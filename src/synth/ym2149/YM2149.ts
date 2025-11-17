@@ -25,11 +25,12 @@ export interface YMState {
 
 export class YM2149 {
   private audioContext: AudioContext;
-  private registers: YMRegisters;
+  private registers: number[];
   private state: YMState;
   private oscillators: OscillatorNode[];
   private noiseNode: AudioBufferSourceNode | null = null;
   private gainNodes: GainNode[];
+  private dcOffsetNodes: GainNode[]; // Add DC offset correction nodes
   private noiseGainNode: GainNode;
   private envelopeGainNode: GainNode;
 
@@ -50,19 +51,37 @@ export class YM2149 {
     // Initialize audio nodes
     this.oscillators = [];
     this.gainNodes = [];
+    this.dcOffsetNodes = [];
     this.noiseGainNode = audioContext.createGain();
     this.envelopeGainNode = audioContext.createGain();
 
+    console.log('=== INITIALIZING YM2149 AUDIO NODES ===');
+
     for (let i = 0; i < 3; i++) {
+      console.log(`Creating oscillator ${i}`);
+      
+      // Create oscillator
       const oscillator = audioContext.createOscillator();
       oscillator.type = 'square';
+      oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // Default to A4
+      
+      // Create gain node
       const gainNode = audioContext.createGain();
+      gainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start silent
+      
+      // Connect: oscillator -> gain -> destination (bypassing DC offset for now)
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
+      
       oscillator.start();
+      
       this.oscillators.push(oscillator);
       this.gainNodes.push(gainNode);
+      
+      console.log(`Oscillator ${i} created and connected: freq=${oscillator.frequency.value}, type=${oscillator.type}`);
     }
+
+    console.log('=== YM2149 AUDIO NODES INITIALIZED ===');
 
     this.noiseGainNode.connect(audioContext.destination);
     this.envelopeGainNode.connect(audioContext.destination);
@@ -110,7 +129,8 @@ export class YM2149 {
   }
 
   private updateAudioNodes(): void {
-    console.log('Updating audio nodes...');
+    const now = this.audioContext.currentTime;
+    
     for (let i = 0; i < 3; i++) {
       const channel = this.state.channels[i];
       const oscillator = this.oscillators[i];
@@ -118,30 +138,37 @@ export class YM2149 {
 
       console.log(`Channel ${i}: toneEnabled=${channel.toneEnabled}, period=${channel.tonePeriod}, volume=${channel.volume}`);
 
-      // Update frequency if tone is enabled
-      if (channel.toneEnabled && channel.tonePeriod > 0) {
-        const frequency = YM_BASE_CLOCK / (16 * channel.tonePeriod);
-        console.log(`Setting frequency ${frequency} Hz for channel ${i}`);
-        // Use immediate timing with setValueAtTime for clean updates
-        oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-      } else {
-        // Set to very low frequency for silence
-        console.log(`Setting silence frequency for channel ${i}`);
-        oscillator.frequency.setValueAtTime(0.01, this.audioContext.currentTime);
-      }
-
-      // Update volume with immediate timing
-      const volume = channel.volume / MAX_CHANNEL_VOLUME;
-      const targetVolume = channel.envelopeEnabled ? volume * 0.5 : volume * 0.1;
-      console.log(`Setting volume ${targetVolume} for channel ${i}`);
+      // Check if channel should be silent (volume = 0 in YM2149 means silence)
+      const isSilent = channel.volume === 0;
       
-      // Use setValueAtTime for immediate volume changes
-      gainNode.gain.setValueAtTime(targetVolume, this.audioContext.currentTime);
-    }
-
-    // Update noise generator
-    if (this.state.noisePeriod > 0) {
-      this.updateNoiseGenerator();
+      // Check if this channel should play sound
+      const shouldPlay = channel.toneEnabled && 
+                        channel.tonePeriod > 0 && 
+                        channel.tonePeriod < 4096 && 
+                        !isSilent;
+      
+      if (shouldPlay) {
+        // YM2149 frequency calculation: f = clock / (32 * period)
+        const frequency = YM_BASE_CLOCK / (32 * channel.tonePeriod);
+        
+        // Clamp frequency to reasonable range (20Hz - 20kHz)
+        const clampedFrequency = Math.max(20, Math.min(20000, frequency));
+        
+        console.log(`Channel ${i}: Playing frequency ${clampedFrequency}Hz with volume ${channel.volume}`);
+        
+        // Update frequency IMMEDIATELY (no glide/portamento)
+        oscillator.frequency.setValueAtTime(clampedFrequency, now);
+        
+        // Calculate volume with proper YM2149 volume levels (0-15, where 15 is LOUDEST)
+        const volume = channel.volume / 15.0 * 0.3; // Max 30% volume to prevent clipping
+        
+        // Apply volume immediately for crisp note changes
+        gainNode.gain.setValueAtTime(volume, now);
+        
+      } else {
+        // Complete silence - immediate cutoff
+        gainNode.gain.setValueAtTime(0, now);
+      }
     }
   }
 

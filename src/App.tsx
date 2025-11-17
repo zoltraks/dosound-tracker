@@ -18,7 +18,6 @@ import { PianoKeyboard } from './components/PianoKeyboard';
 import './App.css';
 
 const App: React.FC = () => {
-  console.log('App component rendering...');
   
   const [currentOctave, setCurrentOctave] = useState(3);
   const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
@@ -32,7 +31,9 @@ const App: React.FC = () => {
     createNewSong, 
     saveSong, 
     createNewInstrument, 
-    saveInstrument 
+    saveInstrument,
+    fileInputRef,
+    triggerFileLoad
   } = useDataManagement();
   const { sequencerState, start, stop, setCallback, setPosition } = useSequencer();
 
@@ -156,13 +157,13 @@ const App: React.FC = () => {
             channelCyclesRef.current[0] = 0; // Reset when no note
           }
           
-          if (lineB?.trackB) {
+          if (lineB?.trackA) {
             channelCyclesRef.current[1] = (channelCyclesRef.current[1] + 1) % 2;
           } else {
             channelCyclesRef.current[1] = 0; // Reset when no note
           }
           
-          if (lineC?.trackC) {
+          if (lineC?.trackA) {
             channelCyclesRef.current[2] = (channelCyclesRef.current[2] + 1) % 2;
           } else {
             channelCyclesRef.current[2] = 0; // Reset when no note
@@ -170,8 +171,8 @@ const App: React.FC = () => {
           
           // Update each channel with DOSOUND timing (volume every 2 cycles)
           updateChannelWithInstrument(ym2149, 0, lineA?.trackA, state.currentTick, channelCyclesRef.current[0]);
-          updateChannelWithInstrument(ym2149, 1, lineB?.trackB, state.currentTick, channelCyclesRef.current[1]);
-          updateChannelWithInstrument(ym2149, 2, lineC?.trackC, state.currentTick, channelCyclesRef.current[2]);
+          updateChannelWithInstrument(ym2149, 1, lineB?.trackA, state.currentTick, channelCyclesRef.current[1]);
+          updateChannelWithInstrument(ym2149, 2, lineC?.trackA, state.currentTick, channelCyclesRef.current[2]);
         }
       }
     });
@@ -185,6 +186,7 @@ const App: React.FC = () => {
 
     // Get instrument for this track
     const instrument = currentSong.instruments.find(inst => inst.id === noteData?.instrument);
+    
     if (!instrument) {
       // No instrument - silence channel
       ym2149.writeRegister(volumeRegister, 0x00);
@@ -275,24 +277,23 @@ const App: React.FC = () => {
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: any) => {
-    // Find the current playlist entry
-    const currentPatternIndex = sequencerState.currentPattern;
-    const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
-    
-    if (!currentPlaylistEntry) {
-      return; // No current playlist entry, can't update
+    if (!newPattern || !newPattern.id) {
+      console.error('No pattern ID provided to handlePatternChange');
+      return;
     }
     
-    // Find which pattern ID we should update based on which track is being edited
-    // For now, we'll update all patterns that match the new pattern's ID
+    // Find and update the pattern by ID
     const updatedPatterns = [...currentSong.patterns];
     const patternIndex = updatedPatterns.findIndex(p => p.id === newPattern.id);
     
-    if (patternIndex !== -1) {
-      updatedPatterns[patternIndex] = newPattern;
-      updateSong({ patterns: updatedPatterns });
+    if (patternIndex === -1) {
+      console.error('Pattern not found with ID:', newPattern.id);
+      return;
     }
-  }, [currentSong.patterns, currentSong.playlist, sequencerState.currentPattern, updateSong]);
+    
+    updatedPatterns[patternIndex] = newPattern;
+    updateSong({ patterns: updatedPatterns });
+  }, [currentSong.patterns, updateSong]);
 
   const handlePlaylistChange = useCallback((newPlaylist: any[]) => {
     updateSong({ playlist: newPlaylist });
@@ -335,8 +336,29 @@ const App: React.FC = () => {
       return null; // No pattern set for this track
     }
     
-    return currentSong.patterns.find(p => p.id === patternId) || null;
-  }, [currentSong, sequencerState.currentPattern]);
+    let foundPattern = currentSong.patterns.find(p => p.id === patternId);
+    
+    // If pattern doesn't exist, create it
+    if (!foundPattern) {
+      const newPattern = {
+        id: patternId,
+        name: `Pattern ${patternId}`,
+        lines: Array(64).fill(null).map(() => ({
+          trackA: null,
+          trackB: null,
+          trackC: null
+        }))
+      };
+      
+      // Add the new pattern to the song
+      const updatedPatterns = [...currentSong.patterns, newPattern];
+      updateSong({ patterns: updatedPatterns });
+      
+      foundPattern = newPattern;
+    }
+    
+    return foundPattern;
+  }, [currentSong, sequencerState.currentPattern, updateSong]);
 
   // Handle instrument selection
   const handleInstrumentSelect = useCallback((instrument: Instrument) => {
@@ -391,7 +413,7 @@ const App: React.FC = () => {
         <CommandPanel
           onNewSong={createNewSong}
           onSaveSong={saveSong}
-          onLoadSong={() => console.log('Load song clicked')}
+          onLoadSong={triggerFileLoad}
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
           onLoadInstrument={() => console.log('Load instrument clicked')}
@@ -479,7 +501,6 @@ const App: React.FC = () => {
               setActiveSection={setActiveSection}
               data={currentInstrument.volumeEnvelope}
               onChange={(data: number[]) => {
-                console.log('Volume envelope changed:', data);
                 updateInstrument({ volumeEnvelope: data });
               }}
             />
@@ -490,7 +511,6 @@ const App: React.FC = () => {
               setActiveSection={setActiveSection}
               data={currentInstrument.arpeggioEnvelope}
               onChange={(data: number[]) => {
-                console.log('Arpeggio envelope changed:', data);
                 updateInstrument({ arpeggioEnvelope: data });
               }}
             />
@@ -501,7 +521,6 @@ const App: React.FC = () => {
               setActiveSection={setActiveSection}
               data={currentInstrument.pitchEnvelope}
               onChange={(data: number[]) => {
-                console.log('Pitch envelope changed:', data);
                 updateInstrument({ pitchEnvelope: data });
               }}
             />
@@ -512,7 +531,6 @@ const App: React.FC = () => {
               setActiveSection={setActiveSection}
               data={currentInstrument.noiseEnvelope}
               onChange={(data: number[]) => {
-                console.log('Noise envelope changed:', data);
                 updateInstrument({ noiseEnvelope: data });
               }}
             />
@@ -558,6 +576,20 @@ const App: React.FC = () => {
           onOctaveChange={setCurrentOctave}
           ym2149={ym2149Ref.current}
           currentInstrument={currentInstrument}
+        />
+        
+        {/* Hidden file input for loading songs */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".yaml,.yml"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              // This will be handled by the useDataManagement hook
+            }
+          }}
         />
       </div>
     );

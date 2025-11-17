@@ -96,7 +96,6 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   const getBarColor = (value: number) => {
     // Use different colors based on T (0) or N (1) value
     const color = value === 0 ? '#f59e0b' : '#3fbbc8'; // Orange for T (tone), cyan for N (noise)
-    console.log(`getBarColor called with value ${value}, returning ${color}`);
     return color;
   };
 

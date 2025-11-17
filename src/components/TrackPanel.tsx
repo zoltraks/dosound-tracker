@@ -127,15 +127,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const getTrackNotes = useCallback(() => {
     if (!pattern) return Array(PATTERN_LENGTH).fill(null);
     
-    return pattern.lines.map(line => {
-      switch (trackId) {
-        case 'A': return line.trackA;
-        case 'B': return line.trackB;
-        case 'C': return line.trackC;
-        default: return null;
-      }
-    });
-  }, [pattern, trackId]);
+    // For shared patterns, show the same content in all tracks
+    // Use trackA data as the shared content for all tracks
+    return pattern.lines.map(line => line.trackA);
+  }, [pattern]);
 
   const trackNotes = getTrackNotes();
 
@@ -189,12 +184,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
         
-        // Clear the note for this track
-        switch (trackId) {
-          case 'A': newPattern.lines[currentLine].trackA = null; break;
-          case 'B': newPattern.lines[currentLine].trackB = null; break;
-          case 'C': newPattern.lines[currentLine].trackC = null; break;
-        }
+        // Clear the note for shared pattern (always use trackA)
+        newPattern.lines[currentLine].trackA = null;
         
         onPatternChange(newPattern);
       }
@@ -206,13 +197,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
         
-        // Set note off for this track
+        // Set note off for shared pattern (always use trackA)
         const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
-        switch (trackId) {
-          case 'A': newPattern.lines[currentLine].trackA = noteOff; break;
-          case 'B': newPattern.lines[currentLine].trackB = noteOff; break;
-          case 'C': newPattern.lines[currentLine].trackC = noteOff; break;
-        }
+        newPattern.lines[currentLine].trackA = noteOff;
         
         onPatternChange(newPattern);
       }
@@ -224,12 +211,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
         
-        // Clear the note for this track
-        switch (trackId) {
-          case 'A': newPattern.lines[currentLine].trackA = null; break;
-          case 'B': newPattern.lines[currentLine].trackB = null; break;
-          case 'C': newPattern.lines[currentLine].trackC = null; break;
-        }
+        // Clear the note for shared pattern (always use trackA)
+        newPattern.lines[currentLine].trackA = null;
         
         onPatternChange(newPattern);
       }
@@ -268,12 +251,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         
         const newNote: Note = { note, octave: finalOctave, instrument: currentInstrument };
         
-        // Set the note for this track
-        switch (trackId) {
-          case 'A': newPattern.lines[currentLine].trackA = newNote; break;
-          case 'B': newPattern.lines[currentLine].trackB = newNote; break;
-          case 'C': newPattern.lines[currentLine].trackC = newNote; break;
-        }
+        // Set the note for shared pattern (always use trackA)
+        newPattern.lines[currentLine].trackA = newNote;
         
         onPatternChange(newPattern);
       }

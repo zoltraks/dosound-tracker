@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/dosound/DosoundDriver';
-// import yaml from 'js-yaml';
+import yaml from 'js-yaml';
 
 // Storage keys
 const SONG_STORAGE_KEY = 'dosound-tracker-song';
@@ -102,27 +102,22 @@ export const useDataManagement = () => {
   useEffect(() => {
     const songInstrument = currentSong.instruments.find(inst => inst.id === currentInstrument.id);
     if (songInstrument && JSON.stringify(songInstrument) !== JSON.stringify(currentInstrument)) {
-      console.log('Syncing currentInstrument with song data:', songInstrument);
       setCurrentInstrument(songInstrument);
     }
   }, [currentSong.instruments, currentInstrument.id]);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    console.log('Saving song to localStorage:', currentSong);
     try {
       localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(currentSong));
-      console.log('Song saved successfully');
     } catch (error) {
       console.warn('Failed to save song to localStorage:', error);
     }
   }, [currentSong]);
 
   useEffect(() => {
-    console.log('Saving instrument to localStorage:', currentInstrument);
     try {
       localStorage.setItem(INSTRUMENT_STORAGE_KEY, JSON.stringify(currentInstrument));
-      console.log('Instrument saved successfully');
     } catch (error) {
       console.warn('Failed to save instrument to localStorage:', error);
     }
@@ -166,34 +161,27 @@ export const useDataManagement = () => {
   }, [currentSong]);
 
   const saveSong = useCallback(() => {
-    // Temporarily disabled yaml functionality
-    console.log('Save song temporarily disabled');
-    return;
-    
-    /*
-    const yamlContent = yaml.dump(currentSong, {
-      indent: 2,
-      lineWidth: -1
-    });
-    
-    const blob = new Blob([yamlContent], { type: 'text/yaml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentSong.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    */
+    try {
+      const yamlContent = yaml.dump(currentSong, {
+        indent: 2,
+        lineWidth: -1
+      });
+      
+      const blob = new Blob([yamlContent], { type: 'text/yaml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentSong.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to save song:', error);
+    }
   }, [currentSong]);
 
-  const loadSong = useCallback((_file: File) => {
-    // Temporarily disabled yaml functionality
-    console.log('Load song temporarily disabled');
-    return;
-    
-    /*
+  const loadSong = useCallback((file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
@@ -209,7 +197,6 @@ export const useDataManagement = () => {
       }
     };
     reader.readAsText(file);
-    */
   }, []);
 
   const saveInstrument = useCallback(() => {
