@@ -122,6 +122,9 @@ const App: React.FC = () => {
     };
   }, []);
 
+  // Track cycle counters for each channel (0-1, 0-1, 0-1...)
+  const channelCyclesRef = useRef([0, 0, 0]);
+
   // Sequencer callback for playing notes
   useEffect(() => {
     setCallback((state) => {
@@ -146,27 +149,50 @@ const App: React.FC = () => {
           const lineB = patternB?.lines[state.currentLine];
           const lineC = patternC?.lines[state.currentLine];
           
-          // Update each channel with its track's instrument and all envelopes
-          updateChannelWithInstrument(ym2149, 0, lineA?.trackA, state.currentTick);
-          updateChannelWithInstrument(ym2149, 1, lineB?.trackB, state.currentTick);
-          updateChannelWithInstrument(ym2149, 2, lineC?.trackC, state.currentTick);
+          // Update cycle counters only for channels that have notes playing
+          if (lineA?.trackA) {
+            channelCyclesRef.current[0] = (channelCyclesRef.current[0] + 1) % 2;
+          } else {
+            channelCyclesRef.current[0] = 0; // Reset when no note
+          }
+          
+          if (lineB?.trackB) {
+            channelCyclesRef.current[1] = (channelCyclesRef.current[1] + 1) % 2;
+          } else {
+            channelCyclesRef.current[1] = 0; // Reset when no note
+          }
+          
+          if (lineC?.trackC) {
+            channelCyclesRef.current[2] = (channelCyclesRef.current[2] + 1) % 2;
+          } else {
+            channelCyclesRef.current[2] = 0; // Reset when no note
+          }
+          
+          // Update each channel with DOSOUND timing (volume every 2 cycles)
+          updateChannelWithInstrument(ym2149, 0, lineA?.trackA, state.currentTick, channelCyclesRef.current[0]);
+          updateChannelWithInstrument(ym2149, 1, lineB?.trackB, state.currentTick, channelCyclesRef.current[1]);
+          updateChannelWithInstrument(ym2149, 2, lineC?.trackC, state.currentTick, channelCyclesRef.current[2]);
         }
       }
     });
   }, [setCallback, currentSong]);
 
   // Helper function to update channel with instrument and all envelopes
-  const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0) => {
+  const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0, cycle: number = 0) => {
     const volumeRegister = 8 + channel; // R8, R9, R10
     const fineRegister = channel * 2;        // R0, R2, R4
     const coarseRegister = channel * 2 + 1;  // R1, R3, R5
 
-    if (noteData && currentTick === 0) {
-      // Start of new note - get instrument for this track
-      const instrument = currentSong.instruments.find(inst => inst.id === noteData.instrument);
-      if (!instrument) return;
+    // Get instrument for this track
+    const instrument = currentSong.instruments.find(inst => inst.id === noteData?.instrument);
+    if (!instrument) {
+      // No instrument - silence channel
+      ym2149.writeRegister(volumeRegister, 0x00);
+      return;
+    }
 
-      // Set frequency based on note
+    if (noteData && currentTick === 0) {
+      // Start of new note - set frequency
       const noteFrequencies: { [key: string]: number } = {
         'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13,
         'E': 329.63, 'F': 349.23, 'F#': 369.99, 'G': 392.00,
@@ -205,6 +231,10 @@ const App: React.FC = () => {
           // Disable noise for this channel
           ym2149.writeRegister(0x07, 0x38); // Enable tone only
         }
+        
+        // Apply initial volume immediately when note starts
+        const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
+        ym2149.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
       }
     } else if (!noteData) {
       // No note data - silence channel
@@ -212,25 +242,36 @@ const App: React.FC = () => {
       return;
     }
 
-    // Get instrument for this track
-    const instrument = currentSong.instruments.find(inst => inst.id === noteData?.instrument);
-    if (!instrument) return;
-
-    // Apply volume envelope
-    const volumeIndex = Math.min(currentTick, instrument.volumeEnvelope.length - 1);
-    const volumeValue = instrument.volumeEnvelope[volumeIndex];
-    const volume = Math.max(0, Math.min(15, volumeValue)); // Clamp to 0-15
+    // Apply volume envelope only on cycle 0 (every 2 cycles = 40ms in DOSOUND mode), but not on tick 0 (already applied)
+    if (cycle === 0 && currentTick > 0) {
+      const volumeIndex = Math.min(currentTick, instrument.volumeEnvelope.length - 1);
+      const volumeValue = instrument.volumeEnvelope[volumeIndex];
+      const volume = Math.max(0, Math.min(15, volumeValue)); // Clamp to 0-15
+      
+      ym2149.writeRegister(volumeRegister, volume);
+    }
     
-    ym2149.writeRegister(volumeRegister, volume);
-    
-    // Apply noise envelope if in noise mode
-    if (instrument.toneNoiseMode === 'noise') {
+    // Apply noise envelope if in noise mode (only on cycle 0 for DOSOUND timing)
+    if (instrument.toneNoiseMode === 'noise' && cycle === 0) {
       const noiseIndex = Math.min(currentTick, instrument.noiseEnvelope.length - 1);
       const noiseValue = instrument.noiseEnvelope[noiseIndex];
       const noisePeriod = Math.max(0, Math.min(31, noiseValue)); // Clamp to 0-31
       ym2149.writeRegister(0x06, noisePeriod); // Noise period register
     }
   }, [currentSong.instruments]);
+
+  // Handle stop playback with silence
+  const handleStopPlayback = useCallback(() => {
+    // Reset cycle counters when stopping
+    channelCyclesRef.current = [0, 0, 0];
+    
+    // Silence all channels
+    if (ym2149Ref.current) {
+      ym2149Ref.current.writeRegister(0x08, 0x00); // Channel A volume
+      ym2149Ref.current.writeRegister(0x09, 0x00); // Channel B volume
+      ym2149Ref.current.writeRegister(0x0A, 0x00); // Channel C volume
+    }
+  }, []);
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: any) => {
@@ -255,14 +296,9 @@ const App: React.FC = () => {
     // Stop the sequencer
     stop();
     
-    // Silence all channels immediately
-    if (ym2149Ref.current) {
-      const ym2149 = ym2149Ref.current;
-      ym2149.writeRegister(0x08, 0x00); // Silence channel A
-      ym2149.writeRegister(0x09, 0x00); // Silence channel B
-      ym2149.writeRegister(0x0A, 0x00); // Silence channel C
-    }
-  }, [stop]);
+    // Reset cycle counters and silence all channels
+    handleStopPlayback();
+  }, [stop, handleStopPlayback]);
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
@@ -342,6 +378,7 @@ const App: React.FC = () => {
                     pattern={getCurrentPattern()}
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
+                    currentInstrumentData={currentInstrument}
                   />
                   
                   <TrackPanel
@@ -355,6 +392,7 @@ const App: React.FC = () => {
                     pattern={getCurrentPattern()}
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
+                    currentInstrumentData={currentInstrument}
                   />
                   
                   <TrackPanel
@@ -368,6 +406,7 @@ const App: React.FC = () => {
                     pattern={getCurrentPattern()}
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
+                    currentInstrumentData={currentInstrument}
                   />
                 </div>
               </div>

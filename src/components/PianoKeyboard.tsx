@@ -24,6 +24,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
   const isActive = activeSection === 'piano';
+  
+  // Envelope timing state
+  const envelopeTimersRef = useRef<{ [key: string]: number }>({});
+  const cycleCountersRef = useRef<{ [key: string]: number }>({});
 
   // Generate piano keys for 5 octaves with proper layout
   const generatePianoKeys = () => {
@@ -104,16 +108,70 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
     const frequency = baseFreq * Math.pow(2, octave - 4);
     const period = Math.floor(2000000 / (16 * frequency));
+    const keyId = `${note}${octave}`;
+
+    // Clear any existing timer for this key
+    if (envelopeTimersRef.current[keyId]) {
+      clearInterval(envelopeTimersRef.current[keyId]);
+    }
+
+    // Initialize cycle counter for this key
+    cycleCountersRef.current[keyId] = 0;
 
     // Play on channel A (for simplicity)
     ym2149.writeRegister(0x00, period & 0xFF);        // Fine tone A
     ym2149.writeRegister(0x01, (period >> 8) & 0x0F);  // Coarse tone A
     ym2149.writeRegister(0x07, 0x38);                  // Mixer: enable tone A
-    ym2149.writeRegister(0x08, currentInstrument.volumeEnvelope[0] || 0x0F); // Volume A
+
+    // Set initial volume from envelope
+    const initialVolume = currentInstrument.volumeEnvelope[0] || 0x0F;
+    ym2149.writeRegister(0x08, initialVolume); // Volume A
+
+    // Start envelope timer - update every 20ms (50Hz), but change volume every 40ms (every 2 cycles)
+    let envelopeIndex = 0; // Separate counter for envelope position
+    
+    envelopeTimersRef.current[keyId] = setInterval(() => {
+      const cycle = cycleCountersRef.current[keyId];
+      
+      // Update volume only on cycle 0 (every 2 cycles = 40ms)
+      if (cycle === 0) {
+        if (envelopeIndex < currentInstrument.volumeEnvelope.length) {
+          const volume = currentInstrument.volumeEnvelope[envelopeIndex];
+          const clampedVolume = Math.max(0, Math.min(15, volume)); // Clamp to 0-15
+          ym2149.writeRegister(0x08, clampedVolume);
+          envelopeIndex++; // Increment envelope index when volume changes
+        } else {
+          // Envelope finished, keep last value
+          const lastVolume = currentInstrument.volumeEnvelope[currentInstrument.volumeEnvelope.length - 1];
+          const clampedVolume = Math.max(0, Math.min(15, lastVolume));
+          ym2149.writeRegister(0x08, clampedVolume);
+        }
+      }
+
+      // Update cycle counter (0, 1, 0, 1, ...)
+      cycleCountersRef.current[keyId] = (cycle + 1) % 2;
+    }, 20); // 20ms = 50Hz VBLANK rate
   }, [ym2149, currentInstrument]);
 
-  const stopNote = useCallback(() => {
+  const stopNote = useCallback((note?: string, octave?: number) => {
     if (!ym2149) return;
+    
+    // If note and octave provided, clear specific timer
+    if (note && octave) {
+      const keyId = `${note}${octave}`;
+      if (envelopeTimersRef.current[keyId]) {
+        clearInterval(envelopeTimersRef.current[keyId]);
+        delete envelopeTimersRef.current[keyId];
+      }
+      if (cycleCountersRef.current[keyId]) {
+        delete cycleCountersRef.current[keyId];
+      }
+    } else {
+      // Clear all timers (fallback)
+      Object.values(envelopeTimersRef.current).forEach(timer => clearInterval(timer));
+      envelopeTimersRef.current = {};
+      cycleCountersRef.current = {};
+    }
     
     // Silence channel A
     ym2149.writeRegister(0x08, 0x00); // Volume A = 0
@@ -163,11 +221,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         return newSet;
       });
       
-      if (pressedKeys.size === 1) {
-        stopNote();
+      if (pressedKeys.has(keyId)) {
+        stopNote(note, finalOctave);
       }
     }
-  }, [isActive, currentOctave, playNote, stopNote, pressedKeys.size]);
+  }, [isActive, currentOctave, stopNote, pressedKeys]);
 
   const handlePianoKeyDown = useCallback((note: string, octave: number) => {
     const keyId = `${note}${octave}`;
@@ -189,8 +247,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       return newSet;
     });
     
-    if (pressedKeys.size === 1) {
-      stopNote();
+    if (pressedKeys.has(keyId)) {
+      stopNote(note, octave);
     }
   }, [pressedKeys, stopNote]);
 

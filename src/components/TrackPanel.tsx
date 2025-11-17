@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { PATTERN_LENGTH, KEYBOARD_TO_NOTE } from '../constants/music';
-import type { Pattern, Note } from '../synth/dosound/DosoundDriver';
+import type { Pattern, Note, Instrument } from '../synth/dosound/DosoundDriver';
 import { YM2149 } from '../synth/ym2149/YM2149';
 
 interface TrackPanelProps {
@@ -15,6 +15,7 @@ interface TrackPanelProps {
   pattern: Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
   ym2149: YM2149 | null;
+  currentInstrumentData: Instrument;
 }
 
 interface NoteData {
@@ -34,12 +35,17 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onLineChange,
     pattern,
     onPatternChange,
-    ym2149
+    ym2149,
+    currentInstrumentData
   } = props;
   
   const [currentInstrument, setCurrentInstrument] = useState('00');
   const trackRef = useRef<HTMLDivElement>(null);
   const isProcessingWheel = useRef<boolean>(false);
+  
+  // Envelope timing state for preview notes
+  const envelopeTimerRef = useRef<number | null>(null);
+  const cycleCounterRef = useRef<number>(0);
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
@@ -47,6 +53,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   // Play preview note when entering notes
   const playPreviewNote = useCallback((note: string, octave: number) => {
     if (!ym2149) return;
+
+    // Clear any existing envelope timer
+    if (envelopeTimerRef.current) {
+      clearInterval(envelopeTimerRef.current);
+    }
 
     const noteFrequencies: { [key: string]: number } = {
       'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13,
@@ -69,15 +80,48 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Play note on this channel
     ym2149.writeRegister(fineRegister, period & 0xFF);
     ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
-    ym2149.writeRegister(volumeRegister, 0x0F); // Full volume
+    ym2149.writeRegister(0x07, 0x38); // Enable tone for this channel
 
-    // Auto-silence after 200ms for preview
-    setTimeout(() => {
-      if (ym2149) {
-        ym2149.writeRegister(volumeRegister, 0x00);
+    // Initialize envelope timing
+    cycleCounterRef.current = 0;
+    let envelopeIndex = 0;
+
+    // Set initial volume from envelope
+    const initialVolume = currentInstrumentData.volumeEnvelope[0] || 0x0F;
+    ym2149.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
+
+    // Start envelope timer - same logic as piano keyboard
+    envelopeTimerRef.current = setInterval(() => {
+      const cycle = cycleCounterRef.current;
+      
+      // Update volume only on cycle 0 (every 2 cycles = 40ms)
+      if (cycle === 0) {
+        if (envelopeIndex < currentInstrumentData.volumeEnvelope.length) {
+          const volume = currentInstrumentData.volumeEnvelope[envelopeIndex];
+          const clampedVolume = Math.max(0, Math.min(15, volume));
+          ym2149.writeRegister(volumeRegister, clampedVolume);
+          envelopeIndex++;
+        } else {
+          // Envelope finished, keep last value
+          const lastVolume = currentInstrumentData.volumeEnvelope[currentInstrumentData.volumeEnvelope.length - 1];
+          const clampedVolume = Math.max(0, Math.min(15, lastVolume));
+          ym2149.writeRegister(volumeRegister, clampedVolume);
+        }
       }
-    }, 200);
-  }, [ym2149, trackId]);
+
+      // Update cycle counter (0, 1, 0, 1, ...)
+      cycleCounterRef.current = (cycle + 1) % 2;
+    }, 20); // 20ms = 50Hz VBLANK rate
+
+    // Auto-silence after 500ms for preview (longer to hear envelope)
+    setTimeout(() => {
+      if (envelopeTimerRef.current) {
+        clearInterval(envelopeTimerRef.current);
+        envelopeTimerRef.current = null;
+      }
+      ym2149.writeRegister(volumeRegister, 0x00); // Silence channel
+    }, 500);
+  }, [ym2149, trackId, currentInstrumentData]);
 
   // Get notes for this track from the pattern
   const getTrackNotes = useCallback(() => {
