@@ -25,12 +25,12 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const pianoRef = useRef<HTMLDivElement>(null);
   const isActive = activeSection === 'piano';
 
-  // Generate piano keys for 3 octaves with proper layout
+  // Generate piano keys for 5 octaves with proper layout
   const generatePianoKeys = () => {
     const keys = [];
-    const startOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE - 2, currentOctave - 1));
+    const startOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE - 4, currentOctave - 1));
     
-    for (let octave = startOctave; octave <= startOctave + 2 && octave <= MAX_OCTAVE; octave++) {
+    for (let octave = startOctave; octave <= startOctave + 4 && octave <= MAX_OCTAVE; octave++) {
       const octaveOffset = (octave - startOctave) * 7; // 7 white keys per octave
       
       // White keys first

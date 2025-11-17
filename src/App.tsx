@@ -7,6 +7,7 @@ import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
 import { TrackPanel } from './components/TrackPanel';
 import { EnvelopePanel } from './components/EnvelopePanel';
+import { ToneNoisePanel } from './components/ToneNoisePanel';
 import { SongInfoPanel } from './components/SongInfoPanel';
 import { PlaylistPanel } from './components/PlaylistPanel';
 import { InstrumentListPanel } from './components/InstrumentListPanel';
@@ -128,28 +129,102 @@ const App: React.FC = () => {
       if (state.currentTick === 0 && ym2149Ref.current) {
         const ym2149 = ym2149Ref.current;
         
-        // Get current line data from tracks (simplified - just play a demo pattern)
-        if (state.currentLine % 8 === 0) { // Play a note every 8 lines
-          // Play C note on channel A
-          const frequency = 261.63 * Math.pow(2, 4 - 4); // C4
-          const period = Math.floor(2000000 / (16 * frequency));
-          ym2149.writeRegister(0x00, period & 0xFF);
-          ym2149.writeRegister(0x01, (period >> 8) & 0x0F);
-          ym2149.writeRegister(0x08, 0x0F); // Volume
-        } else if (state.currentLine % 8 === 4) { // Play E note
-          // Play E note on channel A
-          const frequency = 329.63 * Math.pow(2, 4 - 4); // E4
-          const period = Math.floor(2000000 / (16 * frequency));
-          ym2149.writeRegister(0x00, period & 0xFF);
-          ym2149.writeRegister(0x01, (period >> 8) & 0x0F);
-          ym2149.writeRegister(0x08, 0x0F); // Volume
-        } else {
-          // Silence on other beats
-          ym2149.writeRegister(0x08, 0x00); // Volume = 0
+        // Get current pattern from playlist
+        const currentPatternIndex = state.currentPattern % currentSong.playlist.length;
+        const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
+        
+        if (currentPlaylistEntry) {
+          // Get pattern data for each track
+          const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
+          const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
+          const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
+          
+          // Get current line data
+          const currentLine = state.currentLine % 64;
+          const lineA = patternA?.lines[currentLine];
+          const lineB = patternB?.lines[currentLine];
+          const lineC = patternC?.lines[currentLine];
+          
+          // Channel A (Track A)
+          if (lineA?.trackA) {
+            playNoteOnChannel(ym2149, lineA.trackA.note, lineA.trackA.octave, 0);
+          } else {
+            silenceChannel(ym2149, 0);
+          }
+          
+          // Channel B (Track B)
+          if (lineB?.trackB) {
+            playNoteOnChannel(ym2149, lineB.trackB.note, lineB.trackB.octave, 1);
+          } else {
+            silenceChannel(ym2149, 1);
+          }
+          
+          // Channel C (Track C)
+          if (lineC?.trackC) {
+            playNoteOnChannel(ym2149, lineC.trackC.note, lineC.trackC.octave, 2);
+          } else {
+            silenceChannel(ym2149, 2);
+          }
         }
       }
     });
-  }, [setCallback]);
+  }, [setCallback, currentSong]);
+
+  // Helper function to play note on specific channel
+  const playNoteOnChannel = useCallback((ym2149: YM2149, note: string, octave: number, channel: number) => {
+    const noteFrequencies: { [key: string]: number } = {
+      'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13,
+      'E': 329.63, 'F': 349.23, 'F#': 369.99, 'G': 392.00,
+      'G#': 415.30, 'A': 440.00, 'A#': 466.16, 'B': 493.88
+    };
+
+    const baseFreq = noteFrequencies[note];
+    if (!baseFreq) return;
+
+    const frequency = baseFreq * Math.pow(2, octave - 4);
+    const period = Math.floor(2000000 / (16 * frequency));
+
+    // Set frequency for the specific channel
+    const fineRegister = channel * 2;        // R0, R2, R4
+    const coarseRegister = channel * 2 + 1;  // R1, R3, R5
+    const volumeRegister = 8 + channel;      // R8, R9, R10
+
+    ym2149.writeRegister(fineRegister, period & 0xFF);
+    ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+    ym2149.writeRegister(volumeRegister, 0x0F); // Full volume
+  }, []);
+
+  // Helper function to silence specific channel
+  const silenceChannel = useCallback((ym2149: YM2149, channel: number) => {
+    const volumeRegister = 8 + channel; // R8, R9, R10
+    ym2149.writeRegister(volumeRegister, 0x00); // Silence
+  }, []);
+
+  // Pattern handling functions
+  const handlePatternChange = useCallback((newPattern: any) => {
+    const updatedPatterns = [...currentSong.patterns];
+    updatedPatterns[0] = newPattern; // Update first pattern
+    
+    updateSong({ patterns: updatedPatterns });
+  }, [currentSong.patterns, updateSong]);
+
+  const getCurrentPattern = useCallback(() => {
+    return currentSong.patterns[0] || null;
+  }, [currentSong]);
+
+  // Handle stop playback with silence
+  const handleStop = useCallback(() => {
+    // Stop the sequencer
+    stop();
+    
+    // Silence all channels immediately
+    if (ym2149Ref.current) {
+      const ym2149 = ym2149Ref.current;
+      ym2149.writeRegister(0x08, 0x00); // Silence channel A
+      ym2149.writeRegister(0x09, 0x00); // Silence channel B
+      ym2149.writeRegister(0x0A, 0x00); // Silence channel C
+    }
+  }, [stop]);
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
@@ -194,7 +269,7 @@ const App: React.FC = () => {
           onSaveInstrument={saveInstrument}
           onLoadInstrument={() => console.log('Load instrument clicked')}
           onPlaySong={() => start()}
-          onStopSong={() => stop()}
+          onStopSong={handleStop}
           onExportData={() => console.log('Export clicked')}
           isPlaying={sequencerState.isPlaying}
           isDosoundMode={true}
@@ -226,6 +301,9 @@ const App: React.FC = () => {
                     onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
+                    pattern={getCurrentPattern()}
+                    onPatternChange={handlePatternChange}
+                    ym2149={ym2149Ref.current}
                   />
                   
                   <TrackPanel
@@ -236,6 +314,9 @@ const App: React.FC = () => {
                     onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
+                    pattern={getCurrentPattern()}
+                    onPatternChange={handlePatternChange}
+                    ym2149={ym2149Ref.current}
                   />
                   
                   <TrackPanel
@@ -246,6 +327,9 @@ const App: React.FC = () => {
                     onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
+                    pattern={getCurrentPattern()}
+                    onPatternChange={handlePatternChange}
+                    ym2149={ym2149Ref.current}
                   />
                 </div>
               </div>
@@ -253,8 +337,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="middle-column">
-            <EnvelopePanel
-              type="toneNoise"
+            <ToneNoisePanel
               activeSection={activeSection}
               setActiveSection={setActiveSection}
             />

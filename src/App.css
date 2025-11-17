@@ -1177,6 +1177,30 @@ body {
   text-align: right;
 }
 
+/* Tone/Noise Panel Styles */
+.tone-noise-bar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  position: relative !important;
+}
+
+.tone-noise-emoji {
+  font-size: 10px;
+  line-height: 1;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+.tone-noise-bar:hover .tone-noise-emoji {
+  opacity: 1;
+}
+
+.tone-noise-bar.current .tone-noise-emoji {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

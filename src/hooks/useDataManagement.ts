@@ -1,16 +1,38 @@
 import { useState, useRef, useCallback } from 'react';
-import type { Instrument, Song, Pattern } from '../synth/dosound/DosoundDriver';
+import type { Instrument, Song, Pattern, PatternLine } from '../synth/dosound/DosoundDriver';
 // import yaml from 'js-yaml';
 
 export const useDataManagement = () => {
-  const [currentSong, setCurrentSong] = useState<Song>({
-    title: 'Untitled Song',
-    author: 'ZoltarX / New Generation',
-    year: new Date().getFullYear(),
-    speed: 6,
-    patterns: [],
-    playlist: [],
-    instruments: []
+  const [currentSong, setCurrentSong] = useState<Song>(() => {
+    // Create a default pattern with some notes
+    const defaultPattern: Pattern = {
+      id: '00',
+      name: 'Default Pattern',
+      lines: Array.from({ length: 64 }, (_, i) => {
+        const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+        
+        // Add some notes to create a simple melody
+        if (i % 8 === 0) line.trackA = { note: 'C', octave: 4, instrument: '00' };
+        if (i % 8 === 2) line.trackA = { note: 'E', octave: 4, instrument: '00' };
+        if (i % 8 === 4) line.trackA = { note: 'G', octave: 4, instrument: '00' };
+        if (i % 8 === 6) line.trackA = { note: 'E', octave: 4, instrument: '00' };
+        
+        // Add some bass notes on track B
+        if (i % 4 === 0) line.trackB = { note: 'C', octave: 3, instrument: '00' };
+        
+        return line;
+      })
+    };
+
+    return {
+      title: 'Untitled Song',
+      author: 'ZoltarX / New Generation',
+      year: new Date().getFullYear(),
+      speed: 6,
+      patterns: [defaultPattern],
+      playlist: [{ trackA: '00', trackB: '00', trackC: '00' }],
+      instruments: []
+    };
   });
 
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>({
