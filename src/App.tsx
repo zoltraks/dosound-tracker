@@ -1,6 +1,8 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
+import { useSequencer } from './hooks/useSequencer';
+import { YM2149 } from './synth/ym2149/YM2149';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
 import { TrackPanel } from './components/TrackPanel';
@@ -28,6 +30,126 @@ const App: React.FC = () => {
     createNewInstrument, 
     saveInstrument 
   } = useDataManagement();
+  const { sequencerState, start, stop, setCallback } = useSequencer();
+
+  // Audio setup
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const ym2149Ref = useRef<YM2149 | null>(null);
+
+  // Initialize audio on component mount
+  useEffect(() => {
+    const initAudio = () => {
+      try {
+        console.log('Starting audio initialization...');
+        
+        // Create audio context
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContextClass) {
+          throw new Error('Web Audio API not supported');
+        }
+        
+        const audioContext = new AudioContextClass();
+        console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
+        console.log('AudioContext state:', audioContext.state);
+        
+        // Resume context if suspended (browser policy)
+        if (audioContext.state === 'suspended') {
+          audioContext.resume();
+          console.log('AudioContext resumed');
+        }
+        
+        audioContextRef.current = audioContext;
+        
+        // Initialize YM2149
+        const ym2149 = new YM2149(audioContext);
+        ym2149Ref.current = ym2149;
+        console.log('YM2149 initialized');
+        
+        // Set initial volume for all channels
+        ym2149.writeRegister(0x08, 0x0F); // Channel A volume
+        ym2149.writeRegister(0x09, 0x0F); // Channel B volume  
+        ym2149.writeRegister(0x0A, 0x0F); // Channel C volume
+        ym2149.writeRegister(0x07, 0x38); // Enable tone channels, disable noise
+        console.log('YM2149 registers set');
+        
+        // Test tone to verify audio is working (play C4 for 100ms)
+        const testFrequency = 261.63; // C4
+        const testPeriod = Math.floor(2000000 / (16 * testFrequency));
+        console.log('Setting test tone - frequency:', testFrequency, 'period:', testPeriod);
+        
+        ym2149.writeRegister(0x00, testPeriod & 0xFF);        // Fine tone A
+        ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);  // Coarse tone A
+        console.log('Test tone registers written');
+        
+        // Stop test tone after 100ms
+        setTimeout(() => {
+          if (ym2149Ref.current) {
+            ym2149Ref.current.writeRegister(0x08, 0x00); // Silence channel A
+            console.log('Test tone stopped');
+          }
+        }, 100);
+        
+        console.log('Audio initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize audio:', error);
+      }
+    };
+
+    // Add a click handler to resume audio context (browser requirement)
+    const handleUserInteraction = () => {
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+        console.log('AudioContext resumed by user interaction');
+      }
+    };
+
+    document.addEventListener('click', handleUserInteraction);
+    initAudio();
+
+    // Cleanup on unmount
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      if (ym2149Ref.current) {
+        ym2149Ref.current.dispose();
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
+
+  // Sequencer callback for playing notes
+  useEffect(() => {
+    setCallback((state) => {
+      // Update current line for UI
+      setSharedCurrentLine(state.currentLine);
+      
+      // Play notes at the beginning of each line (tick 0)
+      if (state.currentTick === 0 && ym2149Ref.current) {
+        const ym2149 = ym2149Ref.current;
+        
+        // Get current line data from tracks (simplified - just play a demo pattern)
+        if (state.currentLine % 8 === 0) { // Play a note every 8 lines
+          // Play C note on channel A
+          const frequency = 261.63 * Math.pow(2, 4 - 4); // C4
+          const period = Math.floor(2000000 / (16 * frequency));
+          ym2149.writeRegister(0x00, period & 0xFF);
+          ym2149.writeRegister(0x01, (period >> 8) & 0x0F);
+          ym2149.writeRegister(0x08, 0x0F); // Volume
+        } else if (state.currentLine % 8 === 4) { // Play E note
+          // Play E note on channel A
+          const frequency = 329.63 * Math.pow(2, 4 - 4); // E4
+          const period = Math.floor(2000000 / (16 * frequency));
+          ym2149.writeRegister(0x00, period & 0xFF);
+          ym2149.writeRegister(0x01, (period >> 8) & 0x0F);
+          ym2149.writeRegister(0x08, 0x0F); // Volume
+        } else {
+          // Silence on other beats
+          ym2149.writeRegister(0x08, 0x00); // Volume = 0
+        }
+      }
+    });
+  }, [setCallback]);
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
@@ -71,10 +193,10 @@ const App: React.FC = () => {
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
           onLoadInstrument={() => console.log('Load instrument clicked')}
-          onPlaySong={() => console.log('Play song clicked')}
-          onStopSong={() => console.log('Stop song clicked')}
+          onPlaySong={() => start()}
+          onStopSong={() => stop()}
           onExportData={() => console.log('Export clicked')}
-          isPlaying={false}
+          isPlaying={sequencerState.isPlaying}
           isDosoundMode={true}
           onToggleDosoundMode={() => console.log('Toggle DOSOUND mode')}
         />
@@ -205,7 +327,7 @@ const App: React.FC = () => {
           setActiveSection={setActiveSection}
           currentOctave={currentOctave}
           onOctaveChange={setCurrentOctave}
-          ym2149={null}
+          ym2149={ym2149Ref.current}
           currentInstrument={currentInstrument}
         />
       </div>

@@ -110,30 +110,33 @@ export class YM2149 {
   }
 
   private updateAudioNodes(): void {
+    console.log('Updating audio nodes...');
     for (let i = 0; i < 3; i++) {
       const channel = this.state.channels[i];
       const oscillator = this.oscillators[i];
       const gainNode = this.gainNodes[i];
 
+      console.log(`Channel ${i}: toneEnabled=${channel.toneEnabled}, period=${channel.tonePeriod}, volume=${channel.volume}`);
+
       // Update frequency if tone is enabled
       if (channel.toneEnabled && channel.tonePeriod > 0) {
         const frequency = YM_BASE_CLOCK / (16 * channel.tonePeriod);
+        console.log(`Setting frequency ${frequency} Hz for channel ${i}`);
+        // Use immediate timing with setValueAtTime for clean updates
         oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
-        oscillator.frequency.linearRampToValueAtTime(
-          frequency, 
-          this.audioContext.currentTime
-        );
       } else {
-        oscillator.frequency.setValueAtTime(0.1, this.audioContext.currentTime);
+        // Set to very low frequency for silence
+        console.log(`Setting silence frequency for channel ${i}`);
+        oscillator.frequency.setValueAtTime(0.01, this.audioContext.currentTime);
       }
 
-      // Update volume
+      // Update volume with immediate timing
       const volume = channel.volume / MAX_CHANNEL_VOLUME;
-      if (channel.envelopeEnabled) {
-        gainNode.gain.setValueAtTime(volume * 0.5, this.audioContext.currentTime);
-      } else {
-        gainNode.gain.setValueAtTime(volume * 0.1, this.audioContext.currentTime);
-      }
+      const targetVolume = channel.envelopeEnabled ? volume * 0.5 : volume * 0.1;
+      console.log(`Setting volume ${targetVolume} for channel ${i}`);
+      
+      // Use setValueAtTime for immediate volume changes
+      gainNode.gain.setValueAtTime(targetVolume, this.audioContext.currentTime);
     }
 
     // Update noise generator
