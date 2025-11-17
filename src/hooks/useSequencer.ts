@@ -10,14 +10,14 @@ export interface SequencerState {
   ticksPerRow: number;
 }
 
-export const useSequencer = () => {
+export const useSequencer = (songSpeed: number = 6) => {
   const [sequencerState, setSequencerState] = useState<SequencerState>({
     isPlaying: false,
     currentPattern: 0,
     currentLine: 0,
     currentTick: 0,
     bpm: 125,
-    ticksPerRow: 6
+    ticksPerRow: songSpeed
   });
 
   const intervalRef = useRef<number | null>(null);
@@ -112,6 +112,10 @@ export const useSequencer = () => {
     setSequencerState(prev => ({ ...prev, ticksPerRow }));
   }, []);
 
+  const updateSpeed = useCallback((newSpeed: number) => {
+    setSequencerState(prev => ({ ...prev, ticksPerRow: newSpeed }));
+  }, []);
+
   const setCallback = useCallback((callback: (state: SequencerState) => void) => {
     callbackRef.current = callback;
   }, []);
@@ -190,6 +194,7 @@ export const useSequencer = () => {
     setPosition,
     setBPM,
     setTicksPerRow,
+    updateSpeed,
     setCallback,
     setTickCallback,
     getCurrentTime,

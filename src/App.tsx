@@ -35,7 +35,12 @@ const App: React.FC = () => {
     fileInputRef,
     triggerFileLoad
   } = useDataManagement();
-  const { sequencerState, start, stop, setCallback, setPosition } = useSequencer();
+  const { sequencerState, start, stop, setCallback, setPosition, updateSpeed } = useSequencer(currentSong.speed);
+
+  // Update sequencer speed when song speed changes
+  useEffect(() => {
+    updateSpeed(currentSong.speed);
+  }, [currentSong.speed, updateSpeed]);
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);

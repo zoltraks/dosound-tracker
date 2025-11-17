@@ -55,11 +55,7 @@ export class YM2149 {
     this.noiseGainNode = audioContext.createGain();
     this.envelopeGainNode = audioContext.createGain();
 
-    console.log('=== INITIALIZING YM2149 AUDIO NODES ===');
-
     for (let i = 0; i < 3; i++) {
-      console.log(`Creating oscillator ${i}`);
-      
       // Create oscillator
       const oscillator = audioContext.createOscillator();
       oscillator.type = 'square';
@@ -77,11 +73,7 @@ export class YM2149 {
       
       this.oscillators.push(oscillator);
       this.gainNodes.push(gainNode);
-      
-      console.log(`Oscillator ${i} created and connected: freq=${oscillator.frequency.value}, type=${oscillator.type}`);
     }
-
-    console.log('=== YM2149 AUDIO NODES INITIALIZED ===');
 
     this.noiseGainNode.connect(audioContext.destination);
     this.envelopeGainNode.connect(audioContext.destination);
@@ -136,8 +128,6 @@ export class YM2149 {
       const oscillator = this.oscillators[i];
       const gainNode = this.gainNodes[i];
 
-      console.log(`Channel ${i}: toneEnabled=${channel.toneEnabled}, period=${channel.tonePeriod}, volume=${channel.volume}`);
-
       // Check if channel should be silent (volume = 0 in YM2149 means silence)
       const isSilent = channel.volume === 0;
       
@@ -153,8 +143,6 @@ export class YM2149 {
         
         // Clamp frequency to reasonable range (20Hz - 20kHz)
         const clampedFrequency = Math.max(20, Math.min(20000, frequency));
-        
-        console.log(`Channel ${i}: Playing frequency ${clampedFrequency}Hz with volume ${channel.volume}`);
         
         // Update frequency IMMEDIATELY (no glide/portamento)
         oscillator.frequency.setValueAtTime(clampedFrequency, now);

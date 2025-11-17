@@ -98,7 +98,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection('instrumentList')}
     >
-      <div className="instrument-list-header">Instrument List</div>
+      <div className="instrument-list-header">Instrument</div>
       
       <div className="instrument-list-content">
         <div className="instrument-header-row">
