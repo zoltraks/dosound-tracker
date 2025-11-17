@@ -1,10 +1,29 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/dosound/DosoundDriver';
 // import yaml from 'js-yaml';
 
+// Storage keys
+const SONG_STORAGE_KEY = 'dosound-tracker-song';
+const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
+
 export const useDataManagement = () => {
   const [currentSong, setCurrentSong] = useState<Song>(() => {
-    // Create a default pattern with some notes
+    // Try to load from localStorage first
+    console.log('Loading song from localStorage...');
+    try {
+      const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
+      console.log('Saved song data:', savedSong);
+      if (savedSong) {
+        const parsedSong = JSON.parse(savedSong);
+        console.log('Parsed song:', parsedSong);
+        return parsedSong;
+      }
+    } catch (error) {
+      console.warn('Failed to load song from localStorage:', error);
+    }
+    console.log('Using default song');
+
+    // Create default song if no saved data
     const defaultPattern: Pattern = {
       id: '00',
       name: 'Default Pattern',
@@ -31,19 +50,95 @@ export const useDataManagement = () => {
       speed: 6,
       patterns: [defaultPattern],
       playlist: [{ trackA: '00', trackB: '00', trackC: '00' }],
-      instruments: []
+      instruments: [
+        {
+          id: '00',
+          name: 'Default Instrument',
+          volumeEnvelope: Array(32).fill(0x0F),
+          arpeggioEnvelope: Array(32).fill(0),
+          pitchEnvelope: Array(32).fill(0),
+          noiseEnvelope: Array(32).fill(0),
+          toneNoiseMode: 'tone'
+        },
+        {
+          id: '01',
+          name: 'Bass Instrument',
+          volumeEnvelope: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
+          arpeggioEnvelope: Array(32).fill(0),
+          pitchEnvelope: Array(32).fill(0),
+          noiseEnvelope: Array(32).fill(0),
+          toneNoiseMode: 'tone'
+        },
+        {
+          id: '02',
+          name: 'Lead Instrument',
+          volumeEnvelope: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
+          arpeggioEnvelope: Array(32).fill(0),
+          pitchEnvelope: Array(32).fill(0),
+          noiseEnvelope: Array(32).fill(0),
+          toneNoiseMode: 'tone'
+        }
+      ]
     };
   });
 
-  const [currentInstrument, setCurrentInstrument] = useState<Instrument>({
-    id: '00',
-    name: 'Default Instrument',
-    volumeEnvelope: Array(32).fill(0x0F),
-    arpeggioEnvelope: Array(32).fill(0),
-    pitchEnvelope: Array(32).fill(0),
-    noiseEnvelope: Array(32).fill(0),
-    toneNoiseMode: 'tone'
+  const [currentInstrument, setCurrentInstrument] = useState<Instrument>(() => {
+    // Try to load from localStorage first
+    console.log('Loading instrument from localStorage...');
+    try {
+      const savedInstrument = localStorage.getItem(INSTRUMENT_STORAGE_KEY);
+      console.log('Saved instrument data:', savedInstrument);
+      if (savedInstrument) {
+        const parsedInstrument = JSON.parse(savedInstrument);
+        console.log('Parsed instrument:', parsedInstrument);
+        return parsedInstrument;
+      }
+    } catch (error) {
+      console.warn('Failed to load instrument from localStorage:', error);
+    }
+    console.log('Using default instrument');
+
+    // Create default instrument if no saved data
+    return {
+      id: '00',
+      name: 'Default Instrument',
+      volumeEnvelope: Array(32).fill(0x0F),
+      arpeggioEnvelope: Array(32).fill(0),
+      pitchEnvelope: Array(32).fill(0),
+      noiseEnvelope: Array(32).fill(0),
+      toneNoiseMode: 'tone'
+    };
   });
+
+  // Sync currentInstrument with song's instruments when song changes
+  useEffect(() => {
+    const songInstrument = currentSong.instruments.find(inst => inst.id === currentInstrument.id);
+    if (songInstrument && JSON.stringify(songInstrument) !== JSON.stringify(currentInstrument)) {
+      console.log('Syncing currentInstrument with song data:', songInstrument);
+      setCurrentInstrument(songInstrument);
+    }
+  }, [currentSong.instruments, currentInstrument.id]);
+
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    console.log('Saving song to localStorage:', currentSong);
+    try {
+      localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(currentSong));
+      console.log('Song saved successfully');
+    } catch (error) {
+      console.warn('Failed to save song to localStorage:', error);
+    }
+  }, [currentSong]);
+
+  useEffect(() => {
+    console.log('Saving instrument to localStorage:', currentInstrument);
+    try {
+      localStorage.setItem(INSTRUMENT_STORAGE_KEY, JSON.stringify(currentInstrument));
+      console.log('Instrument saved successfully');
+    } catch (error) {
+      console.warn('Failed to save instrument to localStorage:', error);
+    }
+  }, [currentInstrument]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -190,13 +285,22 @@ export const useDataManagement = () => {
     setCurrentInstrument(prev => ({ ...prev, ...updates }));
     
     // Also update in song if it exists
-    setCurrentSong(prev => ({
-      ...prev,
-      instruments: prev.instruments.map(inst => 
+    setCurrentSong(prev => {
+      const updatedInstruments = prev.instruments.map(inst => 
         inst.id === currentInstrument.id ? { ...inst, ...updates } : inst
-      )
-    }));
-  }, [currentInstrument.id]);
+      );
+      
+      // If instrument doesn't exist in song, add it
+      if (!prev.instruments.some(inst => inst.id === currentInstrument.id)) {
+        updatedInstruments.push({ ...currentInstrument, ...updates });
+      }
+      
+      return {
+        ...prev,
+        instruments: updatedInstruments
+      };
+    });
+  }, [currentInstrument.id, currentInstrument]);
 
   const createNewPattern = useCallback((patternId: string) => {
     const newPattern: Pattern = {
@@ -232,6 +336,7 @@ export const useDataManagement = () => {
   return {
     currentSong,
     currentInstrument,
+    setCurrentInstrument,
     fileInputRef,
     createNewSong,
     createNewInstrument,

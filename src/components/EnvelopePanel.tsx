@@ -38,26 +38,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     }
   }, [data]);
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (!isActive) return;
-
-    const key = event.key.toUpperCase();
-    
-    if (key === 'ARROWLEFT') {
-      event.preventDefault();
-      setCurrentPosition(prev => Math.max(0, prev - 1));
-    } else if (key === 'ARROWRIGHT') {
-      event.preventDefault();
-      setCurrentPosition(prev => Math.min(ENVELOPE_LENGTH - 1, prev + 1));
-    } else if (key === 'ARROWUP') {
-      event.preventDefault();
-      handleValueChange(1);
-    } else if (key === 'ARROWDOWN') {
-      event.preventDefault();
-      handleValueChange(-1);
-    }
-  }, [isActive, currentPosition]);
-
   const handleValueChange = useCallback((delta: number) => {
     if (!onChange) return;
 
@@ -88,6 +68,35 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     setEnvelopeData(newData);
     onChange(newData);
   }, [envelopeData, currentPosition, type, onChange]);
+
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (!isActive) return;
+
+    const key = event.key.toUpperCase();
+    
+    if (key === 'ARROWLEFT') {
+      event.preventDefault();
+      setCurrentPosition(prev => Math.max(0, prev - 1));
+    } else if (key === 'ARROWRIGHT') {
+      event.preventDefault();
+      setCurrentPosition(prev => Math.min(ENVELOPE_LENGTH - 1, prev + 1));
+    } else if (key === 'ARROWUP') {
+      event.preventDefault();
+      handleValueChange(1);
+    } else if (key === 'ARROWDOWN') {
+      event.preventDefault();
+      handleValueChange(-1);
+    } else if (key === 'BACKSPACE' || key === 'DELETE') {
+      event.preventDefault();
+      // Zero out the current position value
+      if (onChange) {
+        const newData = [...envelopeData];
+        newData[currentPosition] = 0;
+        setEnvelopeData(newData);
+        onChange(newData);
+      }
+    }
+  }, [isActive, handleValueChange, currentPosition, envelopeData, onChange]);
 
   const handlePositionClick = useCallback((position: number) => {
     setCurrentPosition(position);
@@ -184,9 +193,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
               onClick={() => handlePositionClick(index)}
               title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
             >
-              {index === currentPosition && (
-                <div className="value-display">{formatValue(value)}</div>
-              )}
             </div>
           ))}
         </div>
