@@ -30,7 +30,6 @@ export class YM2149 {
   private oscillators: OscillatorNode[];
   private noiseNode: AudioBufferSourceNode | null = null;
   private gainNodes: GainNode[];
-  private dcOffsetNodes: GainNode[]; // Add DC offset correction nodes
   private noiseGainNode: GainNode;
   private envelopeGainNode: GainNode;
 
@@ -51,7 +50,6 @@ export class YM2149 {
     // Initialize audio nodes
     this.oscillators = [];
     this.gainNodes = [];
-    this.dcOffsetNodes = [];
     this.noiseGainNode = audioContext.createGain();
     this.envelopeGainNode = audioContext.createGain();
 
