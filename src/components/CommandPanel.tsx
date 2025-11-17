@@ -9,9 +9,12 @@ interface CommandPanelProps {
   onLoadInstrument: () => void;
   onPlaySong: () => void;
   onStopSong: () => void;
+  onPlayPattern: () => void;
+  onStopPattern: () => void;
   onExportData: () => void;
   onAddLine: () => void;
   isPlaying: boolean;
+  isPatternPlaying: boolean;
   isDosoundMode: boolean;
   onToggleDosoundMode: () => void;
 }
@@ -25,9 +28,12 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onLoadInstrument,
   onPlaySong,
   onStopSong,
+  onPlayPattern,
+  onStopPattern,
   onExportData,
   onAddLine,
   isPlaying,
+  isPatternPlaying,
   isDosoundMode,
   onToggleDosoundMode
 }) => {
@@ -63,12 +69,17 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       {/* Playback Operations */}
       <div className="command-row">
         <button 
-          onClick={isPlaying ? onStopSong : onPlaySong} 
-          className={`command-btn ${isPlaying ? 'playing' : ''}`}
+          onClick={isPlaying && !isPatternPlaying ? onStopSong : onPlaySong} 
+          className={`command-btn ${isPlaying && !isPatternPlaying ? 'playing' : ''}`}
         >
-          {isPlaying ? 'STOP SONG' : 'PLAY SONG'}
+          {isPlaying && !isPatternPlaying ? 'STOP SONG' : 'PLAY SONG'}
         </button>
-        <button onClick={() => {}} className="command-btn">PLAY PATTERN</button>
+        <button 
+          onClick={isPatternPlaying ? onStopPattern : onPlayPattern} 
+          className={`command-btn ${isPatternPlaying ? 'playing' : ''}`}
+        >
+          {isPatternPlaying ? 'STOP PATTERN' : 'PLAY PATTERN'}
+        </button>
         <button onClick={() => {}} className="command-btn">PLAY INST</button>
         <button 
           onClick={onToggleDosoundMode} 

@@ -3,6 +3,7 @@ import { VBLANK_RATE } from '../synth/dosound/DosoundDriver';
 
 export interface SequencerState {
   isPlaying: boolean;
+  isPatternLoop: boolean;
   currentPattern: number;
   currentLine: number;
   currentTick: number;
@@ -13,6 +14,7 @@ export interface SequencerState {
 export const useSequencer = (songSpeed: number = 6) => {
   const [sequencerState, setSequencerState] = useState<SequencerState>({
     isPlaying: false,
+    isPatternLoop: false,
     currentPattern: 0,
     currentLine: 0,
     currentTick: 0,
@@ -27,7 +29,7 @@ export const useSequencer = (songSpeed: number = 6) => {
   const calculateTickInterval = useCallback(() => {
     // Calculate interval based on BPM and ticks per row
     // 50Hz VBLANK timing = 20ms per tick
-    const baseInterval = 1000 / VBLANK_RATE; // 20ms
+    const baseInterval = 1000 / VBLANK_RATE;
     return baseInterval;
   }, []);
 
@@ -53,7 +55,10 @@ export const useSequencer = (songSpeed: number = 6) => {
           // This would be determined by the pattern length
           if (newLine >= 64) { // Assuming 64 lines per pattern
             newLine = 0;
-            newPattern++;
+            // Only advance pattern if not in pattern loop mode
+            if (!prev.isPatternLoop) {
+              newPattern++;
+            }
           }
         }
 
@@ -115,6 +120,120 @@ export const useSequencer = (songSpeed: number = 6) => {
   const updateSpeed = useCallback((newSpeed: number) => {
     setSequencerState(prev => ({ ...prev, ticksPerRow: newSpeed }));
   }, []);
+
+  const startPatternLoop = useCallback(() => {
+    if (sequencerState.isPlaying) return;
+
+    setSequencerState(prev => ({ 
+      ...prev, 
+      isPlaying: true,
+      isPatternLoop: true,
+      currentTick: 0,
+      currentLine: 0
+      // Keep currentPattern to loop current pattern
+    }));
+
+    const interval = calculateTickInterval();
+    
+    intervalRef.current = setInterval(() => {
+      setSequencerState(prev => {
+        let newTick = prev.currentTick + 1;
+        let newLine = prev.currentLine;
+        let newPattern = prev.currentPattern;
+
+        // Check if we've completed all ticks in current row
+        if (newTick >= prev.ticksPerRow) {
+          newTick = 0;
+          newLine++;
+
+          // Check if we've completed all lines in current pattern
+          // This would be determined by the pattern length
+          if (newLine >= 64) { // Assuming 64 lines per pattern
+            newLine = 0;
+            // Only advance pattern if not in pattern loop mode
+            if (!prev.isPatternLoop) {
+              newPattern++;
+            }
+          }
+        }
+
+        const newState = {
+          ...prev,
+          currentTick: newTick,
+          currentLine: newLine,
+          currentPattern: newPattern
+        };
+
+        // Call registered callbacks
+        if (callbackRef.current) {
+          callbackRef.current(newState);
+        }
+
+        if (tickCallbackRef.current) {
+          tickCallbackRef.current(newTick);
+        }
+
+        return newState;
+      });
+    }, interval);
+  }, [sequencerState.isPlaying, calculateTickInterval]);
+
+  const startSong = useCallback(() => {
+    if (sequencerState.isPlaying) return;
+
+    setSequencerState(prev => ({ 
+      ...prev, 
+      isPlaying: true,
+      isPatternLoop: false,
+      currentTick: 0,
+      currentLine: 0
+      // Keep currentPattern to start from current position
+    }));
+
+    const interval = calculateTickInterval();
+    
+    intervalRef.current = setInterval(() => {
+      setSequencerState(prev => {
+        let newTick = prev.currentTick + 1;
+        let newLine = prev.currentLine;
+        let newPattern = prev.currentPattern;
+
+        // Check if we've completed all ticks in current row
+        if (newTick >= prev.ticksPerRow) {
+          newTick = 0;
+          newLine++;
+
+          // Check if we've completed all lines in current pattern
+          // This would be determined by the pattern length
+          if (newLine >= 64) { // Assuming 64 lines per pattern
+            newLine = 0;
+            // Only advance pattern if not in pattern loop mode
+            if (!prev.isPatternLoop) {
+              newPattern++;
+            }
+          }
+        }
+
+        const newState = {
+          ...prev,
+          currentTick: newTick,
+          currentLine: newLine,
+          currentPattern: newPattern
+        };
+
+        // Call registered callbacks
+        if (callbackRef.current) {
+          callbackRef.current(newState);
+        }
+
+        if (tickCallbackRef.current) {
+          tickCallbackRef.current(newTick);
+        }
+
+        return newState;
+      });
+    }, interval);
+  }, [sequencerState.isPlaying, calculateTickInterval]);
 
   const setCallback = useCallback((callback: (state: SequencerState) => void) => {
     callbackRef.current = callback;
@@ -195,6 +314,8 @@ export const useSequencer = (songSpeed: number = 6) => {
     setBPM,
     setTicksPerRow,
     updateSpeed,
+    startPatternLoop,
+    startSong,
     setCallback,
     setTickCallback,
     getCurrentTime,

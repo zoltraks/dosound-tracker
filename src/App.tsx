@@ -35,7 +35,7 @@ const App: React.FC = () => {
     fileInputRef,
     triggerFileLoad
   } = useDataManagement();
-  const { sequencerState, start, stop, setCallback, setPosition, updateSpeed } = useSequencer(currentSong.speed);
+  const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed);
 
   // Update sequencer speed when song speed changes
   useEffect(() => {
@@ -131,44 +131,57 @@ const App: React.FC = () => {
   // Track cycle counters for each channel (0-1, 0-1, 0-1...)
   const channelCyclesRef = useRef([0, 0, 0]);
 
-  // Sequencer callback for playing notes
-  useEffect(() => {
-    setCallback((state) => {
-      // Update current line for UI
-      setSharedCurrentLine(state.currentLine);
+  // Track pattern playing state
+  const [isPatternPlaying, setIsPatternPlaying] = useState(false);
+
+  // Basic sequencer callback for playback
+  const sequencerCallback = useCallback((state: any) => {
+    // Update current line for UI
+    setSharedCurrentLine(state.currentLine);
+    
+    // Track pattern playing state
+    setIsPatternPlaying(state.isPatternLoop && state.isPlaying);
+    
+    if (ym2149Ref.current) {
+      const ym2149 = ym2149Ref.current;
       
-      if (ym2149Ref.current) {
-        const ym2149 = ym2149Ref.current;
+      // Get current pattern from playlist
+      const currentPatternIndex = state.currentPattern;
+      
+      // Bounds check to prevent array access errors
+      if (currentPatternIndex < 0 || currentPatternIndex >= currentSong.playlist.length) {
+        return;
+      }
+      
+      const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
+      
+      if (currentPlaylistEntry) {
+        // Get pattern data for each track
+        const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
+        const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
+        const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
         
-        // Get current pattern from playlist
-        const currentPatternIndex = state.currentPattern % currentSong.playlist.length;
-        const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
-        
-        if (currentPlaylistEntry) {
-          // Get pattern data for each track
-          const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
-          const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
-          const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
-          
-          // Get current line data from each pattern
+        // Allow playback even if some tracks are empty (using --)
+        if (patternA || patternB || patternC) {
+          // Get current line data
           const lineA = patternA?.lines[state.currentLine];
           const lineB = patternB?.lines[state.currentLine];
           const lineC = patternC?.lines[state.currentLine];
           
           // Update cycle counters only for channels that have notes playing
-          if (lineA?.trackA) {
+          if (lineA?.trackA?.note) {
             channelCyclesRef.current[0] = (channelCyclesRef.current[0] + 1) % 2;
           } else {
             channelCyclesRef.current[0] = 0; // Reset when no note
           }
           
-          if (lineB?.trackA) {
+          if (lineB?.trackA?.note) {
             channelCyclesRef.current[1] = (channelCyclesRef.current[1] + 1) % 2;
           } else {
             channelCyclesRef.current[1] = 0; // Reset when no note
           }
           
-          if (lineC?.trackA) {
+          if (lineC?.trackA?.note) {
             channelCyclesRef.current[2] = (channelCyclesRef.current[2] + 1) % 2;
           } else {
             channelCyclesRef.current[2] = 0; // Reset when no note
@@ -180,8 +193,13 @@ const App: React.FC = () => {
           updateChannelWithInstrument(ym2149, 2, lineC?.trackA, state.currentTick, channelCyclesRef.current[2]);
         }
       }
-    });
-  }, [setCallback, currentSong]);
+    }
+  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong]);
+
+  // Register sequencer callback
+  useEffect(() => {
+    setCallback(sequencerCallback);
+  }, [setCallback, sequencerCallback]);
 
   // Helper function to update channel with instrument and all envelopes
   const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0, cycle: number = 0) => {
@@ -380,6 +398,49 @@ const App: React.FC = () => {
     handleStopPlayback();
   }, [stop, handleStopPlayback]);
 
+  // Handle stop pattern playback
+  const handleStopPattern = useCallback(() => {
+    // Stop the sequencer
+    stop();
+    
+    // Update pattern playing state
+    setIsPatternPlaying(false);
+    
+    // Reset cycle counters and silence all channels
+    handleStopPlayback();
+  }, [stop, handleStopPlayback]);
+
+  // Handle start song playback
+  const handleStartSong = useCallback(() => {
+    // Stop pattern mode if active
+    if (isPatternPlaying) {
+      setIsPatternPlaying(false);
+    }
+    
+    // Set position to current pattern and line BEFORE starting
+    setPosition(sequencerState.currentPattern, sharedCurrentLine, 0);
+    
+    // Start song playback
+    startSong();
+  }, [isPatternPlaying, startSong, sharedCurrentLine, sequencerState.currentPattern, setPosition, sequencerState]);
+
+  // Handle start pattern playback
+  const handleStartPattern = useCallback(() => {
+    // Stop any current playback first
+    if (sequencerState.isPlaying) {
+      stop();
+    }
+    
+    // Update pattern playing state
+    setIsPatternPlaying(true);
+    
+    // Set position to current pattern and line BEFORE starting
+    setPosition(sequencerState.currentPattern, sharedCurrentLine, 0);
+    
+    // Start pattern loop
+    startPatternLoop();
+  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, setPosition]);
+
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
   }, []);
@@ -422,11 +483,14 @@ const App: React.FC = () => {
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
           onLoadInstrument={() => console.log('Load instrument clicked')}
-          onPlaySong={() => start()}
+          onPlaySong={handleStartSong}
           onStopSong={handleStop}
+          onPlayPattern={handleStartPattern}
+          onStopPattern={handleStopPattern}
           onExportData={() => console.log('Export clicked')}
           onAddLine={handleAddLine}
           isPlaying={sequencerState.isPlaying}
+          isPatternPlaying={isPatternPlaying}
           isDosoundMode={false} // TODO: Implement settings property on Song interface
           onToggleDosoundMode={() => console.log('DOSOUND mode toggle not implemented')}
         />
