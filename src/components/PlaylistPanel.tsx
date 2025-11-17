@@ -11,19 +11,68 @@ interface PlaylistPanelProps {
   playlist: PlaylistEntry[];
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
+  onPlaylistChange: (playlist: PlaylistEntry[]) => void;
+  currentPlaybackPosition: number;
+  onPositionSelect: (position: number) => void;
 }
 
 export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   playlist,
   activeSection,
-  setActiveSection
+  setActiveSection,
+  onPlaylistChange,
+  currentPlaybackPosition,
+  onPositionSelect
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
+  const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>('A');
   const [scrollOffset, setScrollOffset] = useState(0);
+  const [editingPattern, setEditingPattern] = useState<string>('');
   const playlistRef = useRef<HTMLDivElement>(null);
   const VISIBLE_LINES = 8;
 
   const isActive = activeSection === 'playlist';
+
+  const updatePattern = useCallback((lineIndex: number, track: 'A' | 'B' | 'C', patternId: string) => {
+    const newPlaylist = [...playlist];
+    const entry = { ...newPlaylist[lineIndex] };
+    
+    // Validate pattern ID (should be 2-digit hex or '--')
+    if (patternId === '--' || (patternId.length === 2 && /^[0-9A-Fa-f]{2}$/.test(patternId))) {
+      switch (track) {
+        case 'A': entry.trackA = patternId; break;
+        case 'B': entry.trackB = patternId; break;
+        case 'C': entry.trackC = patternId; break;
+      }
+      
+      newPlaylist[lineIndex] = entry;
+      onPlaylistChange(newPlaylist);
+    }
+  }, [playlist, onPlaylistChange]);
+
+  const startEditingPattern = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
+    const entry = playlist[lineIndex];
+    let currentPattern = '--';
+    
+    switch (track) {
+      case 'A': currentPattern = entry.trackA; break;
+      case 'B': currentPattern = entry.trackB; break;
+      case 'C': currentPattern = entry.trackC; break;
+    }
+    
+    setCurrentLine(lineIndex);
+    setCurrentTrack(track);
+    setEditingPattern(currentPattern === '--' ? '' : currentPattern);
+  }, [playlist]);
+
+  const finishEditingPattern = useCallback(() => {
+    if (editingPattern.trim() === '') {
+      updatePattern(currentLine, currentTrack, '--');
+    } else {
+      updatePattern(currentLine, currentTrack, editingPattern.toUpperCase().padStart(2, '0'));
+    }
+    setEditingPattern('');
+  }, [editingPattern, currentLine, currentTrack, updatePattern]);
 
   useEffect(() => {
     if (isActive && playlistRef.current) {
@@ -43,7 +92,28 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
 
-    switch (event.key.toUpperCase()) {
+    const key = event.key.toUpperCase();
+
+    // If we're editing a pattern, handle pattern input
+    if (editingPattern !== '') {
+      if (key === 'ENTER' || key === 'ESCAPE') {
+        event.preventDefault();
+        if (key === 'ENTER') {
+          finishEditingPattern();
+        } else {
+          setEditingPattern('');
+        }
+      } else if (key === 'BACKSPACE') {
+        event.preventDefault();
+        setEditingPattern(prev => prev.slice(0, -1));
+      } else if (/^[0-9A-F]$/.test(key) && editingPattern.length < 2) {
+        event.preventDefault();
+        setEditingPattern(prev => prev + key);
+      }
+      return;
+    }
+
+    switch (key) {
       case 'ARROWUP':
         event.preventDefault();
         setCurrentLine(prev => Math.max(0, prev - 1));
@@ -52,17 +122,65 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         event.preventDefault();
         setCurrentLine(prev => Math.min(playlist.length - 1, prev + 1));
         break;
-      case ' ':
+      case 'ARROWLEFT':
         event.preventDefault();
-        // Add new playlist entry
+        setCurrentTrack(prev => {
+          if (prev === 'A') return 'C';
+          if (prev === 'B') return 'A';
+          return 'B'; // C -> B
+        });
+        break;
+      case 'ARROWRIGHT':
+        event.preventDefault();
+        setCurrentTrack(prev => {
+          if (prev === 'A') return 'B';
+          if (prev === 'B') return 'C';
+          return 'A'; // C -> A
+        });
+        break;
+      case ' ':
+      case '0':
+      case '1':
+      case '2':
+      case '3':
+      case '4':
+      case '5':
+      case '6':
+      case '7':
+      case '8':
+      case '9':
+      case 'A':
+      case 'B':
+      case 'C':
+      case 'D':
+      case 'E':
+      case 'F':
+        event.preventDefault();
+        startEditingPattern(currentLine, currentTrack);
+        if (key !== ' ') {
+          setEditingPattern(key);
+        }
+        break;
+      case 'DELETE':
+      case 'BACKSPACE':
+        event.preventDefault();
+        updatePattern(currentLine, currentTrack, '--');
         break;
     }
-  }, [isActive, playlist.length]);
+  }, [isActive, playlist.length, currentLine, currentTrack, editingPattern, startEditingPattern, finishEditingPattern, updatePattern]);
 
   const handleLineClick = useCallback((lineIndex: number) => {
     setCurrentLine(lineIndex);
     setActiveSection('playlist');
-  }, [setActiveSection]);
+    onPositionSelect(lineIndex);
+  }, [setActiveSection, onPositionSelect]);
+
+  const handlePatternClick = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
+    setCurrentLine(lineIndex);
+    setCurrentTrack(track);
+    onPositionSelect(lineIndex);
+    startEditingPattern(lineIndex, track);
+  }, [startEditingPattern, onPositionSelect]);
 
   const formatPatternDisplay = useCallback((patternId: string) => {
     if (patternId === '--') return '--';
@@ -75,8 +193,19 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     if (lineIndex === currentLine && isActive) {
       classes.push('current');
     }
+    if (lineIndex === currentPlaybackPosition) {
+      classes.push('playback-position');
+    }
     return classes.join(' ');
-  }, [currentLine, isActive]);
+  }, [currentLine, isActive, currentPlaybackPosition]);
+
+  const getPatternClass = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
+    const classes = ['track-pattern'];
+    if (lineIndex === currentLine && track === currentTrack && isActive) {
+      classes.push('current-track');
+    }
+    return classes.join(' ');
+  }, [currentLine, currentTrack, isActive]);
 
   const visiblePlaylist = playlist.slice(scrollOffset, scrollOffset + VISIBLE_LINES);
 
@@ -88,19 +217,22 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection('playlist')}
     >
-      <div className="playlist-header">Song Playlist</div>
+      <div className="playlist-header">Playlist</div>
       
       <div className="playlist-content">
         <div className="playlist-header-row">
           <span className="line-number-header">Pos</span>
-          <span className="track-header">Track A</span>
-          <span className="track-header">Track B</span>
-          <span className="track-header">Track C</span>
+          <span className="track-header">A</span>
+          <span className="track-header">B</span>
+          <span className="track-header">C</span>
         </div>
         
         <div className="playlist-lines">
           {visiblePlaylist.map((entry, index) => {
             const actualIndex = scrollOffset + index;
+            const isCurrentLine = actualIndex === currentLine;
+            const isEditing = isCurrentLine && editingPattern !== '';
+            
             return (
               <div
                 key={actualIndex}
@@ -110,15 +242,96 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                 <span className="line-number">
                   {actualIndex.toString(16).padStart(2, '0').toUpperCase()}
                 </span>
-                <span className="track-pattern">
-                  {formatPatternDisplay(entry.trackA)}
-                </span>
-                <span className="track-pattern">
-                  {formatPatternDisplay(entry.trackB)}
-                </span>
-                <span className="track-pattern">
-                  {formatPatternDisplay(entry.trackC)}
-                </span>
+                
+                {/* Track A */}
+                {isCurrentLine && currentTrack === 'A' && isEditing ? (
+                  <input
+                    type="text"
+                    className="pattern-input"
+                    value={editingPattern}
+                    onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
+                    onBlur={finishEditingPattern}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        finishEditingPattern();
+                      } else if (e.key === 'Escape') {
+                        setEditingPattern('');
+                      }
+                    }}
+                    autoFocus
+                    maxLength={2}
+                  />
+                ) : (
+                  <span 
+                    className={getPatternClass(actualIndex, 'A')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePatternClick(actualIndex, 'A');
+                    }}
+                  >
+                    {formatPatternDisplay(entry.trackA)}
+                  </span>
+                )}
+                
+                {/* Track B */}
+                {isCurrentLine && currentTrack === 'B' && isEditing ? (
+                  <input
+                    type="text"
+                    className="pattern-input"
+                    value={editingPattern}
+                    onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
+                    onBlur={finishEditingPattern}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        finishEditingPattern();
+                      } else if (e.key === 'Escape') {
+                        setEditingPattern('');
+                      }
+                    }}
+                    autoFocus
+                    maxLength={2}
+                  />
+                ) : (
+                  <span 
+                    className={getPatternClass(actualIndex, 'B')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePatternClick(actualIndex, 'B');
+                    }}
+                  >
+                    {formatPatternDisplay(entry.trackB)}
+                  </span>
+                )}
+                
+                {/* Track C */}
+                {isCurrentLine && currentTrack === 'C' && isEditing ? (
+                  <input
+                    type="text"
+                    className="pattern-input"
+                    value={editingPattern}
+                    onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
+                    onBlur={finishEditingPattern}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        finishEditingPattern();
+                      } else if (e.key === 'Escape') {
+                        setEditingPattern('');
+                      }
+                    }}
+                    autoFocus
+                    maxLength={2}
+                  />
+                ) : (
+                  <span 
+                    className={getPatternClass(actualIndex, 'C')}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePatternClick(actualIndex, 'C');
+                    }}
+                  >
+                    {formatPatternDisplay(entry.trackC)}
+                  </span>
+                )}
               </div>
             );
           })}

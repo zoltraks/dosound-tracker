@@ -10,6 +10,7 @@ interface CommandPanelProps {
   onPlaySong: () => void;
   onStopSong: () => void;
   onExportData: () => void;
+  onAddLine: () => void;
   isPlaying: boolean;
   isDosoundMode: boolean;
   onToggleDosoundMode: () => void;
@@ -25,6 +26,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onPlaySong,
   onStopSong,
   onExportData,
+  onAddLine,
   isPlaying,
   isDosoundMode,
   onToggleDosoundMode
@@ -36,7 +38,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onNewSong} className="command-btn">NEW SONG</button>
         <button onClick={onLoadSong} className="command-btn">LOAD SONG</button>
         <button onClick={onSaveSong} className="command-btn">SAVE SONG</button>
-        <button onClick={() => {}} className="command-btn">INSERT LINE</button>
+        <button onClick={onAddLine} className="command-btn">ADD LINE</button>
         <button onClick={() => {}} className="command-btn">DELETE LINE</button>
       </div>
 

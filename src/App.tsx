@@ -34,7 +34,7 @@ const App: React.FC = () => {
     createNewInstrument, 
     saveInstrument 
   } = useDataManagement();
-  const { sequencerState, start, stop, setCallback } = useSequencer();
+  const { sequencerState, start, stop, setCallback, setPosition } = useSequencer();
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -275,15 +275,68 @@ const App: React.FC = () => {
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: any) => {
-    const updatedPatterns = [...currentSong.patterns];
-    updatedPatterns[0] = newPattern; // Update first pattern
+    // Find the current playlist entry
+    const currentPatternIndex = sequencerState.currentPattern;
+    const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
     
-    updateSong({ patterns: updatedPatterns });
-  }, [currentSong.patterns, updateSong]);
+    if (!currentPlaylistEntry) {
+      return; // No current playlist entry, can't update
+    }
+    
+    // Find which pattern ID we should update based on which track is being edited
+    // For now, we'll update all patterns that match the new pattern's ID
+    const updatedPatterns = [...currentSong.patterns];
+    const patternIndex = updatedPatterns.findIndex(p => p.id === newPattern.id);
+    
+    if (patternIndex !== -1) {
+      updatedPatterns[patternIndex] = newPattern;
+      updateSong({ patterns: updatedPatterns });
+    }
+  }, [currentSong.patterns, currentSong.playlist, sequencerState.currentPattern, updateSong]);
 
-  const getCurrentPattern = useCallback(() => {
-    return currentSong.patterns[0] || null;
-  }, [currentSong]);
+  const handlePlaylistChange = useCallback((newPlaylist: any[]) => {
+    updateSong({ playlist: newPlaylist });
+  }, [updateSong]);
+
+  const handleAddLine = useCallback(() => {
+    const newPlaylist = [...currentSong.playlist];
+    // Add a new empty playlist entry with all tracks set to '--'
+    newPlaylist.push({
+      trackA: '--',
+      trackB: '--', 
+      trackC: '--'
+    });
+    updateSong({ playlist: newPlaylist });
+  }, [currentSong.playlist, updateSong]);
+
+  const handlePositionSelect = useCallback((position: number) => {
+    // Set sequencer to the selected pattern position, reset line and tick to 0
+    setPosition(position, 0, 0);
+  }, [setPosition]);
+
+  const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
+    // Get current playlist row based on sequencer state
+    const currentPatternIndex = sequencerState.currentPattern;
+    const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
+    
+    if (!currentPlaylistEntry) {
+      return null;
+    }
+    
+    // Return pattern based on which track is asking
+    let patternId = '--';
+    switch (trackId) {
+      case 'A': patternId = currentPlaylistEntry.trackA; break;
+      case 'B': patternId = currentPlaylistEntry.trackB; break;
+      case 'C': patternId = currentPlaylistEntry.trackC; break;
+    }
+    
+    if (patternId === '--') {
+      return null; // No pattern set for this track
+    }
+    
+    return currentSong.patterns.find(p => p.id === patternId) || null;
+  }, [currentSong, sequencerState.currentPattern]);
 
   // Handle instrument selection
   const handleInstrumentSelect = useCallback((instrument: Instrument) => {
@@ -345,9 +398,10 @@ const App: React.FC = () => {
           onPlaySong={() => start()}
           onStopSong={handleStop}
           onExportData={() => console.log('Export clicked')}
+          onAddLine={handleAddLine}
           isPlaying={sequencerState.isPlaying}
-          isDosoundMode={true}
-          onToggleDosoundMode={() => console.log('Toggle DOSOUND mode')}
+          isDosoundMode={false} // TODO: Implement settings property on Song interface
+          onToggleDosoundMode={() => console.log('DOSOUND mode toggle not implemented')}
         />
 
         <div className="main-content">
@@ -375,7 +429,7 @@ const App: React.FC = () => {
                     onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
-                    pattern={getCurrentPattern()}
+                    pattern={getCurrentPatternForTrack('A')}
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
@@ -389,7 +443,7 @@ const App: React.FC = () => {
                     onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
-                    pattern={getCurrentPattern()}
+                    pattern={getCurrentPatternForTrack('B')}
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
@@ -403,7 +457,7 @@ const App: React.FC = () => {
                     onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
-                    pattern={getCurrentPattern()}
+                    pattern={getCurrentPatternForTrack('C')}
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
@@ -476,6 +530,9 @@ const App: React.FC = () => {
               playlist={currentSong.playlist}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
+              onPlaylistChange={handlePlaylistChange}
+              currentPlaybackPosition={sequencerState.currentPattern}
+              onPositionSelect={handlePositionSelect}
             />
             
             <InstrumentListPanel

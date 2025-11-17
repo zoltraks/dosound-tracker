@@ -21,6 +21,11 @@
   --active-border: #00ff88;
   --active-glow: rgba(0, 255, 136, 0.3);
   
+  --playback-position-bg: #2a1a1a;
+  --playback-position-border: #ff4444;
+  --playback-position-active-bg: #3a2a2a;
+  --playback-position-active-border: #ff6666;
+  
   --hover-bg: #1f2947;
   --hover-glow: rgba(0, 255, 136, 0.1);
   
@@ -72,6 +77,11 @@
   --active-bg: #fef3c7;
   --active-border: #f59e0b;
   --active-glow: rgba(245, 158, 11, 0.3);
+  
+  --playback-position-bg: #fee2e2;
+  --playback-position-border: #ef4444;
+  --playback-position-active-bg: #fecaca;
+  --playback-position-active-border: #f87171;
   
   --hover-bg: #edf2f7;
   --hover-glow: rgba(245, 158, 11, 0.1);
@@ -774,6 +784,49 @@ body {
 .playlist-line.current {
   background-color: var(--active-bg);
   border: 1px solid var(--active-border);
+}
+
+.playlist-line.playback-position {
+  background-color: var(--playback-position-bg);
+  border: 1px solid var(--playback-position-border);
+}
+
+.playlist-line.playback-position.current {
+  background-color: var(--playback-position-active-bg);
+  border: 1px solid var(--playback-position-active-border);
+}
+
+.track-pattern {
+  flex: 1;
+  text-align: center;
+  cursor: pointer;
+  padding: 1px 2px;
+}
+
+.track-pattern:hover {
+  background-color: var(--hover-bg);
+}
+
+.track-pattern.current-track {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+}
+
+.pattern-input {
+  flex: 1;
+  text-align: center;
+  background-color: var(--input-bg);
+  border: 1px solid var(--input-border);
+  color: var(--input-text);
+  font-size: 10px;
+  padding: 1px 2px;
+  outline: none;
+}
+
+.pattern-input:focus {
+  border-color: var(--active-border);
+  background-color: var(--active-bg);
 }
 
 .playlist-footer {
