@@ -1,0 +1,213 @@
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import type { NavigationSection } from '../constants/navigation';
+import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, ARPEGGIO_MIN, ARPEGGIO_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
+
+interface EnvelopePanelProps {
+  type: 'volume' | 'arpeggio' | 'pitch' | 'noise' | 'toneNoise';
+  activeSection: NavigationSection;
+  setActiveSection: (section: NavigationSection) => void;
+  data?: number[];
+  onChange?: (data: number[]) => void;
+}
+
+export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
+  type,
+  activeSection,
+  setActiveSection,
+  data,
+  onChange
+}) => {
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const [envelopeData, setEnvelopeData] = useState<number[]>(
+    data || Array(ENVELOPE_LENGTH).fill(0)
+  );
+  const envelopeRef = useRef<HTMLDivElement>(null);
+
+  const sectionName = type === 'toneNoise' ? 'toneNoise' : type;
+  const isActive = activeSection === sectionName;
+
+  useEffect(() => {
+    if (isActive && envelopeRef.current) {
+      envelopeRef.current.focus();
+    }
+  }, [isActive]);
+
+  useEffect(() => {
+    if (data) {
+      setEnvelopeData(data);
+    }
+  }, [data]);
+
+  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+    if (!isActive) return;
+
+    const key = event.key.toUpperCase();
+    
+    if (key === 'ARROWLEFT') {
+      event.preventDefault();
+      setCurrentPosition(prev => Math.max(0, prev - 1));
+    } else if (key === 'ARROWRIGHT') {
+      event.preventDefault();
+      setCurrentPosition(prev => Math.min(ENVELOPE_LENGTH - 1, prev + 1));
+    } else if (key === 'ARROWUP') {
+      event.preventDefault();
+      handleValueChange(1);
+    } else if (key === 'ARROWDOWN') {
+      event.preventDefault();
+      handleValueChange(-1);
+    }
+  }, [isActive, currentPosition]);
+
+  const handleValueChange = useCallback((delta: number) => {
+    if (!onChange) return;
+
+    const newData = [...envelopeData];
+    let currentValue = newData[currentPosition];
+    let newValue = currentValue;
+
+    switch (type) {
+      case 'volume':
+        newValue = Math.max(0, Math.min(VOLUME_MAX, currentValue + delta));
+        break;
+      case 'noise':
+        newValue = Math.max(0, Math.min(NOISE_MAX, currentValue + delta));
+        break;
+      case 'arpeggio':
+        newValue = Math.max(ARPEGGIO_MIN, Math.min(ARPEGGIO_MAX, currentValue + delta));
+        break;
+      case 'pitch':
+        newValue = Math.max(PITCH_MIN, Math.min(PITCH_MAX, currentValue + delta));
+        break;
+      case 'toneNoise':
+        // Toggle between tone and noise
+        newValue = currentValue === 0 ? 1 : 0;
+        break;
+    }
+
+    newData[currentPosition] = newValue;
+    setEnvelopeData(newData);
+    onChange(newData);
+  }, [envelopeData, currentPosition, type, onChange]);
+
+  const handlePositionClick = useCallback((position: number) => {
+    setCurrentPosition(position);
+    setActiveSection(sectionName);
+  }, [setActiveSection, sectionName]);
+
+  const formatValue = useCallback((value: number) => {
+    switch (type) {
+      case 'volume':
+        return value.toString(16).toUpperCase();
+      case 'noise':
+        return value.toString(16).toUpperCase();
+      case 'arpeggio':
+        return value >= 0 ? `+${value}` : value.toString();
+      case 'pitch':
+        return value >= 0 ? `+${value}` : value.toString();
+      case 'toneNoise':
+        return value === 0 ? 'TONE' : 'NOISE';
+      default:
+        return value.toString();
+    }
+  }, [type]);
+
+  const getBarHeight = useCallback((value: number) => {
+    switch (type) {
+      case 'volume':
+        return (value / VOLUME_MAX) * 100;
+      case 'noise':
+        return (value / NOISE_MAX) * 100;
+      case 'arpeggio':
+        return Math.abs(value) / Math.max(Math.abs(ARPEGGIO_MIN), ARPEGGIO_MAX) * 100;
+      case 'pitch':
+        return Math.abs(value) / Math.max(Math.abs(PITCH_MIN), PITCH_MAX) * 100;
+      case 'toneNoise':
+        return value * 100;
+      default:
+        return 0;
+    }
+  }, [type]);
+
+  const getTitle = useCallback(() => {
+    switch (type) {
+      case 'volume': return 'Volume';
+      case 'arpeggio': return 'Arpeggio';
+      case 'pitch': return 'Pitch';
+      case 'noise': return 'Noise';
+      case 'toneNoise': return 'Tone/Noise';
+      default: return type;
+    }
+  }, [type]);
+
+  if (type === 'toneNoise') {
+    return (
+      <div 
+        ref={envelopeRef}
+        className={`envelope-panel tone-noise ${isActive ? 'active' : ''}`}
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onClick={() => setActiveSection(sectionName)}
+      >
+        <div className="envelope-header">{getTitle()}</div>
+        <div className="tone-noise-content">
+          {envelopeData.slice(0, 16).map((value, index) => (
+            <div
+              key={index}
+              className={`tone-noise-cell ${index === currentPosition && isActive ? 'current' : ''}`}
+              onClick={() => handlePositionClick(index)}
+            >
+              {formatValue(value)}
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      ref={envelopeRef}
+      className={`envelope-panel ${type} ${isActive ? 'active' : ''}`}
+      tabIndex={0}
+      onKeyDown={handleKeyDown}
+      onClick={() => setActiveSection(sectionName)}
+    >
+      <div className="envelope-header">{getTitle()}</div>
+      
+      <div className="envelope-content">
+        <div className="envelope-graph">
+          {envelopeData.map((value, index) => (
+            <div
+              key={index}
+              className={`envelope-bar ${index === currentPosition && isActive ? 'current' : ''}`}
+              style={{ height: `${getBarHeight(value)}%` }}
+              onClick={() => handlePositionClick(index)}
+              title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
+            >
+              {index === currentPosition && (
+                <div className="value-display">{formatValue(value)}</div>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        <div className="envelope-values">
+          {envelopeData.map((value, index) => (
+            <div
+              key={index}
+              className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
+              onClick={() => handlePositionClick(index)}
+            >
+              {formatValue(value)}
+            </div>
+          ))}
+        </div>
+      </div>
+      
+      <div className="envelope-footer">
+        <span>Pos: {currentPosition.toString(16).toUpperCase()}</span>
+        <span>Val: {formatValue(envelopeData[currentPosition])}</span>
+      </div>
+    </div>
+  );
+};
