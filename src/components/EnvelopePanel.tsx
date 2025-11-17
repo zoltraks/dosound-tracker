@@ -3,7 +3,7 @@ import type { NavigationSection } from '../constants/navigation';
 import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, ARPEGGIO_MIN, ARPEGGIO_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
 
 interface EnvelopePanelProps {
-  type: 'volume' | 'arpeggio' | 'pitch' | 'noise' | 'toneNoise';
+  type: 'volume' | 'arpeggio' | 'pitch' | 'noise' | 'mode';
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   data?: number[];
@@ -23,7 +23,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   );
   const envelopeRef = useRef<HTMLDivElement>(null);
 
-  const sectionName = type === 'toneNoise' ? 'toneNoise' : type;
+  const sectionName = type === 'mode' ? 'mode' : type;
   const isActive = activeSection === sectionName;
 
   useEffect(() => {
@@ -58,7 +58,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       case 'pitch':
         newValue = Math.max(PITCH_MIN, Math.min(PITCH_MAX, currentValue + delta));
         break;
-      case 'toneNoise':
+      case 'mode':
         // Toggle between tone and noise
         newValue = currentValue === 0 ? 1 : 0;
         break;
@@ -113,7 +113,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         return value >= 0 ? `+${value}` : value.toString();
       case 'pitch':
         return value >= 0 ? `+${value}` : value.toString();
-      case 'toneNoise':
+      case 'mode':
         return value === 0 ? 'TONE' : 'NOISE';
       default:
         return value.toString();
@@ -130,10 +130,23 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         return Math.abs(value) / Math.max(Math.abs(ARPEGGIO_MIN), ARPEGGIO_MAX) * 100;
       case 'pitch':
         return Math.abs(value) / Math.max(Math.abs(PITCH_MIN), PITCH_MAX) * 100;
-      case 'toneNoise':
+      case 'mode':
         return value * 100;
       default:
         return 0;
+    }
+  }, [type]);
+
+  const getCenteredBarPosition = useCallback((value: number) => {
+    switch (type) {
+      case 'arpeggio':
+        // Position: 50% for 0, less for positive (go up), more for negative (go down)
+        return 50 - (value / ARPEGGIO_MAX) * 50;
+      case 'pitch':
+        // Position: 50% for 0, less for positive (go up), more for negative (go down)
+        return 50 - (value / PITCH_MAX) * 50;
+      default:
+        return 50;
     }
   }, [type]);
 
@@ -143,16 +156,16 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       case 'arpeggio': return 'Arpeggio';
       case 'pitch': return 'Pitch';
       case 'noise': return 'Noise';
-      case 'toneNoise': return 'Tone/Noise';
+      case 'mode': return 'Mode';
       default: return type;
     }
   }, [type]);
 
-  if (type === 'toneNoise') {
+  if (type === 'mode') {
     return (
       <div 
         ref={envelopeRef}
-        className={`envelope-panel tone-noise ${isActive ? 'active' : ''}`}
+        className={`envelope-panel mode ${isActive ? 'active' : ''}`}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onClick={() => setActiveSection(sectionName)}
@@ -183,32 +196,68 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     >
       <div className="envelope-header">{getTitle()}</div>
       
-      <div className="envelope-content">
-        <div className="envelope-graph">
-          {envelopeData.map((value, index) => (
-            <div
-              key={index}
-              className={`envelope-bar ${index === currentPosition && isActive ? 'current' : ''}`}
-              style={{ height: `${getBarHeight(value)}%` }}
-              onClick={() => handlePositionClick(index)}
-              title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
-            >
-            </div>
-          ))}
+      {(type === 'arpeggio' || type === 'pitch') ? (
+        // Thin horizontal line rendering for arpeggio and pitch
+        <div className="envelope-content">
+          <div className="envelope-graph centered">
+            <div className="neutral-line"></div>
+            {envelopeData.map((value, index) => (
+              <div
+                key={index}
+                className={`envelope-bar centered ${index === currentPosition && isActive ? 'current' : ''}`}
+                style={{ 
+                  top: `${getCenteredBarPosition(value)}%`,
+                  left: `${(index / envelopeData.length) * 100}%`,
+                  height: '3px'
+                }}
+                onClick={() => handlePositionClick(index)}
+                title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
+              >
+              </div>
+            ))}
+          </div>
+          
+          <div className="envelope-values">
+            {envelopeData.map((value, index) => (
+              <div
+                key={index}
+                className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
+                onClick={() => handlePositionClick(index)}
+              >
+                {formatValue(value)}
+              </div>
+            ))}
+          </div>
         </div>
-        
-        <div className="envelope-values">
-          {envelopeData.map((value, index) => (
-            <div
-              key={index}
-              className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
-              onClick={() => handlePositionClick(index)}
-            >
-              {formatValue(value)}
-            </div>
-          ))}
+      ) : (
+        // Bar rendering for volume and noise
+        <div className="envelope-content">
+          <div className="envelope-graph">
+            {envelopeData.map((value, index) => (
+              <div
+                key={index}
+                className={`envelope-bar ${index === currentPosition && isActive ? 'current' : ''}`}
+                style={{ height: `${getBarHeight(value)}%` }}
+                onClick={() => handlePositionClick(index)}
+                title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
+              >
+              </div>
+            ))}
+          </div>
+          
+          <div className="envelope-values">
+            {envelopeData.map((value, index) => (
+              <div
+                key={index}
+                className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
+                onClick={() => handlePositionClick(index)}
+              >
+                {formatValue(value)}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
       
       <div className="envelope-footer">
         <span>Pos: {currentPosition.toString(16).toUpperCase()}</span>

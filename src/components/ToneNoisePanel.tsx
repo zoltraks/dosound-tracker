@@ -20,7 +20,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   );
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const sectionName = 'toneNoise';
+  const sectionName = 'mode';
   const isActive = activeSection === sectionName;
 
   useEffect(() => {
@@ -93,10 +93,6 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
     return '🎵'; // Always use music note emoji
   };
 
-  const getBarHeight = () => {
-    return 30; // Reduced height for shorter Mode block
-  };
-
   const getBarColor = (value: number) => {
     // Use different colors based on T (0) or N (1) value
     const color = value === 0 ? '#f59e0b' : '#3fbbc8'; // Orange for T (tone), cyan for N (noise)
@@ -111,7 +107,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   return (
     <div 
       ref={panelRef}
-      className={`envelope-panel toneNoise ${isActive ? 'active' : ''}`}
+      className={`envelope-panel mode ${isActive ? 'active' : ''}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection(sectionName)}
@@ -125,7 +121,6 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
               key={index}
               className={`envelope-bar tone-noise-bar ${index === currentPosition && isActive ? 'current' : ''}`}
               style={{ 
-                height: `${getBarHeight()}%`,
                 backgroundColor: getBarColor(value)
               }}
               onClick={() => handleBarClick(index)}

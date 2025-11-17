@@ -537,7 +537,6 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
 }
 
@@ -623,6 +622,15 @@ body {
   display: flex;
   gap: 2px;
   flex-wrap: wrap;
+}
+
+/* Mode panel specific spacing */
+.envelope-panel.mode .envelope-content {
+  gap: 2px; /* Reduced gap for mode panel */
+}
+
+.envelope-panel.mode .envelope-graph {
+  height: 20px; /* Reduced height for mode panel */
 }
 
 .tone-noise-cell {
@@ -1183,6 +1191,41 @@ body {
   align-items: center !important;
   justify-content: center !important;
   position: relative !important;
+  height: 20px;
+}
+
+/* Centered Bar Styles for Arpeggio and Pitch */
+.envelope-graph.centered {
+  position: relative;
+}
+
+.envelope-graph.centered .neutral-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background-color: var(--text-secondary);
+  opacity: 0.5;
+  z-index: 1;
+}
+
+.envelope-bar.centered {
+  position: absolute;
+  bottom: auto;
+  background-color: var(--envelope-bar);
+  width: calc(100% / 32); /* Limited to cell width */
+  height: 3px; /* Exactly 3px thick */
+  z-index: 2;
+}
+
+.envelope-bar.centered:hover {
+  background-color: var(--envelope-bar-hover);
+}
+
+.envelope-bar.centered.current {
+  background-color: var(--accent-color);
+  box-shadow: 0 0 4px var(--accent-color);
 }
 
 .tone-noise-emoji {

@@ -4,7 +4,7 @@ export const NAVIGATION_ORDER = [
   'trackA',
   'trackB', 
   'trackC',
-  'toneNoise',
+  'mode',
   'volume',
   'arpeggio',
   'pitch',

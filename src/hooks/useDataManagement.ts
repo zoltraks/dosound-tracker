@@ -55,8 +55,8 @@ export const useDataManagement = () => {
           id: '00',
           name: 'Default Instrument',
           volumeEnvelope: Array(32).fill(0x0F),
-          arpeggioEnvelope: Array(32).fill(0),
-          pitchEnvelope: Array(32).fill(0),
+          arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
+          pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
           noiseEnvelope: Array(32).fill(0),
           toneNoiseMode: 'tone'
         },
@@ -64,8 +64,8 @@ export const useDataManagement = () => {
           id: '01',
           name: 'Bass Instrument',
           volumeEnvelope: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
-          arpeggioEnvelope: Array(32).fill(0),
-          pitchEnvelope: Array(32).fill(0),
+          arpeggioEnvelope: [12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)],
+          pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
           toneNoiseMode: 'tone'
         },
@@ -73,8 +73,8 @@ export const useDataManagement = () => {
           id: '02',
           name: 'Lead Instrument',
           volumeEnvelope: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
-          arpeggioEnvelope: Array(32).fill(0),
-          pitchEnvelope: Array(32).fill(0),
+          arpeggioEnvelope: [24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)],
+          pitchEnvelope: [128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
           toneNoiseMode: 'tone'
         }
@@ -83,28 +83,16 @@ export const useDataManagement = () => {
   });
 
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>(() => {
-    // Try to load from localStorage first
-    console.log('Loading instrument from localStorage...');
-    try {
-      const savedInstrument = localStorage.getItem(INSTRUMENT_STORAGE_KEY);
-      console.log('Saved instrument data:', savedInstrument);
-      if (savedInstrument) {
-        const parsedInstrument = JSON.parse(savedInstrument);
-        console.log('Parsed instrument:', parsedInstrument);
-        return parsedInstrument;
-      }
-    } catch (error) {
-      console.warn('Failed to load instrument from localStorage:', error);
-    }
-    console.log('Using default instrument');
-
-    // Create default instrument if no saved data
+    // Temporarily skip localStorage to test new data
+    console.log('Using new test instrument data (localStorage disabled for testing)');
+    
+    // Create test instrument with positive/negative values
     return {
       id: '00',
       name: 'Default Instrument',
       volumeEnvelope: Array(32).fill(0x0F),
-      arpeggioEnvelope: Array(32).fill(0),
-      pitchEnvelope: Array(32).fill(0),
+      arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
+      pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
       noiseEnvelope: Array(32).fill(0),
       toneNoiseMode: 'tone'
     };

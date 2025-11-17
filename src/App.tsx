@@ -141,29 +141,32 @@ const App: React.FC = () => {
           const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
           const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
           
-          // Get current line data
-          const currentLine = state.currentLine % 64;
-          const lineA = patternA?.lines[currentLine];
-          const lineB = patternB?.lines[currentLine];
-          const lineC = patternC?.lines[currentLine];
+          // Get current line data from each pattern
+          const lineA = patternA?.lines[state.currentLine];
+          const lineB = patternB?.lines[state.currentLine];
+          const lineC = patternC?.lines[state.currentLine];
           
-          // Update envelopes for all channels based on current tick
-          updateChannelEnvelope(ym2149, 0, currentInstrument.volumeEnvelope, state.currentTick, lineA?.trackA);
-          updateChannelEnvelope(ym2149, 1, currentInstrument.volumeEnvelope, state.currentTick, lineB?.trackB);
-          updateChannelEnvelope(ym2149, 2, currentInstrument.volumeEnvelope, state.currentTick, lineC?.trackC);
+          // Update each channel with its track's instrument and all envelopes
+          updateChannelWithInstrument(ym2149, 0, lineA?.trackA, state.currentTick);
+          updateChannelWithInstrument(ym2149, 1, lineB?.trackB, state.currentTick);
+          updateChannelWithInstrument(ym2149, 2, lineC?.trackC, state.currentTick);
         }
       }
     });
-  }, [setCallback, currentSong, currentInstrument]);
+  }, [setCallback, currentSong]);
 
-  // Helper function to update channel with envelope
-  const updateChannelEnvelope = useCallback((ym2149: YM2149, channel: number, volumeEnvelope: number[], currentTick: number, noteData?: any) => {
+  // Helper function to update channel with instrument and all envelopes
+  const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0) => {
     const volumeRegister = 8 + channel; // R8, R9, R10
     const fineRegister = channel * 2;        // R0, R2, R4
     const coarseRegister = channel * 2 + 1;  // R1, R3, R5
 
     if (noteData && currentTick === 0) {
-      // Start of new note - set frequency
+      // Start of new note - get instrument for this track
+      const instrument = currentSong.instruments.find(inst => inst.id === noteData.instrument);
+      if (!instrument) return;
+
+      // Set frequency based on note
       const noteFrequencies: { [key: string]: number } = {
         'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13,
         'E': 329.63, 'F': 349.23, 'F#': 369.99, 'G': 392.00,
@@ -172,11 +175,36 @@ const App: React.FC = () => {
 
       const baseFreq = noteFrequencies[noteData.note];
       if (baseFreq) {
-        const frequency = baseFreq * Math.pow(2, noteData.octave - 4);
+        let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
+        
+        // Apply arpeggio envelope
+        const arpeggioIndex = Math.min(currentTick, instrument.arpeggioEnvelope.length - 1);
+        const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
+        if (arpeggioValue !== 0) {
+          frequency = frequency * Math.pow(2, arpeggioValue / 12); // Convert semitones to frequency ratio
+        }
+        
+        // Apply pitch envelope  
+        const pitchIndex = Math.min(currentTick, instrument.pitchEnvelope.length - 1);
+        const pitchValue = instrument.pitchEnvelope[pitchIndex];
+        if (pitchValue !== 0) {
+          frequency = frequency * Math.pow(2, pitchValue / 12); // Convert semitones to frequency ratio
+        }
+        
         const period = Math.floor(2000000 / (16 * frequency));
         
         ym2149.writeRegister(fineRegister, period & 0xFF);
         ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+        
+        // Set tone/noise mode
+        const modeValue = instrument.toneNoiseMode === 'tone' ? 0 : 1;
+        if (modeValue === 1) {
+          // Enable noise for this channel
+          ym2149.writeRegister(0x07, 0x38 | (1 << channel)); // Enable noise for this channel
+        } else {
+          // Disable noise for this channel
+          ym2149.writeRegister(0x07, 0x38); // Enable tone only
+        }
       }
     } else if (!noteData) {
       // No note data - silence channel
@@ -184,13 +212,25 @@ const App: React.FC = () => {
       return;
     }
 
+    // Get instrument for this track
+    const instrument = currentSong.instruments.find(inst => inst.id === noteData?.instrument);
+    if (!instrument) return;
+
     // Apply volume envelope
-    const envelopeIndex = Math.min(currentTick, volumeEnvelope.length - 1);
-    const volumeValue = volumeEnvelope[envelopeIndex];
+    const volumeIndex = Math.min(currentTick, instrument.volumeEnvelope.length - 1);
+    const volumeValue = instrument.volumeEnvelope[volumeIndex];
     const volume = Math.max(0, Math.min(15, volumeValue)); // Clamp to 0-15
     
     ym2149.writeRegister(volumeRegister, volume);
-  }, []);
+    
+    // Apply noise envelope if in noise mode
+    if (instrument.toneNoiseMode === 'noise') {
+      const noiseIndex = Math.min(currentTick, instrument.noiseEnvelope.length - 1);
+      const noiseValue = instrument.noiseEnvelope[noiseIndex];
+      const noisePeriod = Math.max(0, Math.min(31, noiseValue)); // Clamp to 0-31
+      ym2149.writeRegister(0x06, noisePeriod); // Noise period register
+    }
+  }, [currentSong.instruments]);
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: any) => {
