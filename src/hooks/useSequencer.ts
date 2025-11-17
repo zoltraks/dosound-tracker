@@ -85,8 +85,8 @@ export const useSequencer = (songSpeed: number = 6) => {
       ...prev, 
       isPlaying: false,
       currentTick: 0,
-      currentLine: 0,
-      currentPattern: 0
+      currentLine: 0
+      // Keep currentPattern to maintain playlist position
     }));
 
     if (intervalRef.current) {
