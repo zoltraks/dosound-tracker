@@ -95,6 +95,15 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+    } else if (type === 'volume' && /^[0-9A-F]$/.test(key)) {
+      event.preventDefault();
+      if (onChange) {
+        const newData = [...envelopeData];
+        const newValue = parseInt(key, 16);
+        newData[currentPosition] = newValue;
+        setEnvelopeData(newData);
+        onChange(newData);
+      }
     }
   }, [isActive, handleValueChange, currentPosition, envelopeData, onChange]);
 
