@@ -934,6 +934,17 @@ body {
 .instrument-item.current {
   background-color: var(--active-bg);
   border: 1px solid var(--active-border);
+  box-shadow: 0 0 8px var(--active-glow);
+}
+
+.instrument-item.current .instrument-id,
+.instrument-item.current .instrument-name {
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+.instrument-item.focused {
+  background-color: var(--bg-active);
 }
 
 .instrument-item.empty {

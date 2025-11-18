@@ -82,8 +82,11 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
 
   const getItemClass = useCallback((index: number) => {
     const classes = ['instrument-item'];
-    if (index === currentIndex && isActive) {
+    if (index === currentIndex) {
       classes.push('current');
+    }
+    if (isActive && index === currentIndex) {
+      classes.push('focused');
     }
     return classes.join(' ');
   }, [currentIndex, isActive]);
