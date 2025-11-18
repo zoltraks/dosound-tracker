@@ -1,5 +1,26 @@
 const YM_BASE_CLOCK = 2000000; // 2 MHz clock frequency
 const YM_REGISTER_COUNT = 16; // Number of YM2149 registers (0-15)
+
+// AY/YM style logarithmic volume table (16 levels, approx. -2dB per step)
+// Values are relative amplitudes; we'll scale them to keep headroom.
+const YM_LOG_VOLUME_TABLE: number[] = [
+  0.0,    // 0: silence
+  0.0078, // 1
+  0.0110, // 2
+  0.0157, // 3
+  0.0221, // 4
+  0.0313, // 5
+  0.0442, // 6
+  0.0625, // 7
+  0.0884, // 8
+  0.1250, // 9
+  0.1768, // 10
+  0.2500, // 11
+  0.3536, // 12
+  0.5000, // 13
+  0.7071, // 14
+  1.0000  // 15: max
+];
 import { NOTE_FREQUENCIES } from '../constants/music';
 
 export interface YMChannel {
@@ -158,8 +179,9 @@ export class YM2149 {
         // Update frequency IMMEDIATELY (no glide/portamento)
         oscillator.frequency.setValueAtTime(clampedFrequency, now);
         
-        // Calculate volume with proper YM2149 volume levels (0-15, where 15 is LOUDEST)
-        const volume = channel.volume / 15.0 * 0.3; // Max 30% volume to prevent clipping
+        // Calculate volume using AY/YM logarithmic curve (0-15, where 15 is LOUDEST)
+        const level = Math.max(0, Math.min(15, channel.volume | 0));
+        const volume = YM_LOG_VOLUME_TABLE[level] * 0.3; // Scale for headroom
         
         // Apply volume immediately for crisp note changes
         gainNode.gain.setValueAtTime(volume, now);
@@ -174,11 +196,12 @@ export class YM2149 {
     const anyNoiseActive = this.state.channels.some(channel => channel.noiseEnabled && channel.volume > 0);
     
     if (anyNoiseActive && this.state.noisePeriod > 0) {
-      // Calculate noise volume based on the loudest channel using noise
+      // Calculate noise volume based on the loudest channel using noise (log curve)
       const maxNoiseVolume = Math.max(...this.state.channels
         .filter(channel => channel.noiseEnabled)
         .map(channel => channel.volume));
-      const noiseVolume = maxNoiseVolume / 15.0 * 0.3; // Normal volume for noise
+      const noiseLevel = Math.max(0, Math.min(15, maxNoiseVolume | 0));
+      const noiseVolume = YM_LOG_VOLUME_TABLE[noiseLevel] * 0.3;
       this.noiseGainNode.gain.setValueAtTime(noiseVolume, now);
     } else {
       this.noiseGainNode.gain.setValueAtTime(0, now);
