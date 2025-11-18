@@ -71,15 +71,22 @@ export function exportToAssembly(song: Song): string {
 function getRegisterComment(register: number, value: number): string {
   switch (register) {
     case 0x07: // Mixer
-      let comment = 'MX ';
-      if (!(value & 0x01)) comment += 'T+';
-      if (!(value & 0x02)) comment += 'T+';
-      if (!(value & 0x04)) comment += 'T+';
-      if (!(value & 0x08)) comment += 'N+';
-      if (!(value & 0x10)) comment += 'N+';
-      if (!(value & 0x20)) comment += 'N+';
-      if (comment === 'MX ') comment += 'T+T+N'; // Default
-      return comment;
+      const getChannelMode = (channel: 0 | 1 | 2): 'T' | 'N' => {
+        const toneDisabledMask = 1 << channel;
+        const noiseDisabledMask = 0x08 << channel;
+        const toneEnabled = (value & toneDisabledMask) === 0;
+        const noiseEnabled = (value & noiseDisabledMask) === 0;
+
+        if (toneEnabled && !noiseEnabled) return 'T';
+        if (noiseEnabled && !toneEnabled) return 'N';
+        if (toneEnabled && noiseEnabled) return 'T';
+        return 'N';
+      };
+
+      const a = getChannelMode(0);
+      const b = getChannelMode(1);
+      const c = getChannelMode(2);
+      return `MX ${a}+${b}+${c}`;
       
     case 0x08: // Volume A
       return `VA ${value.toString(16).toUpperCase()}`;
