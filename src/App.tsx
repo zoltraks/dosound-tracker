@@ -22,6 +22,7 @@ const App: React.FC = () => {
   
   const [currentOctave, setCurrentOctave] = useState(3);
   const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
+  const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -310,6 +311,19 @@ const App: React.FC = () => {
     updateSong({ playlist: newPlaylist });
   }, [currentSong.playlist, updateSong]);
 
+  const handleRequestNewSong = useCallback(() => {
+    setIsNewSongConfirmOpen(true);
+  }, []);
+
+  const handleConfirmNewSong = useCallback(() => {
+    createNewSong();
+    setIsNewSongConfirmOpen(false);
+  }, [createNewSong]);
+
+  const handleCancelNewSong = useCallback(() => {
+    setIsNewSongConfirmOpen(false);
+  }, []);
+
   const handleExportData = useCallback(() => {
     try {
       const assemblyContent = exportToAssembly(currentSong);
@@ -486,7 +500,7 @@ const App: React.FC = () => {
         />
         
         <CommandPanel
-          onNewSong={createNewSong}
+          onNewSong={handleRequestNewSong}
           onSaveSong={saveSong}
           onLoadSong={triggerFileLoad}
           onNewInstrument={createNewInstrument}
@@ -686,6 +700,20 @@ const App: React.FC = () => {
             }
           }}
         />
+        {isNewSongConfirmOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Create new song?</div>
+              <div className="modal-body">
+                Current song data will be lost unless it has been saved. Continue?
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleConfirmNewSong}>OK</button>
+                <button className="command-btn" onClick={handleCancelNewSong}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   } catch (error) {
