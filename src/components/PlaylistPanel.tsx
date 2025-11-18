@@ -340,7 +340,11 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       
       <div className="playlist-footer">
         <div className="playlist-info">
-          Line: {currentLine.toString(16).toUpperCase()} / {(playlist.length - 1).toString(16).toUpperCase()}
+          Line: {playlist.length === 0
+            ? '--'
+            : currentLine.toString(16).toUpperCase()} / {playlist.length === 0
+            ? '--'
+            : playlist.length.toString(16).toUpperCase()}
         </div>
         
         <div className="playlist-controls">
