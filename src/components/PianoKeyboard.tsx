@@ -11,6 +11,7 @@ interface PianoKeyboardProps {
   onOctaveChange: (octave: number) => void;
   ym2149: YM2149 | null;
   currentInstrument: Instrument;
+  previewChannel: number;
 }
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
@@ -19,7 +20,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   currentOctave,
   onOctaveChange,
   ym2149,
-  currentInstrument
+  currentInstrument,
+  previewChannel
 }) => {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
@@ -103,7 +105,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     // Initialize cycle counter for this key
     cycleCountersRef.current[keyId] = 0;
 
-    const channel = 0; // Use channel A for preview keyboard
+    const channel = previewChannel;
     const fineRegister = channel * 2;
     const coarseRegister = channel * 2 + 1;
     const volumeRegister = 0x08 + channel;
@@ -152,7 +154,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       // Update cycle counter (0, 1, 0, 1, ...)
       cycleCountersRef.current[keyId] = (cycle + 1) % 2;
     }, 20); // 20ms = 50Hz VBLANK rate
-  }, [ym2149, currentInstrument]);
+  }, [ym2149, currentInstrument, previewChannel]);
 
   const stopNote = useCallback((note?: string, octave?: number) => {
     if (!ym2149) return;
@@ -174,9 +176,9 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       cycleCountersRef.current = {};
     }
     
-    // Silence channel A
-    ym2149.writeRegister(0x08, 0x00); // Volume A = 0
-  }, [ym2149]);
+    const volumeRegister = 0x08 + previewChannel;
+    ym2149.writeRegister(volumeRegister, 0x00);
+  }, [ym2149, previewChannel]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;

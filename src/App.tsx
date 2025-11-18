@@ -46,6 +46,7 @@ const App: React.FC = () => {
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
   const ym2149Ref = useRef<YM2149 | null>(null);
+  const [, forceYmRender] = useState(0);
 
   // Initialize audio on component mount
   useEffect(() => {
@@ -74,6 +75,7 @@ const App: React.FC = () => {
         // Initialize YM2149
         const ym2149 = new YM2149(audioContext);
         ym2149Ref.current = ym2149;
+        forceYmRender(v => v + 1);
         console.log('YM2149 initialized');
         
         // Expose YM2149 instance globally for debugging
@@ -137,6 +139,18 @@ const App: React.FC = () => {
 
   // Track cycle counters for each channel (0-1, 0-1, 0-1...)
   const channelCyclesRef = useRef([0, 0, 0]);
+
+  const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
+
+  useEffect(() => {
+    if (activeSection === 'trackA') {
+      setLastTrackId('A');
+    } else if (activeSection === 'trackB') {
+      setLastTrackId('B');
+    } else if (activeSection === 'trackC') {
+      setLastTrackId('C');
+    }
+  }, [activeSection]);
 
   // Track pattern playing state
   const [isPatternPlaying, setIsPatternPlaying] = useState(false);
@@ -607,8 +621,8 @@ const App: React.FC = () => {
             />
             
             <div className="bottom-panels">
-              <DumpPanel ym2149={null} />
-              <EQPanel />
+              <DumpPanel ym2149={ym2149Ref.current} />
+              <EQPanel ym2149={ym2149Ref.current} />
             </div>
           </div>
         </div>
@@ -621,6 +635,19 @@ const App: React.FC = () => {
           onOctaveChange={setCurrentOctave}
           ym2149={ym2149Ref.current}
           currentInstrument={currentInstrument}
+          previewChannel={
+            activeSection === 'trackA'
+              ? 0
+              : activeSection === 'trackB'
+              ? 1
+              : activeSection === 'trackC'
+              ? 2
+              : lastTrackId === 'B'
+              ? 1
+              : lastTrackId === 'C'
+              ? 2
+              : 0
+          }
         />
         
         {/* Hidden file input for loading songs */}
