@@ -1,6 +1,6 @@
 const YM_BASE_CLOCK = 2000000; // 2 MHz clock frequency
 const YM_REGISTER_COUNT = 16; // Number of YM2149 registers (0-15)
-import { NOTE_FREQUENCIES } from '../../constants/music';
+import { NOTE_FREQUENCIES } from '../constants/music';
 
 export interface YMChannel {
   tonePeriod: number;

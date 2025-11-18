@@ -1,8 +1,8 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
-import { YM2149 } from '../synth/ym2149/YM2149';
-import type { Instrument } from '../synth/dosound/DosoundDriver';
+import { YM2149 } from '../synth/YM2149';
+import type { Instrument } from '../synth/SoundDriver';
 
 interface PianoKeyboardProps {
   activeSection: NavigationSection;

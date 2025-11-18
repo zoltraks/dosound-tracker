@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { Instrument, Song, Pattern, PatternLine } from '../synth/dosound/DosoundDriver';
+import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
 import yaml from 'js-yaml';
 
 // Storage keys

@@ -1,5 +1,5 @@
-import type { Song } from '../synth/dosound/DosoundDriver';
-import { DosoundDriver } from '../synth/dosound/DosoundDriver';
+import type { Song } from '../synth/SoundDriver';
+import { DosoundDriver } from '../synth/SoundDriver';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format

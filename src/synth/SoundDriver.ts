@@ -1,5 +1,5 @@
-import { YM2149 } from '../ym2149/YM2149';
-import { NOTE_FREQUENCIES } from '../../constants/music';
+import { YM2149 } from './YM2149';
+import { NOTE_FREQUENCIES } from '../constants/music';
 
 export const DOSOUND_REGISTER_WRITE = 0xFF;
 export const DOSOUND_END_MARKER = 0x00;

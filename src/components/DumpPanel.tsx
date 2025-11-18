@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { YM2149 } from '../synth/ym2149/YM2149';
+import { YM2149 } from '../synth/YM2149';
 
 interface DumpPanelProps {
   ym2149: YM2149 | null;

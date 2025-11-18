@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { PATTERN_LENGTH, KEYBOARD_TO_NOTE } from '../constants/music';
-import type { Pattern, Note, Instrument } from '../synth/dosound/DosoundDriver';
-import { YM2149 } from '../synth/ym2149/YM2149';
+import type { Pattern, Note, Instrument } from '../synth/SoundDriver';
+import { YM2149 } from '../synth/YM2149';
 
 interface TrackPanelProps {
   trackId: 'A' | 'B' | 'C';

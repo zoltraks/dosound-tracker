@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import type { Instrument } from '../synth/dosound/DosoundDriver';
+import type { Instrument } from '../synth/SoundDriver';
 
 interface InstrumentListPanelProps {
   instruments: Instrument[];

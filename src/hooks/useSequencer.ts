@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { VBLANK_RATE } from '../synth/dosound/DosoundDriver';
+import { VBLANK_RATE } from '../synth/SoundDriver';
 
 export interface SequencerState {
   isPlaying: boolean;

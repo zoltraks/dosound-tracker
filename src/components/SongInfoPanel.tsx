@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import type { Song } from '../synth/dosound/DosoundDriver';
+import type { Song } from '../synth/SoundDriver';
 
 interface SongInfoPanelProps {
   song: Song;
