@@ -8,6 +8,7 @@ interface InstrumentListPanelProps {
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   onSelectInstrument: (instrument: Instrument) => void;
+  onRenameInstrument: (name: string) => void;
 }
 
 export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
@@ -15,7 +16,8 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   currentInstrument,
   activeSection,
   setActiveSection,
-  onSelectInstrument
+  onSelectInstrument,
+  onRenameInstrument
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
@@ -142,7 +144,13 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       
       <div className="instrument-list-footer">
         <div className="instrument-info">
-          Current: {currentInstrument.id} - {currentInstrument.name}
+          <span>Current: {currentInstrument.id}</span>
+          <input
+            type="text"
+            className="instrument-name-input"
+            value={currentInstrument.name}
+            onChange={(e) => onRenameInstrument(e.target.value)}
+          />
         </div>
         
         <div className="instrument-controls">

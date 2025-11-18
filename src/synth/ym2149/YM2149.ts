@@ -30,7 +30,6 @@ export interface Instrument {
   pitchEnvelope: number[];
   noiseEnvelope: number[];
   modeEnvelope: number[];
-  toneNoiseMode: 'tone' | 'noise';
 }
 
 export class YM2149 {
@@ -274,9 +273,7 @@ export class YM2149 {
   }
 
   // Helper methods for instrument-based sound generation
-  private getDefaultModeValue = (instrument: Instrument) => (
-    instrument.toneNoiseMode === 'noise' ? 1 : 0
-  );
+  private getDefaultModeValue = (_instrument: Instrument) => 0;
 
   public getModeValueForTick = (instrument: Instrument, tick: number): number => {
     const defaultMode = this.getDefaultModeValue(instrument);

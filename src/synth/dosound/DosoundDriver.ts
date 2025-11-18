@@ -21,7 +21,6 @@ export interface Instrument {
   pitchEnvelope: number[];
   noiseEnvelope: number[];
   modeEnvelope: number[];
-  toneNoiseMode: 'tone' | 'noise';
 }
 
 export interface Note {
@@ -177,8 +176,7 @@ export class DosoundDriver {
       arpeggioEnvelope: [0, 0, 0, 0],
       pitchEnvelope: [0, 0, 0, 0],
       noiseEnvelope: [0, 0, 0, 0],
-      modeEnvelope: Array(32).fill(0),
-      toneNoiseMode: 'tone'
+      modeEnvelope: Array(32).fill(0)
     };
   }
 
@@ -195,11 +193,22 @@ export class DosoundDriver {
   private calculateMixerValue(channel: number, instrument: Instrument): number {
     // Default mixer: enable tone for all channels, disable noise
     let mixer = 0x38; // 00111000 - noise enabled for all channels, tone disabled
-    
-    if (instrument.toneNoiseMode === 'tone') {
+
+    const modeValue = (instrument.modeEnvelope && instrument.modeEnvelope.length > 0)
+      ? instrument.modeEnvelope[0] || 0
+      : 0;
+
+    const toneActive = modeValue === 0 || modeValue === 2;
+    const noiseActive = modeValue === 1 || modeValue === 2;
+
+    if (toneActive) {
       mixer &= ~(1 << channel); // Enable tone for this channel
     }
-    
+
+    if (!noiseActive) {
+      mixer |= (0x08 << channel); // Disable noise for this channel
+    }
+
     return mixer;
   }
 

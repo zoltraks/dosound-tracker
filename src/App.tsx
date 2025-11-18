@@ -499,6 +499,10 @@ const App: React.FC = () => {
     setCurrentInstrument(instrument);
   }, []);
 
+  const handleRenameInstrument = useCallback((name: string) => {
+    updateInstrument({ name });
+  }, [updateInstrument]);
+
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
     if (instruments.length === 0) {
@@ -520,8 +524,7 @@ const App: React.FC = () => {
       arpeggioEnvelope: Array(32).fill(0),
       pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0),
-      toneNoiseMode: 'tone'
+      modeEnvelope: Array(32).fill(0)
     };
 
     const newInstruments = [...instruments];
@@ -798,6 +801,7 @@ const App: React.FC = () => {
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               onSelectInstrument={handleInstrumentSelect}
+              onRenameInstrument={handleRenameInstrument}
             />
             
             <div className="bottom-panels">

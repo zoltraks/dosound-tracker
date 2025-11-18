@@ -58,8 +58,7 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
           pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
           noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0),
-          toneNoiseMode: 'tone'
+          modeEnvelope: Array(32).fill(0)
         },
         {
           id: '01',
@@ -68,8 +67,7 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)],
           pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0),
-          toneNoiseMode: 'tone'
+          modeEnvelope: Array(32).fill(0)
         },
         {
           id: '02',
@@ -78,8 +76,7 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)],
           pitchEnvelope: [128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0),
-          toneNoiseMode: 'tone'
+          modeEnvelope: Array(32).fill(0)
         }
       ]
     };
@@ -97,8 +94,7 @@ export const useDataManagement = () => {
       arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
       pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0),
-      toneNoiseMode: 'tone'
+      modeEnvelope: Array(32).fill(0)
     };
   });
 
@@ -161,8 +157,7 @@ export const useDataManagement = () => {
       arpeggioEnvelope: Array(32).fill(0),
       pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0),
-      toneNoiseMode: 'tone'
+      modeEnvelope: Array(32).fill(0)
     };
 
     const updatedInstruments = [...instruments];
@@ -221,57 +216,109 @@ export const useDataManagement = () => {
   }, []);
 
   const saveInstrument = useCallback(() => {
-    // Temporarily disabled yaml functionality
-    console.log('Save instrument temporarily disabled');
-    return;
-    
-    /*
-    const yamlContent = yaml.dump(currentInstrument, {
-      indent: 2,
-      lineWidth: -1
-    });
-    
-    const blob = new Blob([yamlContent], { type: 'text/yaml' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${currentInstrument.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    */
+    try {
+      const trimEnvelope = (values: number[]): number[] => {
+        if (!values || values.length === 0) return [];
+        const last = values[values.length - 1];
+        let i = values.length - 2;
+        while (i >= 0 && values[i] === last) {
+          i--;
+        }
+        return values.slice(0, i + 1).concat(last);
+      };
+
+      const instrumentNode: any = {
+        name: currentInstrument.name,
+        volume: trimEnvelope(currentInstrument.volumeEnvelope),
+        arpeggio: trimEnvelope(currentInstrument.arpeggioEnvelope),
+        pitch: trimEnvelope(currentInstrument.pitchEnvelope),
+        noise: trimEnvelope(currentInstrument.noiseEnvelope),
+        mode: trimEnvelope(currentInstrument.modeEnvelope)
+      };
+
+      const exportData = { instrument: instrumentNode };
+
+      const yamlContent = yaml.dump(exportData, {
+        indent: 2,
+        lineWidth: -1,
+        flowLevel: 2
+      });
+
+      const blob = new Blob([yamlContent], { type: 'text/yaml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      a.download = `${safeName}.yaml`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Failed to save instrument:', error);
+    }
   }, [currentInstrument]);
 
-  const loadInstrument = useCallback((_file: File) => {
-    // Temporarily disabled yaml functionality
-    console.log('Load instrument temporarily disabled');
-    return;
-    
-    /*
+  const loadInstrument = useCallback((file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const loadedInstrument = yaml.load(content) as Instrument;
-        setCurrentInstrument(loadedInstrument);
-        
-        // Add to current song if not already present
-        if (!currentSong.instruments.find(inst => inst.id === loadedInstrument.id)) {
-          const updatedSong = {
-            ...currentSong,
-            instruments: [...currentSong.instruments, loadedInstrument]
-          };
-          setCurrentSong(updatedSong);
+        const parsed = yaml.load(content) as any;
+        const node = parsed && parsed.instrument ? parsed.instrument : parsed;
+
+        if (!node || typeof node !== 'object') {
+          throw new Error('Invalid instrument file format');
         }
+
+        const expandEnvelope = (field: string, length: number, defaultValue: number): number[] => {
+          const raw = Array.isArray(node[field]) ? node[field] as any[] : [];
+          const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
+
+          if (values.length === 0) {
+            return Array(length).fill(defaultValue);
+          }
+
+          const result: number[] = [];
+          for (let i = 0; i < length; i++) {
+            if (i < values.length) {
+              result[i] = values[i];
+            } else {
+              result[i] = values[values.length - 1];
+            }
+          }
+          return result;
+        };
+
+        const newInstrument: Instrument = {
+          id: currentInstrument.id,
+          name: typeof node.name === 'string' && node.name.trim() ? node.name : currentInstrument.name,
+          modeEnvelope: expandEnvelope('mode', 32, 0),
+          volumeEnvelope: expandEnvelope('volume', 32, 0x0F),
+          arpeggioEnvelope: expandEnvelope('arpeggio', 32, 0),
+          pitchEnvelope: expandEnvelope('pitch', 32, 0),
+          noiseEnvelope: expandEnvelope('noise', 32, 0)
+        };
+
+        setCurrentInstrument(newInstrument);
+
+        setCurrentSong(prev => {
+          const instruments = [...prev.instruments];
+          const slotIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
+          if (slotIndex >= 0) {
+            instruments[slotIndex] = newInstrument;
+          } else {
+            instruments.push(newInstrument);
+          }
+          return { ...prev, instruments };
+        });
       } catch (error) {
         console.error('Error loading instrument:', error);
         alert('Error loading instrument file. Please check the file format.');
       }
     };
     reader.readAsText(file);
-    */
-  }, [currentSong]);
+  }, [currentInstrument.id]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
     setCurrentSong(prev => ({ ...prev, ...updates }));
