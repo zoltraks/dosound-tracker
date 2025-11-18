@@ -27,9 +27,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const pianoRef = useRef<HTMLDivElement>(null);
   const isActive = activeSection === 'piano';
   
-  // Envelope timing state
+  // Envelope timing state per previewed key
   const envelopeTimersRef = useRef<{ [key: string]: number }>({});
-  const cycleCountersRef = useRef<{ [key: string]: number }>({});
+  const previewSubTicksRef = useRef<{ [key: string]: number }>({});
+  const previewEnvelopeStepsRef = useRef<{ [key: string]: number }>({});
 
   // Generate piano keys for 5 octaves with proper layout
   const generatePianoKeys = () => {
@@ -92,7 +93,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
     const baseFreq = NOTE_FREQUENCIES[note];
     if (!baseFreq) return;
-
     const keyId = `${note}${octave}`;
 
     // Clear any existing timer for this key
@@ -100,90 +100,31 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       clearInterval(envelopeTimersRef.current[keyId]);
     }
 
-    // Initialize cycle counter for this key
-    cycleCountersRef.current[keyId] = 0;
-
     const channel = previewChannel;
-    const fineRegister = channel * 2;
-    const coarseRegister = channel * 2 + 1;
-    const volumeRegister = 0x08 + channel;
+    const instrument = currentInstrument as any;
+    const noteData = { note, octave };
 
-    const applyModeForTick = (tick: number) => {
-      const { toneActive, noiseActive } = ym2149.getToneNoiseState(currentInstrument, tick);
-      ym2149.updateMixerForChannel(channel, toneActive, noiseActive);
-      if (noiseActive) {
-        ym2149.applyNoiseEnvelopeValue(currentInstrument, tick);
-      }
-    };
+    // Initialize envelope timing
+    previewSubTicksRef.current[keyId] = 0;
+    previewEnvelopeStepsRef.current[keyId] = 0;
 
-    const applyToneForTick = (tick: number) => {
-      let frequency = baseFreq * Math.pow(2, octave - 4);
+    // Apply initial state (step 0)
+    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0);
 
-      let arpeggioSemitones = 0;
-      if (currentInstrument.arpeggioEnvelope && currentInstrument.arpeggioEnvelope.length > 0) {
-        const arpeggioIndex = Math.min(Math.max(tick, 0), currentInstrument.arpeggioEnvelope.length - 1);
-        const arpeggioValue = currentInstrument.arpeggioEnvelope[arpeggioIndex];
-        if (typeof arpeggioValue === 'number') {
-          arpeggioSemitones = arpeggioValue;
-        }
+    // Start envelope timer - 20ms tick, advance envelope step every 40ms
+    envelopeTimersRef.current[keyId] = window.setInterval(() => {
+      const currentSub = previewSubTicksRef.current[keyId] ?? 0;
+      const nextSub = (currentSub + 1) % 2;
+      previewSubTicksRef.current[keyId] = nextSub;
+
+      if (nextSub === 0) {
+        const currentStep = (previewEnvelopeStepsRef.current[keyId] ?? 0) + 1;
+        previewEnvelopeStepsRef.current[keyId] = currentStep;
       }
 
-      if (arpeggioSemitones !== 0) {
-        frequency = frequency * Math.pow(2, arpeggioSemitones / 12);
-      }
-
-      let pitchSemitones = 0;
-      if (currentInstrument.pitchEnvelope && currentInstrument.pitchEnvelope.length > 0) {
-        const pitchIndex = Math.min(Math.max(tick, 0), currentInstrument.pitchEnvelope.length - 1);
-        const pitchValue = currentInstrument.pitchEnvelope[pitchIndex];
-        if (typeof pitchValue === 'number') {
-          pitchSemitones = pitchValue;
-        }
-      }
-
-      if (pitchSemitones !== 0) {
-        frequency = frequency * Math.pow(2, pitchSemitones / 12);
-      }
-
-      const period = Math.floor(2000000 / (16 * frequency));
-      ym2149.writeRegister(fineRegister, period & 0xFF);
-      ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
-    };
-
-    // Apply initial mode/noise state and tone before starting envelopes
-    applyModeForTick(0);
-    applyToneForTick(0);
-
-    // Set initial volume from envelope
-    const initialVolume = currentInstrument.volumeEnvelope[0] || 0x0F;
-    ym2149.writeRegister(volumeRegister, initialVolume); // Volume
-
-    // Start envelope timer - update every 20ms (50Hz), but change volume every 40ms (every 2 cycles)
-    let envelopeIndex = 0; // Separate counter for envelope position
-    
-    envelopeTimersRef.current[keyId] = setInterval(() => {
-      const cycle = cycleCountersRef.current[keyId];
-      
-      // Update volume only on cycle 0 (every 2 cycles = 40ms)
-      if (cycle === 0) {
-        applyModeForTick(envelopeIndex);
-        applyToneForTick(envelopeIndex);
-        if (envelopeIndex < currentInstrument.volumeEnvelope.length) {
-          const volume = currentInstrument.volumeEnvelope[envelopeIndex];
-          const clampedVolume = Math.max(0, Math.min(15, volume)); // Clamp to 0-15
-          ym2149.writeRegister(volumeRegister, clampedVolume);
-          envelopeIndex++; // Increment envelope index when volume changes
-        } else {
-          // Envelope finished, keep last value
-          const lastVolume = currentInstrument.volumeEnvelope[currentInstrument.volumeEnvelope.length - 1];
-          const clampedVolume = Math.max(0, Math.min(15, lastVolume));
-          ym2149.writeRegister(volumeRegister, clampedVolume);
-        }
-      }
-
-      // Update cycle counter (0, 1, 0, 1, ...)
-      cycleCountersRef.current[keyId] = (cycle + 1) % 2;
-    }, 20); // 20ms = 50Hz VBLANK rate
+      const step = previewEnvelopeStepsRef.current[keyId] ?? 0;
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, step);
+    }, 20); // 20ms = 50Hz, step every 2 ticks = 40ms
   }, [ym2149, currentInstrument, previewChannel]);
 
   const stopNote = useCallback((note?: string, octave?: number) => {
@@ -196,14 +137,18 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         clearInterval(envelopeTimersRef.current[keyId]);
         delete envelopeTimersRef.current[keyId];
       }
-      if (cycleCountersRef.current[keyId]) {
-        delete cycleCountersRef.current[keyId];
+      if (previewSubTicksRef.current[keyId] !== undefined) {
+        delete previewSubTicksRef.current[keyId];
+      }
+      if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
+        delete previewEnvelopeStepsRef.current[keyId];
       }
     } else {
       // Clear all timers (fallback)
       Object.values(envelopeTimersRef.current).forEach(timer => clearInterval(timer));
       envelopeTimersRef.current = {};
-      cycleCountersRef.current = {};
+      previewSubTicksRef.current = {};
+      previewEnvelopeStepsRef.current = {};
     }
     
     const volumeRegister = 0x08 + previewChannel;

@@ -332,29 +332,36 @@ export class YM2149 {
     this.writeRegister(0x06, noisePeriod);
   };
 
-  public updateChannelWithInstrument = (channel: number, instrument: Instrument, noteData?: { note: string; octave: number }, currentTick: number = 0, cycle: number = 0) => {
+  public updateChannelWithInstrument = (
+    channel: number,
+    instrument: Instrument,
+    noteData?: { note: string; octave: number },
+    envelopeTick: number = 0
+  ) => {
     const volumeRegister = 8 + channel; // R8, R9, R10
     const fineRegister = channel * 2;        // R0, R2, R4
     const coarseRegister = channel * 2 + 1;  // R1, R3, R5
 
-    const { toneActive, noiseActive } = this.getToneNoiseState(instrument, currentTick);
+    const safeTick = Math.max(0, envelopeTick | 0);
+
+    const { toneActive, noiseActive } = this.getToneNoiseState(instrument, safeTick);
     this.updateMixerForChannel(channel, toneActive, noiseActive);
 
-    if (!noteData) {
-      // No note data - silence channel
+    if (!noteData || noteData.note === '===') {
+      // No note or explicit note-off - silence channel
       this.writeRegister(volumeRegister, 0x00);
       return;
     }
 
     // Update tone frequency using arpeggio and pitch envelopes
-    if (toneActive && (currentTick === 0 || (cycle === 0 && currentTick > 0))) {
+    if (toneActive) {
       const baseFreq = NOTE_FREQUENCIES[noteData.note];
       if (baseFreq) {
         let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
 
         let arpeggioSemitones = 0;
         if (instrument.arpeggioEnvelope && instrument.arpeggioEnvelope.length > 0) {
-          const arpeggioIndex = Math.min(Math.max(currentTick, 0), instrument.arpeggioEnvelope.length - 1);
+          const arpeggioIndex = Math.min(safeTick, instrument.arpeggioEnvelope.length - 1);
           const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
           if (typeof arpeggioValue === 'number') {
             arpeggioSemitones = arpeggioValue;
@@ -367,7 +374,7 @@ export class YM2149 {
 
         let pitchSemitones = 0;
         if (instrument.pitchEnvelope && instrument.pitchEnvelope.length > 0) {
-          const pitchIndex = Math.min(Math.max(currentTick, 0), instrument.pitchEnvelope.length - 1);
+          const pitchIndex = Math.min(safeTick, instrument.pitchEnvelope.length - 1);
           const pitchValue = instrument.pitchEnvelope[pitchIndex];
           if (typeof pitchValue === 'number') {
             pitchSemitones = pitchValue;
@@ -385,24 +392,15 @@ export class YM2149 {
       }
     }
 
-    // Apply initial volume immediately when note starts (regardless of tone/noise mode)
-    if (currentTick === 0) {
-      const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
-      this.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
-    }
+    // Volume envelope
+    const volumeIndex = Math.min(safeTick, instrument.volumeEnvelope.length - 1);
+    const volumeValue = instrument.volumeEnvelope[volumeIndex];
+    const volume = Math.max(0, Math.min(15, volumeValue));
+    this.writeRegister(volumeRegister, volume);
 
-    // Apply volume envelope only on cycle 0 (every 2 cycles = 40ms in DOSOUND mode), but not on tick 0 (already applied)
-    if (cycle === 0 && currentTick > 0) {
-      const volumeIndex = Math.min(Math.max(currentTick, 0), instrument.volumeEnvelope.length - 1);
-      const volumeValue = instrument.volumeEnvelope[volumeIndex];
-      const volume = Math.max(0, Math.min(15, volumeValue));
-
-      this.writeRegister(volumeRegister, volume);
-    }
-    
-    // Apply noise envelope whenever noise is active
+    // Noise envelope whenever noise is active
     if (noiseActive) {
-      this.applyNoiseEnvelopeValue(instrument, currentTick);
+      this.applyNoiseEnvelopeValue(instrument, safeTick);
     }
   };
 

@@ -141,10 +141,11 @@ const App: React.FC = () => {
     };
   }, []);
 
-  // Track cycle counters for each channel (0-1, 0-1, 0-1...)
-  const channelCyclesRef = useRef([0, 0, 0]);
-  // Track envelope tick position for each channel (0,1,2,...) used by all envelopes
-  const channelEnvelopeTickRef = useRef([0, 0, 0]);
+  // Track envelope timing for each channel
+  // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
+  const channelSubTickRef = useRef([0, 0, 0]);
+  const channelEnvelopeStepRef = useRef([0, 0, 0]);
+  const lastNotesRef = useRef<any[]>([null, null, null]);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
 
@@ -195,53 +196,45 @@ const App: React.FC = () => {
           const lineB = patternB?.lines[state.currentLine];
           const lineC = patternC?.lines[state.currentLine];
 
-          const noteA = lineA?.trackA;
-          const noteB = lineB?.trackA;
-          const noteC = lineC?.trackA;
+          const noteA = lineA?.trackA || null;
+          const noteB = lineB?.trackA || null;
+          const noteC = lineC?.trackA || null;
 
-          const tick = state.currentTick;
+          const notes = [noteA, noteB, noteC];
+          const lastNotes = lastNotesRef.current;
 
-          // Update cycle and envelope tick counters only for channels that have notes playing
-          if (noteA?.note) {
-            channelCyclesRef.current[0] = (channelCyclesRef.current[0] + 1) % 2;
-            if (tick === 0) {
-              channelEnvelopeTickRef.current[0] = 0;
-            } else if (channelCyclesRef.current[0] === 0) {
-              channelEnvelopeTickRef.current[0] = channelEnvelopeTickRef.current[0] + 1;
+          for (let ch = 0; ch < 3; ch++) {
+            const note = notes[ch];
+            const last = lastNotes[ch];
+
+            if (note && note.note && note.note !== '===') {
+              const isNew =
+                !last ||
+                last.note !== note.note ||
+                last.octave !== note.octave ||
+                last.instrument !== note.instrument;
+
+              if (isNew) {
+                channelEnvelopeStepRef.current[ch] = 0;
+                channelSubTickRef.current[ch] = 0;
+              } else {
+                const sub = (channelSubTickRef.current[ch] + 1) % 2;
+                channelSubTickRef.current[ch] = sub;
+                if (sub === 0) {
+                  channelEnvelopeStepRef.current[ch] = channelEnvelopeStepRef.current[ch] + 1;
+                }
+              }
+
+              updateChannelWithInstrument(ym2149, ch, note, channelEnvelopeStepRef.current[ch]);
+            } else {
+              // No note or explicit rest - reset and silence
+              channelEnvelopeStepRef.current[ch] = 0;
+              channelSubTickRef.current[ch] = 0;
+              updateChannelWithInstrument(ym2149, ch, null, 0);
             }
-          } else {
-            channelCyclesRef.current[0] = 0; // Reset when no note
-            channelEnvelopeTickRef.current[0] = 0;
+
+            lastNotes[ch] = note || null;
           }
-          
-          if (noteB?.note) {
-            channelCyclesRef.current[1] = (channelCyclesRef.current[1] + 1) % 2;
-            if (tick === 0) {
-              channelEnvelopeTickRef.current[1] = 0;
-            } else if (channelCyclesRef.current[1] === 0) {
-              channelEnvelopeTickRef.current[1] = channelEnvelopeTickRef.current[1] + 1;
-            }
-          } else {
-            channelCyclesRef.current[1] = 0; // Reset when no note
-            channelEnvelopeTickRef.current[1] = 0;
-          }
-          
-          if (noteC?.note) {
-            channelCyclesRef.current[2] = (channelCyclesRef.current[2] + 1) % 2;
-            if (tick === 0) {
-              channelEnvelopeTickRef.current[2] = 0;
-            } else if (channelCyclesRef.current[2] === 0) {
-              channelEnvelopeTickRef.current[2] = channelEnvelopeTickRef.current[2] + 1;
-            }
-          } else {
-            channelCyclesRef.current[2] = 0; // Reset when no note
-            channelEnvelopeTickRef.current[2] = 0;
-          }
-          
-          // Update each channel with DOSOUND timing (volume and envelopes every 2 cycles)
-          updateChannelWithInstrument(ym2149, 0, noteA, channelEnvelopeTickRef.current[0], channelCyclesRef.current[0]);
-          updateChannelWithInstrument(ym2149, 1, noteB, channelEnvelopeTickRef.current[1], channelCyclesRef.current[1]);
-          updateChannelWithInstrument(ym2149, 2, noteC, channelEnvelopeTickRef.current[2], channelCyclesRef.current[2]);
         }
       }
     }
@@ -272,29 +265,30 @@ const App: React.FC = () => {
   }, []);
 
   // Helper function to update channel with instrument and all envelopes
-  const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0, cycle: number = 0) => {
-    const normalizedNoteInstrumentId = normalizeInstrumentId(noteData?.instrument);
+  const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData: any | null, envelopeStep: number = 0) => {
+    const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
     const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
     const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
 
     const instrument = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
     
-    if (!instrument) {
-      // No instrument - silence channel
+    if (!instrument || !noteData || noteData.note === '===') {
+      // No instrument or no active note - silence channel
       const volumeRegister = 8 + channel;
       ym2149.writeRegister(volumeRegister, 0x00);
       return;
     }
 
     // Use YM2149's built-in method to update channel with instrument
-    ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentTick, cycle);
+    ym2149.updateChannelWithInstrument(channel, instrument as any, { note: noteData.note, octave: noteData.octave }, envelopeStep);
   }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
 
   // Handle stop playback with silence
   const handleStopPlayback = useCallback(() => {
     // Reset cycle counters when stopping
-    channelCyclesRef.current = [0, 0, 0];
-    channelEnvelopeTickRef.current = [0, 0, 0];
+    channelSubTickRef.current = [0, 0, 0];
+    channelEnvelopeStepRef.current = [0, 0, 0];
+    lastNotesRef.current = [null, null, null];
     
     // Silence all channels
     if (ym2149Ref.current) {

@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { PATTERN_LENGTH, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
+import { PATTERN_LENGTH, KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument } from '../synth/dosound/DosoundDriver';
 import { YM2149 } from '../synth/ym2149/YM2149';
 
@@ -51,7 +51,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   // Envelope timing state for preview notes
   const envelopeTimerRef = useRef<number | null>(null);
-  const cycleCounterRef = useRef<number>(0);
+  const previewSubTickRef = useRef<number>(0);
+  const previewEnvelopeStepRef = useRef<number>(0);
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
@@ -65,68 +66,32 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       clearInterval(envelopeTimerRef.current);
     }
 
-    const baseFreq = NOTE_FREQUENCIES[note];
-    if (!baseFreq) return;
-
-    const frequency = baseFreq * Math.pow(2, octave - 4);
-    const period = Math.floor(2000000 / (16 * frequency));
-
     // Map track to channel
     const channel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-    const fineRegister = channel * 2;        // R0, R2, R4
-    const coarseRegister = channel * 2 + 1;  // R1, R3, R5
-    const volumeRegister = 8 + channel;      // R8, R9, R10
-
-    const applyModeForTick = (tick: number) => {
-      const { toneActive, noiseActive } = ym2149.getToneNoiseState(currentInstrumentData, tick);
-      ym2149.updateMixerForChannel(channel, toneActive, noiseActive);
-      if (noiseActive) {
-        ym2149.applyNoiseEnvelopeValue(currentInstrumentData, tick);
-      }
-    };
-
-    // Apply initial mode/noise state before starting envelopes
-    applyModeForTick(0);
-
-    // Play note on this channel
-    ym2149.writeRegister(fineRegister, period & 0xFF);
-    ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+    const instrument = currentInstrumentData as any;
+    const noteData = { note, octave };
 
     // Initialize envelope timing
-    cycleCounterRef.current = 0;
-    let envelopeIndex = 0;
+    previewSubTickRef.current = 0;
+    previewEnvelopeStepRef.current = 0;
 
-    // Set initial volume from envelope
-    const initialVolume = currentInstrumentData.volumeEnvelope[0] || 0x0F;
-    ym2149.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
+    // Apply initial state (step 0)
+    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0);
 
-    // Start envelope timer - same logic as piano keyboard
-    envelopeTimerRef.current = setInterval(() => {
-      const cycle = cycleCounterRef.current;
-
-      // Update envelopes/mode only on cycle 0 (every 2 cycles = 40ms)
-      if (cycle === 0) {
-        applyModeForTick(envelopeIndex);
-
-        if (envelopeIndex < currentInstrumentData.volumeEnvelope.length) {
-          const volume = currentInstrumentData.volumeEnvelope[envelopeIndex];
-          const clampedVolume = Math.max(0, Math.min(15, volume));
-          ym2149.writeRegister(volumeRegister, clampedVolume);
-          envelopeIndex++;
-        } else {
-          // Envelope finished, keep last value
-          const lastVolume = currentInstrumentData.volumeEnvelope[currentInstrumentData.volumeEnvelope.length - 1];
-          const clampedVolume = Math.max(0, Math.min(15, lastVolume));
-          ym2149.writeRegister(volumeRegister, clampedVolume);
-        }
+    // Start envelope timer: 20ms tick, advance envelope step every 40ms
+    envelopeTimerRef.current = window.setInterval(() => {
+      const sub = (previewSubTickRef.current + 1) % 2;
+      previewSubTickRef.current = sub;
+      if (sub === 0) {
+        previewEnvelopeStepRef.current = previewEnvelopeStepRef.current + 1;
       }
 
-      // Update cycle counter (0, 1, 0, 1, ...)
-      cycleCounterRef.current = (cycle + 1) % 2;
-    }, 20); // 20ms = 50Hz VBLANK rate
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, previewEnvelopeStepRef.current);
+    }, 20); // 20ms = 50Hz, envelope step every 2 ticks = 40ms
 
     // Auto-silence after 500ms for preview (longer to hear envelope)
-    setTimeout(() => {
+    const volumeRegister = 8 + channel;
+    window.setTimeout(() => {
       if (envelopeTimerRef.current) {
         clearInterval(envelopeTimerRef.current);
         envelopeTimerRef.current = null;
