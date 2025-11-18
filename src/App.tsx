@@ -104,6 +104,8 @@ const App: React.FC = () => {
         setTimeout(() => {
           if (ym2149Ref.current) {
             ym2149Ref.current.writeRegister(0x08, 0x00); // Silence channel A
+            ym2149Ref.current.writeRegister(0x09, 0x00);
+            ym2149Ref.current.writeRegister(0x0A, 0x00);
             console.log('Test tone stopped');
           }
         }, 100);
