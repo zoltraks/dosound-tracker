@@ -656,6 +656,7 @@ const App: React.FC = () => {
           onLoadSong={triggerFileLoad}
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
+          onExportInstrument={() => {}}
           onLoadInstrument={handleLoadInstrumentClick}
           onDeleteInstrument={handleDeleteInstrument}
           onPlaySong={handleStartSong}

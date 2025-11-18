@@ -6,6 +6,7 @@ interface CommandPanelProps {
   onSaveSong: () => void;
   onNewInstrument: () => void;
   onSaveInstrument: () => void;
+  onExportInstrument: () => void;
   onLoadInstrument: () => void;
   onDeleteInstrument: () => void;
   onPlaySong: () => void;
@@ -27,6 +28,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onSaveSong,
   onNewInstrument,
   onSaveInstrument,
+  onExportInstrument,
   onLoadInstrument,
   onDeleteInstrument,
   onPlaySong,
@@ -59,6 +61,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onSaveInstrument} className="command-btn">SAVE INST</button>
         <button onClick={() => {}} className="command-btn">CLONE INST</button>
         <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
+        <button onClick={onExportInstrument} className="command-btn">EXPORT INST</button>
       </div>
 
       {/* Pattern Operations */}
