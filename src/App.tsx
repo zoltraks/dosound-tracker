@@ -448,6 +448,27 @@ const App: React.FC = () => {
     setCurrentInstrument(instrument);
   }, []);
 
+  const handleDeleteInstrument = useCallback(() => {
+    const instruments = currentSong.instruments;
+    if (instruments.length <= 1) {
+      alert('Cannot delete the last instrument.');
+      return;
+    }
+
+    const index = instruments.findIndex(inst => inst.id === currentInstrument.id);
+    if (index === -1) {
+      alert('Current instrument not found in song instruments.');
+      return;
+    }
+
+    const newInstruments = instruments.filter(inst => inst.id !== currentInstrument.id);
+    const newCurrentIndex = Math.max(0, index - 1);
+    const newCurrentInstrument = newInstruments[newCurrentIndex];
+
+    updateSong({ instruments: newInstruments });
+    setCurrentInstrument(newCurrentInstrument);
+  }, [currentSong.instruments, currentInstrument.id, updateSong, setCurrentInstrument]);
+
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
     // Stop the sequencer
@@ -563,6 +584,7 @@ const App: React.FC = () => {
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
           onLoadInstrument={() => console.log('Load instrument clicked')}
+          onDeleteInstrument={handleDeleteInstrument}
           onPlaySong={handleStartSong}
           onStopSong={handleStop}
           onPlayPattern={handleStartPattern}
