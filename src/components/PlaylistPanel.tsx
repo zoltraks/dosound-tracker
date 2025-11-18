@@ -14,6 +14,7 @@ interface PlaylistPanelProps {
   onPlaylistChange: (playlist: PlaylistEntry[]) => void;
   currentPlaybackPosition: number;
   onPositionSelect: (position: number) => void;
+  onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
 }
 
 export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
@@ -22,7 +23,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   setActiveSection,
   onPlaylistChange,
   currentPlaybackPosition,
-  onPositionSelect
+  onPositionSelect,
+  onCreatePatternAt
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>('A');
@@ -149,6 +151,10 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           return 'A'; // C -> A
         });
         break;
+      case 'N':
+        event.preventDefault();
+        onCreatePatternAt(currentLine, currentTrack);
+        break;
       case ' ':
       case '0':
       case '1':
@@ -263,10 +269,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
                     onBlur={finishEditingPattern}
                     onKeyDown={(e) => {
+                      const key = e.key.toUpperCase();
                       if (e.key === 'Enter') {
                         finishEditingPattern();
                       } else if (e.key === 'Escape') {
                         setEditingPattern('');
+                      } else if (key === 'N') {
+                        e.preventDefault();
+                        setEditingPattern('');
+                        onCreatePatternAt(actualIndex, 'A');
                       }
                     }}
                     autoFocus
@@ -293,10 +304,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
                     onBlur={finishEditingPattern}
                     onKeyDown={(e) => {
+                      const key = e.key.toUpperCase();
                       if (e.key === 'Enter') {
                         finishEditingPattern();
                       } else if (e.key === 'Escape') {
                         setEditingPattern('');
+                      } else if (key === 'N') {
+                        e.preventDefault();
+                        setEditingPattern('');
+                        onCreatePatternAt(actualIndex, 'B');
                       }
                     }}
                     autoFocus
@@ -323,10 +339,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
                     onBlur={finishEditingPattern}
                     onKeyDown={(e) => {
+                      const key = e.key.toUpperCase();
                       if (e.key === 'Enter') {
                         finishEditingPattern();
                       } else if (e.key === 'Escape') {
                         setEditingPattern('');
+                      } else if (key === 'N') {
+                        e.preventDefault();
+                        setEditingPattern('');
+                        onCreatePatternAt(actualIndex, 'C');
                       }
                     }}
                     autoFocus

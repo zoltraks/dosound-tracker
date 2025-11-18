@@ -34,6 +34,7 @@ const App: React.FC = () => {
     saveSong, 
     createNewInstrument, 
     saveInstrument,
+    createNewPattern,
     fileInputRef,
     triggerFileLoad
   } = useDataManagement();
@@ -299,6 +300,41 @@ const App: React.FC = () => {
   const handlePlaylistChange = useCallback((newPlaylist: any[]) => {
     updateSong({ playlist: newPlaylist });
   }, [updateSong]);
+
+  const handleCreatePatternAt = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
+    if (lineIndex < 0 || lineIndex >= currentSong.playlist.length) {
+      return;
+    }
+
+    // Generate a unique 2-digit hex pattern ID
+    const existingIds = currentSong.patterns.map(p => p.id);
+    let index = currentSong.patterns.length;
+    let patternId: string;
+    do {
+      patternId = index.toString(16).padStart(2, '0').toUpperCase();
+      index++;
+    } while (existingIds.includes(patternId));
+
+    createNewPattern(patternId);
+
+    const newPlaylist = [...currentSong.playlist];
+    const entry = { ...newPlaylist[lineIndex] };
+
+    switch (track) {
+      case 'A':
+        entry.trackA = patternId;
+        break;
+      case 'B':
+        entry.trackB = patternId;
+        break;
+      case 'C':
+        entry.trackC = patternId;
+        break;
+    }
+
+    newPlaylist[lineIndex] = entry;
+    updateSong({ playlist: newPlaylist });
+  }, [currentSong.playlist, currentSong.patterns, createNewPattern, updateSong]);
 
   const handleAddLine = useCallback(() => {
     const newPlaylist = [...currentSong.playlist];
@@ -669,6 +705,7 @@ const App: React.FC = () => {
               onPlaylistChange={handlePlaylistChange}
               currentPlaybackPosition={sequencerState.currentPattern}
               onPositionSelect={handlePositionSelect}
+              onCreatePatternAt={handleCreatePatternAt}
             />
             
             <InstrumentListPanel
