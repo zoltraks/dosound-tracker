@@ -160,9 +160,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Navigation
     if (key === 'ARROWUP') {
       event.preventDefault();
+      if (!pattern) return;
       onLineChange(Math.max(0, currentLine - 1));
     } else if (key === 'ARROWDOWN') {
       event.preventDefault();
+      if (!pattern) return;
       onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
@@ -227,10 +229,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine].trackA = null;
 
         onPatternChange(newPattern);
+        // Move to next line
+        onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
       }
-
-      // Move to next line
-      onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
     } else if (event.ctrlKey && key === '-') {
       event.preventDefault();
       // Previous instrument
@@ -267,10 +268,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine].trackA = newNote;
 
         onPatternChange(newPattern);
+        // Move to next line
+        onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
       }
-
-      // Move to next line
-      onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
     }
   }, [isActive, currentLine, currentOctave, currentInstrument, onLineChange, playPreviewNote, pattern, trackId, onPatternChange]);
 
