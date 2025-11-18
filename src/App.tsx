@@ -15,6 +15,7 @@ import { InstrumentListPanel } from './components/InstrumentListPanel';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
+import { exportToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
 import './App.css';
 
 const App: React.FC = () => {
@@ -293,6 +294,17 @@ const App: React.FC = () => {
     updateSong({ playlist: newPlaylist });
   }, [currentSong.playlist, updateSong]);
 
+  const handleExportData = useCallback(() => {
+    try {
+      const assemblyContent = exportToAssembly(currentSong);
+      const filename = `${currentSong.title.replace(/[^a-zA-Z0-9]/g, '_')}.s`;
+      downloadAssemblyFile(assemblyContent, filename);
+    } catch (error) {
+      console.error('Export failed:', error);
+      // Could add user notification here
+    }
+  }, [currentSong]);
+
   const handlePositionSelect = useCallback((position: number) => {
     // Set sequencer to the selected pattern position, reset line and tick to 0
     setPosition(position, 0, 0);
@@ -447,7 +459,7 @@ const App: React.FC = () => {
           onStopSong={handleStop}
           onPlayPattern={handleStartPattern}
           onStopPattern={handleStopPattern}
-          onExportData={() => console.log('Export clicked')}
+          onExportData={handleExportData}
           onAddLine={handleAddLine}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
