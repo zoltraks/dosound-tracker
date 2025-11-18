@@ -12,6 +12,7 @@ export const useKeyboardNavigation = () => {
     return false; // Default to light mode
   });
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
+  const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
 
   // Save theme preference to localStorage whenever it changes
   useEffect(() => {
@@ -20,6 +21,10 @@ export const useKeyboardNavigation = () => {
 
   const setCallback = useCallback((section: NavigationSection, callback: (() => void) | null) => {
     callbacksRef.current[section] = callback;
+  }, []);
+
+  const setGlobalShortcut = useCallback((action: string, callback: (() => void) | null) => {
+    globalCallbacksRef.current[action] = callback;
   }, []);
 
   const navigateToNext = useCallback(() => {
@@ -36,7 +41,15 @@ export const useKeyboardNavigation = () => {
 
   const executeShortcut = useCallback((shortcut: KeyboardShortcut) => {
     const action = KEYBOARD_SHORTCUTS[shortcut];
-    
+
+    if (!action) return;
+
+    const globalCallback = globalCallbacksRef.current[action];
+    if (globalCallback) {
+      globalCallback();
+      return;
+    }
+
     switch (action) {
       case 'nextSection':
         navigateToNext();
@@ -73,6 +86,9 @@ export const useKeyboardNavigation = () => {
         case 'O': shortcut = 'CTRL+O'; break;
         case 'S': shortcut = 'CTRL+S'; break;
         case 'I': shortcut = 'CTRL+I'; break;
+        case '5': shortcut = 'CTRL+5'; break;
+        case '6': shortcut = 'CTRL+6'; break;
+        case '8': shortcut = 'CTRL+8'; break;
         case ' ': 
           event.preventDefault();
           shortcut = 'CTRL+SPACE'; 
@@ -116,7 +132,6 @@ export const useKeyboardNavigation = () => {
         case 'F2': shortcut = 'F2'; break;
         case 'F3': shortcut = 'F3'; break;
         case 'F4': shortcut = 'F4'; break;
-        case 'F5': shortcut = 'F5'; break;
       }
     }
 
@@ -138,6 +153,7 @@ export const useKeyboardNavigation = () => {
     isDarkMode,
     setIsDarkMode,
     setCallback,
+    setGlobalShortcut,
     navigateToNext,
     navigateToPrevious
   };

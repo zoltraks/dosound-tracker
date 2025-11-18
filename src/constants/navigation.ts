@@ -37,7 +37,9 @@ export const KEYBOARD_SHORTCUTS = {
   'F2': 'playPattern',
   'F3': 'playInstrument',
   'F4': 'toggleDosoundMode',
-  'F5': 'exportData',
+  'CTRL+5': 'playPatternFromStart',
+  'CTRL+6': 'playPattern',
+  'CTRL+8': 'stopPlayback',
   
   // File operations
   'CTRL+N': 'newSong',

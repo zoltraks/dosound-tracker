@@ -22,7 +22,7 @@ const App: React.FC = () => {
   
   const [currentOctave, setCurrentOctave] = useState(3);
   const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
-  const { activeSection, isDarkMode, setIsDarkMode, setActiveSection } = useKeyboardNavigation();
+  const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
     currentInstrument,
@@ -428,6 +428,27 @@ const App: React.FC = () => {
     // Start pattern loop
     startPatternLoop();
   }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, setPosition]);
+
+  const handleStartPatternFromBeginning = useCallback(() => {
+    if (sequencerState.isPlaying) {
+      stop();
+    }
+
+    if (isPatternPlaying) {
+      setIsPatternPlaying(false);
+    }
+
+    // Start from the beginning (line 0) of the current pattern
+    setPosition(sequencerState.currentPattern, 0, 0);
+
+    startSong();
+  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isPatternPlaying]);
+
+  useEffect(() => {
+    setGlobalShortcut('playPatternFromStart', handleStartPatternFromBeginning);
+    setGlobalShortcut('playPattern', handleStartPattern);
+    setGlobalShortcut('stopPlayback', handleStop);
+  }, [setGlobalShortcut, handleStartPatternFromBeginning, handleStartPattern, handleStop]);
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
