@@ -85,9 +85,6 @@ const App: React.FC = () => {
         
         // Expose YM2149 instance globally for debugging
         (window as any).ym2149 = ym2149;
-        (window as any).testNoise = () => ym2149.testNoise();
-        console.log('YM2149 exposed globally as window.ym2149');
-        console.log('Test noise function available as window.testNoise()');
         
         // Set initial volume for all channels
         ym2149.writeRegister(0x08, 0x0F); // Channel A volume

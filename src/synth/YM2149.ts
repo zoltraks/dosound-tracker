@@ -407,20 +407,4 @@ export class YM2149 {
       this.noiseNode.stop();
     }
   }
-
-  // Test method for debugging noise
-  public testNoise(): void {
-    // Clear all registers first
-    this.writeRegister(0x07, 0x3F); // Disable everything
-    this.writeRegister(0x08, 0x00); // Volume A = 0
-    
-    // Enable only noise on channel A
-    this.writeRegister(0x07, 0x33); // 110011 - Tone A disabled, Noise A enabled
-    this.writeRegister(0x08, 0x0F); // Max volume on channel A
-    this.writeRegister(0x06, 15);   // Mid noise period
-    
-    // Also set tone period to 0 to ensure tone is silent
-    this.writeRegister(0x00, 0x00); // Fine tone A = 0
-    this.writeRegister(0x01, 0x00); // Coarse tone A = 0
-  }
 }
