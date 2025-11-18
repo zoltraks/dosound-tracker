@@ -51,6 +51,7 @@ export interface Instrument {
   pitchEnvelope: number[];
   noiseEnvelope: number[];
   modeEnvelope: number[];
+  base?: string;
 }
 
 export class YM2149 {

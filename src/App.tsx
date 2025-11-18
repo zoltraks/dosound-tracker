@@ -511,6 +511,14 @@ const App: React.FC = () => {
     updateInstrument({ name });
   }, [updateInstrument]);
 
+  const handleChangeBaseKey = useCallback((note: string, octave: number) => {
+    const upper = note.toUpperCase();
+    const formatted = upper.endsWith('#')
+      ? `${upper}${octave}`
+      : `${upper}-${octave}`;
+    updateInstrument({ base: formatted });
+  }, [updateInstrument]);
+
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
     if (instruments.length === 0) {
@@ -841,6 +849,7 @@ const App: React.FC = () => {
               ? 2
               : 0
           }
+          onChangeBaseKey={handleChangeBaseKey}
         />
         
         {/* Hidden file input for loading songs */}

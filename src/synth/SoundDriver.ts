@@ -21,6 +21,7 @@ export interface Instrument {
   pitchEnvelope: number[];
   noiseEnvelope: number[];
   modeEnvelope: number[];
+  base?: string;
 }
 
 export interface Note {

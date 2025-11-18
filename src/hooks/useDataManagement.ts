@@ -7,6 +7,38 @@ import yaml from 'js-yaml';
 const SONG_STORAGE_KEY = 'dosound-tracker-song';
 const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
 
+const DEFAULT_BASE_KEY = 'C-4';
+
+const formatBaseKey = (note: string, octave: number): string => {
+  const upperNote = note.toUpperCase();
+  return upperNote.endsWith('#')
+    ? `${upperNote}${octave}`
+    : `${upperNote}-${octave}`;
+};
+
+const parseBaseKey = (value: unknown): { note: string; octave: number } | null => {
+  if (typeof value !== 'string') return null;
+  const raw = value.trim().toUpperCase();
+  if (!raw) return null;
+
+  let notePart = raw.charAt(0);
+  let rest = raw.slice(1);
+
+  if (rest.startsWith('#')) {
+    notePart += '#';
+    rest = rest.slice(1);
+  }
+
+  if (rest.startsWith('-')) {
+    rest = rest.slice(1);
+  }
+
+  const octave = parseInt(rest, 10);
+  if (!Number.isFinite(octave)) return null;
+
+  return { note: notePart, octave };
+};
+
 export const useDataManagement = () => {
   const [currentSong, setCurrentSong] = useState<Song>(() => {
     // Try to load from localStorage first
@@ -59,7 +91,8 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
           pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
           noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0)
+          modeEnvelope: Array(32).fill(0),
+          base: DEFAULT_BASE_KEY
         },
         {
           id: '01',
@@ -68,7 +101,8 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)],
           pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0)
+          modeEnvelope: Array(32).fill(0),
+          base: DEFAULT_BASE_KEY
         },
         {
           id: '02',
@@ -77,7 +111,8 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)],
           pitchEnvelope: [128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0)
+          modeEnvelope: Array(32).fill(0),
+          base: DEFAULT_BASE_KEY
         }
       ]
     };
@@ -95,7 +130,8 @@ export const useDataManagement = () => {
       arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
       pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0)
+      modeEnvelope: Array(32).fill(0),
+      base: DEFAULT_BASE_KEY
     };
   });
 
@@ -158,7 +194,8 @@ export const useDataManagement = () => {
       arpeggioEnvelope: Array(32).fill(0),
       pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0)
+      modeEnvelope: Array(32).fill(0),
+      base: DEFAULT_BASE_KEY
     };
 
     const updatedInstruments = [...instruments];
@@ -235,7 +272,8 @@ export const useDataManagement = () => {
       const instrumentNode: any = {
         name: currentInstrument.name,
         volume: trimEnvelope(currentInstrument.volumeEnvelope),
-        arpeggio: trimEnvelope(currentInstrument.arpeggioEnvelope)
+        arpeggio: trimEnvelope(currentInstrument.arpeggioEnvelope),
+        base: currentInstrument.base || DEFAULT_BASE_KEY
       };
 
       const isZeroDefault = (values: number[]): boolean =>
@@ -320,7 +358,12 @@ export const useDataManagement = () => {
           volumeEnvelope: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F),
           arpeggioEnvelope: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
           pitchEnvelope: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
-          noiseEnvelope: expandEnvelope('noise', ENVELOPE_LENGTH, 0)
+          noiseEnvelope: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
+          base: (() => {
+            const parsedBase = parseBaseKey((node as any).base);
+            if (!parsedBase) return DEFAULT_BASE_KEY;
+            return formatBaseKey(parsedBase.note, parsedBase.octave);
+          })()
         };
 
         setCurrentInstrument(newInstrument);

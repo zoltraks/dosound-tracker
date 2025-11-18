@@ -12,6 +12,7 @@ interface PianoKeyboardProps {
   ym2149: YM2149 | null;
   currentInstrument: Instrument;
   previewChannel: number;
+  onChangeBaseKey: (note: string, octave: number) => void;
 }
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
@@ -21,7 +22,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   onOctaveChange,
   ym2149,
   currentInstrument,
-  previewChannel
+  previewChannel,
+  onChangeBaseKey
 }) => {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
@@ -81,6 +83,31 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   };
 
   const pianoKeys = generatePianoKeys();
+
+  const parseBaseKey = (value?: string): { note: string; octave: number } | null => {
+    if (!value) return null;
+    const raw = value.trim().toUpperCase();
+    if (!raw) return null;
+
+    let notePart = raw.charAt(0);
+    let rest = raw.slice(1);
+
+    if (rest.startsWith('#')) {
+      notePart += '#';
+      rest = rest.slice(1);
+    }
+
+    if (rest.startsWith('-')) {
+      rest = rest.slice(1);
+    }
+
+    const octave = parseInt(rest, 10);
+    if (!Number.isFinite(octave)) return null;
+
+    return { note: notePart, octave };
+  };
+
+  const baseKeyData = parseBaseKey(currentInstrument.base || 'C-4');
 
   useEffect(() => {
     if (isActive && pianoRef.current) {
@@ -255,26 +282,46 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         onClick={() => setActiveSection('piano')}
       >
         <div className="piano-keys">
-          {pianoKeys.map((key) => (
-            <div
-              key={key.stableKey}
-              className={getKeyClass(key)}
-              style={{
-                left: key.isBlackKey ? `${Math.floor(key.position) * 25 + 28}px` : 'auto',
-                position: key.isBlackKey ? 'absolute' : 'relative'
-              }}
-              onMouseDown={() => handlePianoKeyDown(key.note, key.octave)}
-              onMouseUp={() => handlePianoKeyUp(key.note, key.octave)}
-              onMouseLeave={() => handlePianoKeyUp(key.note, key.octave)}
-              title={`${key.note}${key.octave}`}
-            >
-              {!key.isBlackKey && (
-                <span className="key-label">
-                  {key.note}{key.octave}
-                </span>
-              )}
-            </div>
-          ))}
+          {pianoKeys.map((key) => {
+            const isBaseKey =
+              !!baseKeyData &&
+              key.note.toUpperCase() === baseKeyData.note &&
+              key.octave === baseKeyData.octave;
+
+            return (
+              <div
+                key={key.stableKey}
+                className={getKeyClass(key)}
+                style={{
+                  left: key.isBlackKey ? `${Math.floor(key.position) * 25 + 28}px` : 'auto',
+                  position: key.isBlackKey ? 'absolute' : 'relative'
+                }}
+                onMouseDown={(e) => {
+                  if (e.button === 0) {
+                    handlePianoKeyDown(key.note, key.octave);
+                  }
+                }}
+                onMouseUp={(e) => {
+                  if (e.button === 0) {
+                    handlePianoKeyUp(key.note, key.octave);
+                  }
+                }}
+                onMouseLeave={() => handlePianoKeyUp(key.note, key.octave)}
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                  onChangeBaseKey(key.note, key.octave);
+                }}
+                title={`${key.note}${key.octave}`}
+              >
+                {!key.isBlackKey && (
+                  <span className="key-label">
+                    {key.note}{key.octave}
+                  </span>
+                )}
+                {isBaseKey && <span className="base-key-dot" />}
+              </div>
+            );
+          })}
         </div>
       </div>
 
