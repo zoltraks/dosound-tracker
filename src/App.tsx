@@ -36,7 +36,9 @@ const App: React.FC = () => {
     saveInstrument,
     createNewPattern,
     fileInputRef,
-    triggerFileLoad
+    triggerFileLoad,
+    loadSong,
+    loadInstrument
   } = useDataManagement();
   const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed);
 
@@ -49,6 +51,7 @@ const App: React.FC = () => {
   const audioContextRef = useRef<AudioContext | null>(null);
   const ym2149Ref = useRef<YM2149 | null>(null);
   const [, forceYmRender] = useState(0);
+  const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Initialize audio on component mount
   useEffect(() => {
@@ -443,6 +446,13 @@ const App: React.FC = () => {
     }
   }, [currentSong]);
 
+  const handleLoadInstrumentClick = useCallback(() => {
+    if (instrumentFileInputRef.current) {
+      instrumentFileInputRef.current.value = '';
+      instrumentFileInputRef.current.click();
+    }
+  }, []);
+
   const handlePositionSelect = useCallback((position: number) => {
     // Set sequencer to the selected pattern position, reset line and tick to 0
     setPosition(position, 0, 0);
@@ -648,7 +658,7 @@ const App: React.FC = () => {
           onLoadSong={triggerFileLoad}
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
-          onLoadInstrument={() => console.log('Load instrument clicked')}
+          onLoadInstrument={handleLoadInstrumentClick}
           onDeleteInstrument={handleDeleteInstrument}
           onPlaySong={handleStartSong}
           onStopSong={handleStop}
@@ -843,7 +853,20 @@ const App: React.FC = () => {
           onChange={(e) => {
             const file = e.target.files?.[0];
             if (file) {
+              loadSong(file);
               // This will be handled by the useDataManagement hook
+            }
+          }}
+        />
+        <input
+          ref={instrumentFileInputRef}
+          type="file"
+          accept=".yaml,.yml"
+          style={{ display: 'none' }}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              loadInstrument(file);
             }
           }}
         />

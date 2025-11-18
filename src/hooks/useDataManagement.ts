@@ -1,5 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import yaml from 'js-yaml';
 
 // Storage keys
@@ -227,14 +228,28 @@ export const useDataManagement = () => {
         return values.slice(0, i + 1).concat(last);
       };
 
+      const pitchEnv = trimEnvelope(currentInstrument.pitchEnvelope);
+      const noiseEnv = trimEnvelope(currentInstrument.noiseEnvelope);
+      const modeEnv = trimEnvelope(currentInstrument.modeEnvelope);
+
       const instrumentNode: any = {
         name: currentInstrument.name,
         volume: trimEnvelope(currentInstrument.volumeEnvelope),
-        arpeggio: trimEnvelope(currentInstrument.arpeggioEnvelope),
-        pitch: trimEnvelope(currentInstrument.pitchEnvelope),
-        noise: trimEnvelope(currentInstrument.noiseEnvelope),
-        mode: trimEnvelope(currentInstrument.modeEnvelope)
+        arpeggio: trimEnvelope(currentInstrument.arpeggioEnvelope)
       };
+
+      const isZeroDefault = (values: number[]): boolean =>
+        values.length === 0 || (values.length === 1 && values[0] === 0);
+
+      if (!isZeroDefault(pitchEnv)) {
+        instrumentNode.pitch = pitchEnv;
+      }
+      if (!isZeroDefault(noiseEnv)) {
+        instrumentNode.noise = noiseEnv;
+      }
+      if (!isZeroDefault(modeEnv)) {
+        instrumentNode.mode = modeEnv;
+      }
 
       const exportData = { instrument: instrumentNode };
 
@@ -293,23 +308,50 @@ export const useDataManagement = () => {
         const newInstrument: Instrument = {
           id: currentInstrument.id,
           name: typeof node.name === 'string' && node.name.trim() ? node.name : currentInstrument.name,
-          modeEnvelope: expandEnvelope('mode', 32, 0),
-          volumeEnvelope: expandEnvelope('volume', 32, 0x0F),
-          arpeggioEnvelope: expandEnvelope('arpeggio', 32, 0),
-          pitchEnvelope: expandEnvelope('pitch', 32, 0),
-          noiseEnvelope: expandEnvelope('noise', 32, 0)
+          modeEnvelope: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
+          volumeEnvelope: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F),
+          arpeggioEnvelope: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
+          pitchEnvelope: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
+          noiseEnvelope: expandEnvelope('noise', ENVELOPE_LENGTH, 0)
         };
 
         setCurrentInstrument(newInstrument);
 
         setCurrentSong(prev => {
           const instruments = [...prev.instruments];
-          const slotIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
-          if (slotIndex >= 0) {
-            instruments[slotIndex] = newInstrument;
+
+          let targetIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
+
+          if (targetIndex === -1) {
+            const slotFromId = parseInt(currentInstrument.id, 16);
+            if (Number.isFinite(slotFromId) && slotFromId >= 0 && slotFromId < MAX_INSTRUMENTS) {
+              const clamped = slotFromId;
+
+              for (let i = instruments.length; i <= clamped; i++) {
+                if (!instruments[i]) {
+                  const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+                  instruments[i] = {
+                    id: slotId,
+                    name: '',
+                    volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    modeEnvelope: Array(ENVELOPE_LENGTH).fill(0)
+                  };
+                }
+              }
+
+              targetIndex = clamped;
+            }
+          }
+
+          if (targetIndex >= 0) {
+            instruments[targetIndex] = newInstrument;
           } else {
             instruments.push(newInstrument);
           }
+
           return { ...prev, instruments };
         });
       } catch (error) {
@@ -327,20 +369,45 @@ export const useDataManagement = () => {
   const updateInstrument = useCallback((updates: Partial<Instrument>) => {
     setCurrentInstrument(prev => ({ ...prev, ...updates }));
     
-    // Also update in song if it exists
     setCurrentSong(prev => {
-      const updatedInstruments = prev.instruments.map(inst => 
-        inst.id === currentInstrument.id ? { ...inst, ...updates } : inst
-      );
-      
-      // If instrument doesn't exist in song, add it
-      if (!prev.instruments.some(inst => inst.id === currentInstrument.id)) {
-        updatedInstruments.push({ ...currentInstrument, ...updates });
+      const instruments = [...prev.instruments];
+
+      let targetIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
+      const updatedInstrument: Instrument = { ...currentInstrument, ...updates } as Instrument;
+
+      if (targetIndex === -1) {
+        const slotFromId = parseInt(currentInstrument.id, 16);
+        if (Number.isFinite(slotFromId) && slotFromId >= 0 && slotFromId < MAX_INSTRUMENTS) {
+          const clamped = slotFromId;
+
+          for (let i = instruments.length; i <= clamped; i++) {
+            if (!instruments[i]) {
+              const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+              instruments[i] = {
+                id: slotId,
+                name: '',
+                volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                modeEnvelope: Array(ENVELOPE_LENGTH).fill(0)
+              };
+            }
+          }
+
+          targetIndex = clamped;
+        }
       }
-      
+
+      if (targetIndex >= 0) {
+        instruments[targetIndex] = updatedInstrument;
+      } else {
+        instruments.push(updatedInstrument);
+      }
+
       return {
         ...prev,
-        instruments: updatedInstruments
+        instruments
       };
     });
   }, [currentInstrument.id, currentInstrument]);
