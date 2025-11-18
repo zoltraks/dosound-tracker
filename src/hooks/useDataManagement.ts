@@ -58,6 +58,7 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
           pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
           noiseEnvelope: Array(32).fill(0),
+          modeEnvelope: Array(32).fill(0),
           toneNoiseMode: 'tone'
         },
         {
@@ -67,6 +68,7 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)],
           pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
+          modeEnvelope: Array(32).fill(0),
           toneNoiseMode: 'tone'
         },
         {
@@ -76,6 +78,7 @@ export const useDataManagement = () => {
           arpeggioEnvelope: [24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)],
           pitchEnvelope: [128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)],
           noiseEnvelope: Array(32).fill(0),
+          modeEnvelope: Array(32).fill(0),
           toneNoiseMode: 'tone'
         }
       ]
@@ -94,6 +97,7 @@ export const useDataManagement = () => {
       arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
       pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
       noiseEnvelope: Array(32).fill(0),
+      modeEnvelope: Array(32).fill(0),
       toneNoiseMode: 'tone'
     };
   });
@@ -148,6 +152,7 @@ export const useDataManagement = () => {
       arpeggioEnvelope: Array(32).fill(0),
       pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
+      modeEnvelope: Array(32).fill(0),
       toneNoiseMode: 'tone'
     };
     

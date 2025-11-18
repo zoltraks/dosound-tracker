@@ -19,6 +19,7 @@ export interface Instrument {
   arpeggioEnvelope: number[];
   pitchEnvelope: number[];
   noiseEnvelope: number[];
+  modeEnvelope: number[];
   toneNoiseMode: 'tone' | 'noise';
 }
 
@@ -175,6 +176,7 @@ export class DosoundDriver {
       arpeggioEnvelope: [0, 0, 0, 0],
       pitchEnvelope: [0, 0, 0, 0],
       noiseEnvelope: [0, 0, 0, 0],
+      modeEnvelope: Array(32).fill(0),
       toneNoiseMode: 'tone'
     };
   }

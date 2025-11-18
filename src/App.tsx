@@ -201,6 +201,33 @@ const App: React.FC = () => {
     setCallback(sequencerCallback);
   }, [setCallback, sequencerCallback]);
 
+  const getModeValueForTick = useCallback((instrument: Instrument, tick: number) => {
+    const defaultMode = instrument.toneNoiseMode === 'noise' ? 1 : 0;
+    if (!instrument.modeEnvelope || instrument.modeEnvelope.length === 0) {
+      return defaultMode;
+    }
+
+    const modeIndex = Math.min(tick, instrument.modeEnvelope.length - 1);
+    const envelopeValue = instrument.modeEnvelope[modeIndex];
+    return typeof envelopeValue === 'number' ? envelopeValue : defaultMode;
+  }, []);
+
+  const updateMixerForChannel = useCallback((ym2149: YM2149, channel: number, toneActive: boolean, noiseActive: boolean) => {
+    const registers = ym2149.getRegistersArray();
+    const currentMixer = registers[7] ?? 0x3F;
+    let mixer = currentMixer;
+
+    const toneBit = 1 << channel;
+    const noiseBit = 0x08 << channel;
+
+    mixer = toneActive ? (mixer & ~toneBit) : (mixer | toneBit);
+    mixer = noiseActive ? (mixer & ~noiseBit) : (mixer | noiseBit);
+
+    if (mixer !== currentMixer) {
+      ym2149.writeRegister(0x07, mixer);
+    }
+  }, []);
+
   // Helper function to update channel with instrument and all envelopes
   const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0, cycle: number = 0) => {
     const volumeRegister = 8 + channel; // R8, R9, R10
@@ -215,6 +242,12 @@ const App: React.FC = () => {
       ym2149.writeRegister(volumeRegister, 0x00);
       return;
     }
+
+    const modeValue = getModeValueForTick(instrument, currentTick);
+    const toneActive = modeValue === 0 || modeValue === 2;
+    const noiseActive = modeValue === 1 || modeValue === 2;
+
+    updateMixerForChannel(ym2149, channel, toneActive, noiseActive);
 
     if (noteData && currentTick === 0) {
       // Start of new note - set frequency
@@ -247,16 +280,6 @@ const App: React.FC = () => {
         ym2149.writeRegister(fineRegister, period & 0xFF);
         ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
         
-        // Set tone/noise mode
-        const modeValue = instrument.toneNoiseMode === 'tone' ? 0 : 1;
-        if (modeValue === 1) {
-          // Enable noise for this channel
-          ym2149.writeRegister(0x07, 0x38 | (1 << channel)); // Enable noise for this channel
-        } else {
-          // Disable noise for this channel
-          ym2149.writeRegister(0x07, 0x38); // Enable tone only
-        }
-        
         // Apply initial volume immediately when note starts
         const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
         ym2149.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
@@ -276,14 +299,14 @@ const App: React.FC = () => {
       ym2149.writeRegister(volumeRegister, volume);
     }
     
-    // Apply noise envelope if in noise mode (only on cycle 0 for DOSOUND timing)
-    if (instrument.toneNoiseMode === 'noise' && cycle === 0) {
+    // Apply noise envelope when noise is active (only on cycle 0 for DOSOUND timing)
+    if (noiseActive && cycle === 0) {
       const noiseIndex = Math.min(currentTick, instrument.noiseEnvelope.length - 1);
       const noiseValue = instrument.noiseEnvelope[noiseIndex];
       const noisePeriod = Math.max(0, Math.min(31, noiseValue)); // Clamp to 0-31
       ym2149.writeRegister(0x06, noisePeriod); // Noise period register
     }
-  }, [currentSong.instruments]);
+  }, [currentSong.instruments, getModeValueForTick, updateMixerForChannel]);
 
   // Handle stop playback with silence
   const handleStopPlayback = useCallback(() => {
@@ -562,6 +585,10 @@ const App: React.FC = () => {
             <ToneNoisePanel
               activeSection={activeSection}
               setActiveSection={setActiveSection}
+              data={currentInstrument.modeEnvelope}
+              onChange={(data: number[]) => {
+                updateInstrument({ modeEnvelope: data });
+              }}
             />
             
             <EnvelopePanel
