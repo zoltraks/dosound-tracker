@@ -86,7 +86,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     {
       leftLabel: 'MX',
       leftValue: `$${formatHex(derived.mixer, 2)}`,
-      rightLabel: 'NF',
+      rightLabel: 'NS',
       rightValue: `$${formatHex(derived.noisePeriod, 2)}`,
     },
   ];
