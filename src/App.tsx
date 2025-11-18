@@ -143,6 +143,8 @@ const App: React.FC = () => {
 
   // Track cycle counters for each channel (0-1, 0-1, 0-1...)
   const channelCyclesRef = useRef([0, 0, 0]);
+  // Track envelope tick position for each channel (0,1,2,...) used by all envelopes
+  const channelEnvelopeTickRef = useRef([0, 0, 0]);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
 
@@ -192,30 +194,54 @@ const App: React.FC = () => {
           const lineA = patternA?.lines[state.currentLine];
           const lineB = patternB?.lines[state.currentLine];
           const lineC = patternC?.lines[state.currentLine];
-          
-          // Update cycle counters only for channels that have notes playing
-          if (lineA?.trackA?.note) {
+
+          const noteA = lineA?.trackA;
+          const noteB = lineB?.trackA;
+          const noteC = lineC?.trackA;
+
+          const tick = state.currentTick;
+
+          // Update cycle and envelope tick counters only for channels that have notes playing
+          if (noteA?.note) {
             channelCyclesRef.current[0] = (channelCyclesRef.current[0] + 1) % 2;
+            if (tick === 0) {
+              channelEnvelopeTickRef.current[0] = 0;
+            } else if (channelCyclesRef.current[0] === 0) {
+              channelEnvelopeTickRef.current[0] = channelEnvelopeTickRef.current[0] + 1;
+            }
           } else {
             channelCyclesRef.current[0] = 0; // Reset when no note
+            channelEnvelopeTickRef.current[0] = 0;
           }
           
-          if (lineB?.trackA?.note) {
+          if (noteB?.note) {
             channelCyclesRef.current[1] = (channelCyclesRef.current[1] + 1) % 2;
+            if (tick === 0) {
+              channelEnvelopeTickRef.current[1] = 0;
+            } else if (channelCyclesRef.current[1] === 0) {
+              channelEnvelopeTickRef.current[1] = channelEnvelopeTickRef.current[1] + 1;
+            }
           } else {
             channelCyclesRef.current[1] = 0; // Reset when no note
+            channelEnvelopeTickRef.current[1] = 0;
           }
           
-          if (lineC?.trackA?.note) {
+          if (noteC?.note) {
             channelCyclesRef.current[2] = (channelCyclesRef.current[2] + 1) % 2;
+            if (tick === 0) {
+              channelEnvelopeTickRef.current[2] = 0;
+            } else if (channelCyclesRef.current[2] === 0) {
+              channelEnvelopeTickRef.current[2] = channelEnvelopeTickRef.current[2] + 1;
+            }
           } else {
             channelCyclesRef.current[2] = 0; // Reset when no note
+            channelEnvelopeTickRef.current[2] = 0;
           }
           
-          // Update each channel with DOSOUND timing (volume every 2 cycles)
-          updateChannelWithInstrument(ym2149, 0, lineA?.trackA, state.currentTick, channelCyclesRef.current[0]);
-          updateChannelWithInstrument(ym2149, 1, lineB?.trackA, state.currentTick, channelCyclesRef.current[1]);
-          updateChannelWithInstrument(ym2149, 2, lineC?.trackA, state.currentTick, channelCyclesRef.current[2]);
+          // Update each channel with DOSOUND timing (volume and envelopes every 2 cycles)
+          updateChannelWithInstrument(ym2149, 0, noteA, channelEnvelopeTickRef.current[0], channelCyclesRef.current[0]);
+          updateChannelWithInstrument(ym2149, 1, noteB, channelEnvelopeTickRef.current[1], channelCyclesRef.current[1]);
+          updateChannelWithInstrument(ym2149, 2, noteC, channelEnvelopeTickRef.current[2], channelCyclesRef.current[2]);
         }
       }
     }
@@ -268,6 +294,7 @@ const App: React.FC = () => {
   const handleStopPlayback = useCallback(() => {
     // Reset cycle counters when stopping
     channelCyclesRef.current = [0, 0, 0];
+    channelEnvelopeTickRef.current = [0, 0, 0];
     
     // Silence all channels
     if (ym2149Ref.current) {

@@ -93,8 +93,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     const baseFreq = NOTE_FREQUENCIES[note];
     if (!baseFreq) return;
 
-    const frequency = baseFreq * Math.pow(2, octave - 4);
-    const period = Math.floor(2000000 / (16 * frequency));
     const keyId = `${note}${octave}`;
 
     // Clear any existing timer for this key
@@ -118,16 +116,47 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       }
     };
 
-    // Apply initial mode/noise state before programming tone
-    applyModeForTick(0);
+    const applyToneForTick = (tick: number) => {
+      let frequency = baseFreq * Math.pow(2, octave - 4);
 
-    // Play on channel A (for simplicity)
-    ym2149.writeRegister(fineRegister, period & 0xFF);        // Fine tone A
-    ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);  // Coarse tone A
+      let arpeggioSemitones = 0;
+      if (currentInstrument.arpeggioEnvelope && currentInstrument.arpeggioEnvelope.length > 0) {
+        const arpeggioIndex = Math.min(Math.max(tick, 0), currentInstrument.arpeggioEnvelope.length - 1);
+        const arpeggioValue = currentInstrument.arpeggioEnvelope[arpeggioIndex];
+        if (typeof arpeggioValue === 'number') {
+          arpeggioSemitones = arpeggioValue;
+        }
+      }
+
+      if (arpeggioSemitones !== 0) {
+        frequency = frequency * Math.pow(2, arpeggioSemitones / 12);
+      }
+
+      let pitchSemitones = 0;
+      if (currentInstrument.pitchEnvelope && currentInstrument.pitchEnvelope.length > 0) {
+        const pitchIndex = Math.min(Math.max(tick, 0), currentInstrument.pitchEnvelope.length - 1);
+        const pitchValue = currentInstrument.pitchEnvelope[pitchIndex];
+        if (typeof pitchValue === 'number') {
+          pitchSemitones = pitchValue;
+        }
+      }
+
+      if (pitchSemitones !== 0) {
+        frequency = frequency * Math.pow(2, pitchSemitones / 12);
+      }
+
+      const period = Math.floor(2000000 / (16 * frequency));
+      ym2149.writeRegister(fineRegister, period & 0xFF);
+      ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+    };
+
+    // Apply initial mode/noise state and tone before starting envelopes
+    applyModeForTick(0);
+    applyToneForTick(0);
 
     // Set initial volume from envelope
     const initialVolume = currentInstrument.volumeEnvelope[0] || 0x0F;
-    ym2149.writeRegister(volumeRegister, initialVolume); // Volume A
+    ym2149.writeRegister(volumeRegister, initialVolume); // Volume
 
     // Start envelope timer - update every 20ms (50Hz), but change volume every 40ms (every 2 cycles)
     let envelopeIndex = 0; // Separate counter for envelope position
@@ -138,6 +167,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       // Update volume only on cycle 0 (every 2 cycles = 40ms)
       if (cycle === 0) {
         applyModeForTick(envelopeIndex);
+        applyToneForTick(envelopeIndex);
         if (envelopeIndex < currentInstrument.volumeEnvelope.length) {
           const volume = currentInstrument.volumeEnvelope[envelopeIndex];
           const clampedVolume = Math.max(0, Math.min(15, volume)); // Clamp to 0-15

@@ -340,51 +340,63 @@ export class YM2149 {
     const { toneActive, noiseActive } = this.getToneNoiseState(instrument, currentTick);
     this.updateMixerForChannel(channel, toneActive, noiseActive);
 
-    if (noteData && currentTick === 0) {
-      // Start of new note - set frequency only if tone is active
-      const { toneActive } = this.getToneNoiseState(instrument, currentTick);
-      
-      if (toneActive) {
-        const baseFreq = NOTE_FREQUENCIES[noteData.note];
-        if (baseFreq) {
-          let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
-          
-          // Apply arpeggio envelope
-          const arpeggioIndex = Math.min(currentTick, instrument.arpeggioEnvelope.length - 1);
-          const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
-          if (arpeggioValue !== 0) {
-            frequency = frequency * Math.pow(2, arpeggioValue / 12); // Convert semitones to frequency ratio
-          }
-          
-          // Apply pitch envelope  
-          const pitchIndex = Math.min(currentTick, instrument.pitchEnvelope.length - 1);
-          const pitchValue = instrument.pitchEnvelope[pitchIndex];
-          if (pitchValue !== 0) {
-            frequency = frequency * Math.pow(2, pitchValue / 12); // Convert semitones to frequency ratio
-          }
-          
-          const period = Math.floor(2000000 / (16 * frequency));
-          
-          this.writeRegister(fineRegister, period & 0xFF);
-          this.writeRegister(coarseRegister, (period >> 8) & 0x0F);
-        }
-      }
-      
-      // Apply initial volume immediately when note starts (regardless of tone/noise mode)
-      const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
-      this.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
-    } else if (!noteData) {
+    if (!noteData) {
       // No note data - silence channel
       this.writeRegister(volumeRegister, 0x00);
       return;
     }
 
+    // Update tone frequency using arpeggio and pitch envelopes
+    if (toneActive && (currentTick === 0 || (cycle === 0 && currentTick > 0))) {
+      const baseFreq = NOTE_FREQUENCIES[noteData.note];
+      if (baseFreq) {
+        let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
+
+        let arpeggioSemitones = 0;
+        if (instrument.arpeggioEnvelope && instrument.arpeggioEnvelope.length > 0) {
+          const arpeggioIndex = Math.min(Math.max(currentTick, 0), instrument.arpeggioEnvelope.length - 1);
+          const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
+          if (typeof arpeggioValue === 'number') {
+            arpeggioSemitones = arpeggioValue;
+          }
+        }
+
+        if (arpeggioSemitones !== 0) {
+          frequency = frequency * Math.pow(2, arpeggioSemitones / 12);
+        }
+
+        let pitchSemitones = 0;
+        if (instrument.pitchEnvelope && instrument.pitchEnvelope.length > 0) {
+          const pitchIndex = Math.min(Math.max(currentTick, 0), instrument.pitchEnvelope.length - 1);
+          const pitchValue = instrument.pitchEnvelope[pitchIndex];
+          if (typeof pitchValue === 'number') {
+            pitchSemitones = pitchValue;
+          }
+        }
+
+        if (pitchSemitones !== 0) {
+          frequency = frequency * Math.pow(2, pitchSemitones / 12);
+        }
+
+        const period = Math.floor(2000000 / (16 * frequency));
+
+        this.writeRegister(fineRegister, period & 0xFF);
+        this.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+      }
+    }
+
+    // Apply initial volume immediately when note starts (regardless of tone/noise mode)
+    if (currentTick === 0) {
+      const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
+      this.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
+    }
+
     // Apply volume envelope only on cycle 0 (every 2 cycles = 40ms in DOSOUND mode), but not on tick 0 (already applied)
     if (cycle === 0 && currentTick > 0) {
-      const volumeIndex = Math.min(currentTick, instrument.volumeEnvelope.length - 1);
+      const volumeIndex = Math.min(Math.max(currentTick, 0), instrument.volumeEnvelope.length - 1);
       const volumeValue = instrument.volumeEnvelope[volumeIndex];
-      const volume = Math.max(0, Math.min(15, volumeValue)); // Clamp to 0-15
-      
+      const volume = Math.max(0, Math.min(15, volumeValue));
+
       this.writeRegister(volumeRegister, volume);
     }
     
