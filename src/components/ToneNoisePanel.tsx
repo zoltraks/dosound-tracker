@@ -15,25 +15,25 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   onChange
 }) => {
   const [currentPosition, setCurrentPosition] = useState(0);
-  const [toneNoiseData, setToneNoiseData] = useState<number[]>(
-    data || [0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1] // Alternating T/N for testing
-  );
   const panelRef = useRef<HTMLDivElement>(null);
 
   const sectionName = 'mode';
   const isActive = activeSection === sectionName;
+
+  const defaultToneNoiseData: number[] = [
+    0, 1, 0, 1, 0, 1, 0, 1,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    0, 1, 0, 1, 0, 1, 0, 1,
+    0, 1, 0, 1, 0, 1, 0, 1
+  ];
+
+  const toneNoiseData = (data && data.length > 0) ? data : defaultToneNoiseData;
 
   useEffect(() => {
     if (isActive && panelRef.current) {
       panelRef.current.focus();
     }
   }, [isActive]);
-
-  useEffect(() => {
-    if (data) {
-      setToneNoiseData(data);
-    }
-  }, [data]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -48,31 +48,30 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
       setCurrentPosition(prev => Math.min(31, prev + 1));
     } else if (key === 'ARROWUP') {
       event.preventDefault();
-      setToneNoiseData(prev => {
-        const newData = [...prev];
+      if (onChange) {
+        const source = toneNoiseData;
+        const newData = [...source];
         newData[currentPosition] = Math.min(1, newData[currentPosition] + 1);
-        if (onChange) onChange(newData);
-        return newData;
-      });
+        onChange(newData);
+      }
     } else if (key === 'ARROWDOWN') {
       event.preventDefault();
-      setToneNoiseData(prev => {
-        const newData = [...prev];
+      if (onChange) {
+        const source = toneNoiseData;
+        const newData = [...source];
         newData[currentPosition] = Math.max(0, newData[currentPosition] - 1);
-        if (onChange) onChange(newData);
-        return newData;
-      });
+        onChange(newData);
+      }
     } else if (key === ' ') {
       event.preventDefault();
-      // Toggle between tone and noise
-      setToneNoiseData(prev => {
-        const newData = [...prev];
+      if (onChange) {
+        const source = toneNoiseData;
+        const newData = [...source];
         newData[currentPosition] = newData[currentPosition] === 0 ? 1 : 0;
-        if (onChange) onChange(newData);
-        return newData;
-      });
+        onChange(newData);
+      }
     }
-  }, [isActive, currentPosition, onChange]);
+  }, [isActive, currentPosition, onChange, toneNoiseData]);
 
   const handlePositionClick = useCallback((index: number) => {
     setCurrentPosition(index);
@@ -80,14 +79,15 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   }, [setActiveSection]);
 
   const handleBarClick = useCallback((index: number) => {
-    setToneNoiseData(prev => {
-      const newData = [...prev];
+    if (onChange) {
+      const source = toneNoiseData;
+      const newData = [...source];
       newData[index] = newData[index] === 0 ? 1 : 0;
-      if (onChange) onChange(newData);
-      return newData;
-    });
+      onChange(newData);
+    }
     setCurrentPosition(index);
-  }, [onChange]);
+    setActiveSection(sectionName);
+  }, [onChange, toneNoiseData, setActiveSection]);
 
   const getBarEmoji = () => {
     return '🎵'; // Always use music note emoji
