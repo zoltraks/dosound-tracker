@@ -334,7 +334,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   return (
     <div
       ref={trackRef}
-      className={`track-panel track-${trackId.toLowerCase()} ${isActive ? 'active' : ''}`}
+      className={`track-panel track-${trackId.toLowerCase()} ${isActive ? 'active' : ''} ${!pattern ? 'disabled' : ''}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onWheel={handleWheel}

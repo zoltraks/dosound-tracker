@@ -479,6 +479,18 @@ body {
   box-shadow: var(--shadow-large), var(--glow-secondary);
 }
 
+.track-panel.disabled {
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  border-color: var(--border-dim);
+  opacity: 0.7;
+}
+
+.track-panel.disabled .track-header,
+.track-panel.disabled .note-data,
+.track-panel.disabled .track-footer {
+  color: var(--text-muted);
+}
+
 .track-header {
   font-family: var(--font-mono);
   font-size: 10px;
