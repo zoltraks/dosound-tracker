@@ -201,23 +201,53 @@ const App: React.FC = () => {
           const noteC = lineC?.trackA || null;
 
           const notes = [noteA, noteB, noteC];
+          const patterns = [patternA, patternB, patternC];
           const lastNotes = lastNotesRef.current;
 
           for (let ch = 0; ch < 3; ch++) {
-            const note = notes[ch];
+            const pattern = patterns[ch];
+            const noteOnRow = notes[ch];
             const last = lastNotes[ch];
 
-            if (note && note.note && note.note !== '===') {
+            // If no pattern is assigned on this channel, always treat as rest
+            if (!pattern) {
+              channelEnvelopeStepRef.current[ch] = 0;
+              channelSubTickRef.current[ch] = 0;
+              updateChannelWithInstrument(ym2149, ch, null, 0);
+              lastNotes[ch] = null;
+              continue;
+            }
+
+            // Explicit note-off event on this row
+            if (noteOnRow && noteOnRow.note === '===') {
+              channelEnvelopeStepRef.current[ch] = 0;
+              channelSubTickRef.current[ch] = 0;
+              updateChannelWithInstrument(ym2149, ch, null, 0);
+              lastNotes[ch] = null;
+              continue;
+            }
+
+            // Determine active note: current row's note if present, otherwise hold last active note
+            const activeNote = noteOnRow && noteOnRow.note
+              ? noteOnRow
+              : last;
+
+            if (activeNote && activeNote.note && activeNote.note !== '===') {
               const isNew =
-                !last ||
-                last.note !== note.note ||
-                last.octave !== note.octave ||
-                last.instrument !== note.instrument;
+                !!noteOnRow &&
+                (
+                  !last ||
+                  last.note !== noteOnRow.note ||
+                  last.octave !== noteOnRow.octave ||
+                  last.instrument !== noteOnRow.instrument
+                );
 
               if (isNew) {
+                // New note event: restart envelopes
                 channelEnvelopeStepRef.current[ch] = 0;
                 channelSubTickRef.current[ch] = 0;
               } else {
+                // Continuing note (including across empty rows): advance envelope every 40ms
                 const sub = (channelSubTickRef.current[ch] + 1) % 2;
                 channelSubTickRef.current[ch] = sub;
                 if (sub === 0) {
@@ -225,15 +255,15 @@ const App: React.FC = () => {
                 }
               }
 
-              updateChannelWithInstrument(ym2149, ch, note, channelEnvelopeStepRef.current[ch]);
+              updateChannelWithInstrument(ym2149, ch, activeNote, channelEnvelopeStepRef.current[ch]);
+              lastNotes[ch] = activeNote;
             } else {
-              // No note or explicit rest - reset and silence
+              // No active note at all - reset and silence
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
               updateChannelWithInstrument(ym2149, ch, null, 0);
+              lastNotes[ch] = null;
             }
-
-            lastNotes[ch] = note || null;
           }
         }
       }
@@ -529,12 +559,12 @@ const App: React.FC = () => {
       setIsPatternPlaying(false);
     }
     
-    // Set position to current pattern and line BEFORE starting
-    setPosition(sequencerState.currentPattern, sharedCurrentLine, 0);
+    // Set position to beginning (line 0) of the current pattern BEFORE starting
+    setPosition(sequencerState.currentPattern, 0, 0);
     
     // Start song playback
     startSong();
-  }, [isPatternPlaying, startSong, sharedCurrentLine, sequencerState.currentPattern, setPosition, sequencerState]);
+  }, [isPatternPlaying, startSong, sequencerState.currentPattern, setPosition]);
 
   // Handle start pattern playback
   const handleStartPattern = useCallback(() => {
