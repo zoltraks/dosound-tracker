@@ -1,8 +1,5 @@
-export const YM_BASE_CLOCK = 2000000; // 2 MHz base clock
-export const MAX_CHANNEL_VOLUME = 0x0F; // Maximum volume (0-15)
-export const YM_REGISTER_COUNT = 14; // R0-R13
-export const NOISE_PERIOD_MAX = 0x1F; // Maximum noise period value
-export const TONE_PERIOD_MAX = 0xFFF; // Maximum tone period value
+import { YM_BASE_CLOCK, YM_REGISTER_COUNT } from './constants';
+import { NOTE_FREQUENCIES } from '../../constants/music';
 
 export interface YMChannel {
   tonePeriod: number;
@@ -23,6 +20,18 @@ export interface YMState {
   envelopeEnabled: boolean;
 }
 
+// Forward declaration for Instrument interface
+export interface Instrument {
+  id: string;
+  name: string;
+  volumeEnvelope: number[];
+  arpeggioEnvelope: number[];
+  pitchEnvelope: number[];
+  noiseEnvelope: number[];
+  modeEnvelope: number[];
+  toneNoiseMode: 'tone' | 'noise';
+}
+
 export class YM2149 {
   private audioContext: AudioContext;
   private registers: number[];
@@ -32,6 +41,7 @@ export class YM2149 {
   private gainNodes: GainNode[];
   private noiseGainNode: GainNode;
   private envelopeGainNode: GainNode;
+  private lastNoisePeriod: number = -1; // Track noise period changes
 
   constructor(audioContext: AudioContext) {
     this.audioContext = audioContext;
@@ -121,6 +131,9 @@ export class YM2149 {
   private updateAudioNodes(): void {
     const now = this.audioContext.currentTime;
     
+    // Update noise generator first
+    this.updateNoiseGenerator();
+    
     for (let i = 0; i < 3; i++) {
       const channel = this.state.channels[i];
       const oscillator = this.oscillators[i];
@@ -129,13 +142,13 @@ export class YM2149 {
       // Check if channel should be silent (volume = 0 in YM2149 means silence)
       const isSilent = channel.volume === 0;
       
-      // Check if this channel should play sound
-      const shouldPlay = channel.toneEnabled && 
-                        channel.tonePeriod > 0 && 
-                        channel.tonePeriod < 4096 && 
-                        !isSilent;
+      // Check if this channel should play sound (tone OR noise)
+      const shouldPlayTone = channel.toneEnabled && 
+                            channel.tonePeriod > 0 && 
+                            channel.tonePeriod < 4096 && 
+                            !isSilent;
       
-      if (shouldPlay) {
+      if (shouldPlayTone) {
         // YM2149 frequency calculation: f = clock / (32 * period)
         const frequency = YM_BASE_CLOCK / (32 * channel.tonePeriod);
         
@@ -152,43 +165,87 @@ export class YM2149 {
         gainNode.gain.setValueAtTime(volume, now);
         
       } else {
-        // Complete silence - immediate cutoff
+        // Complete silence for tone - immediate cutoff
         gainNode.gain.setValueAtTime(0, now);
       }
+    }
+    
+    // Update noise gain based on any channel using noise
+    const anyNoiseActive = this.state.channels.some(channel => channel.noiseEnabled && channel.volume > 0);
+    
+    if (anyNoiseActive && this.state.noisePeriod > 0) {
+      // Calculate noise volume based on the loudest channel using noise
+      const maxNoiseVolume = Math.max(...this.state.channels
+        .filter(channel => channel.noiseEnabled)
+        .map(channel => channel.volume));
+      const noiseVolume = maxNoiseVolume / 15.0 * 0.3; // Normal volume for noise
+      this.noiseGainNode.gain.setValueAtTime(noiseVolume, now);
+    } else {
+      this.noiseGainNode.gain.setValueAtTime(0, now);
     }
   }
 
   private updateNoiseGenerator(): void {
+    const targetNoisePeriod = this.state.noisePeriod;
+    
+    // Check if noise period changed
+    if (targetNoisePeriod !== this.lastNoisePeriod) {
+      this.lastNoisePeriod = targetNoisePeriod;
+      
+      if (targetNoisePeriod === 0) {
+        // No noise - silence
+        if (this.noiseNode) {
+          this.noiseNode.stop();
+          this.noiseNode = null;
+        }
+      } else {
+        // Create new noise generator with updated period
+        this.createNoiseGenerator(targetNoisePeriod);
+      }
+    }
+  }
+
+  private createNoiseGenerator(noisePeriod: number): void {
     if (this.noiseNode) {
       this.noiseNode.stop();
     }
 
-    const noiseBuffer = this.createNoiseBuffer();
+    const noiseBuffer = this.createNoiseBuffer(noisePeriod);
     this.noiseNode = this.audioContext.createBufferSource();
     this.noiseNode.buffer = noiseBuffer;
     this.noiseNode.loop = true;
     this.noiseNode.connect(this.noiseGainNode);
-    
-    const noiseVolume = this.state.noisePeriod / NOISE_PERIOD_MAX;
-    this.noiseGainNode.gain.setValueAtTime(noiseVolume * 0.05, this.audioContext.currentTime);
-    
     this.noiseNode.start();
   }
 
-  private createNoiseBuffer(): AudioBuffer {
+  private createNoiseBuffer(noisePeriod: number): AudioBuffer {
     const sampleRate = this.audioContext.sampleRate;
-    const bufferLength = sampleRate * 2; // 2 seconds of noise
+    
+    // Calculate noise frequency from period
+    // YM2149 noise frequency = clock / (16 * period)
+    // For period 31, this gives ~4kHz clock / (16 * 31) = ~4kHz
+    // But this seems too high - let's try a different approach
+    // Let's use a more reasonable frequency range
+    const baseFrequency = YM_BASE_CLOCK / (16 * noisePeriod);
+    // Clamp to audible range (100Hz to 8kHz)
+    const noiseFrequency = Math.max(100, Math.min(8000, baseFrequency));
+    
+    const bufferLength = Math.ceil(sampleRate * 2); // 2 seconds of noise
     const buffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
     const data = buffer.getChannelData(0);
 
-    // Simple pseudo-random noise generator
-    let seed = 0x1234;
+    // Simple approach: generate white noise and filter it based on period
+    // Lower period = higher frequency noise = more random changes
+    const changeProbability = Math.min(1, noiseFrequency / 1000); // Probability of changing value each sample
+    
+    let currentValue = (Math.random() - 0.5) * 0.2; // Start with random value between -0.1 and 0.1
+    
     for (let i = 0; i < bufferLength; i++) {
-      seed = (seed << 1) | ((seed >> 14) & 1);
-      if ((seed & 1) ^ ((seed >> 1) & 1)) {
-        seed |= 0x4000;
+      // Randomly change value to create noise
+      if (Math.random() < changeProbability) {
+        currentValue = (Math.random() - 0.5) * 0.2; // New random value
       }
-      data[i] = ((seed & 1) * 2 - 1) * 0.1; // Convert to -0.1 to 0.1 range
+      data[i] = currentValue;
     }
 
     return buffer;
@@ -210,14 +267,152 @@ export class YM2149 {
     for (let i = 0; i < YM_REGISTER_COUNT; i++) {
       this.registers[i] = 0;
     }
+    this.lastNoisePeriod = -1; // Reset noise period tracking
     this.updateState();
     this.updateAudioNodes();
   }
+
+  // Helper methods for instrument-based sound generation
+  private getDefaultModeValue = (instrument: Instrument) => (
+    instrument.toneNoiseMode === 'noise' ? 1 : 0
+  );
+
+  public getModeValueForTick = (instrument: Instrument, tick: number): number => {
+    const defaultMode = this.getDefaultModeValue(instrument);
+
+    if (!instrument.modeEnvelope || instrument.modeEnvelope.length === 0) {
+      return defaultMode;
+    }
+
+    const modeIndex = Math.min(Math.max(tick, 0), instrument.modeEnvelope.length - 1);
+    const envelopeValue = instrument.modeEnvelope[modeIndex];
+    return typeof envelopeValue === 'number' ? envelopeValue : defaultMode;
+  };
+
+  public getToneNoiseState = (instrument: Instrument, tick: number) => {
+    const modeValue = this.getModeValueForTick(instrument, tick);
+    const toneActive = modeValue === 0 || modeValue === 2;
+    const noiseActive = modeValue === 1 || modeValue === 2;
+    return { modeValue, toneActive, noiseActive };
+  };
+
+  public updateMixerForChannel = (channel: number, toneActive: boolean, noiseActive: boolean) => {
+    const currentMixer = this.registers[7] ?? 0x3F;
+    let mixer = currentMixer;
+
+    const toneBit = 1 << channel;
+    const noiseBit = 0x08 << channel;
+
+    mixer = toneActive ? (mixer & ~toneBit) : (mixer | toneBit);
+    mixer = noiseActive ? (mixer & ~noiseBit) : (mixer | noiseBit);
+
+    if (mixer !== currentMixer) {
+      this.writeRegister(0x07, mixer);
+    }
+  };
+
+  public applyNoiseEnvelopeValue = (instrument: Instrument, tick: number) => {
+    let noisePeriod: number;
+    
+    if (!instrument.noiseEnvelope || instrument.noiseEnvelope.length === 0) {
+      // Default noise period when no envelope is defined
+      noisePeriod = 15; // Mid-range noise period
+    } else {
+      const noiseIndex = Math.min(Math.max(tick, 0), instrument.noiseEnvelope.length - 1);
+      const noiseValue = instrument.noiseEnvelope[noiseIndex];
+      noisePeriod = Math.max(0, Math.min(31, typeof noiseValue === 'number' ? noiseValue : 0));
+      
+      // If envelope value is 0, use a default noise period
+      if (noisePeriod === 0) {
+        noisePeriod = 15;
+      }
+    }
+    
+    this.writeRegister(0x06, noisePeriod);
+  };
+
+  public updateChannelWithInstrument = (channel: number, instrument: Instrument, noteData?: { note: string; octave: number }, currentTick: number = 0, cycle: number = 0) => {
+    const volumeRegister = 8 + channel; // R8, R9, R10
+    const fineRegister = channel * 2;        // R0, R2, R4
+    const coarseRegister = channel * 2 + 1;  // R1, R3, R5
+
+    const { toneActive, noiseActive } = this.getToneNoiseState(instrument, currentTick);
+    this.updateMixerForChannel(channel, toneActive, noiseActive);
+
+    if (noteData && currentTick === 0) {
+      // Start of new note - set frequency only if tone is active
+      const { toneActive } = this.getToneNoiseState(instrument, currentTick);
+      
+      if (toneActive) {
+        const baseFreq = NOTE_FREQUENCIES[noteData.note];
+        if (baseFreq) {
+          let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
+          
+          // Apply arpeggio envelope
+          const arpeggioIndex = Math.min(currentTick, instrument.arpeggioEnvelope.length - 1);
+          const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
+          if (arpeggioValue !== 0) {
+            frequency = frequency * Math.pow(2, arpeggioValue / 12); // Convert semitones to frequency ratio
+          }
+          
+          // Apply pitch envelope  
+          const pitchIndex = Math.min(currentTick, instrument.pitchEnvelope.length - 1);
+          const pitchValue = instrument.pitchEnvelope[pitchIndex];
+          if (pitchValue !== 0) {
+            frequency = frequency * Math.pow(2, pitchValue / 12); // Convert semitones to frequency ratio
+          }
+          
+          const period = Math.floor(2000000 / (16 * frequency));
+          
+          this.writeRegister(fineRegister, period & 0xFF);
+          this.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+        }
+      }
+      
+      // Apply initial volume immediately when note starts (regardless of tone/noise mode)
+      const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
+      this.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
+    } else if (!noteData) {
+      // No note data - silence channel
+      this.writeRegister(volumeRegister, 0x00);
+      return;
+    }
+
+    // Apply volume envelope only on cycle 0 (every 2 cycles = 40ms in DOSOUND mode), but not on tick 0 (already applied)
+    if (cycle === 0 && currentTick > 0) {
+      const volumeIndex = Math.min(currentTick, instrument.volumeEnvelope.length - 1);
+      const volumeValue = instrument.volumeEnvelope[volumeIndex];
+      const volume = Math.max(0, Math.min(15, volumeValue)); // Clamp to 0-15
+      
+      this.writeRegister(volumeRegister, volume);
+    }
+    
+    // Apply noise envelope whenever noise is active
+    if (noiseActive) {
+      this.applyNoiseEnvelopeValue(instrument, currentTick);
+    }
+  };
 
   dispose(): void {
     this.oscillators.forEach(osc => osc.stop());
     if (this.noiseNode) {
       this.noiseNode.stop();
     }
+  }
+
+  // Test method for debugging noise
+  public testNoise(): void {
+    // Clear all registers first
+    this.writeRegister(0x07, 0x3F); // Disable everything
+    this.writeRegister(0x08, 0x00); // Volume A = 0
+    
+    // Enable only noise on channel A
+    this.writeRegister(0x07, 0x33); // 110011 - Tone A disabled, Noise A enabled
+    this.writeRegister(0x08, 0x0F); // Max volume on channel A
+    this.writeRegister(0x06, 15);   // Mid noise period
+    
+    // Also set tone period to 0 to ensure tone is silent
+    this.writeRegister(0x00, 0x00); // Fine tone A = 0
+    this.writeRegister(0x01, 0x00); // Coarse tone A = 0
   }
 }

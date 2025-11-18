@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { MIN_OCTAVE, MAX_OCTAVE, KEYBOARD_TO_NOTE } from '../constants/music';
+import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
 import { YM2149 } from '../synth/ym2149/YM2149';
 import type { Instrument } from '../synth/dosound/DosoundDriver';
 
@@ -88,22 +88,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const playNote = useCallback((note: string, octave: number) => {
     if (!ym2149) return;
 
-    const noteFrequencies: { [key: string]: number } = {
-      'C': 261.63,
-      'C#': 277.18,
-      'D': 293.66,
-      'D#': 311.13,
-      'E': 329.63,
-      'F': 349.23,
-      'F#': 369.99,
-      'G': 392.00,
-      'G#': 415.30,
-      'A': 440.00,
-      'A#': 466.16,
-      'B': 493.88
-    };
-
-    const baseFreq = noteFrequencies[note];
+    const baseFreq = NOTE_FREQUENCIES[note];
     if (!baseFreq) return;
 
     const frequency = baseFreq * Math.pow(2, octave - 4);
@@ -118,14 +103,29 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     // Initialize cycle counter for this key
     cycleCountersRef.current[keyId] = 0;
 
+    const channel = 0; // Use channel A for preview keyboard
+    const fineRegister = channel * 2;
+    const coarseRegister = channel * 2 + 1;
+    const volumeRegister = 0x08 + channel;
+
+    const applyModeForTick = (tick: number) => {
+      const { toneActive, noiseActive } = ym2149.getToneNoiseState(currentInstrument, tick);
+      ym2149.updateMixerForChannel(channel, toneActive, noiseActive);
+      if (noiseActive) {
+        ym2149.applyNoiseEnvelopeValue(currentInstrument, tick);
+      }
+    };
+
+    // Apply initial mode/noise state before programming tone
+    applyModeForTick(0);
+
     // Play on channel A (for simplicity)
-    ym2149.writeRegister(0x00, period & 0xFF);        // Fine tone A
-    ym2149.writeRegister(0x01, (period >> 8) & 0x0F);  // Coarse tone A
-    ym2149.writeRegister(0x07, 0x38);                  // Mixer: enable tone A
+    ym2149.writeRegister(fineRegister, period & 0xFF);        // Fine tone A
+    ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);  // Coarse tone A
 
     // Set initial volume from envelope
     const initialVolume = currentInstrument.volumeEnvelope[0] || 0x0F;
-    ym2149.writeRegister(0x08, initialVolume); // Volume A
+    ym2149.writeRegister(volumeRegister, initialVolume); // Volume A
 
     // Start envelope timer - update every 20ms (50Hz), but change volume every 40ms (every 2 cycles)
     let envelopeIndex = 0; // Separate counter for envelope position
@@ -135,16 +135,17 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       
       // Update volume only on cycle 0 (every 2 cycles = 40ms)
       if (cycle === 0) {
+        applyModeForTick(envelopeIndex);
         if (envelopeIndex < currentInstrument.volumeEnvelope.length) {
           const volume = currentInstrument.volumeEnvelope[envelopeIndex];
           const clampedVolume = Math.max(0, Math.min(15, volume)); // Clamp to 0-15
-          ym2149.writeRegister(0x08, clampedVolume);
+          ym2149.writeRegister(volumeRegister, clampedVolume);
           envelopeIndex++; // Increment envelope index when volume changes
         } else {
           // Envelope finished, keep last value
           const lastVolume = currentInstrument.volumeEnvelope[currentInstrument.volumeEnvelope.length - 1];
           const clampedVolume = Math.max(0, Math.min(15, lastVolume));
-          ym2149.writeRegister(0x08, clampedVolume);
+          ym2149.writeRegister(volumeRegister, clampedVolume);
         }
       }
 

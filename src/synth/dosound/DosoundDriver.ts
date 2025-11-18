@@ -1,4 +1,5 @@
 import { YM2149 } from '../ym2149/YM2149';
+import { NOTE_FREQUENCIES } from '../../constants/music';
 
 export const DOSOUND_REGISTER_WRITE = 0xFF;
 export const DOSOUND_END_MARKER = 0x00;
@@ -182,22 +183,7 @@ export class DosoundDriver {
   }
 
   private calculateNoteFrequency(note: string, octave: number): number {
-    const noteFrequencies: { [key: string]: number } = {
-      'C': 261.63,
-      'C#': 277.18,
-      'D': 293.66,
-      'D#': 311.13,
-      'E': 329.63,
-      'F': 349.23,
-      'F#': 369.99,
-      'G': 392.00,
-      'G#': 415.30,
-      'A': 440.00,
-      'A#': 466.16,
-      'B': 493.88
-    };
-
-    const baseFreq = noteFrequencies[note] || 440.00;
+    const baseFreq = NOTE_FREQUENCIES[note] || 440.00;
     return baseFreq * Math.pow(2, octave - 4);
   }
 

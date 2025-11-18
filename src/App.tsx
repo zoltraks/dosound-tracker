@@ -75,6 +75,12 @@ const App: React.FC = () => {
         ym2149Ref.current = ym2149;
         console.log('YM2149 initialized');
         
+        // Expose YM2149 instance globally for debugging
+        (window as any).ym2149 = ym2149;
+        (window as any).testNoise = () => ym2149.testNoise();
+        console.log('YM2149 exposed globally as window.ym2149');
+        console.log('Test noise function available as window.testNoise()');
+        
         // Set initial volume for all channels
         ym2149.writeRegister(0x08, 0x0F); // Channel A volume
         ym2149.writeRegister(0x09, 0x0F); // Channel B volume  
@@ -201,112 +207,43 @@ const App: React.FC = () => {
     setCallback(sequencerCallback);
   }, [setCallback, sequencerCallback]);
 
-  const getModeValueForTick = useCallback((instrument: Instrument, tick: number) => {
-    const defaultMode = instrument.toneNoiseMode === 'noise' ? 1 : 0;
-    if (!instrument.modeEnvelope || instrument.modeEnvelope.length === 0) {
-      return defaultMode;
+  const normalizeInstrumentId = useCallback((value?: string | number | null) => {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value.toString(16).padStart(2, '0').toUpperCase();
     }
 
-    const modeIndex = Math.min(tick, instrument.modeEnvelope.length - 1);
-    const envelopeValue = instrument.modeEnvelope[modeIndex];
-    return typeof envelopeValue === 'number' ? envelopeValue : defaultMode;
-  }, []);
-
-  const updateMixerForChannel = useCallback((ym2149: YM2149, channel: number, toneActive: boolean, noiseActive: boolean) => {
-    const registers = ym2149.getRegistersArray();
-    const currentMixer = registers[7] ?? 0x3F;
-    let mixer = currentMixer;
-
-    const toneBit = 1 << channel;
-    const noiseBit = 0x08 << channel;
-
-    mixer = toneActive ? (mixer & ~toneBit) : (mixer | toneBit);
-    mixer = noiseActive ? (mixer & ~noiseBit) : (mixer | noiseBit);
-
-    if (mixer !== currentMixer) {
-      ym2149.writeRegister(0x07, mixer);
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (!trimmed) return '';
+      const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
+      const upper = sanitized.toUpperCase();
+      if (/^[0-9A-F]{1,2}$/.test(upper)) {
+        return upper.padStart(2, '0');
+      }
+      return upper;
     }
+
+    return '';
   }, []);
 
   // Helper function to update channel with instrument and all envelopes
   const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData?: any, currentTick: number = 0, cycle: number = 0) => {
-    const volumeRegister = 8 + channel; // R8, R9, R10
-    const fineRegister = channel * 2;        // R0, R2, R4
-    const coarseRegister = channel * 2 + 1;  // R1, R3, R5
+    const normalizedNoteInstrumentId = normalizeInstrumentId(noteData?.instrument);
+    const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
+    const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
 
-    // Get instrument for this track
-    const instrument = currentSong.instruments.find(inst => inst.id === noteData?.instrument);
+    const instrument = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
     
     if (!instrument) {
       // No instrument - silence channel
+      const volumeRegister = 8 + channel;
       ym2149.writeRegister(volumeRegister, 0x00);
       return;
     }
 
-    const modeValue = getModeValueForTick(instrument, currentTick);
-    const toneActive = modeValue === 0 || modeValue === 2;
-    const noiseActive = modeValue === 1 || modeValue === 2;
-
-    updateMixerForChannel(ym2149, channel, toneActive, noiseActive);
-
-    if (noteData && currentTick === 0) {
-      // Start of new note - set frequency
-      const noteFrequencies: { [key: string]: number } = {
-        'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13,
-        'E': 329.63, 'F': 349.23, 'F#': 369.99, 'G': 392.00,
-        'G#': 415.30, 'A': 440.00, 'A#': 466.16, 'B': 493.88
-      };
-
-      const baseFreq = noteFrequencies[noteData.note];
-      if (baseFreq) {
-        let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
-        
-        // Apply arpeggio envelope
-        const arpeggioIndex = Math.min(currentTick, instrument.arpeggioEnvelope.length - 1);
-        const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
-        if (arpeggioValue !== 0) {
-          frequency = frequency * Math.pow(2, arpeggioValue / 12); // Convert semitones to frequency ratio
-        }
-        
-        // Apply pitch envelope  
-        const pitchIndex = Math.min(currentTick, instrument.pitchEnvelope.length - 1);
-        const pitchValue = instrument.pitchEnvelope[pitchIndex];
-        if (pitchValue !== 0) {
-          frequency = frequency * Math.pow(2, pitchValue / 12); // Convert semitones to frequency ratio
-        }
-        
-        const period = Math.floor(2000000 / (16 * frequency));
-        
-        ym2149.writeRegister(fineRegister, period & 0xFF);
-        ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
-        
-        // Apply initial volume immediately when note starts
-        const initialVolume = instrument.volumeEnvelope[0] || 0x0F;
-        ym2149.writeRegister(volumeRegister, Math.max(0, Math.min(15, initialVolume)));
-      }
-    } else if (!noteData) {
-      // No note data - silence channel
-      ym2149.writeRegister(volumeRegister, 0x00);
-      return;
-    }
-
-    // Apply volume envelope only on cycle 0 (every 2 cycles = 40ms in DOSOUND mode), but not on tick 0 (already applied)
-    if (cycle === 0 && currentTick > 0) {
-      const volumeIndex = Math.min(currentTick, instrument.volumeEnvelope.length - 1);
-      const volumeValue = instrument.volumeEnvelope[volumeIndex];
-      const volume = Math.max(0, Math.min(15, volumeValue)); // Clamp to 0-15
-      
-      ym2149.writeRegister(volumeRegister, volume);
-    }
-    
-    // Apply noise envelope when noise is active (only on cycle 0 for DOSOUND timing)
-    if (noiseActive && cycle === 0) {
-      const noiseIndex = Math.min(currentTick, instrument.noiseEnvelope.length - 1);
-      const noiseValue = instrument.noiseEnvelope[noiseIndex];
-      const noisePeriod = Math.max(0, Math.min(31, noiseValue)); // Clamp to 0-31
-      ym2149.writeRegister(0x06, noisePeriod); // Noise period register
-    }
-  }, [currentSong.instruments, getModeValueForTick, updateMixerForChannel]);
+    // Use YM2149's built-in method to update channel with instrument
+    ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentTick, cycle);
+  }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
 
   // Handle stop playback with silence
   const handleStopPlayback = useCallback(() => {

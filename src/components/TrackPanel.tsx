@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { PATTERN_LENGTH, KEYBOARD_TO_NOTE } from '../constants/music';
+import { PATTERN_LENGTH, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument } from '../synth/dosound/DosoundDriver';
 import { YM2149 } from '../synth/ym2149/YM2149';
 
@@ -38,11 +38,17 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     ym2149,
     currentInstrumentData
   } = props;
-  
+
   const [currentInstrument, setCurrentInstrument] = useState('00');
   const trackRef = useRef<HTMLDivElement>(null);
   const isProcessingWheel = useRef<boolean>(false);
-  
+
+  useEffect(() => {
+    if (currentInstrumentData?.id) {
+      setCurrentInstrument(currentInstrumentData.id);
+    }
+  }, [currentInstrumentData.id]);
+
   // Envelope timing state for preview notes
   const envelopeTimerRef = useRef<number | null>(null);
   const cycleCounterRef = useRef<number>(0);
@@ -59,13 +65,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       clearInterval(envelopeTimerRef.current);
     }
 
-    const noteFrequencies: { [key: string]: number } = {
-      'C': 261.63, 'C#': 277.18, 'D': 293.66, 'D#': 311.13,
-      'E': 329.63, 'F': 349.23, 'F#': 369.99, 'G': 392.00,
-      'G#': 415.30, 'A': 440.00, 'A#': 466.16, 'B': 493.88
-    };
-
-    const baseFreq = noteFrequencies[note];
+    const baseFreq = NOTE_FREQUENCIES[note];
     if (!baseFreq) return;
 
     const frequency = baseFreq * Math.pow(2, octave - 4);
@@ -77,10 +77,20 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     const coarseRegister = channel * 2 + 1;  // R1, R3, R5
     const volumeRegister = 8 + channel;      // R8, R9, R10
 
+    const applyModeForTick = (tick: number) => {
+      const { toneActive, noiseActive } = ym2149.getToneNoiseState(currentInstrumentData, tick);
+      ym2149.updateMixerForChannel(channel, toneActive, noiseActive);
+      if (noiseActive) {
+        ym2149.applyNoiseEnvelopeValue(currentInstrumentData, tick);
+      }
+    };
+
+    // Apply initial mode/noise state before starting envelopes
+    applyModeForTick(0);
+
     // Play note on this channel
     ym2149.writeRegister(fineRegister, period & 0xFF);
     ym2149.writeRegister(coarseRegister, (period >> 8) & 0x0F);
-    ym2149.writeRegister(0x07, 0x38); // Enable tone for this channel
 
     // Initialize envelope timing
     cycleCounterRef.current = 0;
@@ -93,9 +103,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Start envelope timer - same logic as piano keyboard
     envelopeTimerRef.current = setInterval(() => {
       const cycle = cycleCounterRef.current;
-      
-      // Update volume only on cycle 0 (every 2 cycles = 40ms)
+
+      // Update envelopes/mode only on cycle 0 (every 2 cycles = 40ms)
       if (cycle === 0) {
+        applyModeForTick(envelopeIndex);
+
         if (envelopeIndex < currentInstrumentData.volumeEnvelope.length) {
           const volume = currentInstrumentData.volumeEnvelope[envelopeIndex];
           const clampedVolume = Math.max(0, Math.min(15, volume));
@@ -126,7 +138,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   // Get notes for this track from the pattern
   const getTrackNotes = useCallback(() => {
     if (!pattern) return Array(PATTERN_LENGTH).fill(null);
-    
+
     // For shared patterns, show the same content in all tracks
     // Use trackA data as the shared content for all tracks
     return pattern.lines.map(line => line.trackA);
@@ -144,7 +156,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     if (!isActive) return;
 
     const key = event.key.toUpperCase();
-    
+
     // Navigation
     if (key === 'ARROWUP') {
       event.preventDefault();
@@ -183,10 +195,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
-        
+
         // Clear the note for shared pattern (always use trackA)
         newPattern.lines[currentLine].trackA = null;
-        
+
         onPatternChange(newPattern);
       }
     } else if (event.ctrlKey && key === ' ') {
@@ -196,11 +208,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
-        
+
         // Set note off for shared pattern (always use trackA)
         const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
         newPattern.lines[currentLine].trackA = noteOff;
-        
+
         onPatternChange(newPattern);
       }
     } else if (key === ' ') {
@@ -210,13 +222,13 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
-        
+
         // Clear the note for shared pattern (always use trackA)
         newPattern.lines[currentLine].trackA = null;
-        
+
         onPatternChange(newPattern);
       }
-      
+
       // Move to next line
       onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
     } else if (event.ctrlKey && key === '-') {
@@ -240,23 +252,23 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       // Insert note
       const { note, octaveOffset } = KEYBOARD_TO_NOTE[key];
       const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
-      
+
       // Play preview note immediately
       playPreviewNote(note, finalOctave);
-      
+
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
-        
-        const newNote: Note = { note, octave: finalOctave, instrument: currentInstrument };
-        
+
+        const newNote: Note = { note, octave: finalOctave, instrument: currentInstrumentData.id };
+
         // Set the note for shared pattern (always use trackA)
         newPattern.lines[currentLine].trackA = newNote;
-        
+
         onPatternChange(newPattern);
       }
-      
+
       // Move to next line
       onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
     }
@@ -269,17 +281,17 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   const handleWheel = useCallback((event: React.WheelEvent) => {
     if (!isActive) return;
-    
+
     event.preventDefault();
-    
+
     // If we're already processing a wheel movement, ignore this event
     if (isProcessingWheel.current) {
       return;
     }
-    
+
     // Set flag to prevent processing additional events from this wheel click
     isProcessingWheel.current = true;
-    
+
     // Move one line based on direction
     const delta = event.deltaY;
     if (delta > 0) {
@@ -289,7 +301,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       // Scroll up - move to previous line
       onLineChange(Math.max(0, currentLine - 1));
     }
-    
+
     // Clear the flag after a short delay to allow next wheel click
     setTimeout(() => {
       isProcessingWheel.current = false;
@@ -299,12 +311,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const formatNoteDisplay = useCallback((noteData: NoteData | null) => {
     if (!noteData) return '---';
     if (noteData.note === '===') return '===';
-    
+
     // Format note: natural notes get "-", sharps keep "#"
-    const formattedNote = noteData.note.includes('#') 
-      ? noteData.note 
+    const formattedNote = noteData.note.includes('#')
+      ? noteData.note
       : noteData.note + '-';
-    
+
     return `${formattedNote}${noteData.octave} ${noteData.instrument}`;
   }, []);
 
@@ -320,7 +332,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   }, [currentLine, isActive]);
 
   return (
-    <div 
+    <div
       ref={trackRef}
       className={`track-panel track-${trackId.toLowerCase()} ${isActive ? 'active' : ''}`}
       tabIndex={0}
@@ -329,7 +341,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onClick={() => setActiveSection(sectionName)}
     >
       <div className="track-header">Track {trackId}</div>
-      
+
       <div className="track-content" onScroll={onScroll}>
         {trackNotes.map((noteData, lineIndex) => (
           <div
@@ -343,7 +355,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           </div>
         ))}
       </div>
-      
+
       <div className="track-footer">
         <div className="current-instrument">
           Inst: {currentInstrument}
