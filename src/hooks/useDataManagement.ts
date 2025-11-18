@@ -274,13 +274,21 @@ export const useDataManagement = () => {
     }
   }, [currentInstrument]);
 
+  const [instrumentError, setInstrumentError] = useState('');
+
   const loadInstrument = useCallback((file: File) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
         const parsed = yaml.load(content) as any;
-        const node = parsed && parsed.instrument ? parsed.instrument : parsed;
+
+        if (!parsed || typeof parsed !== 'object' || !parsed.instrument) {
+          setInstrumentError('Error loading instrument file.\n\nRoot "instrument" key not found.');
+          return;
+        }
+
+        const node = parsed.instrument;
 
         if (!node || typeof node !== 'object') {
           throw new Error('Invalid instrument file format');
@@ -356,11 +364,11 @@ export const useDataManagement = () => {
         });
       } catch (error) {
         console.error('Error loading instrument:', error);
-        alert('Error loading instrument file. Please check the file format.');
+        setInstrumentError('Error loading instrument file. Please check the file format.');
       }
     };
     reader.readAsText(file);
-  }, [currentInstrument.id]);
+  }, [currentInstrument.id, setInstrumentError]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
     setCurrentSong(prev => ({ ...prev, ...updates }));
@@ -447,6 +455,8 @@ export const useDataManagement = () => {
     currentSong,
     currentInstrument,
     setCurrentInstrument,
+    instrumentError,
+    setInstrumentError,
     fileInputRef,
     createNewSong,
     createNewInstrument,

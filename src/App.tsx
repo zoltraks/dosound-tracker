@@ -38,11 +38,12 @@ const App: React.FC = () => {
     fileInputRef,
     triggerFileLoad,
     loadSong,
-    loadInstrument
+    loadInstrument,
+    instrumentError,
+    setInstrumentError
   } = useDataManagement();
   const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed);
 
-  // Update sequencer speed when song speed changes
   useEffect(() => {
     updateSpeed(currentSong.speed);
   }, [currentSong.speed, updateSpeed]);
@@ -867,12 +868,35 @@ const App: React.FC = () => {
             }
           }}
         />
+        {instrumentError && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Instrument Load Error</div>
+              <div className="modal-body">
+                {instrumentError.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < instrumentError.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={() => setInstrumentError('')}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
         {isNewSongConfirmOpen && (
           <div className="modal-backdrop">
             <div className="modal-dialog">
               <div className="modal-title">Create new song?</div>
               <div className="modal-body">
-                Current song data will be lost unless it has been saved. Continue?
+                Current song data will be lost.
+                <br />
+                <br />
+                Continue?
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleConfirmNewSong}>OK</button>
