@@ -144,10 +144,19 @@ export const useDataManagement = () => {
   }, []);
 
   const createNewInstrument = useCallback(() => {
-    const instrumentCount = currentSong.instruments.length;
+    const instruments = currentSong.instruments;
+
+    // Find first cleared slot (identified by empty name)
+    let slotIndex = instruments.findIndex(inst => !inst.name);
+    if (slotIndex === -1) {
+      slotIndex = instruments.length;
+    }
+
+    const slotId = slotIndex.toString(16).padStart(2, '0').toUpperCase();
+
     const newInstrument: Instrument = {
-      id: instrumentCount.toString(16).padStart(2, '0').toUpperCase(),
-      name: `Instrument ${instrumentCount}`,
+      id: slotId,
+      name: `Instrument ${slotIndex}`,
       volumeEnvelope: Array(32).fill(0x0F),
       arpeggioEnvelope: Array(32).fill(0),
       pitchEnvelope: Array(32).fill(0),
@@ -155,10 +164,17 @@ export const useDataManagement = () => {
       modeEnvelope: Array(32).fill(0),
       toneNoiseMode: 'tone'
     };
-    
+
+    const updatedInstruments = [...instruments];
+    if (slotIndex < instruments.length) {
+      updatedInstruments[slotIndex] = newInstrument;
+    } else {
+      updatedInstruments.push(newInstrument);
+    }
+
     const updatedSong = {
       ...currentSong,
-      instruments: [...currentSong.instruments, newInstrument]
+      instruments: updatedInstruments
     };
     setCurrentSong(updatedSong);
     setCurrentInstrument(newInstrument);

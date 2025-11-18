@@ -114,15 +114,15 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
             const actualIndex = scrollOffset + index;
             return (
               <div
-                key={instrument.id}
+                key={actualIndex}
                 className={getItemClass(actualIndex)}
                 onClick={() => handleInstrumentClick(instrument, actualIndex)}
               >
                 <span className="instrument-id">
-                  {instrument.id}
+                  {actualIndex.toString(16).padStart(2, '0').toUpperCase()}
                 </span>
                 <span className="instrument-name">
-                  {instrument.name}
+                  {instrument.name || '...'}
                 </span>
               </div>
             );

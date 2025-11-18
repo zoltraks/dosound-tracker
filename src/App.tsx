@@ -450,8 +450,7 @@ const App: React.FC = () => {
 
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
-    if (instruments.length <= 1) {
-      alert('Cannot delete the last instrument.');
+    if (instruments.length === 0) {
       return;
     }
 
@@ -461,12 +460,24 @@ const App: React.FC = () => {
       return;
     }
 
-    const newInstruments = instruments.filter(inst => inst.id !== currentInstrument.id);
-    const newCurrentIndex = Math.max(0, index - 1);
-    const newCurrentInstrument = newInstruments[newCurrentIndex];
+    const slotId = instruments[index].id;
+
+    const clearedInstrument: Instrument = {
+      id: slotId,
+      name: '',
+      volumeEnvelope: Array(32).fill(0),
+      arpeggioEnvelope: Array(32).fill(0),
+      pitchEnvelope: Array(32).fill(0),
+      noiseEnvelope: Array(32).fill(0),
+      modeEnvelope: Array(32).fill(0),
+      toneNoiseMode: 'tone'
+    };
+
+    const newInstruments = [...instruments];
+    newInstruments[index] = clearedInstrument;
 
     updateSong({ instruments: newInstruments });
-    setCurrentInstrument(newCurrentInstrument);
+    setCurrentInstrument(clearedInstrument);
   }, [currentSong.instruments, currentInstrument.id, updateSong, setCurrentInstrument]);
 
   // Handle stop playback with silence
