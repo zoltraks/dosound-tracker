@@ -93,7 +93,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
 
   return (
     <div className="dump-panel">
-      <div className="dump-header">Register Dump</div>
+      <div className="dump-header">Dump</div>
       <div className="dump-content">
         <div className="register-grid">
           {rows.map((row, index) => (

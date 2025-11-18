@@ -7,7 +7,9 @@ export const useKeyboardNavigation = () => {
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // Load theme preference from localStorage
     const savedTheme = localStorage.getItem('dosound-tracker-theme');
-    return savedTheme === 'light' ? false : true; // Default to dark mode
+    if (savedTheme === 'dark') return true;
+    if (savedTheme === 'light') return false;
+    return false; // Default to light mode
   });
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
 
