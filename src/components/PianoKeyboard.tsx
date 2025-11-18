@@ -111,20 +111,17 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     // Apply initial state (step 0)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0);
 
-    // Start envelope timer - 20ms tick, advance envelope step every 40ms
+    // Start envelope timer - 20ms tick, advance envelope step every 20ms
     envelopeTimersRef.current[keyId] = window.setInterval(() => {
-      const currentSub = previewSubTicksRef.current[keyId] ?? 0;
-      const nextSub = (currentSub + 1) % 2;
-      previewSubTicksRef.current[keyId] = nextSub;
+      // Track raw sub-ticks for potential future use
+      const currentSub = (previewSubTicksRef.current[keyId] ?? 0) + 1;
+      previewSubTicksRef.current[keyId] = currentSub;
 
-      if (nextSub === 0) {
-        const currentStep = (previewEnvelopeStepsRef.current[keyId] ?? 0) + 1;
-        previewEnvelopeStepsRef.current[keyId] = currentStep;
-      }
+      const currentStep = (previewEnvelopeStepsRef.current[keyId] ?? 0) + 1;
+      previewEnvelopeStepsRef.current[keyId] = currentStep;
 
-      const step = previewEnvelopeStepsRef.current[keyId] ?? 0;
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, step);
-    }, 20); // 20ms = 50Hz, step every 2 ticks = 40ms
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep);
+    }, 20); // 20ms = 50Hz, envelope step every tick
   }, [ym2149, currentInstrument, previewChannel]);
 
   const stopNote = useCallback((note?: string, octave?: number) => {
