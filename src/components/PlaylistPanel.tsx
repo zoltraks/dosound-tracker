@@ -116,11 +116,22 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     switch (key) {
       case 'ARROWUP':
         event.preventDefault();
-        setCurrentLine(prev => Math.max(0, prev - 1));
+        setCurrentLine(prev => {
+          const next = Math.max(0, prev - 1);
+          onPositionSelect(next);
+          return next;
+        });
         break;
       case 'ARROWDOWN':
         event.preventDefault();
-        setCurrentLine(prev => Math.min(playlist.length - 1, prev + 1));
+        setCurrentLine(prev => {
+          if (playlist.length === 0) {
+            return prev;
+          }
+          const next = Math.min(playlist.length - 1, prev + 1);
+          onPositionSelect(next);
+          return next;
+        });
         break;
       case 'ARROWLEFT':
         event.preventDefault();
@@ -350,14 +361,29 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         <div className="playlist-controls">
           <button 
             className="nav-btn"
-            onClick={() => setCurrentLine(prev => Math.max(0, prev - 1))}
+            onClick={() => {
+              setCurrentLine(prev => {
+                const next = Math.max(0, prev - 1);
+                onPositionSelect(next);
+                return next;
+              });
+            }}
             disabled={currentLine === 0}
           >
             ↑
           </button>
           <button 
             className="nav-btn"
-            onClick={() => setCurrentLine(prev => Math.min(playlist.length - 1, prev + 1))}
+            onClick={() => {
+              setCurrentLine(prev => {
+                if (playlist.length === 0) {
+                  return prev;
+                }
+                const next = Math.min(playlist.length - 1, prev + 1);
+                onPositionSelect(next);
+                return next;
+              });
+            }}
             disabled={currentLine >= playlist.length - 1}
           >
             ↓

@@ -13,6 +13,7 @@ interface CommandPanelProps {
   onStopPattern: () => void;
   onExportData: () => void;
   onAddLine: () => void;
+  onDeleteLine: () => void;
   isPlaying: boolean;
   isPatternPlaying: boolean;
   isDosoundMode: boolean;
@@ -32,6 +33,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onStopPattern,
   onExportData,
   onAddLine,
+  onDeleteLine,
   isPlaying,
   isPatternPlaying,
   isDosoundMode,
@@ -45,7 +47,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onLoadSong} className="command-btn">LOAD SONG</button>
         <button onClick={onSaveSong} className="command-btn">SAVE SONG</button>
         <button onClick={onAddLine} className="command-btn">ADD LINE</button>
-        <button onClick={() => {}} className="command-btn">DELETE LINE</button>
+        <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
       </div>
 
       {/* Instrument Operations */}

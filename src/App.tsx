@@ -311,6 +311,27 @@ const App: React.FC = () => {
     updateSong({ playlist: newPlaylist });
   }, [currentSong.playlist, updateSong]);
 
+  const handleDeleteLine = useCallback(() => {
+    const length = currentSong.playlist.length;
+    if (length === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, length - 1));
+    const newPlaylist = [...currentSong.playlist];
+    newPlaylist.splice(currentIndex, 1);
+    updateSong({ playlist: newPlaylist });
+
+    const newLength = newPlaylist.length;
+    if (newLength === 0) {
+      setPosition(0, 0, 0);
+      return;
+    }
+
+    const newIndex = Math.min(currentIndex, newLength - 1);
+    setPosition(newIndex, 0, 0);
+  }, [currentSong.playlist, sequencerState.currentPattern, updateSong, setPosition]);
+
   const handleRequestNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(true);
   }, []);
@@ -512,6 +533,7 @@ const App: React.FC = () => {
           onStopPattern={handleStopPattern}
           onExportData={handleExportData}
           onAddLine={handleAddLine}
+          onDeleteLine={handleDeleteLine}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
           isDosoundMode={false} // TODO: Implement settings property on Song interface
