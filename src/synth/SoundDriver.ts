@@ -51,7 +51,7 @@ export interface Song {
   instruments: Instrument[];
 }
 
-export class DosoundDriver {
+export class SoundDriver {
   private ym2149: YM2149;
   private isPlaying: boolean = false;
   private currentDelay: number = 0;

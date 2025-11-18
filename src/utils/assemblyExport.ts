@@ -1,5 +1,5 @@
 import type { Song } from '../synth/SoundDriver';
-import { DosoundDriver } from '../synth/SoundDriver';
+import { SoundDriver } from '../synth/SoundDriver';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -7,7 +7,7 @@ import { DosoundDriver } from '../synth/SoundDriver';
  * @returns Assembly formatted string
  */
 export function exportToAssembly(song: Song): string {
-  const driver = new DosoundDriver(null as any); // We only need the conversion logic
+  const driver = new SoundDriver(null as any); // We only need the conversion logic
   const events = driver.convertSongToDosoundEvents(song);
   
   let assembly = '';
