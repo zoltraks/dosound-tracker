@@ -19,7 +19,7 @@ export function exportToAssembly(song: Song): string {
   }
   
   const frames: FrameState[] = [];
-  const ticksPerRow = Math.max(1, Math.floor(song.speed / 2)); // DOSOUND cycle conversion
+  const ticksPerRow = song.speed; // DOSOUND uses frames, not cycles
   
   // Initialize register state
   let currentRegs: RegisterState = {
@@ -34,12 +34,13 @@ export function exportToAssembly(song: Song): string {
     note: { note: string; octave: number; instrument: string } | null;
     envelopeStep: number;
     subTick: number;
+    isNewNote: boolean; // Flag to ensure tone registers are written on first frame
   }
   
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0 },
-    { note: null, envelopeStep: 0, subTick: 0 },
-    { note: null, envelopeStep: 0, subTick: 0 },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
   ];
   
   // Process each playlist entry
@@ -87,6 +88,7 @@ export function exportToAssembly(song: Song): string {
               channelState.note = null;
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
+              channelState.isNewNote = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
             }
@@ -95,6 +97,7 @@ export function exportToAssembly(song: Song): string {
               channelState.note = null;
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
+              channelState.isNewNote = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
             }
@@ -109,7 +112,12 @@ export function exportToAssembly(song: Song): string {
                 channelState.note = noteOnRow;
                 channelState.envelopeStep = 0;
                 channelState.subTick = 0;
+                channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
+              } else {
+                channelState.isNewNote = false;
               }
+            } else {
+              channelState.isNewNote = false;
             }
           }
           
@@ -117,12 +125,12 @@ export function exportToAssembly(song: Song): string {
           if (channelState.note) {
             const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
             if (instrument) {
-              applyInstrumentToRegisters(newRegs, ch, channelState.note, instrument, channelState.envelopeStep);
+              applyInstrumentToRegisters(newRegs, ch, channelState.note, instrument, channelState.envelopeStep, channelState.isNewNote);
             }
           }
           
-          // Advance envelope timing (every 2 ticks = 40ms)
-          if (channelState.note && tick > 0) {
+          // Advance envelope timing (every 2 frames = 40ms)
+          if (channelState.note) {
             const sub = (channelState.subTick + 1) % 2;
             channelState.subTick = sub;
             if (sub === 0) {
@@ -152,7 +160,8 @@ function applyInstrumentToRegisters(
   channel: number,
   note: { note: string; octave: number },
   instrument: Instrument,
-  envelopeStep: number
+  envelopeStep: number,
+  isNewNote: boolean
 ): void {
   const step = Math.max(0, envelopeStep);
   
@@ -200,8 +209,8 @@ function applyInstrumentToRegisters(
   }
   regs[0x07] = mixer;
   
-  // Set tone period if active
-  if (toneActive) {
+  // Set tone period if active (always set for new notes, even if not tone-active in current step)
+  if (toneActive || isNewNote) {
     regs[channel * 2] = period & 0xFF;
     regs[channel * 2 + 1] = (period >> 8) & 0x0F;
   }
@@ -238,6 +247,20 @@ function formatFramesToAssembly(frames: any[], song: Song): string {
   asm += formatAsmLine([0x09, firstRegs[0x09] || 0x00], 'VB');
   asm += formatAsmLine([0x0A, firstRegs[0x0A] || 0x00], 'VC');
   
+  // Write tone registers if they exist in first frame
+  for (let ch = 0; ch < 3; ch++) {
+    const fineReg = ch * 2;
+    const coarseReg = ch * 2 + 1;
+    const fine = firstRegs[fineReg];
+    const coarse = firstRegs[coarseReg];
+    
+    if (fine !== undefined && coarse !== undefined && (fine !== 0 || coarse !== 0)) {
+      const period = (coarse << 8) | fine;
+      const noteLabel = periodToNoteLabel(period);
+      asm += formatAsmLine([coarseReg, coarse, fineReg, fine], `T${String.fromCharCode(65 + ch)} ${noteLabel}`);
+    }
+  }
+  
   let lastRegs: { [register: number]: number } = { ...firstRegs };
   let lastLineIndex = 0;
   let tickCount = 0;
@@ -271,7 +294,16 @@ function formatFramesToAssembly(frames: any[], song: Song): string {
         lastLineIndex = lineIndex;
       }
       
-      // Write changed registers in DOSOUND order: tones, noise, mixer, volumes
+      // Write changed registers in DOSOUND order: volumes, tones, noise, mixer
+      
+      // Volume registers first
+      for (let ch = 0; ch < 3; ch++) {
+        const reg = 0x08 + ch;
+        if (regs[reg] !== undefined && regs[reg] !== lastRegs[reg]) {
+          asm += formatAsmLine([reg, regs[reg]], `V${String.fromCharCode(65 + ch)}`);
+          lastRegs[reg] = regs[reg];
+        }
+      }
       
       // Tone registers (write pairs)
       for (let ch = 0; ch < 3; ch++) {
@@ -300,15 +332,6 @@ function formatFramesToAssembly(frames: any[], song: Song): string {
       if (regs[0x07] !== undefined && regs[0x07] !== lastRegs[0x07]) {
         asm += formatAsmLine([0x07, regs[0x07]], getRegisterComment(0x07, regs[0x07]));
         lastRegs[0x07] = regs[0x07];
-      }
-      
-      // Volume registers
-      for (let ch = 0; ch < 3; ch++) {
-        const reg = 0x08 + ch;
-        if (regs[reg] !== undefined && regs[reg] !== lastRegs[reg]) {
-          asm += formatAsmLine([reg, regs[reg]], `V${String.fromCharCode(65 + ch)}`);
-          lastRegs[reg] = regs[reg];
-        }
       }
       
       tickCount++;
