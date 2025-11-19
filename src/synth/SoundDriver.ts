@@ -6,7 +6,7 @@ export const DOSOUND_END_MARKER = 0x00;
 export const VBLANK_RATE = 50; // Hz
 export const MIN_DELAY_CYCLES = 2; // Minimum delay in DOSOUND mode
 
-export interface DosoundEvent {
+export interface SoundEvent {
   type: 'register' | 'delay';
   register?: number;
   value?: number;
@@ -57,7 +57,7 @@ export class SoundDriver {
   private isPlaying: boolean = false;
   private currentDelay: number = 0;
   private eventIndex: number = 0;
-  private events: DosoundEvent[] = [];
+  private events: SoundEvent[] = [];
   private playbackSpeed: number = 6;
   private dosoundMode: boolean = true;
 
@@ -78,8 +78,8 @@ export class SoundDriver {
     }
   }
 
-  convertSongToDosoundEvents(song: Song): DosoundEvent[] {
-    const events: DosoundEvent[] = [];
+  convertSongToSoundEvents(song: Song): SoundEvent[] {
+    const events: SoundEvent[] = [];
     
     for (let lineIndex = 0; lineIndex < song.playlist.length; lineIndex++) {
       const playlistEntry = song.playlist[lineIndex];
@@ -123,7 +123,7 @@ export class SoundDriver {
     return this.optimizeEvents(events);
   }
 
-  private processPattern(pattern: Pattern, channel: number, events: DosoundEvent[]): void {
+  private processPattern(pattern: Pattern, channel: number, events: SoundEvent[]): void {
     for (let lineIndex = 0; lineIndex < pattern.lines.length; lineIndex++) {
       const line = pattern.lines[lineIndex];
       let note: Note | null = null;
@@ -140,7 +140,7 @@ export class SoundDriver {
     }
   }
 
-  private processNote(note: Note, channel: number, events: DosoundEvent[]): void {
+  private processNote(note: Note, channel: number, events: SoundEvent[]): void {
     // Find instrument
     const instrument = this.findInstrument(note.instrument);
     if (!instrument) return;
@@ -213,8 +213,8 @@ export class SoundDriver {
     return mixer;
   }
 
-  private optimizeEvents(events: DosoundEvent[]): DosoundEvent[] {
-    const optimized: DosoundEvent[] = [];
+  private optimizeEvents(events: SoundEvent[]): SoundEvent[] {
+    const optimized: SoundEvent[] = [];
     let lastRegisterValues: { [key: number]: number } = {};
     
     for (const event of events) {
@@ -234,7 +234,7 @@ export class SoundDriver {
     return optimized;
   }
 
-  playEvents(events: DosoundEvent[]): void {
+  playEvents(events: SoundEvent[]): void {
     this.events = events;
     this.eventIndex = 0;
     this.currentDelay = 0;
@@ -278,7 +278,7 @@ export class SoundDriver {
     this.ym2149.writeRegister(0x0A, 0x00);
   }
 
-  exportToAssembly(events: DosoundEvent[]): string {
+  exportToAssembly(events: SoundEvent[]): string {
     let assembly = 'music:\n\n';
     let lineCount = 0;
     

@@ -8,7 +8,7 @@ import { SoundDriver } from '../synth/SoundDriver';
  */
 export function exportToAssembly(song: Song): string {
   const driver = new SoundDriver(null as any); // We only need the conversion logic
-  const events = driver.convertSongToDosoundEvents(song);
+  const events = driver.convertSongToSoundEvents(song);
   
   let assembly = '';
   let currentLine = 0;
