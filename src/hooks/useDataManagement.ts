@@ -192,6 +192,19 @@ export const useDataManagement = () => {
       instruments: []
     };
     setCurrentSong(newSong);
+
+    const newCurrentInstrument: Instrument = {
+      id: '00',
+      name: '',
+      volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      base: DEFAULT_BASE_KEY
+    };
+    setCurrentInstrument(newCurrentInstrument);
+
     return newSong;
   }, []);
 
