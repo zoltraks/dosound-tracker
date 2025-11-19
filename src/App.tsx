@@ -53,6 +53,8 @@ const App: React.FC = () => {
   const ym2149Ref = useRef<YM2149 | null>(null);
   const [, forceYmRender] = useState(0);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
+  const playInstTimerRef = useRef<number | null>(null);
+  const playInstStepRef = useRef<number>(0);
 
   // Initialize audio on component mount
   useEffect(() => {
@@ -519,6 +521,79 @@ const App: React.FC = () => {
     updateInstrument({ base: formatted });
   }, [updateInstrument]);
 
+  const parseBaseKeyString = useCallback((value?: string): { note: string; octave: number } | null => {
+    if (!value) return null;
+    const raw = value.trim().toUpperCase();
+    if (!raw) return null;
+
+    let notePart = raw.charAt(0);
+    let rest = raw.slice(1);
+
+    if (rest.startsWith('#')) {
+      notePart += '#';
+      rest = rest.slice(1);
+    }
+
+    if (rest.startsWith('-')) {
+      rest = rest.slice(1);
+    }
+
+    const octave = parseInt(rest, 10);
+    if (!Number.isFinite(octave)) return null;
+
+    return { note: notePart, octave };
+  }, []);
+
+  const handlePlayInstrument = useCallback(() => {
+    if (!ym2149Ref.current) {
+      return;
+    }
+
+    const base = parseBaseKeyString(currentInstrument.base || 'C-4');
+    if (!base) {
+      return;
+    }
+
+    const ym2149 = ym2149Ref.current;
+
+    const channel =
+      activeSection === 'trackA'
+        ? 0
+        : activeSection === 'trackB'
+        ? 1
+        : activeSection === 'trackC'
+        ? 2
+        : lastTrackId === 'B'
+        ? 1
+        : lastTrackId === 'C'
+        ? 2
+        : 0;
+
+    if (playInstTimerRef.current !== null) {
+      window.clearInterval(playInstTimerRef.current);
+      playInstTimerRef.current = null;
+    }
+
+    playInstStepRef.current = 0;
+
+    const noteData = { note: base.note, octave: base.octave };
+
+    ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, 0);
+
+    playInstTimerRef.current = window.setInterval(() => {
+      playInstStepRef.current = playInstStepRef.current + 1;
+      ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, playInstStepRef.current);
+
+      if (playInstStepRef.current >= 64) {
+        if (playInstTimerRef.current !== null) {
+          window.clearInterval(playInstTimerRef.current);
+          playInstTimerRef.current = null;
+        }
+        ym2149.writeRegister(0x08 + channel, 0x00);
+      }
+    }, 20);
+  }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString]);
+
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
     if (instruments.length === 0) {
@@ -678,6 +753,7 @@ const App: React.FC = () => {
           isPatternPlaying={isPatternPlaying}
           isDosoundMode={false} // TODO: Implement settings property on Song interface
           onToggleDosoundMode={() => console.log('DOSOUND mode toggle not implemented')}
+          onPlayInstrument={handlePlayInstrument}
         />
 
         <div className="main-content">
