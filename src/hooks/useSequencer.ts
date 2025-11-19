@@ -101,21 +101,25 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   }, [startPlayback]);
 
   const stop = useCallback(() => {
-    if (!sequencerState.isPlaying) return;
+    setSequencerState(prev => {
+      if (!prev.isPlaying) {
+        return prev;
+      }
 
-    setSequencerState(prev => ({ 
-      ...prev, 
-      isPlaying: false,
-      currentTick: 0,
-      currentLine: 0
-      // Keep currentPattern to maintain playlist position
-    }));
+      return {
+        ...prev,
+        isPlaying: false,
+        currentTick: 0,
+        currentLine: 0
+        // Keep currentPattern to maintain playlist position
+      };
+    });
 
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
-  }, [sequencerState.isPlaying]);
+  }, []);
 
   const setPosition = useCallback((pattern: number, line: number, tick: number = 0) => {
     setSequencerState(prev => ({

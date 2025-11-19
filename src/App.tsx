@@ -170,6 +170,21 @@ const App: React.FC = () => {
   // Track pattern playing state
   const [isPatternPlaying, setIsPatternPlaying] = useState(false);
 
+  // Handle stop playback with silence
+  const handleStopPlayback = useCallback(() => {
+    // Reset cycle counters when stopping
+    channelSubTickRef.current = [0, 0, 0];
+    channelEnvelopeStepRef.current = [0, 0, 0];
+    lastNotesRef.current = [null, null, null];
+    
+    // Silence all channels
+    if (ym2149Ref.current) {
+      ym2149Ref.current.writeRegister(0x08, 0x00); // Channel A volume
+      ym2149Ref.current.writeRegister(0x09, 0x00); // Channel B volume
+      ym2149Ref.current.writeRegister(0x0A, 0x00); // Channel C volume
+    }
+  }, []);
+
   // Basic sequencer callback for playback
   const sequencerCallback = useCallback((state: any) => {
     // Update current line for UI
@@ -180,12 +195,28 @@ const App: React.FC = () => {
     
     if (ym2149Ref.current) {
       const ym2149 = ym2149Ref.current;
+
+      if (!state.isPlaying) {
+        return;
+      }
+
+      const playlistLength = currentSong.playlist.length;
+
+      if (playlistLength === 0) {
+        stop();
+        handleStopPlayback();
+        return;
+      }
       
       // Get current pattern from playlist
       const currentPatternIndex = state.currentPattern;
       
       // Bounds check to prevent array access errors
-      if (currentPatternIndex < 0 || currentPatternIndex >= currentSong.playlist.length) {
+      if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
+        const lastIndex = Math.max(0, playlistLength - 1);
+        setPosition(lastIndex, 0, 0);
+        stop();
+        handleStopPlayback();
         return;
       }
       
@@ -198,85 +229,83 @@ const App: React.FC = () => {
         const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
         
         // Allow playback even if some tracks are empty (using --)
-        if (patternA || patternB || patternC) {
-          // Get current line data
-          const lineA = patternA?.lines[state.currentLine];
-          const lineB = patternB?.lines[state.currentLine];
-          const lineC = patternC?.lines[state.currentLine];
+        // Get current line data
+        const lineA = patternA?.lines[state.currentLine];
+        const lineB = patternB?.lines[state.currentLine];
+        const lineC = patternC?.lines[state.currentLine];
 
-          const noteA = lineA?.trackA || null;
-          const noteB = lineB?.trackA || null;
-          const noteC = lineC?.trackA || null;
+        const noteA = lineA?.trackA || null;
+        const noteB = lineB?.trackA || null;
+        const noteC = lineC?.trackA || null;
 
-          const notes = [noteA, noteB, noteC];
-          const patterns = [patternA, patternB, patternC];
-          const lastNotes = lastNotesRef.current;
+        const notes = [noteA, noteB, noteC];
+        const patterns = [patternA, patternB, patternC];
+        const lastNotes = lastNotesRef.current;
 
-          for (let ch = 0; ch < 3; ch++) {
-            const pattern = patterns[ch];
-            const noteOnRow = notes[ch];
-            const last = lastNotes[ch];
+        for (let ch = 0; ch < 3; ch++) {
+          const pattern = patterns[ch];
+          const noteOnRow = notes[ch];
+          const last = lastNotes[ch];
 
-            // If no pattern is assigned on this channel, always treat as rest
-            if (!pattern) {
+          // If no pattern is assigned on this channel, always treat as rest
+          if (!pattern) {
+            channelEnvelopeStepRef.current[ch] = 0;
+            channelSubTickRef.current[ch] = 0;
+            updateChannelWithInstrument(ym2149, ch, null, 0);
+            lastNotes[ch] = null;
+            continue;
+          }
+
+          // Explicit note-off event on this row
+          if (noteOnRow && noteOnRow.note === '===') {
+            channelEnvelopeStepRef.current[ch] = 0;
+            channelSubTickRef.current[ch] = 0;
+            updateChannelWithInstrument(ym2149, ch, null, 0);
+            lastNotes[ch] = null;
+            continue;
+          }
+
+          // Determine active note: current row's note if present, otherwise hold last active note
+          const activeNote = noteOnRow && noteOnRow.note
+            ? noteOnRow
+            : last;
+
+          if (activeNote && activeNote.note && activeNote.note !== '===') {
+            const isNew =
+              !!noteOnRow &&
+              (
+                !last ||
+                last.note !== noteOnRow.note ||
+                last.octave !== noteOnRow.octave ||
+                last.instrument !== noteOnRow.instrument
+              );
+
+            if (isNew) {
+              // New note event: restart envelopes
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
-              updateChannelWithInstrument(ym2149, ch, null, 0);
-              lastNotes[ch] = null;
-              continue;
-            }
-
-            // Explicit note-off event on this row
-            if (noteOnRow && noteOnRow.note === '===') {
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
-              updateChannelWithInstrument(ym2149, ch, null, 0);
-              lastNotes[ch] = null;
-              continue;
-            }
-
-            // Determine active note: current row's note if present, otherwise hold last active note
-            const activeNote = noteOnRow && noteOnRow.note
-              ? noteOnRow
-              : last;
-
-            if (activeNote && activeNote.note && activeNote.note !== '===') {
-              const isNew =
-                !!noteOnRow &&
-                (
-                  !last ||
-                  last.note !== noteOnRow.note ||
-                  last.octave !== noteOnRow.octave ||
-                  last.instrument !== noteOnRow.instrument
-                );
-
-              if (isNew) {
-                // New note event: restart envelopes
-                channelEnvelopeStepRef.current[ch] = 0;
-                channelSubTickRef.current[ch] = 0;
-              } else {
-                // Continuing note (including across empty rows): advance envelope every 40ms
-                const sub = (channelSubTickRef.current[ch] + 1) % 2;
-                channelSubTickRef.current[ch] = sub;
-                if (sub === 0) {
-                  channelEnvelopeStepRef.current[ch] = channelEnvelopeStepRef.current[ch] + 1;
-                }
-              }
-
-              updateChannelWithInstrument(ym2149, ch, activeNote, channelEnvelopeStepRef.current[ch]);
-              lastNotes[ch] = activeNote;
             } else {
-              // No active note at all - reset and silence
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
-              updateChannelWithInstrument(ym2149, ch, null, 0);
-              lastNotes[ch] = null;
+              // Continuing note (including across empty rows): advance envelope every 40ms
+              const sub = (channelSubTickRef.current[ch] + 1) % 2;
+              channelSubTickRef.current[ch] = sub;
+              if (sub === 0) {
+                channelEnvelopeStepRef.current[ch] = channelEnvelopeStepRef.current[ch] + 1;
+              }
             }
+
+            updateChannelWithInstrument(ym2149, ch, activeNote, channelEnvelopeStepRef.current[ch]);
+            lastNotes[ch] = activeNote;
+          } else {
+            // No active note at all - reset and silence
+            channelEnvelopeStepRef.current[ch] = 0;
+            channelSubTickRef.current[ch] = 0;
+            updateChannelWithInstrument(ym2149, ch, null, 0);
+            lastNotes[ch] = null;
           }
         }
       }
     }
-  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong]);
+  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition]);
 
   // Register sequencer callback
   useEffect(() => {
@@ -320,21 +349,6 @@ const App: React.FC = () => {
     // Use YM2149's built-in method to update channel with instrument
     ym2149.updateChannelWithInstrument(channel, instrument as any, { note: noteData.note, octave: noteData.octave }, envelopeStep);
   }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
-
-  // Handle stop playback with silence
-  const handleStopPlayback = useCallback(() => {
-    // Reset cycle counters when stopping
-    channelSubTickRef.current = [0, 0, 0];
-    channelEnvelopeStepRef.current = [0, 0, 0];
-    lastNotesRef.current = [null, null, null];
-    
-    // Silence all channels
-    if (ym2149Ref.current) {
-      ym2149Ref.current.writeRegister(0x08, 0x00); // Channel A volume
-      ym2149Ref.current.writeRegister(0x09, 0x00); // Channel B volume
-      ym2149Ref.current.writeRegister(0x0A, 0x00); // Channel C volume
-    }
-  }, []);
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: any) => {
@@ -670,20 +684,63 @@ const App: React.FC = () => {
 
   // Handle start song playback
   const handleStartSong = useCallback(() => {
+    if (currentSong.playlist.length === 0) {
+      return;
+    }
+
+    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
+
     // Stop pattern mode if active
     if (isPatternPlaying) {
       setIsPatternPlaying(false);
     }
     
     // Set position to beginning (line 0) of the current pattern BEFORE starting
-    setPosition(sequencerState.currentPattern, 0, 0);
+    setPosition(clampedIndex, 0, 0);
     
     // Start song playback
     startSong();
-  }, [isPatternPlaying, startSong, sequencerState.currentPattern, setPosition]);
+  }, [isPatternPlaying, startSong, sequencerState.currentPattern, setPosition, currentSong.playlist]);
 
   // Handle start pattern playback
   const handleStartPattern = useCallback(() => {
+    if (currentSong.playlist.length === 0) {
+      return;
+    }
+
+    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
+    const currentEntry = currentSong.playlist[clampedIndex];
+
+    if (!currentEntry) {
+      return;
+    }
+
+    let trackId: 'A' | 'B' | 'C' = lastTrackId;
+    if (activeSection === 'trackA') {
+      trackId = 'A';
+    } else if (activeSection === 'trackB') {
+      trackId = 'B';
+    } else if (activeSection === 'trackC') {
+      trackId = 'C';
+    }
+
+    let patternId = '--';
+    switch (trackId) {
+      case 'A':
+        patternId = currentEntry.trackA;
+        break;
+      case 'B':
+        patternId = currentEntry.trackB;
+        break;
+      case 'C':
+        patternId = currentEntry.trackC;
+        break;
+    }
+
+    if (patternId === '--') {
+      return;
+    }
+
     // Stop any current playback first
     if (sequencerState.isPlaying) {
       stop();
@@ -693,13 +750,50 @@ const App: React.FC = () => {
     setIsPatternPlaying(true);
     
     // Set position to current pattern and line BEFORE starting
-    setPosition(sequencerState.currentPattern, sharedCurrentLine, 0);
+    setPosition(clampedIndex, sharedCurrentLine, 0);
     
     // Start pattern loop
     startPatternLoop();
-  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, setPosition]);
+  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, setPosition, currentSong.playlist, activeSection, lastTrackId]);
 
   const handleStartPatternFromBeginning = useCallback(() => {
+    if (currentSong.playlist.length === 0) {
+      return;
+    }
+
+    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
+    const currentEntry = currentSong.playlist[clampedIndex];
+
+    if (!currentEntry) {
+      return;
+    }
+
+    let trackId: 'A' | 'B' | 'C' = lastTrackId;
+    if (activeSection === 'trackA') {
+      trackId = 'A';
+    } else if (activeSection === 'trackB') {
+      trackId = 'B';
+    } else if (activeSection === 'trackC') {
+      trackId = 'C';
+    }
+
+    let patternId = '--';
+    switch (trackId) {
+      case 'A':
+        patternId = currentEntry.trackA;
+        break;
+      case 'B':
+        patternId = currentEntry.trackB;
+        break;
+      case 'C':
+        patternId = currentEntry.trackC;
+        break;
+    }
+
+    if (patternId === '--') {
+      return;
+    }
+
     if (sequencerState.isPlaying) {
       stop();
     }
@@ -709,10 +803,10 @@ const App: React.FC = () => {
     }
 
     // Start from the beginning (line 0) of the current pattern
-    setPosition(sequencerState.currentPattern, 0, 0);
+    setPosition(clampedIndex, 0, 0);
 
     startSong();
-  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isPatternPlaying]);
+  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isPatternPlaying, currentSong.playlist, activeSection, lastTrackId]);
 
   useEffect(() => {
     setGlobalShortcut('playPatternFromStart', handleStartPatternFromBeginning);
