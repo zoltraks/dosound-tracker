@@ -8,6 +8,84 @@ const SONG_STORAGE_KEY = 'dosound-tracker-song';
 const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
 
 const DEFAULT_BASE_KEY = 'C-4';
+const DEFAULT_SONG_TITLE = 'New Song';
+const DEFAULT_SONG_AUTHOR = 'Author Name';
+
+const createDefaultSong = (): Song => {
+  const defaultPatternLength = PATTERN_LENGTH;
+  const defaultPattern: Pattern = {
+    id: '00',
+    name: 'Default Pattern',
+    lines: Array.from({ length: defaultPatternLength }, (_, i) => {
+      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+
+      // Add some notes to create a simple melody
+      if (i % 8 === 0) line.trackA = { note: 'C', octave: 4, instrument: '00' };
+      if (i % 8 === 2) line.trackA = { note: 'E', octave: 4, instrument: '00' };
+      if (i % 8 === 4) line.trackA = { note: 'G', octave: 4, instrument: '00' };
+      if (i % 8 === 6) line.trackA = { note: 'E', octave: 4, instrument: '00' };
+
+      // Add some bass notes on track B
+      if (i % 4 === 0) line.trackB = { note: 'C', octave: 3, instrument: '00' };
+
+      return line;
+    })
+  };
+
+  return {
+    title: DEFAULT_SONG_TITLE,
+    author: DEFAULT_SONG_AUTHOR,
+    year: new Date().getFullYear(),
+    speed: 6,
+    patternLength: defaultPatternLength,
+    patterns: [defaultPattern],
+    playlist: [{ trackA: '00', trackB: '00', trackC: '00' }],
+    instruments: [
+      {
+        id: '00',
+        name: 'Default Instrument',
+        volumeEnvelope: Array(32).fill(0x0F),
+        arpeggioEnvelope: [
+          0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20,
+          -16, -12, -8, -4, ...Array(8).fill(0)
+        ],
+        pitchEnvelope: [
+          0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64,
+          -32, -16, ...Array(12).fill(0)
+        ],
+        noiseEnvelope: Array(32).fill(0),
+        modeEnvelope: Array(32).fill(0),
+        base: DEFAULT_BASE_KEY
+      },
+      {
+        id: '01',
+        name: 'Bass Instrument',
+        volumeEnvelope: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
+        arpeggioEnvelope: [
+          12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)
+        ],
+        pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
+        noiseEnvelope: Array(32).fill(0),
+        modeEnvelope: Array(32).fill(0),
+        base: DEFAULT_BASE_KEY
+      },
+      {
+        id: '02',
+        name: 'Lead Instrument',
+        volumeEnvelope: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
+        arpeggioEnvelope: [
+          24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)
+        ],
+        pitchEnvelope: [
+          128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)
+        ],
+        noiseEnvelope: Array(32).fill(0),
+        modeEnvelope: Array(32).fill(0),
+        base: DEFAULT_BASE_KEY
+      }
+    ]
+  };
+};
 
 const formatBaseKey = (note: string, octave: number): string => {
   const upperNote = note.toUpperCase();
@@ -55,69 +133,7 @@ export const useDataManagement = () => {
       console.warn('Failed to load song from localStorage:', error);
     }
     console.log('Using default song');
-
-    // Create default song if no saved data
-    const defaultPatternLength = PATTERN_LENGTH;
-    const defaultPattern: Pattern = {
-      id: '00',
-      name: 'Default Pattern',
-      lines: Array.from({ length: defaultPatternLength }, (_, i) => {
-        const line: PatternLine = { trackA: null, trackB: null, trackC: null };
-        
-        // Add some notes to create a simple melody
-        if (i % 8 === 0) line.trackA = { note: 'C', octave: 4, instrument: '00' };
-        if (i % 8 === 2) line.trackA = { note: 'E', octave: 4, instrument: '00' };
-        if (i % 8 === 4) line.trackA = { note: 'G', octave: 4, instrument: '00' };
-        if (i % 8 === 6) line.trackA = { note: 'E', octave: 4, instrument: '00' };
-        
-        // Add some bass notes on track B
-        if (i % 4 === 0) line.trackB = { note: 'C', octave: 3, instrument: '00' };
-        
-        return line;
-      })
-    };
-
-    return {
-      title: 'Untitled Song',
-      author: 'Zoltar X / New Generation',
-      year: new Date().getFullYear(),
-      speed: 6,
-      patternLength: defaultPatternLength,
-      patterns: [defaultPattern],
-      playlist: [{ trackA: '00', trackB: '00', trackC: '00' }],
-      instruments: [
-        {
-          id: '00',
-          name: 'Default Instrument',
-          volumeEnvelope: Array(32).fill(0x0F),
-          arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
-          pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
-          noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0),
-          base: DEFAULT_BASE_KEY
-        },
-        {
-          id: '01',
-          name: 'Bass Instrument',
-          volumeEnvelope: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
-          arpeggioEnvelope: [12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)],
-          pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
-          noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0),
-          base: DEFAULT_BASE_KEY
-        },
-        {
-          id: '02',
-          name: 'Lead Instrument',
-          volumeEnvelope: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
-          arpeggioEnvelope: [24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)],
-          pitchEnvelope: [128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)],
-          noiseEnvelope: Array(32).fill(0),
-          modeEnvelope: Array(32).fill(0),
-          base: DEFAULT_BASE_KEY
-        }
-      ]
-    };
+    return createDefaultSong();
   });
 
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>(() => {
@@ -166,8 +182,8 @@ export const useDataManagement = () => {
 
   const createNewSong = useCallback(() => {
     const newSong: Song = {
-      title: 'New Song',
-      author: 'Author Name',
+      title: DEFAULT_SONG_TITLE,
+      author: DEFAULT_SONG_AUTHOR,
       year: new Date().getFullYear(),
       speed: 6,
       patternLength: PATTERN_LENGTH,
@@ -420,9 +436,9 @@ export const useDataManagement = () => {
         const clampedLength = Math.max(16, Math.min(256, Math.floor(patternLengthRaw)));
 
         const title =
-          typeof node.title === 'string' && node.title.trim() ? node.title : 'Untitled Song';
+          typeof node.title === 'string' && node.title.trim() ? node.title : DEFAULT_SONG_TITLE;
         const author =
-          typeof node.author === 'string' && node.author.trim() ? node.author : 'Unknown';
+          typeof node.author === 'string' && node.author.trim() ? node.author : DEFAULT_SONG_AUTHOR;
 
         const speedRaw = Number(node.speed);
         const speed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
