@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { PATTERN_LENGTH, KEYBOARD_TO_NOTE } from '../constants/music';
+import { KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
 
@@ -10,6 +10,7 @@ interface TrackPanelProps {
   setActiveSection: (section: NavigationSection) => void;
   currentOctave: number;
   currentLine: number;
+   patternLength: number;
   onLineChange: (lineIndex: number) => void;
   pattern: Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
@@ -30,6 +31,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     setActiveSection,
     currentOctave,
     currentLine,
+    patternLength,
     onLineChange,
     pattern,
     onPatternChange,
@@ -97,12 +99,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   // Get notes for this track from the pattern
   const getTrackNotes = useCallback(() => {
-    if (!pattern) return Array(PATTERN_LENGTH).fill(null);
+    if (!pattern) return Array(Math.max(1, patternLength)).fill(null);
 
     // For shared patterns, show the same content in all tracks
     // Use trackA data as the shared content for all tracks
     return pattern.lines.map(line => line.trackA);
-  }, [pattern]);
+  }, [pattern, patternLength]);
 
   const trackNotes = getTrackNotes();
 
@@ -125,7 +127,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     } else if (key === 'ARROWDOWN') {
       event.preventDefault();
       if (!pattern) return;
-      onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
+      onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
       // Navigate to previous track (circular)
@@ -190,7 +192,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
         onPatternChange(newPattern);
         // Move to next line
-        onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
+        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
       }
     } else if (event.ctrlKey && key === '-') {
       event.preventDefault();
@@ -229,10 +231,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
         onPatternChange(newPattern);
         // Move to next line
-        onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
+        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
       }
     }
-  }, [isActive, currentLine, currentOctave, currentInstrument, onLineChange, playPreviewNote, pattern, trackId, onPatternChange]);
+  }, [isActive, currentLine, currentOctave, currentInstrument, onLineChange, patternLength, playPreviewNote, pattern, trackId, onPatternChange]);
 
   const handleLineClick = useCallback((lineIndex: number) => {
     onLineChange(lineIndex);

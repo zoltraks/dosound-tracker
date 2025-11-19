@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH } from '../constants/music';
 import yaml from 'js-yaml';
 
 // Storage keys
@@ -57,10 +57,11 @@ export const useDataManagement = () => {
     console.log('Using default song');
 
     // Create default song if no saved data
+    const defaultPatternLength = PATTERN_LENGTH;
     const defaultPattern: Pattern = {
       id: '00',
       name: 'Default Pattern',
-      lines: Array.from({ length: 64 }, (_, i) => {
+      lines: Array.from({ length: defaultPatternLength }, (_, i) => {
         const line: PatternLine = { trackA: null, trackB: null, trackC: null };
         
         // Add some notes to create a simple melody
@@ -81,6 +82,7 @@ export const useDataManagement = () => {
       author: 'ZoltarX / New Generation',
       year: new Date().getFullYear(),
       speed: 6,
+      patternLength: defaultPatternLength,
       patterns: [defaultPattern],
       playlist: [{ trackA: '00', trackB: '00', trackC: '00' }],
       instruments: [
@@ -168,6 +170,7 @@ export const useDataManagement = () => {
       author: 'ZoltarX / New Generation',
       year: new Date().getFullYear(),
       speed: 6,
+      patternLength: PATTERN_LENGTH,
       patterns: [],
       playlist: [],
       instruments: []
@@ -414,7 +417,39 @@ export const useDataManagement = () => {
   }, [currentInstrument.id, setInstrumentError]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
-    setCurrentSong(prev => ({ ...prev, ...updates }));
+    setCurrentSong(prev => {
+      // Handle pattern length updates with clamping and pattern resizing
+      let next: Song = { ...prev, ...updates } as Song;
+
+      if (typeof updates.patternLength === 'number') {
+        const rawLength = updates.patternLength;
+        const clampedLength = Math.max(16, Math.min(256, Math.floor(rawLength)));
+        next.patternLength = clampedLength;
+
+        next.patterns = prev.patterns.map(pattern => {
+          const existingLines = pattern.lines || [];
+
+          if (existingLines.length === clampedLength) {
+            return pattern;
+          }
+
+          let newLines: PatternLine[];
+          if (existingLines.length > clampedLength) {
+            // Truncate extra lines
+            newLines = existingLines.slice(0, clampedLength);
+          } else {
+            // Extend with empty lines
+            const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+            const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({ ...emptyLine }));
+            newLines = [...existingLines, ...extra];
+          }
+
+          return { ...pattern, lines: newLines };
+        });
+      }
+
+      return next;
+    });
   }, []);
 
   const updateInstrument = useCallback((updates: Partial<Instrument>) => {
@@ -464,10 +499,11 @@ export const useDataManagement = () => {
   }, [currentInstrument.id, currentInstrument]);
 
   const createNewPattern = useCallback((patternId: string) => {
+    const targetLength = currentSong.patternLength || PATTERN_LENGTH;
     const newPattern: Pattern = {
       id: patternId,
       name: `Pattern ${patternId}`,
-      lines: Array(64).fill(null).map(() => ({
+      lines: Array(targetLength).fill(null).map(() => ({
         trackA: null,
         trackB: null,
         trackC: null

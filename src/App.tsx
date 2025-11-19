@@ -4,6 +4,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
 import type { Instrument } from './synth/SoundDriver';
+import { PATTERN_LENGTH } from './constants/music';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
 import { TrackPanel } from './components/TrackPanel';
@@ -46,7 +47,7 @@ const App: React.FC = () => {
     instrumentError,
     setInstrumentError
   } = useDataManagement();
-  const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed);
+  const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
 
   useEffect(() => {
     updateSpeed(currentSong.speed);
@@ -489,12 +490,13 @@ const App: React.FC = () => {
     
     let foundPattern = currentSong.patterns.find(p => p.id === patternId);
     
-    // If pattern doesn't exist, create it
+    // If pattern doesn't exist, create it with current pattern length
     if (!foundPattern) {
+      const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const newPattern = {
         id: patternId,
         name: `Pattern ${patternId}`,
-        lines: Array(64).fill(null).map(() => ({
+        lines: Array(targetLength).fill(null).map(() => ({
           trackA: null,
           trackB: null,
           trackC: null
@@ -821,7 +823,7 @@ const App: React.FC = () => {
               <div className="position-block">
                 <div className="position-header"></div>
                 <div className="position-content" onScroll={handlePositionScroll}>
-                  {Array.from({ length: 64 }, (_, i) => (
+                  {Array.from({ length: currentSong.patternLength || PATTERN_LENGTH }, (_, i) => (
                     <div 
                       key={i} 
                       className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
@@ -840,6 +842,7 @@ const App: React.FC = () => {
                     setActiveSection={setActiveSection}
                     currentOctave={currentOctave}
                     currentLine={sharedCurrentLine}
+                    patternLength={currentSong.patternLength || PATTERN_LENGTH}
                     onLineChange={handleLineChange}
                     pattern={getCurrentPatternForTrack('A')}
                     onPatternChange={handlePatternChange}
@@ -853,6 +856,7 @@ const App: React.FC = () => {
                     setActiveSection={setActiveSection}
                     currentOctave={currentOctave}
                     currentLine={sharedCurrentLine}
+                    patternLength={currentSong.patternLength || PATTERN_LENGTH}
                     onLineChange={handleLineChange}
                     pattern={getCurrentPatternForTrack('B')}
                     onPatternChange={handlePatternChange}
@@ -866,6 +870,7 @@ const App: React.FC = () => {
                     setActiveSection={setActiveSection}
                     currentOctave={currentOctave}
                     currentLine={sharedCurrentLine}
+                    patternLength={currentSong.patternLength || PATTERN_LENGTH}
                     onLineChange={handleLineChange}
                     pattern={getCurrentPatternForTrack('C')}
                     onPatternChange={handlePatternChange}

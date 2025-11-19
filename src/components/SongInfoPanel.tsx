@@ -94,6 +94,25 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
             max="255"
           />
         </div>
+        
+        <div className="info-field">
+          <label>Length:</label>
+          <input
+            type="number"
+            value={song.patternLength ?? 64}
+            onChange={(e) => {
+              const raw = parseInt(e.target.value, 10);
+              const safe = Number.isFinite(raw) ? raw : 64;
+              const clamped = Math.max(16, Math.min(256, safe));
+              handleFieldChange('patternLength', clamped);
+            }}
+            onKeyDown={handleKeyDown}
+            className="info-input"
+            min="16"
+            max="256"
+            placeholder="Pattern length"
+          />
+        </div>
       </div>
     </div>
   );

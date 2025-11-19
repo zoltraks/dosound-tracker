@@ -11,7 +11,7 @@ export interface SequencerState {
   ticksPerRow: number;
 }
 
-export const useSequencer = (songSpeed: number = 6) => {
+export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) => {
   const [sequencerState, setSequencerState] = useState<SequencerState>({
     isPlaying: false,
     isPatternLoop: false,
@@ -49,7 +49,7 @@ export const useSequencer = (songSpeed: number = 6) => {
 
           // Check if we've completed all lines in current pattern
           // This would be determined by the pattern length
-          if (newLine >= 64) { // Assuming 64 lines per pattern
+          if (newLine >= patternLength) {
             newLine = 0;
             // Only advance pattern if not in pattern loop mode
             if (!prev.isPatternLoop) {
@@ -156,23 +156,23 @@ export const useSequencer = (songSpeed: number = 6) => {
 
   const getCurrentTime = useCallback(() => {
     // Calculate current playback time in seconds
-    const totalTicks = (sequencerState.currentPattern * 64 + sequencerState.currentLine) * sequencerState.ticksPerRow + sequencerState.currentTick;
+    const totalTicks = (sequencerState.currentPattern * patternLength + sequencerState.currentLine) * sequencerState.ticksPerRow + sequencerState.currentTick;
     const tickDuration = 60.0 / (sequencerState.bpm * 4); // 16th notes
     return totalTicks * tickDuration;
-  }, [sequencerState]);
+  }, [sequencerState, patternLength]);
 
   const jumpToLine = useCallback((line: number) => {
     setSequencerState(prev => ({
       ...prev,
-      currentLine: Math.max(0, Math.min(63, line)),
+      currentLine: Math.max(0, Math.min(patternLength - 1, line)),
       currentTick: 0
     }));
-  }, []);
+  }, [patternLength]);
 
   const nextLine = useCallback(() => {
     setSequencerState(prev => {
       const newLine = prev.currentLine + 1;
-      if (newLine >= 64) {
+      if (newLine >= patternLength) {
         return {
           ...prev,
           currentPattern: prev.currentPattern + 1,
@@ -186,7 +186,7 @@ export const useSequencer = (songSpeed: number = 6) => {
         currentTick: 0
       };
     });
-  }, []);
+  }, [patternLength]);
 
   const previousLine = useCallback(() => {
     setSequencerState(prev => {
@@ -196,7 +196,7 @@ export const useSequencer = (songSpeed: number = 6) => {
         return {
           ...prev,
           currentPattern: newPattern,
-          currentLine: 63,
+          currentLine: Math.max(0, patternLength - 1),
           currentTick: 0
         };
       }
