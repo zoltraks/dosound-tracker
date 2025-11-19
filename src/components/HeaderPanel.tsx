@@ -6,6 +6,7 @@ interface HeaderPanelProps {
   title: string;
   currentOctave: number;
   onOctaveChange: (octave: number) => void;
+  onShowAbout: () => void;
 }
 
 export const HeaderPanel: React.FC<HeaderPanelProps> = ({
@@ -13,12 +14,13 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   onToggleTheme,
   title,
   currentOctave,
-  onOctaveChange
+  onOctaveChange,
+  onShowAbout
 }) => {
   return (
     <header className="header-panel">
       <div className="header-left">
-        <div className="logo">🎶</div>
+        <div className="logo" onClick={onShowAbout} title="About DOSOUND Tracker">🎶</div>
         <h1 className="title">DOSOUND Tracker</h1>
       </div>
       

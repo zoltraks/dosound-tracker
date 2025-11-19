@@ -18,11 +18,15 @@ import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
 import './App.css';
 
+declare const __APP_VERSION__: string;
+const APP_VERSION = __APP_VERSION__;
+
 const App: React.FC = () => {
   
   const [currentOctave, setCurrentOctave] = useState(3);
   const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
   const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -435,6 +439,10 @@ const App: React.FC = () => {
     setIsNewSongConfirmOpen(false);
   }, []);
 
+  const handleShowAbout = useCallback(() => {
+    setIsAboutOpen(true);
+  }, []);
+
   const handleExportData = useCallback(() => {
     try {
       const assemblyContent = exportToAssembly(currentSong);
@@ -731,6 +739,7 @@ const App: React.FC = () => {
           onToggleTheme={() => setIsDarkMode(!isDarkMode)}
           currentOctave={currentOctave}
           onOctaveChange={handleOctaveChange}
+          onShowAbout={handleShowAbout}
         />
         
         <CommandPanel
@@ -968,6 +977,27 @@ const App: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={() => setInstrumentError('')}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isAboutOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">About</div>
+              <div className="modal-body">
+                DOSOUND Tracker
+                <br />
+                <br />
+                Made by Zoltar X / New Generation
+                <br />
+                <br />
+                Version: {APP_VERSION}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={() => setIsAboutOpen(false)}>
                   OK
                 </button>
               </div>
