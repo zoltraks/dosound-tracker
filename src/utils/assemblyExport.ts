@@ -151,29 +151,6 @@ function frequencyToPeriod(frequency: number): number {
   return Math.floor(2000000 / (16 * frequency));
 }
 
-function calculateMixerForInstrument(channel: number, instrument: Instrument): number {
-  // Default mixer: enable tone for all channels, disable noise
-  let mixer = 0x38; // 00111000 - noise enabled for all channels, tone disabled
-
-  const modeValue =
-    instrument.modeEnvelope && instrument.modeEnvelope.length > 0
-      ? instrument.modeEnvelope[0] || 0
-      : 0;
-
-  const toneActive = modeValue === 0 || modeValue === 2;
-  const noiseActive = modeValue === 1 || modeValue === 2;
-
-  if (toneActive) {
-    mixer &= ~(1 << channel); // Enable tone for this channel
-  }
-
-  if (!noiseActive) {
-    mixer |= 0x08 << channel; // Disable noise for this channel
-  }
-
-  return mixer & 0xFF;
-}
-
 /**
  * Export a single instrument to DOSOUND-format assembly using its base note,
  * volume envelope and arpeggio envelope. Tone (TA) follows arpeggio over time.
@@ -192,18 +169,34 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
       : [0x0f, 0x0e, 0x0c, 0x08, 0x04, 0x00];
 
   const arpeggioEnv = instrument.arpeggioEnvelope || [];
+  const modeEnv = instrument.modeEnvelope || [];
+  const noiseEnv = instrument.noiseEnvelope || [];
 
   const clampVol = (v: number) => Math.max(0, Math.min(0x0f, v | 0));
   const vols = volumeEnv.map(clampVol);
 
   // Number of envelope steps to consider (40ms per step)
-  const stepsCount = Math.max(vols.length, arpeggioEnv.length || 1);
+  const stepsCount = Math.max(vols.length, arpeggioEnv.length || 1, modeEnv.length || 1);
 
-  type StepState = { volume: number; period: number; semitone: number };
+  type StepState = { 
+    volume: number; 
+    period: number; 
+    semitone: number;
+    mode: number;      // 0=tone, 1=noise, 2=tone+noise
+    noisePeriod: number;
+  };
   const states: StepState[] = [];
 
   for (let i = 0; i < stepsCount; i++) {
     const vol = i < vols.length ? vols[i] : vols[vols.length - 1] ?? 0;
+
+    // Get mode for this step
+    const modeIdx = modeEnv.length > 0 ? Math.min(i, modeEnv.length - 1) : 0;
+    const mode = modeEnv.length > 0 ? (modeEnv[modeIdx] || 0) : 0;
+
+    // Get noise period for this step
+    const noiseIdx = noiseEnv.length > 0 ? Math.min(i, noiseEnv.length - 1) : 0;
+    const noisePeriod = noiseEnv.length > 0 ? Math.max(0, Math.min(0x1f, noiseEnv[noiseIdx] | 0)) : 0;
 
     // Apply arpeggio in semitones on top of baseFrequency
     let frequency = baseFrequency;
@@ -218,38 +211,8 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
     }
 
     const period = frequencyToPeriod(frequency);
-    states.push({ volume: vol, period, semitone });
+    states.push({ volume: vol, period, semitone, mode, noisePeriod });
   }
-
-  // Group consecutive identical states into segments
-  interface Segment {
-    volume: number;
-    period: number;
-    semitone: number; // arpeggio offset in semitones
-    length: number;   // number of 40ms steps in this segment
-  }
-
-  const segments: Segment[] = [];
-  if (states.length === 0) {
-    // Fallback: single silent step
-    segments.push({ volume: 0, period: frequencyToPeriod(baseFrequency), semitone: 0, length: 1 });
-  } else {
-    let current = states[0];
-    let runLength = 1;
-    for (let i = 1; i < states.length; i++) {
-      const s = states[i];
-      if (s.volume === current.volume && s.period === current.period) {
-        runLength++;
-      } else {
-        segments.push({ volume: current.volume, period: current.period, semitone: current.semitone, length: runLength });
-        current = s;
-        runLength = 1;
-      }
-    }
-    segments.push({ volume: current.volume, period: current.period, semitone: current.semitone, length: runLength });
-  }
-
-  const first = segments[0];
 
   const getCoarseFine = (p: number) => {
     const period = p & 0x0fff;
@@ -259,12 +222,23 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
     };
   };
 
-  // Initial mixer and noise setup for channel A
-  const mixerValue = calculateMixerForInstrument(0, instrument);
-  const noiseValue =
-    instrument.noiseEnvelope && instrument.noiseEnvelope.length > 0
-      ? Math.max(0, Math.min(0x1f, instrument.noiseEnvelope[0] | 0))
-      : 0x00;
+  const getMixerForMode = (mode: number, channel: number = 0): number => {
+    // Start with default: all tones enabled, all noise disabled (0x38 = 00111000)
+    let mixer = 0x38;
+    
+    const toneActive = mode === 0 || mode === 2;
+    const noiseActive = mode === 1 || mode === 2;
+
+    // Modify only the specified channel
+    if (!toneActive) {
+      mixer |= (1 << channel); // Disable tone for this channel
+    }
+    if (noiseActive) {
+      mixer &= ~(0x08 << channel); // Enable noise for this channel
+    }
+
+    return mixer & 0xFF;
+  };
 
   let asm = '';
 
@@ -272,53 +246,97 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
   asm += 'music:\n\n';
   asm += '\t; START\n\n';
 
-  // Mixer (MX ...)
-  const mixerComment = getRegisterComment(0x07, mixerValue) || 'MX';
-  asm += formatAsmLine([0x07, mixerValue], mixerComment);
+  if (states.length === 0) {
+    // Fallback: empty instrument
+    asm += formatAsmLine([0x07, 0x38], 'MX T+T+T');
+    asm += '\n';
+    asm += formatAsmLine([0x08, 0x0], 'VA');
+    asm += formatAsmLine([0x09, 0x0], 'VB');
+    asm += formatAsmLine([0x0A, 0x0], 'VC');
+    asm += '\n';
+    asm += formatDelayLine(2);
+    asm += '\n';
+    asm += '\t; END\n\n';
+    asm += formatAsmLine([0x08, 0x0], 'VA');
+    asm += formatAsmLine([0x09, 0x0], 'VB');
+    asm += formatAsmLine([0x0A, 0x0], 'VC');
+    asm += '\n';
+    asm += formatAsmLine([0xff, 0x00], 'STOP');
+    return asm;
+  }
+
+  const first = states[0];
+
+  // Initial mixer based on first mode
+  const initialMixer = getMixerForMode(first.mode, 0);
+  const mixerComment = getRegisterComment(0x07, initialMixer) || 'MX';
+  asm += formatAsmLine([0x07, initialMixer], mixerComment);
   asm += '\n';
 
-  // Initial volumes: set all channels, with A using first segment's volume
-  const initialVol = first.volume ?? 0;
-  asm += formatAsmLine([0x08, initialVol], 'VA');
+  // Initial volumes
+  asm += formatAsmLine([0x08, first.volume], 'VA');
   asm += formatAsmLine([0x09, 0x0], 'VB');
   asm += formatAsmLine([0x0A, 0x0], 'VC');
   asm += '\n';
 
-  // Initial tone period for channel A
-  const firstCF = getCoarseFine(first.period);
-  const firstLabel = formatNoteLabel(base.note, base.octave, first.semitone || 0);
-  asm += formatAsmLine([0x01, firstCF.coarse, 0x00, firstCF.fine], `TA ${firstLabel}`);
-
-  // Optional noise register if any noise envelope is used
-  if (noiseValue !== 0) {
-    asm += formatAsmLine([0x06, noiseValue], 'NS');
+  // Initial tone period (only if tone is active)
+  const firstToneActive = first.mode === 0 || first.mode === 2;
+  if (firstToneActive) {
+    const firstCF = getCoarseFine(first.period);
+    const firstLabel = formatNoteLabel(base.note, base.octave, first.semitone || 0);
+    asm += formatAsmLine([0x01, firstCF.coarse, 0x00, firstCF.fine], `TA ${firstLabel}`);
   }
 
-  const framesFor = (stepCount: number) => Math.max(1, stepCount) * 2; // 40ms -> 2 frames
+  // Initial noise period (only if noise is active)
+  const firstNoiseActive = first.mode === 1 || first.mode === 2;
+  if (firstNoiseActive && first.noisePeriod > 0) {
+    asm += formatAsmLine([0x06, first.noisePeriod], 'NS');
+  }
 
-  // Emit delay for the first segment
-  asm += formatDelayLine(framesFor(first.length));
+  // Emit delay for the first step (40ms = 2 frames)
+  asm += formatDelayLine(2);
 
-  // Subsequent segments: change VA/TA as needed, then delay
+  // Subsequent steps: track changes
   let prevVolume = first.volume;
   let prevPeriod = first.period;
+  let prevMode = first.mode;
+  let prevNoisePeriod = first.noisePeriod;
 
-  for (let i = 1; i < segments.length; i++) {
-    const seg = segments[i];
+  for (let i = 1; i < states.length; i++) {
+    const step = states[i];
+    const toneActive = step.mode === 0 || step.mode === 2;
+    const noiseActive = step.mode === 1 || step.mode === 2;
 
-    if (seg.volume !== prevVolume) {
-      asm += formatAsmLine([0x08, seg.volume], 'VA');
-      prevVolume = seg.volume;
+    // Check if mode changed
+    if (step.mode !== prevMode) {
+      const newMixer = getMixerForMode(step.mode, 0);
+      const comment = getRegisterComment(0x07, newMixer) || 'MX';
+      asm += formatAsmLine([0x07, newMixer], comment);
+      prevMode = step.mode;
     }
 
-    if (seg.period !== prevPeriod) {
-      const cf = getCoarseFine(seg.period);
-      const label = formatNoteLabel(base.note, base.octave, seg.semitone || 0);
+    // Update noise period if mode includes noise
+    if (noiseActive && step.noisePeriod !== prevNoisePeriod) {
+      asm += formatAsmLine([0x06, step.noisePeriod], 'NS');
+      prevNoisePeriod = step.noisePeriod;
+    }
+
+    // Update volume if changed
+    if (step.volume !== prevVolume) {
+      asm += formatAsmLine([0x08, step.volume], 'VA');
+      prevVolume = step.volume;
+    }
+
+    // Update tone period if mode includes tone AND period changed
+    if (toneActive && step.period !== prevPeriod) {
+      const cf = getCoarseFine(step.period);
+      const label = formatNoteLabel(base.note, base.octave, step.semitone || 0);
       asm += formatAsmLine([0x01, cf.coarse, 0x00, cf.fine], `TA ${label}`);
-      prevPeriod = seg.period;
+      prevPeriod = step.period;
     }
 
-    asm += formatDelayLine(framesFor(seg.length));
+    // Emit delay (40ms = 2 frames)
+    asm += formatDelayLine(2);
   }
 
   // END block: silence channels and STOP marker
@@ -357,11 +375,11 @@ function getRegisterComment(register: number, value: number): string {
       return `MX ${a}+${b}+${c}`;
       
     case 0x08: // Volume A
-      return `VA ${value.toString(16).toUpperCase()}`;
+      return 'VA';
     case 0x09: // Volume B  
-      return `VB ${value.toString(16).toUpperCase()}`;
+      return 'VB';
     case 0x0A: // Volume C
-      return `VC ${value.toString(16).toUpperCase()}`;
+      return 'VC';
       
     case 0x00: // Tone A fine
     case 0x01: // Tone A coarse
@@ -373,7 +391,7 @@ function getRegisterComment(register: number, value: number): string {
       return '';
       
     case 0x06: // Noise period
-      return `NP ${value.toString(16).toUpperCase()}`;
+      return 'NS';
       
     default:
       return '';
