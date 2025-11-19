@@ -429,20 +429,13 @@ export const useDataManagement = () => {
         next.patterns = prev.patterns.map(pattern => {
           const existingLines = pattern.lines || [];
 
-          if (existingLines.length === clampedLength) {
+          if (existingLines.length >= clampedLength) {
             return pattern;
           }
 
-          let newLines: PatternLine[];
-          if (existingLines.length > clampedLength) {
-            // Truncate extra lines
-            newLines = existingLines.slice(0, clampedLength);
-          } else {
-            // Extend with empty lines
-            const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
-            const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({ ...emptyLine }));
-            newLines = [...existingLines, ...extra];
-          }
+          const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+          const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({ ...emptyLine }));
+          const newLines: PatternLine[] = [...existingLines, ...extra];
 
           return { ...pattern, lines: newLines };
         });

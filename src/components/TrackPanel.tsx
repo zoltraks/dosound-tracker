@@ -103,7 +103,16 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     // For shared patterns, show the same content in all tracks
     // Use trackA data as the shared content for all tracks
-    return pattern.lines.map(line => line.trackA);
+    const safeLength = Math.max(1, patternLength);
+    const lines = pattern.lines || [];
+    const notes = [] as (Note | null)[];
+
+    for (let i = 0; i < safeLength; i++) {
+      const line = lines[i] || { trackA: null, trackB: null, trackC: null };
+      notes.push(line.trackA);
+    }
+
+    return notes;
   }, [pattern, patternLength]);
 
   const trackNotes = getTrackNotes();
