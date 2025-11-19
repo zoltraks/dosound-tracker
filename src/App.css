@@ -385,7 +385,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
-  width: 36px;
+  width: 42px;
   height: 100%;
   box-shadow: var(--shadow-medium);
   border-radius: 3px;
@@ -413,6 +413,8 @@ body {
 .position-content {
   flex: 1;
   overflow-y: auto;
+  /* Put vertical scrollbar on the left side */
+  direction: rtl;
 }
 
 .position-number {
@@ -430,6 +432,8 @@ body {
   box-sizing: border-box;
   padding: 0;
   margin: 0;
+  /* Keep numbers themselves left-to-right even though container is rtl */
+  direction: ltr;
 }
 
 .position-number.current {
