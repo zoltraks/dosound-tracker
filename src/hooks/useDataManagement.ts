@@ -1003,8 +1003,14 @@ export const useDataManagement = () => {
         const tracks: (keyof PatternLine)[] = ['trackA', 'trackB', 'trackC'];
         tracks.forEach(trackKey => {
           const note = line[trackKey] as any;
-          if (note && typeof note.instrument === 'string') {
-            const id = note.instrument.trim().toUpperCase();
+          if (note && note.instrument !== undefined && note.instrument !== null) {
+            // Normalize instrument ID to uppercase string
+            let id = '';
+            if (typeof note.instrument === 'string') {
+              id = note.instrument.trim().toUpperCase();
+            } else if (typeof note.instrument === 'number') {
+              id = Math.floor(note.instrument).toString(16).padStart(2, '0').toUpperCase();
+            }
             if (id) {
               usedInstrumentIds.add(id);
             }
@@ -1017,11 +1023,13 @@ export const useDataManagement = () => {
     const removedInstrumentIds: string[] = [];
 
     song.instruments.forEach(inst => {
+      if (!inst) return; // Skip null/undefined instruments
+      
       const idNorm = (inst.id || '').trim().toUpperCase();
       if (idNorm && usedInstrumentIds.has(idNorm)) {
         newInstruments.push(inst);
       } else {
-        removedInstrumentIds.push(inst.id);
+        removedInstrumentIds.push(inst.id || 'unknown');
       }
     });
 
