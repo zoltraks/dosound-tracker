@@ -385,7 +385,8 @@ body {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
-  width: 30px;
+  width: 36px;
+  height: 100%;
   box-shadow: var(--shadow-medium);
   border-radius: 3px;
 }
@@ -407,6 +408,11 @@ body {
   background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
   box-sizing: border-box;
+}
+
+.position-content {
+  flex: 1;
+  overflow-y: auto;
 }
 
 .position-number {
@@ -515,6 +521,15 @@ body {
   font-family: 'Courier New', monospace;
   flex: 1;
   overflow-y: auto;
+}
+
+.track-content::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.track-content {
+  scrollbar-width: none; /* Firefox */
 }
 
 .track-line {

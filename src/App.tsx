@@ -717,9 +717,9 @@ const App: React.FC = () => {
   const handleTrackScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync position block scroll
-    const positionBlock = document.querySelector('.position-block');
-    if (positionBlock) {
-      (positionBlock as HTMLDivElement).scrollTop = scrollTop;
+    const positionContent = document.querySelector('.position-content');
+    if (positionContent) {
+      (positionContent as HTMLDivElement).scrollTop = scrollTop;
     }
     // Sync other tracks scroll
     const tracks = document.querySelectorAll('.track-content');
@@ -731,11 +731,11 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const positionBlock = document.querySelector('.position-block') as HTMLDivElement | null;
+    const positionContent = document.querySelector('.position-content') as HTMLDivElement | null;
     const primaryTrack = (document.querySelector('.track-panel.track-a .track-content') ||
       document.querySelector('.track-content')) as HTMLDivElement | null;
 
-    if (!positionBlock || !primaryTrack) {
+    if (!positionContent || !primaryTrack) {
       return;
     }
 
@@ -750,14 +750,33 @@ const App: React.FC = () => {
     }
 
     const container = primaryTrack;
+    const currentScrollTop = container.scrollTop;
+    const containerHeight = container.clientHeight;
 
-    // Ask the browser to ensure the selected line is visible inside the track content
-    targetLine.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    const rowHeight = targetLine.offsetHeight || 14;
+    const targetTop = sharedCurrentLine * rowHeight;
+    const targetBottom = targetTop + rowHeight;
 
-    const newScrollTop = container.scrollTop;
+    let newScrollTop = currentScrollTop;
 
-    // Apply synchronized scroll to position block and all track contents
-    positionBlock.scrollTop = newScrollTop;
+    if (targetTop < currentScrollTop) {
+      // Selected row is above the visible area
+      newScrollTop = targetTop;
+    } else if (targetBottom > currentScrollTop + containerHeight) {
+      // Selected row is below the visible area
+      newScrollTop = targetBottom - containerHeight;
+    }
+
+    const maxScrollTop = container.scrollHeight - containerHeight;
+    newScrollTop = Math.max(0, Math.min(newScrollTop, maxScrollTop));
+
+    if (newScrollTop === currentScrollTop) {
+      return;
+    }
+
+    // Apply synchronized scroll only to the pattern area
+    container.scrollTop = newScrollTop;
+    positionContent.scrollTop = newScrollTop;
 
     const tracks = document.querySelectorAll('.track-content');
     tracks.forEach(track => {
@@ -807,14 +826,16 @@ const App: React.FC = () => {
             <div className="left-column-content">
               <div className="position-block">
                 <div className="position-header"></div>
-                {Array.from({ length: 64 }, (_, i) => (
-                  <div 
-                    key={i} 
-                    className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
-                  >
-                    {i.toString(16).toUpperCase().padStart(2, '0')}
-                  </div>
-                ))}
+                <div className="position-content" onScroll={handleTrackScroll}>
+                  {Array.from({ length: 64 }, (_, i) => (
+                    <div 
+                      key={i} 
+                      className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
+                    >
+                      {i.toString(16).toUpperCase().padStart(2, '0')}
+                    </div>
+                  ))}
+                </div>
               </div>
               
               <div className="tracks-container">
