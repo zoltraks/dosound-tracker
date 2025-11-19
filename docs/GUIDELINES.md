@@ -172,12 +172,12 @@ Minimum is 0 and maximum is 7.
 The music settings include fields allowing the user to specify the title of the tune, the year, the author, and the playback speed (the speed parameter).
 
 ```
-┌──────────────────────────────────┐
-│ Title:  Title of the song        │
-│ Author: ZoltarX / New Generation │
-│ Year:   2025                     │
-│ Speed:  6                        │
-└──────────────────────────────────┘
+┌───────────────────────────────────┐
+│ Title:  Title of the song         │
+│ Author: Zoltar X / New Generation │
+│ Year:   2025                      │
+│ Speed:  6                         │
+└───────────────────────────────────┘
 ```
 
 ![](media/song.png)

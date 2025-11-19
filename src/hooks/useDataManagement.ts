@@ -79,7 +79,7 @@ export const useDataManagement = () => {
 
     return {
       title: 'Untitled Song',
-      author: 'ZoltarX / New Generation',
+      author: 'Zoltar X / New Generation',
       year: new Date().getFullYear(),
       speed: 6,
       patternLength: defaultPatternLength,
@@ -167,7 +167,7 @@ export const useDataManagement = () => {
   const createNewSong = useCallback(() => {
     const newSong: Song = {
       title: 'New Song',
-      author: 'ZoltarX / New Generation',
+      author: 'Author Name',
       year: new Date().getFullYear(),
       speed: 6,
       patternLength: PATTERN_LENGTH,
