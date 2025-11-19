@@ -28,6 +28,8 @@ const App: React.FC = () => {
   const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
   const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
+  const [optimizeSummary, setOptimizeSummary] = useState('');
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -823,16 +825,22 @@ const App: React.FC = () => {
   }, []);
 
   const handleOptimizeSong = useCallback(() => {
-    const confirmed = window.confirm(
-      'Optimize song?\n\nThis will remove unused patterns and instruments and trim pattern data beyond the current length.'
-    );
-    if (!confirmed) {
-      return;
-    }
-
-    const summary = optimizeSong();
-    window.alert(summary);
+    setIsOptimizeConfirmOpen(true);
   }, [optimizeSong]);
+
+  const handleConfirmOptimize = useCallback(() => {
+    const summary = optimizeSong();
+    setIsOptimizeConfirmOpen(false);
+    setOptimizeSummary(summary);
+  }, [optimizeSong]);
+
+  const handleCancelOptimize = useCallback(() => {
+    setIsOptimizeConfirmOpen(false);
+  }, []);
+
+  const handleCloseOptimizeSummary = useCallback(() => {
+    setOptimizeSummary('');
+  }, []);
 
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
@@ -1151,6 +1159,41 @@ const App: React.FC = () => {
                 <button className="command-btn" onClick={() => setInstrumentError('')}>
                   OK
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isOptimizeConfirmOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Optimize song?</div>
+              <div className="modal-body">
+                Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.
+                <br />
+                <br />
+                Continue?
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleConfirmOptimize}>OK</button>
+                <button className="command-btn" onClick={handleCancelOptimize}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {optimizeSummary && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Optimization Summary</div>
+              <div className="modal-body">
+                {optimizeSummary.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < optimizeSummary.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseOptimizeSummary}>OK</button>
               </div>
             </div>
           </div>
