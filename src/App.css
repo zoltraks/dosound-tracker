@@ -414,7 +414,7 @@ body {
   max-height: 14px;
   height: 14px;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
   font-size: 10px;
@@ -422,7 +422,7 @@ body {
   flex-shrink: 0;
   line-height: 10px;
   box-sizing: border-box;
-  padding: 2px 0;
+  padding: 0;
   margin: 0;
 }
 
@@ -443,6 +443,7 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
 }
 
 .tracks-row {
@@ -462,7 +463,6 @@ body {
   cursor: pointer;
   display: flex;
   flex-direction: column;
-  height: 100%;
   box-shadow: var(--shadow-medium);
   border-radius: 3px;
   position: relative;
@@ -513,6 +513,8 @@ body {
 
 .track-content {
   font-family: 'Courier New', monospace;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .track-line {
