@@ -753,7 +753,6 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
 }
 
@@ -810,7 +809,6 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
 }
 
@@ -960,7 +958,6 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
 }
 
@@ -1073,7 +1070,6 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
   font-size: 10px;
 }
@@ -1117,7 +1113,6 @@ body {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
-  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
   font-size: 10px;
 }
