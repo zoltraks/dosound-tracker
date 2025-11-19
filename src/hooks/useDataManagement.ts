@@ -699,28 +699,36 @@ export const useDataManagement = () => {
         return values.slice(0, i + 1).concat(last);
       };
 
+      const volumeEnv = trimEnvelope(currentInstrument.volumeEnvelope);
+      const arpeggioEnv = trimEnvelope(currentInstrument.arpeggioEnvelope);
       const pitchEnv = trimEnvelope(currentInstrument.pitchEnvelope);
       const noiseEnv = trimEnvelope(currentInstrument.noiseEnvelope);
       const modeEnv = trimEnvelope(currentInstrument.modeEnvelope);
 
-      const instrumentNode: any = {
-        name: currentInstrument.name,
-        volume: trimEnvelope(currentInstrument.volumeEnvelope),
-        arpeggio: trimEnvelope(currentInstrument.arpeggioEnvelope),
-        base: currentInstrument.base || DEFAULT_BASE_KEY
-      };
-
       const isZeroDefault = (values: number[]): boolean =>
         values.length === 0 || (values.length === 1 && values[0] === 0);
+
+      const instrumentNode: Record<string, any> = {
+        name: currentInstrument.name || ''
+      };
+
+      const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
+      if (baseKey !== DEFAULT_BASE_KEY) {
+        instrumentNode.base = baseKey;
+      }
+
+      if (!isZeroDefault(modeEnv)) {
+        instrumentNode.mode = modeEnv;
+      }
+
+      instrumentNode.volume = volumeEnv;
+      instrumentNode.arpeggio = arpeggioEnv;
 
       if (!isZeroDefault(pitchEnv)) {
         instrumentNode.pitch = pitchEnv;
       }
       if (!isZeroDefault(noiseEnv)) {
         instrumentNode.noise = noiseEnv;
-      }
-      if (!isZeroDefault(modeEnv)) {
-        instrumentNode.mode = modeEnv;
       }
 
       const exportData = { instrument: instrumentNode };

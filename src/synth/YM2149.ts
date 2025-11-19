@@ -150,6 +150,11 @@ export class YM2149 {
     this.state.envelopeEnabled = !!(this.registers[13] & 0x10);
   }
 
+  private getEffectiveNoisePeriod(period: number): number {
+    const masked = period & 0x1F;
+    return masked === 0 ? 1 : masked;
+  }
+
   private updateAudioNodes(): void {
     const now = this.audioContext.currentTime;
     
@@ -196,13 +201,14 @@ export class YM2149 {
     // Update noise gain based on any channel using noise
     const anyNoiseActive = this.state.channels.some(channel => channel.noiseEnabled && channel.volume > 0);
     
-    if (anyNoiseActive && this.state.noisePeriod > 0) {
-      // Calculate noise volume based on the loudest channel using noise (log curve)
-      const maxNoiseVolume = Math.max(...this.state.channels
-        .filter(channel => channel.noiseEnabled)
-        .map(channel => channel.volume));
-      const noiseLevel = Math.max(0, Math.min(15, maxNoiseVolume | 0));
-      const noiseVolume = YM_LOG_VOLUME_TABLE[noiseLevel] * 0.3;
+    if (anyNoiseActive) {
+      const noiseLevels = this.state.channels
+        .filter(channel => channel.noiseEnabled && channel.volume > 0)
+        .map(channel => Math.max(0, Math.min(15, channel.volume | 0)));
+      const combinedLevel = Math.min(1,
+        noiseLevels.reduce((sum, level) => sum + YM_LOG_VOLUME_TABLE[level], 0)
+      );
+      const noiseVolume = combinedLevel * 0.4; // Slight boost so noise matches perceived tone loudness
       this.noiseGainNode.gain.setValueAtTime(noiseVolume, now);
     } else {
       this.noiseGainNode.gain.setValueAtTime(0, now);
@@ -210,28 +216,18 @@ export class YM2149 {
   }
 
   private updateNoiseGenerator(): void {
-    const targetNoisePeriod = this.state.noisePeriod;
-    
-    // Check if noise period changed
-    if (targetNoisePeriod !== this.lastNoisePeriod) {
-      this.lastNoisePeriod = targetNoisePeriod;
-      
-      if (targetNoisePeriod === 0) {
-        // No noise - silence
-        if (this.noiseNode) {
-          this.noiseNode.stop();
-          this.noiseNode = null;
-        }
-      } else {
-        // Create new noise generator with updated period
-        this.createNoiseGenerator(targetNoisePeriod);
-      }
+    const effectiveNoisePeriod = this.getEffectiveNoisePeriod(this.state.noisePeriod);
+
+    if (effectiveNoisePeriod !== this.lastNoisePeriod || !this.noiseNode) {
+      this.lastNoisePeriod = effectiveNoisePeriod;
+      this.createNoiseGenerator(effectiveNoisePeriod);
     }
   }
 
   private createNoiseGenerator(noisePeriod: number): void {
     if (this.noiseNode) {
       this.noiseNode.stop();
+      this.noiseNode.disconnect();
     }
 
     const noiseBuffer = this.createNoiseBuffer(noisePeriod);
@@ -244,32 +240,30 @@ export class YM2149 {
 
   private createNoiseBuffer(noisePeriod: number): AudioBuffer {
     const sampleRate = this.audioContext.sampleRate;
-    
-    // Calculate noise frequency from period
-    // YM2149 noise frequency = clock / (16 * period)
-    // For period 31, this gives ~4kHz clock / (16 * 31) = ~4kHz
-    // But this seems too high - let's try a different approach
-    // Let's use a more reasonable frequency range
-    const baseFrequency = YM_BASE_CLOCK / (16 * noisePeriod);
-    // Clamp to audible range (100Hz to 8kHz)
-    const noiseFrequency = Math.max(100, Math.min(8000, baseFrequency));
-    
-    const bufferLength = Math.ceil(sampleRate * 2); // 2 seconds of noise
+    const effectiveNoisePeriod = this.getEffectiveNoisePeriod(noisePeriod);
+    const noiseFrequency = YM_BASE_CLOCK / (16 * effectiveNoisePeriod);
+    const bufferLength = Math.ceil(sampleRate * 2);
     const buffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
     const data = buffer.getChannelData(0);
 
-    // Simple approach: generate white noise and filter it based on period
-    // Lower period = higher frequency noise = more random changes
-    const changeProbability = Math.min(1, noiseFrequency / 1000); // Probability of changing value each sample
-    
-    let currentValue = (Math.random() - 0.5) * 0.2; // Start with random value between -0.1 and 0.1
-    
+    let lfsr = 0x1FFFF; // 17-bit LFSR seed (must be non-zero)
+    let phase = 0;
+    const step = noiseFrequency / sampleRate;
+
     for (let i = 0; i < bufferLength; i++) {
-      // Randomly change value to create noise
-      if (Math.random() < changeProbability) {
-        currentValue = (Math.random() - 0.5) * 0.2; // New random value
+      phase += step;
+      if (phase >= 1) {
+        const advances = Math.floor(phase);
+        phase -= advances;
+        for (let a = 0; a < advances; a++) {
+          const bit0 = lfsr & 1;
+          const bit3 = (lfsr >> 3) & 1;
+          const newBit = bit0 ^ bit3;
+          lfsr = ((lfsr >> 1) | (newBit << 16)) & 0x1FFFF;
+        }
       }
-      data[i] = currentValue;
+
+      data[i] = (lfsr & 1) ? 1 : -1;
     }
 
     return buffer;
@@ -343,11 +337,6 @@ export class YM2149 {
       const noiseIndex = Math.min(Math.max(tick, 0), instrument.noiseEnvelope.length - 1);
       const noiseValue = instrument.noiseEnvelope[noiseIndex];
       noisePeriod = Math.max(0, Math.min(31, typeof noiseValue === 'number' ? noiseValue : 0));
-      
-      // If envelope value is 0, use a default noise period
-      if (noisePeriod === 0) {
-        noisePeriod = 15;
-      }
     }
     
     this.writeRegister(0x06, noisePeriod);
