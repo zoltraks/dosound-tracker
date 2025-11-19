@@ -4,6 +4,7 @@ interface CommandPanelProps {
   onNewSong: () => void;
   onLoadSong: () => void;
   onSaveSong: () => void;
+  onOptimize: () => void;
   onNewInstrument: () => void;
   onSaveInstrument: () => void;
   onExportInstrument: () => void;
@@ -27,6 +28,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onNewSong,
   onLoadSong,
   onSaveSong,
+  onOptimize,
   onNewInstrument,
   onSaveInstrument,
   onExportInstrument,
@@ -52,6 +54,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onNewSong} className="command-btn">NEW SONG</button>
         <button onClick={onLoadSong} className="command-btn">LOAD SONG</button>
         <button onClick={onSaveSong} className="command-btn">SAVE SONG</button>
+        <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
         <button onClick={onAddLine} className="command-btn">ADD LINE</button>
         <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
       </div>

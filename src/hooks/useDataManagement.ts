@@ -921,6 +921,116 @@ export const useDataManagement = () => {
     setCurrentSong(updatedSong);
   }, [currentSong]);
 
+  const optimizeSong = useCallback((): string => {
+    const song = currentSong;
+    const patternLength = song.patternLength || PATTERN_LENGTH;
+
+    // Determine used pattern IDs from playlist (ignore '--' and GOTO markers starting with '^^')
+    const usedPatternIds = new Set<string>();
+    song.playlist.forEach(entry => {
+      [entry.trackA, entry.trackB, entry.trackC].forEach(id => {
+        if (typeof id === 'string') {
+          const trimmed = id.trim();
+          if (trimmed && trimmed !== '--' && !trimmed.startsWith('^^')) {
+            usedPatternIds.add(trimmed);
+          }
+        }
+      });
+    });
+
+    const newPatterns: Pattern[] = [];
+    const removedPatternIds: string[] = [];
+    const trimmedLinesInfo: { id: string; name: string; removed: number }[] = [];
+
+    song.patterns.forEach(pattern => {
+      if (!usedPatternIds.has(pattern.id)) {
+        removedPatternIds.push(pattern.id);
+        return;
+      }
+
+      const existingLines = pattern.lines || [];
+      const removedCount = existingLines.length > patternLength
+        ? existingLines.length - patternLength
+        : 0;
+
+      let newLines = existingLines;
+
+      if (removedCount > 0) {
+        newLines = existingLines.slice(0, patternLength);
+        trimmedLinesInfo.push({ id: pattern.id, name: pattern.name, removed: removedCount });
+      } else if (existingLines.length < patternLength) {
+        const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+        const extra = Array.from({ length: patternLength - existingLines.length }, () => ({ ...emptyLine }));
+        newLines = [...existingLines, ...extra];
+      }
+
+      newPatterns.push({ ...pattern, lines: newLines });
+    });
+
+    // Determine used instruments from remaining patterns
+    const usedInstrumentIds = new Set<string>();
+    newPatterns.forEach(pattern => {
+      (pattern.lines || []).forEach(line => {
+        const tracks: (keyof PatternLine)[] = ['trackA', 'trackB', 'trackC'];
+        tracks.forEach(trackKey => {
+          const note = line[trackKey] as any;
+          if (note && typeof note.instrument === 'string') {
+            const id = note.instrument.trim().toUpperCase();
+            if (id) {
+              usedInstrumentIds.add(id);
+            }
+          }
+        });
+      });
+    });
+
+    const newInstruments: Instrument[] = [];
+    const removedInstrumentIds: string[] = [];
+
+    song.instruments.forEach(inst => {
+      const idNorm = (inst.id || '').trim().toUpperCase();
+      if (idNorm && usedInstrumentIds.has(idNorm)) {
+        newInstruments.push(inst);
+      } else {
+        removedInstrumentIds.push(inst.id);
+      }
+    });
+
+    const optimizedSong: Song = {
+      ...song,
+      patternLength,
+      patterns: newPatterns,
+      instruments: newInstruments
+    };
+
+    setCurrentSong(optimizedSong);
+
+    const summaryLines: string[] = [];
+    summaryLines.push('Optimization complete.');
+    summaryLines.push('');
+    summaryLines.push(
+      `Removed patterns: ${removedPatternIds.length}` +
+        (removedPatternIds.length ? ` (${removedPatternIds.join(', ')})` : '')
+    );
+    summaryLines.push(
+      `Removed instruments: ${removedInstrumentIds.length}` +
+        (removedInstrumentIds.length ? ` (${removedInstrumentIds.join(', ')})` : '')
+    );
+
+    if (trimmedLinesInfo.length > 0) {
+      summaryLines.push('Trimmed pattern lines:');
+      trimmedLinesInfo.forEach(info => {
+        summaryLines.push(
+          `- Pattern ${info.id} (${info.name || 'unnamed'}): ${info.removed} lines above length ${patternLength}`
+        );
+      });
+    } else {
+      summaryLines.push('Trimmed pattern lines: 0');
+    }
+
+    return summaryLines.join('\n');
+  }, [currentSong]);
+
   const triggerFileLoad = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -942,6 +1052,7 @@ export const useDataManagement = () => {
     updateInstrument,
     createNewPattern,
     addPlaylistEntry,
+    optimizeSong,
     triggerFileLoad
   };
 };

@@ -45,7 +45,8 @@ const App: React.FC = () => {
     loadSong,
     loadInstrument,
     instrumentError,
-    setInstrumentError
+    setInstrumentError,
+    optimizeSong
   } = useDataManagement();
   const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
 
@@ -817,12 +818,22 @@ const App: React.FC = () => {
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
   }, []);
-
   const handleLineChange = useCallback((lineIndex: number) => {
     setSharedCurrentLine(lineIndex);
   }, []);
 
-  
+  const handleOptimizeSong = useCallback(() => {
+    const confirmed = window.confirm(
+      'Optimize song?\n\nThis will remove unused patterns and instruments and trim pattern data beyond the current length.'
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    const summary = optimizeSong();
+    window.alert(summary);
+  }, [optimizeSong]);
+
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
@@ -902,8 +913,9 @@ const App: React.FC = () => {
         
         <CommandPanel
           onNewSong={handleRequestNewSong}
-          onSaveSong={saveSong}
           onLoadSong={triggerFileLoad}
+          onSaveSong={saveSong}
+          onOptimize={handleOptimizeSong}
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
           onExportInstrument={handleExportInstrumentAssembly}
