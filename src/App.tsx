@@ -16,7 +16,7 @@ import { InstrumentListPanel } from './components/InstrumentListPanel';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
-import { exportToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
+import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -604,6 +604,18 @@ const App: React.FC = () => {
     }, 20);
   }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString]);
 
+  const handleExportInstrumentAssembly = useCallback(() => {
+    try {
+      const asm = exportInstrumentToAssembly(currentInstrument);
+      const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`)
+        .replace(/[^a-z0-9]/gi, '_')
+        .toLowerCase();
+      downloadAssemblyFile(asm, `${safeName}.s`);
+    } catch (error) {
+      console.error('Instrument assembly export failed:', error);
+    }
+  }, [currentInstrument]);
+
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
     if (instruments.length === 0) {
@@ -800,7 +812,7 @@ const App: React.FC = () => {
           onLoadSong={triggerFileLoad}
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
-          onExportInstrument={() => {}}
+          onExportInstrument={handleExportInstrumentAssembly}
           onLoadInstrument={handleLoadInstrumentClick}
           onDeleteInstrument={handleDeleteInstrument}
           onPlaySong={handleStartSong}

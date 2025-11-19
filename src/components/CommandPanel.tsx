@@ -90,7 +90,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         >
           {isPatternPlaying ? 'STOP PATTERN' : 'PLAY PATTERN'}
         </button>
-        <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
         <button 
           onClick={onToggleDosoundMode} 
           className={`command-btn ${isDosoundMode ? 'active' : ''}`}
