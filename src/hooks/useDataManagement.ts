@@ -9,6 +9,17 @@ const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
 
 const DEFAULT_BASE_KEY = 'C-4';
 
+class FlowSeq<T> extends Array<T> {}
+
+const YamlAny: any = yaml;
+const FlowSeqType = new YamlAny.Type('tag:yaml.org,2002:seq', {
+  kind: 'sequence',
+  instanceOf: FlowSeq,
+  represent: (seq: any[]) => seq,
+  defaultStyle: 'flow'
+});
+const SONG_DUMP_SCHEMA = YamlAny.DEFAULT_SCHEMA.extend([FlowSeqType]);
+
 const formatBaseKey = (note: string, octave: number): string => {
   const upperNote = note.toUpperCase();
   return upperNote.endsWith('#')
@@ -219,11 +230,150 @@ export const useDataManagement = () => {
 
   const saveSong = useCallback(() => {
     try {
-      const yamlContent = yaml.dump(currentSong, {
-        indent: 2,
-        lineWidth: -1
+      const trimEnvelope = (values: number[]): number[] => {
+        if (!values || values.length === 0) return [];
+        const last = values[values.length - 1];
+        let i = values.length - 2;
+        while (i >= 0 && values[i] === last) {
+          i--;
+        }
+        return values.slice(0, i + 1).concat(last);
+      };
+
+      const isZeroDefault = (values: number[]): boolean =>
+        values.length === 0 || (values.length === 1 && values[0] === 0);
+
+      const instruments = currentSong.instruments.map((inst, index) => {
+        const volumeEnv = trimEnvelope(inst.volumeEnvelope);
+        const arpeggioEnv = trimEnvelope(inst.arpeggioEnvelope);
+        const pitchEnv = trimEnvelope(inst.pitchEnvelope);
+        const noiseEnv = trimEnvelope(inst.noiseEnvelope);
+        const modeEnv = trimEnvelope(inst.modeEnvelope);
+
+        const number =
+          typeof inst.id === 'string' && inst.id.trim()
+            ? inst.id
+            : index.toString(16).padStart(2, '0').toUpperCase();
+
+        const instrumentNode: any = {
+          name: inst.name,
+          number,
+          volume: new FlowSeq(...volumeEnv),
+          arpeggio: new FlowSeq(...arpeggioEnv)
+        };
+
+        const baseKey = inst.base || DEFAULT_BASE_KEY;
+        if (baseKey !== DEFAULT_BASE_KEY) {
+          instrumentNode.base = baseKey;
+        }
+
+        if (!isZeroDefault(pitchEnv)) {
+          instrumentNode.pitch = new FlowSeq(...pitchEnv);
+        }
+        if (!isZeroDefault(noiseEnv)) {
+          instrumentNode.noise = new FlowSeq(...noiseEnv);
+        }
+        if (!isZeroDefault(modeEnv)) {
+          instrumentNode.mode = new FlowSeq(...modeEnv);
+        }
+
+        return instrumentNode;
       });
-      
+
+      // Playlist: A/B/C keys instead of trackA/trackB/trackC
+      const playlist = currentSong.playlist.map(entry => ({
+        A: entry.trackA,
+        B: entry.trackB,
+        C: entry.trackC
+      }));
+
+      // Patterns: single-track (track A) lines with note strings or space
+      const targetLength = currentSong.patternLength || PATTERN_LENGTH;
+      const patterns = currentSong.patterns.map((pattern, index) => {
+        const number =
+          typeof pattern.id === 'string' && pattern.id.trim()
+            ? pattern.id
+            : index.toString(16).padStart(2, '0').toUpperCase();
+
+        const rawLines = pattern.lines || [];
+        const lines: any[] = [];
+
+        for (let i = 0; i < targetLength; i++) {
+          const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
+          const cell = raw.trackA;
+
+          if (!cell) {
+            lines.push({ space: true });
+          } else {
+            const noteText = formatBaseKey(cell.note, cell.octave);
+            lines.push({
+              note: noteText,
+              instrument: cell.instrument
+            });
+          }
+        }
+
+        // Trim trailing pure-space lines
+        let lastNonSpace = lines.length - 1;
+        while (lastNonSpace >= 0) {
+          const ln: any = lines[lastNonSpace];
+          if (ln && ln.space === true && Object.keys(ln).length === 1) {
+            lastNonSpace--;
+          } else {
+            break;
+          }
+        }
+
+        const trimmedLines = lines.slice(0, lastNonSpace + 1);
+
+        // Compress consecutive pure-space lines into space: <count>
+        const compressedLines: any[] = [];
+        let runCount = 0;
+
+        const flushRun = () => {
+          if (runCount > 0) {
+            compressedLines.push({ space: runCount });
+            runCount = 0;
+          }
+        };
+
+        for (const ln of trimmedLines) {
+          if (ln && ln.space === true && Object.keys(ln).length === 1) {
+            runCount++;
+          } else {
+            flushRun();
+            compressedLines.push(ln);
+          }
+        }
+        flushRun();
+
+        return {
+          name: pattern.name,
+          number,
+          lines: compressedLines
+        };
+      });
+
+      const exportData = {
+        song: {
+          title: currentSong.title,
+          author: currentSong.author,
+          length: currentSong.patternLength,
+          speed: currentSong.speed,
+          year: currentSong.year,
+          playlist,
+          patterns,
+          instruments
+        }
+      };
+
+      const yamlContent = yaml.dump(exportData, {
+        schema: SONG_DUMP_SCHEMA,
+        indent: 2,
+        lineWidth: -1,
+        quotingType: '"'
+      });
+
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -243,10 +393,248 @@ export const useDataManagement = () => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const loadedSong = yaml.load(content) as Song;
-        setCurrentSong(loadedSong);
-        if (loadedSong.instruments.length > 0) {
-          setCurrentInstrument(loadedSong.instruments[0]);
+        const parsed = yaml.load(content) as any;
+
+        if (!parsed || typeof parsed !== 'object' || !parsed.song) {
+          alert('Error loading song file.\n\nRoot "song" key not found.');
+          return;
+        }
+
+        const node = parsed.song as any;
+        if (!node || typeof node !== 'object') {
+          throw new Error('Invalid song file format');
+        }
+
+        const rawLength = Number(node.length);
+        const patternLengthRaw = Number.isFinite(rawLength) ? rawLength : PATTERN_LENGTH;
+        const clampedLength = Math.max(16, Math.min(256, Math.floor(patternLengthRaw)));
+
+        const title =
+          typeof node.title === 'string' && node.title.trim() ? node.title : 'Untitled Song';
+        const author =
+          typeof node.author === 'string' && node.author.trim() ? node.author : 'Unknown';
+
+        const speedRaw = Number(node.speed);
+        const speed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
+
+        const yearRaw = Number(node.year);
+        const year = Number.isFinite(yearRaw) ? yearRaw : new Date().getFullYear();
+
+        const playlistNodes = Array.isArray(node.playlist) ? node.playlist : [];
+        if (playlistNodes.length === 0) {
+          throw new Error('Song playlist is missing or empty');
+        }
+
+        const playlist = playlistNodes.map((entry: any, index: number) => {
+          if (!entry || typeof entry !== 'object') {
+            throw new Error(`Invalid playlist entry at index ${index}`);
+          }
+
+          const trackA = typeof entry.A === 'string' ? entry.A : '--';
+          const trackB = typeof entry.B === 'string' ? entry.B : '--';
+          const trackC = typeof entry.C === 'string' ? entry.C : '--';
+
+          return { trackA, trackB, trackC };
+        });
+
+        const patternNodes = Array.isArray(node.patterns) ? node.patterns : [];
+        if (patternNodes.length === 0) {
+          throw new Error('Song patterns are missing');
+        }
+
+        const patterns: Pattern[] = patternNodes.map((pNode: any, patternIndex: number) => {
+          if (!pNode || typeof pNode !== 'object') {
+            throw new Error(`Invalid pattern at index ${patternIndex}`);
+          }
+
+          const rawNumber = pNode.number;
+          const number =
+            typeof rawNumber === 'string' && rawNumber.trim()
+              ? rawNumber.trim().toUpperCase()
+              : patternIndex.toString(16).padStart(2, '0').toUpperCase();
+
+          const name =
+            typeof pNode.name === 'string' && pNode.name.trim()
+              ? pNode.name
+              : `Pattern ${number}`;
+
+          const rawLineNodes = Array.isArray(pNode.lines) ? pNode.lines : [];
+          const expandedLineNodes: any[] = [];
+
+          // Expand compressed space/off runs (space: N / off: N) into individual logical lines
+          for (const nodeLine of rawLineNodes) {
+            if (nodeLine && typeof nodeLine === 'object') {
+              const ln: any = nodeLine;
+
+              const spaceVal = ln.space;
+              const offVal = ln.off;
+
+              const isNumericSpace = typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
+              const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
+
+              if (isNumericSpace || isNumericOff) {
+                const count = isNumericSpace ? spaceVal : offVal;
+                const isOff = isNumericOff && !isNumericSpace;
+                for (let i = 0; i < count; i++) {
+                  expandedLineNodes.push(isOff ? { off: true } : { space: true });
+                }
+                continue;
+              }
+
+              expandedLineNodes.push(nodeLine);
+            } else {
+              expandedLineNodes.push(nodeLine);
+            }
+          }
+
+          const lines: PatternLine[] = [];
+
+          for (let i = 0; i < clampedLength; i++) {
+            const rawLineNode = expandedLineNodes[i];
+            const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+
+            if (rawLineNode && typeof rawLineNode === 'object') {
+              const ln: any = rawLineNode;
+
+              if (ln.space === true || ln.off === true) {
+                // Empty or note-off line: currently treated as space
+              } else if (typeof ln.note === 'string') {
+                const parsedKey = parseBaseKey(ln.note);
+                if (!parsedKey) {
+                  throw new Error(
+                    `Invalid note value "${ln.note}" in pattern ${number} at line ${i}`
+                  );
+                }
+
+                const instId =
+                  typeof ln.instrument === 'string' && ln.instrument.trim()
+                    ? ln.instrument.trim().toUpperCase()
+                    : '00';
+
+                line.trackA = {
+                  note: parsedKey.note,
+                  octave: parsedKey.octave,
+                  instrument: instId
+                };
+              }
+            }
+
+            lines.push(line);
+          }
+
+          return {
+            id: number,
+            name,
+            lines
+          };
+        });
+
+        const instrumentNodes = Array.isArray(node.instruments) ? node.instruments : [];
+        if (instrumentNodes.length === 0) {
+          throw new Error('Song instruments are missing');
+        }
+
+        const instruments: Instrument[] = [];
+
+        const expandEnvelope = (values: any, length: number, defaultValue: number): number[] => {
+          const rawArray = Array.isArray(values) ? (values as any[]) : [];
+          const numericValues = rawArray
+            .map(v => Number(v))
+            .filter(v => Number.isFinite(v));
+
+          if (numericValues.length === 0) {
+            return Array(length).fill(defaultValue);
+          }
+
+          const result: number[] = [];
+          for (let i = 0; i < length; i++) {
+            if (i < numericValues.length) {
+              result[i] = numericValues[i];
+            } else {
+              result[i] = numericValues[numericValues.length - 1];
+            }
+          }
+          return result;
+        };
+
+        instrumentNodes.forEach((instNode: any, index: number) => {
+          if (!instNode || typeof instNode !== 'object') {
+            throw new Error(`Invalid instrument at index ${index}`);
+          }
+
+          const rawNumber = instNode.number;
+          const number =
+            typeof rawNumber === 'string' && rawNumber.trim()
+              ? rawNumber.trim().toUpperCase()
+              : index.toString(16).padStart(2, '0').toUpperCase();
+
+          const slotIndex = parseInt(number, 16);
+          if (!Number.isFinite(slotIndex) || slotIndex < 0 || slotIndex >= MAX_INSTRUMENTS) {
+            throw new Error(`Invalid instrument number "${rawNumber}"`);
+          }
+
+          const name =
+            typeof instNode.name === 'string' && instNode.name.trim()
+              ? instNode.name
+              : `Instrument ${number}`;
+
+          const baseParsed = parseBaseKey((instNode as any).base);
+          const base = baseParsed
+            ? formatBaseKey(baseParsed.note, baseParsed.octave)
+            : DEFAULT_BASE_KEY;
+
+          const volumeEnvelope = expandEnvelope(instNode.volume, ENVELOPE_LENGTH, 0x0F);
+          const arpeggioEnvelope = expandEnvelope(instNode.arpeggio, ENVELOPE_LENGTH, 0);
+          const pitchEnvelope = expandEnvelope(instNode.pitch, ENVELOPE_LENGTH, 0);
+          const noiseEnvelope = expandEnvelope(instNode.noise, ENVELOPE_LENGTH, 0);
+          const modeEnvelope = expandEnvelope(instNode.mode, ENVELOPE_LENGTH, 0);
+
+          for (let i = instruments.length; i <= slotIndex; i++) {
+            if (!instruments[i]) {
+              const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+              instruments[i] = {
+                id: slotId,
+                name: '',
+                volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                base: DEFAULT_BASE_KEY
+              };
+            }
+          }
+
+          instruments[slotIndex] = {
+            id: number,
+            name,
+            volumeEnvelope,
+            arpeggioEnvelope,
+            pitchEnvelope,
+            noiseEnvelope,
+            modeEnvelope,
+            base
+          };
+        });
+
+        const newSong: Song = {
+          title,
+          author,
+          year,
+          speed,
+          patternLength: clampedLength,
+          patterns,
+          playlist,
+          instruments
+        };
+
+        setCurrentSong(newSong);
+
+        const firstInstrument = newSong.instruments.find(
+          inst => inst && inst.name && inst.name.trim()
+        );
+        if (firstInstrument) {
+          setCurrentInstrument(firstInstrument);
         }
       } catch (error) {
         console.error('Error loading song:', error);
@@ -254,7 +642,7 @@ export const useDataManagement = () => {
       }
     };
     reader.readAsText(file);
-  }, []);
+  }, [setCurrentInstrument]);
 
   const saveInstrument = useCallback(() => {
     try {
