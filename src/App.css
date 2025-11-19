@@ -523,7 +523,6 @@ body {
   font-family: 'Courier New', monospace;
   flex: 1;
   overflow-y: auto;
-  pointer-events: none;
 }
 
 .track-content::-webkit-scrollbar {
