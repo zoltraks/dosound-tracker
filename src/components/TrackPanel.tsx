@@ -16,6 +16,7 @@ interface TrackPanelProps {
   onPatternChange: (pattern: Pattern) => void;
   ym2149: YM2149 | null;
   currentInstrumentData: Instrument;
+  isTargetTrack: boolean;
 }
 
 interface NoteData {
@@ -36,7 +37,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     pattern,
     onPatternChange,
     ym2149,
-    currentInstrumentData
+    currentInstrumentData,
+    isTargetTrack
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -281,7 +283,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection(sectionName)}
     >
-      <div className="track-header">Track {trackId}</div>
+      <div className={`track-header ${isTargetTrack ? 'target-track' : ''}`}>
+        Track {trackId}
+      </div>
 
       <div className="track-content">
         {trackNotes.map((noteData, lineIndex) => (

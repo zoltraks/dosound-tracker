@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
@@ -185,6 +185,13 @@ const App: React.FC = () => {
       setLastTrackId('C');
     }
   }, [activeSection]);
+
+  const targetTrackId = useMemo<'A' | 'B' | 'C'>(() => {
+    if (activeSection === 'trackA') return 'A';
+    if (activeSection === 'trackB') return 'B';
+    if (activeSection === 'trackC') return 'C';
+    return lastTrackId;
+  }, [activeSection, lastTrackId]);
 
   // Track pattern playing state
   const [isPatternPlaying, setIsPatternPlaying] = useState(false);
@@ -441,12 +448,7 @@ const App: React.FC = () => {
     updateSong({ playlist: newPlaylist });
   }, [updateSong]);
 
-  const handleCreatePatternAt = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
-    if (lineIndex < 0 || lineIndex >= currentSong.playlist.length) {
-      return;
-    }
-
-    // Generate a unique 2-digit hex pattern ID
+  const generateUniquePatternId = useCallback(() => {
     const existingIds = currentSong.patterns.map(p => p.id);
     let index = currentSong.patterns.length;
     let patternId: string;
@@ -454,7 +456,15 @@ const App: React.FC = () => {
       patternId = index.toString(16).padStart(2, '0').toUpperCase();
       index++;
     } while (existingIds.includes(patternId));
+    return patternId;
+  }, [currentSong.patterns]);
 
+  const handleCreatePatternAt = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
+    if (lineIndex < 0 || lineIndex >= currentSong.playlist.length) {
+      return;
+    }
+
+    const patternId = generateUniquePatternId();
     createNewPattern(patternId);
 
     const newPlaylist = [...currentSong.playlist];
@@ -474,7 +484,38 @@ const App: React.FC = () => {
 
     newPlaylist[lineIndex] = entry;
     updateSong({ playlist: newPlaylist });
-  }, [currentSong.playlist, currentSong.patterns, createNewPattern, updateSong]);
+  }, [currentSong.playlist, createNewPattern, updateSong, generateUniquePatternId]);
+
+  const handleCreateNewTrack = useCallback(() => {
+    const playlist = currentSong.playlist.length > 0
+      ? [...currentSong.playlist]
+      : [{ trackA: '--', trackB: '--', trackC: '--' }];
+
+    const targetLine = Math.max(0, Math.min(sequencerState.currentPattern, playlist.length - 1));
+    const patternId = generateUniquePatternId();
+    createNewPattern(patternId);
+
+    const entry = { ...playlist[targetLine] };
+    switch (targetTrackId) {
+      case 'A':
+        entry.trackA = patternId;
+        break;
+      case 'B':
+        entry.trackB = patternId;
+        break;
+      case 'C':
+        entry.trackC = patternId;
+        break;
+    }
+
+    playlist[targetLine] = entry;
+    updateSong({ playlist });
+
+    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
+    setActiveSection(section);
+    setSharedCurrentLine(0);
+    setPosition(targetLine, 0, 0);
+  }, [currentSong.playlist, sequencerState.currentPattern, targetTrackId, generateUniquePatternId, createNewPattern, updateSong, setActiveSection, setSharedCurrentLine, setPosition]);
 
   const handleAddLine = useCallback(() => {
     const newPlaylist = [...currentSong.playlist];
@@ -1252,6 +1293,7 @@ const App: React.FC = () => {
           onPlayInstrument={handlePlayInstrument}
           onCopyTrack={handleCopyTrack}
           onPasteTrack={handlePasteTrack}
+          onNewTrack={handleCreateNewTrack}
         />
 
         <div className="main-content">
@@ -1270,7 +1312,7 @@ const App: React.FC = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div className="tracks-container">
                 <div className="tracks-row">
                   <TrackPanel
@@ -1285,8 +1327,9 @@ const App: React.FC = () => {
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
+                    isTargetTrack={targetTrackId === 'A'}
                   />
-                  
+
                   <TrackPanel
                     trackId="B"
                     activeSection={activeSection}
@@ -1299,8 +1342,9 @@ const App: React.FC = () => {
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
+                    isTargetTrack={targetTrackId === 'B'}
                   />
-                  
+
                   <TrackPanel
                     trackId="C"
                     activeSection={activeSection}
@@ -1313,6 +1357,7 @@ const App: React.FC = () => {
                     onPatternChange={handlePatternChange}
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
+                    isTargetTrack={targetTrackId === 'C'}
                   />
                 </div>
               </div>
@@ -1386,6 +1431,7 @@ const App: React.FC = () => {
               currentPlaybackPosition={sequencerState.currentPattern}
               onPositionSelect={handlePositionSelect}
               onCreatePatternAt={handleCreatePatternAt}
+              targetTrack={targetTrackId}
             />
             
             <InstrumentListPanel

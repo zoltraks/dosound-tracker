@@ -24,6 +24,7 @@ interface CommandPanelProps {
   onPlayInstrument: () => void;
   onCopyTrack: () => void;
   onPasteTrack: () => void;
+  onNewTrack: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -49,7 +50,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onToggleDosoundMode,
   onPlayInstrument,
   onCopyTrack,
-  onPasteTrack
+  onPasteTrack,
+  onNewTrack
 }) => {
   return (
     <div className="command-panel">
@@ -76,7 +78,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
 
       {/* Pattern Operations */}
       <div className="command-row">
-        <button onClick={() => {}} className="command-btn">NEW PATTERN</button>
+        <button onClick={onNewTrack} className="command-btn">NEW TRACK</button>
         <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>
         <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
         <button onClick={() => {}} className="command-btn">DELETE PATTERN</button>

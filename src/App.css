@@ -523,6 +523,13 @@ body {
   box-sizing: border-box;
 }
 
+.track-header.target-track {
+  background: linear-gradient(180deg, var(--active-bg) 0%, var(--bg-secondary) 100%);
+  border: 1px solid var(--active-border);
+  box-shadow: var(--glow-primary);
+  color: var(--text-secondary);
+}
+
 .track-content {
   font-family: 'Courier New', monospace;
   flex: 1;

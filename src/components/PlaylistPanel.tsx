@@ -15,6 +15,7 @@ interface PlaylistPanelProps {
   currentPlaybackPosition: number;
   onPositionSelect: (position: number) => void;
   onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
+  targetTrack: 'A' | 'B' | 'C';
 }
 
 export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
@@ -24,7 +25,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   onPlaylistChange,
   currentPlaybackPosition,
   onPositionSelect,
-  onCreatePatternAt
+  onCreatePatternAt,
+  targetTrack
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>('A');
@@ -239,9 +241,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       <div className="playlist-content">
         <div className="playlist-header-row">
           <span className="line-number-header">Pos</span>
-          <span className="track-header">A</span>
-          <span className="track-header">B</span>
-          <span className="track-header">C</span>
+          <span className={`track-header ${targetTrack === 'A' ? 'target-track' : ''}`}>A</span>
+          <span className={`track-header ${targetTrack === 'B' ? 'target-track' : ''}`}>B</span>
+          <span className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}>C</span>
         </div>
         
         <div className="playlist-lines">
