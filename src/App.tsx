@@ -719,16 +719,53 @@ const App: React.FC = () => {
     // Sync position block scroll
     const positionBlock = document.querySelector('.position-block');
     if (positionBlock) {
-      positionBlock.scrollTop = scrollTop;
+      (positionBlock as HTMLDivElement).scrollTop = scrollTop;
     }
     // Sync other tracks scroll
     const tracks = document.querySelectorAll('.track-content');
     tracks.forEach(track => {
       if (track !== event.currentTarget) {
-        track.scrollTop = scrollTop;
+        (track as HTMLDivElement).scrollTop = scrollTop;
       }
     });
   }, []);
+
+  useEffect(() => {
+    const positionBlock = document.querySelector('.position-block') as HTMLDivElement | null;
+    const primaryTrack = (document.querySelector('.track-panel.track-a .track-content') ||
+      document.querySelector('.track-content')) as HTMLDivElement | null;
+
+    if (!positionBlock || !primaryTrack) {
+      return;
+    }
+
+    const lineElements = primaryTrack.querySelectorAll('.track-line') as NodeListOf<HTMLDivElement>;
+    if (!lineElements.length) {
+      return;
+    }
+
+    const targetLine = lineElements[sharedCurrentLine] as HTMLDivElement | undefined;
+    if (!targetLine) {
+      return;
+    }
+
+    const container = primaryTrack;
+
+    // Ask the browser to ensure the selected line is visible inside the track content
+    targetLine.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+
+    const newScrollTop = container.scrollTop;
+
+    // Apply synchronized scroll to position block and all track contents
+    positionBlock.scrollTop = newScrollTop;
+
+    const tracks = document.querySelectorAll('.track-content');
+    tracks.forEach(track => {
+      if (track !== container) {
+        (track as HTMLDivElement).scrollTop = newScrollTop;
+      }
+    });
+  }, [sharedCurrentLine]);
 
   try {
     return (
