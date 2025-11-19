@@ -50,11 +50,24 @@ const App: React.FC = () => {
     setInstrumentError,
     optimizeSong
   } = useDataManagement();
-  const { sequencerState, stop, setCallback, setPosition, updateSpeed, startPatternLoop, startSong } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
+  const {
+    sequencerState,
+    stop,
+    setCallback,
+    setPosition,
+    updateSpeed,
+    startPatternLoop,
+    startSong,
+    updatePatternLength
+  } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
 
   useEffect(() => {
     updateSpeed(currentSong.speed);
   }, [currentSong.speed, updateSpeed]);
+
+  useEffect(() => {
+    updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
+  }, [currentSong.patternLength, updatePatternLength]);
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -157,6 +170,7 @@ const App: React.FC = () => {
   const channelSubTickRef = useRef([0, 0, 0]);
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
   const lastNotesRef = useRef<any[]>([null, null, null]);
+  const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
 
@@ -179,6 +193,7 @@ const App: React.FC = () => {
     channelSubTickRef.current = [0, 0, 0];
     channelEnvelopeStepRef.current = [0, 0, 0];
     lastNotesRef.current = [null, null, null];
+    lastSequencerPositionRef.current = null;
     
     // Silence all channels
     if (ym2149Ref.current) {
@@ -200,7 +215,24 @@ const App: React.FC = () => {
       const ym2149 = ym2149Ref.current;
 
       if (!state.isPlaying) {
+        lastSequencerPositionRef.current = null;
         return;
+      }
+
+      const lastPos = lastSequencerPositionRef.current;
+      const wrappedOrJumped =
+        lastPos &&
+        (state.currentPattern !== lastPos.pattern || state.currentLine < lastPos.line);
+
+      lastSequencerPositionRef.current = {
+        pattern: state.currentPattern,
+        line: state.currentLine
+      };
+
+      if (wrappedOrJumped) {
+        channelSubTickRef.current = [0, 0, 0];
+        channelEnvelopeStepRef.current = [0, 0, 0];
+        lastNotesRef.current = [null, null, null];
       }
 
       const playlistLength = currentSong.playlist.length;
