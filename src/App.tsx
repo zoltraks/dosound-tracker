@@ -331,6 +331,7 @@ const App: React.FC = () => {
             const isNew =
               !!noteOnRow &&
               (
+                wrappedOrJumped ||
                 !last ||
                 last.note !== noteOnRow.note ||
                 last.octave !== noteOnRow.octave ||
