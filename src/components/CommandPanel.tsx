@@ -22,6 +22,8 @@ interface CommandPanelProps {
   isDosoundMode: boolean;
   onToggleDosoundMode: () => void;
   onPlayInstrument: () => void;
+  onCopyTrack: () => void;
+  onPasteTrack: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -45,7 +47,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   isPatternPlaying,
   isDosoundMode,
   onToggleDosoundMode,
-  onPlayInstrument
+  onPlayInstrument,
+  onCopyTrack,
+  onPasteTrack
 }) => {
   return (
     <div className="command-panel">
@@ -73,8 +77,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       {/* Pattern Operations */}
       <div className="command-row">
         <button onClick={() => {}} className="command-btn">NEW PATTERN</button>
-        <button onClick={() => {}} className="command-btn">COPY PATTERN</button>
-        <button onClick={() => {}} className="command-btn">PASTE PATTERN</button>
+        <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>
+        <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
         <button onClick={() => {}} className="command-btn">DELETE PATTERN</button>
         <button onClick={() => {}} className="command-btn">TRANSPOSE</button>
       </div>

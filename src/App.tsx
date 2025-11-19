@@ -5,6 +5,7 @@ import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
 import type { Instrument } from './synth/SoundDriver';
 import { PATTERN_LENGTH } from './constants/music';
+import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
 import { TrackPanel } from './components/TrackPanel';
@@ -30,6 +31,7 @@ const App: React.FC = () => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [optimizeSummary, setOptimizeSummary] = useState('');
+  const [trackClipboardError, setTrackClipboardError] = useState('');
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -562,23 +564,10 @@ const App: React.FC = () => {
     return foundPattern;
   }, [currentSong, sequencerState.currentPattern, updateSong]);
 
-  // Handle instrument selection
-  const handleInstrumentSelect = useCallback((instrument: Instrument) => {
-    console.log('Selecting instrument:', instrument.id, instrument.name);
-    setCurrentInstrument(instrument);
-  }, []);
-
-  const handleRenameInstrument = useCallback((name: string) => {
-    updateInstrument({ name });
-  }, [updateInstrument]);
-
-  const handleChangeBaseKey = useCallback((note: string, octave: number) => {
+  const formatNoteKey = useCallback((note: string, octave: number): string => {
     const upper = note.toUpperCase();
-    const formatted = upper.endsWith('#')
-      ? `${upper}${octave}`
-      : `${upper}-${octave}`;
-    updateInstrument({ base: formatted });
-  }, [updateInstrument]);
+    return upper.endsWith('#') ? `${upper}${octave}` : `${upper}-${octave}`;
+  }, []);
 
   const parseBaseKeyString = useCallback((value?: string): { note: string; octave: number } | null => {
     if (!value) return null;
@@ -602,6 +591,236 @@ const App: React.FC = () => {
 
     return { note: notePart, octave };
   }, []);
+
+  const handleCopyTrack = useCallback(async () => {
+    try {
+      if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.writeText) {
+        setTrackClipboardError('Clipboard API is not available in this browser.');
+        return;
+      }
+
+      let trackId: 'A' | 'B' | 'C' = lastTrackId;
+      if (activeSection === 'trackA') {
+        trackId = 'A';
+      } else if (activeSection === 'trackB') {
+        trackId = 'B';
+      } else if (activeSection === 'trackC') {
+        trackId = 'C';
+      }
+
+      const pattern = getCurrentPatternForTrack(trackId);
+      if (!pattern) {
+        setTrackClipboardError('No pattern is assigned for the current track at this position.');
+        return;
+      }
+
+      const targetLength = currentSong.patternLength || PATTERN_LENGTH;
+      const rawLines = pattern.lines || [];
+      const steps: any[] = [];
+
+      // Patterns are single-track internally (trackA). Track selection only chooses
+      // which pattern from the playlist we operate on.
+      for (let i = 0; i < targetLength; i++) {
+        const line = rawLines[i] || { trackA: null, trackB: null, trackC: null };
+        const cell: any = line.trackA;
+
+        if (!cell) {
+          steps.push({ space: true });
+        } else {
+          const noteText = formatNoteKey(cell.note, cell.octave);
+          steps.push({
+            note: noteText,
+            instrument: cell.instrument
+          });
+        }
+      }
+
+      let lastNonSpace = steps.length - 1;
+      while (lastNonSpace >= 0) {
+        const ln: any = steps[lastNonSpace];
+        if (ln && ln.space === true && Object.keys(ln).length === 1) {
+          lastNonSpace--;
+        } else {
+          break;
+        }
+      }
+
+      const trimmedSteps = steps.slice(0, lastNonSpace + 1);
+
+      const compressedSteps: any[] = [];
+      let runCount = 0;
+
+      const flushRun = () => {
+        if (runCount > 0) {
+          compressedSteps.push({ space: runCount });
+          runCount = 0;
+        }
+      };
+
+      for (const ln of trimmedSteps) {
+        if (ln && ln.space === true && Object.keys(ln).length === 1) {
+          runCount++;
+        } else {
+          flushRun();
+          compressedSteps.push(ln);
+        }
+      }
+      flushRun();
+
+      const exportData = { steps: compressedSteps };
+      const yamlContent = yaml.dump(exportData, {
+        indent: 2,
+        lineWidth: -1,
+        quotingType: '"'
+      });
+
+      await navigator.clipboard.writeText(yamlContent);
+    } catch (error) {
+      console.error('Failed to copy track:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
+    }
+  }, [activeSection, lastTrackId, getCurrentPatternForTrack, currentSong.patternLength, formatNoteKey]);
+
+  const handlePasteTrack = useCallback(async () => {
+    try {
+      if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.readText) {
+        setTrackClipboardError('Clipboard API is not available in this browser.');
+        return;
+      }
+
+      const text = await navigator.clipboard.readText();
+      if (!text || !text.trim()) {
+        setTrackClipboardError('Clipboard is empty or does not contain track data.');
+        return;
+      }
+
+      let parsed: any;
+      try {
+        parsed = yaml.load(text) as any;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        setTrackClipboardError('Failed to parse track data from clipboard.\n\n' + message);
+        return;
+      }
+
+      const stepsNode = parsed && typeof parsed === 'object' ? (parsed as any).steps : null;
+      if (!Array.isArray(stepsNode)) {
+        setTrackClipboardError('Track clipboard data is invalid.\n\nExpected YAML with root "steps" list.');
+        return;
+      }
+
+      const rawSteps = stepsNode as any[];
+      const expandedSteps: any[] = [];
+
+      for (const node of rawSteps) {
+        if (node && typeof node === 'object') {
+          const ln: any = node;
+          const spaceVal = ln.space;
+          const offVal = ln.off;
+          const isNumericSpace = typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
+          const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
+
+          if (isNumericSpace || isNumericOff) {
+            const count = isNumericSpace ? spaceVal : offVal;
+            const isOff = isNumericOff && !isNumericSpace;
+            for (let i = 0; i < count; i++) {
+              expandedSteps.push(isOff ? { off: true } : { space: true });
+            }
+            continue;
+          }
+        }
+
+        expandedSteps.push(node);
+      }
+
+      let trackId: 'A' | 'B' | 'C' = lastTrackId;
+      if (activeSection === 'trackA') {
+        trackId = 'A';
+      } else if (activeSection === 'trackB') {
+        trackId = 'B';
+      } else if (activeSection === 'trackC') {
+        trackId = 'C';
+      }
+
+      const pattern = getCurrentPatternForTrack(trackId);
+      if (!pattern) {
+        setTrackClipboardError('No pattern is assigned for the current track at this position.');
+        return;
+      }
+
+      const targetLength = currentSong.patternLength || PATTERN_LENGTH;
+      const existingLines = pattern.lines || [];
+      const newLines: any[] = [];
+
+      // Overwrite the monotrack data (trackA) of the selected pattern with clipboard steps.
+      for (let i = 0; i < targetLength; i++) {
+        const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
+        const line: any = { ...baseLine };
+        const rawStep = expandedSteps[i];
+
+        if (rawStep && typeof rawStep === 'object') {
+          const ln: any = rawStep;
+          if (ln.space === true || ln.off === true) {
+            line.trackA = null;
+          } else if (typeof ln.note === 'string') {
+            const parsedKey = parseBaseKeyString(ln.note);
+            if (!parsedKey) {
+              setTrackClipboardError(`Invalid note value "${ln.note}" in track clipboard data at line ${i}.`);
+              return;
+            }
+
+            const instId =
+              typeof ln.instrument === 'string' && ln.instrument.trim()
+                ? ln.instrument.trim().toUpperCase()
+                : '00';
+
+            const noteObj = {
+              note: parsedKey.note,
+              octave: parsedKey.octave,
+              instrument: instId
+            };
+
+            line.trackA = noteObj;
+          } else {
+            line.trackA = null;
+          }
+        } else {
+          line.trackA = null;
+        }
+
+        newLines.push(line);
+      }
+
+      const updatedPattern = { ...pattern, lines: newLines };
+      const updatedPatterns = currentSong.patterns.map(p =>
+        p.id === pattern.id ? updatedPattern : p
+      );
+      updateSong({ patterns: updatedPatterns });
+    } catch (error) {
+      console.error('Failed to paste track:', error);
+      const message = error instanceof Error ? error.message : String(error);
+      setTrackClipboardError('Failed to paste track from clipboard.\n\n' + message);
+    }
+  }, [activeSection, lastTrackId, getCurrentPatternForTrack, currentSong.patternLength, currentSong.patterns, updateSong, parseBaseKeyString]);
+
+  // Handle instrument selection
+  const handleInstrumentSelect = useCallback((instrument: Instrument) => {
+    console.log('Selecting instrument:', instrument.id, instrument.name);
+    setCurrentInstrument(instrument);
+  }, []);
+
+  const handleRenameInstrument = useCallback((name: string) => {
+    updateInstrument({ name });
+  }, [updateInstrument]);
+
+  const handleChangeBaseKey = useCallback((note: string, octave: number) => {
+    const upper = note.toUpperCase();
+    const formatted = upper.endsWith('#')
+      ? `${upper}${octave}`
+      : `${upper}-${octave}`;
+    updateInstrument({ base: formatted });
+  }, [updateInstrument]);
 
   const handlePlayInstrument = useCallback(() => {
     if (!ym2149Ref.current) {
@@ -973,6 +1192,8 @@ const App: React.FC = () => {
           isDosoundMode={false} // TODO: Implement settings property on Song interface
           onToggleDosoundMode={() => console.log('DOSOUND mode toggle not implemented')}
           onPlayInstrument={handlePlayInstrument}
+          onCopyTrack={handleCopyTrack}
+          onPasteTrack={handlePasteTrack}
         />
 
         <div className="main-content">
@@ -1189,6 +1410,26 @@ const App: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={() => setInstrumentError('')}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {trackClipboardError && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Track Clipboard Error</div>
+              <div className="modal-body">
+                {trackClipboardError.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < trackClipboardError.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={() => setTrackClipboardError('')}>
                   OK
                 </button>
               </div>
