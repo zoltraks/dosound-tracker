@@ -103,7 +103,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     startPlayback(false);
   }, [startPlayback]);
 
-  const stop = useCallback(() => {
+  const stop = useCallback((preservePattern?: number) => {
     setSequencerState(prev => {
       if (!prev.isPlaying) {
         return prev;
@@ -113,8 +113,9 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
         ...prev,
         isPlaying: false,
         currentTick: 0,
-        currentLine: 0
-        // Keep currentPattern to maintain playlist position
+        currentLine: 0,
+        // Use provided pattern or keep current pattern to maintain playlist position
+        currentPattern: preservePattern !== undefined ? preservePattern : prev.currentPattern
       };
     });
 

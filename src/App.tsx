@@ -256,16 +256,30 @@ const App: React.FC = () => {
       
       // Bounds check to prevent array access errors
       if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
+        // Song has run past the playlist - stop and keep cursor on last valid entry
         const lastIndex = Math.max(0, playlistLength - 1);
-        setPosition(lastIndex, 0, 0);
-        stop();
         handleStopPlayback();
+        stop(lastIndex); // Preserve playlist position
         return;
       }
       
       const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
       
       if (currentPlaylistEntry) {
+        // Treat GOTO markers (^^) as end-of-song for UI playback
+        const isGoto =
+          (typeof currentPlaylistEntry.trackA === 'string' && currentPlaylistEntry.trackA.startsWith('^^')) ||
+          (typeof currentPlaylistEntry.trackB === 'string' && currentPlaylistEntry.trackB.startsWith('^^')) ||
+          (typeof currentPlaylistEntry.trackC === 'string' && currentPlaylistEntry.trackC.startsWith('^^'));
+
+        if (isGoto) {
+          // Stop playback and leave cursor on the last real playlist position
+          const lastIndex = Math.max(0, Math.min(currentPatternIndex, playlistLength - 1) - 1);
+          handleStopPlayback();
+          stop(lastIndex);
+          return;
+        }
+
         // Get pattern data for each track
         const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
         const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
@@ -1073,6 +1087,34 @@ const App: React.FC = () => {
     setGlobalShortcut('playPattern', handleStartPattern);
     setGlobalShortcut('stopPlayback', handleStop);
   }, [setGlobalShortcut, handleStartPatternFromBeginning, handleStartPattern, handleStop]);
+
+  // Safety guard: ensure sequencer position always stays within playlist bounds
+  // and force a clean stop if playback runs past the end for any reason.
+  useEffect(() => {
+    const playlistLength = currentSong.playlist.length;
+
+    // Nothing to do if not playing
+    if (!sequencerState.isPlaying) {
+      return;
+    }
+
+    // If playlist was cleared while playing, stop gracefully
+    if (playlistLength === 0) {
+      handleStopPlayback();
+      stop();
+      return;
+    }
+
+    // If currentPattern moved outside playlist range, clamp and stop
+    if (
+      sequencerState.currentPattern < 0 ||
+      sequencerState.currentPattern >= playlistLength
+    ) {
+      const lastIndex = Math.max(0, playlistLength - 1);
+      handleStopPlayback();
+      stop(lastIndex);
+    }
+  }, [sequencerState.isPlaying, sequencerState.currentPattern, currentSong.playlist.length, stop, handleStopPlayback]);
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
