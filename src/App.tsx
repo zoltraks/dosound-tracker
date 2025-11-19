@@ -232,9 +232,15 @@ const App: React.FC = () => {
       };
 
       if (wrappedOrJumped) {
+        // Always reset envelope timing on wrap/jump
         channelSubTickRef.current = [0, 0, 0];
         channelEnvelopeStepRef.current = [0, 0, 0];
-        lastNotesRef.current = [null, null, null];
+        
+        // Only reset notes if pattern changed (not on same-pattern loop)
+        const patternChanged = lastPos && state.currentPattern !== lastPos.pattern;
+        if (patternChanged || !state.isPatternLoop) {
+          lastNotesRef.current = [null, null, null];
+        }
       }
 
       const playlistLength = currentSong.playlist.length;
