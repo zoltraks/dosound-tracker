@@ -232,13 +232,14 @@ const App: React.FC = () => {
       };
 
       if (wrappedOrJumped) {
-        // Always reset envelope timing on wrap/jump
+        // Always reset sub-tick timing on wrap/jump so 40ms envelope steps realign
         channelSubTickRef.current = [0, 0, 0];
-        channelEnvelopeStepRef.current = [0, 0, 0];
-        
-        // Only reset notes if pattern changed (not on same-pattern loop)
+
+        // Only reset envelopes and notes when we actually change pattern
+        // (song mode) or when not looping a single pattern.
         const patternChanged = lastPos && state.currentPattern !== lastPos.pattern;
         if (patternChanged || !state.isPatternLoop) {
+          channelEnvelopeStepRef.current = [0, 0, 0];
           lastNotesRef.current = [null, null, null];
         }
       }
@@ -322,21 +323,29 @@ const App: React.FC = () => {
             continue;
           }
 
+          // If we just wrapped/jumped and there is no explicit note on this
+          // row, do NOT carry the previous note across the pattern boundary.
+          // This ensures that channels whose patterns start with spaces
+          // remain silent at line 0 on each loop.
+          if (wrappedOrJumped && !noteOnRow) {
+            channelEnvelopeStepRef.current[ch] = 0;
+            channelSubTickRef.current[ch] = 0;
+            updateChannelWithInstrument(ym2149, ch, null, 0);
+            lastNotes[ch] = null;
+            continue;
+          }
+
           // Determine active note: current row's note if present, otherwise hold last active note
           const activeNote = noteOnRow && noteOnRow.note
             ? noteOnRow
             : last;
 
           if (activeNote && activeNote.note && activeNote.note !== '===') {
-            const isNew =
-              !!noteOnRow &&
-              (
-                wrappedOrJumped ||
-                !last ||
-                last.note !== noteOnRow.note ||
-                last.octave !== noteOnRow.octave ||
-                last.instrument !== noteOnRow.instrument
-              );
+            // Any explicit note on this row is treated as a new note event,
+            // even if it has the same pitch/instrument as the previous one.
+            // This ensures envelopes always restart when a note is written
+            // in the pattern, while held notes only continue across empty rows.
+            const isNew = !!noteOnRow;
 
             if (isNew) {
               // New note event: restart envelopes
