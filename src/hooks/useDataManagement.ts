@@ -9,17 +9,6 @@ const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
 
 const DEFAULT_BASE_KEY = 'C-4';
 
-class FlowSeq<T> extends Array<T> {}
-
-const YamlAny: any = yaml;
-const FlowSeqType = new YamlAny.Type('tag:yaml.org,2002:seq', {
-  kind: 'sequence',
-  instanceOf: FlowSeq,
-  represent: (seq: any[]) => seq,
-  defaultStyle: 'flow'
-});
-const SONG_DUMP_SCHEMA = YamlAny.DEFAULT_SCHEMA.extend([FlowSeqType]);
-
 const formatBaseKey = (note: string, octave: number): string => {
   const upperNote = note.toUpperCase();
   return upperNote.endsWith('#')
@@ -255,26 +244,26 @@ export const useDataManagement = () => {
             ? inst.id
             : index.toString(16).padStart(2, '0').toUpperCase();
 
-        const instrumentNode: any = {
-          name: inst.name,
-          number,
-          volume: new FlowSeq(...volumeEnv),
-          arpeggio: new FlowSeq(...arpeggioEnv)
-        };
+        const instrumentNode: any = {};
+        instrumentNode.name = inst.name;
+        instrumentNode.number = number;
 
         const baseKey = inst.base || DEFAULT_BASE_KEY;
         if (baseKey !== DEFAULT_BASE_KEY) {
           instrumentNode.base = baseKey;
         }
 
+        instrumentNode.volume = volumeEnv;
+        instrumentNode.arpeggio = arpeggioEnv;
+
         if (!isZeroDefault(pitchEnv)) {
-          instrumentNode.pitch = new FlowSeq(...pitchEnv);
+          instrumentNode.pitch = pitchEnv;
         }
         if (!isZeroDefault(noiseEnv)) {
-          instrumentNode.noise = new FlowSeq(...noiseEnv);
+          instrumentNode.noise = noiseEnv;
         }
         if (!isZeroDefault(modeEnv)) {
-          instrumentNode.mode = new FlowSeq(...modeEnv);
+          instrumentNode.mode = modeEnv;
         }
 
         return instrumentNode;
@@ -287,7 +276,7 @@ export const useDataManagement = () => {
         C: entry.trackC
       }));
 
-      // Patterns: single-track (track A) lines with note strings or space
+      // Patterns: single-track (track A) steps with note strings or space
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const patterns = currentSong.patterns.map((pattern, index) => {
         const number =
@@ -350,7 +339,7 @@ export const useDataManagement = () => {
         return {
           name: pattern.name,
           number,
-          lines: compressedLines
+          steps: compressedLines
         };
       });
 
@@ -367,12 +356,33 @@ export const useDataManagement = () => {
         }
       };
 
-      const yamlContent = yaml.dump(exportData, {
-        schema: SONG_DUMP_SCHEMA,
+      let yamlContent = yaml.dump(exportData, {
         indent: 2,
         lineWidth: -1,
         quotingType: '"'
       });
+
+      const compressInstrumentArray = (key: string, text: string): string => {
+        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const pattern = new RegExp(
+          `^(\\s*)(${escapedKey}:)\\s*\\n((?:\\1  -\\s*[^\\n]+\\n)+)`,
+          'gm'
+        );
+        return text.replace(pattern, (_match, indent, keyText, block) => {
+          const values: string[] = [];
+          block.split('\n').forEach((line: string) => {
+            const trimmed = line.trim();
+            if (!trimmed.startsWith('- ')) return;
+            values.push(trimmed.slice(2).trim());
+          });
+          return `${indent}${keyText} [${values.join(', ')}]\n`;
+        });
+      };
+
+      const keys = ['volume', 'arpeggio', 'pitch', 'noise', 'mode'];
+      for (const key of keys) {
+        yamlContent = compressInstrumentArray(key, yamlContent);
+      }
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
@@ -458,7 +468,11 @@ export const useDataManagement = () => {
               ? pNode.name
               : `Pattern ${number}`;
 
-          const rawLineNodes = Array.isArray(pNode.lines) ? pNode.lines : [];
+          const rawLineNodes = Array.isArray(pNode.steps)
+            ? pNode.steps
+            : Array.isArray(pNode.lines)
+              ? pNode.lines
+              : [];
           const expandedLineNodes: any[] = [];
 
           // Expand compressed space/off runs (space: N / off: N) into individual logical lines
