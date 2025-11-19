@@ -19,7 +19,8 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     currentLine: 0,
     currentTick: 0,
     bpm: 125,
-    ticksPerRow: songSpeed
+    // Divide by 2 because DOSOUND cycles are 2 frames each
+    ticksPerRow: Math.max(1, Math.floor(songSpeed / 2))
   });
 
   const intervalRef = useRef<number | null>(null);
@@ -137,11 +138,13 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   }, []);
 
   const setTicksPerRow = useCallback((ticksPerRow: number) => {
-    setSequencerState(prev => ({ ...prev, ticksPerRow }));
+    // Divide by 2 because DOSOUND cycles are 2 frames each
+    setSequencerState(prev => ({ ...prev, ticksPerRow: Math.max(1, Math.floor(ticksPerRow / 2)) }));
   }, []);
 
   const updateSpeed = useCallback((newSpeed: number) => {
-    setSequencerState(prev => ({ ...prev, ticksPerRow: newSpeed }));
+    // Divide by 2 because DOSOUND cycles are 2 frames each
+    setSequencerState(prev => ({ ...prev, ticksPerRow: Math.max(1, Math.floor(newSpeed / 2)) }));
   }, []);
 
   const startPatternLoop = useCallback(() => {
