@@ -39,7 +39,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
   const trackRef = useRef<HTMLDivElement>(null);
-  const isProcessingWheel = useRef<boolean>(false);
 
   useEffect(() => {
     if (currentInstrumentData?.id) {
@@ -240,35 +239,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     setActiveSection(sectionName);
   }, [setActiveSection, sectionName, onLineChange]);
 
-  const handleWheel = useCallback((event: React.WheelEvent) => {
-    if (!isActive) return;
-
-    event.preventDefault();
-
-    // If we're already processing a wheel movement, ignore this event
-    if (isProcessingWheel.current) {
-      return;
-    }
-
-    // Set flag to prevent processing additional events from this wheel click
-    isProcessingWheel.current = true;
-
-    // Move one line based on direction
-    const delta = event.deltaY;
-    if (delta > 0) {
-      // Scroll down - move to next line
-      onLineChange(Math.min(PATTERN_LENGTH - 1, currentLine + 1));
-    } else if (delta < 0) {
-      // Scroll up - move to previous line
-      onLineChange(Math.max(0, currentLine - 1));
-    }
-
-    // Clear the flag after a short delay to allow next wheel click
-    setTimeout(() => {
-      isProcessingWheel.current = false;
-    }, 50);
-  }, [isActive, currentLine, onLineChange]);
-
   const formatNoteDisplay = useCallback((noteData: NoteData | null) => {
     if (!noteData) return '---';
     if (noteData.note === '===') return '===';
@@ -298,7 +268,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       className={`track-panel track-${trackId.toLowerCase()} ${isActive ? 'active' : ''} ${!pattern ? 'disabled' : ''}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
-      onWheel={handleWheel}
       onClick={() => setActiveSection(sectionName)}
     >
       <div className="track-header">Track {trackId}</div>

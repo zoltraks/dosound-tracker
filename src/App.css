@@ -526,7 +526,7 @@ body {
 .track-content {
   font-family: 'Courier New', monospace;
   flex: 1;
-  overflow-y: auto;
+  overflow-y: hidden;
 }
 
 .track-content::-webkit-scrollbar {
