@@ -1,5 +1,4 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
-import { SoundDriver } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTES } from '../constants/music';
 
 /**
@@ -8,62 +7,354 @@ import { NOTE_FREQUENCIES, NOTES } from '../constants/music';
  * @returns Assembly formatted string
  */
 export function exportToAssembly(song: Song): string {
-  const driver = new SoundDriver(null as any); // We only need the conversion logic
-  const events = driver.convertSongToSoundEvents(song);
-  
-  let assembly = '';
-  let currentLine = 0;
-  let currentPart = 0;
-  
-  // Add header
-  assembly += `; DOSOUND XBIOS Assembly Export\n`;
-  assembly += `; Title: ${song.title}\n`;
-  assembly += `; Author: ${song.author}\n`;
-  assembly += `; Year: ${song.year}\n`;
-  assembly += `; Speed: ${song.speed}\n\n`;
-  assembly += `music:\n\n`;
-  
-  // Process events and add section comments
-  let eventIndex = 0;
-  while (eventIndex < events.length) {
-    // Add line comment every 16 events (approximately)
-    if (eventIndex % 16 === 0) {
-      assembly += `    ; === LINE ${currentLine.toString(16).toUpperCase().padStart(2, '0')} ===\n\n`;
-      currentLine++;
-    }
-    
-    // Add part comment every 8 events
-    if (eventIndex % 8 === 0) {
-      assembly += `    ; --- PART ${currentPart.toString(16).toUpperCase().padStart(2, '0')} ---\n`;
-      currentPart++;
-    }
-    
-    const event = events[eventIndex];
-    
-    if (event.type === 'register' && event.register !== undefined && event.value !== undefined) {
-      // Format register write as dc.b $XX,$YY
-      assembly += `    dc.b $${event.register.toString(16).toUpperCase().padStart(2, '0')},$${event.value.toString(16).toUpperCase().padStart(2, '0')}`;
-      
-      // Add comment for common registers
-      const registerComment = getRegisterComment(event.register, event.value);
-      if (registerComment) {
-        assembly += `       ; ${registerComment}`;
-      }
-      assembly += '\n';
-      
-    } else if (event.type === 'delay' && event.delay !== undefined) {
-      // Format delay as dc.b $FF, <delay>
-      if (event.delay === 0) {
-        assembly += `    dc.b $ff,$00       ; END MARKER\n`;
-      } else {
-        assembly += `    dc.b $ff,${event.delay}       ; DL ${event.delay + 1}\n`;
-      }
-    }
-    
-    eventIndex++;
+  // Simulate playback and collect register states per frame
+  interface RegisterState {
+    [register: number]: number;
   }
   
-  return assembly;
+  interface FrameState {
+    registers: RegisterState;
+    lineIndex: number;
+    tick: number;
+  }
+  
+  const frames: FrameState[] = [];
+  const ticksPerRow = Math.max(1, Math.floor(song.speed / 2)); // DOSOUND cycle conversion
+  
+  // Initialize register state
+  let currentRegs: RegisterState = {
+    0x07: 0x38, // Mixer: all tones enabled, noise disabled
+    0x08: 0x00, // Volume A
+    0x09: 0x00, // Volume B
+    0x0A: 0x00, // Volume C
+  };
+  
+  // Track active notes and envelope positions per channel
+  interface ChannelState {
+    note: { note: string; octave: number; instrument: string } | null;
+    envelopeStep: number;
+    subTick: number;
+  }
+  
+  const channels: ChannelState[] = [
+    { note: null, envelopeStep: 0, subTick: 0 },
+    { note: null, envelopeStep: 0, subTick: 0 },
+    { note: null, envelopeStep: 0, subTick: 0 },
+  ];
+  
+  // Process each playlist entry
+  for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
+    const playlistEntry = song.playlist[playlistIdx];
+    
+    // Check for GOTO command
+    if (playlistEntry.trackA.startsWith('^^') || 
+        playlistEntry.trackB.startsWith('^^') || 
+        playlistEntry.trackC.startsWith('^^')) {
+      break;
+    }
+    
+    // Get patterns for each track
+    const patterns = [
+      song.patterns.find(p => p.id === playlistEntry.trackA),
+      song.patterns.find(p => p.id === playlistEntry.trackB),
+      song.patterns.find(p => p.id === playlistEntry.trackC),
+    ];
+    
+    // Process each line in the pattern
+    const lineCount = song.patternLength || 64;
+    
+    for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+      // Get notes for this line
+      const notes = [
+        patterns[0]?.lines[lineIdx]?.trackA || null,
+        patterns[1]?.lines[lineIdx]?.trackA || null,
+        patterns[2]?.lines[lineIdx]?.trackA || null,
+      ];
+      
+      // Process each tick in this row
+      for (let tick = 0; tick < ticksPerRow; tick++) {
+        const newRegs: RegisterState = { ...currentRegs };
+        
+        // Process each channel
+        for (let ch = 0; ch < 3; ch++) {
+          const pattern = patterns[ch];
+          const noteOnRow = notes[ch];
+          const channelState = channels[ch];
+          
+          // On first tick of row, check for new note or note-off
+          if (tick === 0) {
+            if (!pattern) {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            }
+            
+            if (noteOnRow && noteOnRow.note === '===') {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            }
+            
+            if (noteOnRow && noteOnRow.note) {
+              const isNew = !channelState.note ||
+                channelState.note.note !== noteOnRow.note ||
+                channelState.note.octave !== noteOnRow.octave ||
+                channelState.note.instrument !== noteOnRow.instrument;
+              
+              if (isNew) {
+                channelState.note = noteOnRow;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+              }
+            }
+          }
+          
+          // Update channel with current envelope step
+          if (channelState.note) {
+            const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
+            if (instrument) {
+              applyInstrumentToRegisters(newRegs, ch, channelState.note, instrument, channelState.envelopeStep);
+            }
+          }
+          
+          // Advance envelope timing (every 2 ticks = 40ms)
+          if (channelState.note && tick > 0) {
+            const sub = (channelState.subTick + 1) % 2;
+            channelState.subTick = sub;
+            if (sub === 0) {
+              channelState.envelopeStep++;
+            }
+          }
+        }
+        
+        // Store this frame
+        frames.push({
+          registers: newRegs,
+          lineIndex: playlistIdx * lineCount + lineIdx,
+          tick: tick
+        });
+        
+        currentRegs = newRegs;
+      }
+    }
+  }
+  
+  // Now convert frames to optimized assembly output
+  return formatFramesToAssembly(frames, song);
+}
+
+function applyInstrumentToRegisters(
+  regs: { [register: number]: number },
+  channel: number,
+  note: { note: string; octave: number },
+  instrument: Instrument,
+  envelopeStep: number
+): void {
+  const step = Math.max(0, envelopeStep);
+  
+  // Get envelope values
+  const volumeEnv = instrument.volumeEnvelope || [0x0F];
+  const arpeggioEnv = instrument.arpeggioEnvelope || [0];
+  const modeEnv = instrument.modeEnvelope || [0];
+  const noiseEnv = instrument.noiseEnvelope || [0];
+  
+  const volIdx = Math.min(step, volumeEnv.length - 1);
+  const arpIdx = Math.min(step, arpeggioEnv.length - 1);
+  const modeIdx = Math.min(step, modeEnv.length - 1);
+  const noiseIdx = Math.min(step, noiseEnv.length - 1);
+  
+  const volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
+  const arpeggio = arpeggioEnv[arpIdx] || 0;
+  const mode = modeEnv[modeIdx] || 0;
+  const noisePeriod = Math.max(0, Math.min(0x1F, noiseEnv[noiseIdx] || 0));
+  
+  // Set volume
+  regs[0x08 + channel] = volume;
+  
+  // Calculate frequency with arpeggio
+  const baseFreq = NOTE_FREQUENCIES[note.note] || 440.0;
+  let frequency = baseFreq * Math.pow(2, note.octave - 4);
+  if (arpeggio !== 0) {
+    frequency = frequency * Math.pow(2, arpeggio / 12);
+  }
+  const period = Math.floor(2000000 / (16 * frequency)) & 0x0FFF;
+  
+  // Update mixer based on mode
+  const toneActive = mode === 0 || mode === 2;
+  const noiseActive = mode === 1 || mode === 2;
+  
+  let mixer = regs[0x07] || 0x38;
+  if (toneActive) {
+    mixer &= ~(1 << channel);
+  } else {
+    mixer |= (1 << channel);
+  }
+  if (noiseActive) {
+    mixer &= ~(0x08 << channel);
+  } else {
+    mixer |= (0x08 << channel);
+  }
+  regs[0x07] = mixer;
+  
+  // Set tone period if active
+  if (toneActive) {
+    regs[channel * 2] = period & 0xFF;
+    regs[channel * 2 + 1] = (period >> 8) & 0x0F;
+  }
+  
+  // Set noise period if active
+  if (noiseActive && noisePeriod > 0) {
+    regs[0x06] = noisePeriod;
+  }
+}
+
+function formatFramesToAssembly(frames: any[], song: Song): string {
+  let asm = 'music:\n\n\t; START\n\n';
+  
+  if (frames.length === 0) {
+    asm += formatAsmLine([0x07, 0x38], 'MX T+T+T');
+    asm += '\n';
+    asm += formatAsmLine([0x08, 0x00], 'VA');
+    asm += formatAsmLine([0x09, 0x00], 'VB');
+    asm += formatAsmLine([0x0A, 0x00], 'VC');
+    asm += '\n\t; END\n\n';
+    asm += formatAsmLine([0x08, 0x00], 'VA');
+    asm += formatAsmLine([0x09, 0x00], 'VB');
+    asm += formatAsmLine([0x0A, 0x00], 'VC');
+    asm += '\n';
+    asm += formatAsmLine([0xff, 0x00], 'STOP');
+    return asm;
+  }
+  
+  // Write initial state
+  const firstRegs = frames[0].registers;
+  asm += formatAsmLine([0x07, firstRegs[0x07] || 0x38], getRegisterComment(0x07, firstRegs[0x07] || 0x38));
+  asm += '\n';
+  asm += formatAsmLine([0x08, firstRegs[0x08] || 0x00], 'VA');
+  asm += formatAsmLine([0x09, firstRegs[0x09] || 0x00], 'VB');
+  asm += formatAsmLine([0x0A, firstRegs[0x0A] || 0x00], 'VC');
+  
+  let lastRegs: { [register: number]: number } = { ...firstRegs };
+  let lastLineIndex = 0;
+  let tickCount = 0;
+  let delayFrames = 0;
+  
+  for (let i = 1; i < frames.length; i++) {
+    const frame = frames[i];
+    const regs = frame.registers;
+    
+    // Check if anything changed
+    const changed = Object.keys(regs).some(k => regs[parseInt(k)] !== lastRegs[parseInt(k)]);
+    
+    // Check if we're on a new line for marker purposes
+    const lineIndex = frame.lineIndex;
+    const lineChanged = lineIndex !== lastLineIndex;
+    
+    if (changed || i === frames.length - 1) {
+      // Write accumulated delay if any
+      if (delayFrames > 0) {
+        asm += formatDelayLine(delayFrames);
+        delayFrames = 0;
+      }
+      
+      // Add pattern/beat markers when crossing line boundaries
+      if (lineChanged) {
+        if (lineIndex % (song.patternLength || 64) === 0 && lineIndex > 0) {
+          asm += '\n\t; ===\n\n';
+        } else if (lineIndex % 4 === 0 && lineIndex > 0) {
+          asm += '\n\t; ---\n\n';
+        }
+        lastLineIndex = lineIndex;
+      }
+      
+      // Write changed registers in DOSOUND order: tones, noise, mixer, volumes
+      
+      // Tone registers (write pairs)
+      for (let ch = 0; ch < 3; ch++) {
+        const fineReg = ch * 2;
+        const coarseReg = ch * 2 + 1;
+        const fine = regs[fineReg];
+        const coarse = regs[coarseReg];
+        
+        if ((fine !== lastRegs[fineReg] || coarse !== lastRegs[coarseReg]) &&
+            fine !== undefined && coarse !== undefined) {
+          const period = (coarse << 8) | fine;
+          const noteLabel = periodToNoteLabel(period);
+          asm += formatAsmLine([coarseReg, coarse, fineReg, fine], `T${String.fromCharCode(65 + ch)} ${noteLabel}`);
+          lastRegs[fineReg] = fine;
+          lastRegs[coarseReg] = coarse;
+        }
+      }
+      
+      // Noise register
+      if (regs[0x06] !== undefined && regs[0x06] !== lastRegs[0x06]) {
+        asm += formatAsmLine([0x06, regs[0x06]], 'NS');
+        lastRegs[0x06] = regs[0x06];
+      }
+      
+      // Mixer register
+      if (regs[0x07] !== undefined && regs[0x07] !== lastRegs[0x07]) {
+        asm += formatAsmLine([0x07, regs[0x07]], getRegisterComment(0x07, regs[0x07]));
+        lastRegs[0x07] = regs[0x07];
+      }
+      
+      // Volume registers
+      for (let ch = 0; ch < 3; ch++) {
+        const reg = 0x08 + ch;
+        if (regs[reg] !== undefined && regs[reg] !== lastRegs[reg]) {
+          asm += formatAsmLine([reg, regs[reg]], `V${String.fromCharCode(65 + ch)}`);
+          lastRegs[reg] = regs[reg];
+        }
+      }
+      
+      tickCount++;
+    } else {
+      delayFrames++;
+    }
+  }
+  
+  // Final delay if needed
+  if (delayFrames > 0) {
+    asm += formatDelayLine(delayFrames);
+  }
+  
+  // END marker
+  asm += '\n\t; END\n\n';
+  asm += formatAsmLine([0x08, 0x00], 'VA');
+  asm += formatAsmLine([0x09, 0x00], 'VB');
+  asm += formatAsmLine([0x0A, 0x00], 'VC');
+  asm += '\n';
+  asm += formatAsmLine([0xff, 0x00], 'STOP');
+  
+  return asm;
+}
+
+function periodToNoteLabel(period: number): string {
+  // Convert period back to approximate note
+  const frequency = 2000000 / (16 * period);
+  
+  // Find closest note
+  let closestNote = 'C';
+  let closestOctave = 4;
+  let minDiff = Infinity;
+  
+  for (const noteName of Object.keys(NOTE_FREQUENCIES)) {
+    for (let octave = 0; octave <= 8; octave++) {
+      const freq = NOTE_FREQUENCIES[noteName] * Math.pow(2, octave - 4);
+      const diff = Math.abs(freq - frequency);
+      if (diff < minDiff) {
+        minDiff = diff;
+        closestNote = noteName;
+        closestOctave = octave;
+      }
+    }
+  }
+  
+  return closestNote.includes('#') ? `${closestNote}${closestOctave}` : `${closestNote}-${closestOctave}`;
 }
 
 // Helper: hex formatting using short form for nibbles when possible
@@ -84,9 +375,11 @@ function formatAsmLine(bytes: number[], comment: string): string {
 }
 
 // Helper: format DOSOUND delay in frames (20ms units)
+// DOSOUND bug: $ff,N delays N+1 frames, so $ff,1 = 2 frames delay
 function formatDelayLine(frames: number): string {
-  const f = Math.max(1, frames); // at least 1 frame (DL 2 logically handled by caller)
-  const n = f - 1;
+  // Minimum delay is 2 frames (40ms) - can't delay just 1 frame
+  const f = Math.max(2, frames);
+  const n = f - 1; // DOSOUND delay value: N = frames - 1
   return formatAsmLine([0xff, n], `DL ${f}`);
 }
 
