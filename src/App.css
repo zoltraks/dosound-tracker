@@ -457,6 +457,7 @@ body {
   flex-direction: row;
   gap: 2px;
   flex: 1;
+  min-height: 0;
 }
 
 /* Track Panel */
@@ -473,6 +474,7 @@ body {
   border-radius: 3px;
   position: relative;
   transition: all 0.3s ease;
+  min-height: 0;
 }
 
 .track-panel.active {
@@ -521,6 +523,7 @@ body {
   font-family: 'Courier New', monospace;
   flex: 1;
   overflow-y: auto;
+  pointer-events: none;
 }
 
 .track-content::-webkit-scrollbar {

@@ -714,19 +714,13 @@ const App: React.FC = () => {
     setSharedCurrentLine(lineIndex);
   }, []);
 
-  const handleTrackScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
+  
+  const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
-    // Sync position block scroll
-    const positionContent = document.querySelector('.position-content');
-    if (positionContent) {
-      (positionContent as HTMLDivElement).scrollTop = scrollTop;
-    }
-    // Sync other tracks scroll
+    // Sync all tracks scroll when position block is scrolled
     const tracks = document.querySelectorAll('.track-content');
     tracks.forEach(track => {
-      if (track !== event.currentTarget) {
-        (track as HTMLDivElement).scrollTop = scrollTop;
-      }
+      (track as HTMLDivElement).scrollTop = scrollTop;
     });
   }, []);
 
@@ -826,7 +820,7 @@ const App: React.FC = () => {
             <div className="left-column-content">
               <div className="position-block">
                 <div className="position-header"></div>
-                <div className="position-content" onScroll={handleTrackScroll}>
+                <div className="position-content" onScroll={handlePositionScroll}>
                   {Array.from({ length: 64 }, (_, i) => (
                     <div 
                       key={i} 
@@ -845,7 +839,6 @@ const App: React.FC = () => {
                     activeSection={activeSection}
                     setActiveSection={setActiveSection}
                     currentOctave={currentOctave}
-                    onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
                     pattern={getCurrentPatternForTrack('A')}
@@ -859,7 +852,6 @@ const App: React.FC = () => {
                     activeSection={activeSection}
                     setActiveSection={setActiveSection}
                     currentOctave={currentOctave}
-                    onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
                     pattern={getCurrentPatternForTrack('B')}
@@ -873,7 +865,6 @@ const App: React.FC = () => {
                     activeSection={activeSection}
                     setActiveSection={setActiveSection}
                     currentOctave={currentOctave}
-                    onScroll={handleTrackScroll}
                     currentLine={sharedCurrentLine}
                     onLineChange={handleLineChange}
                     pattern={getCurrentPatternForTrack('C')}

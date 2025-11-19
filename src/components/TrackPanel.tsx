@@ -9,7 +9,6 @@ interface TrackPanelProps {
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   currentOctave: number;
-  onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
   currentLine: number;
   onLineChange: (lineIndex: number) => void;
   pattern: Pattern | null;
@@ -30,7 +29,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     activeSection,
     setActiveSection,
     currentOctave,
-    onScroll,
     currentLine,
     onLineChange,
     pattern,
@@ -305,7 +303,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     >
       <div className="track-header">Track {trackId}</div>
 
-      <div className="track-content" onScroll={onScroll}>
+      <div className="track-content">
         {trackNotes.map((noteData, lineIndex) => (
           <div
             key={lineIndex}
@@ -317,12 +315,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             </span>
           </div>
         ))}
-      </div>
-
-      <div className="track-footer">
-        <div className="current-instrument">
-          Inst: {currentInstrument}
-        </div>
       </div>
     </div>
   );
