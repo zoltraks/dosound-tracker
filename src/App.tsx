@@ -30,8 +30,10 @@ const App: React.FC = () => {
   const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
+  const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [optimizeSummary, setOptimizeSummary] = useState('');
+  const [renumberSummary, setRenumberSummary] = useState('');
   const [isTransposeOpen, setIsTransposeOpen] = useState(false);
   const [transposeScope, setTransposeScope] = useState<'line' | 'song'>('line');
   const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
@@ -94,7 +96,8 @@ const App: React.FC = () => {
     loadInstrument,
     instrumentError,
     setInstrumentError,
-    optimizeSong
+    optimizeSong,
+    renumberSong
   } = useDataManagement();
   const {
     sequencerState,
@@ -1787,6 +1790,24 @@ const App: React.FC = () => {
     setOptimizeSummary('');
   }, []);
 
+  const handleRenumberSong = useCallback(() => {
+    setIsRenumberConfirmOpen(true);
+  }, []);
+
+  const handleConfirmRenumber = useCallback(() => {
+    const summary = renumberSong();
+    setIsRenumberConfirmOpen(false);
+    setRenumberSummary(summary);
+  }, [renumberSong]);
+
+  const handleCancelRenumber = useCallback(() => {
+    setIsRenumberConfirmOpen(false);
+  }, []);
+
+  const handleCloseRenumberSummary = useCallback(() => {
+    setRenumberSummary('');
+  }, []);
+
   const handleOpenTranspose = useCallback(() => {
     // When opening, keep the last-used transpose settings and just ensure the
     // input text reflects the current numeric amount.
@@ -2092,6 +2113,7 @@ const App: React.FC = () => {
           onLoadSong={triggerFileLoad}
           onSaveSong={saveSong}
           onOptimize={handleOptimizeSong}
+          onRenumber={handleRenumberSong}
           onNewInstrument={createNewInstrument}
           onSaveInstrument={saveInstrument}
           onExportInstrument={handleExportInstrumentAssembly}
@@ -2610,6 +2632,79 @@ const App: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleCloseSoundExportSummary}>OK</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isOptimizeConfirmOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Optimize song?</div>
+              <div className="modal-body">
+                Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.
+                <br />
+                <br />
+                Continue?
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleConfirmOptimize}>OK</button>
+                <button className="command-btn" onClick={handleCancelOptimize}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {optimizeSummary && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Optimization Summary</div>
+              <div className="modal-body">
+                {optimizeSummary.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < optimizeSummary.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseOptimizeSummary}>OK</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isRenumberConfirmOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Renumber song?</div>
+              <div className="modal-body">
+                Renumber all patterns according to their order of appearance in the playlist (then any hidden patterns), and renumber all instruments alphabetically by name.
+                <br />
+                <br />
+                This will update all references in the playlist and patterns.
+                <br />
+                <br />
+                Continue?
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleConfirmRenumber}>OK</button>
+                <button className="command-btn" onClick={handleCancelRenumber}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {renumberSummary && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Renumber Summary</div>
+              <div className="modal-body">
+                {renumberSummary.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < renumberSummary.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseRenumberSummary}>OK</button>
               </div>
             </div>
           </div>

@@ -964,13 +964,15 @@ export const useDataManagement = () => {
     const newPattern: Pattern = {
       id: patternId,
       name: `Pattern ${patternId}`,
-      lines: Array(targetLength).fill(null).map(() => ({
-        trackA: null,
-        trackB: null,
-        trackC: null
-      }))
+      lines: Array(targetLength)
+        .fill(null)
+        .map(() => ({
+          trackA: null,
+          trackB: null,
+          trackC: null
+        }))
     };
-    
+
     const updatedSong = {
       ...currentSong,
       patterns: [...currentSong.patterns, newPattern]
@@ -979,13 +981,16 @@ export const useDataManagement = () => {
     return newPattern;
   }, [currentSong]);
 
-  const addPlaylistEntry = useCallback((entry: { trackA: string; trackB: string; trackC: string }) => {
-    const updatedSong = {
-      ...currentSong,
-      playlist: [...currentSong.playlist, entry]
-    };
-    setCurrentSong(updatedSong);
-  }, [currentSong]);
+  const addPlaylistEntry = useCallback(
+    (entry: { trackA: string; trackB: string; trackC: string }) => {
+      const updatedSong = {
+        ...currentSong,
+        playlist: [...currentSong.playlist, entry]
+      };
+      setCurrentSong(updatedSong);
+    },
+    [currentSong]
+  );
 
   const optimizeSong = useCallback((): string => {
     const song = currentSong;
@@ -1015,9 +1020,8 @@ export const useDataManagement = () => {
       }
 
       const existingLines = pattern.lines || [];
-      const removedCount = existingLines.length > patternLength
-        ? existingLines.length - patternLength
-        : 0;
+      const removedCount =
+        existingLines.length > patternLength ? existingLines.length - patternLength : 0;
 
       let newLines = existingLines;
 
@@ -1026,7 +1030,9 @@ export const useDataManagement = () => {
         trimmedLinesInfo.push({ id: pattern.id, name: pattern.name, removed: removedCount });
       } else if (existingLines.length < patternLength) {
         const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
-        const extra = Array.from({ length: patternLength - existingLines.length }, () => ({ ...emptyLine }));
+        const extra = Array.from({ length: patternLength - existingLines.length }, () => ({
+          ...emptyLine
+        }));
         newLines = [...existingLines, ...extra];
       }
 
@@ -1046,7 +1052,10 @@ export const useDataManagement = () => {
             if (typeof note.instrument === 'string') {
               id = note.instrument.trim().toUpperCase();
             } else if (typeof note.instrument === 'number') {
-              id = Math.floor(note.instrument).toString(16).padStart(2, '0').toUpperCase();
+              id = Math.floor(note.instrument)
+                .toString(16)
+                .padStart(2, '0')
+                .toUpperCase();
             }
             if (id) {
               usedInstrumentIds.add(id);
@@ -1061,7 +1070,7 @@ export const useDataManagement = () => {
 
     song.instruments.forEach(inst => {
       if (!inst) return; // Skip null/undefined instruments
-      
+
       const idNorm = (inst.id || '').trim().toUpperCase();
       if (idNorm && usedInstrumentIds.has(idNorm)) {
         newInstruments.push(inst);
@@ -1105,6 +1114,231 @@ export const useDataManagement = () => {
     return summaryLines.join('\n');
   }, [currentSong]);
 
+  const renumberSong = useCallback((): string => {
+    const song = currentSong;
+
+    // Build pattern lookup map
+    const patternById = new Map<string, Pattern>();
+    song.patterns.forEach(pattern => {
+      if (pattern && typeof pattern.id === 'string') {
+        patternById.set(pattern.id.trim().toUpperCase(), pattern);
+      }
+    });
+
+    // Determine pattern order by first occurrence in playlist (A/B/C),
+    // ignoring '--' and GOTO markers ('^^..'), then append any hidden
+    // patterns that are not referenced from the playlist.
+    const orderedPatternIds: string[] = [];
+    const seenPatternIds = new Set<string>();
+
+    const addPatternId = (rawId: string) => {
+      const trimmed = rawId.trim().toUpperCase();
+      if (!trimmed || trimmed === '--') {
+        return;
+      }
+
+      if (trimmed.startsWith('^^')) {
+        const suffix = trimmed.slice(2).trim().toUpperCase();
+        if (!suffix) return;
+        if (!patternById.has(suffix) || seenPatternIds.has(suffix)) return;
+        seenPatternIds.add(suffix);
+        orderedPatternIds.push(suffix);
+        return;
+      }
+
+      if (!patternById.has(trimmed) || seenPatternIds.has(trimmed)) {
+        return;
+      }
+      seenPatternIds.add(trimmed);
+      orderedPatternIds.push(trimmed);
+    };
+
+    song.playlist.forEach(entry => {
+      if (!entry) return;
+      if (typeof entry.trackA === 'string') addPatternId(entry.trackA);
+      if (typeof entry.trackB === 'string') addPatternId(entry.trackB);
+      if (typeof entry.trackC === 'string') addPatternId(entry.trackC);
+    });
+
+    // Append hidden patterns (those not referenced in the playlist),
+    // preserving their existing order.
+    song.patterns.forEach(pattern => {
+      if (!pattern || typeof pattern.id !== 'string') return;
+      const idNorm = pattern.id.trim().toUpperCase();
+      if (!patternById.has(idNorm) || seenPatternIds.has(idNorm)) {
+        return;
+      }
+      seenPatternIds.add(idNorm);
+      orderedPatternIds.push(idNorm);
+    });
+
+    // Build mapping old pattern ID -> new pattern ID (00, 01, 02, ...)
+    const patternIdMap: Record<string, string> = {};
+    orderedPatternIds.forEach((oldId, index) => {
+      patternIdMap[oldId] = index.toString(16).padStart(2, '0').toUpperCase();
+    });
+
+    const remapPatternId = (rawId: string): string => {
+      const trimmed = rawId.trim();
+      if (!trimmed) return rawId;
+      if (trimmed === '--') return trimmed;
+
+      if (trimmed.startsWith('^^')) {
+        const suffix = trimmed.slice(2).trim().toUpperCase();
+        if (!suffix) return trimmed;
+        const mapped = patternIdMap[suffix];
+        return mapped ? `^^${mapped}` : trimmed;
+      }
+
+      const mapped = patternIdMap[trimmed.toUpperCase()];
+      return mapped || trimmed;
+    };
+
+    // Renumber playlist pattern references
+    const newPlaylist = song.playlist.map(entry => {
+      if (!entry) return entry;
+      return {
+        trackA: typeof entry.trackA === 'string' ? remapPatternId(entry.trackA) : entry.trackA,
+        trackB: typeof entry.trackB === 'string' ? remapPatternId(entry.trackB) : entry.trackB,
+        trackC: typeof entry.trackC === 'string' ? remapPatternId(entry.trackC) : entry.trackC
+      };
+    });
+
+    // Build new patterns in the newly defined order and apply new IDs.
+    const remappedPatterns: Pattern[] = orderedPatternIds
+      .map(oldId => {
+        const original = patternById.get(oldId);
+        if (!original) {
+          return null as any;
+        }
+
+        const newId = patternIdMap[oldId];
+        const newLines: PatternLine[] = (original.lines || []).map(line => ({
+          trackA: line.trackA ? { ...line.trackA } : null,
+          trackB: line.trackB ? { ...line.trackB } : null,
+          trackC: line.trackC ? { ...line.trackC } : null
+        }));
+
+        return {
+          ...original,
+          id: newId,
+          lines: newLines
+        };
+      })
+      .filter(Boolean);
+
+    // Prepare instrument renumbering: sort instruments by name (case-insensitive)
+    // and then assign hexadecimal IDs in that order.
+    const instruments = song.instruments || [];
+    const instrumentsSorted = [...instruments].sort((a, b) => {
+      const nameA = (a?.name || '').toLowerCase();
+      const nameB = (b?.name || '').toLowerCase();
+      if (nameA < nameB) return -1;
+      if (nameA > nameB) return 1;
+      const idA = parseInt((a?.id || '0'), 16);
+      const idB = parseInt((b?.id || '0'), 16);
+      return idA - idB;
+    });
+
+    const instrumentIdMap: Record<string, string> = {};
+
+    const newInstruments: Instrument[] = instrumentsSorted.map((inst, index) => {
+      const oldIdNorm = (inst.id || '').trim().toUpperCase();
+      const newId = index.toString(16).padStart(2, '0').toUpperCase();
+      if (oldIdNorm) {
+        instrumentIdMap[oldIdNorm] = newId;
+      }
+      return {
+        ...inst,
+        id: newId
+      };
+    });
+
+    // Remap instrument IDs in all pattern note data.
+    const remappedPatternsWithInstruments: Pattern[] = remappedPatterns.map(pattern => {
+      const lines = (pattern.lines || []).map(line => {
+        const newLine: PatternLine = { ...line };
+
+        (['trackA', 'trackB', 'trackC'] as (keyof PatternLine)[]).forEach(key => {
+          const note = newLine[key] as any;
+          if (note && typeof note.instrument === 'string') {
+            const raw = note.instrument.trim().toUpperCase();
+            const mapped = instrumentIdMap[raw];
+            if (mapped) {
+              newLine[key] = {
+                ...note,
+                instrument: mapped
+              } as any;
+            }
+          }
+        });
+
+        return newLine;
+      });
+
+      return {
+        ...pattern,
+        lines
+      };
+    });
+
+    // Update currentInstrument to keep it in sync with the new instrument IDs.
+    let nextCurrentInstrument = currentInstrument;
+    if (currentInstrument) {
+      const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
+      const mappedId = instrumentIdMap[currentIdNorm];
+      if (mappedId) {
+        const updatedFromList = newInstruments.find(inst => inst.id === mappedId);
+        nextCurrentInstrument = updatedFromList || { ...currentInstrument, id: mappedId };
+      }
+    }
+
+    const renumberedSong: Song = {
+      ...song,
+      patterns: remappedPatternsWithInstruments,
+      playlist: newPlaylist,
+      instruments: newInstruments
+    };
+
+    setCurrentSong(renumberedSong);
+    if (nextCurrentInstrument) {
+      setCurrentInstrument(nextCurrentInstrument);
+    }
+
+    // Build human-readable summary
+    const summaryLines: string[] = [];
+    summaryLines.push('Renumbering complete.');
+    summaryLines.push('');
+    summaryLines.push(`Patterns: ${song.patterns.length} -> ${renumberedSong.patterns.length}`);
+    summaryLines.push(
+      `Instruments: ${song.instruments.length} -> ${renumberedSong.instruments.length}`
+    );
+
+    if (orderedPatternIds.length > 0) {
+      summaryLines.push('');
+      summaryLines.push('Pattern ID mapping (old -> new):');
+      orderedPatternIds.forEach(oldId => {
+        const newId = patternIdMap[oldId];
+        const pattern = patternById.get(oldId);
+        const name = pattern && pattern.name ? pattern.name : '';
+        summaryLines.push(`- ${oldId} -> ${newId}${name ? ` (${name})` : ''}`);
+      });
+    }
+
+    if (instrumentsSorted.length > 0) {
+      summaryLines.push('');
+      summaryLines.push('Instrument ID mapping (old -> new):');
+      instrumentsSorted.forEach(inst => {
+        const oldIdNorm = (inst.id || '').trim().toUpperCase();
+        const mapped = instrumentIdMap[oldIdNorm];
+        const name = inst.name || '';
+        summaryLines.push(`- ${inst.id} -> ${mapped}${name ? ` (${name})` : ''}`);
+      });
+    }
+
+    return summaryLines.join('\n');
+  }, [currentSong, currentInstrument]);
+
   const triggerFileLoad = useCallback(() => {
     fileInputRef.current?.click();
   }, []);
@@ -1127,6 +1361,7 @@ export const useDataManagement = () => {
     createNewPattern,
     addPlaylistEntry,
     optimizeSong,
+    renumberSong,
     triggerFileLoad
   };
 };

@@ -6,6 +6,7 @@ interface CommandPanelProps {
   onLoadSong: () => void;
   onSaveSong: () => void;
   onOptimize: () => void;
+  onRenumber: () => void;
   onNewInstrument: () => void;
   onSaveInstrument: () => void;
   onExportInstrument: () => void;
@@ -45,6 +46,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onLoadSong,
   onSaveSong,
   onOptimize,
+  onRenumber,
   onNewInstrument,
   onSaveInstrument,
   onExportInstrument,
@@ -79,9 +81,35 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
 
+  const focusDefaultButton = () => {
+    const panel = panelRef.current;
+    if (!panel) {
+      return;
+    }
+
+    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>('.command-btn'));
+    if (buttons.length === 0) {
+      return;
+    }
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    const activeIsButton = activeElement && buttons.includes(activeElement as HTMLButtonElement);
+    if (activeIsButton) {
+      return;
+    }
+
+    const playButton = panel.querySelector<HTMLButtonElement>('.play-song-btn');
+    if (playButton) {
+      playButton.focus();
+    } else {
+      buttons[0].focus();
+    }
+  };
+
   useEffect(() => {
     if (isActive && panelRef.current) {
       panelRef.current.focus();
+      focusDefaultButton();
     }
   }, [isActive]);
 
@@ -182,6 +210,15 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       ref={panelRef}
       className={`command-panel ${isActive ? 'active' : ''}`}
       tabIndex={0}
+      onFocus={event => {
+        if (!isActive) {
+          return;
+        }
+
+        if (event.target === panelRef.current) {
+          focusDefaultButton();
+        }
+      }}
       onClick={() => setActiveSection('commands')}
       onKeyDown={handleKeyDown}
     >
@@ -191,6 +228,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onLoadSong} className="command-btn">LOAD SONG</button>
         <button onClick={onSaveSong} className="command-btn">SAVE SONG</button>
         <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
+        <button onClick={onRenumber} className="command-btn">RENUMBER</button>
         <button onClick={onAddLine} className="command-btn">ADD LINE</button>
         <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
         <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
@@ -224,7 +262,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       <div className="command-row">
         <button 
           onClick={isPlaying && !isPatternPlaying ? onStopSong : onPlaySong} 
-          className={`command-btn ${isPlaying && !isPatternPlaying ? 'playing' : ''}`}
+          className={`command-btn play-song-btn ${isPlaying && !isPatternPlaying ? 'playing' : ''}`}
         >
           {isPlaying && !isPatternPlaying ? 'STOP SONG' : 'PLAY SONG'}
         </button>
