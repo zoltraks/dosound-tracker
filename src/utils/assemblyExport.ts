@@ -140,12 +140,14 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
           }
         }
         
-        // Store this frame
-        frames.push({
-          registers: newRegs,
-          lineIndex: playlistIdx * lineCount + lineIdx,
-          tick: tick
-        });
+        // Store this frame only when envelope steps advance (every 40ms like instrument export)
+        if (tick === 0 || (tick % 2 === 0)) {
+          frames.push({
+            registers: newRegs,
+            lineIndex: playlistIdx * lineCount + lineIdx,
+            tick: tick
+          });
+        }
         
         currentRegs = newRegs;
       }
