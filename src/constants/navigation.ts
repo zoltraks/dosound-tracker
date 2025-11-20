@@ -40,6 +40,7 @@ export const KEYBOARD_SHORTCUTS = {
   'CTRL+5': 'playPatternFromStart',
   'CTRL+6': 'playPattern',
   'CTRL+8': 'stopPlayback',
+  'ESC': 'stopPlayback',
   
   // File operations
   'CTRL+N': 'newSong',

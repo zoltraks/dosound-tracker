@@ -45,7 +45,36 @@ const App: React.FC = () => {
     const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
     return savedDumpMode === 'complex';
   });
-  const [channelMutes, setChannelMutes] = useState<[boolean, boolean, boolean]>([false, false, false]);
+  const [channelMutes, setChannelMutes] = useState<[boolean, boolean, boolean]>(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-eq-mutes');
+      if (!stored) return [false, false, false];
+      const parsed = JSON.parse(stored);
+      if (
+        Array.isArray(parsed) &&
+        parsed.length === 3 &&
+        parsed.every(v => typeof v === 'boolean')
+      ) {
+        return [parsed[0], parsed[1], parsed[2]] as [boolean, boolean, boolean];
+      }
+    } catch {
+      // ignore
+    }
+    return [false, false, false];
+  });
+  const [instrumentOctaves, setInstrumentOctaves] = useState<Record<string, number>>(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-instrument-octaves');
+      if (!stored) return {};
+      const parsed = JSON.parse(stored);
+      if (parsed && typeof parsed === 'object') {
+        return parsed as Record<string, number>;
+      }
+    } catch {
+      // ignore
+    }
+    return {};
+  });
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -84,6 +113,31 @@ const App: React.FC = () => {
   useEffect(() => {
     updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
   }, [currentSong.patternLength, updatePatternLength]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-eq-mutes', JSON.stringify(channelMutes));
+    } catch {
+      // ignore
+    }
+  }, [channelMutes]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-instrument-octaves', JSON.stringify(instrumentOctaves));
+    } catch {
+      // ignore
+    }
+  }, [instrumentOctaves]);
+
+  useEffect(() => {
+    const id = currentInstrument?.id;
+    if (!id) return;
+    const storedOctave = instrumentOctaves[id];
+    if (typeof storedOctave === 'number') {
+      setCurrentOctave(storedOctave);
+    }
+  }, [currentInstrument?.id, instrumentOctaves]);
 
   // Save dump mode preference to localStorage whenever it changes
   useEffect(() => {
@@ -811,7 +865,12 @@ const App: React.FC = () => {
   }, []);
 
   const handleConfirmNewSong = useCallback(() => {
-    createNewSong();
+    const newSong = createNewSong();
+    const hasInstruments = newSong.instruments && newSong.instruments.length > 0;
+    if (!hasInstruments) {
+      setCurrentOctave(3);
+    }
+    setChannelMutes([false, false, false]);
     setIsNewSongConfirmOpen(false);
   }, [createNewSong]);
 
@@ -826,6 +885,8 @@ const App: React.FC = () => {
   const handleConfirmReset = useCallback(() => {
     // Clear all localStorage data
     localStorage.clear();
+    setChannelMutes([false, false, false]);
+    setCurrentOctave(3);
     // Reload the application to start fresh
     window.location.reload();
   }, []);
@@ -907,6 +968,31 @@ const App: React.FC = () => {
     // Set sequencer to the selected pattern position, reset line and tick to 0
     setPosition(position, 0, 0);
   }, [setPosition]);
+
+  const handleMovePlaylistLineUp = useCallback((lineIndex: number) => {
+    if (currentSong.playlist.length === 0 || lineIndex <= 0 || lineIndex >= currentSong.playlist.length) {
+      return;
+    }
+    const newPlaylist = [...currentSong.playlist];
+    const tmp = newPlaylist[lineIndex - 1];
+    newPlaylist[lineIndex - 1] = newPlaylist[lineIndex];
+    newPlaylist[lineIndex] = tmp;
+    updateSong({ playlist: newPlaylist });
+    setPosition(lineIndex - 1, sequencerState.currentLine, sequencerState.currentTick);
+  }, [currentSong.playlist, updateSong, setPosition, sequencerState.currentLine, sequencerState.currentTick]);
+
+  const handleMovePlaylistLineDown = useCallback((lineIndex: number) => {
+    const length = currentSong.playlist.length;
+    if (length === 0 || lineIndex < 0 || lineIndex >= length - 1) {
+      return;
+    }
+    const newPlaylist = [...currentSong.playlist];
+    const tmp = newPlaylist[lineIndex + 1];
+    newPlaylist[lineIndex + 1] = newPlaylist[lineIndex];
+    newPlaylist[lineIndex] = tmp;
+    updateSong({ playlist: newPlaylist });
+    setPosition(lineIndex + 1, sequencerState.currentLine, sequencerState.currentTick);
+  }, [currentSong.playlist, updateSong, setPosition, sequencerState.currentLine, sequencerState.currentTick]);
 
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
@@ -1367,6 +1453,9 @@ const App: React.FC = () => {
   const handleStop = useCallback(() => {
     // Stop the sequencer
     stop();
+
+    // Ensure pattern play state is cleared so buttons show PLAY again
+    setIsPatternPlaying(false);
     
     // Reset cycle counters and silence all channels
     handleStopPlayback();
@@ -1627,7 +1716,10 @@ const App: React.FC = () => {
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
-  }, []);
+    const id = currentInstrument?.id;
+    if (!id) return;
+    setInstrumentOctaves(prev => ({ ...prev, [id]: octave }));
+  }, [currentInstrument?.id]);
   const handleLineChange = useCallback((lineIndex: number) => {
     setSharedCurrentLine(lineIndex);
   }, []);
@@ -2103,6 +2195,8 @@ const App: React.FC = () => {
               onPositionSelect={handlePositionSelect}
               onCreatePatternAt={handleCreatePatternAt}
               targetTrack={targetTrackId}
+              onMoveLineUp={handleMovePlaylistLineUp}
+              onMoveLineDown={handleMovePlaylistLineDown}
             />
             
             <InstrumentListPanel
@@ -2130,7 +2224,7 @@ const App: React.FC = () => {
           activeSection={activeSection}
           setActiveSection={setActiveSection}
           currentOctave={currentOctave}
-          onOctaveChange={setCurrentOctave}
+          onOctaveChange={handleOctaveChange}
           ym2149={ym2149Ref.current}
           currentInstrument={currentInstrument}
           previewChannel={
@@ -2160,6 +2254,7 @@ const App: React.FC = () => {
             if (file) {
               loadSong(file);
               setActiveSection('playlist');
+              setChannelMutes([false, false, false]);
               // This will be handled by the useDataManagement hook
             }
           }}

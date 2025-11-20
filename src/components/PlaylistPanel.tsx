@@ -16,6 +16,8 @@ interface PlaylistPanelProps {
   onPositionSelect: (position: number) => void;
   onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   targetTrack: 'A' | 'B' | 'C';
+  onMoveLineUp: (lineIndex: number) => void;
+  onMoveLineDown: (lineIndex: number) => void;
 }
 
 export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
@@ -26,7 +28,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   currentPlaybackPosition,
   onPositionSelect,
   onCreatePatternAt,
-  targetTrack
+  targetTrack,
+  onMoveLineUp,
+  onMoveLineDown
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>('A');
@@ -391,14 +395,47 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       
       <div className="playlist-footer">
         <div className="playlist-info">
-          Line: {playlist.length === 0
-            ? '--'
-            : currentLine.toString(16).toUpperCase()} / {playlist.length === 0
-            ? '--'
-            : playlist.length.toString(16).toUpperCase()}
+          <span>
+            Line: {playlist.length === 0
+              ? '--'
+              : currentLine.toString(16).toUpperCase()} / {playlist.length === 0
+              ? '--'
+              : playlist.length.toString(16).toUpperCase()}
+          </span>
         </div>
         
         <div className="playlist-controls">
+          <button
+            className="nav-btn"
+            onClick={() => {
+              if (playlist.length === 0 || currentLine === 0) {
+                return;
+              }
+              onMoveLineUp(currentLine);
+              setCurrentLine(prev => Math.max(0, prev - 1));
+            }}
+            disabled={playlist.length === 0 || currentLine === 0}
+          >
+            ↑
+          </button>
+          <button
+            className="nav-btn"
+            onClick={() => {
+              if (playlist.length === 0 || currentLine >= playlist.length - 1) {
+                return;
+              }
+              onMoveLineDown(currentLine);
+              setCurrentLine(prev => {
+                if (playlist.length === 0) {
+                  return prev;
+                }
+                return Math.min(playlist.length - 1, prev + 1);
+              });
+            }}
+            disabled={playlist.length === 0 || currentLine >= playlist.length - 1}
+          >
+            ↓
+          </button>
           <button 
             className="nav-btn"
             onClick={() => {

@@ -150,6 +150,9 @@ export const useKeyboardNavigation = () => {
           event.preventDefault();
           shortcut = 'TAB'; 
           break;
+        case 'ESCAPE':
+          shortcut = 'ESC';
+          break;
         case 'ARROWUP': 
           event.preventDefault();
           shortcut = 'ARROW_UP'; 
