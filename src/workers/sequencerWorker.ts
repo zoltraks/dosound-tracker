@@ -2,6 +2,7 @@
 let intervalId: number | null = null;
 let tickInterval = 20; // 50Hz = 20ms
 let isPlaying = false;
+let isPatternLoop = false;
 let currentTick = 0;
 let currentLine = 0;
 let currentPattern = 0;
@@ -27,7 +28,11 @@ function scheduleTick() {
 
     if (newLine >= patternLength) {
       newLine = 0;
-      newPattern++;
+      // In song mode, advance to the next playlist position when the pattern wraps.
+      // In pattern-loop mode, stay on the same playlist position and just wrap rows.
+      if (!isPatternLoop) {
+        newPattern++;
+      }
     }
   }
 
@@ -58,6 +63,7 @@ function startSequencer() {
 
 function stopSequencer() {
   isPlaying = false;
+  isPatternLoop = false;
   if (intervalId !== null) {
     clearInterval(intervalId);
     intervalId = null;
@@ -122,6 +128,7 @@ self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
         currentPattern = data.pattern || 0;
         currentLine = data.line || 0;
         currentTick = data.tick || 0;
+        isPatternLoop = !!(data as any).patternLoop;
       }
       startSequencer();
       break;

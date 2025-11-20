@@ -147,7 +147,8 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
         data: {
           pattern: initialPattern !== undefined ? initialPattern : sequencerState.currentPattern,
           line: initialLine !== undefined ? initialLine : sequencerState.currentLine,
-          tick: initialTick !== undefined ? initialTick : 0
+          tick: initialTick !== undefined ? initialTick : 0,
+          patternLoop
         }
       });
     }
