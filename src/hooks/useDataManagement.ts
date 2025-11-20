@@ -13,22 +13,43 @@ const DEFAULT_SONG_AUTHOR = 'Author Name';
 
 const createDefaultSong = (): Song => {
   const defaultPatternLength = PATTERN_LENGTH;
-  const defaultPattern: Pattern = {
-    id: '00',
-    name: 'Default Pattern',
+  
+  // Create three different patterns for each track
+  const defaultPatternA: Pattern = {
+    id: '01',
+    name: 'Pattern 01',
     lines: Array.from({ length: defaultPatternLength }, (_, i) => {
       const line: PatternLine = { trackA: null, trackB: null, trackC: null };
 
-      // Add some notes to create a simple melody
+      // Add some notes to create a simple melody on track A
       if (i % 8 === 0) line.trackA = { note: 'C', octave: 4, instrument: '00' };
       if (i % 8 === 2) line.trackA = { note: 'E', octave: 4, instrument: '00' };
       if (i % 8 === 4) line.trackA = { note: 'G', octave: 4, instrument: '00' };
       if (i % 8 === 6) line.trackA = { note: 'E', octave: 4, instrument: '00' };
 
+      return line;
+    })
+  };
+  
+  const defaultPatternB: Pattern = {
+    id: '02', 
+    name: 'Pattern 02',
+    lines: Array.from({ length: defaultPatternLength }, (_, i) => {
+      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+
       // Add some bass notes on track B
-      if (i % 4 === 0) line.trackB = { note: 'C', octave: 3, instrument: '00' };
+      if (i % 4 === 0) line.trackA = { note: 'C', octave: 3, instrument: '00' };
 
       return line;
+    })
+  };
+  
+  const defaultPatternC: Pattern = {
+    id: '03',
+    name: 'Pattern 03', 
+    lines: Array.from({ length: defaultPatternLength }, () => {
+      // Empty pattern for track C
+      return { trackA: null, trackB: null, trackC: null };
     })
   };
 
@@ -38,8 +59,8 @@ const createDefaultSong = (): Song => {
     year: new Date().getFullYear(),
     speed: 6,
     patternLength: defaultPatternLength,
-    patterns: [defaultPattern],
-    playlist: [{ trackA: '00', trackB: '00', trackC: '00' }],
+    patterns: [defaultPatternA, defaultPatternB, defaultPatternC],
+    playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
     instruments: [
       {
         id: '00',
@@ -49,10 +70,7 @@ const createDefaultSong = (): Song => {
           0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20,
           -16, -12, -8, -4, ...Array(8).fill(0)
         ],
-        pitchEnvelope: [
-          0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64,
-          -32, -16, ...Array(12).fill(0)
-        ],
+        pitchEnvelope: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
         modeEnvelope: Array(32).fill(0),
         base: DEFAULT_BASE_KEY
@@ -64,7 +82,7 @@ const createDefaultSong = (): Song => {
         arpeggioEnvelope: [
           12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)
         ],
-        pitchEnvelope: [64, 32, 0, -32, -64, -32, 0, 32, 64, ...Array(23).fill(0)],
+        pitchEnvelope: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
         modeEnvelope: Array(32).fill(0),
         base: DEFAULT_BASE_KEY
@@ -76,9 +94,7 @@ const createDefaultSong = (): Song => {
         arpeggioEnvelope: [
           24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)
         ],
-        pitchEnvelope: [
-          128, 96, 64, 32, 0, -32, -64, -96, -128, ...Array(23).fill(0)
-        ],
+        pitchEnvelope: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
         modeEnvelope: Array(32).fill(0),
         base: DEFAULT_BASE_KEY
@@ -146,7 +162,7 @@ export const useDataManagement = () => {
       name: 'Default Instrument',
       volumeEnvelope: Array(32).fill(0x0F),
       arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
-      pitchEnvelope: [0, 16, 32, 64, 96, 128, 96, 64, 32, 16, 0, -16, -32, -64, -96, -128, -96, -64, -32, -16, ...Array(12).fill(0)],
+      pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
       modeEnvelope: Array(32).fill(0),
       base: DEFAULT_BASE_KEY

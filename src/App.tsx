@@ -30,6 +30,7 @@ const App: React.FC = () => {
   const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [optimizeSummary, setOptimizeSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
@@ -570,6 +571,21 @@ const App: React.FC = () => {
 
   const handleCancelNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(false);
+  }, []);
+
+  const handleRequestReset = useCallback(() => {
+    setIsResetConfirmOpen(true);
+  }, []);
+
+  const handleConfirmReset = useCallback(() => {
+    // Clear all localStorage data
+    localStorage.clear();
+    // Reload the application to start fresh
+    window.location.reload();
+  }, []);
+
+  const handleCancelReset = useCallback(() => {
+    setIsResetConfirmOpen(false);
   }, []);
 
   const handleShowAbout = useCallback(() => {
@@ -1300,6 +1316,7 @@ const App: React.FC = () => {
           onExportData={handleExportData}
           onAddLine={handleAddLine}
           onDeleteLine={handleDeleteLine}
+          onReset={handleRequestReset}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
           isDosoundMode={false} // TODO: Implement settings property on Song interface
@@ -1625,6 +1642,26 @@ const App: React.FC = () => {
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleConfirmNewSong}>OK</button>
                 <button className="command-btn" onClick={handleCancelNewSong}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isResetConfirmOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Reset application?</div>
+              <div className="modal-body">
+                All saved data will be permanently deleted and the application will reload to default state.
+                <br />
+                <br />
+                This action cannot be undone.
+                <br />
+                <br />
+                Continue with reset?
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleConfirmReset}>Reset</button>
+                <button className="command-btn" onClick={handleCancelReset}>Cancel</button>
               </div>
             </div>
           </div>
