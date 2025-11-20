@@ -20,6 +20,8 @@ interface CommandPanelProps {
   onExportSound: () => void;
   onAddLine: () => void;
   onDeleteLine: () => void;
+  onCloneLine: () => void;
+  onDuplicateLine: () => void;
   onReset: () => void;
   isPlaying: boolean;
   isPatternPlaying: boolean;
@@ -55,6 +57,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onExportSound,
   onAddLine,
   onDeleteLine,
+  onCloneLine,
+  onDuplicateLine,
   onReset,
   isPlaying,
   isPatternPlaying,
@@ -185,6 +189,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
         <button onClick={onAddLine} className="command-btn">ADD LINE</button>
         <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
+        <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
+        <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
         <button onClick={onReset} className="command-btn">RESET</button>
       </div>
 

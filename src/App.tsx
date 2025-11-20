@@ -552,6 +552,23 @@ const App: React.FC = () => {
     updateSong({ playlist: newPlaylist });
   }, [currentSong.playlist, updateSong]);
 
+  const handleCloneLine = useCallback(() => {
+    const length = currentSong.playlist.length;
+    if (length === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, length - 1));
+    const sourceEntry = currentSong.playlist[currentIndex];
+    const newPlaylist = [...currentSong.playlist];
+    const clonedEntry = { ...sourceEntry };
+    const insertIndex = currentIndex + 1;
+
+    newPlaylist.splice(insertIndex, 0, clonedEntry);
+    updateSong({ playlist: newPlaylist });
+    setPosition(insertIndex, 0, 0);
+  }, [currentSong.playlist, sequencerState.currentPattern, updateSong, setPosition]);
+
   const handleDeleteLine = useCallback(() => {
     const length = currentSong.playlist.length;
     if (length === 0) {
@@ -572,6 +589,82 @@ const App: React.FC = () => {
     const newIndex = Math.min(currentIndex, newLength - 1);
     setPosition(newIndex, 0, 0);
   }, [currentSong.playlist, sequencerState.currentPattern, updateSong, setPosition]);
+
+  const handleDuplicateLine = useCallback(() => {
+    const playlist = currentSong.playlist;
+    const patterns = currentSong.patterns;
+    const length = playlist.length;
+    if (length === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, length - 1));
+    const sourceEntry = playlist[currentIndex];
+
+    const newPlaylist = [...playlist];
+    const newEntry = { ...sourceEntry };
+    const newPatterns = [...patterns];
+
+    const existingIds = new Set(patterns.map(p => p.id));
+    let nextIndex = patterns.length;
+
+    const allocatePatternId = () => {
+      // Generate hex IDs like existing patterns (00, 01, 02, ...)
+      // Ensure the ID is unique across all patterns, including newly-added ones.
+      // eslint-disable-next-line no-constant-condition
+      while (true) {
+        const id = nextIndex.toString(16).padStart(2, '0').toUpperCase();
+        nextIndex++;
+        if (!existingIds.has(id)) {
+          existingIds.add(id);
+          return id;
+        }
+      }
+    };
+
+    const duplicateTrack = (key: 'trackA' | 'trackB' | 'trackC') => {
+      const patternId = sourceEntry[key];
+      if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+        newEntry[key] = patternId;
+        return;
+      }
+
+      const original = patterns.find(p => p.id === patternId);
+      if (!original) {
+        newEntry[key] = patternId;
+        return;
+      }
+
+      const newId = allocatePatternId();
+      const newLines = original.lines.map(line => ({
+        trackA: line.trackA ? { ...line.trackA } : null,
+        trackB: line.trackB ? { ...line.trackB } : null,
+        trackC: line.trackC ? { ...line.trackC } : null
+      }));
+
+      newPatterns.push({
+        id: newId,
+        name: original.name,
+        lines: newLines
+      });
+
+      newEntry[key] = newId;
+    };
+
+    duplicateTrack('trackA');
+    duplicateTrack('trackB');
+    duplicateTrack('trackC');
+
+    const insertIndex = currentIndex + 1;
+    newPlaylist.splice(insertIndex, 0, newEntry);
+
+    updateSong({
+      playlist: newPlaylist,
+      patterns: newPatterns
+    });
+
+    setPosition(insertIndex, 0, 0);
+  }, [currentSong.playlist, currentSong.patterns, sequencerState.currentPattern, updateSong, setPosition]);
 
   const handleRequestNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(true);
@@ -1629,6 +1722,8 @@ const App: React.FC = () => {
           onExportSound={handleExportSound}
           onAddLine={handleAddLine}
           onDeleteLine={handleDeleteLine}
+          onCloneLine={handleCloneLine}
+          onDuplicateLine={handleDuplicateLine}
           onReset={handleRequestReset}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
@@ -1881,7 +1976,7 @@ const App: React.FC = () => {
               <div className="modal-title">Transpose</div>
               <div className="modal-body">
                 <div style={{ marginBottom: '8px' }}>
-                  <div>Scope:</div>
+                  <div>Song scope:</div>
                   <label>
                     <input
                       type="radio"
@@ -1951,34 +2046,45 @@ const App: React.FC = () => {
 
                 <div style={{ marginBottom: '8px' }}>
                   <div>Semitone offset:</div>
-                  <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                  <div
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+                      gap: '4px',
+                      marginBottom: '4px'
+                    }}
+                  >
                     <button
                       type="button"
                       className="command-btn"
+                      style={{ width: '100%' }}
                       onClick={() => setTransposeAmount(-12)}
                     >
-                      -12 (octave down)
+                      -12 (OCTAVE DOWN)
                     </button>
                     <button
                       type="button"
                       className="command-btn"
+                      style={{ width: '100%' }}
                       onClick={() => setTransposeAmount(-1)}
                     >
-                      -1 (note down)
+                      -1 (NOTE DOWN)
                     </button>
                     <button
                       type="button"
                       className="command-btn"
-                      onClick={() => setTransposeAmount(1)}
-                    >
-                      +1 (note up)
-                    </button>
-                    <button
-                      type="button"
-                      className="command-btn"
+                      style={{ width: '100%' }}
                       onClick={() => setTransposeAmount(12)}
                     >
-                      +12 (octave up)
+                      +12 (OCTAVE UP)
+                    </button>
+                    <button
+                      type="button"
+                      className="command-btn"
+                      style={{ width: '100%' }}
+                      onClick={() => setTransposeAmount(1)}
+                    >
+                      +1 (NOTE UP)
                     </button>
                   </div>
                   <div>
@@ -1990,11 +2096,6 @@ const App: React.FC = () => {
                       style={{ width: '80px' }}
                     />
                   </div>
-                </div>
-
-                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
-                  By default, transposition operates on the current track and playlist position for all
-                  instruments.
                 </div>
               </div>
               <div className="modal-actions">
