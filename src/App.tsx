@@ -908,7 +908,6 @@ const App: React.FC = () => {
 
   // Handle instrument selection
   const handleInstrumentSelect = useCallback((instrument: Instrument) => {
-    console.log('Selecting instrument:', instrument.id, instrument.name);
     setCurrentInstrument(instrument);
   }, []);
 

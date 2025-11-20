@@ -23,6 +23,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   const [currentIndex, setCurrentIndex] = useState(0);
   const [scrollOffset, setScrollOffset] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
+  const nameInputRef = useRef<HTMLInputElement | null>(null);
   const VISIBLE_ITEMS = 8;
 
   const isActive = activeSection === 'instrumentList';
@@ -72,25 +73,37 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
 
+    const target = event.target as HTMLElement | null;
+    if (target && target.tagName === 'INPUT') {
+      return;
+    }
+
     switch (event.key.toUpperCase()) {
+      case 'ENTER':
+        event.preventDefault();
+        if (nameInputRef.current) {
+          nameInputRef.current.focus();
+          nameInputRef.current.select();
+        }
+        break;
       case 'ARROWUP':
         event.preventDefault();
-        setCurrentIndex(prev => {
-          const newIndex = Math.max(0, prev - 1);
+        {
+          const newIndex = Math.max(0, currentIndex - 1);
+          setCurrentIndex(newIndex);
           onSelectInstrument(getInstrumentForSlot(newIndex));
-          return newIndex;
-        });
+        }
         break;
       case 'ARROWDOWN':
         event.preventDefault();
-        setCurrentIndex(prev => {
-          const newIndex = Math.min(MAX_INSTRUMENTS - 1, prev + 1);
+        {
+          const newIndex = Math.min(MAX_INSTRUMENTS - 1, currentIndex + 1);
+          setCurrentIndex(newIndex);
           onSelectInstrument(getInstrumentForSlot(newIndex));
-          return newIndex;
-        });
+        }
         break;
     }
-  }, [isActive, getInstrumentForSlot, onSelectInstrument]);
+  }, [isActive, getInstrumentForSlot, onSelectInstrument, currentIndex]);
 
   const handleInstrumentClick = useCallback((slotIndex: number) => {
     setCurrentIndex(slotIndex);
@@ -131,6 +144,13 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
         <div className="instrument-items">
           {visibleSlots.map((slotIndex) => {
             const instrument = instruments[slotIndex];
+            const isCurrent = slotIndex === currentIndex;
+            const displayName =
+              isCurrent
+                ? currentInstrument.name
+                : instrument && instrument.name
+                  ? instrument.name
+                  : '';
             return (
               <div
                 key={slotIndex}
@@ -141,7 +161,27 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                   {slotIndex.toString(16).padStart(2, '0').toUpperCase()}
                 </span>
                 <span className="instrument-name">
-                  {instrument && instrument.name ? instrument.name : '...'}
+                  {isCurrent ? (
+                    <input
+                      ref={nameInputRef}
+                      type="text"
+                      className="instrument-name-input"
+                      value={displayName}
+                      onChange={(e) => onRenameInstrument(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (listRef.current) {
+                            listRef.current.focus();
+                          }
+                        }
+                      }}
+                    />
+                  ) : (
+                    displayName || '...'
+                  )}
                 </span>
               </div>
             );
@@ -151,13 +191,9 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       
       <div className="instrument-list-footer">
         <div className="instrument-info">
-          <span>Current: {currentInstrument.id}</span>
-          <input
-            type="text"
-            className="instrument-name-input"
-            value={currentInstrument.name}
-            onChange={(e) => onRenameInstrument(e.target.value)}
-          />
+          <span>
+            Current: {currentInstrument.id} {currentInstrument.name}
+          </span>
         </div>
         
         <div className="instrument-controls">

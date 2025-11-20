@@ -72,6 +72,20 @@ export const useKeyboardNavigation = () => {
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toUpperCase();
+    const target = event.target as HTMLElement | null;
+    const tagName = target?.tagName;
+    const isEditable =
+      tagName === 'INPUT' ||
+      tagName === 'TEXTAREA' ||
+      tagName === 'SELECT' ||
+      (target != null && target.isContentEditable);
+
+    const isTabKey = key === 'TAB';
+
+    if (isEditable && !isTabKey) {
+      return;
+    }
+
     const ctrl = event.ctrlKey || event.metaKey;
     const shift = event.shiftKey;
     
