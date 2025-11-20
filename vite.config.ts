@@ -6,6 +6,7 @@ const packageJson = JSON.parse(readFileSync(new URL('./package.json', import.met
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [react()],
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version)
@@ -17,6 +18,18 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Deterministic filenames without content hashes
+        entryFileNames: 'assets/[name].js',
+        chunkFileNames: 'assets/[name].js',
+        assetFileNames: 'assets/[name][extname]'
+      }
+    }
+  },
+  worker: {
+    // Ensure worker bundles (like sequencerWorker) also get stable filenames
+    // without random hashes.
+    format: 'es',
+    rollupOptions: {
+      output: {
         entryFileNames: 'assets/[name].js',
         chunkFileNames: 'assets/[name].js',
         assetFileNames: 'assets/[name][extname]'

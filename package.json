@@ -3,11 +3,14 @@
   "private": true,
   "version": "1.0.14",
   "type": "module",
+  "main": "electron/main.cjs",
   "scripts": {
     "dev": "vite",
     "build": "node scripts/bump-version.mjs && tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:8008 && electron .\"",
+    "electron:build": "npm run build && electron-builder"
   },
   "dependencies": {
     "js-yaml": "^4.1.0",
@@ -21,15 +24,51 @@
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.1.0",
+    "concurrently": "^9.1.0",
+    "electron": "^28.2.0",
+    "electron-builder": "^24.13.3",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",
     "globals": "^16.5.0",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.46.3",
-    "vite": "npm:rolldown-vite@7.2.2"
+    "vite": "npm:rolldown-vite@7.2.2",
+    "wait-on": "^7.2.0"
   },
   "overrides": {
     "vite": "npm:rolldown-vite@7.2.2"
+  },
+  "author": "Zoltar X / New Generation",
+  "build": {
+    "appId": "com.dosound.tracker",
+    "productName": "DOSOUND Tracker",
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "package.json"
+    ],
+    "directories": {
+      "output": "release"
+    },
+    "mac": {
+      "category": "public.app-category.music",
+      "icon": "public/icons/icon-512.png"
+    },
+    "win": {
+      "target": [
+        "nsis",
+        "zip"
+      ],
+      "icon": "public/icons/icon-512.png"
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "tar.gz"
+      ],
+      "category": "AudioVideo",
+      "icon": "public/icons/icon-512.png"
+    }
   }
 }
