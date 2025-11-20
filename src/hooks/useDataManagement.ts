@@ -442,7 +442,8 @@ export const useDataManagement = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${currentSong.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.yaml`;
+      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_');
+      a.download = `${safeTitle}.yaml`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

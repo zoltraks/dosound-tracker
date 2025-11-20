@@ -4,7 +4,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
 import type { Instrument } from './synth/SoundDriver';
-import { PATTERN_LENGTH } from './constants/music';
+import { PATTERN_LENGTH, MAX_INSTRUMENTS } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
@@ -1000,6 +1000,65 @@ const App: React.FC = () => {
     }
   }, [currentInstrument]);
 
+  const handleCloneInstrument = useCallback(() => {
+    const instruments = currentSong.instruments;
+    if (instruments.length >= MAX_INSTRUMENTS) {
+      alert('No free instrument slots available.');
+      return;
+    }
+
+    const currentIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
+
+    const isSlotFree = (inst: Instrument | undefined) => !inst || !inst.name;
+
+    let slotIndex = -1;
+
+    if (currentIndex >= 0) {
+      for (let i = currentIndex + 1; i < instruments.length; i++) {
+        if (isSlotFree(instruments[i])) {
+          slotIndex = i;
+          break;
+        }
+      }
+
+      if (slotIndex === -1) {
+        for (let i = 0; i <= currentIndex; i++) {
+          if (isSlotFree(instruments[i])) {
+            slotIndex = i;
+            break;
+          }
+        }
+      }
+    }
+
+    if (slotIndex === -1) {
+      slotIndex = instruments.length;
+    }
+
+    if (slotIndex >= MAX_INSTRUMENTS) {
+      alert('No free instrument slots available.');
+      return;
+    }
+
+    const slotId = slotIndex.toString(16).padStart(2, '0').toUpperCase();
+
+    const clonedInstrument: Instrument = {
+      ...currentInstrument,
+      id: slotId
+    };
+
+    const updatedInstruments = [...instruments];
+    if (slotIndex < updatedInstruments.length) {
+      updatedInstruments[slotIndex] = clonedInstrument;
+    } else {
+      updatedInstruments.push(clonedInstrument);
+    }
+
+    updateSong({ instruments: updatedInstruments });
+    setCurrentInstrument(clonedInstrument);
+    setActiveSection('instrumentList');
+  }, [currentSong.instruments, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]);
+
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
     if (instruments.length === 0) {
@@ -1325,6 +1384,7 @@ const App: React.FC = () => {
           onExportInstrument={handleExportInstrumentAssembly}
           onLoadInstrument={handleLoadInstrumentClick}
           onDeleteInstrument={handleDeleteInstrument}
+          onCloneInstrument={handleCloneInstrument}
           onPlaySong={handleStartSong}
           onStopSong={handleStop}
           onPlayPattern={handleStartPattern}
@@ -1539,6 +1599,7 @@ const App: React.FC = () => {
             const file = e.target.files?.[0];
             if (file) {
               loadSong(file);
+              setActiveSection('playlist');
               // This will be handled by the useDataManagement hook
             }
           }}
@@ -1552,6 +1613,7 @@ const App: React.FC = () => {
             const file = e.target.files?.[0];
             if (file) {
               loadInstrument(file);
+              setActiveSection('instrumentList');
             }
           }}
         />
