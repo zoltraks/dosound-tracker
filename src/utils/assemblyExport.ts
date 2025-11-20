@@ -252,7 +252,7 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
       
       // Add beat marker after each completed playlist position (every patternLength lines)
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % (song.patternLength || 64) === 0) {
-        asm += '\t; ---\n';
+        asm += '\n\t; ---\n\n';
       }
       lastLineIndex = lineIndex;
       
@@ -306,9 +306,18 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
     
   } else {
     // Unoptimized dump - write all registers every frame
+    let lastLineIndex = -1;
+    
     for (let i = 0; i < frames.length; i++) {
       const frame = frames[i];
       const regs = frame.registers;
+      const lineIndex = frame.lineIndex;
+      
+      // Add beat marker after each completed playlist position (every patternLength lines)
+      if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % (song.patternLength || 64) === 0) {
+        asm += '\n\t; ---\n\n';
+      }
+      lastLineIndex = lineIndex;
       
       // Write mixer register
       asm += formatAsmLine([0x07, regs[0x07] || 0x38], getRegisterComment(0x07, regs[0x07] || 0x38));
