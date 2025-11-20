@@ -1,5 +1,5 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
-import { NOTE_FREQUENCIES, NOTES } from '../constants/music';
+import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE } from '../constants/music';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -187,9 +187,9 @@ function applyInstrumentToRegisters(
   // Set volume
   regs[0x08 + channel] = volume;
   
-  // Calculate frequency with arpeggio
+  // Calculate frequency with arpeggio (NOTE_FREQUENCIES are defined for NOTE_BASE_OCTAVE)
   const baseFreq = NOTE_FREQUENCIES[note.note] || 440.0;
-  let frequency = baseFreq * Math.pow(2, note.octave - 4);
+  let frequency = baseFreq * Math.pow(2, note.octave - NOTE_BASE_OCTAVE);
   if (arpeggio !== 0) {
     frequency = frequency * Math.pow(2, arpeggio / 12);
   }

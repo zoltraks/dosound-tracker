@@ -21,7 +21,7 @@ const YM_LOG_VOLUME_TABLE: number[] = [
   0.7071, // 14
   1.0000  // 15: max
 ];
-import { NOTE_FREQUENCIES } from '../constants/music';
+import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
 
 export interface YMChannel {
   tonePeriod: number;
@@ -176,8 +176,8 @@ export class YM2149 {
                             !isSilent;
       
       if (shouldPlayTone) {
-        // YM2149 frequency calculation: f = clock / (32 * period)
-        const frequency = YM_BASE_CLOCK / (32 * channel.tonePeriod);
+        // YM2149 frequency calculation: f = clock / (16 * period)
+        const frequency = YM_BASE_CLOCK / (16 * channel.tonePeriod);
         
         // Clamp frequency to reasonable range (20Hz - 20kHz)
         const clampedFrequency = Math.max(20, Math.min(20000, frequency));
@@ -388,7 +388,7 @@ export class YM2149 {
     if (toneActive) {
       const baseFreq = NOTE_FREQUENCIES[noteData.note];
       if (baseFreq) {
-        let frequency = baseFreq * Math.pow(2, noteData.octave - 4);
+        let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
 
         let arpeggioSemitones = 0;
         let arpeggioIndex = -1;

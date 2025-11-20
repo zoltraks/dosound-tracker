@@ -13,6 +13,9 @@ export const NOTE_FREQUENCIES: { [key: string]: number } = {
   'B': 493.88
 };
 
+// Reference octave for NOTE_FREQUENCIES (A-4 = 440 Hz, C-4 = 261.63, etc.)
+export const NOTE_BASE_OCTAVE = 4;
+
 export const KEYBOARD_TO_NOTE: { [key: string]: { note: string; octaveOffset: number } } = {
   'Z': { note: 'C', octaveOffset: 0 },
   'S': { note: 'C#', octaveOffset: 0 },

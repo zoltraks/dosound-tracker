@@ -1,5 +1,5 @@
 import { YM2149 } from './YM2149';
-import { NOTE_FREQUENCIES } from '../constants/music';
+import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
 
 export const DOSOUND_REGISTER_WRITE = 0xFF;
 export const DOSOUND_END_MARKER = 0x00;
@@ -184,7 +184,7 @@ export class SoundDriver {
 
   private calculateNoteFrequency(note: string, octave: number): number {
     const baseFreq = NOTE_FREQUENCIES[note] || 440.00;
-    return baseFreq * Math.pow(2, octave - 4);
+    return baseFreq * Math.pow(2, octave - NOTE_BASE_OCTAVE);
   }
 
   private frequencyToPeriod(frequency: number): number {
