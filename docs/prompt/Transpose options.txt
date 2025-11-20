@@ -1,0 +1,4 @@
+In the transpose options I need to be able to write negative values in semitones edit field which is not possible now.
+When I press "-12 (OCTAVE DOWN)" then instead of setting absolute value "-12" for semitones field, substract 12, so if I press it twice, then it should be -24.
+Apply this logic for "+12 (OCTAVE UP)" and "-1 (NOTE DOWN)" and "+1 (NOTE UP)".
+Remember these options until "RESET" is pressed.

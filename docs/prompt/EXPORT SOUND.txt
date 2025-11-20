@@ -1,0 +1,46 @@
+Add another "EXPORT SOUND" command button just after "EXPORT DATA" and implement rendering the song to WAV format and download it.
+Use 16-bit mono 44100 format.
+After sound is exported, show summary.
+Don't use alert function.
+
+1.
+
+Look at the octave selection block.
+Remember octave selection for an instrument.
+Don't save this information in a file when "SAVE INST" is invoked.
+Just remember settings of the octave for an instrument.
+If an instrument wasn't used before and you don't know the octave, just don't change the setting and remember it for that instrument.
+If the program is reset and no instrument is on the instrument list, set by default octave 3.
+
+2.
+
+Look at the "EQ" block.
+When reload application the state of channels in "EQ" block (muted/unmuted) is lost.
+Please keep the state in local storage and clean it (reset to unmuted) after "RESET", "NEW SONG" or "LOAD SONG".
+
+3.
+
+In the playlist add another navigation buttons before these with up arrow and down arrow to move current line up or down.
+Keep current line selected on the new position.
+
+4.
+
+Review sequencer playback routine. 
+When playback is running and Esc key is pressed then playback should be stopped. 
+When playback is stopped, state of buttons "STOP SONG", "STOP PATTERN" must be set back to "PLAY SONG" and "PLAY PATTERN".
+When the playback is stopped, no matter if stopped with "STOP SONG", "STOP PATTERN" or by hitting Enter or Esc key when playing *YOU MUST* stop all sounds by setting the volume of all channels A, B, C to 0. Now I can stop playback and the sound is stucked at last tone and volume but there should be no sound after playback is stopped.
+
+
+
+Again review stop playback. I still can stop playing and sound is not silenced.
+
+
+
+Let's make some UI improvements.
+On the right side we have to blocks which content is variable. That is "Playlist" and "Instrument". 
+Add vertical scroll bars to both of them and make them to fill all available height in the viewport.
+
+
+
+
+After song is loaded, always select the first line on the playlist.

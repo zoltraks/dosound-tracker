@@ -1,0 +1,36 @@
+Improve song data format used for load and save by fixing style: in a subkey "playlist" of "song" key use all values in double quotes, no matter if they need to be quoted or not.
+
+Instead:
+
+```yaml
+song:
+  playlist:
+    - A: "02"
+      B: "09"
+      C: 0D
+    - A: "03"
+      B: 0A
+      C: 0D
+    - A: "04"
+      B: 0B
+      C: 0D
+```
+
+Write:
+
+
+```yaml
+song:
+  playlist:
+    - A: "02"
+      B: "09"
+      C: "0D"
+    - A: "03"
+      B: "0A"
+      C: "0D"
+    - A: "04"
+      B: "0B"
+      C: "0D"
+```
+
+That will make indentation consistent and nice to look on that by human eye.

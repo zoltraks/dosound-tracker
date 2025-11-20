@@ -1,0 +1,14 @@
+1.
+
+When command bar is focused by clicking mouse on its area or is entered from navigation with TAB key and no command button is selected, select "PLAY SONG" button.
+
+2.
+
+Add "RENUMBER" button after "OPTIMIZE" in command bar to make renumbering operation.
+Confirm that user is sure to make this operation.
+After that, all pattern numbers should be renumbered in the order of existence in playlist.
+If there are any hidden patterns not existing in the playlist renumber them also after that.
+Renumber all the instruments in order by name alphabetically ignoring letter case.
+Remember to renumber also instruments in the patterns so song is fully playable and nothing is broken.
+After that show the summary of the operation.
+Don't use alert function.
