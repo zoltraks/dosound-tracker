@@ -38,7 +38,7 @@ const createDefaultSong = (): Song => {
       const line: PatternLine = { trackA: null, trackB: null, trackC: null };
 
       // Add some bass notes on track B
-      if (i % 4 === 0) line.trackA = { note: 'C', octave: 3, instrument: '00' };
+      if (i % 4 === 0) line.trackB = { note: 'C', octave: 3, instrument: '00' };
 
       return line;
     })
@@ -47,9 +47,16 @@ const createDefaultSong = (): Song => {
   const defaultPatternC: Pattern = {
     id: '03',
     name: 'Pattern 03', 
-    lines: Array.from({ length: defaultPatternLength }, () => {
-      // Empty pattern for track C
-      return { trackA: null, trackB: null, trackC: null };
+    lines: Array.from({ length: defaultPatternLength }, (_, i) => {
+      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+
+      // Add some high-frequency notes on track C
+      if (i % 8 === 1) line.trackC = { note: 'G', octave: 5, instrument: '00' };
+      if (i % 8 === 3) line.trackC = { note: 'E', octave: 5, instrument: '00' };
+      if (i % 8 === 5) line.trackC = { note: 'C', octave: 5, instrument: '00' };
+      if (i % 8 === 7) line.trackC = { note: 'E', octave: 5, instrument: '00' };
+
+      return line;
     })
   };
 

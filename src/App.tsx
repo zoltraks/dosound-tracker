@@ -244,19 +244,22 @@ const App: React.FC = () => {
         lastPos &&
         (state.currentPattern !== lastPos.pattern || state.currentLine < lastPos.line);
 
+      // Detect if this is the first tick after starting playback
+      const isFirstTick = !lastPos;
+
       lastSequencerPositionRef.current = {
         pattern: state.currentPattern,
         line: state.currentLine
       };
 
-      if (wrappedOrJumped) {
-        // Always reset sub-tick timing on wrap/jump so 40ms envelope steps realign
+      if (wrappedOrJumped || isFirstTick) {
+        // Always reset sub-tick timing on wrap/jump or first tick so 40ms envelope steps realign
         channelSubTickRef.current = [0, 0, 0];
 
-        // Only reset envelopes and notes when we actually change pattern
-        // (song mode) or when not looping a single pattern.
+        // Reset envelopes and notes when we change pattern (song mode) 
+        // or when not looping a single pattern, or on first tick
         const patternChanged = lastPos && state.currentPattern !== lastPos.pattern;
-        if (patternChanged || !state.isPatternLoop) {
+        if (patternChanged || !state.isPatternLoop || isFirstTick) {
           channelEnvelopeStepRef.current = [0, 0, 0];
           lastNotesRef.current = [null, null, null];
         }
@@ -311,8 +314,8 @@ const App: React.FC = () => {
         const lineC = patternC?.lines[state.currentLine];
 
         const noteA = lineA?.trackA || null;
-        const noteB = lineB?.trackA || null;
-        const noteC = lineC?.trackA || null;
+        const noteB = lineB?.trackB || null;
+        const noteC = lineC?.trackC || null;
 
         const notes = [noteA, noteB, noteC];
         const patterns = [patternA, patternB, patternC];
@@ -345,7 +348,7 @@ const App: React.FC = () => {
           // row, do NOT carry the previous note across the pattern boundary.
           // This ensures that channels whose patterns start with spaces
           // remain silent at line 0 on each loop.
-          if (wrappedOrJumped && !noteOnRow) {
+          if ((wrappedOrJumped || isFirstTick) && !noteOnRow) {
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
             updateChannelWithInstrument(ym2149, ch, null, 0);
@@ -1050,12 +1053,12 @@ const App: React.FC = () => {
       setIsPatternPlaying(false);
     }
     
-    // Set position to beginning (line 0) of the current pattern BEFORE starting
-    setPosition(clampedIndex, 0, 0);
+    // Clear position ref to ensure first tick detection works
+    lastSequencerPositionRef.current = null;
     
-    // Start song playback
-    startSong();
-  }, [isPatternPlaying, startSong, sequencerState.currentPattern, setPosition, currentSong.playlist]);
+    // Set position to beginning (line 0) of the current pattern and start song
+    startSong(clampedIndex, 0);
+  }, [isPatternPlaying, startSong, sequencerState.currentPattern, currentSong.playlist]);
 
   // Handle start pattern playback
   const handleStartPattern = useCallback(() => {
@@ -1101,14 +1104,14 @@ const App: React.FC = () => {
       stop();
     }
     
+    // Clear position ref to ensure first tick detection works
+    lastSequencerPositionRef.current = null;
+    
     // Update pattern playing state
     setIsPatternPlaying(true);
     
-    // Set position to current pattern and line BEFORE starting
-    setPosition(clampedIndex, sharedCurrentLine, 0);
-    
-    // Start pattern loop
-    startPatternLoop();
+    // Start pattern loop from line 0
+    startPatternLoop(clampedIndex, 0);
   }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, setPosition, currentSong.playlist, activeSection, lastTrackId]);
 
   const handleStartPatternFromBeginning = useCallback(() => {

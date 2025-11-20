@@ -27,6 +27,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const tickCallbackRef = useRef<((tick: number) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
+  const initialPositionRef = useRef<{ pattern?: number; line?: number; tick?: number } | null>(null);
 
   const calculateTickInterval = useCallback(() => {
     // Calculate interval based on BPM and ticks per row
@@ -40,29 +41,63 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
 
     intervalRef.current = setInterval(() => {
       setSequencerState(prev => {
-        let newTick = prev.currentTick + 1;
-        let newLine = prev.currentLine;
-        let newPattern = prev.currentPattern;
+        // Check if we have initial position override for first tick
+        let newState = { ...prev };
+        let hasInitialOverride = false;
+        if (initialPositionRef.current) {
+          if (initialPositionRef.current.pattern !== undefined) {
+            newState.currentPattern = initialPositionRef.current.pattern;
+          }
+          if (initialPositionRef.current.line !== undefined) {
+            newState.currentLine = initialPositionRef.current.line;
+          }
+          if (initialPositionRef.current.tick !== undefined) {
+            newState.currentTick = initialPositionRef.current.tick;
+          }
+          // Clear the ref after applying
+          initialPositionRef.current = null;
+          hasInitialOverride = true;
+        }
 
-        // Check if we've completed all ticks in current row
-        if (newTick >= prev.ticksPerRow) {
+        if (!newState.isPlaying) {
+          return newState;
+        }
+
+        // Skip tick advancement on first tick when applying initial override
+        if (hasInitialOverride) {
+          // Call registered callbacks with initial state
+          if (callbackRef.current) {
+            callbackRef.current(newState);
+          }
+          if (tickCallbackRef.current) {
+            tickCallbackRef.current(newState.currentTick);
+          }
+          return newState;
+        }
+
+        // Advance tick
+        let newTick = newState.currentTick + 1;
+        let newLine = newState.currentLine;
+        let newPattern = newState.currentPattern;
+
+        // Check if we need to advance to next line
+        if (newTick >= newState.ticksPerRow) {
           newTick = 0;
           newLine++;
 
-          // Check if we've completed all lines in current pattern
           // This is determined by the (dynamic) pattern length
           const maxLines = patternLengthRef.current || 1;
           if (newLine >= maxLines) {
             newLine = 0;
             // Only advance pattern if not in pattern loop mode
-            if (!prev.isPatternLoop) {
+            if (!newState.isPatternLoop) {
               newPattern++;
             }
           }
         }
 
-        const newState = {
-          ...prev,
+        const finalState = {
+          ...newState,
           currentTick: newTick,
           currentLine: newLine,
           currentPattern: newPattern
@@ -70,19 +105,22 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
 
         // Call registered callbacks
         if (callbackRef.current) {
-          callbackRef.current(newState);
+          callbackRef.current(finalState);
         }
 
         if (tickCallbackRef.current) {
           tickCallbackRef.current(newTick);
         }
 
-        return newState;
+        return finalState;
       });
     }, interval);
   }, [calculateTickInterval]);
 
-  const startPlayback = useCallback((patternLoop: boolean) => {
+  const startPlayback = useCallback((patternLoop: boolean, initialPattern?: number, initialLine?: number, initialTick?: number) => {
+    // Store initial position in ref for synchronous access
+    initialPositionRef.current = { pattern: initialPattern, line: initialLine, tick: initialTick };
+    
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -93,7 +131,6 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
       isPlaying: true,
       isPatternLoop: patternLoop,
       currentTick: 0
-      // Preserve currentLine/currentPattern so callers can set position before starting
     }));
 
     schedulePlaybackInterval();
@@ -148,12 +185,12 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     setSequencerState(prev => ({ ...prev, ticksPerRow: Math.max(1, Math.floor(newSpeed / 2)) }));
   }, []);
 
-  const startPatternLoop = useCallback(() => {
-    startPlayback(true);
+  const startPatternLoop = useCallback((initialPattern?: number, initialLine?: number) => {
+    startPlayback(true, initialPattern, initialLine);
   }, [startPlayback]);
 
-  const startSong = useCallback(() => {
-    startPlayback(false);
+  const startSong = useCallback((initialPattern?: number, initialLine?: number) => {
+    startPlayback(false, initialPattern, initialLine);
   }, [startPlayback]);
 
   const setCallback = useCallback((callback: (state: SequencerState) => void) => {
