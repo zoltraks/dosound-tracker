@@ -1,6 +1,7 @@
 export const NAVIGATION_ORDER = [
+  'piano',
   'octave',
-  'theme',
+  'commands',
   'trackA',
   'trackB', 
   'trackC',
@@ -11,8 +12,7 @@ export const NAVIGATION_ORDER = [
   'noise',
   'songInfo',
   'playlist',
-  'instrumentList',
-  'piano'
+  'instrumentList'
 ] as const;
 
 export type NavigationSection = typeof NAVIGATION_ORDER[number];

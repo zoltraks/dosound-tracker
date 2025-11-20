@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import type { NavigationSection } from '../constants/navigation';
 
 interface CommandPanelProps {
   onNewSong: () => void;
@@ -28,6 +29,8 @@ interface CommandPanelProps {
   onNewTrack: () => void;
   isComplexDumpMode: boolean;
   onToggleDumpMode: () => void;
+  activeSection: NavigationSection;
+  setActiveSection: (section: NavigationSection) => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -57,10 +60,26 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onPasteTrack,
   onNewTrack,
   isComplexDumpMode,
-  onToggleDumpMode
+  onToggleDumpMode,
+  activeSection,
+  setActiveSection
 }) => {
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const isActive = activeSection === 'commands';
+
+  useEffect(() => {
+    if (isActive && panelRef.current) {
+      panelRef.current.focus();
+    }
+  }, [isActive]);
+
   return (
-    <div className="command-panel">
+    <div
+      ref={panelRef}
+      className={`command-panel ${isActive ? 'active' : ''}`}
+      tabIndex={0}
+      onClick={() => setActiveSection('commands')}
+    >
       {/* Song Operations */}
       <div className="command-row">
         <button onClick={onNewSong} className="command-btn">NEW SONG</button>

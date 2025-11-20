@@ -1296,6 +1296,8 @@ const App: React.FC = () => {
           currentOctave={currentOctave}
           onOctaveChange={handleOctaveChange}
           onShowAbout={handleShowAbout}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
         />
         
         <CommandPanel
@@ -1326,6 +1328,8 @@ const App: React.FC = () => {
           onNewTrack={handleCreateNewTrack}
           isComplexDumpMode={isComplexDumpMode}
           onToggleDumpMode={handleToggleDumpMode}
+          activeSection={activeSection}
+          setActiveSection={setActiveSection}
         />
 
         <div className="main-content">

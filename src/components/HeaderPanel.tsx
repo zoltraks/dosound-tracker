@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
+import type { NavigationSection } from '../constants/navigation';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;
@@ -7,6 +8,8 @@ interface HeaderPanelProps {
   currentOctave: number;
   onOctaveChange: (octave: number) => void;
   onShowAbout: () => void;
+  activeSection: NavigationSection;
+  setActiveSection: (section: NavigationSection) => void;
 }
 
 export const HeaderPanel: React.FC<HeaderPanelProps> = ({
@@ -15,8 +18,19 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   title,
   currentOctave,
   onOctaveChange,
-  onShowAbout
+  onShowAbout,
+  activeSection,
+  setActiveSection
 }) => {
+  const octaveRef = useRef<HTMLDivElement | null>(null);
+  const isOctaveActive = activeSection === 'octave';
+
+  useEffect(() => {
+    if (isOctaveActive && octaveRef.current) {
+      octaveRef.current.focus();
+    }
+  }, [isOctaveActive]);
+
   return (
     <header className="header-panel">
       <div className="header-left">
@@ -30,7 +44,12 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       
       <div className="header-right">
         {/* Octave Selection */}
-        <div className="octave-selection">
+        <div
+          ref={octaveRef}
+          className={`octave-selection ${isOctaveActive ? 'active' : ''}`}
+          tabIndex={0}
+          onClick={() => setActiveSection('octave')}
+        >
           {Array.from({ length: 8 }, (_, i) => (
             <button
               key={i}
