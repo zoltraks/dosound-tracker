@@ -76,6 +76,13 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       updatePattern(currentLine, currentTrack, editingPattern.toUpperCase().padStart(2, '0'));
     }
     setEditingPattern('');
+    
+    // Refocus the playlist container after editing completes
+    setTimeout(() => {
+      if (playlistRef.current) {
+        playlistRef.current.focus();
+      }
+    }, 0);
   }, [editingPattern, currentLine, currentTrack, updatePattern]);
 
   useEffect(() => {
@@ -109,7 +116,13 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         }
       } else if (key === 'BACKSPACE') {
         event.preventDefault();
-        setEditingPattern(prev => prev.slice(0, -1));
+        // If editing pattern has only 1 character, clear to '--' and exit editing
+        if (editingPattern.length === 1) {
+          updatePattern(currentLine, currentTrack, '--');
+          setEditingPattern('');
+        } else {
+          setEditingPattern(prev => prev.slice(0, -1));
+        }
       } else if (/^[0-9A-F]$/.test(key) && editingPattern.length < 2) {
         event.preventDefault();
         setEditingPattern(prev => prev + key);
@@ -184,6 +197,10 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       case 'BACKSPACE':
         event.preventDefault();
         updatePattern(currentLine, currentTrack, '--');
+        break;
+      case 'ENTER':
+        event.preventDefault();
+        startEditingPattern(currentLine, currentTrack);
         break;
     }
   }, [isActive, playlist.length, currentLine, currentTrack, editingPattern, startEditingPattern, finishEditingPattern, updatePattern]);
