@@ -222,8 +222,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     setCurrentLine(lineIndex);
     setCurrentTrack(track);
     onPositionSelect(lineIndex);
-    startEditingPattern(lineIndex, track);
-  }, [startEditingPattern, onPositionSelect]);
+  }, [onPositionSelect]);
 
   const formatPatternDisplay = useCallback((patternId: string) => {
     if (patternId === '--') return '--';
