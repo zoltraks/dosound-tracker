@@ -372,11 +372,10 @@ export class YM2149 {
         let arpeggioSemitones = 0;
         let arpeggioIndex = -1;
         if (instrument.arpeggioEnvelope && instrument.arpeggioEnvelope.length > 0) {
-          const arpLen = instrument.arpeggioEnvelope.length;
-          // Loop arpeggio envelopes instead of clamping at the last value so
-          // that patterns like [0, 12, 0, 12, ...] continue repeating for
-          // long notes and across sequencer passes.
-          arpeggioIndex = arpLen > 0 ? (safeTick % arpLen) : 0;
+          // Apply arpeggio envelope step-by-step from the beginning up to the
+          // last defined value, then hold that last value for all subsequent
+          // ticks (no automatic looping).
+          arpeggioIndex = Math.min(safeTick, instrument.arpeggioEnvelope.length - 1);
           const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
           if (typeof arpeggioValue === 'number') {
             arpeggioSemitones = arpeggioValue;
@@ -405,16 +404,6 @@ export class YM2149 {
 
         this.writeRegister(fineRegister, period & 0xFF);
         this.writeRegister(coarseRegister, (period >> 8) & 0x0F);
-
-        // Debug logging for sequencer/piano comparison of arpeggio behaviour
-        // Channel, tick, arpeggio index/value, pitch index/value, and resulting period
-        // (This is verbose and intended for temporary debugging.)
-        // eslint-disable-next-line no-console
-        console.log(
-          `[YM] ch=${channel} tick=${safeTick} note=${noteData.note}${noteData.octave} ` +
-          `arpIdx=${arpeggioIndex} arpSemitones=${arpeggioSemitones} ` +
-          `pitchIdx=${pitchIndex} pitchSemitones=${pitchSemitones} period=${period}`
-        );
       }
     }
 

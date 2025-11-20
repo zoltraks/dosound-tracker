@@ -377,10 +377,6 @@ const App: React.FC = () => {
             // advance the step for the next 20ms tick.
             const step = channelEnvelopeStepRef.current[ch];
 
-            console.log(
-              `[SEQ] pat=${state.currentPattern} line=${state.currentLine} tick=${state.currentTick} ch=${ch} note=${activeNote.note}${activeNote.octave} inst=${activeNote.instrument} envStep=${step}`
-            );
-
             updateChannelWithInstrument(ym2149, ch, activeNote, step);
 
             channelEnvelopeStepRef.current[ch] = step + 1;
