@@ -218,9 +218,7 @@ const App: React.FC = () => {
     
     // Silence all channels
     if (ym2149Ref.current) {
-      ym2149Ref.current.writeRegister(0x08, 0x00); // Channel A volume
-      ym2149Ref.current.writeRegister(0x09, 0x00); // Channel B volume
-      ym2149Ref.current.writeRegister(0x0A, 0x00); // Channel C volume
+      ym2149Ref.current.silenceAll();
     }
   }, []);
 

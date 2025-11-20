@@ -290,6 +290,27 @@ export class YM2149 {
     this.updateAudioNodes();
   }
 
+  public silenceAll(): void {
+    const now = this.audioContext.currentTime;
+
+    // Zero volume registers for all channels so state and debug views reflect silence
+    for (let ch = 0; ch < 3; ch++) {
+      const volumeRegister = 8 + ch; // R8, R9, R10
+      this.registers[volumeRegister] = 0;
+    }
+
+    // Recompute internal state and derived gains based on zeroed volumes
+    this.updateState();
+    this.updateAudioNodes();
+
+    // Hard-gate all gains to guarantee immediate silence regardless of previous state
+    this.gainNodes.forEach(gainNode => {
+      gainNode.gain.setValueAtTime(0, now);
+    });
+    this.noiseGainNode.gain.setValueAtTime(0, now);
+    this.envelopeGainNode.gain.setValueAtTime(0, now);
+  }
+
   // Helper methods for instrument-based sound generation
   private getDefaultModeValue = (_instrument: Instrument) => 0;
 
