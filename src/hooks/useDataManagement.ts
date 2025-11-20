@@ -384,33 +384,24 @@ const parseSongFromYaml = (content: string): Song => {
 export const useDataManagement = () => {
   const [currentSong, setCurrentSong] = useState<Song>(() => {
     // Try to load from localStorage first
-    console.log('Loading song from localStorage...');
     try {
       const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
-      console.log('Saved song data:', savedSong);
       if (savedSong) {
         const parsedSong = JSON.parse(savedSong);
-        console.log('Parsed song:', parsedSong);
         return parsedSong;
       }
     } catch (error) {
       console.warn('Failed to load song from localStorage:', error);
     }
-    console.log('Using bundled default song from YAML');
     try {
       return parseSongFromYaml(defaultSongYaml);
     } catch (error) {
       console.error('Failed to parse bundled default song YAML:', error);
-      console.log('Falling back to built-in default song');
       return createDefaultSong();
     }
   });
 
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>(() => {
-    // Temporarily skip localStorage to test new data
-    console.log('Using new test instrument data (localStorage disabled for testing)');
-    
-    // Create test instrument with positive/negative values
     return {
       id: '00',
       name: 'Default Instrument',
