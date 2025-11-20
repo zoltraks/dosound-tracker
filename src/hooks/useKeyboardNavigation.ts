@@ -3,7 +3,8 @@ import type { NavigationSection, KeyboardShortcut } from '../constants/navigatio
 import { NAVIGATION_ORDER, KEYBOARD_SHORTCUTS } from '../constants/navigation';
 
 export const useKeyboardNavigation = () => {
-  const [activeSection, setActiveSection] = useState<NavigationSection>('octave');
+  const [activeSection, setActiveSectionInternal] = useState<NavigationSection>('octave');
+  const [lastTrackSection, setLastTrackSection] = useState<'trackA' | 'trackB' | 'trackC'>('trackA');
   const [isDarkMode, setIsDarkMode] = useState(() => {
     // Load theme preference from localStorage
     const savedTheme = localStorage.getItem('dosound-tracker-theme');
@@ -19,6 +20,13 @@ export const useKeyboardNavigation = () => {
     localStorage.setItem('dosound-tracker-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
 
+  const setActiveSection = useCallback((section: NavigationSection) => {
+    setActiveSectionInternal(section);
+    if (section === 'trackA' || section === 'trackB' || section === 'trackC') {
+      setLastTrackSection(section);
+    }
+  }, []);
+
   const setCallback = useCallback((section: NavigationSection, callback: (() => void) | null) => {
     callbacksRef.current[section] = callback;
   }, []);
@@ -28,16 +36,36 @@ export const useKeyboardNavigation = () => {
   }, []);
 
   const navigateToNext = useCallback(() => {
+    if (activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC') {
+      setActiveSection('mode');
+      return;
+    }
+
+    if (activeSection === 'commands') {
+      setActiveSection(lastTrackSection);
+      return;
+    }
+
     const currentIndex = NAVIGATION_ORDER.indexOf(activeSection);
     const nextIndex = (currentIndex + 1) % NAVIGATION_ORDER.length;
     setActiveSection(NAVIGATION_ORDER[nextIndex]);
-  }, [activeSection]);
+  }, [activeSection, lastTrackSection, setActiveSection]);
 
   const navigateToPrevious = useCallback(() => {
+    if (activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC') {
+      setActiveSection('commands');
+      return;
+    }
+
+    if (activeSection === 'mode') {
+      setActiveSection(lastTrackSection);
+      return;
+    }
+
     const currentIndex = NAVIGATION_ORDER.indexOf(activeSection);
     const previousIndex = currentIndex === 0 ? NAVIGATION_ORDER.length - 1 : currentIndex - 1;
     setActiveSection(NAVIGATION_ORDER[previousIndex]);
-  }, [activeSection]);
+  }, [activeSection, lastTrackSection, setActiveSection]);
 
   const executeShortcut = useCallback((shortcut: KeyboardShortcut) => {
     const action = KEYBOARD_SHORTCUTS[shortcut];
