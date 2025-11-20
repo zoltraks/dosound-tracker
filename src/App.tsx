@@ -45,9 +45,12 @@ const App: React.FC = () => {
   const [dumpExportSummary, setDumpExportSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
-    // Load dump mode preference from localStorage
+    // Load dump mode preference from localStorage. Default to complex mode
+    // when no preference is stored.
     const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
-    return savedDumpMode === 'complex';
+    if (savedDumpMode === 'complex') return true;
+    if (savedDumpMode === 'simple') return false;
+    return true;
   });
   const [channelMutes, setChannelMutes] = useState<[boolean, boolean, boolean]>(() => {
     try {
