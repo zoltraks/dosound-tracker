@@ -278,10 +278,9 @@ const App: React.FC = () => {
       
       // Bounds check to prevent array access errors
       if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
-        // Song has run past the playlist - stop and keep cursor on last valid entry
-        const lastIndex = Math.max(0, playlistLength - 1);
+        // Song has run past the playlist - stop and return to first line
         handleStopPlayback();
-        stop(lastIndex); // Preserve playlist position
+        stop(0); // Return to first line
         return;
       }
       
@@ -1194,9 +1193,8 @@ const App: React.FC = () => {
       sequencerState.currentPattern < 0 ||
       sequencerState.currentPattern >= playlistLength
     ) {
-      const lastIndex = Math.max(0, playlistLength - 1);
       handleStopPlayback();
-      stop(lastIndex);
+      stop(0); // Return to first line
     }
   }, [sequencerState.isPlaying, sequencerState.currentPattern, currentSong.playlist.length, stop, handleStopPlayback]);
 
