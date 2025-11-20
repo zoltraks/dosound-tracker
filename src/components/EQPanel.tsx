@@ -3,9 +3,11 @@ import { YM2149 } from '../synth/YM2149';
 
 interface EQPanelProps {
   ym2149?: YM2149 | null;
+  channelMutes: boolean[];
+  onToggleChannelMute: (channelIndex: number) => void;
 }
 
-export const EQPanel: React.FC<EQPanelProps> = ({ ym2149 }) => {
+export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggleChannelMute }) => {
   const [volumes, setVolumes] = useState<number[]>([0, 0, 0]);
 
   useEffect(() => {
@@ -30,13 +32,16 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149 }) => {
         <div className="volume-bars">
           {volumes.map((volume, index) => (
             <div key={index} className="volume-bar-container">
-              <div className="volume-bar">
+              <div
+                className={`volume-bar ${channelMutes[index] ? 'muted' : ''}`}
+                onClick={() => onToggleChannelMute(index)}
+              >
                 <div 
                   className="volume-fill"
                   style={{ height: `${getBarHeight(volume)}%` }}
                 />
               </div>
-              <span className="channel-label">
+              <span className={`channel-label ${channelMutes[index] ? 'muted' : ''}`}>
                 {String.fromCharCode(65 + index)} {/* A, B, C */}
               </span>
             </div>

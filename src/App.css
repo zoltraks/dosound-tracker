@@ -1196,6 +1196,15 @@ body {
   transition: height 0.05s ease;
 }
 
+.volume-bar.muted {
+  background-color: var(--playback-position-bg);
+  border-color: var(--playback-position-border);
+}
+
+.channel-label.muted {
+  color: var(--text-muted);
+}
+
 .channel-label {
   font-size: 8px;
   color: var(--text-secondary);

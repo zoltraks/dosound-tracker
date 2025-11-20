@@ -38,6 +38,7 @@ const App: React.FC = () => {
     const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
     return savedDumpMode === 'complex';
   });
+  const [channelMutes, setChannelMutes] = useState<[boolean, boolean, boolean]>([false, false, false]);
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -320,6 +321,12 @@ const App: React.FC = () => {
         const lastNotes = lastNotesRef.current;
 
         for (let ch = 0; ch < 3; ch++) {
+          if (channelMutes[ch]) {
+            const volumeRegister = 8 + ch;
+            ym2149.writeRegister(volumeRegister, 0x00);
+            continue;
+          }
+
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
           const last = lastNotes[ch];
@@ -391,7 +398,7 @@ const App: React.FC = () => {
         }
       }
     }
-  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition]);
+  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition, channelMutes]);
 
   // Register sequencer callback
   useEffect(() => {
@@ -606,6 +613,14 @@ const App: React.FC = () => {
 
   const handleToggleDumpMode = useCallback(() => {
     setIsComplexDumpMode(prev => !prev);
+  }, []);
+
+  const handleToggleChannelMute = useCallback((channelIndex: number) => {
+    setChannelMutes(prev => {
+      const next: [boolean, boolean, boolean] = [...prev] as [boolean, boolean, boolean];
+      next[channelIndex] = !next[channelIndex];
+      return next;
+    });
   }, []);
 
   const handleLoadInstrumentClick = useCallback(() => {
@@ -1481,7 +1496,11 @@ const App: React.FC = () => {
             
             <div className="bottom-panels">
               <DumpPanel ym2149={ym2149Ref.current} />
-              <EQPanel ym2149={ym2149Ref.current} />
+              <EQPanel
+                ym2149={ym2149Ref.current}
+                channelMutes={channelMutes}
+                onToggleChannelMute={handleToggleChannelMute}
+              />
             </div>
           </div>
         </div>
