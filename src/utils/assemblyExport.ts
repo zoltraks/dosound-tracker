@@ -4,9 +4,10 @@ import { NOTE_FREQUENCIES, NOTES } from '../constants/music';
 /**
  * Converts a song to DOSOUND XBIOS assembly format
  * @param song The song to export
+ * @param isComplexDumpMode Whether to use complex dump mode (includes detailed comments and optimization)
  * @returns Assembly formatted string
  */
-export function exportToAssembly(song: Song): string {
+export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false): string {
   // Simulate playback and collect register states per frame
   interface RegisterState {
     [register: number]: number;
@@ -152,7 +153,7 @@ export function exportToAssembly(song: Song): string {
   }
   
   // Now convert frames to optimized assembly output
-  return formatFramesToAssembly(frames, song);
+  return formatFramesToAssembly(frames, song, isComplexDumpMode);
 }
 
 function applyInstrumentToRegisters(
@@ -221,7 +222,9 @@ function applyInstrumentToRegisters(
   }
 }
 
-function formatFramesToAssembly(frames: any[], song: Song): string {
+function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: boolean = false): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // isComplexDumpMode parameter will be used for future optimization logic
   let asm = 'music:\n\n\t; START\n\n';
   
   if (frames.length === 0) {

@@ -32,6 +32,11 @@ const App: React.FC = () => {
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [optimizeSummary, setOptimizeSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
+  const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
+    // Load dump mode preference from localStorage
+    const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
+    return savedDumpMode === 'complex';
+  });
   const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
@@ -70,6 +75,11 @@ const App: React.FC = () => {
   useEffect(() => {
     updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
   }, [currentSong.patternLength, updatePatternLength]);
+
+  // Save dump mode preference to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('dosound-tracker-dump-mode', isComplexDumpMode ? 'complex' : 'simple');
+  }, [isComplexDumpMode]);
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -568,14 +578,18 @@ const App: React.FC = () => {
 
   const handleExportData = useCallback(() => {
     try {
-      const assemblyContent = exportToAssembly(currentSong);
+      const assemblyContent = exportToAssembly(currentSong, isComplexDumpMode);
       const filename = `${currentSong.title.replace(/[^a-zA-Z0-9]/g, '_')}.s`;
       downloadAssemblyFile(assemblyContent, filename);
     } catch (error) {
       console.error('Export failed:', error);
       // Could add user notification here
     }
-  }, [currentSong]);
+  }, [currentSong, isComplexDumpMode]);
+
+  const handleToggleDumpMode = useCallback(() => {
+    setIsComplexDumpMode(prev => !prev);
+  }, []);
 
   const handleLoadInstrumentClick = useCallback(() => {
     if (instrumentFileInputRef.current) {
@@ -1294,6 +1308,8 @@ const App: React.FC = () => {
           onCopyTrack={handleCopyTrack}
           onPasteTrack={handlePasteTrack}
           onNewTrack={handleCreateNewTrack}
+          isComplexDumpMode={isComplexDumpMode}
+          onToggleDumpMode={handleToggleDumpMode}
         />
 
         <div className="main-content">

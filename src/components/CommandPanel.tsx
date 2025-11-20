@@ -25,6 +25,8 @@ interface CommandPanelProps {
   onCopyTrack: () => void;
   onPasteTrack: () => void;
   onNewTrack: () => void;
+  isComplexDumpMode: boolean;
+  onToggleDumpMode: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -51,7 +53,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onPlayInstrument,
   onCopyTrack,
   onPasteTrack,
-  onNewTrack
+  onNewTrack,
+  isComplexDumpMode,
+  onToggleDumpMode
 }) => {
   return (
     <div className="command-panel">
@@ -104,6 +108,12 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           className={`command-btn ${isDosoundMode ? 'active' : ''}`}
         >
           DOSOUND MODE
+        </button>
+        <button 
+          onClick={onToggleDumpMode} 
+          className={`command-btn ${isComplexDumpMode ? 'active' : ''}`}
+        >
+          {isComplexDumpMode ? 'COMPLEX DUMP' : 'SIMPLE DUMP'}
         </button>
         <button onClick={onExportData} className="command-btn">EXPORT DATA</button>
       </div>
