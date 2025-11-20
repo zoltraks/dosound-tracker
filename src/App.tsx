@@ -37,6 +37,7 @@ const App: React.FC = () => {
   const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
   const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>('all');
   const [transposeAmount, setTransposeAmount] = useState<number>(0);
+  const [transposeAmountInput, setTransposeAmountInput] = useState<string>('0');
   const [transposeSummary, setTransposeSummary] = useState('');
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
@@ -143,6 +144,50 @@ const App: React.FC = () => {
   useEffect(() => {
     localStorage.setItem('dosound-tracker-dump-mode', isComplexDumpMode ? 'complex' : 'simple');
   }, [isComplexDumpMode]);
+
+  // Load transpose settings from localStorage on startup so they persist
+  // until the application is fully reset (RESET clears localStorage and reloads).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('dosound-tracker-transpose-settings');
+      if (!raw) return;
+
+      const parsed = JSON.parse(raw) as any;
+      if (parsed && typeof parsed === 'object') {
+        if (parsed.scope === 'line' || parsed.scope === 'song') {
+          setTransposeScope(parsed.scope);
+        }
+        if (parsed.trackScope === 'current' || parsed.trackScope === 'all') {
+          setTransposeTrackScope(parsed.trackScope);
+        }
+        if (parsed.instrumentScope === 'all' || parsed.instrumentScope === 'selected') {
+          setTransposeInstrumentScope(parsed.instrumentScope);
+        }
+        if (typeof parsed.amount === 'number' && Number.isFinite(parsed.amount)) {
+          setTransposeAmount(parsed.amount);
+          setTransposeAmountInput(String(parsed.amount));
+        }
+      }
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  // Persist transpose settings whenever they change so they survive reloads
+  // until the RESET action clears localStorage.
+  useEffect(() => {
+    try {
+      const payload = {
+        scope: transposeScope,
+        trackScope: transposeTrackScope,
+        instrumentScope: transposeInstrumentScope,
+        amount: transposeAmount
+      };
+      localStorage.setItem('dosound-tracker-transpose-settings', JSON.stringify(payload));
+    } catch {
+      // ignore
+    }
+  }, [transposeScope, transposeTrackScope, transposeInstrumentScope, transposeAmount]);
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -1743,19 +1788,28 @@ const App: React.FC = () => {
   }, []);
 
   const handleOpenTranspose = useCallback(() => {
-    setTransposeScope('line');
-    setTransposeTrackScope('current');
-    setTransposeInstrumentScope('all');
-    setTransposeAmount(0);
+    // When opening, keep the last-used transpose settings and just ensure the
+    // input text reflects the current numeric amount.
+    setTransposeAmountInput(String(transposeAmount));
     setIsTransposeOpen(true);
-  }, []);
+  }, [transposeAmount]);
 
   const handleCancelTranspose = useCallback(() => {
     setIsTransposeOpen(false);
   }, []);
 
   const handleConfirmTranspose = useCallback(() => {
-    const semitones = Math.round(transposeAmount);
+    // Parse the semitone offset from the text input so negative values and
+    // partial edits are handled correctly.
+    let semitones = 0;
+    const trimmed = transposeAmountInput.trim();
+
+    if (trimmed !== '' && trimmed !== '-' && trimmed !== '+') {
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed)) {
+        semitones = Math.round(parsed);
+      }
+    }
 
     const playlistLength = currentSong.playlist.length;
     if (playlistLength === 0) {
@@ -1917,7 +1971,7 @@ const App: React.FC = () => {
 
     setTransposeSummary(lines.join('\n'));
   }, [
-    transposeAmount,
+    transposeAmountInput,
     currentSong.playlist,
     currentSong.patterns,
     transposeScope,
@@ -1929,6 +1983,22 @@ const App: React.FC = () => {
     updateSong,
     normalizeInstrumentId
   ]);
+
+  const handleTransposeAmountChange = useCallback((value: string) => {
+    // Allow arbitrary text (including just "-" while typing) but only update
+    // the numeric amount when the value parses to a finite number.
+    setTransposeAmountInput(value);
+
+    const trimmed = value.trim();
+    if (!trimmed || trimmed === '-' || trimmed === '+') {
+      return;
+    }
+
+    const parsed = Number(trimmed);
+    if (Number.isFinite(parsed)) {
+      setTransposeAmount(parsed);
+    }
+  }, []);
 
   const handleCloseTransposeSummary = useCallback(() => {
     setTransposeSummary('');
@@ -2380,7 +2450,13 @@ const App: React.FC = () => {
                       type="button"
                       className="command-btn"
                       style={{ width: '100%' }}
-                      onClick={() => setTransposeAmount(-12)}
+                      onClick={() => {
+                        setTransposeAmount(prev => {
+                          const next = prev - 12;
+                          setTransposeAmountInput(String(next));
+                          return next;
+                        });
+                      }}
                     >
                       -12 (OCTAVE DOWN)
                     </button>
@@ -2388,7 +2464,13 @@ const App: React.FC = () => {
                       type="button"
                       className="command-btn"
                       style={{ width: '100%' }}
-                      onClick={() => setTransposeAmount(-1)}
+                      onClick={() => {
+                        setTransposeAmount(prev => {
+                          const next = prev - 1;
+                          setTransposeAmountInput(String(next));
+                          return next;
+                        });
+                      }}
                     >
                       -1 (NOTE DOWN)
                     </button>
@@ -2396,7 +2478,13 @@ const App: React.FC = () => {
                       type="button"
                       className="command-btn"
                       style={{ width: '100%' }}
-                      onClick={() => setTransposeAmount(12)}
+                      onClick={() => {
+                        setTransposeAmount(prev => {
+                          const next = prev + 12;
+                          setTransposeAmountInput(String(next));
+                          return next;
+                        });
+                      }}
                     >
                       +12 (OCTAVE UP)
                     </button>
@@ -2404,7 +2492,13 @@ const App: React.FC = () => {
                       type="button"
                       className="command-btn"
                       style={{ width: '100%' }}
-                      onClick={() => setTransposeAmount(1)}
+                      onClick={() => {
+                        setTransposeAmount(prev => {
+                          const next = prev + 1;
+                          setTransposeAmountInput(String(next));
+                          return next;
+                        });
+                      }}
                     >
                       +1 (NOTE UP)
                     </button>
@@ -2413,8 +2507,8 @@ const App: React.FC = () => {
                     Semitones:{' '}
                     <input
                       type="number"
-                      value={transposeAmount}
-                      onChange={e => setTransposeAmount(Number(e.target.value) || 0)}
+                      value={transposeAmountInput}
+                      onChange={e => handleTransposeAmountChange(e.target.value)}
                       style={{ width: '80px' }}
                     />
                   </div>
