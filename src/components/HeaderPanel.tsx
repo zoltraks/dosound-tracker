@@ -25,6 +25,44 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
 
+  const handleOctaveKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isOctaveActive) {
+      return;
+    }
+
+    const key = event.key;
+
+    if (
+      key === 'ArrowLeft' ||
+      key === 'ArrowRight' ||
+      key === 'ArrowUp' ||
+      key === 'ArrowDown' ||
+      key === ' '
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+
+    if (key === ' ') {
+      onOctaveChange(currentOctave);
+      return;
+    }
+
+    let nextOctave = currentOctave;
+
+    if (key === 'ArrowLeft' || key === 'ArrowDown') {
+      nextOctave = Math.max(0, currentOctave - 1);
+    } else if (key === 'ArrowRight' || key === 'ArrowUp') {
+      nextOctave = Math.min(7, currentOctave + 1);
+    } else {
+      return;
+    }
+
+    if (nextOctave !== currentOctave) {
+      onOctaveChange(nextOctave);
+    }
+  };
+
   useEffect(() => {
     if (isOctaveActive && octaveRef.current) {
       octaveRef.current.focus();
@@ -48,6 +86,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
           ref={octaveRef}
           className={`octave-selection ${isOctaveActive ? 'active' : ''}`}
           tabIndex={0}
+          onKeyDown={handleOctaveKeyDown}
           onClick={() => setActiveSection('octave')}
         >
           {Array.from({ length: 8 }, (_, i) => (
