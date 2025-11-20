@@ -42,6 +42,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     intervalRef.current = setInterval(() => {
       setSequencerState(prev => {
         // Check if we have initial position override for first tick
+        // Check if we have initial position override for first tick
         let newState = { ...prev };
         let hasInitialOverride = false;
         if (initialPositionRef.current) {
@@ -65,13 +66,6 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
 
         // Skip tick advancement on first tick when applying initial override
         if (hasInitialOverride) {
-          // Call registered callbacks with initial state
-          if (callbackRef.current) {
-            callbackRef.current(newState);
-          }
-          if (tickCallbackRef.current) {
-            tickCallbackRef.current(newState.currentTick);
-          }
           return newState;
         }
 
@@ -103,19 +97,19 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
           currentPattern: newPattern
         };
 
-        // Call registered callbacks
-        if (callbackRef.current) {
-          callbackRef.current(finalState);
-        }
-
-        if (tickCallbackRef.current) {
-          tickCallbackRef.current(newTick);
-        }
-
         return finalState;
       });
     }, interval);
   }, [calculateTickInterval]);
+
+  useEffect(() => {
+    if (sequencerState.isPlaying && callbackRef.current) {
+      callbackRef.current(sequencerState);
+    }
+    if (sequencerState.isPlaying && tickCallbackRef.current) {
+      tickCallbackRef.current(sequencerState.currentTick);
+    }
+  }, [sequencerState]);
 
   const startPlayback = useCallback((patternLoop: boolean, initialPattern?: number, initialLine?: number, initialTick?: number) => {
     // Store initial position in ref for synchronous access

@@ -241,8 +241,7 @@ const App: React.FC = () => {
 
       const lastPos = lastSequencerPositionRef.current;
       const wrappedOrJumped =
-        lastPos &&
-        (state.currentPattern !== lastPos.pattern || state.currentLine < lastPos.line);
+        lastPos && state.currentPattern !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
 
       // Detect if this is the first tick after starting playback
       const isFirstTick = !lastPos;
@@ -343,11 +342,11 @@ const App: React.FC = () => {
             continue;
           }
 
-          // If we just wrapped/jumped and there is no explicit note on this
+          // If we just wrapped/jumped to a different pattern and there is no explicit note on this
           // row, do NOT carry the previous note across the pattern boundary.
           // This ensures that channels whose patterns start with spaces
-          // remain silent at line 0 on each loop.
-          if ((wrappedOrJumped || isFirstTick) && !noteOnRow) {
+          // remain silent at line 0 when switching patterns.
+          if ((wrappedOrJumped || isFirstTick) && !noteOnRow && state.currentPattern !== lastPos?.pattern) {
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
             updateChannelWithInstrument(ym2149, ch, null, 0);
@@ -355,32 +354,36 @@ const App: React.FC = () => {
             continue;
           }
 
-          // Determine active note: current row's note if present, otherwise hold last active note
-          const activeNote = noteOnRow && noteOnRow.note
-            ? noteOnRow
-            : last;
+          // Determine active note: explicit note on this row if present, otherwise
+          // continue holding the last active note.
+          let activeNote = last as any;
+          const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
 
-          if (activeNote && activeNote.note && activeNote.note !== '===') {
-            // Any explicit note on this row is treated as a new note event,
-            // even if it has the same pitch/instrument as the previous one.
-            // This ensures envelopes always restart when a note is written
-            // in the pattern, while held notes only continue across empty rows.
-            const isNew = !!noteOnRow;
+          if (hasExplicitNote) {
+            // New explicit note on this row
+            activeNote = noteOnRow;
 
-            if (isNew) {
-              // New note event: restart envelopes
+            // Retrigger envelopes only on the first tick of the row so that
+            // the same row is not restarted multiple times when ticksPerRow > 1.
+            if (state.currentTick === 0) {
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
-            } else {
-              // Continuing note (including across empty rows): advance envelope every 40ms
-              const sub = (channelSubTickRef.current[ch] + 1) % 2;
-              channelSubTickRef.current[ch] = sub;
-              if (sub === 0) {
-                channelEnvelopeStepRef.current[ch] = channelEnvelopeStepRef.current[ch] + 1;
-              }
             }
+          }
 
-            updateChannelWithInstrument(ym2149, ch, activeNote, channelEnvelopeStepRef.current[ch]);
+          if (activeNote && activeNote.note && activeNote.note !== '===') {
+            // Use current step as envelope tick (so a freshly triggered note
+            // starts at step 0, matching the piano keyboard behaviour), then
+            // advance the step for the next 20ms tick.
+            const step = channelEnvelopeStepRef.current[ch];
+
+            console.log(
+              `[SEQ] pat=${state.currentPattern} line=${state.currentLine} tick=${state.currentTick} ch=${ch} note=${activeNote.note}${activeNote.octave} inst=${activeNote.instrument} envStep=${step}`
+            );
+
+            updateChannelWithInstrument(ym2149, ch, activeNote, step);
+
+            channelEnvelopeStepRef.current[ch] = step + 1;
             lastNotes[ch] = activeNote;
           } else {
             // No active note at all - reset and silence
