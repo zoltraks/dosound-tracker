@@ -7,28 +7,28 @@ song:
   playlist:
     - A: "02"
       B: "09"
-      C: 0D
+      C: "0D"
     - A: "03"
-      B: 0A
-      C: 0D
+      B: "0A"
+      C: "0D"
     - A: "04"
-      B: 0B
-      C: 0D
+      B: "0B"
+      C: "0D"
     - A: "05"
-      B: 0C
-      C: 0D
+      B: "0C"
+      C: "0D"
     - A: "02"
       B: "09"
-      C: 0D
+      C: "0D"
     - A: "03"
-      B: 0A
-      C: 0D
+      B: "0A"
+      C: "0D"
     - A: "04"
-      B: 0B
-      C: 0D
+      B: "0B"
+      C: "0D"
     - A: "05"
-      B: 0C
-      C: 0D
+      B: "0C"
+      C: "0D"
   patterns:
     - name: Pattern 02
       number: "02"

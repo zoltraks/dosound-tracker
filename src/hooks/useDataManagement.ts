@@ -671,10 +671,26 @@ export const useDataManagement = () => {
         });
       };
 
+      const quotePlaylistValues = (text: string): string => {
+        const playlistLineRegex = /^(\s*-\s+|\s+)([ABC]):\s*(.+)$/gm;
+        return text.replace(playlistLineRegex, (_match, indent, key, value) => {
+          let inner = String(value).trim();
+          if (
+            (inner.startsWith('"') && inner.endsWith('"')) ||
+            (inner.startsWith('\'') && inner.endsWith('\''))
+          ) {
+            inner = inner.slice(1, -1);
+          }
+          return `${indent}${key}: "${inner}"`;
+        });
+      };
+
       const keys = ['volume', 'arpeggio', 'pitch', 'noise', 'mode'];
       for (const key of keys) {
         yamlContent = compressInstrumentArray(key, yamlContent);
       }
+
+      yamlContent = quotePlaylistValues(yamlContent);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
