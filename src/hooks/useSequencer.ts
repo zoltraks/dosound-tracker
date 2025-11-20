@@ -38,10 +38,10 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   });
 
   const intervalRef = useRef<number | null>(null);
+  const workerRef = useRef<Worker | null>(null);
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const tickCallbackRef = useRef<((tick: number) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
-  const initialPositionRef = useRef<{ pattern?: number; line?: number; tick?: number } | null>(null);
 
   const calculateTickInterval = useCallback(() => {
     // Calculate interval based on BPM and ticks per row
@@ -50,98 +50,74 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     return baseInterval;
   }, []);
 
-  const schedulePlaybackInterval = useCallback(() => {
-    const interval = calculateTickInterval();
+  // Initialize Web Worker
+  useEffect(() => {
+    if (typeof Worker !== 'undefined') {
+      workerRef.current = new Worker(new URL('../workers/sequencerWorker.ts', import.meta.url), {
+        type: 'module'
+      });
 
-    intervalRef.current = setInterval(() => {
-      // Start from the last known playback state stored in the ref so we can
-      // advance it even when React is busy rendering.
-      const previous = playbackStateRef.current;
-      let newState: SequencerState = { ...previous };
-      let hasInitialOverride = false;
-
-      if (initialPositionRef.current) {
-        if (initialPositionRef.current.pattern !== undefined) {
-          newState.currentPattern = initialPositionRef.current.pattern;
-        }
-        if (initialPositionRef.current.line !== undefined) {
-          newState.currentLine = initialPositionRef.current.line;
-        }
-        if (initialPositionRef.current.tick !== undefined) {
-          newState.currentTick = initialPositionRef.current.tick;
-        }
-        // Clear the ref after applying so subsequent ticks advance normally
-        initialPositionRef.current = null;
-        hasInitialOverride = true;
-      }
-
-      if (!newState.isPlaying) {
-        playbackStateRef.current = newState;
-        return;
-      }
-
-      // Only advance tick when we are not just applying the initial
-      // position override. This mirrors the original behaviour where the
-      // first tick after start simply applied the override without
-      // advancing time.
-      if (!hasInitialOverride) {
-        let newTick = newState.currentTick + 1;
-        let newLine = newState.currentLine;
-        let newPattern = newState.currentPattern;
-
-        // Check if we need to advance to next line
-        if (newTick >= newState.ticksPerRow) {
-          newTick = 0;
-          newLine++;
-
-          // This is determined by the (dynamic) pattern length
-          const maxLines = patternLengthRef.current || 1;
-          if (newLine >= maxLines) {
-            newLine = 0;
-            // Only advance pattern if not in pattern loop mode
-            if (!newState.isPatternLoop) {
-              newPattern++;
+      workerRef.current.addEventListener('message', (event: MessageEvent) => {
+        const { type, data } = event.data;
+        
+        switch (type) {
+          case 'tick':
+          case 'update':
+            // Update playback ref for immediate access
+            playbackStateRef.current = {
+              ...playbackStateRef.current,
+              ...data
+            };
+            
+            // Fire audio callbacks
+            if (callbackRef.current) {
+              callbackRef.current(playbackStateRef.current);
             }
-          }
+            if (tickCallbackRef.current) {
+              tickCallbackRef.current(data.currentTick);
+            }
+            
+            // Update React state only for row changes
+            if (type === 'tick') {
+              setSequencerState(prev => {
+                const rowChanged = data.currentLine !== prev.currentLine || 
+                                 data.currentPattern !== prev.currentPattern;
+                if (rowChanged || data.isPlaying !== prev.isPlaying) {
+                  return { ...prev, ...data };
+                }
+                return prev;
+              });
+            } else {
+              // Always update for explicit position updates
+              setSequencerState(prev => ({ ...prev, ...data }));
+            }
+            break;
+            
+          case 'stop':
+            playbackStateRef.current = {
+              ...playbackStateRef.current,
+              ...data
+            };
+            setSequencerState(prev => ({ ...prev, ...data }));
+            break;
         }
+      });
 
-        newState = {
-          ...newState,
-          currentTick: newTick,
-          currentLine: newLine,
-          currentPattern: newPattern
-        };
+      // Initialize worker parameters
+      workerRef.current.postMessage({
+        type: 'setParams',
+        data: {
+          tickInterval: calculateTickInterval(),
+          patternLength: patternLengthRef.current
+        }
+      });
+    }
+
+    return () => {
+      if (workerRef.current) {
+        workerRef.current.terminate();
       }
-
-      // Update the playback ref first so callbacks see the most recent state.
-      playbackStateRef.current = newState;
-
-      // Fire high-frequency callbacks directly from the timer so audio and
-      // envelope processing are not tied to React's render loop.
-      if (callbackRef.current) {
-        callbackRef.current(newState);
-      }
-      if (tickCallbackRef.current) {
-        tickCallbackRef.current(newState.currentTick);
-      }
-
-      // Only propagate state changes to React when something that the UI
-      // actually depends on has changed (row, pattern, or meta playback
-      // state). This keeps React renders at row boundaries instead of at
-      // every 20ms tick.
-      const rowChanged =
-        newState.currentLine !== previous.currentLine ||
-        newState.currentPattern !== previous.currentPattern;
-      const metaChanged =
-        newState.isPlaying !== previous.isPlaying ||
-        newState.isPatternLoop !== previous.isPatternLoop ||
-        newState.ticksPerRow !== previous.ticksPerRow ||
-        newState.bpm !== previous.bpm;
-
-      if (rowChanged || metaChanged || hasInitialOverride) {
-        setSequencerState(newState);
-      }
-    }, interval);
+    };
   }, [calculateTickInterval]);
 
   // Keep the playback ref in sync whenever external callers mutate the
@@ -151,68 +127,74 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   }, [sequencerState]);
 
   const startPlayback = useCallback((patternLoop: boolean, initialPattern?: number, initialLine?: number, initialTick?: number) => {
-    // Store initial position in ref for synchronous access
-    initialPositionRef.current = { pattern: initialPattern, line: initialLine, tick: initialTick };
-    
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-
-    // Prepare a fresh playback state and mirror it into React state so the
-    // UI knows we are playing, while the timer loop uses the ref.
-    const base = playbackStateRef.current;
+    // Update React state immediately for UI responsiveness
     const nextState: SequencerState = {
-      ...base,
+      ...sequencerState,
       isPlaying: true,
       isPatternLoop: patternLoop,
-      currentTick: 0
+      currentPattern: initialPattern !== undefined ? initialPattern : sequencerState.currentPattern,
+      currentLine: initialLine !== undefined ? initialLine : sequencerState.currentLine,
+      currentTick: initialTick !== undefined ? initialTick : 0
     };
 
-    playbackStateRef.current = nextState;
     setSequencerState(nextState);
+    playbackStateRef.current = nextState;
 
-    schedulePlaybackInterval();
-  }, [schedulePlaybackInterval]);
+    // Start worker-based timing
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'start',
+        data: {
+          pattern: initialPattern !== undefined ? initialPattern : sequencerState.currentPattern,
+          line: initialLine !== undefined ? initialLine : sequencerState.currentLine,
+          tick: initialTick !== undefined ? initialTick : 0
+        }
+      });
+    }
+  }, [sequencerState]);
 
   const start = useCallback(() => {
     startPlayback(false);
   }, [startPlayback]);
 
   const stop = useCallback((preservePattern?: number) => {
-    setSequencerState(prev => {
-      if (!prev.isPlaying) {
-        playbackStateRef.current = prev;
-        return prev;
-      }
+    const stoppedState: SequencerState = {
+      ...sequencerState,
+      isPlaying: false,
+      currentTick: 0,
+      currentLine: 0,
+      // Use provided pattern or keep current pattern to maintain playlist position
+      currentPattern: preservePattern !== undefined ? preservePattern : sequencerState.currentPattern
+    };
 
-      const stoppedState: SequencerState = {
-        ...prev,
-        isPlaying: false,
-        currentTick: 0,
-        currentLine: 0,
-        // Use provided pattern or keep current pattern to maintain playlist position
-        currentPattern: preservePattern !== undefined ? preservePattern : prev.currentPattern
-      };
+    setSequencerState(stoppedState);
+    playbackStateRef.current = stoppedState;
 
-      playbackStateRef.current = stoppedState;
-      return stoppedState;
-    });
-
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+    // Stop worker-based timing
+    if (workerRef.current) {
+      workerRef.current.postMessage({ type: 'stop' });
     }
-  }, []);
+  }, [sequencerState]);
 
   const setPosition = useCallback((pattern: number, line: number, tick: number = 0) => {
-    setSequencerState(prev => ({
-      ...prev,
+    const newState = {
+      ...sequencerState,
       currentPattern: pattern,
       currentLine: line,
       currentTick: tick
-    }));
-  }, []);
+    };
+    
+    setSequencerState(newState);
+    playbackStateRef.current = newState;
+
+    // Update worker position
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'update',
+        data: { pattern, line, tick }
+      });
+    }
+  }, [sequencerState]);
 
   const setBPM = useCallback((bpm: number) => {
     setSequencerState(prev => ({ ...prev, bpm }));
@@ -225,7 +207,17 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
 
   const updateSpeed = useCallback((newSpeed: number) => {
     // Divide by 2 because DOSOUND cycles are 2 frames each
-    setSequencerState(prev => ({ ...prev, ticksPerRow: Math.max(1, Math.floor(newSpeed / 2)) }));
+    const newTicksPerRow = Math.max(1, Math.floor(newSpeed / 2));
+    
+    setSequencerState(prev => ({ ...prev, ticksPerRow: newTicksPerRow }));
+    
+    // Update worker parameters
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'setParams',
+        data: { ticksPerRow: newTicksPerRow }
+      });
+    }
   }, []);
 
   const startPatternLoop = useCallback((initialPattern?: number, initialLine?: number) => {
@@ -309,10 +301,19 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   const updatePatternLength = useCallback((newLength: number) => {
     const clamped = Math.max(1, (newLength | 0) || 1);
     patternLengthRef.current = clamped;
+    
     setSequencerState(prev => ({
       ...prev,
       currentLine: Math.min(prev.currentLine, clamped - 1)
     }));
+
+    // Update worker parameters
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'setParams',
+        data: { patternLength: clamped }
+      });
+    }
   }, []);
 
   // Cleanup on unmount
@@ -320,6 +321,9 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      if (workerRef.current) {
+        workerRef.current.terminate();
       }
     };
   }, []);
