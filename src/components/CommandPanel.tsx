@@ -53,8 +53,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onReset,
   isPlaying,
   isPatternPlaying,
-  isDosoundMode,
-  onToggleDosoundMode,
   onPlayInstrument,
   onCopyTrack,
   onPasteTrack,
@@ -73,12 +71,105 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
     }
   }, [isActive]);
 
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (!isActive) {
+      return;
+    }
+
+    const key = event.key;
+    if (
+      key !== 'ArrowLeft' &&
+      key !== 'ArrowRight' &&
+      key !== 'ArrowUp' &&
+      key !== 'ArrowDown'
+    ) {
+      return;
+    }
+
+    const panel = panelRef.current;
+    if (!panel) {
+      return;
+    }
+
+    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>('.command-btn'));
+    if (buttons.length === 0) {
+      return;
+    }
+
+    const activeElement = document.activeElement as HTMLElement | null;
+    let currentIndex = activeElement ? buttons.indexOf(activeElement as HTMLButtonElement) : -1;
+
+    // If focus is on the panel container, move to the first button
+    if (currentIndex === -1) {
+      buttons[0].focus();
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    let nextIndex = currentIndex;
+
+    if (key === 'ArrowLeft') {
+      nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+    } else if (key === 'ArrowRight') {
+      nextIndex = (currentIndex + 1) % buttons.length;
+    } else {
+      const currentRect = buttons[currentIndex].getBoundingClientRect();
+      const currentCenterX = currentRect.left + currentRect.width / 2;
+      const currentCenterY = currentRect.top + currentRect.height / 2;
+
+      let bestIndex = -1;
+      let bestDistance = Number.POSITIVE_INFINITY;
+
+      buttons.forEach((button, index) => {
+        if (index === currentIndex) {
+          return;
+        }
+
+        const rect = button.getBoundingClientRect();
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+
+        const isAbove = centerY < currentCenterY - 1;
+        const isBelow = centerY > currentCenterY + 1;
+
+        if (key === 'ArrowUp' && !isAbove) {
+          return;
+        }
+
+        if (key === 'ArrowDown' && !isBelow) {
+          return;
+        }
+
+        const dx = centerX - currentCenterX;
+        const dy = centerY - currentCenterY;
+        const distance = dx * dx + dy * dy;
+
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestIndex = index;
+        }
+      });
+
+      if (bestIndex !== -1) {
+        nextIndex = bestIndex;
+      }
+    }
+
+    if (nextIndex !== currentIndex) {
+      buttons[nextIndex].focus();
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  };
+
   return (
     <div
       ref={panelRef}
       className={`command-panel ${isActive ? 'active' : ''}`}
       tabIndex={0}
       onClick={() => setActiveSection('commands')}
+      onKeyDown={handleKeyDown}
     >
       {/* Song Operations */}
       <div className="command-row">
@@ -124,12 +215,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           className={`command-btn ${isPatternPlaying ? 'playing' : ''}`}
         >
           {isPatternPlaying ? 'STOP PATTERN' : 'PLAY PATTERN'}
-        </button>
-        <button 
-          onClick={onToggleDosoundMode} 
-          className={`command-btn ${isDosoundMode ? 'active' : ''}`}
-        >
-          DOSOUND MODE
         </button>
         <button 
           onClick={onToggleDumpMode} 
