@@ -22,6 +22,8 @@ interface CommandPanelProps {
   onDeleteLine: () => void;
   onCloneLine: () => void;
   onDuplicateLine: () => void;
+  onInsertStep: () => void;
+  onDeleteStep: () => void;
   onReset: () => void;
   isPlaying: boolean;
   isPatternPlaying: boolean;
@@ -59,6 +61,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onDeleteLine,
   onCloneLine,
   onDuplicateLine,
+  onInsertStep,
+  onDeleteStep,
   onReset,
   isPlaying,
   isPatternPlaying,
@@ -212,6 +216,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
         <button onClick={() => {}} className="command-btn">DELETE PATTERN</button>
         <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
+        <button onClick={onInsertStep} className="command-btn">INSERT STEP</button>
+        <button onClick={onDeleteStep} className="command-btn">DELETE STEP</button>
       </div>
 
       {/* Playback Operations */}

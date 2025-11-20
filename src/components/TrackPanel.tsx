@@ -17,6 +17,7 @@ interface TrackPanelProps {
   ym2149: YM2149 | null;
   currentInstrumentData: Instrument;
   isTargetTrack: boolean;
+  onTogglePatternFromCursor: (lineIndex: number) => void;
 }
 
 interface NoteData {
@@ -38,7 +39,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onPatternChange,
     ym2149,
     currentInstrumentData,
-    isTargetTrack
+    isTargetTrack,
+    onTogglePatternFromCursor
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -163,6 +165,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         targetTrack = 'trackA'; // C -> A
       }
       setActiveSection(targetTrack);
+    } else if (key === 'ENTER') {
+      event.preventDefault();
+      onTogglePatternFromCursor(currentLine);
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault();
       // Clear current line
@@ -245,7 +250,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
       }
     }
-  }, [isActive, currentLine, currentOctave, currentInstrument, onLineChange, patternLength, playPreviewNote, pattern, trackId, onPatternChange]);
+  }, [isActive, currentLine, currentOctave, currentInstrument, onLineChange, patternLength, playPreviewNote, pattern, trackId, onPatternChange, onTogglePatternFromCursor]);
 
   const handleLineClick = useCallback((lineIndex: number) => {
     onLineChange(lineIndex);

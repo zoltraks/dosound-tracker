@@ -103,6 +103,10 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   }, [calculateTickInterval]);
 
   useEffect(() => {
+    if (initialPositionRef.current) {
+      return;
+    }
+
     if (sequencerState.isPlaying && callbackRef.current) {
       callbackRef.current(sequencerState);
     }

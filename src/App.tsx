@@ -192,6 +192,7 @@ const App: React.FC = () => {
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
   const lastNotesRef = useRef<any[]>([null, null, null]);
   const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
+  const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
 
@@ -665,6 +666,145 @@ const App: React.FC = () => {
 
     setPosition(insertIndex, 0, 0);
   }, [currentSong.playlist, currentSong.patterns, sequencerState.currentPattern, updateSong, setPosition]);
+
+  const handleInsertStep = useCallback(() => {
+    const playlistLength = currentSong.playlist.length;
+    if (playlistLength === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+    const entry = currentSong.playlist[currentIndex];
+
+    let patternId = '--';
+    switch (targetTrackId) {
+      case 'A':
+        patternId = entry.trackA;
+        break;
+      case 'B':
+        patternId = entry.trackB;
+        break;
+      case 'C':
+        patternId = entry.trackC;
+        break;
+    }
+
+    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+      return;
+    }
+
+    const patterns = [...currentSong.patterns];
+    const patternIndex = patterns.findIndex(p => p.id === patternId);
+    if (patternIndex === -1) {
+      return;
+    }
+
+    const pattern = { ...patterns[patternIndex] };
+    const totalLines = currentSong.patternLength || PATTERN_LENGTH;
+    const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
+    const lines = [...pattern.lines];
+
+    while (lines.length < totalLines) {
+      lines.push({
+        trackA: null,
+        trackB: null,
+        trackC: null
+      });
+    }
+
+    for (let i = totalLines - 1; i > safeIndex; i--) {
+      const from = lines[i - 1] || { trackA: null, trackB: null, trackC: null };
+      const base = lines[i] || { trackA: null, trackB: null, trackC: null };
+      lines[i] = {
+        ...base,
+        trackA: from.trackA
+      };
+    }
+
+    const base = lines[safeIndex] || { trackA: null, trackB: null, trackC: null };
+    lines[safeIndex] = {
+      ...base,
+      trackA: null
+    };
+
+    pattern.lines = lines;
+    patterns[patternIndex] = pattern;
+
+    updateSong({ patterns });
+
+    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
+    setActiveSection(section);
+  }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection]);
+
+  const handleDeleteStep = useCallback(() => {
+    const playlistLength = currentSong.playlist.length;
+    if (playlistLength === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+    const entry = currentSong.playlist[currentIndex];
+
+    let patternId = '--';
+    switch (targetTrackId) {
+      case 'A':
+        patternId = entry.trackA;
+        break;
+      case 'B':
+        patternId = entry.trackB;
+        break;
+      case 'C':
+        patternId = entry.trackC;
+        break;
+    }
+
+    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+      return;
+    }
+
+    const patterns = [...currentSong.patterns];
+    const patternIndex = patterns.findIndex(p => p.id === patternId);
+    if (patternIndex === -1) {
+      return;
+    }
+
+    const pattern = { ...patterns[patternIndex] };
+    const totalLines = currentSong.patternLength || PATTERN_LENGTH;
+    const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
+    const lines = [...pattern.lines];
+
+    while (lines.length < totalLines) {
+      lines.push({
+        trackA: null,
+        trackB: null,
+        trackC: null
+      });
+    }
+
+    for (let i = safeIndex; i < totalLines - 1; i++) {
+      const from = lines[i + 1] || { trackA: null, trackB: null, trackC: null };
+      const base = lines[i] || { trackA: null, trackB: null, trackC: null };
+      lines[i] = {
+        ...base,
+        trackA: from.trackA
+      };
+    }
+
+    const lastIndex = totalLines - 1;
+    const lastBase = lines[lastIndex] || { trackA: null, trackB: null, trackC: null };
+    lines[lastIndex] = {
+      ...lastBase,
+      trackA: null
+    };
+
+    pattern.lines = lines;
+    patterns[patternIndex] = pattern;
+
+    updateSong({ patterns });
+
+    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
+    setActiveSection(section);
+  }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection]);
 
   const handleRequestNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(true);
@@ -1242,7 +1382,13 @@ const App: React.FC = () => {
     
     // Reset cycle counters and silence all channels
     handleStopPlayback();
-  }, [stop, handleStopPlayback]);
+    const returnPos = patternReturnPositionRef.current;
+    if (returnPos) {
+      setPosition(returnPos.pattern, returnPos.line, 0);
+      setSharedCurrentLine(returnPos.line);
+      patternReturnPositionRef.current = null;
+    }
+  }, [stop, handleStopPlayback, setPosition]);
 
   // Handle start song playback
   const handleStartSong = useCallback(() => {
@@ -1257,6 +1403,12 @@ const App: React.FC = () => {
       setIsPatternPlaying(false);
     }
     
+    // Save return position (where cursor was before starting playback)
+    patternReturnPositionRef.current = {
+      pattern: clampedIndex,
+      line: sharedCurrentLine
+    };
+
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
     
@@ -1316,7 +1468,7 @@ const App: React.FC = () => {
     
     // Start pattern loop from line 0
     startPatternLoop(clampedIndex, 0);
-  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, setPosition, currentSong.playlist, activeSection, lastTrackId]);
+  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, currentSong.playlist, activeSection, lastTrackId]);
 
   const handleStartPatternFromBeginning = useCallback(() => {
     if (currentSong.playlist.length === 0) {
@@ -1369,6 +1521,76 @@ const App: React.FC = () => {
 
     startSong();
   }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isPatternPlaying, currentSong.playlist, activeSection, lastTrackId]);
+
+  const handleStartPatternFromCurrentLine = useCallback((overrideLine?: number) => {
+    if (currentSong.playlist.length === 0) {
+      return;
+    }
+
+    const playlistLength = currentSong.playlist.length;
+    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+    const currentEntry = currentSong.playlist[clampedIndex];
+
+    if (!currentEntry) {
+      return;
+    }
+
+    let trackId: 'A' | 'B' | 'C' = lastTrackId;
+    if (activeSection === 'trackA') {
+      trackId = 'A';
+    } else if (activeSection === 'trackB') {
+      trackId = 'B';
+    } else if (activeSection === 'trackC') {
+      trackId = 'C';
+    }
+
+    let patternId = '--';
+    switch (trackId) {
+      case 'A':
+        patternId = currentEntry.trackA;
+        break;
+      case 'B':
+        patternId = currentEntry.trackB;
+        break;
+      case 'C':
+        patternId = currentEntry.trackC;
+        break;
+    }
+
+    if (patternId === '--') {
+      return;
+    }
+
+    const effectiveLine = overrideLine != null ? overrideLine : sharedCurrentLine;
+
+    // Save return position (playlist row and line where cursor currently is)
+    patternReturnPositionRef.current = {
+      pattern: clampedIndex,
+      line: effectiveLine
+    };
+
+    if (sequencerState.isPlaying) {
+      stop();
+    }
+
+    // Clear position ref to ensure first tick detection works
+    lastSequencerPositionRef.current = null;
+
+    setIsPatternPlaying(true);
+
+    // Start pattern loop from the current cursor line
+    const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.patternLength || PATTERN_LENGTH) - 1));
+    startPatternLoop(clampedIndex, startLine);
+  }, [currentSong.playlist, currentSong.patternLength, sharedCurrentLine, sequencerState.currentPattern, sequencerState.isPlaying, activeSection, lastTrackId, stop, startPatternLoop]);
+
+  const handleTogglePatternFromCursor = useCallback((lineIndex: number) => {
+    if (isPatternPlaying && sequencerState.isPlaying) {
+      handleStopPattern();
+      return;
+    }
+
+    handleStartPatternFromCurrentLine(lineIndex);
+  }, [isPatternPlaying, sequencerState.isPlaying, handleStopPattern, handleStartPatternFromCurrentLine]);
 
   useEffect(() => {
     setGlobalShortcut('playPatternFromStart', handleStartPatternFromBeginning);
@@ -1724,6 +1946,8 @@ const App: React.FC = () => {
           onDeleteLine={handleDeleteLine}
           onCloneLine={handleCloneLine}
           onDuplicateLine={handleDuplicateLine}
+          onInsertStep={handleInsertStep}
+          onDeleteStep={handleDeleteStep}
           onReset={handleRequestReset}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
@@ -1772,6 +1996,7 @@ const App: React.FC = () => {
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
                     isTargetTrack={targetTrackId === 'A'}
+                    onTogglePatternFromCursor={handleTogglePatternFromCursor}
                   />
 
                   <TrackPanel
@@ -1787,6 +2012,7 @@ const App: React.FC = () => {
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
                     isTargetTrack={targetTrackId === 'B'}
+                    onTogglePatternFromCursor={handleTogglePatternFromCursor}
                   />
 
                   <TrackPanel
@@ -1802,6 +2028,7 @@ const App: React.FC = () => {
                     ym2149={ym2149Ref.current}
                     currentInstrumentData={currentInstrument}
                     isTargetTrack={targetTrackId === 'C'}
+                    onTogglePatternFromCursor={handleTogglePatternFromCursor}
                   />
                 </div>
               </div>
