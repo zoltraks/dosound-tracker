@@ -306,7 +306,9 @@ export const useDataManagement = () => {
         }
 
         instrumentNode.volume = volumeEnv;
-        instrumentNode.arpeggio = arpeggioEnv;
+        if (!isZeroDefault(arpeggioEnv)) {
+          instrumentNode.arpeggio = arpeggioEnv;
+        }
 
         if (!isZeroDefault(pitchEnv)) {
           instrumentNode.pitch = pitchEnv;
@@ -745,7 +747,9 @@ export const useDataManagement = () => {
       }
 
       instrumentNode.volume = volumeEnv;
-      instrumentNode.arpeggio = arpeggioEnv;
+      if (!isZeroDefault(arpeggioEnv)) {
+        instrumentNode.arpeggio = arpeggioEnv;
+      }
 
       if (!isZeroDefault(pitchEnv)) {
         instrumentNode.pitch = pitchEnv;
