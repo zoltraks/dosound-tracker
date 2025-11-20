@@ -1,5 +1,6 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE } from '../constants/music';
+import { VBLANK_RATE } from '../synth/SoundDriver';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -741,5 +742,273 @@ export function downloadAssemblyFile(content: string, filename: string = 'music.
   document.body.removeChild(link);
   
   // Clean up the URL
+  URL.revokeObjectURL(url);
+}
+
+const YM_CLOCK = 2000000;
+const WAV_SAMPLE_RATE = 44100;
+
+export interface WavExportResult {
+  buffer: ArrayBuffer;
+  sampleRate: number;
+  totalSamples: number;
+  durationSeconds: number;
+}
+
+function encodePcm16Wav(samples: number[], sampleRate: number): ArrayBuffer {
+  const dataLength = samples.length;
+  const buffer = new ArrayBuffer(44 + dataLength * 2);
+  const view = new DataView(buffer);
+
+  view.setUint32(0, 0x52494646, false);
+  view.setUint32(4, 36 + dataLength * 2, true);
+  view.setUint32(8, 0x57415645, false);
+  view.setUint32(12, 0x666d7420, false);
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, 1, true);
+  view.setUint32(24, sampleRate, true);
+  const byteRate = sampleRate * 2;
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);
+  view.setUint32(36, 0x64617461, false);
+  view.setUint32(40, dataLength * 2, true);
+
+  let offset = 44;
+  for (let i = 0; i < dataLength; i++) {
+    let s = samples[i];
+    if (s > 1) s = 1;
+    if (s < -1) s = -1;
+    const v = s < 0 ? s * 32768 : s * 32767;
+    view.setInt16(offset, v | 0, true);
+    offset += 2;
+  }
+
+  return buffer;
+}
+
+function synthTickSamples(
+  outSamples: number[],
+  regs: { [register: number]: number },
+  phases: number[],
+  samplesPerTick: number
+): void {
+  const mixer = regs[0x07] !== undefined ? regs[0x07] : 0x38;
+
+  const periods = [0, 0, 0];
+  const freqs = [0, 0, 0];
+  const volumes = [0, 0, 0];
+  const toneEnabled = [false, false, false];
+  const noiseEnabled = [false, false, false];
+
+  for (let ch = 0; ch < 3; ch++) {
+    const fineReg = ch * 2;
+    const coarseReg = ch * 2 + 1;
+    const fine = regs[fineReg] !== undefined ? regs[fineReg] : 0;
+    const coarse = regs[coarseReg] !== undefined ? regs[coarseReg] : 0;
+    const period = ((coarse & 0x0f) << 8) | (fine & 0xff);
+    periods[ch] = period;
+    if (period > 0) {
+      freqs[ch] = YM_CLOCK / (16 * period);
+    } else {
+      freqs[ch] = 0;
+    }
+    const vol = regs[0x08 + ch] !== undefined ? regs[0x08 + ch] : 0;
+    volumes[ch] = vol & 0x0f;
+    toneEnabled[ch] = (mixer & (1 << ch)) === 0;
+    noiseEnabled[ch] = (mixer & (0x08 << ch)) === 0;
+  }
+
+  for (let i = 0; i < samplesPerTick; i++) {
+    let value = 0;
+
+    for (let ch = 0; ch < 3; ch++) {
+      const vol = volumes[ch];
+      if (vol === 0) {
+        continue;
+      }
+
+      let sample = 0;
+
+      if (toneEnabled[ch] && freqs[ch] > 0) {
+        const inc = freqs[ch] / WAV_SAMPLE_RATE;
+        let phase = phases[ch] + inc;
+        if (phase >= 1) {
+          phase -= Math.floor(phase);
+        }
+        phases[ch] = phase;
+        sample += phase < 0.5 ? 1 : -1;
+      }
+
+      if (noiseEnabled[ch]) {
+        sample += (Math.random() * 2 - 1) * 0.3;
+      }
+
+      if (sample !== 0) {
+        const amp = vol / 15;
+        value += sample * amp;
+      }
+    }
+
+    value *= 0.2;
+    if (value > 1) value = 1;
+    if (value < -1) value = -1;
+    outSamples.push(value);
+  }
+}
+
+export function exportSongToWav(song: Song): WavExportResult {
+  const ticksPerRow = song.speed || 6;
+  const lineCount = song.patternLength || 64;
+  const samples: number[] = [];
+  let regs: { [register: number]: number } = {
+    0x07: 0x38,
+    0x08: 0x00,
+    0x09: 0x00,
+    0x0a: 0x00
+  };
+
+  interface ChannelState {
+    note: { note: string; octave: number; instrument: string } | null;
+    envelopeStep: number;
+    subTick: number;
+    isNewNote: boolean;
+  }
+
+  const channels: ChannelState[] = [
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false }
+  ];
+
+  const phases = [0, 0, 0];
+  const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / VBLANK_RATE));
+
+  for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
+    const playlistEntry = song.playlist[playlistIdx];
+
+    if (
+      playlistEntry.trackA.startsWith('^^') ||
+      playlistEntry.trackB.startsWith('^^') ||
+      playlistEntry.trackC.startsWith('^^')
+    ) {
+      break;
+    }
+
+    const patterns = [
+      song.patterns.find(p => p.id === playlistEntry.trackA),
+      song.patterns.find(p => p.id === playlistEntry.trackB),
+      song.patterns.find(p => p.id === playlistEntry.trackC)
+    ];
+
+    for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+      const notes = [
+        patterns[0]?.lines[lineIdx]?.trackA || null,
+        patterns[1]?.lines[lineIdx]?.trackA || null,
+        patterns[2]?.lines[lineIdx]?.trackA || null
+      ];
+
+      for (let tick = 0; tick < ticksPerRow; tick++) {
+        const newRegs: { [register: number]: number } = { ...regs };
+
+        for (let ch = 0; ch < 3; ch++) {
+          const pattern = patterns[ch];
+          const noteOnRow = notes[ch];
+          const channelState = channels[ch];
+
+          if (tick === 0) {
+            if (!pattern) {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = false;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            }
+
+            if (noteOnRow && noteOnRow.note === '===') {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = false;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            }
+
+            if (noteOnRow && noteOnRow.note) {
+              const isNew =
+                !channelState.note ||
+                channelState.note.note !== noteOnRow.note ||
+                channelState.note.octave !== noteOnRow.octave ||
+                channelState.note.instrument !== noteOnRow.instrument;
+
+              if (isNew) {
+                channelState.note = noteOnRow;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+                channelState.isNewNote = true;
+              } else {
+                channelState.isNewNote = false;
+              }
+            } else {
+              channelState.isNewNote = false;
+            }
+          }
+
+          if (channelState.note) {
+            const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
+            if (instrument) {
+              applyInstrumentToRegisters(
+                newRegs,
+                ch,
+                channelState.note,
+                instrument,
+                channelState.envelopeStep,
+                channelState.isNewNote
+              );
+            }
+          }
+
+          if (channelState.note) {
+            const sub = (channelState.subTick + 1) % 2;
+            channelState.subTick = sub;
+            if (sub === 0) {
+              channelState.envelopeStep++;
+            }
+          }
+        }
+
+        synthTickSamples(samples, newRegs, phases, samplesPerTick);
+        regs = newRegs;
+      }
+    }
+  }
+
+  const totalSamples = samples.length;
+  const buffer = encodePcm16Wav(samples, WAV_SAMPLE_RATE);
+  const durationSeconds = totalSamples > 0 ? totalSamples / WAV_SAMPLE_RATE : 0;
+
+  return {
+    buffer,
+    sampleRate: WAV_SAMPLE_RATE,
+    totalSamples,
+    durationSeconds
+  };
+}
+
+export function downloadWavFile(buffer: ArrayBuffer, filename: string = 'music.wav'): void {
+  const blob = new Blob([buffer], { type: 'audio/wav' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
   URL.revokeObjectURL(url);
 }

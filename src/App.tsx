@@ -17,7 +17,7 @@ import { InstrumentListPanel } from './components/InstrumentListPanel';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
-import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
+import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile } from './utils/assemblyExport';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -38,6 +38,7 @@ const App: React.FC = () => {
   const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>('all');
   const [transposeAmount, setTransposeAmount] = useState<number>(0);
   const [transposeSummary, setTransposeSummary] = useState('');
+  const [soundExportSummary, setSoundExportSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
     // Load dump mode preference from localStorage
@@ -614,6 +615,41 @@ const App: React.FC = () => {
       // Could add user notification here
     }
   }, [currentSong, isComplexDumpMode]);
+
+  const handleExportSound = useCallback(() => {
+    try {
+      const result = exportSongToWav(currentSong);
+      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+      const filename = `${safeTitle}.wav`;
+
+      downloadWavFile(result.buffer, filename);
+
+      const lines: string[] = [];
+      lines.push('Sound export completed.');
+      lines.push('');
+      lines.push(`File: ${filename}`);
+      lines.push(`Sample rate: ${result.sampleRate} Hz`);
+      lines.push('Channels: 1 (mono)');
+      lines.push('Bit depth: 16-bit');
+      lines.push(`Total samples: ${result.totalSamples}`);
+      lines.push(`Duration: ${result.durationSeconds.toFixed(2)} seconds`);
+
+      if (result.totalSamples === 0) {
+        lines.push('');
+        lines.push('Warning: song produced 0 samples (empty playlist or no active notes).');
+      }
+
+      setSoundExportSummary(lines.join('\n'));
+    } catch (error) {
+      console.error('Sound export failed:', error);
+      const lines: string[] = [];
+      lines.push('Sound export failed.');
+      if (error instanceof Error) {
+        lines.push(`Error: ${error.message}`);
+      }
+      setSoundExportSummary(lines.join('\n'));
+    }
+  }, [currentSong]);
 
   const handleToggleDumpMode = useCallback(() => {
     setIsComplexDumpMode(prev => !prev);
@@ -1491,6 +1527,10 @@ const App: React.FC = () => {
     setTransposeSummary('');
   }, []);
 
+  const handleCloseSoundExportSummary = useCallback(() => {
+    setSoundExportSummary('');
+  }, []);
+
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
@@ -1586,6 +1626,7 @@ const App: React.FC = () => {
           onPlayPattern={handleStartPattern}
           onStopPattern={handleStopPattern}
           onExportData={handleExportData}
+          onExportSound={handleExportSound}
           onAddLine={handleAddLine}
           onDeleteLine={handleDeleteLine}
           onReset={handleRequestReset}
@@ -2034,6 +2075,24 @@ const App: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleCloseOptimizeSummary}>OK</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {soundExportSummary && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Sound Export Summary</div>
+              <div className="modal-body">
+                {soundExportSummary.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < soundExportSummary.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseSoundExportSummary}>OK</button>
               </div>
             </div>
           </div>
