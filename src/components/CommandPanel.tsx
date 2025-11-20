@@ -39,6 +39,7 @@ interface CommandPanelProps {
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   onTranspose: () => void;
+  onExportDump: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -76,7 +77,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onToggleDumpMode,
   activeSection,
   setActiveSection,
-  onTranspose
+  onTranspose,
+  onExportDump
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
@@ -271,6 +273,12 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           className={`command-btn ${isPatternPlaying ? 'playing' : ''}`}
         >
           {isPatternPlaying ? 'STOP PATTERN' : 'PLAY PATTERN'}
+        </button>
+        <button 
+          onClick={onExportDump} 
+          className="command-btn"
+        >
+          EXPORT DUMP
         </button>
         <button 
           onClick={onToggleDumpMode} 

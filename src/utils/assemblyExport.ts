@@ -858,6 +858,170 @@ function synthTickSamples(
   }
 }
 
+export function exportSongRegisterDump(song: Song): { content: string; cycleCount: number } {
+  const ticksPerRow = song.speed || 6;
+  const lineCount = song.patternLength || 64;
+
+  type RegisterState = { [register: number]: number };
+
+  let regs: RegisterState = {
+    0x07: 0x38,
+    0x08: 0x00,
+    0x09: 0x00,
+    0x0a: 0x00
+  };
+
+  interface DumpChannelState {
+    note: { note: string; octave: number; instrument: string } | null;
+    envelopeStep: number;
+    subTick: number;
+    isNewNote: boolean;
+  }
+
+  const channels: DumpChannelState[] = [
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false }
+  ];
+
+  const lines: string[] = [];
+  let cycleCount = 0;
+
+  lines.push('music:');
+
+  for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
+    const playlistEntry = song.playlist[playlistIdx];
+
+    if (
+      playlistEntry.trackA.startsWith('^^') ||
+      playlistEntry.trackB.startsWith('^^') ||
+      playlistEntry.trackC.startsWith('^^')
+    ) {
+      break;
+    }
+
+    const patterns = [
+      song.patterns.find(p => p.id === playlistEntry.trackA),
+      song.patterns.find(p => p.id === playlistEntry.trackB),
+      song.patterns.find(p => p.id === playlistEntry.trackC)
+    ];
+
+    for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+      const notes = [
+        patterns[0]?.lines[lineIdx]?.trackA || null,
+        patterns[1]?.lines[lineIdx]?.trackA || null,
+        patterns[2]?.lines[lineIdx]?.trackA || null
+      ];
+
+      for (let tick = 0; tick < ticksPerRow; tick++) {
+        const newRegs: RegisterState = { ...regs };
+
+        for (let ch = 0; ch < 3; ch++) {
+          const pattern = patterns[ch];
+          const noteOnRow = notes[ch];
+          const channelState = channels[ch];
+
+          if (tick === 0) {
+            if (!pattern) {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = false;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            }
+
+            if (noteOnRow && noteOnRow.note === '===') {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = false;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            }
+
+            if (noteOnRow && noteOnRow.note) {
+              const isNew =
+                !channelState.note ||
+                channelState.note.note !== noteOnRow.note ||
+                channelState.note.octave !== noteOnRow.octave ||
+                channelState.note.instrument !== noteOnRow.instrument;
+
+              if (isNew) {
+                channelState.note = noteOnRow;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+                channelState.isNewNote = true;
+              } else {
+                channelState.isNewNote = false;
+              }
+            } else {
+              channelState.isNewNote = false;
+            }
+          }
+
+          if (channelState.note) {
+            const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
+            if (instrument) {
+              applyInstrumentToRegisters(
+                newRegs,
+                ch,
+                { note: channelState.note.note, octave: channelState.note.octave },
+                instrument,
+                channelState.envelopeStep,
+                channelState.isNewNote
+              );
+            }
+          }
+
+          if (channelState.note) {
+            const sub = (channelState.subTick + 1) % 2;
+            channelState.subTick = sub;
+            if (sub === 0) {
+              channelState.envelopeStep++;
+            }
+          }
+        }
+
+        regs = newRegs;
+
+        const taFine = regs[0x00] ?? 0;
+        const taCoarse = regs[0x01] ?? 0;
+        const tbFine = regs[0x02] ?? 0;
+        const tbCoarse = regs[0x03] ?? 0;
+        const tcFine = regs[0x04] ?? 0;
+        const tcCoarse = regs[0x05] ?? 0;
+        const ns = regs[0x06] ?? 0;
+        const mx = regs[0x07] ?? 0x38;
+        const va = regs[0x08] ?? 0;
+        const vb = regs[0x09] ?? 0;
+        const vc = regs[0x0a] ?? 0;
+
+        const bytes = [
+          taFine,
+          taCoarse,
+          tbFine,
+          tbCoarse,
+          tcFine,
+          tcCoarse,
+          ns,
+          mx,
+          va,
+          vb,
+          vc
+        ];
+
+        const line = '\t' + 'dc.b ' + bytes.map(b => `$${toHex(b, true)}`).join(',');
+        lines.push(line);
+        cycleCount++;
+      }
+    }
+  }
+
+  const content = lines.join('\n') + (lines.length ? '\n' : '');
+  return { content, cycleCount };
+}
+
 export function exportSongToWav(song: Song): WavExportResult {
   const ticksPerRow = song.speed || 6;
   const lineCount = song.patternLength || 64;

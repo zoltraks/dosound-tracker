@@ -17,7 +17,7 @@ import { InstrumentListPanel } from './components/InstrumentListPanel';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
-import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile } from './utils/assemblyExport';
+import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump } from './utils/assemblyExport';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -42,6 +42,7 @@ const App: React.FC = () => {
   const [transposeAmountInput, setTransposeAmountInput] = useState<string>('0');
   const [transposeSummary, setTransposeSummary] = useState('');
   const [soundExportSummary, setSoundExportSummary] = useState('');
+  const [dumpExportSummary, setDumpExportSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
     // Load dump mode preference from localStorage
@@ -990,6 +991,37 @@ const App: React.FC = () => {
         lines.push(`Error: ${error.message}`);
       }
       setSoundExportSummary(lines.join('\n'));
+    }
+  }, [currentSong]);
+
+  const handleExportDump = useCallback(() => {
+    try {
+      const { content, cycleCount } = exportSongRegisterDump(currentSong);
+      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+      const filename = `${safeTitle}_dump.s`;
+
+      downloadAssemblyFile(content, filename);
+
+      const lines: string[] = [];
+      lines.push('Dump export completed.');
+      lines.push('');
+      lines.push(`File: ${filename}`);
+      lines.push(`Cycles: ${cycleCount}`);
+
+      if (cycleCount === 0) {
+        lines.push('');
+        lines.push('Warning: song produced 0 cycles (empty playlist or no active notes).');
+      }
+
+      setDumpExportSummary(lines.join('\n'));
+    } catch (error) {
+      console.error('Dump export failed:', error);
+      const lines: string[] = [];
+      lines.push('Dump export failed.');
+      if (error instanceof Error) {
+        lines.push(`Error: ${error.message}`);
+      }
+      setDumpExportSummary(lines.join('\n'));
     }
   }, [currentSong]);
 
@@ -2029,6 +2061,10 @@ const App: React.FC = () => {
     setSoundExportSummary('');
   }, []);
 
+  const handleCloseDumpExportSummary = useCallback(() => {
+    setDumpExportSummary('');
+  }, []);
+
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
@@ -2146,6 +2182,7 @@ const App: React.FC = () => {
           activeSection={activeSection}
           setActiveSection={setActiveSection}
           onTranspose={handleOpenTranspose}
+          onExportDump={handleExportDump}
         />
 
         <div className="main-content">
@@ -2632,6 +2669,24 @@ const App: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleCloseSoundExportSummary}>OK</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {dumpExportSummary && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Dump Export Summary</div>
+              <div className="modal-body">
+                {dumpExportSummary.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < dumpExportSummary.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseDumpExportSummary}>OK</button>
               </div>
             </div>
           </div>

@@ -1,0 +1,22 @@
+Add "EXPORT DUMP" command button before "COMPLEX DUMP".
+
+Implement "EXPORT DUMP" operation: create register dump for every cycle for a song in assembly format.
+For every cycle write bytes for all significant registers of soundchip: TA (frequency divider for A: fine, coarse), TB (frequency divider for B: fine, coarse), TC (frequency divider for C: fine, coarse), NS (noise frequency), MX (mixer setting), VA (volume A), VB (volume B), VC (volume C).
+Dump register values exactly in that order for every single cycle.
+Use byte values in hexadecimal form for a byte with "$".
+For every cycle make separate line.
+
+Start dump with:
+
+```
+music:
+```
+
+For A-1 ($8E0) on channel A with volume $0A, D-2 ($6A6) on channel B with volume $03, D-2 ($6A6) on channel C with volume $0F, mixer setting T+T+N ($1C) and noise $9 write a line:
+
+```
+	dc.b $E0,$08,$A6,$06,$A6,$06,$09,$1C,$0A,$03,$0F
+```
+
+After export show summary dialog how many cycles were exported.
+Don't use alert function.
