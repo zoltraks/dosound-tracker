@@ -308,14 +308,14 @@ const App: React.FC = () => {
         const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
         
         // Allow playback even if some tracks are empty (using --)
-        // Get current line data
+        // Get current line data (patterns are track-agnostic - read trackA data for any track)
         const lineA = patternA?.lines[state.currentLine];
         const lineB = patternB?.lines[state.currentLine];
         const lineC = patternC?.lines[state.currentLine];
 
         const noteA = lineA?.trackA || null;
-        const noteB = lineB?.trackB || null;
-        const noteC = lineC?.trackC || null;
+        const noteB = patternB ? (lineB?.trackA || null) : null; // Read trackA for track B
+        const noteC = patternC ? (lineC?.trackA || null) : null; // Read trackA for track C
 
         const notes = [noteA, noteB, noteC];
         const patterns = [patternA, patternB, patternC];
