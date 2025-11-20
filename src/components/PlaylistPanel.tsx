@@ -34,10 +34,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
   const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>('A');
-  const [scrollOffset, setScrollOffset] = useState(0);
   const [editingPattern, setEditingPattern] = useState<string>('');
   const playlistRef = useRef<HTMLDivElement>(null);
-  const VISIBLE_LINES = 8;
+  const linesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = activeSection === 'playlist';
 
@@ -96,13 +95,17 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   }, [isActive]);
 
   useEffect(() => {
-    // Auto-scroll to keep current line visible
-    if (currentLine < scrollOffset) {
-      setScrollOffset(currentLine);
-    } else if (currentLine >= scrollOffset + VISIBLE_LINES) {
-      setScrollOffset(currentLine - VISIBLE_LINES + 1);
+    if (!isActive || !linesContainerRef.current) {
+      return;
     }
-  }, [currentLine, scrollOffset]);
+
+    const container = linesContainerRef.current;
+    const lineElements = container.querySelectorAll('.playlist-line') as NodeListOf<HTMLDivElement>;
+    const target = lineElements[currentLine];
+    if (target) {
+      target.scrollIntoView({ block: 'nearest' });
+    }
+  }, [currentLine, isActive]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -247,8 +250,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     return classes.join(' ');
   }, [currentLine, currentTrack, isActive]);
 
-  const visiblePlaylist = playlist.slice(scrollOffset, scrollOffset + VISIBLE_LINES);
-
   return (
     <div 
       ref={playlistRef}
@@ -267,9 +268,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           <span className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}>C</span>
         </div>
         
-        <div className="playlist-lines">
-          {visiblePlaylist.map((entry, index) => {
-            const actualIndex = scrollOffset + index;
+        <div className="playlist-lines" ref={linesContainerRef}>
+          {playlist.map((entry, actualIndex) => {
             const isCurrentLine = actualIndex === currentLine;
             const isEditing = isCurrentLine && editingPattern !== '';
             

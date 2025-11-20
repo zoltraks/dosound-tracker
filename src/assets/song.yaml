@@ -17,122 +17,134 @@ song:
     - A: "05"
       B: 0C
       C: 0D
+    - A: "02"
+      B: "09"
+      C: 0D
+    - A: "03"
+      B: 0A
+      C: 0D
+    - A: "04"
+      B: 0B
+      C: 0D
+    - A: "05"
+      B: 0C
+      C: 0D
   patterns:
     - name: Pattern 02
       number: "02"
       steps:
-        - note: E-4
+        - note: E-3
           instrument: "01"
         - space: 5
-        - note: E-4
+        - note: E-3
           instrument: "01"
     - name: Pattern 03
       number: "03"
       steps:
-        - note: G-4
+        - note: G-3
           instrument: "01"
         - space: 5
-        - note: G-4
+        - note: G-3
           instrument: "01"
     - name: Pattern 04
       number: "04"
       steps:
-        - note: C-4
+        - note: C-3
           instrument: "01"
         - space: 5
-        - note: C-4
+        - note: C-3
           instrument: "01"
     - name: Pattern 05
       number: "05"
       steps:
-        - note: D-4
+        - note: D-3
           instrument: "01"
         - space: 5
-        - note: D-4
+        - note: D-3
           instrument: "01"
     - name: Pattern 09
       number: "09"
       steps:
         - space: 2
-        - note: E-3
+        - note: E-2
           instrument: "00"
         - space: 1
-        - note: E-2
+        - note: E-1
           instrument: "02"
         - space: 1
-        - note: E-2
+        - note: E-1
           instrument: "02"
         - space: 3
-        - note: E-3
+        - note: E-2
           instrument: "00"
         - space: 1
-        - note: E-2
+        - note: E-1
           instrument: "02"
         - space: 1
-        - note: E-2
+        - note: E-1
           instrument: "02"
     - name: Pattern 0A
       number: 0A
       steps:
         - space: 2
-        - note: G-3
+        - note: G-2
           instrument: "00"
         - space: 1
-        - note: G-2
+        - note: G-1
           instrument: "02"
         - space: 1
-        - note: G-2
+        - note: G-1
           instrument: "02"
         - space: 3
-        - note: G-3
+        - note: G-2
           instrument: "00"
         - space: 1
-        - note: G-2
+        - note: G-1
           instrument: "02"
         - space: 1
-        - note: G-2
+        - note: G-1
           instrument: "02"
     - name: Pattern 0B
       number: 0B
       steps:
         - space: 2
-        - note: C-3
+        - note: C-2
           instrument: "00"
         - space: 1
-        - note: C-3
+        - note: C-2
           instrument: "02"
         - space: 1
-        - note: C-3
+        - note: C-2
           instrument: "02"
         - space: 3
-        - note: C-3
+        - note: C-2
           instrument: "00"
         - space: 1
-        - note: C-3
+        - note: C-2
           instrument: "02"
         - space: 1
-        - note: C-3
+        - note: C-2
           instrument: "02"
     - name: Pattern 0C
       number: 0C
       steps:
         - space: 2
-        - note: D-3
+        - note: D-2
           instrument: "00"
         - space: 1
-        - note: D-3
+        - note: D-2
           instrument: "02"
         - space: 1
-        - note: D-3
+        - note: D-2
           instrument: "02"
         - space: 3
-        - note: D-3
+        - note: D-2
           instrument: "00"
         - space: 1
-        - note: D-3
+        - note: D-2
           instrument: "02"
         - space: 1
-        - note: D-3
+        - note: D-2
           instrument: "02"
     - name: Pattern 0D
       number: 0D
@@ -165,7 +177,7 @@ song:
       number: "00"
       base: C-3
       volume: [15, 15, 15, 15, 0]
-    - name: Smooth
+    - name: Smooth_arp
       number: "01"
       volume: [11, 13, 14, 13, 13, 13, 12, 12, 12, 12, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
       arpeggio: [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0]
@@ -185,6 +197,9 @@ song:
       volume: [10, 8, 7, 0]
       noise: [2, 1, 0]
       mode: [1, 1, 1, 0]
+    - name: ""
+      number: "05"
+      volume: [0]
     - name: Snare
       number: "06"
       base: G-3

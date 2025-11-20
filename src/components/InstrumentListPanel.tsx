@@ -21,10 +21,9 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   onRenameInstrument
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [scrollOffset, setScrollOffset] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
-  const VISIBLE_ITEMS = 8;
+  const itemsContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = activeSection === 'instrumentList';
 
@@ -43,13 +42,17 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   }, [isActive]);
 
   useEffect(() => {
-    // Auto-scroll to keep current instrument visible
-    if (currentIndex < scrollOffset) {
-      setScrollOffset(currentIndex);
-    } else if (currentIndex >= scrollOffset + VISIBLE_ITEMS) {
-      setScrollOffset(currentIndex - VISIBLE_ITEMS + 1);
+    if (!isActive || !itemsContainerRef.current) {
+      return;
     }
-  }, [currentIndex, scrollOffset]);
+
+    const container = itemsContainerRef.current;
+    const itemElements = container.querySelectorAll('.instrument-item') as NodeListOf<HTMLDivElement>;
+    const target = itemElements[currentIndex];
+    if (target) {
+      target.scrollIntoView({ block: 'nearest' });
+    }
+  }, [currentIndex, isActive]);
 
   const getInstrumentForSlot = useCallback((slotIndex: number): Instrument => {
     const existing = instruments[slotIndex];
@@ -122,11 +125,8 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
     return classes.join(' ');
   }, [currentIndex, isActive]);
 
-  const visibleSlots = Array.from({ length: VISIBLE_ITEMS }, (_, index) => scrollOffset + index)
-    .filter(index => index >= 0 && index < MAX_INSTRUMENTS);
-
   return (
-    <div 
+    <div
       ref={listRef}
       className={`instrument-list-panel ${isActive ? 'active' : ''}`}
       tabIndex={0}
@@ -134,15 +134,15 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       onClick={() => setActiveSection('instrumentList')}
     >
       <div className="instrument-list-header">Instrument</div>
-      
+
       <div className="instrument-list-content">
         <div className="instrument-header-row">
           <span className="instrument-id-header">ID</span>
           <span className="instrument-name-header">Name</span>
         </div>
-        
-        <div className="instrument-items">
-          {visibleSlots.map((slotIndex) => {
+
+        <div className="instrument-items" ref={itemsContainerRef}>
+          {Array.from({ length: MAX_INSTRUMENTS }, (_, slotIndex) => {
             const instrument = instruments[slotIndex];
             const isCurrent = slotIndex === currentIndex;
             const displayName =
@@ -151,6 +151,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                 : instrument && instrument.name
                   ? instrument.name
                   : '';
+
             return (
               <div
                 key={slotIndex}
@@ -188,16 +189,16 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
           })}
         </div>
       </div>
-      
+
       <div className="instrument-list-footer">
         <div className="instrument-info">
           <span>
             Current: {currentInstrument.id} {currentInstrument.name}
           </span>
         </div>
-        
+
         <div className="instrument-controls">
-          <button 
+          <button
             className="nav-btn"
             onClick={() => {
               const newIndex = Math.max(0, currentIndex - 1);
@@ -208,7 +209,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
           >
             ↑
           </button>
-          <button 
+          <button
             className="nav-btn"
             onClick={() => {
               const newIndex = Math.min(MAX_INSTRUMENTS - 1, currentIndex + 1);

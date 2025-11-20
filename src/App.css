@@ -393,6 +393,7 @@ body {
 
 .right-column {
   flex: 2;
+  min-height: 0;
 }
 
 /* Position Block */
@@ -824,6 +825,9 @@ body {
   padding: 4px;
   cursor: pointer;
   outline: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .playlist-panel.active {
@@ -841,6 +845,8 @@ body {
 .playlist-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .playlist-header-row {
@@ -865,6 +871,8 @@ body {
 
 .playlist-lines {
   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .playlist-line {
@@ -973,6 +981,9 @@ body {
   padding: 4px;
   cursor: pointer;
   outline: none;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 .instrument-list-panel.active {
@@ -990,6 +1001,8 @@ body {
 .instrument-list-content {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 .instrument-header-row {
@@ -1014,6 +1027,8 @@ body {
 
 .instrument-items {
   flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 
 .instrument-item {
