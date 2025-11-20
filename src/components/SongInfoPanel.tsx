@@ -103,12 +103,12 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
             onChange={(e) => {
               const raw = parseInt(e.target.value, 10);
               const safe = Number.isFinite(raw) ? raw : 64;
-              const clamped = Math.max(16, Math.min(256, safe));
+              const clamped = Math.max(4, Math.min(256, safe));
               handleFieldChange('patternLength', clamped);
             }}
             onKeyDown={handleKeyDown}
             className="info-input"
-            min="16"
+            min="4"
             max="256"
             placeholder="Pattern length"
           />

@@ -462,7 +462,7 @@ export const useDataManagement = () => {
 
         const rawLength = Number(node.length);
         const patternLengthRaw = Number.isFinite(rawLength) ? rawLength : PATTERN_LENGTH;
-        const clampedLength = Math.max(16, Math.min(256, Math.floor(patternLengthRaw)));
+        const clampedLength = Math.max(4, Math.min(256, Math.floor(patternLengthRaw)));
 
         const title =
           typeof node.title === 'string' && node.title.trim() ? node.title : DEFAULT_SONG_TITLE;
@@ -878,7 +878,7 @@ export const useDataManagement = () => {
 
       if (typeof updates.patternLength === 'number') {
         const rawLength = updates.patternLength;
-        const clampedLength = Math.max(16, Math.min(256, Math.floor(rawLength)));
+        const clampedLength = Math.max(4, Math.min(256, Math.floor(rawLength)));
         next.patternLength = clampedLength;
 
         next.patterns = prev.patterns.map(pattern => {
