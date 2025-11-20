@@ -32,6 +32,7 @@ interface CommandPanelProps {
   onToggleDumpMode: () => void;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
+  onTranspose: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -62,7 +63,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   isComplexDumpMode,
   onToggleDumpMode,
   activeSection,
-  setActiveSection
+  setActiveSection,
+  onTranspose
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
@@ -201,7 +203,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>
         <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
         <button onClick={() => {}} className="command-btn">DELETE PATTERN</button>
-        <button onClick={() => {}} className="command-btn">TRANSPOSE</button>
+        <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
       </div>
 
       {/* Playback Operations */}

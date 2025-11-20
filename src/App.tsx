@@ -4,7 +4,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
 import type { Instrument } from './synth/SoundDriver';
-import { PATTERN_LENGTH, MAX_INSTRUMENTS } from './constants/music';
+import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
@@ -32,6 +32,12 @@ const App: React.FC = () => {
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [optimizeSummary, setOptimizeSummary] = useState('');
+  const [isTransposeOpen, setIsTransposeOpen] = useState(false);
+  const [transposeScope, setTransposeScope] = useState<'line' | 'song'>('line');
+  const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
+  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>('all');
+  const [transposeAmount, setTransposeAmount] = useState<number>(0);
+  const [transposeSummary, setTransposeSummary] = useState('');
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
     // Load dump mode preference from localStorage
@@ -1293,6 +1299,198 @@ const App: React.FC = () => {
     setOptimizeSummary('');
   }, []);
 
+  const handleOpenTranspose = useCallback(() => {
+    setTransposeScope('line');
+    setTransposeTrackScope('current');
+    setTransposeInstrumentScope('all');
+    setTransposeAmount(0);
+    setIsTransposeOpen(true);
+  }, []);
+
+  const handleCancelTranspose = useCallback(() => {
+    setIsTransposeOpen(false);
+  }, []);
+
+  const handleConfirmTranspose = useCallback(() => {
+    const semitones = Math.round(transposeAmount);
+
+    const playlistLength = currentSong.playlist.length;
+    if (playlistLength === 0) {
+      setTransposeSummary('No playlist entries to transpose.');
+      setIsTransposeOpen(false);
+      return;
+    }
+
+    if (semitones === 0) {
+      setTransposeSummary('No transposition applied because the semitone offset is 0.');
+      setIsTransposeOpen(false);
+      return;
+    }
+
+    const indices: number[] = [];
+    if (transposeScope === 'line') {
+      const idx = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+      indices.push(idx);
+    } else {
+      for (let i = 0; i < playlistLength; i++) {
+        indices.push(i);
+      }
+    }
+
+    const tracksToProcess: ('A' | 'B' | 'C')[] =
+      transposeTrackScope === 'current' ? [targetTrackId] : ['A', 'B', 'C'];
+
+    const patternIds = new Set<string>();
+
+    for (const idx of indices) {
+      const entry = currentSong.playlist[idx];
+      if (!entry) continue;
+
+      for (const track of tracksToProcess) {
+        let patternId = '--';
+        switch (track) {
+          case 'A':
+            patternId = entry.trackA;
+            break;
+          case 'B':
+            patternId = entry.trackB;
+            break;
+          case 'C':
+            patternId = entry.trackC;
+            break;
+        }
+
+        if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+          continue;
+        }
+
+        patternIds.add(patternId);
+      }
+    }
+
+    if (patternIds.size === 0) {
+      setTransposeSummary('No patterns found for the selected scope to transpose.');
+      setIsTransposeOpen(false);
+      return;
+    }
+
+    const selectedInstrumentId = normalizeInstrumentId(currentInstrument.id);
+    const minSemitone = MIN_OCTAVE * 12;
+    const maxSemitone = MAX_OCTAVE * 12 + 11;
+
+    let notesChanged = 0;
+    let clippedLow = 0;
+    let clippedHigh = 0;
+
+    const updatedPatterns = currentSong.patterns.map(pattern => {
+      if (!patternIds.has(pattern.id)) {
+        return pattern;
+      }
+
+      const newLines = pattern.lines.map(line => {
+        const newLine = { ...line };
+        const cell = newLine.trackA;
+
+        if (!cell || cell.note === '===') {
+          return newLine;
+        }
+
+        if (
+          transposeInstrumentScope === 'selected' &&
+          normalizeInstrumentId(cell.instrument) !== selectedInstrumentId
+        ) {
+          return newLine;
+        }
+
+        const noteIndex = NOTES.indexOf(cell.note.toUpperCase());
+        if (noteIndex < 0) {
+          return newLine;
+        }
+
+        const originalSemitone = cell.octave * 12 + noteIndex;
+        let newSemitone = originalSemitone + semitones;
+
+        if (newSemitone < minSemitone) {
+          newSemitone = minSemitone;
+          clippedLow++;
+        } else if (newSemitone > maxSemitone) {
+          newSemitone = maxSemitone;
+          clippedHigh++;
+        }
+
+        if (newSemitone === originalSemitone) {
+          return newLine;
+        }
+
+        const newOctave = Math.floor(newSemitone / 12);
+        const newNoteIndex = newSemitone % 12;
+
+        newLine.trackA = {
+          ...cell,
+          note: NOTES[newNoteIndex],
+          octave: newOctave
+        };
+
+        notesChanged++;
+        return newLine;
+      });
+
+      return { ...pattern, lines: newLines };
+    });
+
+    updateSong({ patterns: updatedPatterns });
+    setIsTransposeOpen(false);
+
+    const directionLabel = semitones > 0 ? `+${semitones}` : `${semitones}`;
+    const scopeLabel =
+      transposeScope === 'line'
+        ? 'Current playlist position only'
+        : 'Entire song (all playlist positions)';
+    const trackLabel =
+      transposeTrackScope === 'current'
+        ? `Current track only (Track ${targetTrackId})`
+        : 'All tracks (A, B, C)';
+    const instrumentLabel =
+      transposeInstrumentScope === 'selected'
+        ? `Selected instrument only (${selectedInstrumentId})`
+        : 'All instruments';
+
+    const lines: string[] = [];
+    lines.push('Transposition complete.');
+    lines.push('');
+    lines.push(`Semitone offset: ${directionLabel}`);
+    lines.push(`Scope: ${scopeLabel}`);
+    lines.push(`Track scope: ${trackLabel}`);
+    lines.push(`Instrument scope: ${instrumentLabel}`);
+    lines.push('');
+    lines.push(`Patterns touched: ${patternIds.size}`);
+    lines.push(`Notes transposed: ${notesChanged}`);
+
+    if (clippedLow > 0 || clippedHigh > 0) {
+      lines.push('');
+      lines.push(`Notes clipped at bottom of range: ${clippedLow}`);
+      lines.push(`Notes clipped at top of range: ${clippedHigh}`);
+    }
+
+    setTransposeSummary(lines.join('\n'));
+  }, [
+    transposeAmount,
+    currentSong.playlist,
+    currentSong.patterns,
+    transposeScope,
+    transposeTrackScope,
+    transposeInstrumentScope,
+    sequencerState.currentPattern,
+    targetTrackId,
+    currentInstrument.id,
+    updateSong,
+    normalizeInstrumentId
+  ]);
+
+  const handleCloseTransposeSummary = useCallback(() => {
+    setTransposeSummary('');
+  }, []);
+
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
@@ -1403,6 +1601,7 @@ const App: React.FC = () => {
           onToggleDumpMode={handleToggleDumpMode}
           activeSection={activeSection}
           setActiveSection={setActiveSection}
+          onTranspose={handleOpenTranspose}
         />
 
         <div className="main-content">
@@ -1629,6 +1828,155 @@ const App: React.FC = () => {
               </div>
               <div className="modal-actions">
                 <button className="command-btn" onClick={() => setInstrumentError('')}>
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isTransposeOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Transpose</div>
+              <div className="modal-body">
+                <div style={{ marginBottom: '8px' }}>
+                  <div>Scope:</div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="transpose-scope"
+                      checked={transposeScope === 'line'}
+                      onChange={() => setTransposeScope('line')}
+                    />{' '}
+                    Current playlist position only
+                  </label>
+                  <br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="transpose-scope"
+                      checked={transposeScope === 'song'}
+                      onChange={() => setTransposeScope('song')}
+                    />{' '}
+                    Entire song (all playlist positions)
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '8px' }}>
+                  <div>Track scope:</div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="transpose-track-scope"
+                      checked={transposeTrackScope === 'current'}
+                      onChange={() => setTransposeTrackScope('current')}
+                    />{' '}
+                    Current track only
+                  </label>
+                  <br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="transpose-track-scope"
+                      checked={transposeTrackScope === 'all'}
+                      onChange={() => setTransposeTrackScope('all')}
+                    />{' '}
+                    All tracks (A, B, C)
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '8px' }}>
+                  <div>Instrument scope:</div>
+                  <label>
+                    <input
+                      type="radio"
+                      name="transpose-inst-scope"
+                      checked={transposeInstrumentScope === 'all'}
+                      onChange={() => setTransposeInstrumentScope('all')}
+                    />{' '}
+                    All instruments
+                  </label>
+                  <br />
+                  <label>
+                    <input
+                      type="radio"
+                      name="transpose-inst-scope"
+                      checked={transposeInstrumentScope === 'selected'}
+                      onChange={() => setTransposeInstrumentScope('selected')}
+                    />{' '}
+                    Selected instrument only
+                  </label>
+                </div>
+
+                <div style={{ marginBottom: '8px' }}>
+                  <div>Semitone offset:</div>
+                  <div style={{ display: 'flex', gap: '4px', marginBottom: '4px', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="command-btn"
+                      onClick={() => setTransposeAmount(-12)}
+                    >
+                      -12 (octave down)
+                    </button>
+                    <button
+                      type="button"
+                      className="command-btn"
+                      onClick={() => setTransposeAmount(-1)}
+                    >
+                      -1 (note down)
+                    </button>
+                    <button
+                      type="button"
+                      className="command-btn"
+                      onClick={() => setTransposeAmount(1)}
+                    >
+                      +1 (note up)
+                    </button>
+                    <button
+                      type="button"
+                      className="command-btn"
+                      onClick={() => setTransposeAmount(12)}
+                    >
+                      +12 (octave up)
+                    </button>
+                  </div>
+                  <div>
+                    Semitones:{' '}
+                    <input
+                      type="number"
+                      value={transposeAmount}
+                      onChange={e => setTransposeAmount(Number(e.target.value) || 0)}
+                      style={{ width: '80px' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ fontSize: '10px', color: 'var(--text-secondary)' }}>
+                  By default, transposition operates on the current track and playlist position for all
+                  instruments.
+                </div>
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleConfirmTranspose}>OK</button>
+                <button className="command-btn" onClick={handleCancelTranspose}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {transposeSummary && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Transpose Summary</div>
+              <div className="modal-body">
+                {transposeSummary.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < transposeSummary.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseTransposeSummary}>
                   OK
                 </button>
               </div>
