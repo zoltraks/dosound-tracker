@@ -275,7 +275,8 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
           const period = (coarse << 8) | fine;
           const noteLabel = periodToNoteLabel(period);
           const channelLabel = String.fromCharCode(65 + ch); // A, B, C
-          asm += formatAsmLine([coarseReg, coarse, fineReg, fine], `T${channelLabel} ${noteLabel}`);
+          const comment = noteLabel ? `T${channelLabel} ${noteLabel}` : `T${channelLabel}`;
+          asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
           lastRegs[fineReg] = fine;
           lastRegs[coarseReg] = coarse;
         }
@@ -332,7 +333,8 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
         const period = (coarse << 8) | fine;
         const noteLabel = periodToNoteLabel(period);
         const channelLabel = String.fromCharCode(65 + ch); // A, B, C
-        asm += formatAsmLine([coarseReg, coarse, fineReg, fine], `T${channelLabel} ${noteLabel}`);
+        const comment = noteLabel ? `T${channelLabel} ${noteLabel}` : `T${channelLabel}`;
+        asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
       }
       
       // Write volume registers for all three channels
@@ -360,6 +362,11 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
 }
 
 function periodToNoteLabel(period: number): string {
+  // Period 0 means silence/no frequency
+  if (period === 0) {
+    return '';
+  }
+  
   // Convert period back to approximate note
   const frequency = 2000000 / (16 * period);
   
