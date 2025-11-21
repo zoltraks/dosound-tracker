@@ -19,8 +19,8 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     currentLine: 0,
     currentTick: 0,
     bpm: 125,
-    // Divide by 2 because DOSOUND cycles are 2 frames each
-    ticksPerRow: Math.max(1, Math.floor(songSpeed / 2))
+    // Use song speed directly as number of VBLANK frames per row
+    ticksPerRow: Math.max(1, songSpeed | 0)
   });
 
   // Internal playback state used by the timer loop. This is kept in sync with
@@ -33,8 +33,8 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     currentLine: 0,
     currentTick: 0,
     bpm: 125,
-    // Divide by 2 because DOSOUND cycles are 2 frames each
-    ticksPerRow: Math.max(1, Math.floor(songSpeed / 2))
+    // Use song speed directly as number of VBLANK frames per row
+    ticksPerRow: Math.max(1, songSpeed | 0)
   });
 
   const intervalRef = useRef<number | null>(null);
@@ -202,16 +202,16 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   }, []);
 
   const setTicksPerRow = useCallback((ticksPerRow: number) => {
-    // Divide by 2 because DOSOUND cycles are 2 frames each
-    setSequencerState(prev => ({ ...prev, ticksPerRow: Math.max(1, Math.floor(ticksPerRow / 2)) }));
+    // Use provided value directly as VBLANK frames per row
+    setSequencerState(prev => ({ ...prev, ticksPerRow: Math.max(1, ticksPerRow | 0) }));
   }, []);
 
   const updateSpeed = useCallback((newSpeed: number) => {
-    // Divide by 2 because DOSOUND cycles are 2 frames each
-    const newTicksPerRow = Math.max(1, Math.floor(newSpeed / 2));
-    
+    // Use song speed directly as number of VBLANK frames per row
+    const newTicksPerRow = Math.max(1, newSpeed | 0);
+
     setSequencerState(prev => ({ ...prev, ticksPerRow: newTicksPerRow }));
-    
+
     // Update worker parameters
     if (workerRef.current) {
       workerRef.current.postMessage({
