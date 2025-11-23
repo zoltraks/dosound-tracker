@@ -657,7 +657,11 @@ const App: React.FC = () => {
       trackC: '--'
     });
     updateSong({ playlist: newPlaylist });
-  }, [currentSong.playlist, updateSong]);
+
+    const newIndex = Math.max(0, newPlaylist.length - 1);
+    setPosition(newIndex, 0, 0);
+    setActiveSection('playlist');
+  }, [currentSong.playlist, updateSong, setPosition, setActiveSection]);
 
   const handleCloneLine = useCallback(() => {
     const length = currentSong.playlist.length;

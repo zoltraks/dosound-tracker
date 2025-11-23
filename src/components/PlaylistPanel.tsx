@@ -95,6 +95,28 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   }, [isActive]);
 
   useEffect(() => {
+    if (!isActive) {
+      return;
+    }
+
+    if (editingPattern !== '') {
+      return;
+    }
+
+    if (playlist.length === 0) {
+      if (currentLine !== 0) {
+        setCurrentLine(0);
+      }
+      return;
+    }
+
+    const clamped = Math.max(0, Math.min(playlist.length - 1, currentPlaybackPosition));
+    if (currentLine !== clamped) {
+      setCurrentLine(clamped);
+    }
+  }, [currentPlaybackPosition, playlist.length, isActive, currentLine, editingPattern]);
+
+  useEffect(() => {
     if (!isActive || !linesContainerRef.current) {
       return;
     }
