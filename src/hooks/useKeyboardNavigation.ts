@@ -102,6 +102,7 @@ export const useKeyboardNavigation = () => {
     const key = event.key.toUpperCase();
     const target = event.target as HTMLElement | null;
     const tagName = target?.tagName;
+    const isInPianoKeyboard = target?.closest('.piano-keyboard') != null;
     const isEditable =
       tagName === 'INPUT' ||
       tagName === 'TEXTAREA' ||
@@ -116,7 +117,12 @@ export const useKeyboardNavigation = () => {
 
     const ctrl = event.ctrlKey || event.metaKey;
     const shift = event.shiftKey;
-    
+
+    // Let PianoKeyboard handle plain Space when it is active/focused
+    if (!ctrl && !shift && key === ' ' && (activeSection === 'piano' || isInPianoKeyboard)) {
+      return;
+    }
+
     let shortcut: KeyboardShortcut | null = null;
 
     // Check for combinations

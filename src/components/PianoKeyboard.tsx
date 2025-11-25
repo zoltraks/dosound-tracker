@@ -185,6 +185,21 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
 
+    // Play base note with Space when piano has focus
+    if (event.key === ' ') {
+      if (baseKeyData) {
+        event.preventDefault();
+        event.stopPropagation();
+        const keyId = `${baseKeyData.note}${baseKeyData.octave}`;
+
+        if (!pressedKeys.has(keyId)) {
+          setPressedKeys(prev => new Set(prev).add(keyId));
+          playNote(baseKeyData.note, baseKeyData.octave);
+        }
+      }
+      return;
+    }
+
     const key = event.key.toUpperCase();
     
     // Handle computer keyboard notes
@@ -208,10 +223,29 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       event.preventDefault();
       onOctaveChange(Math.max(MIN_OCTAVE, currentOctave - 1));
     }
-  }, [isActive, currentOctave, onOctaveChange, playNote, pressedKeys]);
+  }, [isActive, currentOctave, onOctaveChange, playNote, pressedKeys, baseKeyData]);
 
   const handleKeyUp = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
+
+    if (event.key === ' ') {
+      if (baseKeyData) {
+        event.preventDefault();
+        event.stopPropagation();
+        const keyId = `${baseKeyData.note}${baseKeyData.octave}`;
+
+        setPressedKeys(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(keyId);
+          return newSet;
+        });
+
+        if (pressedKeys.has(keyId)) {
+          stopNote(baseKeyData.note, baseKeyData.octave);
+        }
+      }
+      return;
+    }
 
     const key = event.key.toUpperCase();
     
@@ -230,7 +264,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         stopNote(note, finalOctave);
       }
     }
-  }, [isActive, currentOctave, stopNote, pressedKeys]);
+  }, [isActive, currentOctave, stopNote, pressedKeys, baseKeyData]);
 
   const handlePianoKeyDown = useCallback((note: string, octave: number) => {
     const keyId = `${note}${octave}`;
