@@ -1,0 +1,7 @@
+Check the playback routine as sometimes when I stop the playback then volume registers are not set to 0 and are left with non 0 value and I can hear the sound and I can see in EQ and Dump that the volume was not reset to 0 to silence the sound after playback is stopped
+
+
+Now in electron build or Edge web browser sequencer routine and envelope progression in song playback works correctly.
+But when I play instrument from on screen piano or sound is played while editing the track the envelope progression is twice to fast.
+Make it to be constistent so envelope progression in preview playback works exactly like song and pattern playback.
+

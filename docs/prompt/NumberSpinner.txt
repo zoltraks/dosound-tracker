@@ -1,0 +1,32 @@
+
+Create a compact number spinner component for the app with the following specifications:
+
+**Layout:**
+- Horizontal layout with input field on the left, followed by two spinner buttons on the right
+- Input field should be small (around 80px wide) with centered text
+- Two arrow buttons positioned side-by-side to the right of the input
+
+**Functionality:**
+- Allow manual typing of numbers in the input field
+- Left arrow decreases value by 1
+- Right arrow increases value by 1
+- Handle negative numbers
+- Auto-reset to empty if field contains only "-" or invalid number
+- Validate input to only accept integers
+
+**Styling:**
+- Modern, clean design with rounded corners
+- Blue buttons with hover and active states
+- Smooth scale animation on button click (scale down to 0.95)
+- Input field with subtle border, blue focus ring
+- Use horizontal arrows (rotate chevron icons 90 degrees)
+- Include optional quick action buttons below for -10, Reset, +10
+
+**Technical requirements:**
+- React functional component with hooks (useState)
+- Use lucide-react for ChevronUp and ChevronDown icons
+- Tailwind CSS for styling
+- Export as default
+- Include proper ARIA labels for accessibility
+
+Please provide a complete, ready-to-use component and use it for speed setting field.

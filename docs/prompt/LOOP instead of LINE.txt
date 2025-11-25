@@ -1,0 +1,12 @@
+In the "Playlist" block in the left bottom corner there is information like "Line: 0 / 1". I don't need it there.
+Instead, add "Loop" field with the value of song position which can be empty, so the song playback will loop by going into the desired position if not empty and song will be played infinitely until stopped. Use NumberSpinner.
+Remember to store this information in the song data in a "loop" key if not empty.
+I want to be able to manualy enter the position to loop to or press Backspace to clear it and disable looping.
+
+
+Move "Loop" field from "Playlist" to the "Song" and arrange fields "Year", "Speed", "Length" and "Loop" in two columns, in the left keep "Year" and "Speed", in the right keep "Length" and "Loop" aligned to the right.
+
+Remove playlist controls, we'll not be using them anymore.
+
+
+Check playback logic and clean previosly used GOTO logic if any, keeping loop only.
