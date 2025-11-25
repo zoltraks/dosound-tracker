@@ -458,18 +458,6 @@ export const useDataManagement = () => {
       createBlankPattern('03')
     ];
 
-    const newSong: Song = {
-      title: DEFAULT_SONG_TITLE,
-      author: DEFAULT_SONG_AUTHOR,
-      year: new Date().getFullYear(),
-      speed: 6,
-      patternLength: targetLength,
-      patterns,
-      playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
-      instruments: []
-    };
-    setCurrentSong(newSong);
-
     const newCurrentInstrument: Instrument = {
       id: '00',
       name: '',
@@ -480,6 +468,19 @@ export const useDataManagement = () => {
       modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
       base: DEFAULT_BASE_KEY
     };
+
+    const newSong: Song = {
+      title: DEFAULT_SONG_TITLE,
+      author: DEFAULT_SONG_AUTHOR,
+      year: new Date().getFullYear(),
+      speed: 6,
+      patternLength: targetLength,
+      patterns,
+      playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
+      instruments: [newCurrentInstrument]
+    };
+
+    setCurrentSong(newSong);
     setCurrentInstrument(newCurrentInstrument);
 
     return newSong;

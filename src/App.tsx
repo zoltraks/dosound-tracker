@@ -921,15 +921,12 @@ const App: React.FC = () => {
   }, []);
 
   const handleConfirmNewSong = useCallback(() => {
-    const newSong = createNewSong();
-    const hasInstruments = newSong.instruments && newSong.instruments.length > 0;
-    if (!hasInstruments) {
-      setCurrentOctave(3);
-    }
+    createNewSong();
+    setCurrentOctave(3);
     setChannelMutes([false, false, false]);
     setPosition(0, 0, 0);
     setSharedCurrentLine(0);
-    setActiveSection('playlist');
+    setActiveSection('volume');
 
     setIsNewSongConfirmOpen(false);
   }, [createNewSong, setPosition, setActiveSection]);
