@@ -1,3 +1,8 @@
+In the changes dialog increase spacing between paragraphs, h1, h2, li, etc. 
+Use rem as unit.
+
+---
+
 In the about information dialog put a button on the left side in the row where "OK" button exists with the name "CHANGES".
 
 Create CHANGELOG.md that will hold a list of changes in Markdown format and fill it with informations about last changes.

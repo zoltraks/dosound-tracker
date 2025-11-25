@@ -375,6 +375,26 @@ body {
   overflow-x: hidden;
 }
 
+.modal-body.changelog-modal-body h1,
+.modal-body.changelog-modal-body h2 {
+  margin-top: 0;
+  margin-bottom: 1.2rem;
+}
+
+.modal-body.changelog-modal-body p {
+  margin-bottom: 0.8rem;
+}
+
+.modal-body.changelog-modal-body ul,
+.modal-body.changelog-modal-body ol {
+  margin-left: 1.4rem;
+  margin-bottom: 0.8rem;
+}
+
+.modal-body.changelog-modal-body li {
+  margin-bottom: 0.4rem;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;
