@@ -1010,20 +1010,12 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
             }
 
             if (noteOnRow && noteOnRow.note) {
-              const isNew =
-                !channelState.note ||
-                channelState.note.note !== noteOnRow.note ||
-                channelState.note.octave !== noteOnRow.octave ||
-                channelState.note.instrument !== noteOnRow.instrument;
-
-              if (isNew) {
-                channelState.note = noteOnRow;
-                channelState.envelopeStep = 0;
-                channelState.subTick = 0;
-                channelState.isNewNote = true;
-              } else {
-                channelState.isNewNote = false;
-              }
+              // Explicit note on this row: always treat as a new note and
+              // retrigger the envelopes, matching the live sequencer.
+              channelState.note = noteOnRow;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = true;
             } else {
               channelState.isNewNote = false;
             }
@@ -1174,20 +1166,12 @@ export function exportSongToWav(song: Song): WavExportResult {
             }
 
             if (noteOnRow && noteOnRow.note) {
-              const isNew =
-                !channelState.note ||
-                channelState.note.note !== noteOnRow.note ||
-                channelState.note.octave !== noteOnRow.octave ||
-                channelState.note.instrument !== noteOnRow.instrument;
-
-              if (isNew) {
-                channelState.note = noteOnRow;
-                channelState.envelopeStep = 0;
-                channelState.subTick = 0;
-                channelState.isNewNote = true;
-              } else {
-                channelState.isNewNote = false;
-              }
+              // Explicit note on this row: always treat as a new note and
+              // retrigger the envelopes, matching the live sequencer.
+              channelState.note = noteOnRow;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = true;
             } else {
               channelState.isNewNote = false;
             }
