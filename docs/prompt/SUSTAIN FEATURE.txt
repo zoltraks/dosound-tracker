@@ -1,0 +1,31 @@
+The ability to enter a key release action instead of a note in a given track position should be added.
+
+In the note column, if no note is defined for a given step, this position defaults to containing "---". Similarly, if a key release action is specified in a given step, it should be displayed as "===". Entering a key release action in a given track position should be done by pressing the '-' (minus) key.
+
+The key release action overrides the note value if one has been defined.
+
+In the YAML format, this should be saved as a key "off" with a boolean value of true.
+
+This must be accounted for in the "COPY TRACK", "PASTE TRACK", "SAVE SONG", and "LOAD SONG" functions.
+
+---
+
+I want to add SUSTAIN functionality.
+
+An instrument can optionally have a SUSTAIN position specified.
+
+If specified, then during the progression of each envelope, the progression should be halted at this position until a key release action occurs, after which the progression of all envelopes should continue.
+
+This behavior must be accounted for during the playback of a pattern or song, and in all functions exporting the music data.
+
+I want to be able to set sustain value for an instrument by pressing left mouse key over one of the bar in the volume envelope block and the bar position should be the new value for the sustain.
+If I press any bar of volume envelope with right mouse key, then clear the value of the sustain.
+Indicate sustain position by putting a black dot in the middle of the bar at corresponding position.
+
+I want also to be able to set sustain value while editing volume envelope by pressing "S" key.
+If I press "S" key at the position where sustain is set, then clear sustain value for the instrument.
+So if no sustain value is set and I am on any position of the volume envelope and press "S" twice, then sustain value of the instrument should remain unset.
+
+Instrument sustain value must be supported in "LOAD INST", "SAVE INST", "LOAD SONG" and "SAVE SONG" operations.
+Save this value as "sustain" key with decimal numer if specified.
+If not specified, don't write "sustain" in the instrument definition.
