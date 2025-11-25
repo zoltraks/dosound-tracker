@@ -95,7 +95,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
-      if (type === 'volume' || type === 'arpeggio') {
+      if (type === 'volume' || type === 'arpeggio' || type === 'noise') {
         const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
         setCurrentPosition(nextPosition);
       }
@@ -117,6 +117,20 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         let newValue = parseInt(key, 16);
         if (event.shiftKey && key !== '0') {
           newValue = -newValue;
+        }
+        newData[currentPosition] = newValue;
+        setEnvelopeData(newData);
+        onChange(newData);
+      }
+      const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
+      setCurrentPosition(nextPosition);
+    } else if (type === 'noise' && /^[0-9A-F]$/.test(key)) {
+      event.preventDefault();
+      if (onChange) {
+        const newData = [...envelopeData];
+        let newValue = parseInt(key, 16);
+        if (event.shiftKey && key !== '0') {
+          newValue = Math.min(NOISE_MAX, newValue + 16);
         }
         newData[currentPosition] = newValue;
         setEnvelopeData(newData);
