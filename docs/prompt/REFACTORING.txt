@@ -1,0 +1,4 @@
+
+In assemblyExport.ts you should use YM_LOG_VOLUME_TABLE constant from YM2149.ts instead defining YM_LOG_VOLUME_TABLE again.
+
+Also YM_CLOCK constant should be defined in YM2149.ts and used in assemblyExport.ts.

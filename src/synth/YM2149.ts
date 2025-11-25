@@ -1,9 +1,9 @@
-const YM_BASE_CLOCK = 2000000; // 2 MHz clock frequency
+export const YM_CLOCK = 2000000; // 2 MHz clock frequency
 const YM_REGISTER_COUNT = 16; // Number of YM2149 registers (0-15)
 
 // AY/YM style logarithmic volume table (16 levels, approx. -2dB per step)
 // Values are relative amplitudes; we'll scale them to keep headroom.
-const YM_LOG_VOLUME_TABLE: number[] = [
+export const YM_LOG_VOLUME_TABLE: number[] = [
   0.0,    // 0: silence
   0.0078, // 1
   0.0110, // 2
@@ -177,7 +177,7 @@ export class YM2149 {
       
       if (shouldPlayTone) {
         // YM2149 frequency calculation: f = clock / (16 * period)
-        const frequency = YM_BASE_CLOCK / (16 * channel.tonePeriod);
+        const frequency = YM_CLOCK / (16 * channel.tonePeriod);
         
         // Clamp frequency to reasonable range (20Hz - 20kHz)
         const clampedFrequency = Math.max(20, Math.min(20000, frequency));
@@ -241,7 +241,7 @@ export class YM2149 {
   private createNoiseBuffer(noisePeriod: number): AudioBuffer {
     const sampleRate = this.audioContext.sampleRate;
     const effectiveNoisePeriod = this.getEffectiveNoisePeriod(noisePeriod);
-    const noiseFrequency = YM_BASE_CLOCK / (16 * effectiveNoisePeriod);
+    const noiseFrequency = YM_CLOCK / (16 * effectiveNoisePeriod);
     const bufferLength = Math.ceil(sampleRate * 2);
     const buffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
     const data = buffer.getChannelData(0);

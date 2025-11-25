@@ -1,6 +1,7 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE } from '../constants/music';
 import { VBLANK_RATE } from '../synth/SoundDriver';
+import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -751,27 +752,7 @@ export function downloadAssemblyFile(content: string, filename: string = 'music.
   URL.revokeObjectURL(url);
 }
 
-const YM_CLOCK = 2000000;
 const WAV_SAMPLE_RATE = 44100;
-
-const YM_LOG_VOLUME_TABLE: number[] = [
-  0.0,
-  0.0078,
-  0.0110,
-  0.0157,
-  0.0221,
-  0.0313,
-  0.0442,
-  0.0625,
-  0.0884,
-  0.1250,
-  0.1768,
-  0.2500,
-  0.3536,
-  0.5000,
-  0.7071,
-  1.0
-];
 
 interface YmNoiseState {
   lfsr: number;
