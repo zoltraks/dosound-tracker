@@ -1,3 +1,10 @@
+Check git log messages and create description of changes before current version in CHANGELOG.md file.
+Keep descriptions of last versions at the begining.
+
+---
+
+
+
 In the changes dialog increase spacing between paragraphs, h1, h2, li, etc. 
 Use rem as unit.
 
