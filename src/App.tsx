@@ -4,7 +4,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
 import type { Instrument } from './synth/SoundDriver';
-import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE } from './constants/music';
+import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
@@ -144,11 +144,22 @@ const App: React.FC = () => {
   useEffect(() => {
     const id = currentInstrument?.id;
     if (!id) return;
-    const storedOctave = instrumentOctaves[id];
-    if (typeof storedOctave === 'number') {
-      setCurrentOctave(storedOctave);
+
+    const instOctave = (currentInstrument as any).octave;
+    if (typeof instOctave === 'number' && Number.isFinite(instOctave)) {
+      const clamped = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(instOctave)));
+      setCurrentOctave(clamped);
+      return;
     }
-  }, [currentInstrument?.id, instrumentOctaves]);
+
+    const storedOctave = instrumentOctaves[id];
+    if (typeof storedOctave === 'number' && Number.isFinite(storedOctave)) {
+      const clamped = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(storedOctave)));
+      setCurrentOctave(clamped);
+    } else {
+      setCurrentOctave(DEFAULT_OCTAVE);
+    }
+  }, [currentInstrument, instrumentOctaves]);
 
   // Save dump mode preference to localStorage whenever it changes
   useEffect(() => {
@@ -1873,7 +1884,8 @@ const App: React.FC = () => {
     const id = currentInstrument?.id;
     if (!id) return;
     setInstrumentOctaves(prev => ({ ...prev, [id]: octave }));
-  }, [currentInstrument?.id]);
+    updateInstrument({ octave });
+  }, [currentInstrument?.id, updateInstrument]);
   const handleLineChange = useCallback((lineIndex: number) => {
     setSharedCurrentLine(lineIndex);
   }, []);

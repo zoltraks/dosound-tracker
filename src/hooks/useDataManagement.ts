@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH } from '../constants/music';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import yaml from 'js-yaml';
 import defaultSongYaml from '../assets/song.yaml?raw';
 import {
@@ -304,6 +304,14 @@ export const useDataManagement = () => {
           instrumentNode.base = baseKey;
         }
 
+        const rawOctave = (inst as any).octave;
+        if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
+          const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(rawOctave)));
+          if (clampedOctave !== DEFAULT_OCTAVE) {
+            instrumentNode.octave = clampedOctave;
+          }
+        }
+
         instrumentNode.volume = volumeEnv;
         if (!isZeroDefault(arpeggioEnv)) {
           instrumentNode.arpeggio = arpeggioEnv;
@@ -468,6 +476,20 @@ export const useDataManagement = () => {
         });
       };
 
+      const quoteBaseValues = (text: string): string => {
+        const baseLineRegex = /^(\s*-\s+|\s+)(base):\s*(.+)$/gm;
+        return text.replace(baseLineRegex, (_match, indent, key, value) => {
+          let inner = String(value).trim();
+          if (
+            (inner.startsWith('"') && inner.endsWith('"')) ||
+            (inner.startsWith('\'') && inner.endsWith('\''))
+          ) {
+            inner = inner.slice(1, -1);
+          }
+          return `${indent}${key}: "${inner}"`;
+        });
+      };
+
       const keys = ['volume', 'arpeggio', 'pitch', 'noise', 'mode'];
       for (const key of keys) {
         yamlContent = compressInstrumentArray(key, yamlContent);
@@ -475,6 +497,7 @@ export const useDataManagement = () => {
 
       yamlContent = quotePlaylistValues(yamlContent);
       yamlContent = quoteNoteValues(yamlContent);
+      yamlContent = quoteBaseValues(yamlContent);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
@@ -544,6 +567,14 @@ export const useDataManagement = () => {
         instrumentNode.base = baseKey;
       }
 
+      const rawOctave = (currentInstrument as any).octave;
+      if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
+        const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(rawOctave)));
+        if (clampedOctave !== DEFAULT_OCTAVE) {
+          instrumentNode.octave = clampedOctave;
+        }
+      }
+
       if (!isZeroDefault(modeEnv)) {
         instrumentNode.mode = modeEnv;
       }
@@ -562,11 +593,27 @@ export const useDataManagement = () => {
 
       const exportData = { instrument: instrumentNode };
 
-      const yamlContent = yaml.dump(exportData, {
+      let yamlContent = yaml.dump(exportData, {
         indent: 2,
         lineWidth: -1,
         flowLevel: 2
       });
+
+      const quoteBaseValues = (text: string): string => {
+        const baseLineRegex = /^(\s*-\s+|\s+)(base):\s*(.+)$/gm;
+        return text.replace(baseLineRegex, (_match, indent, key, value) => {
+          let inner = String(value).trim();
+          if (
+            (inner.startsWith('"') && inner.endsWith('"')) ||
+            (inner.startsWith('\'') && inner.endsWith('\''))
+          ) {
+            inner = inner.slice(1, -1);
+          }
+          return `${indent}${key}: "${inner}"`;
+        });
+      };
+
+      yamlContent = quoteBaseValues(yamlContent);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
@@ -622,6 +669,21 @@ export const useDataManagement = () => {
           return result;
         };
 
+        const rawOctave = (node as any).octave;
+        let octave = DEFAULT_OCTAVE;
+        if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
+          octave = rawOctave;
+        } else if (typeof rawOctave === 'string') {
+          const trimmed = rawOctave.trim();
+          if (trimmed) {
+            const parsed = Number(trimmed);
+            if (Number.isFinite(parsed)) {
+              octave = parsed;
+            }
+          }
+        }
+        octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
+
         const newInstrument: Instrument = {
           id: currentInstrument.id,
           name: typeof node.name === 'string' && node.name.trim() ? node.name : currentInstrument.name,
@@ -634,7 +696,8 @@ export const useDataManagement = () => {
             const parsedBase = parseBaseKey((node as any).base);
             if (!parsedBase) return DEFAULT_BASE_KEY;
             return formatBaseKey(parsedBase.note, parsedBase.octave);
-          })()
+          })(),
+          octave,
         };
 
         setCurrentInstrument(newInstrument);
