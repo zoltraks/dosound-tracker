@@ -22,6 +22,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     data || Array(ENVELOPE_LENGTH).fill(0)
   );
   const envelopeRef = useRef<HTMLDivElement>(null);
+  const lastPositionRef = useRef<number | null>(null);
 
   const sectionName = type === 'mode' ? 'mode' : type;
   const isActive = activeSection === sectionName;
@@ -76,9 +77,11 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     
     if (key === 'ARROWLEFT') {
       event.preventDefault();
+      lastPositionRef.current = currentPosition;
       setCurrentPosition(prev => Math.max(0, prev - 1));
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
+      lastPositionRef.current = currentPosition;
       setCurrentPosition(prev => Math.min(ENVELOPE_LENGTH - 1, prev + 1));
     } else if (key === 'ARROWUP') {
       event.preventDefault();
@@ -138,13 +141,23 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       }
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
+    } else if (type === 'pitch' && event.key === ' ') {
+      event.preventDefault();
+      if (onChange && lastPositionRef.current !== null) {
+        const sourceIndex = lastPositionRef.current;
+        const newData = [...envelopeData];
+        newData[currentPosition] = newData[sourceIndex];
+        setEnvelopeData(newData);
+        onChange(newData);
+      }
     }
   }, [isActive, handleValueChange, currentPosition, envelopeData, onChange]);
 
   const handlePositionClick = useCallback((position: number) => {
+    lastPositionRef.current = currentPosition;
     setCurrentPosition(position);
     setActiveSection(sectionName);
-  }, [setActiveSection, sectionName]);
+  }, [setActiveSection, sectionName, currentPosition]);
 
   const formatValue = useCallback((value: number) => {
     switch (type) {
