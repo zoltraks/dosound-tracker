@@ -103,6 +103,7 @@ export const useKeyboardNavigation = () => {
     const target = event.target as HTMLElement | null;
     const tagName = target?.tagName;
     const isInPianoKeyboard = target?.closest('.piano-keyboard') != null;
+    const isInOctaveSelection = target?.closest('.octave-selection') != null;
     const isEditable =
       tagName === 'INPUT' ||
       tagName === 'TEXTAREA' ||
@@ -119,7 +120,12 @@ export const useKeyboardNavigation = () => {
     const shift = event.shiftKey;
 
     // Let PianoKeyboard handle plain Space when it is active/focused
-    if (!ctrl && !shift && key === ' ' && (activeSection === 'piano' || isInPianoKeyboard)) {
+    if (
+      !ctrl &&
+      !shift &&
+      key === ' ' &&
+      (activeSection === 'piano' || activeSection === 'octave' || isInPianoKeyboard || isInOctaveSelection)
+    ) {
       return;
     }
 

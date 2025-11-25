@@ -2216,6 +2216,19 @@ const App: React.FC = () => {
     });
   }, [sharedCurrentLine]);
 
+  const previewChannel =
+    activeSection === 'trackA'
+      ? 0
+      : activeSection === 'trackB'
+      ? 1
+      : activeSection === 'trackC'
+      ? 2
+      : lastTrackId === 'B'
+      ? 1
+      : lastTrackId === 'C'
+      ? 2
+      : 0;
+
   try {
     return (
       <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
@@ -2228,6 +2241,9 @@ const App: React.FC = () => {
           onShowAbout={handleShowAbout}
           activeSection={activeSection}
           setActiveSection={setActiveSection}
+          ym2149={ym2149Ref.current}
+          currentInstrument={currentInstrument}
+          previewChannel={previewChannel}
         />
         
         <CommandPanel
@@ -2440,19 +2456,7 @@ const App: React.FC = () => {
           onOctaveChange={handleOctaveChange}
           ym2149={ym2149Ref.current}
           currentInstrument={currentInstrument}
-          previewChannel={
-            activeSection === 'trackA'
-              ? 0
-              : activeSection === 'trackB'
-              ? 1
-              : activeSection === 'trackC'
-              ? 2
-              : lastTrackId === 'B'
-              ? 1
-              : lastTrackId === 'C'
-              ? 2
-              : 0
-          }
+          previewChannel={previewChannel}
           onChangeBaseKey={handleChangeBaseKey}
         />
         

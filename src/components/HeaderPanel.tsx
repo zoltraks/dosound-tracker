@@ -189,6 +189,9 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     if (isOctaveActive && octaveRef.current) {
       octaveRef.current.focus();
     }
+    if (!isOctaveActive) {
+      stopPreview();
+    }
   }, [isOctaveActive]);
 
   return (
