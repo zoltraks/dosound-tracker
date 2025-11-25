@@ -163,7 +163,9 @@ const parseSongFromYaml = (content: string): Song => {
     typeof node.author === 'string' && node.author.trim() ? node.author : DEFAULT_SONG_AUTHOR;
 
   const speedRaw = Number(node.speed);
-  const speed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
+  const baseSpeed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
+  const clampedSpeed = Math.max(2, baseSpeed);
+  const speed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
 
   const yearRaw = Number(node.year);
   const year = Number.isFinite(yearRaw) ? yearRaw : new Date().getFullYear();
@@ -387,8 +389,15 @@ export const useDataManagement = () => {
     try {
       const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
       if (savedSong) {
-        const parsedSong = JSON.parse(savedSong);
-        return parsedSong;
+        const parsedSong = JSON.parse(savedSong) as Song;
+        const rawSpeed = Number((parsedSong as any).speed);
+        const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
+        const clampedSpeed = Math.max(2, baseSpeed);
+        const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
+        return {
+          ...parsedSong,
+          speed: evenSpeed
+        };
       }
     } catch (error) {
       console.warn('Failed to load song from localStorage:', error);

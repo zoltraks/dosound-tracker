@@ -21,7 +21,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
   }
   
   const frames: FrameState[] = [];
-  const ticksPerRow = Math.max(1, Math.floor((song.speed || 6) / 2));
+  const ticksPerRow = song.speed || 6;
   
   // Initialize register state
   let currentRegs: RegisterState = {
@@ -859,7 +859,8 @@ function synthTickSamples(
 }
 
 export function exportSongRegisterDump(song: Song): { content: string; cycleCount: number } {
-  const ticksPerRow = Math.max(1, Math.floor((song.speed || 6) / 2));
+  const baseSpeed = song.speed || 6;
+  const ticksPerRow = Math.max(1, Math.floor(baseSpeed / 2));
   const lineCount = song.patternLength || 64;
 
   type RegisterState = { [register: number]: number };

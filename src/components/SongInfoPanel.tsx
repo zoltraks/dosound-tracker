@@ -128,11 +128,18 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
             ref={speedRef}
             type="number"
             value={song.speed}
-            onChange={(e) => handleFieldChange('speed', Math.max(2, parseInt(e.target.value) || 6))}
+            onChange={(e) => {
+              const raw = parseInt(e.target.value, 10);
+              const base = Number.isFinite(raw) ? raw : 6;
+              const clamped = Math.max(2, base);
+              const even = clamped & ~1; // enforce even speed (2,4,6,...)
+              handleFieldChange('speed', even);
+            }}
             onKeyDown={handleKeyDown}
             onFocus={() => setLastFocusedField('speed')}
             className="info-input"
             min="2"
+            step={2}
             max="255"
           />
         </div>
