@@ -21,7 +21,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
   }
   
   const frames: FrameState[] = [];
-  const ticksPerRow = song.speed; // DOSOUND uses frames, not cycles
+  const ticksPerRow = Math.max(1, Math.floor((song.speed || 6) / 2));
   
   // Initialize register state
   let currentRegs: RegisterState = {
@@ -859,7 +859,7 @@ function synthTickSamples(
 }
 
 export function exportSongRegisterDump(song: Song): { content: string; cycleCount: number } {
-  const ticksPerRow = song.speed || 6;
+  const ticksPerRow = Math.max(1, Math.floor((song.speed || 6) / 2));
   const lineCount = song.patternLength || 64;
 
   type RegisterState = { [register: number]: number };
