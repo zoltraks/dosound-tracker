@@ -110,7 +110,10 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       event.preventDefault();
       if (onChange) {
         const newData = [...envelopeData];
-        const newValue = parseInt(key, 16);
+        let newValue = parseInt(key, 16);
+        if (event.shiftKey && key !== '0') {
+          newValue = -newValue;
+        }
         newData[currentPosition] = newValue;
         setEnvelopeData(newData);
         onChange(newData);
