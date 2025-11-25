@@ -156,6 +156,15 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       const step = 16;
       const wrappedIndex = (currentLine + step) % length;
       onLineChange(wrappedIndex);
+    } else if (key === 'HOME') {
+      event.preventDefault();
+      if (!pattern) return;
+      onLineChange(0);
+    } else if (key === 'END') {
+      event.preventDefault();
+      if (!pattern) return;
+      const length = Math.max(1, patternLength || 1);
+      onLineChange(length - 1);
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
       // Navigate to previous track (circular)
