@@ -1,0 +1,210 @@
+import React, { useCallback, useEffect, useState, useRef } from 'react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
+
+interface NumberSpinnerProps {
+  value: number | null | undefined;
+  onChange: (value: number | null) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+  label?: string;
+  ariaLabel?: string;
+  className?: string;
+  inputRef?: React.Ref<HTMLInputElement> | React.RefObject<HTMLInputElement>;
+  onInputKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
+  onInputFocus?: () => void;
+}
+
+const NumberSpinner: React.FC<NumberSpinnerProps> = ({
+  value,
+  onChange,
+  min,
+  max,
+  step = 1,
+  label,
+  ariaLabel,
+  className = '',
+  inputRef,
+  onInputKeyDown,
+  onInputFocus
+}) => {
+  const [inputValue, setInputValue] = useState<string>('');
+  const localRef = useRef<HTMLInputElement | null>(null);
+
+  const setMergedRef = useCallback(
+    (el: HTMLInputElement | null) => {
+      localRef.current = el;
+      if (typeof inputRef === 'function') {
+        inputRef(el);
+      } else if (inputRef && 'current' in inputRef) {
+        (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
+      }
+    },
+    [inputRef]
+  );
+
+  useEffect(() => {
+    if (value === null || value === undefined || Number.isNaN(value)) {
+      setInputValue('');
+    } else {
+      setInputValue(String((value as number) | 0));
+    }
+  }, [value]);
+
+  const parseValue = useCallback((raw: string): number | null => {
+    const trimmed = raw.trim();
+    if (!trimmed || trimmed === '-') return null;
+    const parsed = parseInt(trimmed, 10);
+    if (!Number.isFinite(parsed)) return null;
+    return parsed | 0;
+  }, []);
+
+  const clampValue = useCallback(
+    (val: number): number => {
+      let next = val;
+      if (typeof min === 'number' && next < min) next = min;
+      if (typeof max === 'number' && next > max) next = max;
+      return next;
+    },
+    [min, max]
+  );
+
+  const commitValue = useCallback(
+    (raw: string) => {
+      const parsed = parseValue(raw);
+      if (parsed === null) {
+        setInputValue('');
+        return;
+      }
+      const clamped = clampValue(parsed);
+      setInputValue(String(clamped));
+      onChange(clamped);
+    },
+    [clampValue, onChange, parseValue]
+  );
+
+  const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const next = event.target.value;
+    if (/^-?\d*$/.test(next)) {
+      setInputValue(next);
+    }
+  }, []);
+
+  const getBaseForDelta = (): number => {
+    const fromInput = parseValue(inputValue);
+    if (fromInput !== null) return fromInput;
+    if (typeof value === 'number' && Number.isFinite(value)) return value;
+    if (typeof min === 'number') return min;
+    return 0;
+  };
+
+  const adjustBy = (delta: number) => {
+    const base = getBaseForDelta();
+    const next = base + delta;
+    commitValue(String(next));
+  };
+
+  const handleBlur = useCallback(() => {
+    commitValue(inputValue);
+  }, [commitValue, inputValue]);
+
+  const handleKeyDownInternal = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.ctrlKey && event.key === 'ArrowUp') {
+        event.preventDefault();
+        adjustBy(step);
+        return;
+      }
+      if (event.ctrlKey && event.key === 'ArrowDown') {
+        event.preventDefault();
+        adjustBy(-step);
+        return;
+      }
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        commitValue(inputValue);
+      }
+      if (onInputKeyDown) {
+        onInputKeyDown(event);
+      }
+    },
+    [commitValue, inputValue, onInputKeyDown, step]
+  );
+
+  const currentParsed = parseValue(inputValue);
+
+  return (
+    <span
+      className={className}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        whiteSpace: 'nowrap',
+        columnGap: 2,
+        fontSize: '10px',
+        minWidth: 0
+      }}
+    >
+      <input
+        ref={setMergedRef}
+        type="text"
+        inputMode="numeric"
+        pattern="-?[0-9]*"
+        className="info-input"
+        value={inputValue}
+        onChange={handleInputChange}
+        onBlur={handleBlur}
+        onKeyDown={handleKeyDownInternal}
+        onFocus={onInputFocus}
+        aria-label={ariaLabel || label || 'Number input'}
+        role="spinbutton"
+        aria-valuenow={currentParsed ?? undefined}
+        aria-valuemin={min}
+        aria-valuemax={max}
+        style={{
+          flex: '0 0 auto',
+          width: 40,
+          height: 20,
+          textAlign: 'center',
+          padding: '0 4px',
+          fontSize: '10px',
+          boxSizing: 'border-box'
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => adjustBy(-step)}
+        aria-label="Decrease value"
+        style={{
+          width: 18,
+          height: 20,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
+          boxSizing: 'border-box'
+        }}
+      >
+        <ChevronDown className="h-3 w-3 rotate-90" />
+      </button>
+      <button
+        type="button"
+        onClick={() => adjustBy(step)}
+        aria-label="Increase value"
+        style={{
+          width: 18,
+          height: 20,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
+          boxSizing: 'border-box'
+        }}
+      >
+        <ChevronUp className="h-3 w-3 rotate-90" />
+      </button>
+    </span>
+  );
+}
+
+export default NumberSpinner;

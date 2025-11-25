@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Song } from '../synth/SoundDriver';
+import NumberSpinner from './NumberSpinner';
 
 interface SongInfoPanelProps {
   song: Song;
@@ -73,6 +74,29 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
     }
   }, [isActive]);
 
+  const handleSpeedChange = useCallback((next: number | null) => {
+    if (typeof next !== 'number' || !Number.isFinite(next)) {
+      return;
+    }
+    const base = next;
+    const clamped = Math.max(2, base);
+    const even = clamped & ~1; // enforce even speed (2,4,6,...)
+    handleFieldChange('speed', even);
+  }, [handleFieldChange]);
+
+  const handleYearChange = useCallback((next: number | null) => {
+    const fallback = new Date().getFullYear();
+    const raw = typeof next === 'number' && Number.isFinite(next) ? next : fallback;
+    const clamped = Math.max(1980, Math.min(2030, raw));
+    handleFieldChange('year', clamped);
+  }, [handleFieldChange]);
+
+  const handleLengthChange = useCallback((next: number | null) => {
+    const base = typeof next === 'number' && Number.isFinite(next) ? next : 64;
+    const clamped = Math.max(4, Math.min(256, base));
+    handleFieldChange('patternLength', clamped);
+  }, [handleFieldChange]);
+
   return (
     <div 
       className={`song-info-panel ${isActive ? 'active' : ''}`}
@@ -109,59 +133,46 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
         
         <div className="info-field">
           <label>Year:</label>
-          <input
-            ref={yearRef}
-            type="number"
+          <NumberSpinner
             value={song.year}
-            onChange={(e) => handleFieldChange('year', parseInt(e.target.value) || new Date().getFullYear())}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setLastFocusedField('year')}
-            className="info-input"
-            min="1980"
-            max="2030"
+            onChange={handleYearChange}
+            min={1980}
+            max={2030}
+            step={1}
+            ariaLabel="Song year"
+            inputRef={yearRef}
+            onInputKeyDown={handleKeyDown as any}
+            onInputFocus={() => setLastFocusedField('year')}
           />
         </div>
         
         <div className="info-field">
           <label>Speed:</label>
-          <input
-            ref={speedRef}
-            type="number"
+          <NumberSpinner
             value={song.speed}
-            onChange={(e) => {
-              const raw = parseInt(e.target.value, 10);
-              const base = Number.isFinite(raw) ? raw : 6;
-              const clamped = Math.max(2, base);
-              const even = clamped & ~1; // enforce even speed (2,4,6,...)
-              handleFieldChange('speed', even);
-            }}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setLastFocusedField('speed')}
-            className="info-input"
-            min="2"
+            onChange={handleSpeedChange}
+            min={2}
+            max={255}
             step={2}
-            max="255"
+            ariaLabel="Song speed"
+            inputRef={speedRef}
+            onInputKeyDown={handleKeyDown as any}
+            onInputFocus={() => setLastFocusedField('speed')}
           />
         </div>
         
         <div className="info-field">
           <label>Length:</label>
-          <input
-            ref={lengthRef}
-            type="number"
+          <NumberSpinner
             value={song.patternLength ?? 64}
-            onChange={(e) => {
-              const raw = parseInt(e.target.value, 10);
-              const safe = Number.isFinite(raw) ? raw : 64;
-              const clamped = Math.max(4, Math.min(256, safe));
-              handleFieldChange('patternLength', clamped);
-            }}
-            onKeyDown={handleKeyDown}
-            onFocus={() => setLastFocusedField('length')}
-            className="info-input"
-            min="4"
-            max="256"
-            placeholder="Pattern length"
+            onChange={handleLengthChange}
+            min={4}
+            max={256}
+            step={1}
+            ariaLabel="Pattern length"
+            inputRef={lengthRef}
+            onInputKeyDown={handleKeyDown as any}
+            onInputFocus={() => setLastFocusedField('length')}
           />
         </div>
       </div>

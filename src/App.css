@@ -807,7 +807,7 @@ body {
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   padding: 2px 4px;
-  font-family: 'Courier New', monospace;
+  font-family: var(--font-mono);
   font-size: 10px;
 }
 
@@ -815,6 +815,10 @@ body {
   outline: none;
   border-color: var(--active-border);
   background-color: var(--active-bg);
+}
+
+.light .info-input:focus {
+  background-color: #f4f4f4;
 }
 
 /* Playlist Panel */
