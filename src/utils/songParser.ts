@@ -1,6 +1,6 @@
 import yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH } from '../constants/music';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 
 export const DEFAULT_BASE_KEY = 'C-4';
 export const DEFAULT_SONG_TITLE = 'New Song';
@@ -249,6 +249,21 @@ export const parseSongFromYaml = (content: string): Song => {
       ? formatBaseKey(baseParsed.note, baseParsed.octave)
       : DEFAULT_BASE_KEY;
 
+    const rawOctave = (instNode as any).octave;
+    let octave = DEFAULT_OCTAVE;
+    if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
+      octave = rawOctave;
+    } else if (typeof rawOctave === 'string') {
+      const trimmed = rawOctave.trim();
+      if (trimmed) {
+        const parsed = Number(trimmed);
+        if (Number.isFinite(parsed)) {
+          octave = parsed;
+        }
+      }
+    }
+    octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
+
     const volumeEnvelope = expandEnvelope(instNode.volume, ENVELOPE_LENGTH, 0x0f);
     const arpeggioEnvelope = expandEnvelope(instNode.arpeggio, ENVELOPE_LENGTH, 0);
     const pitchEnvelope = expandEnvelope(instNode.pitch, ENVELOPE_LENGTH, 0);
@@ -267,6 +282,7 @@ export const parseSongFromYaml = (content: string): Song => {
           noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
           modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
           base: DEFAULT_BASE_KEY,
+          octave: DEFAULT_OCTAVE,
         };
       }
     }
@@ -280,6 +296,7 @@ export const parseSongFromYaml = (content: string): Song => {
       noiseEnvelope,
       modeEnvelope,
       base,
+      octave,
     };
   });
 
