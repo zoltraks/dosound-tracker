@@ -36,6 +36,31 @@ export const parseBaseKey = (value: unknown): { note: string; octave: number } |
   return { note: notePart, octave };
 };
 
+const parseVolumeNibble = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const n = Math.max(0, Math.min(0x0f, Math.floor(value)));
+    return n;
+  }
+
+  if (typeof value === 'string') {
+    const raw = value.trim();
+    if (!raw) return null;
+
+    let text = raw.toUpperCase();
+    if (text.startsWith('$')) {
+      text = text.slice(1);
+    }
+
+    const n = parseInt(text, 16);
+    if (Number.isFinite(n)) {
+      const clamped = Math.max(0, Math.min(0x0f, n));
+      return clamped;
+    }
+  }
+
+  return null;
+};
+
 export const parseSongFromYaml = (content: string): Song => {
   const parsed = yaml.load(content) as any;
 
@@ -181,6 +206,11 @@ export const parseSongFromYaml = (content: string): Song => {
             octave: parsedKey.octave,
             instrument: instId,
           };
+        }
+
+        const vol = parseVolumeNibble(ln.volume);
+        if (vol !== null) {
+          line.volume = vol;
         }
       }
 

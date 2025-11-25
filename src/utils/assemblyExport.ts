@@ -38,12 +38,13 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
     envelopeStep: number;
     subTick: number;
     isNewNote: boolean; // Flag to ensure tone registers are written on first frame
+    volumeModifier: number; // Per-channel volume modifier nibble (0-15)
   }
   
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
   ];
   
   // Process each playlist entry
@@ -74,6 +75,12 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
         patterns[1]?.lines[lineIdx]?.trackA || null,
         patterns[2]?.lines[lineIdx]?.trackA || null,
       ];
+      // Per-line volume modifiers (shared pattern trackA volume)
+      const volumes = [
+        patterns[0]?.lines[lineIdx]?.volume,
+        patterns[1]?.lines[lineIdx]?.volume,
+        patterns[2]?.lines[lineIdx]?.volume,
+      ];
       
       // Process each tick in this row
       for (let tick = 0; tick < ticksPerRow; tick++) {
@@ -84,6 +91,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
           const channelState = channels[ch];
+          const volumeOnRow = volumes[ch];
           
           // On first tick of row, check for new note or note-off
           if (tick === 0) {
@@ -122,13 +130,27 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
             } else {
               channelState.isNewNote = false;
             }
+
+            // Update per-channel volume modifier when explicitly present on this row.
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              channelState.volumeModifier = clamped;
+            }
           }
           
           // Update channel with current envelope step
           if (channelState.note) {
             const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
             if (instrument) {
-              applyInstrumentToRegisters(newRegs, ch, channelState.note, instrument, channelState.envelopeStep, channelState.isNewNote);
+              applyInstrumentToRegisters(
+                newRegs,
+                ch,
+                channelState.note,
+                instrument,
+                channelState.envelopeStep,
+                channelState.isNewNote,
+                channelState.volumeModifier
+              );
             }
           }
           
@@ -166,7 +188,8 @@ function applyInstrumentToRegisters(
   note: { note: string; octave: number },
   instrument: Instrument,
   envelopeStep: number,
-  isNewNote: boolean
+  isNewNote: boolean,
+  volumeModifier?: number | null
 ): void {
   const step = Math.max(0, envelopeStep);
   
@@ -183,12 +206,18 @@ function applyInstrumentToRegisters(
   const modeIdx = Math.min(step, modeEnv.length - 1);
   const noiseIdx = Math.min(step, noiseEnv.length - 1);
   
-  const volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
+  let volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
   const arpeggio = arpeggioEnv[arpIdx] || 0;
   const pitch = (pitchEnv[pitchIdx] || 0) | 0;
   const mode = modeEnv[modeIdx] || 0;
   const noisePeriod = Math.max(0, Math.min(0x1F, noiseEnv[noiseIdx] || 0));
   
+  // Apply optional per-step volume modifier (0-15) as attenuation, 15 = no attenuation.
+  if (volumeModifier !== undefined && volumeModifier !== null) {
+    const mod = Math.max(0, Math.min(0x0f, volumeModifier | 0));
+    volume = Math.floor((volume * mod) / 15);
+  }
+
   // Set volume
   regs[0x08 + channel] = volume;
   
@@ -941,12 +970,13 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
     envelopeStep: number;
     subTick: number;
     isNewNote: boolean;
+    volumeModifier: number;
   }
 
   const channels: DumpChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false }
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f }
   ];
 
   const lines: string[] = [];
@@ -976,6 +1006,12 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
         patterns[0]?.lines[lineIdx]?.trackA || null,
         patterns[1]?.lines[lineIdx]?.trackA || null,
         patterns[2]?.lines[lineIdx]?.trackA || null
+      ];
+
+      const volumes = [
+        patterns[0]?.lines[lineIdx]?.volume,
+        patterns[1]?.lines[lineIdx]?.volume,
+        patterns[2]?.lines[lineIdx]?.volume
       ];
 
       for (let tick = 0; tick < ticksPerRow; tick++) {
@@ -1015,6 +1051,11 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
             } else {
               channelState.isNewNote = false;
             }
+
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              channelState.volumeModifier = clamped;
+            }
           }
 
           if (channelState.note) {
@@ -1026,7 +1067,8 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
                 { note: channelState.note.note, octave: channelState.note.octave },
                 instrument,
                 channelState.envelopeStep,
-                channelState.isNewNote
+                channelState.isNewNote,
+                channelState.volumeModifier
               );
             }
           }
@@ -1095,12 +1137,13 @@ export function exportSongToWav(song: Song): WavExportResult {
     envelopeStep: number;
     subTick: number;
     isNewNote: boolean;
+    volumeModifier: number;
   }
 
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false }
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f }
   ];
 
   const phases = [0, 0, 0];
@@ -1134,6 +1177,12 @@ export function exportSongToWav(song: Song): WavExportResult {
         patterns[2]?.lines[lineIdx]?.trackA || null
       ];
 
+      const volumes = [
+        patterns[0]?.lines[lineIdx]?.volume,
+        patterns[1]?.lines[lineIdx]?.volume,
+        patterns[2]?.lines[lineIdx]?.volume
+      ];
+
       for (let tick = 0; tick < ticksPerRow; tick++) {
         const newRegs: { [register: number]: number } = { ...regs };
 
@@ -1141,6 +1190,7 @@ export function exportSongToWav(song: Song): WavExportResult {
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
           const channelState = channels[ch];
+          const volumeOnRow = volumes[ch];
 
           if (tick === 0) {
             if (!pattern) {
@@ -1171,6 +1221,11 @@ export function exportSongToWav(song: Song): WavExportResult {
             } else {
               channelState.isNewNote = false;
             }
+
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              channelState.volumeModifier = clamped;
+            }
           }
 
           if (channelState.note) {
@@ -1182,7 +1237,8 @@ export function exportSongToWav(song: Song): WavExportResult {
                 channelState.note,
                 instrument,
                 channelState.envelopeStep,
-                channelState.isNewNote
+                channelState.isNewNote,
+                channelState.volumeModifier
               );
             }
           }

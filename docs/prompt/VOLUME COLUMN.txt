@@ -1,0 +1,19 @@
+Add a volume value right next to the note in each track available for editing.  
+This will be an optional value and may be left empty (undefined).
+The value in the volume column is a hexadecimal digit, with the value F being the default volume value modifier for each track.
+The value in this column indicates by how much to decrease the value written to the corresponding sound chip volume register.
+If the volume value is F, the value from the volume envelope should not be decreased.
+If the volume value is E, then the value for the sound chip volume register should be decreased by 1.
+Correspondingly for D, it would mean a decrease of 2.
+And it must be remembered that the final value for the volume register cannot be negative.
+If a volume value is present at a given step, it should replace the current volume modifier value of the track and be applied.
+In a given step, a volume value may not be defined.
+In that case, the volume modifier value for the track remains unchanged.  
+At a given step, only a volume value can be defined without a note.
+At the beginning of playing a pattern or song, it should be assumed that the volume modifier value for each track is the default (F).
+In the track editing block, navigation with arrow keys should allow moving between the note and volume columns.
+The volume value is always a hexadecimal value set using the keys 0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F. When the Backspace key is pressed, the value should be cleared.
+During the entry of a new note value while editing a track, if the volume column for a given step is filled, it should be taken into account when playing the instrument during editing.
+If the volume column does not contain a value at that position, the instrument playback should occur without modifying the volume value written to the soundchip register.
+When saving song data in YAML format using the "SAVE SONG" function, the volume column value should be included and saved if it has been defined, and it should be properly accounted for during "LOAD SONG".
+Include the volume modifier value also when exporting data in all currently supported formats.

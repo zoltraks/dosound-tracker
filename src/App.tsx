@@ -312,6 +312,9 @@ const App: React.FC = () => {
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
   const lastNotesRef = useRef<any[]>([null, null, null]);
   const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
+  // Per-channel volume modifier nibble (0-15) from the pattern "volume column".
+  // Default is 0x0F (no attenuation) at the start of playback.
+  const channelVolumeModifierRef = useRef<number[]>([0x0f, 0x0f, 0x0f]);
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
 
@@ -344,6 +347,7 @@ const App: React.FC = () => {
     channelEnvelopeStepRef.current = [0, 0, 0];
     lastNotesRef.current = [null, null, null];
     lastSequencerPositionRef.current = null;
+    channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
     
     // Silence all channels
     if (ym2149Ref.current) {
@@ -398,6 +402,11 @@ const App: React.FC = () => {
           channelEnvelopeStepRef.current = [0, 0, 0];
           lastNotesRef.current = [null, null, null];
         }
+
+        // Volume modifiers default to 0xF only on the very first tick after starting playback.
+        if (isFirstTick) {
+          channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
+        }
       }
 
       const playlistLength = currentSong.playlist.length;
@@ -448,6 +457,11 @@ const App: React.FC = () => {
 
         const notes = [noteA, noteB, noteC];
         const patterns = [patternA, patternB, patternC];
+        const volumes = [
+          lineA?.volume,
+          patternB ? lineB?.volume : undefined,
+          patternC ? lineC?.volume : undefined
+        ];
         const lastNotes = lastNotesRef.current;
 
         for (let ch = 0; ch < 3; ch++) {
@@ -459,6 +473,7 @@ const App: React.FC = () => {
 
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
+          const volumeOnRow = volumes[ch];
           const last = lastNotes[ch];
 
           // If no pattern is assigned on this channel, always treat as rest
@@ -496,6 +511,12 @@ const App: React.FC = () => {
           let activeNote = last as any;
           const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
 
+          // Update per-channel volume modifier when a volume nibble is present on this row.
+          if (volumeOnRow !== undefined && volumeOnRow !== null) {
+            const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+            channelVolumeModifierRef.current[ch] = clamped;
+          }
+
           if (hasExplicitNote) {
             // New explicit note on this row
             activeNote = noteOnRow;
@@ -513,8 +534,9 @@ const App: React.FC = () => {
             // starts at step 0, matching the piano keyboard behaviour), then
             // advance the step every 40ms (every 2 x 20ms ticks).
             const step = channelEnvelopeStepRef.current[ch];
+            const volumeModifier = channelVolumeModifierRef.current[ch];
 
-            updateChannelWithInstrument(ym2149, ch, activeNote, step);
+            updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier);
 
             // Envelope progression at 25 Hz: only advance on every second tick
             const sub = (channelSubTickRef.current[ch] + 1) % 2;
@@ -560,7 +582,13 @@ const App: React.FC = () => {
   }, []);
 
   // Helper function to update channel with instrument and all envelopes
-  const updateChannelWithInstrument = useCallback((ym2149: YM2149, channel: number, noteData: any | null, envelopeStep: number = 0) => {
+  const updateChannelWithInstrument = useCallback((
+    ym2149: YM2149,
+    channel: number,
+    noteData: any | null,
+    envelopeStep: number = 0,
+    volumeModifier?: number | null
+  ) => {
     const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
     const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
     const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
@@ -575,7 +603,13 @@ const App: React.FC = () => {
     }
 
     // Use YM2149's built-in method to update channel with instrument
-    ym2149.updateChannelWithInstrument(channel, instrument as any, { note: noteData.note, octave: noteData.octave }, envelopeStep);
+    ym2149.updateChannelWithInstrument(
+      channel,
+      instrument as any,
+      { note: noteData.note, octave: noteData.octave },
+      envelopeStep,
+      volumeModifier
+    );
   }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
 
   // Handle stop playback with silence
@@ -1460,12 +1494,12 @@ const App: React.FC = () => {
 
     const noteData = { note: base.note, octave: base.octave };
 
-    ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, 0);
+    ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, 0, 0x0f);
 
     playInstTimerRef.current = window.setInterval(() => {
       // Advance envelope step every 40ms (every 2 x 20ms ticks)
       const step = playInstStepRef.current;
-      ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, step);
+      ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, step, 0x0f);
 
       playInstSubTick = (playInstSubTick + 1) % 2;
       if (playInstSubTick === 0) {

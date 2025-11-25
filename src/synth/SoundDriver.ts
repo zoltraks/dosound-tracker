@@ -35,6 +35,9 @@ export interface PatternLine {
   trackA: Note | null;
   trackB: Note | null;
   trackC: Note | null;
+  // Optional per-line volume modifier (0-15) used by the tracker "volume column".
+  // When undefined, the track keeps the previous modifier (default is 0xF = no attenuation).
+  volume?: number | null;
 }
 
 export interface Pattern {

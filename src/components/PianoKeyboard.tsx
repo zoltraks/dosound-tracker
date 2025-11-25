@@ -135,8 +135,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     previewSubTicksRef.current[keyId] = 0;
     previewEnvelopeStepsRef.current[keyId] = 0;
 
-    // Apply initial state (step 0)
-    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0);
+    // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
+    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
 
     // Start envelope timer - 20ms tick, but advance envelope step every 40ms (every 2 ticks)
     envelopeTimersRef.current[keyId] = window.setInterval(() => {
@@ -150,7 +150,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         previewEnvelopeStepsRef.current[keyId] = currentStep;
       }
 
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep);
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
     }, 20); // 20ms base tick, 40ms per envelope step
   }, [ym2149, currentInstrument, previewChannel]);
 

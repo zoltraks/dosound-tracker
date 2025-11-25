@@ -367,7 +367,8 @@ export class YM2149 {
     channel: number,
     instrument: Instrument,
     noteData?: { note: string; octave: number },
-    envelopeTick: number = 0
+    envelopeTick: number = 0,
+    volumeModifier?: number | null
   ) => {
     const volumeRegister = 8 + channel; // R8, R9, R10
     const fineRegister = channel * 2;        // R0, R2, R4
@@ -435,10 +436,17 @@ export class YM2149 {
       }
     }
 
-    // Volume envelope
+    // Volume envelope with optional per-step modifier.
     const volumeIndex = Math.min(safeTick, instrument.volumeEnvelope.length - 1);
     const volumeValue = instrument.volumeEnvelope[volumeIndex];
-    const volume = Math.max(0, Math.min(15, volumeValue));
+    let volume = Math.max(0, Math.min(15, volumeValue));
+
+    if (volumeModifier !== undefined && volumeModifier !== null) {
+      const mod = Math.max(0, Math.min(15, volumeModifier | 0));
+      // Treat modifier as an attenuation factor: 15 = no attenuation, 0 = silence.
+      volume = Math.floor((volume * mod) / 15);
+    }
+
     this.writeRegister(volumeRegister, volume);
 
     // Noise envelope whenever noise is active

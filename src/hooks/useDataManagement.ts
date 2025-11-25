@@ -337,7 +337,8 @@ export const useDataManagement = () => {
         C: entry.trackC
       }));
 
-      // Patterns: single-track (track A) steps with note strings or space
+      // Patterns: single-track (track A) steps with note strings or space,
+      // plus optional per-line volume modifier.
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const patterns = currentSong.patterns.map((pattern, index) => {
         const number =
@@ -352,15 +353,28 @@ export const useDataManagement = () => {
           const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
           const cell = raw.trackA;
 
+          let step: any;
+
           if (!cell) {
-            lines.push({ space: true });
+            step = { space: true };
           } else {
             const noteText = formatBaseKey(cell.note, cell.octave);
-            lines.push({
+            step = {
               note: noteText,
               instrument: cell.instrument
-            });
+            };
           }
+
+          const volRaw: any = (raw as any).volume;
+          if (volRaw !== undefined && volRaw !== null) {
+            const volNum = Number(volRaw);
+            if (Number.isFinite(volNum)) {
+              const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
+              step.volume = clamped;
+            }
+          }
+
+          lines.push(step);
         }
 
         // Trim trailing pure-space lines

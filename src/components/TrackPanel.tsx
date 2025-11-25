@@ -20,12 +20,6 @@ interface TrackPanelProps {
   onTogglePatternFromCursor: (lineIndex: number) => void;
 }
 
-interface NoteData {
-  note: string;
-  octave: number;
-  instrument: string;
-}
-
 export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const {
     trackId,
@@ -44,6 +38,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
+  const [currentColumn, setCurrentColumn] = useState<'note' | 'volume'>('note');
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -78,8 +73,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     previewSubTickRef.current = 0;
     previewEnvelopeStepRef.current = 0;
 
-    // Apply initial state (step 0)
-    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0);
+    // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
+    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
 
     // Start envelope timer: 20ms tick, advance envelope step every 20ms
     envelopeTimerRef.current = window.setInterval(() => {
@@ -93,7 +88,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         previewEnvelopeStepRef.current = currentStep;
       }
 
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep);
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
     }, 20); // 20ms = 50Hz, envelope step every tick
 
     // Auto-silence after 500ms for preview (longer to hear envelope)
@@ -173,44 +168,34 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onLineChange(length - 1);
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
-      // Navigate to previous track (circular)
-      let targetTrack: NavigationSection;
-      if (trackId === 'A') {
-        targetTrack = 'trackC'; // A -> C
-      } else if (trackId === 'B') {
-        targetTrack = 'trackA'; // B -> A
-      } else { // trackId === 'C'
-        targetTrack = 'trackB'; // C -> B
-      }
-      setActiveSection(targetTrack);
+      if (!pattern) return;
+      // Move to note column within this track
+      setCurrentColumn('note');
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
-      // Navigate to next track (circular)
-      let targetTrack: NavigationSection;
-      if (trackId === 'A') {
-        targetTrack = 'trackB'; // A -> B
-      } else if (trackId === 'B') {
-        targetTrack = 'trackC'; // B -> C
-      } else { // trackId === 'C'
-        targetTrack = 'trackA'; // C -> A
-      }
-      setActiveSection(targetTrack);
+      if (!pattern) return;
+      // Move to volume column within this track
+      setCurrentColumn('volume');
     } else if (key === 'ENTER') {
       event.preventDefault();
       onTogglePatternFromCursor(currentLine);
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault();
-      // Clear current line
-      if (pattern) {
-        const newPattern = { ...pattern };
-        newPattern.lines = [...newPattern.lines];
-        newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
+      if (!pattern) return;
+      const newPattern = { ...pattern };
+      newPattern.lines = [...newPattern.lines];
+      newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
 
-        // Clear the note for shared pattern (always use trackA)
+      if (currentColumn === 'volume') {
+        // Clear only the per-line volume modifier
+        (newPattern.lines[currentLine] as any).volume = undefined;
+      } else {
+        // Clear the note (and implicitly any volume) for shared pattern (trackA)
         newPattern.lines[currentLine].trackA = null;
-
-        onPatternChange(newPattern);
+        (newPattern.lines[currentLine] as any).volume = undefined;
       }
+
+      onPatternChange(newPattern);
     } else if (event.ctrlKey && key === ' ') {
       event.preventDefault();
       // Note off (set to rest)
@@ -227,14 +212,18 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       }
     } else if (key === ' ') {
       event.preventDefault();
-      // Clear current position and move to next line
+      // Clear current position in the active column and move to next line
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
 
-        // Clear the note for shared pattern (always use trackA)
-        newPattern.lines[currentLine].trackA = null;
+        if (currentColumn === 'volume') {
+          (newPattern.lines[currentLine] as any).volume = undefined;
+        } else {
+          newPattern.lines[currentLine].trackA = null;
+          (newPattern.lines[currentLine] as any).volume = undefined;
+        }
 
         onPatternChange(newPattern);
         // Move to next line
@@ -256,6 +245,22 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         const newInst = Math.min(255, instNum + 1);
         return newInst.toString(16).padStart(2, '0').toUpperCase();
       });
+    } else if (!event.ctrlKey && currentColumn === 'volume' && /^[0-9A-F]$/.test(key)) {
+      event.preventDefault();
+      // Hex input for per-line volume modifier
+      if (pattern) {
+        const newPattern = { ...pattern };
+        newPattern.lines = [...newPattern.lines];
+        newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
+
+        const value = parseInt(key, 16);
+        const clamped = Math.max(0, Math.min(0x0f, value));
+        (newPattern.lines[currentLine] as any).volume = clamped;
+
+        onPatternChange(newPattern);
+        // Move to next line after entering a volume nibble
+        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+      }
     } else if (KEYBOARD_TO_NOTE[key]) {
       event.preventDefault();
       // Insert note
@@ -285,9 +290,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const handleLineClick = useCallback((lineIndex: number) => {
     onLineChange(lineIndex);
     setActiveSection(sectionName);
+    setCurrentColumn('note');
   }, [setActiveSection, sectionName, onLineChange]);
 
-  const formatNoteDisplay = useCallback((noteData: NoteData | null) => {
+  const formatNoteDisplay = useCallback((noteData: Note | null) => {
     if (!noteData) return '---';
     if (noteData.note === '===') return '===';
 
@@ -323,17 +329,31 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       </div>
 
       <div className="track-content">
-        {trackNotes.map((noteData, lineIndex) => (
+        {trackNotes.map((noteData, lineIndex) => {
+          const volume = pattern?.lines[lineIndex]?.volume;
+          const isCurrentLine = lineIndex === currentLine && isActive;
+          const volumeIsActive = isCurrentLine && currentColumn === 'volume';
+          const noteIsActive = isCurrentLine && currentColumn === 'note';
+
+          return (
           <div
             key={lineIndex}
             className={getLineClass(lineIndex)}
             onClick={() => handleLineClick(lineIndex)}
           >
             <span className="note-data">
-              {formatNoteDisplay(noteData)}
+              <span className={`note-text ${noteIsActive ? 'active' : ''}`}>
+                {formatNoteDisplay(noteData as any)}
+              </span>
+              <span className={`volume-data ${volumeIsActive ? 'active' : ''}`}>
+                {volume === undefined || volume === null
+                  ? '.'
+                  : (Math.max(0, Math.min(0x0f, (volume as number) | 0))).toString(16).toUpperCase()}
+              </span>
             </span>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

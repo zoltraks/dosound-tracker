@@ -67,8 +67,8 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     previewSubTickRef.current = 0;
     previewEnvelopeStepRef.current = 0;
 
-    // Apply initial state (step 0)
-    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0);
+    // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
+    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
 
     // Start envelope timer - 20ms tick, advance envelope step every 40ms
     previewTimerRef.current = window.setInterval(() => {
@@ -81,7 +81,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
         previewEnvelopeStepRef.current = currentStep;
       }
 
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep);
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
     }, 20);
   };
 
