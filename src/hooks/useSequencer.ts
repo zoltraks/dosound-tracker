@@ -98,6 +98,9 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
               ...playbackStateRef.current,
               ...data
             };
+            if (callbackRef.current) {
+              callbackRef.current(playbackStateRef.current);
+            }
             setSequencerState(prev => ({ ...prev, ...data }));
             break;
         }

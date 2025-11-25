@@ -299,6 +299,7 @@ const App: React.FC = () => {
   const lastNotesRef = useRef<any[]>([null, null, null]);
   const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
+  const wasPlayingRef = useRef(false);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
 
@@ -347,10 +348,18 @@ const App: React.FC = () => {
     if (ym2149Ref.current) {
       const ym2149 = ym2149Ref.current;
 
+      const wasPlaying = wasPlayingRef.current;
+
       if (!state.isPlaying) {
+        if (wasPlaying) {
+          handleStopPlayback();
+        }
+        wasPlayingRef.current = false;
         lastSequencerPositionRef.current = null;
         return;
       }
+
+      wasPlayingRef.current = true;
 
       const lastPos = lastSequencerPositionRef.current;
       const wrappedOrJumped =
@@ -1545,6 +1554,12 @@ const App: React.FC = () => {
     // Ensure pattern play state is cleared so buttons show PLAY again
     setIsPatternPlaying(false);
     
+    // Stop any instrument preview playback
+    if (playInstTimerRef.current !== null) {
+      window.clearInterval(playInstTimerRef.current);
+      playInstTimerRef.current = null;
+    }
+
     // Reset cycle counters and silence all channels
     handleStopPlayback();
   }, [stop, handleStopPlayback]);
@@ -1556,6 +1571,12 @@ const App: React.FC = () => {
     
     // Update pattern playing state
     setIsPatternPlaying(false);
+    
+    // Stop any instrument preview playback
+    if (playInstTimerRef.current !== null) {
+      window.clearInterval(playInstTimerRef.current);
+      playInstTimerRef.current = null;
+    }
     
     // Reset cycle counters and silence all channels
     handleStopPlayback();
