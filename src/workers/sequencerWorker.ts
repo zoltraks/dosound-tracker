@@ -8,6 +8,8 @@ let currentLine = 0;
 let currentPattern = 0;
 let ticksPerRow = 3;
 let patternLength = 64;
+let lastTickTime = 0;
+let nextTickTime = 0;
 
 interface WorkerMessage {
   type: 'start' | 'stop' | 'update' | 'tick' | 'setParams';
@@ -52,22 +54,48 @@ function scheduleTick() {
   } as WorkerMessage);
 }
 
+function tickLoop() {
+  if (!isPlaying) {
+    return;
+  }
+
+  const now = performance.now();
+
+  if (!lastTickTime) {
+    lastTickTime = now;
+    nextTickTime = now + tickInterval;
+  }
+
+  // Catch up on any ticks that were missed due to timer jitter or clamping
+  while (isPlaying && now >= nextTickTime) {
+    scheduleTick();
+    nextTickTime += tickInterval;
+  }
+
+  const delay = Math.max(0, nextTickTime - performance.now());
+  intervalId = setTimeout(tickLoop, delay) as any;
+}
+
 function startSequencer() {
   if (intervalId !== null) {
-    clearInterval(intervalId);
+    clearTimeout(intervalId);
   }
   
   isPlaying = true;
-  intervalId = setInterval(scheduleTick, tickInterval) as any;
+  lastTickTime = 0;
+  nextTickTime = 0;
+  intervalId = setTimeout(tickLoop, tickInterval) as any;
 }
 
 function stopSequencer() {
   isPlaying = false;
   isPatternLoop = false;
   if (intervalId !== null) {
-    clearInterval(intervalId);
+    clearTimeout(intervalId);
     intervalId = null;
   }
+  lastTickTime = 0;
+  nextTickTime = 0;
   
   // Reset position
   currentTick = 0;

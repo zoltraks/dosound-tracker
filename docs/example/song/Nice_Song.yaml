@@ -2,7 +2,7 @@ song:
   title: Nice Song
   author: Zoltar X / New Generation
   length: 64
-  speed: 6
+  speed: 4
   year: 2025
   playlist:
     - A: "01"
@@ -39,7 +39,7 @@ song:
           instrument: "01"
         - space: 1
         - note: "E-1"
-          instrument: "01"
+          instrument: "04"
         - space: 3
         - note: "E-1"
           instrument: "01"
@@ -57,7 +57,7 @@ song:
           instrument: "01"
         - space: 1
         - note: "G-1"
-          instrument: "01"
+          instrument: "04"
         - space: 3
         - note: "G-1"
           instrument: "01"
@@ -75,7 +75,7 @@ song:
           instrument: "01"
         - space: 1
         - note: "C-2"
-          instrument: "01"
+          instrument: "04"
         - space: 3
         - note: "C-2"
           instrument: "01"
@@ -93,13 +93,13 @@ song:
           instrument: "01"
         - space: 1
         - note: "C-2"
-          instrument: "01"
+          instrument: "04"
         - space: 3
         - note: "D-2"
           instrument: "01"
         - space: 1
         - note: "D-2"
-          instrument: "01"
+          instrument: "04"
     - name: Pattern 03
       number: "03"
       steps:
@@ -146,10 +146,14 @@ song:
       arpeggio: [0, 0, 0, 0, 0, 0, 12, 12, 0, 0, 12, 12, 0, 0, 12, 12, 0, 0, 12, 12, 0, 0, 12, 12, 0, 0, 12, 12, 0, 0, 12, 0]
     - name: Nice Bass
       number: "01"
-      volume: [15, 15, 15, 0]
+      volume: [15, 15, 13, 0]
     - name: Nice Lead
       number: "02"
       volume: [15, 15, 10, 10, 6, 6, 0]
     - name: Nice Lead Half Volume
       number: "03"
       volume: [8, 8, 5, 5, 3, 3, 0]
+    - name: Nice Bass Long
+      number: "04"
+      volume: [15, 15, 13, 13, 13, 5, 5, 0]
+  loop: 0
