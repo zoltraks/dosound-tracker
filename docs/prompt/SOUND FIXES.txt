@@ -1,3 +1,13 @@
+
+---
+
+I have a problem with "EXPORT SOUND" command.
+The rendered WAV have song music audio that seems to be in correct speed but some of the sounds are lost and missing and the music sounds different that the "PLAY SONG" actually generates sound.
+Rewrite "EXPORT SOUND" so it correctly export WAV file so it sounds exactly the same as played by sequencer.
+
+
+---
+
 Check the playback routine as sometimes when I stop the playback then volume registers are not set to 0 and are left with non 0 value and I can hear the sound and I can see in EQ and Dump that the volume was not reset to 0 to silence the sound after playback is stopped
 
 
