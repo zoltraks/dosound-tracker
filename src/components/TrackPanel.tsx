@@ -84,10 +84,16 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Start envelope timer: 20ms tick, advance envelope step every 20ms
     envelopeTimerRef.current = window.setInterval(() => {
       // Track raw sub-ticks for potential future use
-      previewSubTickRef.current = previewSubTickRef.current + 1;
-      previewEnvelopeStepRef.current = previewEnvelopeStepRef.current + 1;
+      const currentSub = previewSubTickRef.current + 1;
+      previewSubTickRef.current = currentSub;
 
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, previewEnvelopeStepRef.current);
+      let currentStep = previewEnvelopeStepRef.current;
+      if (currentSub % 2 === 0) {
+        currentStep = currentStep + 1;
+        previewEnvelopeStepRef.current = currentStep;
+      }
+
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep);
     }, 20); // 20ms = 50Hz, envelope step every tick
 
     // Auto-silence after 500ms for preview (longer to hear envelope)
