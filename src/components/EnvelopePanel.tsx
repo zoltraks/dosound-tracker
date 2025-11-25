@@ -95,6 +95,10 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+      if (type === 'volume' || type === 'arpeggio') {
+        const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
+        setCurrentPosition(nextPosition);
+      }
     } else if (type === 'volume' && /^[0-9A-F]$/.test(key)) {
       event.preventDefault();
       if (onChange) {
