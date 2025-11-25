@@ -363,6 +363,9 @@ export const useDataManagement = () => {
             // otherwise keep the legacy boolean `space: true` which is used for
             // trimming/compressing pure empty lines.
             step = { space: hasVolume ? 1 : true };
+          } else if (cell.note === '===') {
+            // Explicit key-release step: encode as off: true in YAML.
+            step = { off: true };
           } else {
             const noteText = formatBaseKey(cell.note, cell.octave);
             step = {

@@ -1257,6 +1257,9 @@ const App: React.FC = () => {
           // otherwise keep the legacy boolean `space: true` which is used for
           // trimming/compressing pure empty lines.
           step = { space: hasVolume ? 1 : true };
+        } else if (cell.note === '===') {
+          // Explicit key-release step: encode as off: true in clipboard YAML.
+          step = { off: true };
         } else {
           const noteText = formatNoteKey(cell.note, cell.octave);
           step = {
@@ -1483,7 +1486,10 @@ const App: React.FC = () => {
         if (rawStep && typeof rawStep === 'object') {
           const ln: any = rawStep;
 
-          if (ln.space === true || ln.off === true) {
+          if (ln.off === true) {
+            // Explicit key-release step: use internal '===' marker.
+            line.trackA = { note: '===', octave: 0, instrument: '00' } as any;
+          } else if (ln.space === true) {
             line.trackA = null;
           } else if (typeof ln.note === 'string') {
             const parsedKey = parseBaseKeyString(ln.note);

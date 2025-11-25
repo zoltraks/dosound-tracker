@@ -281,6 +281,20 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         // Move to next line
         onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
       }
+    } else if (!event.ctrlKey && key === '-') {
+      event.preventDefault();
+      // Insert explicit key-release step (note-off) and move to next line
+      if (pattern) {
+        const newPattern = { ...pattern };
+        newPattern.lines = [...newPattern.lines];
+        newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
+
+        const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
+        newPattern.lines[currentLine].trackA = noteOff;
+
+        onPatternChange(newPattern);
+        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+      }
     } else if (event.ctrlKey && key === '-') {
       event.preventDefault();
       // Previous instrument

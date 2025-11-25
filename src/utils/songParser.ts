@@ -207,7 +207,14 @@ export const parseSongFromYaml = (content: string): Song => {
       if (rawLineNode && typeof rawLineNode === 'object') {
         const ln: any = rawLineNode;
 
-        if (ln.space === true || ln.off === true) {
+        if (ln.off === true) {
+          // Empty or note-off line: currently treated as space
+          line.trackA = {
+            note: '===',
+            octave: 0,
+            instrument: '00',
+          } as any;
+        } else if (ln.space === true) {
           // Empty or note-off line: currently treated as space
         } else if (typeof ln.note === 'string') {
           const parsedKey = parseBaseKey(ln.note);
