@@ -5,13 +5,16 @@ I have a problem with "EXPORT SOUND" command.
 The rendered WAV have song music audio that seems to be in correct speed but some of the sounds are lost and missing and the music sounds different that the "PLAY SONG" actually generates sound.
 Rewrite "EXPORT SOUND" so it correctly export WAV file so it sounds exactly the same as played by sequencer.
 
-
 ---
 
 Check the playback routine as sometimes when I stop the playback then volume registers are not set to 0 and are left with non 0 value and I can hear the sound and I can see in EQ and Dump that the volume was not reset to 0 to silence the sound after playback is stopped
 
-
 Now in electron build or Edge web browser sequencer routine and envelope progression in song playback works correctly.
 But when I play instrument from on screen piano or sound is played while editing the track the envelope progression is twice to fast.
 Make it to be constistent so envelope progression in preview playback works exactly like song and pattern playback.
+
+---
+
+There's still an issue with the timing.
+When I run program from the local web browser in Windows the timing is correct, one step at the speed of 6 takes 120 ms which is correct and the envelopes are advancing in the way each position of envelope last for 40 ms which is correct. But when I run it from electron application in Windows or in web browser in Linux Mint, playback is twice too fast for both the sequencer and the envelope progression.
 
