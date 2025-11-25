@@ -1,0 +1,12 @@
+
+---
+
+When the line of Instrument is selected then make instrument-id span to have padding-top: 3px
+
+In the Playlist make line-number span to have padding-top: 1px
+
+---
+
+In the main-content reduce width of the right-column by about 20% while keeping minimum width intact.
+
+

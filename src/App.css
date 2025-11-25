@@ -903,6 +903,10 @@ body {
   font-size: 10px;
 }
 
+.playlist-line .line-number {
+  padding-top: 1px;
+}
+
 .playlist-line:hover {
   background-color: var(--hover-bg);
 }
@@ -1073,6 +1077,10 @@ body {
 .instrument-item.current .instrument-name {
   color: var(--text-primary);
   font-weight: bold;
+}
+
+.instrument-item.current .instrument-id {
+  padding-top: 3px;
 }
 
 .instrument-item.focused {
