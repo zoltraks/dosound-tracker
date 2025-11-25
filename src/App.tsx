@@ -493,12 +493,17 @@ const App: React.FC = () => {
           if (activeNote && activeNote.note && activeNote.note !== '===') {
             // Use current step as envelope tick (so a freshly triggered note
             // starts at step 0, matching the piano keyboard behaviour), then
-            // advance the step for the next 20ms tick.
+            // advance the step every 40ms (every 2 x 20ms ticks).
             const step = channelEnvelopeStepRef.current[ch];
 
             updateChannelWithInstrument(ym2149, ch, activeNote, step);
 
-            channelEnvelopeStepRef.current[ch] = step + 1;
+            // Envelope progression at 25 Hz: only advance on every second tick
+            const sub = (channelSubTickRef.current[ch] + 1) % 2;
+            channelSubTickRef.current[ch] = sub;
+            if (sub === 0) {
+              channelEnvelopeStepRef.current[ch] = step + 1;
+            }
             lastNotes[ch] = activeNote;
           } else {
             // No active note at all - reset and silence
