@@ -442,14 +442,30 @@ export const useDataManagement = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createNewSong = useCallback(() => {
+    const targetLength = PATTERN_LENGTH;
+
+    const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+
+    const createBlankPattern = (id: string): Pattern => ({
+      id,
+      name: `Pattern ${id}`,
+      lines: Array.from({ length: targetLength }, () => ({ ...emptyLine }))
+    });
+
+    const patterns: Pattern[] = [
+      createBlankPattern('01'),
+      createBlankPattern('02'),
+      createBlankPattern('03')
+    ];
+
     const newSong: Song = {
       title: DEFAULT_SONG_TITLE,
       author: DEFAULT_SONG_AUTHOR,
       year: new Date().getFullYear(),
       speed: 6,
-      patternLength: PATTERN_LENGTH,
-      patterns: [],
-      playlist: [],
+      patternLength: targetLength,
+      patterns,
+      playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
       instruments: []
     };
     setCurrentSong(newSong);

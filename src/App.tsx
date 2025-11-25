@@ -927,8 +927,12 @@ const App: React.FC = () => {
       setCurrentOctave(3);
     }
     setChannelMutes([false, false, false]);
+    setPosition(0, 0, 0);
+    setSharedCurrentLine(0);
+    setActiveSection('playlist');
+
     setIsNewSongConfirmOpen(false);
-  }, [createNewSong]);
+  }, [createNewSong, setPosition, setActiveSection]);
 
   const handleCancelNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(false);
