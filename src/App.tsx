@@ -1437,14 +1437,21 @@ const App: React.FC = () => {
     }
 
     playInstStepRef.current = 0;
+    let playInstSubTick = 0;
 
     const noteData = { note: base.note, octave: base.octave };
 
     ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, 0);
 
     playInstTimerRef.current = window.setInterval(() => {
-      playInstStepRef.current = playInstStepRef.current + 1;
-      ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, playInstStepRef.current);
+      // Advance envelope step every 40ms (every 2 x 20ms ticks)
+      const step = playInstStepRef.current;
+      ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, step);
+
+      playInstSubTick = (playInstSubTick + 1) % 2;
+      if (playInstSubTick === 0) {
+        playInstStepRef.current = playInstStepRef.current + 1;
+      }
 
       if (playInstStepRef.current >= 64) {
         if (playInstTimerRef.current !== null) {
