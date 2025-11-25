@@ -52,6 +52,8 @@ export interface Instrument {
   noiseEnvelope: number[];
   modeEnvelope: number[];
   base?: string;
+  // Optional sustain position (envelope index) in the volume envelope.
+  sustain?: number;
 }
 
 export class YM2149 {

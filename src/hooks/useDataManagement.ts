@@ -313,6 +313,12 @@ export const useDataManagement = () => {
         }
 
         instrumentNode.volume = volumeEnv;
+        // Optional sustain index within the volume envelope
+        if (typeof inst.sustain === 'number' && Number.isFinite(inst.sustain)) {
+          const maxIndex = Math.max(0, volumeEnv.length - 1);
+          const clampedSustain = Math.max(0, Math.min(maxIndex, Math.floor(inst.sustain)));
+          instrumentNode.sustain = clampedSustain;
+        }
         if (!isZeroDefault(arpeggioEnv)) {
           instrumentNode.arpeggio = arpeggioEnv;
         }
@@ -351,7 +357,7 @@ export const useDataManagement = () => {
 
         for (let i = 0; i < targetLength; i++) {
           const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
-          const cell = raw.trackA;
+          const cell = raw.trackA as any;
 
           const volRaw: any = (raw as any).volume;
           const hasVolume = volRaw !== undefined && volRaw !== null;
@@ -363,6 +369,9 @@ export const useDataManagement = () => {
             // otherwise keep the legacy boolean `space: true` which is used for
             // trimming/compressing pure empty lines.
             step = { space: hasVolume ? 1 : true };
+          } else if (cell.note === '===') {
+            // Explicit note-off step
+            step = { off: true };
           } else {
             const noteText = formatBaseKey(cell.note, cell.octave);
             step = {
@@ -639,6 +648,12 @@ export const useDataManagement = () => {
       }
 
       instrumentNode.volume = volumeEnv;
+      // Optional sustain index within the volume envelope for standalone instrument
+      if (typeof currentInstrument.sustain === 'number' && Number.isFinite(currentInstrument.sustain)) {
+        const maxIndex = Math.max(0, volumeEnv.length - 1);
+        const clampedSustain = Math.max(0, Math.min(maxIndex, Math.floor(currentInstrument.sustain)));
+        instrumentNode.sustain = clampedSustain;
+      }
       if (!isZeroDefault(arpeggioEnv)) {
         instrumentNode.arpeggio = arpeggioEnv;
       }
@@ -710,7 +725,7 @@ export const useDataManagement = () => {
         }
 
         const expandEnvelope = (field: string, length: number, defaultValue: number): number[] => {
-          const raw = Array.isArray(node[field]) ? node[field] as any[] : [];
+          const raw = Array.isArray(node[field]) ? (node[field] as any[]) : [];
           const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
 
           if (values.length === 0) {
@@ -735,28 +750,57 @@ export const useDataManagement = () => {
         } else if (typeof rawOctave === 'string') {
           const trimmed = rawOctave.trim();
           if (trimmed) {
-            const parsed = Number(trimmed);
-            if (Number.isFinite(parsed)) {
-              octave = parsed;
+            const parsedOct = Number(trimmed);
+            if (Number.isFinite(parsedOct)) {
+              octave = parsedOct;
             }
           }
         }
-        octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
+
+        const volumeEnvelope = expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F);
+        const modeEnvelope = expandEnvelope('mode', ENVELOPE_LENGTH, 0);
+        const arpeggioEnvelope = expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0);
+        const pitchEnvelope = expandEnvelope('pitch', ENVELOPE_LENGTH, 0);
+        const noiseEnvelope = expandEnvelope('noise', ENVELOPE_LENGTH, 0);
+
+        const base = (() => {
+          const parsedBase = parseBaseKey((node as any).base);
+          if (!parsedBase) return DEFAULT_BASE_KEY;
+          return formatBaseKey(parsedBase.note, parsedBase.octave);
+        })();
+
+        const sustain: number | undefined = (() => {
+          const raw = (node as any).sustain;
+          let sus: number | undefined;
+          if (typeof raw === 'number' && Number.isFinite(raw)) {
+            sus = raw;
+          } else if (typeof raw === 'string') {
+            const trimmed = raw.trim();
+            if (trimmed) {
+              const parsedSus = Number(trimmed);
+              if (Number.isFinite(parsedSus)) {
+                sus = parsedSus;
+              }
+            }
+          }
+          if (typeof sus === 'number' && Number.isFinite(sus)) {
+            const maxIndex = Math.max(0, volumeEnvelope.length - 1);
+            return Math.max(0, Math.min(maxIndex, Math.floor(sus)));
+          }
+          return undefined;
+        })();
 
         const newInstrument: Instrument = {
           id: currentInstrument.id,
           name: typeof node.name === 'string' && node.name.trim() ? node.name : currentInstrument.name,
-          modeEnvelope: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
-          volumeEnvelope: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F),
-          arpeggioEnvelope: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
-          pitchEnvelope: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
-          noiseEnvelope: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
-          base: (() => {
-            const parsedBase = parseBaseKey((node as any).base);
-            if (!parsedBase) return DEFAULT_BASE_KEY;
-            return formatBaseKey(parsedBase.note, parsedBase.octave);
-          })(),
+          modeEnvelope,
+          volumeEnvelope,
+          arpeggioEnvelope,
+          pitchEnvelope,
+          noiseEnvelope,
+          base,
           octave,
+          sustain,
         };
 
         setCurrentInstrument(newInstrument);
@@ -781,7 +825,7 @@ export const useDataManagement = () => {
                     arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                     pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                     noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                    modeEnvelope: Array(ENVELOPE_LENGTH).fill(0)
+                    modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                   };
                 }
               }
@@ -804,7 +848,7 @@ export const useDataManagement = () => {
       }
     };
     reader.readAsText(file);
-  }, [currentInstrument.id, setInstrumentError]);
+  }, [currentInstrument.id, currentInstrument.name, setInstrumentError, setCurrentInstrument, setCurrentSong]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
     setCurrentSong(prev => {

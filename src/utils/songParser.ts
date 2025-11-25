@@ -207,8 +207,20 @@ export const parseSongFromYaml = (content: string): Song => {
       if (rawLineNode && typeof rawLineNode === 'object') {
         const ln: any = rawLineNode;
 
-        if (ln.space === true || ln.off === true) {
-          // Empty or note-off line: currently treated as space
+        if (ln.off === true) {
+          // Explicit note-off event
+          const instId =
+            typeof ln.instrument === 'string' && ln.instrument.trim()
+              ? ln.instrument.trim().toUpperCase()
+              : '00';
+
+          line.trackA = {
+            note: '===',
+            octave: 0,
+            instrument: instId,
+          };
+        } else if (ln.space === true) {
+          // Pure space/rest line: leave trackA as null
         } else if (typeof ln.note === 'string') {
           const parsedKey = parseBaseKey(ln.note);
           if (!parsedKey) {
@@ -321,6 +333,27 @@ export const parseSongFromYaml = (content: string): Song => {
     const noiseEnvelope = expandEnvelope(instNode.noise, ENVELOPE_LENGTH, 0);
     const modeEnvelope = expandEnvelope(instNode.mode, ENVELOPE_LENGTH, 0);
 
+    let sustain: number | undefined;
+    const rawSustain = (instNode as any).sustain;
+    if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
+      sustain = rawSustain;
+    } else if (typeof rawSustain === 'string') {
+      const trimmed = rawSustain.trim();
+      if (trimmed) {
+        const parsed = Number(trimmed);
+        if (Number.isFinite(parsed)) {
+          sustain = parsed;
+        }
+      }
+    }
+    if (typeof sustain === 'number' && Number.isFinite(sustain)) {
+      const maxIndex = ENVELOPE_LENGTH - 1;
+      const clamped = Math.max(0, Math.min(maxIndex, Math.floor(sustain)));
+      sustain = clamped;
+    } else {
+      sustain = undefined;
+    }
+
     for (let i = instruments.length; i <= slotIndex; i++) {
       if (!instruments[i]) {
         const slotId = i.toString(16).padStart(2, '0').toUpperCase();
@@ -348,6 +381,7 @@ export const parseSongFromYaml = (content: string): Song => {
       modeEnvelope,
       base,
       octave,
+      sustain,
     };
   });
 

@@ -1257,6 +1257,9 @@ const App: React.FC = () => {
           // otherwise keep the legacy boolean `space: true` which is used for
           // trimming/compressing pure empty lines.
           step = { space: hasVolume ? 1 : true };
+        } else if (cell.note === '===') {
+          // Explicit note-off step
+          step = { off: true };
         } else {
           const noteText = formatNoteKey(cell.note, cell.octave);
           step = {
@@ -1483,7 +1486,20 @@ const App: React.FC = () => {
         if (rawStep && typeof rawStep === 'object') {
           const ln: any = rawStep;
 
-          if (ln.space === true || ln.off === true) {
+          if (ln.off === true) {
+            // Explicit note-off step
+            const instId =
+              typeof ln.instrument === 'string' && ln.instrument.trim()
+                ? ln.instrument.trim().toUpperCase()
+                : '00';
+
+            line.trackA = {
+              note: '===',
+              octave: 0,
+              instrument: instId
+            };
+          } else if (ln.space === true) {
+            // Pure space/rest line
             line.trackA = null;
           } else if (typeof ln.note === 'string') {
             const parsedKey = parseBaseKeyString(ln.note);
@@ -2706,6 +2722,11 @@ const App: React.FC = () => {
               data={currentInstrument.volumeEnvelope}
               onChange={(data: number[]) => {
                 updateInstrument({ volumeEnvelope: data });
+              }}
+              sustainPosition={currentInstrument.sustain ?? null}
+              onChangeSustain={(position: number | null) => {
+                // Store sustain index directly; null/undefined means no sustain
+                updateInstrument({ sustain: position == null ? undefined : position });
               }}
             />
             

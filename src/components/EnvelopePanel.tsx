@@ -8,6 +8,11 @@ interface EnvelopePanelProps {
   setActiveSection: (section: NavigationSection) => void;
   data?: number[];
   onChange?: (data: number[]) => void;
+  // Optional sustain position (volume envelope only). When defined, a dot is
+  // rendered on the corresponding bar. onChangeSustain is invoked when the
+  // user sets or clears sustain via mouse or keyboard.
+  sustainPosition?: number | null;
+  onChangeSustain?: (position: number | null) => void;
 }
 
 export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
@@ -15,7 +20,9 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   activeSection,
   setActiveSection,
   data,
-  onChange
+  onChange,
+  sustainPosition,
+  onChangeSustain
 }) => {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [envelopeData, setEnvelopeData] = useState<number[]>(
@@ -150,8 +157,26 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+    } else if (type === 'volume' && key === 'S' && onChangeSustain) {
+      event.preventDefault();
+      // Toggle sustain at the current position: if sustain is already here,
+      // clear it; otherwise, move sustain to this position.
+      const current = sustainPosition ?? null;
+      if (current === currentPosition) {
+        onChangeSustain(null);
+      } else {
+        onChangeSustain(currentPosition);
+      }
     }
-  }, [isActive, handleValueChange, currentPosition, envelopeData, onChange]);
+  }, [
+    isActive,
+    handleValueChange,
+    currentPosition,
+    envelopeData,
+    onChange,
+    sustainPosition,
+    onChangeSustain
+  ]);
 
   const handlePositionClick = useCallback((position: number) => {
     lastPositionRef.current = currentPosition;
@@ -294,9 +319,29 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
                 key={index}
                 className={`envelope-bar ${index === currentPosition && isActive ? 'current' : ''}`}
                 style={{ height: `${getBarHeight(value)}%` }}
-                onClick={() => handlePositionClick(index)}
+                onMouseDown={(event) => {
+                  event.preventDefault();
+                  // Left click: move cursor and, for volume, set sustain here.
+                  if (event.button === 0) {
+                    handlePositionClick(index);
+                    if (type === 'volume' && onChangeSustain) {
+                      onChangeSustain(index);
+                    }
+                  }
+                  // Right click: clear sustain for volume envelope
+                  if (event.button === 2 && type === 'volume' && onChangeSustain) {
+                    onChangeSustain(null);
+                  }
+                }}
+                onContextMenu={(event) => {
+                  // Prevent default context menu so right-click is usable
+                  event.preventDefault();
+                }}
                 title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
               >
+                {type === 'volume' && sustainPosition === index && (
+                  <div className="envelope-sustain-dot" />
+                )}
               </div>
             ))}
           </div>

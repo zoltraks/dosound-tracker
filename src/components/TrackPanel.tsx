@@ -250,7 +250,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onPatternChange(newPattern);
     } else if (event.ctrlKey && key === ' ') {
       event.preventDefault();
-      // Note off (set to rest)
+      // Note off (set to rest) without moving the cursor
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
@@ -261,6 +261,21 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine].trackA = noteOff;
 
         onPatternChange(newPattern);
+      }
+    } else if (!event.ctrlKey && key === '-' && currentColumn === 'note') {
+      event.preventDefault();
+      // Note off (key release) that also advances to the next line
+      if (pattern) {
+        const newPattern = { ...pattern };
+        newPattern.lines = [...newPattern.lines];
+        newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
+
+        const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
+        newPattern.lines[currentLine].trackA = noteOff;
+
+        onPatternChange(newPattern);
+        // Move to next line after inserting note-off
+        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
       }
     } else if (key === ' ') {
       event.preventDefault();

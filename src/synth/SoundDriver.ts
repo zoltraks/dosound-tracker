@@ -23,6 +23,10 @@ export interface Instrument {
   modeEnvelope: number[];
   base?: string;
   octave?: number;
+  // Optional sustain position (envelope index) in the volume envelope.
+  // When specified, envelope progression halts at this index until a
+  // key-release (note-off) event occurs.
+  sustain?: number;
 }
 
 export interface Note {
