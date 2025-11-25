@@ -1,0 +1,3 @@
+I want to store information about base octave setting for an instrument.
+When saving instrument definition with "SAVE INST" or "SAVE SONG" include octave setting for an instrument if it's different than DEFAULT_OCTAVE setting.
+When reading with "LOAD INST" or "LOAD SONG" and the value of "octave" is missing, then assume it's the DEFAULT_OCTAVE.
