@@ -104,6 +104,19 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+      const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
+      setCurrentPosition(nextPosition);
+    } else if (type === 'arpeggio' && /^[0-9A-F]$/.test(key)) {
+      event.preventDefault();
+      if (onChange) {
+        const newData = [...envelopeData];
+        const newValue = parseInt(key, 16);
+        newData[currentPosition] = newValue;
+        setEnvelopeData(newData);
+        onChange(newData);
+      }
+      const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
+      setCurrentPosition(nextPosition);
     }
   }, [isActive, handleValueChange, currentPosition, envelopeData, onChange]);
 
