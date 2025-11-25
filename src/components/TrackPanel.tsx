@@ -141,6 +141,21 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       event.preventDefault();
       if (!pattern) return;
       onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+    } else if (key === 'PAGEUP') {
+      event.preventDefault();
+      if (!pattern) return;
+      const length = Math.max(1, patternLength || 1);
+      const step = 16;
+      const rawIndex = currentLine - step;
+      const wrappedIndex = ((rawIndex % length) + length) % length;
+      onLineChange(wrappedIndex);
+    } else if (key === 'PAGEDOWN') {
+      event.preventDefault();
+      if (!pattern) return;
+      const length = Math.max(1, patternLength || 1);
+      const step = 16;
+      const wrappedIndex = (currentLine + step) % length;
+      onLineChange(wrappedIndex);
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
       // Navigate to previous track (circular)
