@@ -2,6 +2,11 @@
 
 This document outlines the coding conventions and specific implementation requirements for the `dosound-tracker` project, ensuring consistency and accuracy in emulating the Atari ST's audio system.
 
+## AI Assistants and Code Generators
+
+- All tools that generate, analyze, or refactor code must **ignore** every file under the `docs/prompt/` directory.
+- Files in `docs/prompt/` are project prompts and design notes, not source code, and must not be used as templates or modified automatically.
+
 ## File Format
 
 Reading and writing the complete song, as well as the selected instrument, should use the YAML text format for readability.
