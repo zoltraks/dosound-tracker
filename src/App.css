@@ -347,6 +347,15 @@ body {
   max-width: 360px;
 }
 
+.modal-dialog.changelog-modal {
+  width: 80vw;
+  max-width: 720px;
+  height: 80vh;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .modal-title {
   font-size: 12px;
   font-weight: bold;
@@ -361,10 +370,9 @@ body {
 }
 
 .modal-body.changelog-modal-body {
-  max-height: 260px;
+  flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  white-space: pre-wrap;
 }
 
 .modal-actions {

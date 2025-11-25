@@ -23,6 +23,73 @@ import './App.css';
 declare const __APP_VERSION__: string;
 const APP_VERSION = __APP_VERSION__;
 
+const escapeHtml = (str: string): string => {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+};
+
+const renderInlineMarkdown = (text: string): string => {
+  const escaped = escapeHtml(text);
+  // Bold **text**
+  return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+};
+
+const renderMarkdown = (md: string): string => {
+  const lines = md.split('\n');
+  const html: string[] = [];
+  let inList = false;
+
+  const closeList = () => {
+    if (inList) {
+      html.push('</ul>');
+      inList = false;
+    }
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trimEnd();
+
+    if (!line.trim()) {
+      closeList();
+      continue;
+    }
+
+    if (line.startsWith('## ')) {
+      closeList();
+      const text = line.slice(3).trim();
+      html.push(`<h2>${escapeHtml(text)}</h2>`);
+      continue;
+    }
+
+    if (line.startsWith('# ')) {
+      closeList();
+      const text = line.slice(2).trim();
+      html.push(`<h1>${escapeHtml(text)}</h1>`);
+      continue;
+    }
+
+    if (line.startsWith('- ')) {
+      if (!inList) {
+        html.push('<ul>');
+        inList = true;
+      }
+      const text = line.slice(2).trim();
+      html.push(`<li>${renderInlineMarkdown(text)}</li>`);
+      continue;
+    }
+
+    closeList();
+    html.push(`<p>${renderInlineMarkdown(line)}</p>`);
+  }
+
+  closeList();
+  return html.join('\n');
+};
+
 const App: React.FC = () => {
   
   const [currentOctave, setCurrentOctave] = useState(3);
@@ -2898,16 +2965,12 @@ const App: React.FC = () => {
         )}
         {isChangelogOpen && (
           <div className="modal-backdrop">
-            <div className="modal-dialog">
+            <div className="modal-dialog changelog-modal">
               <div className="modal-title">Changes</div>
-              <div className="modal-body changelog-modal-body">
-                {changelogContent.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < changelogContent.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
+              <div
+                className="modal-body changelog-modal-body"
+                dangerouslySetInnerHTML={{ __html: renderMarkdown(changelogContent) }}
+              />
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleCloseChangelog}>OK</button>
               </div>
