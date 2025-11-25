@@ -118,13 +118,12 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     const rawKey = event.key;
     const keyUpper = rawKey.toUpperCase();
 
-    // Space: preview instrument base note at the selected octave
+    // Space: preview instrument base note at its own base octave (like PianoKeyboard)
     if (rawKey === ' ') {
       if (baseKeyData) {
         event.preventDefault();
         event.stopPropagation();
-        const octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, currentOctave));
-        playPreviewNote(baseKeyData.note, octave);
+        playPreviewNote(baseKeyData.note, baseKeyData.octave);
       }
       return;
     }
