@@ -187,7 +187,8 @@ const parseSongFromYaml = (content: string): Song => {
     return { trackA, trackB, trackC };
   });
 
-  const patternNodes = Array.isArray(node.patterns) ? node.patterns : [];
+  const rawPatternNodes = Array.isArray(node.pattern) ? node.pattern : node.patterns;
+  const patternNodes = Array.isArray(rawPatternNodes) ? rawPatternNodes : [];
   if (patternNodes.length === 0) {
     throw new Error('Song patterns are missing');
   }
@@ -283,7 +284,8 @@ const parseSongFromYaml = (content: string): Song => {
     };
   });
 
-  const instrumentNodes = Array.isArray(node.instruments) ? node.instruments : [];
+  const rawInstrumentNodes = Array.isArray(node.instrument) ? node.instrument : node.instruments;
+  const instrumentNodes = Array.isArray(rawInstrumentNodes) ? rawInstrumentNodes : [];
   if (instrumentNodes.length === 0) {
     throw new Error('Song instruments are missing');
   }
@@ -669,8 +671,8 @@ export const useDataManagement = () => {
           speed: currentSong.speed,
           year: currentSong.year,
           playlist,
-          patterns,
-          instruments
+          pattern: patterns,
+          instrument: instruments
         }
       };
 
@@ -711,12 +713,27 @@ export const useDataManagement = () => {
         });
       };
 
+      const quoteNoteValues = (text: string): string => {
+        const noteLineRegex = /^(\s*-\s+|\s+)(note):\s*(.+)$/gm;
+        return text.replace(noteLineRegex, (_match, indent, key, value) => {
+          let inner = String(value).trim();
+          if (
+            (inner.startsWith('"') && inner.endsWith('"')) ||
+            (inner.startsWith('\'') && inner.endsWith('\''))
+          ) {
+            inner = inner.slice(1, -1);
+          }
+          return `${indent}${key}: "${inner}"`;
+        });
+      };
+
       const keys = ['volume', 'arpeggio', 'pitch', 'noise', 'mode'];
       for (const key of keys) {
         yamlContent = compressInstrumentArray(key, yamlContent);
       }
 
       yamlContent = quotePlaylistValues(yamlContent);
+      yamlContent = quoteNoteValues(yamlContent);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);

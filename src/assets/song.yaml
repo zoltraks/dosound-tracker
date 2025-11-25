@@ -29,150 +29,150 @@ song:
     - A: "05"
       B: "0C"
       C: "0D"
-  patterns:
+  pattern:
     - name: Pattern 02
       number: "02"
       steps:
-        - note: E-3
+        - note: "E-3"
           instrument: "01"
         - space: 5
-        - note: E-3
+        - note: "E-3"
           instrument: "01"
     - name: Pattern 03
       number: "03"
       steps:
-        - note: G-3
+        - note: "G-3"
           instrument: "01"
         - space: 5
-        - note: G-3
+        - note: "G-3"
           instrument: "01"
     - name: Pattern 04
       number: "04"
       steps:
-        - note: C-3
+        - note: "C-3"
           instrument: "01"
         - space: 5
-        - note: C-3
+        - note: "C-3"
           instrument: "01"
     - name: Pattern 05
       number: "05"
       steps:
-        - note: D-3
+        - note: "D-3"
           instrument: "01"
         - space: 5
-        - note: D-3
+        - note: "D-3"
           instrument: "01"
     - name: Pattern 09
       number: "09"
       steps:
         - space: 2
-        - note: E-2
+        - note: "E-2"
           instrument: "00"
         - space: 1
-        - note: E-1
+        - note: "E-1"
           instrument: "02"
         - space: 1
-        - note: E-1
+        - note: "E-1"
           instrument: "02"
         - space: 3
-        - note: E-2
+        - note: "E-2"
           instrument: "00"
         - space: 1
-        - note: E-1
+        - note: "E-1"
           instrument: "02"
         - space: 1
-        - note: E-1
+        - note: "E-1"
           instrument: "02"
     - name: Pattern 0A
       number: 0A
       steps:
         - space: 2
-        - note: G-2
+        - note: "G-2"
           instrument: "00"
         - space: 1
-        - note: G-1
+        - note: "G-1"
           instrument: "02"
         - space: 1
-        - note: G-1
+        - note: "G-1"
           instrument: "02"
         - space: 3
-        - note: G-2
+        - note: "G-2"
           instrument: "00"
         - space: 1
-        - note: G-1
+        - note: "G-1"
           instrument: "02"
         - space: 1
-        - note: G-1
+        - note: "G-1"
           instrument: "02"
     - name: Pattern 0B
       number: 0B
       steps:
         - space: 2
-        - note: C-2
+        - note: "C-2"
           instrument: "00"
         - space: 1
-        - note: C-2
+        - note: "C-2"
           instrument: "02"
         - space: 1
-        - note: C-2
+        - note: "C-2"
           instrument: "02"
         - space: 3
-        - note: C-2
+        - note: "C-2"
           instrument: "00"
         - space: 1
-        - note: C-2
+        - note: "C-2"
           instrument: "02"
         - space: 1
-        - note: C-2
+        - note: "C-2"
           instrument: "02"
     - name: Pattern 0C
       number: 0C
       steps:
         - space: 2
-        - note: D-2
+        - note: "D-2"
           instrument: "00"
         - space: 1
-        - note: D-2
+        - note: "D-2"
           instrument: "02"
         - space: 1
-        - note: D-2
+        - note: "D-2"
           instrument: "02"
         - space: 3
-        - note: D-2
+        - note: "D-2"
           instrument: "00"
         - space: 1
-        - note: D-2
+        - note: "D-2"
           instrument: "02"
         - space: 1
-        - note: D-2
+        - note: "D-2"
           instrument: "02"
     - name: Pattern 0D
       number: 0D
       steps:
-        - note: D-3
+        - note: "D-3"
           instrument: "03"
         - space: 1
-        - note: C-3
+        - note: "C-3"
           instrument: "04"
         - space: 1
-        - note: G-3
+        - note: "G-3"
           instrument: "06"
         - space: 1
-        - note: C-3
+        - note: "C-3"
           instrument: "04"
         - space: 1
-        - note: D-3
+        - note: "D-3"
           instrument: "03"
         - space: 1
-        - note: C-3
+        - note: "C-3"
           instrument: "04"
         - space: 1
-        - note: G-3
+        - note: "G-3"
           instrument: "06"
         - space: 1
-        - note: C-3
+        - note: "C-3"
           instrument: "04"
-  instruments:
+  instrument:
     - name: Bass
       number: "00"
       base: C-3
