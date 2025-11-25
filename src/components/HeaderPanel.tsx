@@ -230,7 +230,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
           onClick={onToggleTheme}
           title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          {isDarkMode ? '☀️' : '☾'}
+          {isDarkMode ? '☀️' : '🌑'}
         </button>
       </div>
     </header>

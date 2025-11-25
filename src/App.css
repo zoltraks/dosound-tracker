@@ -2,56 +2,56 @@
 
 :root {
   /* Enhanced Dark Mode Color Palette */
-  --bg-primary: #0a0f1b;
-  --bg-secondary: #141b2d;
-  --bg-tertiary: #1e2740;
-  --bg-hover: #1f2947;
-  --bg-active: #2a3867;
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #252537;
+  --bg-tertiary: #2b3043;
+  --bg-hover: #2a2f45;
+  --bg-active: #353b52;
   
-  --text-primary: #00ff88;
-  --text-secondary: #00cc6a;
-  --text-dim: #006644;
-  --text-muted: #4a5568;
+  --text-primary: #f8f8f2;
+  --text-secondary: #c0caf5;
+  --text-dim: #8b92af;
+  --text-muted: #5b6078;
   
-  --border-color: #00ff88;
-  --border-dim: #006644;
-  --border-bright: #00ffaa;
+  --border-color: #44475a;
+  --border-dim: #2a2d3f;
+  --border-bright: #7aa2f7;
   
-  --active-bg: #1a3a2e;
-  --active-border: #00ff88;
-  --active-glow: rgba(0, 255, 136, 0.3);
+  --active-bg: #31374f;
+  --active-border: #7aa2f7;
+  --active-glow: rgba(122, 162, 247, 0.45);
   
-  --playback-position-bg: #2a1a1a;
-  --playback-position-border: #ff4444;
-  --playback-position-active-bg: #3a2a2a;
-  --playback-position-active-border: #ff6666;
+  --playback-position-bg: #3b2240;
+  --playback-position-border: #ff79c6;
+  --playback-position-active-bg: #4b2b52;
+  --playback-position-active-border: #ff92d0;
   
-  --hover-bg: #1f2947;
-  --hover-glow: rgba(0, 255, 136, 0.1);
+  --hover-bg: #2a2f45;
+  --hover-glow: rgba(122, 162, 247, 0.25);
   
-  --button-bg: #1a2332;
-  --button-border: #00ff88;
-  --button-text: #00ff88;
-  --button-hover: #2a3867;
-  --button-active: #1a3a2e;
+  --button-bg: #2b3043;
+  --button-border: #44475a;
+  --button-text: #e2e8ff;
+  --button-hover: #343a52;
+  --button-active: #3b425b;
   
-  --piano-white: #f7fafc;
-  --piano-black: #1a202c;
-  --piano-pressed: #00ff88;
-  --piano-shadow: rgba(0, 0, 0, 0.3);
+  --piano-white: #e9ecf4;
+  --piano-black: #151521;
+  --piano-pressed: #7aa2f7;
+  --piano-shadow: rgba(0, 0, 0, 0.6);
   
-  --envelope-bar: #00ff88;
-  --envelope-glow: rgba(0, 255, 136, 0.5);
-  --volume-bar: #00ff88;
+  --envelope-bar: #7aa2f7;
+  --envelope-glow: rgba(122, 162, 247, 0.6);
+  --volume-bar: #7aa2f7;
   
   /* Shadows and Effects */
-  --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.7);
-  --shadow-large: 0 10px 15px rgba(0, 0, 0, 0.8);
-  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.7);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.8);
+  --shadow-large: 0 10px 18px rgba(0, 0, 0, 0.9);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.7);
   
-  --glow-primary: 0 0 8px rgba(0, 255, 136, 0.4);
-  --glow-secondary: 0 0 4px rgba(0, 255, 136, 0.2);
+  --glow-primary: 0 0 10px rgba(122, 162, 247, 0.6);
+  --glow-secondary: 0 0 6px rgba(122, 162, 247, 0.35);
   
   /* Font settings */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Consolas', monospace;
