@@ -91,10 +91,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   }, [isActive]);
 
   useEffect(() => {
-    if (!isActive) {
-      return;
-    }
-
     if (editingPattern !== '') {
       return;
     }
@@ -110,20 +106,20 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     if (currentLine !== clamped) {
       setCurrentLine(clamped);
     }
-  }, [currentPlaybackPosition, playlist.length, isActive, currentLine, editingPattern]);
+  }, [currentPlaybackPosition, playlist.length, currentLine, editingPattern]);
 
   useEffect(() => {
-    if (!isActive || !linesContainerRef.current) {
+    const container = linesContainerRef.current;
+    if (!container) {
       return;
     }
 
-    const container = linesContainerRef.current;
     const lineElements = container.querySelectorAll('.playlist-line') as NodeListOf<HTMLDivElement>;
     const target = lineElements[currentLine];
     if (target) {
       target.scrollIntoView({ block: 'nearest' });
     }
-  }, [currentLine, isActive]);
+  }, [currentLine]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
