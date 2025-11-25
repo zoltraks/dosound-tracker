@@ -1,0 +1,30 @@
+
+The pitch envelope should be used differently than it was implemented. 
+
+The value of the pitch envelope specifies the number by which the value written to the frequency divider register should be increased or decreased at a given moment, not the note.
+
+For positive values, the frequency divider value resulting from the note pitch and octave should be decreased. For negative values, it should be increased.
+
+When exporting data into assembly format either by "EXPORT DUMP" or "EXPORT INST" you must follow the following rules for a comment where frequency is set.
+
+If the pitch value at the moment is 0 then nothing changes and if the frequency corresponds to "D-2" then write as usual:
+
+
+```
+	dc.b $1,$6,$0,$A6  ; TA D-2
+```
+
+If the pitch value is non zero, then you must write the closest note it coresponds and in addition the pitch value for that note at the moment.
+
+If the pitch value at the specific pitch envelope point is "-1" and the closest note is "D-2" then you should add 1 to frequency divider value and write it as:
+
+```
+	dc.b $1,$6,$0,$A7  ; TA D-2 -1
+```
+
+Similarily when the closest note is "C-3" and the pitch value at the moment is "+2" then you need to substract the value for the frequency value so $3BB becomes $3B9.
+
+```
+	dc.b $1,$3,$0,$B9  ; TA C-3 +2
+```
+

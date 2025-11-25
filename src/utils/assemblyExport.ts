@@ -185,7 +185,7 @@ function applyInstrumentToRegisters(
   
   const volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
   const arpeggio = arpeggioEnv[arpIdx] || 0;
-  const pitch = pitchEnv[pitchIdx] || 0;
+  const pitch = (pitchEnv[pitchIdx] || 0) | 0;
   const mode = modeEnv[modeIdx] || 0;
   const noisePeriod = Math.max(0, Math.min(0x1F, noiseEnv[noiseIdx] || 0));
   
@@ -198,10 +198,11 @@ function applyInstrumentToRegisters(
   if (arpeggio !== 0) {
     frequency = frequency * Math.pow(2, arpeggio / 12);
   }
+  let period = Math.floor(YM_CLOCK / (16 * frequency)) & 0x0FFF;
   if (pitch !== 0) {
-    frequency = frequency * Math.pow(2, pitch / 12);
+    // Apply pitch envelope as a direct delta on the divider value.
+    period = (period - pitch) & 0x0FFF;
   }
-  const period = Math.floor(2000000 / (16 * frequency)) & 0x0FFF;
   
   // Update mixer based on mode
   const toneActive = mode === 0 || mode === 2;
@@ -281,9 +282,10 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
         
         if (i === 0 || fine !== lastFine || coarse !== lastCoarse) {
           const period = (coarse << 8) | fine;
-          const noteLabel = periodToNoteLabel(period);
+          const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
           const channelLabel = String.fromCharCode(65 + ch); // A, B, C
-          const comment = noteLabel ? `T${channelLabel} ${noteLabel}` : `T${channelLabel}`;
+          const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
+          const comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
           asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
           lastRegs[fineReg] = fine;
           lastRegs[coarseReg] = coarse;
@@ -339,9 +341,10 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
         const coarse = regs[coarseReg] || 0;
         
         const period = (coarse << 8) | fine;
-        const noteLabel = periodToNoteLabel(period);
+        const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
         const channelLabel = String.fromCharCode(65 + ch); // A, B, C
-        const comment = noteLabel ? `T${channelLabel} ${noteLabel}` : `T${channelLabel}`;
+        const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
+        const comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
         asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
       }
       
@@ -369,33 +372,35 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
   return asm;
 }
 
-function periodToNoteLabel(period: number): string {
-  // Period 0 means silence/no frequency
+function periodToNoteAndPitch(period: number): { label: string; pitchDelta: number } {
   if (period === 0) {
-    return '';
+    return { label: '', pitchDelta: 0 };
   }
-  
-  // Convert period back to approximate note
-  const frequency = 2000000 / (16 * period);
-  
-  // Find closest note
-  let closestNote = 'C';
-  let closestOctave = 4;
+
+  const targetFrequency = YM_CLOCK / (16 * period);
+
+  let bestLabel = '';
+  let bestPitchDelta = 0;
   let minDiff = Infinity;
-  
+
   for (const noteName of Object.keys(NOTE_FREQUENCIES)) {
     for (let octave = 0; octave <= 8; octave++) {
-      const freq = NOTE_FREQUENCIES[noteName] * Math.pow(2, octave - 4);
-      const diff = Math.abs(freq - frequency);
+      const freq = NOTE_FREQUENCIES[noteName] * Math.pow(2, octave - NOTE_BASE_OCTAVE);
+      const diff = Math.abs(freq - targetFrequency);
       if (diff < minDiff) {
         minDiff = diff;
-        closestNote = noteName;
-        closestOctave = octave;
+        const idealPeriod = Math.floor(YM_CLOCK / (16 * freq));
+        bestPitchDelta = idealPeriod - period;
+        bestLabel = noteName.includes('#') ? `${noteName}${octave}` : `${noteName}-${octave}`;
       }
     }
   }
-  
-  return closestNote.includes('#') ? `${closestNote}${closestOctave}` : `${closestNote}-${closestOctave}`;
+
+  return { label: bestLabel, pitchDelta: bestPitchDelta };
+}
+
+function periodToNoteLabel(period: number): string {
+  return periodToNoteAndPitch(period).label;
 }
 
 // Helper: hex formatting using short form for nibbles when possible
@@ -482,7 +487,7 @@ function formatNoteLabel(baseNote: string, baseOctave: number, semitoneOffset: n
 
 function frequencyToPeriod(frequency: number): number {
   if (frequency <= 0) return 0;
-  return Math.floor(2000000 / (16 * frequency));
+  return Math.floor(YM_CLOCK / (16 * frequency));
 }
 
 /**
@@ -503,6 +508,7 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
       : [0x0f, 0x0e, 0x0c, 0x08, 0x04, 0x00];
 
   const arpeggioEnv = instrument.arpeggioEnvelope || [];
+  const pitchEnv = instrument.pitchEnvelope || [];
   const modeEnv = instrument.modeEnvelope || [];
   const noiseEnv = instrument.noiseEnvelope || [];
 
@@ -510,13 +516,20 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
   const vols = volumeEnv.map(clampVol);
 
   // Number of envelope steps to consider (40ms per step)
-  const stepsCount = Math.max(vols.length, arpeggioEnv.length || 1, modeEnv.length || 1);
+  const stepsCount = Math.max(
+    vols.length,
+    arpeggioEnv.length || 1,
+    pitchEnv.length || 1,
+    modeEnv.length || 1,
+    noiseEnv.length || 1
+  );
 
   type StepState = { 
     volume: number; 
     period: number; 
-    semitone: number;
-    mode: number;      // 0=tone, 1=noise, 2=tone+noise
+    semitone: number;   // arpeggio semitone offset from base
+    pitchDelta: number; // pitch envelope delta applied to divider
+    mode: number;       // 0=tone, 1=noise, 2=tone+noise
     noisePeriod: number;
   };
   const states: StepState[] = [];
@@ -532,6 +545,16 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
     const noiseIdx = noiseEnv.length > 0 ? Math.min(i, noiseEnv.length - 1) : 0;
     const noisePeriod = noiseEnv.length > 0 ? Math.max(0, Math.min(0x1f, noiseEnv[noiseIdx] | 0)) : 0;
 
+    // Get pitch delta for this step (applied directly to divider value)
+    let pitchDelta = 0;
+    if (pitchEnv && pitchEnv.length > 0) {
+      const pIdx = Math.min(i, pitchEnv.length - 1);
+      const pVal = pitchEnv[pIdx];
+      if (typeof pVal === 'number') {
+        pitchDelta = pVal | 0;
+      }
+    }
+
     // Apply arpeggio in semitones on top of baseFrequency
     let frequency = baseFrequency;
     let semitone = 0;
@@ -543,9 +566,14 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
         frequency = frequency * Math.pow(2, semitone / 12);
       }
     }
+    // Base divider from frequency
+    let period = frequencyToPeriod(frequency) & 0x0fff;
+    // Apply pitch delta directly on divider (positive = decrease divider)
+    if (pitchDelta !== 0) {
+      period = (period - pitchDelta) & 0x0fff;
+    }
 
-    const period = frequencyToPeriod(frequency);
-    states.push({ volume: vol, period, semitone, mode, noisePeriod });
+    states.push({ volume: vol, period, semitone, pitchDelta, mode, noisePeriod });
   }
 
   const getCoarseFine = (p: number) => {
@@ -618,7 +646,11 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
   if (firstToneActive) {
     const firstCF = getCoarseFine(first.period);
     const firstLabel = formatNoteLabel(base.note, base.octave, first.semitone || 0);
-    asm += formatAsmLine([0x01, firstCF.coarse, 0x00, firstCF.fine], `TA ${firstLabel}`);
+    const pitchText = first.pitchDelta ? ` ${first.pitchDelta > 0 ? '+' : ''}${first.pitchDelta}` : '';
+    asm += formatAsmLine(
+      [0x01, firstCF.coarse, 0x00, firstCF.fine],
+      `TA ${firstLabel}${pitchText}`
+    );
   }
 
   // Initial noise period (only if noise is active)
@@ -665,7 +697,11 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
     if (toneActive && step.period !== prevPeriod) {
       const cf = getCoarseFine(step.period);
       const label = formatNoteLabel(base.note, base.octave, step.semitone || 0);
-      asm += formatAsmLine([0x01, cf.coarse, 0x00, cf.fine], `TA ${label}`);
+      const pitchText = step.pitchDelta ? ` ${step.pitchDelta > 0 ? '+' : ''}${step.pitchDelta}` : '';
+      asm += formatAsmLine(
+        [0x01, cf.coarse, 0x00, cf.fine],
+        `TA ${label}${pitchText}`
+      );
       prevPeriod = step.period;
     }
 
