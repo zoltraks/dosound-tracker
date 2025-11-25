@@ -1021,6 +1021,7 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
           const channelState = channels[ch];
+          const volumeOnRow = volumes[ch];
 
           if (tick === 0) {
             if (!pattern) {
