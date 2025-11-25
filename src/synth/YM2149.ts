@@ -1,9 +1,9 @@
-const YM_BASE_CLOCK = 2000000; // 2 MHz clock frequency
+export const YM_CLOCK = 2000000; // 2 MHz clock frequency
 const YM_REGISTER_COUNT = 16; // Number of YM2149 registers (0-15)
 
 // AY/YM style logarithmic volume table (16 levels, approx. -2dB per step)
 // Values are relative amplitudes; we'll scale them to keep headroom.
-const YM_LOG_VOLUME_TABLE: number[] = [
+export const YM_LOG_VOLUME_TABLE: number[] = [
   0.0,    // 0: silence
   0.0078, // 1
   0.0110, // 2
@@ -177,7 +177,7 @@ export class YM2149 {
       
       if (shouldPlayTone) {
         // YM2149 frequency calculation: f = clock / (16 * period)
-        const frequency = YM_BASE_CLOCK / (16 * channel.tonePeriod);
+        const frequency = YM_CLOCK / (16 * channel.tonePeriod);
         
         // Clamp frequency to reasonable range (20Hz - 20kHz)
         const clampedFrequency = Math.max(20, Math.min(20000, frequency));
@@ -241,7 +241,7 @@ export class YM2149 {
   private createNoiseBuffer(noisePeriod: number): AudioBuffer {
     const sampleRate = this.audioContext.sampleRate;
     const effectiveNoisePeriod = this.getEffectiveNoisePeriod(noisePeriod);
-    const noiseFrequency = YM_BASE_CLOCK / (16 * effectiveNoisePeriod);
+    const noiseFrequency = YM_CLOCK / (16 * effectiveNoisePeriod);
     const bufferLength = Math.ceil(sampleRate * 2);
     const buffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
     const data = buffer.getChannelData(0);
@@ -384,22 +384,21 @@ export class YM2149 {
       return;
     }
 
-    // Update tone frequency using arpeggio and pitch envelopes
+    // Update tone frequency using arpeggio (in semitones) and pitch envelope as
+    // a direct delta on the frequency divider (period).
     if (toneActive) {
       const baseFreq = NOTE_FREQUENCIES[noteData.note];
       if (baseFreq) {
+        // Start from plain note frequency
         let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
 
+        // Apply arpeggio as semitone offsets on top of the note
         let arpeggioSemitones = 0;
-        let arpeggioIndex = -1;
         if (instrument.arpeggioEnvelope && instrument.arpeggioEnvelope.length > 0) {
-          // Apply arpeggio envelope step-by-step from the beginning up to the
-          // last defined value, then hold that last value for all subsequent
-          // ticks (no automatic looping).
-          arpeggioIndex = Math.min(safeTick, instrument.arpeggioEnvelope.length - 1);
+          const arpeggioIndex = Math.min(safeTick, instrument.arpeggioEnvelope.length - 1);
           const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
           if (typeof arpeggioValue === 'number') {
-            arpeggioSemitones = arpeggioValue;
+            arpeggioSemitones = arpeggioValue | 0;
           }
         }
 
@@ -407,21 +406,29 @@ export class YM2149 {
           frequency = frequency * Math.pow(2, arpeggioSemitones / 12);
         }
 
-        let pitchSemitones = 0;
-        let pitchIndex = -1;
+        // Convert to a base divider period using the YM clock
+        let period = Math.floor(YM_CLOCK / (16 * frequency));
+
+        // Apply pitch envelope as an integer delta on the period:
+        // positive values decrease the divider, negative values increase it.
+        let pitchDelta = 0;
         if (instrument.pitchEnvelope && instrument.pitchEnvelope.length > 0) {
-          pitchIndex = Math.min(safeTick, instrument.pitchEnvelope.length - 1);
+          const pitchIndex = Math.min(safeTick, instrument.pitchEnvelope.length - 1);
           const pitchValue = instrument.pitchEnvelope[pitchIndex];
           if (typeof pitchValue === 'number') {
-            pitchSemitones = pitchValue;
+            pitchDelta = pitchValue | 0;
           }
         }
 
-        if (pitchSemitones !== 0) {
-          frequency = frequency * Math.pow(2, pitchSemitones / 12);
+        if (pitchDelta !== 0) {
+          period -= pitchDelta;
         }
 
-        const period = Math.floor(2000000 / (16 * frequency));
+        // Clamp to valid 12-bit divider range (1..4095). Period 0 is treated as silence.
+        if (period <= 0 || period >= 4096) {
+          // Out of range: silence this tone by writing a large period
+          period = 4095;
+        }
 
         this.writeRegister(fineRegister, period & 0xFF);
         this.writeRegister(coarseRegister, (period >> 8) & 0x0F);
