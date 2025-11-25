@@ -1,0 +1,218 @@
+song:
+  title: Arp Loop 2
+  author: Zoltar X / New Generation
+  year: 2025
+  speed: 4
+  length: 16
+  loop: 4
+  playlist:
+    - A: "00"
+      B: "01"
+      C: "02"
+    - A: "03"
+      B: "04"
+      C: "02"
+    - A: "05"
+      B: "06"
+      C: "02"
+    - A: "07"
+      B: "08"
+      C: "02"
+    - A: "00"
+      B: "01"
+      C: "02"
+    - A: "03"
+      B: "04"
+      C: "02"
+    - A: "05"
+      B: "06"
+      C: "02"
+    - A: "07"
+      B: "08"
+      C: "02"
+  pattern:
+    - name: Pattern 02
+      number: "00"
+      steps:
+        - note: "D-4"
+          instrument: "06"
+        - space: 5
+        - note: "E-3"
+          instrument: "00"
+    - name: Pattern 09
+      number: "01"
+      steps:
+        - space: 2
+        - note: "E-2"
+          instrument: "01"
+        - space: 1
+        - note: "E-1"
+          instrument: "02"
+        - space: 1
+        - note: "E-1"
+          instrument: "02"
+        - space: 3
+        - note: "E-2"
+          instrument: "01"
+        - space: 1
+        - note: "E-1"
+          instrument: "02"
+        - space: 1
+        - note: "E-1"
+          instrument: "02"
+    - name: Pattern 0D
+      number: "02"
+      steps:
+        - note: "D-2"
+          instrument: "04"
+        - space: 1
+        - note: "C-3"
+          instrument: "03"
+        - space: 1
+        - note: "B-2"
+          instrument: "07"
+        - space: 1
+        - note: "C-3"
+          instrument: "03"
+        - space: 1
+        - note: "D-2"
+          instrument: "04"
+        - space: 1
+        - note: "C-3"
+          instrument: "03"
+        - space: 1
+        - note: "B-2"
+          instrument: "07"
+        - space: 1
+        - note: "C-3"
+          instrument: "03"
+    - name: Pattern 03
+      number: "03"
+      steps:
+        - note: "G-3"
+          instrument: "00"
+        - space: 5
+        - note: "G-3"
+          instrument: "00"
+    - name: Pattern 0A
+      number: "04"
+      steps:
+        - space: 2
+        - note: "G-2"
+          instrument: "01"
+        - space: 1
+        - note: "G-1"
+          instrument: "02"
+        - space: 1
+        - note: "G-1"
+          instrument: "02"
+        - space: 3
+        - note: "G-2"
+          instrument: "01"
+        - space: 1
+        - note: "G-1"
+          instrument: "02"
+        - space: 1
+        - note: "G-1"
+          instrument: "02"
+    - name: Pattern 04
+      number: "05"
+      steps:
+        - note: "C-3"
+          instrument: "00"
+        - space: 5
+        - note: "C-3"
+          instrument: "00"
+    - name: Pattern 0B
+      number: "06"
+      steps:
+        - space: 2
+        - note: "C-2"
+          instrument: "01"
+        - space: 1
+        - note: "C-2"
+          instrument: "02"
+        - space: 1
+        - note: "C-2"
+          instrument: "02"
+        - space: 3
+        - note: "C-2"
+          instrument: "01"
+        - space: 1
+        - note: "C-2"
+          instrument: "02"
+        - space: 1
+        - note: "C-2"
+          instrument: "02"
+    - name: Pattern 05
+      number: "07"
+      steps:
+        - note: "D-3"
+          instrument: "00"
+        - space: 5
+        - note: "D-4"
+          instrument: "05"
+    - name: Pattern 0C
+      number: "08"
+      steps:
+        - space: 2
+        - note: "D-2"
+          instrument: "01"
+        - space: 1
+        - note: "D-2"
+          instrument: "02"
+        - space: 1
+        - note: "D-2"
+          instrument: "02"
+        - space: 3
+        - note: "D-2"
+          instrument: "01"
+        - space: 1
+        - note: "D-2"
+          instrument: "02"
+        - space: 1
+        - note: "D-2"
+          instrument: "02"
+  instrument:
+    - name: Arp Vibrato
+      number: "00"
+      octave: 2
+      volume: [11, 13, 14, 13, 13, 13, 12, 12, 12, 12, 11, 11, 11, 11, 10, 10, 10, 10, 10, 10, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      arpeggio: [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0]
+      pitch: [0, -2, 0, 2, 0, -2, 0, 2, 0, -2, 0, 2, 0, -2, 0, 2, 0, -2, 0, 2, 0, -2, 0, 2, 0, -2, 0, 2, 0, -2, 0]
+      noise: [0, 23, 0]
+    - name: Bass Flat
+      number: "01"
+      base: "C-3"
+      volume: [13, 13, 13, 13, 0]
+    - name: Bass Smooth
+      number: "02"
+      base: "C-2"
+      volume: [14, 13, 9, 4, 3, 2, 1, 0]
+    - name: Hihat
+      number: "03"
+      volume: [10, 8, 7, 0]
+      noise: [2, 1, 0]
+      mode: [1, 1, 1, 0]
+    - name: Kick
+      number: "04"
+      base: "D-2"
+      octave: 2
+      volume: [11, 15, 11, 7, 4, 2, 0]
+      noise: [9, 0, 0, 6, 5, 4, 0]
+      mode: [1, 0, 0, 1, 1, 1, 0]
+    - name: Slide Down
+      number: "05"
+      volume: [11, 11, 11, 11, 12, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 14, 13, 13, 13, 13, 12, 12, 12, 12, 11, 11, 11, 11, 10]
+      pitch: [0, -3, -6, -9, -12, -15, -18, -21, -24, -27, -30, -33, -36, -39, -42, -42, -45, -48, -51, -54, -57, -60, -63, -66, -69, -72, -75, -78, -81, -84, -87, -90]
+    - name: Slide Up
+      number: "06"
+      volume: [12, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 14, 13, 13, 13, 13, 12, 12, 12, 12, 11, 11, 11, 11, 10, 10, 10, 10, 9]
+      pitch: [0, 3, 6, 9, 12, 15, 18, 21, 24, 27, 30, 33, 36, 39, 42, 45, 48, 51, 54, 57, 60, 63, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93]
+    - name: Snare
+      number: "07"
+      base: "B-2"
+      octave: 2
+      volume: [11, 15, 13, 10, 9, 8, 6, 5, 0]
+      noise: [9, 0, 2, 10, 7, 5, 4, 3, 3, 3, 2, 2, 0]
+      mode: [1, 0, 1, 1, 1, 1, 1, 1, 0]
