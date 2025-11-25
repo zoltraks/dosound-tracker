@@ -396,20 +396,22 @@ export const useDataManagement = () => {
         };
       });
 
+      const hasLoop =
+        typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop);
+
       const songNode: any = {
         title: currentSong.title,
         author: currentSong.author,
-        length: currentSong.patternLength,
-        speed: currentSong.speed,
         year: currentSong.year,
+        speed: currentSong.speed,
+        length: currentSong.patternLength,
+        ...(hasLoop
+          ? { loop: Math.max(0, Math.floor(currentSong.loop as number)) }
+          : {}),
         playlist,
         pattern: patterns,
         instrument: instruments
       };
-
-      if (typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop)) {
-        songNode.loop = Math.max(0, Math.floor(currentSong.loop));
-      }
 
       const exportData = {
         song: songNode

@@ -1,9 +1,10 @@
 song:
   title: Warmball
   author: Zoltar X / New Generation
-  length: 32
-  speed: 6
   year: 2025
+  speed: 4
+  length: 32
+  loop: 0
   playlist:
     - A: "31"
       B: "09"
@@ -427,7 +428,7 @@ song:
       number: "00"
       base: C-3
       volume: [14, 14, 12, 12, 0]
-    - name: ""
+    - name: Instrument 01
       number: "01"
       volume: [0]
     - name: Bass 5
