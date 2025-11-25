@@ -315,6 +315,14 @@ const App: React.FC = () => {
   // Per-channel volume modifier nibble (0-15) from the pattern "volume column".
   // Default is 0x0F (no attenuation) at the start of playback.
   const channelVolumeModifierRef = useRef<number[]>([0x0f, 0x0f, 0x0f]);
+  // Optional sustain position (0-based envelope index) for the currently held
+  // note on each channel. When non-null and not yet released, envelope
+  // progression is held at this position until a key-release step occurs.
+  const channelSustainRef = useRef<(number | null)[]>([null, null, null]);
+  // Per-channel flag indicating that a key-release (note-off) has occurred
+  // for a note whose instrument has a sustain point. Once released, the
+  // envelope continues past the sustain index instead of being hard-muted.
+  const channelReleasedRef = useRef<boolean[]>([false, false, false]);
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
 
@@ -349,6 +357,8 @@ const App: React.FC = () => {
     lastNotesRef.current = [null, null, null];
     lastSequencerPositionRef.current = null;
     channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
+    channelSustainRef.current = [null, null, null];
+    channelReleasedRef.current = [false, false, false];
     
     // Silence all channels
     if (ym2149Ref.current) {
@@ -402,6 +412,8 @@ const App: React.FC = () => {
         if (patternChanged || !state.isPatternLoop || isFirstTick) {
           channelEnvelopeStepRef.current = [0, 0, 0];
           lastNotesRef.current = [null, null, null];
+          channelSustainRef.current = [null, null, null];
+          channelReleasedRef.current = [false, false, false];
         }
 
         // Volume modifiers default to 0xF only on the very first tick after starting playback.
@@ -483,16 +495,37 @@ const App: React.FC = () => {
             channelSubTickRef.current[ch] = 0;
             updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
+            channelSustainRef.current[ch] = null;
+            channelReleasedRef.current[ch] = false;
             continue;
           }
 
           // Explicit note-off event on this row
           if (noteOnRow && noteOnRow.note === '===') {
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(ym2149, ch, null, 0);
-            lastNotes[ch] = null;
-            continue;
+            const sustainIndex = channelSustainRef.current[ch];
+
+            if (
+              sustainIndex === null ||
+              sustainIndex === undefined ||
+              sustainIndex < 0 ||
+              !last
+            ) {
+              // No sustain defined (or no active note) - treat as hard mute
+              channelEnvelopeStepRef.current[ch] = 0;
+              channelSubTickRef.current[ch] = 0;
+              updateChannelWithInstrument(ym2149, ch, null, 0);
+              lastNotes[ch] = null;
+              channelSustainRef.current[ch] = null;
+              channelReleasedRef.current[ch] = false;
+              continue;
+            }
+
+            // Instrument has a sustain point and a note is active: this
+            // note-off acts as a release trigger instead of an immediate
+            // mute. Keep holding the last note and allow the envelope to
+            // continue past the sustain position.
+            channelReleasedRef.current[ch] = true;
+            // Do not reset envelope step or clear lastNotes; fall through
           }
 
           // If we just wrapped/jumped to a different pattern and there is no explicit note on this
@@ -504,6 +537,8 @@ const App: React.FC = () => {
             channelSubTickRef.current[ch] = 0;
             updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
+            channelSustainRef.current[ch] = null;
+            channelReleasedRef.current[ch] = false;
             continue;
           }
 
@@ -528,13 +563,42 @@ const App: React.FC = () => {
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
             }
+
+            // Resolve sustain position for the instrument used by this note.
+            const instId = activeNote && typeof activeNote.instrument === 'string'
+              ? activeNote.instrument
+              : '';
+            const instrument = currentSong.instruments.find(i => i.id === instId);
+            const rawSustain = instrument ? (instrument as any).sustain : null;
+            if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
+              channelSustainRef.current[ch] = Math.floor(rawSustain);
+            } else {
+              channelSustainRef.current[ch] = null;
+            }
+            channelReleasedRef.current[ch] = false;
           }
 
           if (activeNote && activeNote.note && activeNote.note !== '===') {
             // Use current step as envelope tick (so a freshly triggered note
             // starts at step 0, matching the piano keyboard behaviour), then
             // advance the step every 40ms (every 2 x 20ms ticks).
-            const step = channelEnvelopeStepRef.current[ch];
+            const rawStep = channelEnvelopeStepRef.current[ch];
+            const sustainIndex = channelSustainRef.current[ch];
+            const isReleased = channelReleasedRef.current[ch];
+
+            // While the key is held and a sustain index is defined, clamp
+            // the effective envelope position at the sustain step. Once a
+            // key-release has occurred, allow the envelope to continue.
+            let step = rawStep;
+            if (
+              sustainIndex !== null &&
+              sustainIndex !== undefined &&
+              sustainIndex >= 0 &&
+              !isReleased &&
+              rawStep >= sustainIndex
+            ) {
+              step = sustainIndex;
+            }
             const volumeModifier = channelVolumeModifierRef.current[ch];
 
             updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier);
@@ -543,7 +607,19 @@ const App: React.FC = () => {
             const sub = (channelSubTickRef.current[ch] + 1) % 2;
             channelSubTickRef.current[ch] = sub;
             if (sub === 0) {
-              channelEnvelopeStepRef.current[ch] = step + 1;
+              // Advance the underlying envelope step only if either there is
+              // no sustain point, the note has been released, or we have
+              // not yet reached the sustain index. This implements a
+              // classic hold-at-sustain-until-release behaviour.
+              if (
+                sustainIndex === null ||
+                sustainIndex === undefined ||
+                sustainIndex < 0 ||
+                isReleased ||
+                rawStep < sustainIndex
+              ) {
+                channelEnvelopeStepRef.current[ch] = rawStep + 1;
+              }
             }
             lastNotes[ch] = activeNote;
           } else {
@@ -552,6 +628,8 @@ const App: React.FC = () => {
             channelSubTickRef.current[ch] = 0;
             updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
+            channelSustainRef.current[ch] = null;
+            channelReleasedRef.current[ch] = false;
           }
         }
       }

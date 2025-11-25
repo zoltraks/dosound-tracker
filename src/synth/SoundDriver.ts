@@ -23,6 +23,10 @@ export interface Instrument {
   modeEnvelope: number[];
   base?: string;
   octave?: number;
+  // Optional sustain position in the envelope (0-based index). When set,
+  // envelope progression should halt at this step until a key release
+  // (note-off) occurs, after which the envelopes continue.
+  sustain?: number | null;
 }
 
 export interface Note {
@@ -183,7 +187,8 @@ export class SoundDriver {
       arpeggioEnvelope: [0, 0, 0, 0],
       pitchEnvelope: [0, 0, 0, 0],
       noiseEnvelope: [0, 0, 0, 0],
-      modeEnvelope: Array(32).fill(0)
+      modeEnvelope: Array(32).fill(0),
+      sustain: null
     };
   }
 

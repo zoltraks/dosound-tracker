@@ -39,12 +39,14 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
     subTick: number;
     isNewNote: boolean; // Flag to ensure tone registers are written on first frame
     volumeModifier: number; // Per-channel volume modifier nibble (0-15)
+    sustainIndex: number | null; // Optional sustain position for the current note
+    released: boolean; // Whether a key-release has occurred for a sustained note
   }
   
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
   ];
   
   // Process each playlist entry
@@ -100,30 +102,57 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = false;
+              channelState.sustainIndex = null;
+              channelState.released = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
             }
             
             if (noteOnRow && noteOnRow.note === '===') {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              newRegs[0x08 + ch] = 0x00;
-              continue;
-            }
-            
-            if (noteOnRow && noteOnRow.note) {
+              const sustainIndex = channelState.sustainIndex;
+
+              if (
+                sustainIndex === null ||
+                sustainIndex === undefined ||
+                sustainIndex < 0 ||
+                !channelState.note
+              ) {
+                // No sustain defined (or no active note) - treat as hard mute
+                channelState.note = null;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+                channelState.isNewNote = false;
+                channelState.sustainIndex = null;
+                channelState.released = false;
+                newRegs[0x08 + ch] = 0x00;
+                continue;
+              }
+
+              // Instrument has a sustain point and a note is active: this
+              // note-off acts as a release trigger instead of an immediate
+              // mute. Keep holding the last note and allow the envelope to
+              // continue past the sustain position.
+              channelState.released = true;
+            } else if (noteOnRow && noteOnRow.note) {
               const isNew = !channelState.note ||
                 channelState.note.note !== noteOnRow.note ||
                 channelState.note.octave !== noteOnRow.octave ||
                 channelState.note.instrument !== noteOnRow.instrument;
-              
+
               if (isNew) {
                 channelState.note = noteOnRow;
                 channelState.envelopeStep = 0;
                 channelState.subTick = 0;
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
+
+                const instrument = song.instruments.find(i => i.id === noteOnRow.instrument);
+                const rawSustain = instrument ? (instrument as any).sustain : null;
+                if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
+                  channelState.sustainIndex = Math.floor(rawSustain);
+                } else {
+                  channelState.sustainIndex = null;
+                }
+                channelState.released = false;
               } else {
                 channelState.isNewNote = false;
               }
@@ -142,12 +171,27 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
           if (channelState.note) {
             const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
             if (instrument) {
+              const rawStep = channelState.envelopeStep;
+              const sustainIndex = channelState.sustainIndex;
+              const isReleased = channelState.released;
+
+              let step = rawStep;
+              if (
+                sustainIndex !== null &&
+                sustainIndex !== undefined &&
+                sustainIndex >= 0 &&
+                !isReleased &&
+                rawStep >= sustainIndex
+              ) {
+                step = sustainIndex;
+              }
+
               applyInstrumentToRegisters(
                 newRegs,
                 ch,
                 channelState.note,
                 instrument,
-                channelState.envelopeStep,
+                step,
                 channelState.isNewNote,
                 channelState.volumeModifier
               );
@@ -159,7 +203,19 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
             const sub = (channelState.subTick + 1) % 2;
             channelState.subTick = sub;
             if (sub === 0) {
-              channelState.envelopeStep++;
+              const rawStep = channelState.envelopeStep;
+              const sustainIndex = channelState.sustainIndex;
+              const isReleased = channelState.released;
+
+              if (
+                sustainIndex === null ||
+                sustainIndex === undefined ||
+                sustainIndex < 0 ||
+                isReleased ||
+                rawStep < sustainIndex
+              ) {
+                channelState.envelopeStep = rawStep + 1;
+              }
             }
           }
         }
@@ -971,12 +1027,38 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
     subTick: number;
     isNewNote: boolean;
     volumeModifier: number;
+    sustainIndex: number | null;
+    released: boolean;
   }
 
   const channels: DumpChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f }
+    {
+      note: null,
+      envelopeStep: 0,
+      subTick: 0,
+      isNewNote: false,
+      volumeModifier: 0x0f,
+      sustainIndex: null,
+      released: false
+    },
+    {
+      note: null,
+      envelopeStep: 0,
+      subTick: 0,
+      isNewNote: false,
+      volumeModifier: 0x0f,
+      sustainIndex: null,
+      released: false
+    },
+    {
+      note: null,
+      envelopeStep: 0,
+      subTick: 0,
+      isNewNote: false,
+      volumeModifier: 0x0f,
+      sustainIndex: null,
+      released: false
+    }
   ];
 
   const lines: string[] = [];
@@ -1029,26 +1111,53 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = false;
+              channelState.sustainIndex = null;
+              channelState.released = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
             }
 
             if (noteOnRow && noteOnRow.note === '===') {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              newRegs[0x08 + ch] = 0x00;
-              continue;
-            }
+              const sustainIndex = channelState.sustainIndex;
 
-            if (noteOnRow && noteOnRow.note) {
+              if (
+                sustainIndex === null ||
+                sustainIndex === undefined ||
+                sustainIndex < 0 ||
+                !channelState.note
+              ) {
+                // No sustain defined (or no active note) - treat as hard mute
+                channelState.note = null;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+                channelState.isNewNote = false;
+                channelState.sustainIndex = null;
+                channelState.released = false;
+                newRegs[0x08 + ch] = 0x00;
+                continue;
+              }
+
+              // Instrument has a sustain point and a note is active: this
+              // note-off acts as a release trigger instead of an immediate
+              // mute. Keep holding the last note and allow the envelope to
+              // continue past the sustain position.
+              channelState.released = true;
+            } else if (noteOnRow && noteOnRow.note) {
               // Explicit note on this row: always treat as a new note and
               // retrigger the envelopes, matching the live sequencer.
               channelState.note = noteOnRow;
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = true;
+
+              const instrument = song.instruments.find(i => i.id === noteOnRow.instrument);
+              const rawSustain = instrument ? (instrument as any).sustain : null;
+              if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
+                channelState.sustainIndex = Math.floor(rawSustain);
+              } else {
+                channelState.sustainIndex = null;
+              }
+              channelState.released = false;
             } else {
               channelState.isNewNote = false;
             }
@@ -1062,12 +1171,27 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
           if (channelState.note) {
             const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
             if (instrument) {
+              const rawStep = channelState.envelopeStep;
+              const sustainIndex = channelState.sustainIndex;
+              const isReleased = channelState.released;
+
+              let step = rawStep;
+              if (
+                sustainIndex !== null &&
+                sustainIndex !== undefined &&
+                sustainIndex >= 0 &&
+                !isReleased &&
+                rawStep >= sustainIndex
+              ) {
+                step = sustainIndex;
+              }
+
               applyInstrumentToRegisters(
                 newRegs,
                 ch,
                 { note: channelState.note.note, octave: channelState.note.octave },
                 instrument,
-                channelState.envelopeStep,
+                step,
                 channelState.isNewNote,
                 channelState.volumeModifier
               );
@@ -1078,7 +1202,19 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
             const sub = (channelState.subTick + 1) % 2;
             channelState.subTick = sub;
             if (sub === 0) {
-              channelState.envelopeStep++;
+              const rawStep = channelState.envelopeStep;
+              const sustainIndex = channelState.sustainIndex;
+              const isReleased = channelState.released;
+
+              if (
+                sustainIndex === null ||
+                sustainIndex === undefined ||
+                sustainIndex < 0 ||
+                isReleased ||
+                rawStep < sustainIndex
+              ) {
+                channelState.envelopeStep = rawStep + 1;
+              }
             }
           }
         }

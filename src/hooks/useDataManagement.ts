@@ -86,7 +86,8 @@ const createDefaultSong = (): Song => {
         pitchEnvelope: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
         modeEnvelope: Array(32).fill(0),
-        base: DEFAULT_BASE_KEY
+        base: DEFAULT_BASE_KEY,
+        sustain: null
       },
       {
         id: '01',
@@ -98,7 +99,8 @@ const createDefaultSong = (): Song => {
         pitchEnvelope: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
         modeEnvelope: Array(32).fill(0),
-        base: DEFAULT_BASE_KEY
+        base: DEFAULT_BASE_KEY,
+        sustain: null
       },
       {
         id: '02',
@@ -110,7 +112,8 @@ const createDefaultSong = (): Song => {
         pitchEnvelope: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
         modeEnvelope: Array(32).fill(0),
-        base: DEFAULT_BASE_KEY
+        base: DEFAULT_BASE_KEY,
+        sustain: null
       }
     ]
   };
@@ -153,7 +156,8 @@ export const useDataManagement = () => {
       pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
       modeEnvelope: Array(32).fill(0),
-      base: DEFAULT_BASE_KEY
+      base: DEFAULT_BASE_KEY,
+      sustain: null
     };
   });
 
@@ -209,7 +213,8 @@ export const useDataManagement = () => {
       pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
       noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
       modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      base: DEFAULT_BASE_KEY
+      base: DEFAULT_BASE_KEY,
+      sustain: null
     };
 
     const newSong: Song = {
@@ -249,7 +254,8 @@ export const useDataManagement = () => {
       pitchEnvelope: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
       modeEnvelope: Array(32).fill(0),
-      base: DEFAULT_BASE_KEY
+      base: DEFAULT_BASE_KEY,
+      sustain: null
     };
 
     const updatedInstruments = [...instruments];
@@ -325,6 +331,11 @@ export const useDataManagement = () => {
         }
         if (!isZeroDefault(modeEnv)) {
           instrumentNode.mode = modeEnv;
+        }
+
+        const sustain = inst.sustain;
+        if (typeof sustain === 'number' && Number.isFinite(sustain) && sustain >= 0) {
+          instrumentNode.sustain = Math.floor(sustain);
         }
 
         return instrumentNode;
@@ -653,6 +664,11 @@ export const useDataManagement = () => {
         instrumentNode.noise = noiseEnv;
       }
 
+      const sustain = (currentInstrument as any).sustain;
+      if (typeof sustain === 'number' && Number.isFinite(sustain) && sustain >= 0) {
+        instrumentNode.sustain = Math.floor(sustain);
+      }
+
       const exportData = { instrument: instrumentNode };
 
       let yamlContent = yaml.dump(exportData, {
@@ -746,6 +762,26 @@ export const useDataManagement = () => {
         }
         octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
+        let sustain: number | null = null;
+        const rawSustain = (node as any).sustain;
+        if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
+          const s = Math.floor(rawSustain);
+          if (s >= 0) {
+            sustain = s;
+          }
+        } else if (typeof rawSustain === 'string') {
+          const trimmed = rawSustain.trim();
+          if (trimmed) {
+            const parsed = Number(trimmed);
+            if (Number.isFinite(parsed)) {
+              const s = Math.floor(parsed);
+              if (s >= 0) {
+                sustain = s;
+              }
+            }
+          }
+        }
+
         const newInstrument: Instrument = {
           id: currentInstrument.id,
           name: typeof node.name === 'string' && node.name.trim() ? node.name : currentInstrument.name,
@@ -760,6 +796,7 @@ export const useDataManagement = () => {
             return formatBaseKey(parsedBase.note, parsedBase.octave);
           })(),
           octave,
+          sustain,
         };
 
         setCurrentInstrument(newInstrument);
@@ -784,7 +821,8 @@ export const useDataManagement = () => {
                     arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                     pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                     noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                    modeEnvelope: Array(ENVELOPE_LENGTH).fill(0)
+                    modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    sustain: null,
                   };
                 }
               }
@@ -862,7 +900,8 @@ export const useDataManagement = () => {
                 arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                 pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
                 noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                modeEnvelope: Array(ENVELOPE_LENGTH).fill(0)
+                modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                sustain: null,
               };
             }
           }

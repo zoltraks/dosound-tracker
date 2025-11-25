@@ -328,6 +328,29 @@ export const parseSongFromYaml = (content: string): Song => {
     const noiseEnvelope = expandEnvelope(instNode.noise, ENVELOPE_LENGTH, 0);
     const modeEnvelope = expandEnvelope(instNode.mode, ENVELOPE_LENGTH, 0);
 
+    // Optional sustain position for this instrument (0-based envelope index).
+    // Accept either numeric or string values in YAML and clamp to a
+    // non-negative integer. If out of range or invalid, treat as unset.
+    let sustain: number | null = null;
+    const rawSustain = (instNode as any).sustain;
+    if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
+      const s = Math.floor(rawSustain);
+      if (s >= 0) {
+        sustain = s;
+      }
+    } else if (typeof rawSustain === 'string') {
+      const trimmed = rawSustain.trim();
+      if (trimmed) {
+        const parsed = Number(trimmed);
+        if (Number.isFinite(parsed)) {
+          const s = Math.floor(parsed);
+          if (s >= 0) {
+            sustain = s;
+          }
+        }
+      }
+    }
+
     for (let i = instruments.length; i <= slotIndex; i++) {
       if (!instruments[i]) {
         const slotId = i.toString(16).padStart(2, '0').toUpperCase();
@@ -341,6 +364,7 @@ export const parseSongFromYaml = (content: string): Song => {
           modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
           base: DEFAULT_BASE_KEY,
           octave: DEFAULT_OCTAVE,
+          sustain: null,
         };
       }
     }
@@ -355,6 +379,7 @@ export const parseSongFromYaml = (content: string): Song => {
       modeEnvelope,
       base,
       octave,
+      sustain: sustain,
     };
   });
 
