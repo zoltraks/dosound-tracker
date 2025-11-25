@@ -172,16 +172,19 @@ function applyInstrumentToRegisters(
   // Get envelope values
   const volumeEnv = instrument.volumeEnvelope || [0x0F];
   const arpeggioEnv = instrument.arpeggioEnvelope || [0];
+  const pitchEnv = instrument.pitchEnvelope || [0];
   const modeEnv = instrument.modeEnvelope || [0];
   const noiseEnv = instrument.noiseEnvelope || [0];
   
   const volIdx = Math.min(step, volumeEnv.length - 1);
   const arpIdx = Math.min(step, arpeggioEnv.length - 1);
+  const pitchIdx = Math.min(step, pitchEnv.length - 1);
   const modeIdx = Math.min(step, modeEnv.length - 1);
   const noiseIdx = Math.min(step, noiseEnv.length - 1);
   
   const volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
   const arpeggio = arpeggioEnv[arpIdx] || 0;
+  const pitch = pitchEnv[pitchIdx] || 0;
   const mode = modeEnv[modeIdx] || 0;
   const noisePeriod = Math.max(0, Math.min(0x1F, noiseEnv[noiseIdx] || 0));
   
@@ -193,6 +196,9 @@ function applyInstrumentToRegisters(
   let frequency = baseFreq * Math.pow(2, note.octave - NOTE_BASE_OCTAVE);
   if (arpeggio !== 0) {
     frequency = frequency * Math.pow(2, arpeggio / 12);
+  }
+  if (pitch !== 0) {
+    frequency = frequency * Math.pow(2, pitch / 12);
   }
   const period = Math.floor(2000000 / (16 * frequency)) & 0x0FFF;
   
@@ -748,6 +754,30 @@ export function downloadAssemblyFile(content: string, filename: string = 'music.
 const YM_CLOCK = 2000000;
 const WAV_SAMPLE_RATE = 44100;
 
+const YM_LOG_VOLUME_TABLE: number[] = [
+  0.0,
+  0.0078,
+  0.0110,
+  0.0157,
+  0.0221,
+  0.0313,
+  0.0442,
+  0.0625,
+  0.0884,
+  0.1250,
+  0.1768,
+  0.2500,
+  0.3536,
+  0.5000,
+  0.7071,
+  1.0
+];
+
+interface YmNoiseState {
+  lfsr: number;
+  phase: number;
+}
+
 export interface WavExportResult {
   buffer: ArrayBuffer;
   sampleRate: number;
@@ -792,7 +822,8 @@ function synthTickSamples(
   outSamples: number[],
   regs: { [register: number]: number },
   phases: number[],
-  samplesPerTick: number
+  samplesPerTick: number,
+  noiseState: YmNoiseState
 ): void {
   const mixer = regs[0x07] !== undefined ? regs[0x07] : 0x38;
 
@@ -801,6 +832,11 @@ function synthTickSamples(
   const volumes = [0, 0, 0];
   const toneEnabled = [false, false, false];
   const noiseEnabled = [false, false, false];
+
+  const rawNoisePeriod = regs[0x06] !== undefined ? regs[0x06] : 0;
+  const effectiveNoisePeriod = (rawNoisePeriod & 0x1f) === 0 ? 1 : (rawNoisePeriod & 0x1f);
+  const noiseFrequency = YM_CLOCK / (16 * effectiveNoisePeriod);
+  const noiseStep = noiseFrequency / WAV_SAMPLE_RATE;
 
   for (let ch = 0; ch < 3; ch++) {
     const fineReg = ch * 2;
@@ -821,15 +857,32 @@ function synthTickSamples(
   }
 
   for (let i = 0; i < samplesPerTick; i++) {
-    let value = 0;
+    // Advance shared noise LFSR according to YM clock and noise period
+    noiseState.phase += noiseStep;
+    if (noiseState.phase >= 1) {
+      const advances = Math.floor(noiseState.phase);
+      noiseState.phase -= advances;
+      for (let a = 0; a < advances; a++) {
+        const bit0 = noiseState.lfsr & 1;
+        const bit3 = (noiseState.lfsr >> 3) & 1;
+        const newBit = bit0 ^ bit3;
+        noiseState.lfsr = ((noiseState.lfsr >> 1) | (newBit << 16)) & 0x1ffff;
+      }
+    }
+
+    const noiseSample = (noiseState.lfsr & 1) ? 1 : -1;
+
+    let mixed = 0;
 
     for (let ch = 0; ch < 3; ch++) {
       const vol = volumes[ch];
-      if (vol === 0) {
+      if (vol <= 0) {
         continue;
       }
 
-      let sample = 0;
+      const levelIndex = Math.max(0, Math.min(15, vol | 0));
+      const baseLevel = YM_LOG_VOLUME_TABLE[levelIndex];
+      let chValue = 0;
 
       if (toneEnabled[ch] && freqs[ch] > 0) {
         const inc = freqs[ch] / WAV_SAMPLE_RATE;
@@ -838,20 +891,18 @@ function synthTickSamples(
           phase -= Math.floor(phase);
         }
         phases[ch] = phase;
-        sample += phase < 0.5 ? 1 : -1;
+        const toneSample = phase < 0.5 ? 1 : -1;
+        chValue += toneSample * baseLevel * 0.3;
       }
 
       if (noiseEnabled[ch]) {
-        sample += (Math.random() * 2 - 1) * 0.3;
+        chValue += noiseSample * baseLevel * 0.4;
       }
 
-      if (sample !== 0) {
-        const amp = vol / 15;
-        value += sample * amp;
-      }
+      mixed += chValue;
     }
 
-    value *= 0.2;
+    let value = mixed;
     if (value > 1) value = 1;
     if (value < -1) value = -1;
     outSamples.push(value);
@@ -1048,6 +1099,10 @@ export function exportSongToWav(song: Song): WavExportResult {
   ];
 
   const phases = [0, 0, 0];
+  const noiseState: YmNoiseState = {
+    lfsr: 0x1ffff,
+    phase: 0
+  };
   const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / VBLANK_RATE));
 
   for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
@@ -1144,7 +1199,7 @@ export function exportSongToWav(song: Song): WavExportResult {
           }
         }
 
-        synthTickSamples(samples, newRegs, phases, samplesPerTick);
+        synthTickSamples(samples, newRegs, phases, samplesPerTick, noiseState);
         regs = newRegs;
       }
     }
