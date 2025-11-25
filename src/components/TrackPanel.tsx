@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument } from '../synth/SoundDriver';
@@ -57,6 +57,27 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
+
+  const effectiveVolume = useMemo(() => {
+    if (!pattern) return 0x0f;
+
+    const lines = pattern.lines || [];
+    if (lines.length === 0) return 0x0f;
+
+    const maxIndex = Math.min(currentLine, lines.length - 1);
+    let current = 0x0f;
+
+    for (let i = 0; i <= maxIndex; i++) {
+      const line = lines[i];
+      const vol = line && (line as any).volume;
+      if (vol !== undefined && vol !== null) {
+        const clamped = Math.max(0, Math.min(0x0f, (vol as number) | 0));
+        current = clamped;
+      }
+    }
+
+    return current;
+  }, [pattern, currentLine]);
 
   // Play preview note when entering notes
   const playPreviewNote = useCallback((note: string, octave: number) => {
@@ -374,7 +395,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onClick={() => setActiveSection(sectionName)}
     >
       <div className={`track-header ${isTargetTrack ? 'target-track' : ''}`}>
-        Track {trackId}
+        <span className="track-header-title">Track {trackId}</span>
+        <span className="track-header-volume">
+          VOL {effectiveVolume.toString(16).toUpperCase()}
+        </span>
       </div>
 
       <div className="track-content">

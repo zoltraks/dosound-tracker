@@ -579,6 +579,23 @@ body {
   box-sizing: border-box;
 }
 
+.track-panel .track-header {
+  justify-content: space-between;
+  padding: 4px 4px;
+  padding-left: 20px;
+}
+
+.track-header-title {
+  flex: 1;
+  text-align: left;
+}
+
+.track-header-volume {
+  font-size: 9px;
+  text-align: right;
+  min-width: 6ch;
+}
+
 .track-header.target-track {
   background: linear-gradient(180deg, var(--active-bg) 0%, var(--bg-secondary) 100%);
   border: 1px solid var(--active-border);
@@ -672,7 +689,7 @@ body {
 .note-text.active {
   background-color: var(--track-cell-active-bg);
   color: var(--text-primary);
-  padding-left: 1px;
+  padding-left: 2px;
   border-left: 2px solid var(--active-border);
   border-right: 2px solid var(--active-border);
 }

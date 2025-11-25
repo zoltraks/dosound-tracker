@@ -235,8 +235,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   const handlePatternClick = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
     setCurrentLine(lineIndex);
     setCurrentTrack(track);
+    setActiveSection('playlist');
     onPositionSelect(lineIndex);
-  }, [onPositionSelect]);
+  }, [setActiveSection, onPositionSelect]);
 
   const formatPatternDisplay = useCallback((patternId: string) => {
     if (patternId === '--') return '--';
