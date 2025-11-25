@@ -360,6 +360,13 @@ body {
   margin-bottom: 12px;
 }
 
+.modal-body.changelog-modal-body {
+  max-height: 260px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  white-space: pre-wrap;
+}
+
 .modal-actions {
   display: flex;
   justify-content: flex-end;

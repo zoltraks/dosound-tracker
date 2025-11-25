@@ -1,0 +1,7 @@
+In the about information dialog put a button on the left side in the row where "OK" button exists with the name "CHANGES".
+
+Create CHANGELOG.md that will hold a list of changes in Markdown format and fill it with informations about last changes.
+
+It needs to be available when application is deployed for accessing, because when user click CHANGE in about information dialog I want that the content of the file will be displayed also in modal form.
+
+The inner window in similar style like other modal dialogs with content of CHANGELOG.md should have its own vertical scrollbar. Don't use horizontal scrollbar.

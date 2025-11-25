@@ -29,6 +29,8 @@ const App: React.FC = () => {
   const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
   const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
+  const [changelogContent, setChangelogContent] = useState('');
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -925,6 +927,10 @@ const App: React.FC = () => {
     setActiveSection(section);
   }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection]);
 
+  const handleShowAbout = useCallback(() => {
+    setIsAboutOpen(true);
+  }, []);
+
   const handleRequestNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(true);
   }, []);
@@ -961,8 +967,28 @@ const App: React.FC = () => {
     setIsResetConfirmOpen(false);
   }, []);
 
-  const handleShowAbout = useCallback(() => {
-    setIsAboutOpen(true);
+  const handleShowChangelog = useCallback(() => {
+    setIsAboutOpen(false);
+    setChangelogContent('Loading...');
+    setIsChangelogOpen(true);
+
+    fetch('CHANGELOG.md')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to load changelog.');
+        }
+        return response.text();
+      })
+      .then((text) => {
+        setChangelogContent(text);
+      })
+      .catch(() => {
+        setChangelogContent('Unable to load changelog.');
+      });
+  }, []);
+
+  const handleCloseChangelog = useCallback(() => {
+    setIsChangelogOpen(false);
   }, []);
 
   const handleExportData = useCallback(() => {
@@ -2823,6 +2849,9 @@ const App: React.FC = () => {
                 Version: {APP_VERSION}
               </div>
               <div className="modal-actions">
+                <button className="command-btn" onClick={handleShowChangelog}>
+                  CHANGES
+                </button>
                 <button className="command-btn" onClick={() => setIsAboutOpen(false)}>
                   OK
                 </button>
@@ -2863,6 +2892,24 @@ const App: React.FC = () => {
               <div className="modal-actions">
                 <button className="command-btn" onClick={handleConfirmReset}>Reset</button>
                 <button className="command-btn" onClick={handleCancelReset}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        )}
+        {isChangelogOpen && (
+          <div className="modal-backdrop">
+            <div className="modal-dialog">
+              <div className="modal-title">Changes</div>
+              <div className="modal-body changelog-modal-body">
+                {changelogContent.split('\n').map((line, index) => (
+                  <React.Fragment key={index}>
+                    {line}
+                    {index < changelogContent.split('\n').length - 1 && <br />}
+                  </React.Fragment>
+                ))}
+              </div>
+              <div className="modal-actions">
+                <button className="command-btn" onClick={handleCloseChangelog}>OK</button>
               </div>
             </div>
           </div>
