@@ -1,0 +1,5 @@
+Each modal dialog should have a default keyboard shortcuts binding.
+
+If this is confirmation then pressing ESC should close it and not confirm.
+
+If this is information then pressing ESC should close it the same as pressing ENTER key.
