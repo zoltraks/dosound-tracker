@@ -353,10 +353,16 @@ export const useDataManagement = () => {
           const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
           const cell = raw.trackA;
 
+          const volRaw: any = (raw as any).volume;
+          const hasVolume = volRaw !== undefined && volRaw !== null;
+
           let step: any;
 
           if (!cell) {
-            step = { space: true };
+            // Space line. Use `space: 1` when there is an explicit volume nibble,
+            // otherwise keep the legacy boolean `space: true` which is used for
+            // trimming/compressing pure empty lines.
+            step = { space: hasVolume ? 1 : true };
           } else {
             const noteText = formatBaseKey(cell.note, cell.octave);
             step = {
@@ -365,8 +371,7 @@ export const useDataManagement = () => {
             };
           }
 
-          const volRaw: any = (raw as any).volume;
-          if (volRaw !== undefined && volRaw !== null) {
+          if (hasVolume) {
             const volNum = Number(volRaw);
             if (Number.isFinite(volNum)) {
               const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
@@ -390,20 +395,60 @@ export const useDataManagement = () => {
 
         const trimmedLines = lines.slice(0, lastNonSpace + 1);
 
-        // Compress consecutive pure-space lines into space: <count>
+        // Compress consecutive pure-space lines and volume-only lines into
+        // aggregated runs, e.g. `space: 3` or `space: 3, volume: 14`.
         const compressedLines: any[] = [];
+
+        type RunType = 'none' | 'space' | 'volume-space';
+        let runType: RunType = 'none';
         let runCount = 0;
+        let runVolume = 0;
 
         const flushRun = () => {
-          if (runCount > 0) {
+          if (runCount <= 0) return;
+          if (runType === 'space') {
             compressedLines.push({ space: runCount });
-            runCount = 0;
+          } else if (runType === 'volume-space') {
+            if (runCount === 1) {
+              // Single volume-only step: omit `space` and write only `volume`.
+              compressedLines.push({ volume: runVolume });
+            } else {
+              // Multiple consecutive volume-only steps with same volume.
+              compressedLines.push({ space: runCount, volume: runVolume });
+            }
           }
+          runType = 'none';
+          runCount = 0;
         };
 
+        const isPureSpace = (ln: any) =>
+          ln && ln.space === true && Object.keys(ln).length === 1;
+
+        const isVolumeSpace = (ln: any) =>
+          ln &&
+          ln.space === 1 &&
+          typeof ln.volume === 'number' &&
+          Object.keys(ln).length === 2;
+
         for (const ln of trimmedLines) {
-          if (ln && ln.space === true && Object.keys(ln).length === 1) {
-            runCount++;
+          if (isPureSpace(ln)) {
+            if (runType === 'space') {
+              runCount++;
+            } else {
+              flushRun();
+              runType = 'space';
+              runCount = 1;
+            }
+          } else if (isVolumeSpace(ln)) {
+            const vol = (ln as any).volume;
+            if (runType === 'volume-space' && vol === runVolume) {
+              runCount++;
+            } else {
+              flushRun();
+              runType = 'volume-space';
+              runVolume = vol;
+              runCount = 1;
+            }
           } else {
             flushRun();
             compressedLines.push(ln);

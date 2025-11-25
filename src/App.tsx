@@ -1247,15 +1247,33 @@ const App: React.FC = () => {
         const line = rawLines[i] || { trackA: null, trackB: null, trackC: null };
         const cell: any = line.trackA;
 
+        const volRaw: any = (line as any).volume;
+        const hasVolume = volRaw !== undefined && volRaw !== null;
+
+        let step: any;
+
         if (!cell) {
-          steps.push({ space: true });
+          // Space line. Use `space: 1` when there is an explicit volume nibble,
+          // otherwise keep the legacy boolean `space: true` which is used for
+          // trimming/compressing pure empty lines.
+          step = { space: hasVolume ? 1 : true };
         } else {
           const noteText = formatNoteKey(cell.note, cell.octave);
-          steps.push({
+          step = {
             note: noteText,
             instrument: cell.instrument
-          });
+          };
         }
+
+        if (hasVolume) {
+          const volNum = Number(volRaw);
+          if (Number.isFinite(volNum)) {
+            const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
+            step.volume = clamped;
+          }
+        }
+
+        steps.push(step);
       }
 
       let lastNonSpace = steps.length - 1;
@@ -1271,18 +1289,57 @@ const App: React.FC = () => {
       const trimmedSteps = steps.slice(0, lastNonSpace + 1);
 
       const compressedSteps: any[] = [];
+
+      type RunType = 'none' | 'space' | 'volume-space';
+      let runType: RunType = 'none';
       let runCount = 0;
+      let runVolume = 0;
 
       const flushRun = () => {
-        if (runCount > 0) {
+        if (runCount <= 0) return;
+        if (runType === 'space') {
           compressedSteps.push({ space: runCount });
-          runCount = 0;
+        } else if (runType === 'volume-space') {
+          if (runCount === 1) {
+            // Single volume-only step: omit `space` and write only `volume`.
+            compressedSteps.push({ volume: runVolume });
+          } else {
+            // Multiple consecutive volume-only steps with same volume.
+            compressedSteps.push({ space: runCount, volume: runVolume });
+          }
         }
+        runType = 'none';
+        runCount = 0;
       };
 
+      const isPureSpace = (ln: any) =>
+        ln && ln.space === true && Object.keys(ln).length === 1;
+
+      const isVolumeSpace = (ln: any) =>
+        ln &&
+        ln.space === 1 &&
+        typeof ln.volume === 'number' &&
+        Object.keys(ln).length === 2;
+
       for (const ln of trimmedSteps) {
-        if (ln && ln.space === true && Object.keys(ln).length === 1) {
-          runCount++;
+        if (isPureSpace(ln)) {
+          if (runType === 'space') {
+            runCount++;
+          } else {
+            flushRun();
+            runType = 'space';
+            runCount = 1;
+          }
+        } else if (isVolumeSpace(ln)) {
+          const vol = (ln as any).volume;
+          if (runType === 'volume-space' && vol === runVolume) {
+            runCount++;
+          } else {
+            flushRun();
+            runType = 'volume-space';
+            runVolume = vol;
+            runCount = 1;
+          }
         } else {
           flushRun();
           compressedSteps.push(ln);
@@ -1355,16 +1412,39 @@ const App: React.FC = () => {
       for (const node of rawSteps) {
         if (node && typeof node === 'object') {
           const ln: any = node;
+          const keys = Object.keys(ln);
+          const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
+          const onlySpaceOrOff = keys.every(k => k === 'space' || k === 'off');
+          const onlySpaceOffVolume = keys.every(
+            k => k === 'space' || k === 'off' || k === 'volume'
+          );
+
           const spaceVal = ln.space;
           const offVal = ln.off;
-          const isNumericSpace = typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
-          const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
+          const isNumericSpace =
+            typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
+          const isNumericOff =
+            typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
 
-          if (isNumericSpace || isNumericOff) {
+          // Pure runs without volume
+          if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
             const count = isNumericSpace ? spaceVal : offVal;
             const isOff = isNumericOff && !isNumericSpace;
             for (let i = 0; i < count; i++) {
               expandedSteps.push(isOff ? { off: true } : { space: true });
+            }
+            continue;
+          }
+
+          // Volume-only runs
+          if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
+            const count = isNumericSpace ? spaceVal : offVal;
+            const isOff = isNumericOff && !isNumericSpace;
+            const vol = ln.volume;
+            for (let i = 0; i < count; i++) {
+              expandedSteps.push(
+                isOff ? { off: true, volume: vol } : { space: true, volume: vol }
+              );
             }
             continue;
           }
@@ -1396,10 +1476,13 @@ const App: React.FC = () => {
       for (let i = 0; i < targetLength; i++) {
         const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
         const line: any = { ...baseLine };
+        // Overwrite any existing per-line volume; we'll set it from YAML if present.
+        delete (line as any).volume;
         const rawStep = expandedSteps[i];
 
         if (rawStep && typeof rawStep === 'object') {
           const ln: any = rawStep;
+
           if (ln.space === true || ln.off === true) {
             line.trackA = null;
           } else if (typeof ln.note === 'string') {
@@ -1423,6 +1506,16 @@ const App: React.FC = () => {
             line.trackA = noteObj;
           } else {
             line.trackA = null;
+          }
+
+          // Parse optional per-step volume nibble.
+          const volRaw = (ln as any).volume;
+          if (volRaw !== undefined && volRaw !== null) {
+            const volNum = Number(volRaw);
+            if (Number.isFinite(volNum)) {
+              const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
+              (line as any).volume = clamped;
+            }
           }
         } else {
           line.trackA = null;

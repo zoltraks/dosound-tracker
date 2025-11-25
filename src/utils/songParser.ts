@@ -151,10 +151,17 @@ export const parseSongFromYaml = (content: string): Song => {
         : [];
     const expandedLineNodes: any[] = [];
 
-    // Expand compressed space/off runs (space: N / off: N) into individual logical lines
+    // Expand compressed space/off runs (space: N / off: N) into individual logical lines.
+    // Support both pure runs and volume-only runs, e.g. `space: 3` or
+    // `space: 3, volume: 14`.
     for (const nodeLine of rawLineNodes) {
       if (nodeLine && typeof nodeLine === 'object') {
         const ln: any = nodeLine;
+
+        const keys = Object.keys(ln);
+        const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
+        const onlySpaceOrOff = keys.every(k => k === 'space' || k === 'off');
+        const onlySpaceOffVolume = keys.every(k => k === 'space' || k === 'off' || k === 'volume');
 
         const spaceVal = ln.space;
         const offVal = ln.off;
@@ -162,11 +169,25 @@ export const parseSongFromYaml = (content: string): Song => {
         const isNumericSpace = typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
         const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
 
-        if (isNumericSpace || isNumericOff) {
+        // Pure runs without volume
+        if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
           const count = isNumericSpace ? spaceVal : offVal;
           const isOff = isNumericOff && !isNumericSpace;
           for (let i = 0; i < count; i++) {
             expandedLineNodes.push(isOff ? { off: true } : { space: true });
+          }
+          continue;
+        }
+
+        // Volume-only runs: replicate the volume onto each expanded step.
+        if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
+          const count = isNumericSpace ? spaceVal : offVal;
+          const isOff = isNumericOff && !isNumericSpace;
+          const vol = ln.volume;
+          for (let i = 0; i < count; i++) {
+            expandedLineNodes.push(
+              isOff ? { off: true, volume: vol } : { space: true, volume: vol }
+            );
           }
           continue;
         }
