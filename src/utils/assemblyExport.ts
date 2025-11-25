@@ -399,10 +399,6 @@ function periodToNoteAndPitch(period: number): { label: string; pitchDelta: numb
   return { label: bestLabel, pitchDelta: bestPitchDelta };
 }
 
-function periodToNoteLabel(period: number): string {
-  return periodToNoteAndPitch(period).label;
-}
-
 // Helper: hex formatting using short form for nibbles when possible
 function toHex(value: number, forceByte: boolean = false): string {
   const v = value & 0xFF;
