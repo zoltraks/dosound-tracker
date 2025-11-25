@@ -2263,6 +2263,203 @@ const App: React.FC = () => {
       ? 2
       : 0;
 
+  useEffect(() => {
+    const handleModalKeyDown = (event: KeyboardEvent) => {
+      const hasInfoModal =
+        !!instrumentError ||
+        !!transposeSummary ||
+        !!trackClipboardError ||
+        !!optimizeSummary ||
+        !!soundExportSummary ||
+        !!dumpExportSummary ||
+        !!renumberSummary ||
+        isAboutOpen ||
+        isChangelogOpen;
+
+      const hasConfirmModal =
+        isTransposeOpen ||
+        isOptimizeConfirmOpen ||
+        isRenumberConfirmOpen ||
+        isNewSongConfirmOpen ||
+        isResetConfirmOpen;
+
+      if (!hasInfoModal && !hasConfirmModal) {
+        return;
+      }
+
+      const key = event.key;
+      if (key !== 'Escape' && key !== 'Esc' && key !== 'Enter') {
+        return;
+      }
+
+      event.preventDefault();
+      if (typeof (event as any).stopImmediatePropagation === 'function') {
+        (event as any).stopImmediatePropagation();
+      }
+
+      if (key === 'Escape' || key === 'Esc') {
+        if (isTransposeOpen) {
+          handleCancelTranspose();
+          return;
+        }
+        if (isOptimizeConfirmOpen) {
+          handleCancelOptimize();
+          return;
+        }
+        if (isRenumberConfirmOpen) {
+          handleCancelRenumber();
+          return;
+        }
+        if (isNewSongConfirmOpen) {
+          handleCancelNewSong();
+          return;
+        }
+        if (isResetConfirmOpen) {
+          handleCancelReset();
+          return;
+        }
+
+        if (instrumentError) {
+          setInstrumentError('');
+          return;
+        }
+        if (transposeSummary) {
+          handleCloseTransposeSummary();
+          return;
+        }
+        if (trackClipboardError) {
+          setTrackClipboardError('');
+          return;
+        }
+        if (optimizeSummary) {
+          handleCloseOptimizeSummary();
+          return;
+        }
+        if (soundExportSummary) {
+          handleCloseSoundExportSummary();
+          return;
+        }
+        if (dumpExportSummary) {
+          handleCloseDumpExportSummary();
+          return;
+        }
+        if (renumberSummary) {
+          handleCloseRenumberSummary();
+          return;
+        }
+        if (isAboutOpen) {
+          setIsAboutOpen(false);
+          return;
+        }
+        if (isChangelogOpen) {
+          handleCloseChangelog();
+          return;
+        }
+
+        return;
+      }
+
+      if (key === 'Enter') {
+        if (instrumentError) {
+          setInstrumentError('');
+          return;
+        }
+        if (transposeSummary) {
+          handleCloseTransposeSummary();
+          return;
+        }
+        if (trackClipboardError) {
+          setTrackClipboardError('');
+          return;
+        }
+        if (optimizeSummary) {
+          handleCloseOptimizeSummary();
+          return;
+        }
+        if (soundExportSummary) {
+          handleCloseSoundExportSummary();
+          return;
+        }
+        if (dumpExportSummary) {
+          handleCloseDumpExportSummary();
+          return;
+        }
+        if (renumberSummary) {
+          handleCloseRenumberSummary();
+          return;
+        }
+        if (isAboutOpen) {
+          setIsAboutOpen(false);
+          return;
+        }
+        if (isChangelogOpen) {
+          handleCloseChangelog();
+          return;
+        }
+
+        if (isTransposeOpen) {
+          handleConfirmTranspose();
+          return;
+        }
+        if (isOptimizeConfirmOpen) {
+          handleConfirmOptimize();
+          return;
+        }
+        if (isRenumberConfirmOpen) {
+          handleConfirmRenumber();
+          return;
+        }
+        if (isNewSongConfirmOpen) {
+          handleConfirmNewSong();
+          return;
+        }
+        if (isResetConfirmOpen) {
+          handleConfirmReset();
+          return;
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleModalKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', handleModalKeyDown, true);
+    };
+  }, [
+    instrumentError,
+    transposeSummary,
+    trackClipboardError,
+    optimizeSummary,
+    soundExportSummary,
+    dumpExportSummary,
+    renumberSummary,
+    isAboutOpen,
+    isChangelogOpen,
+    isTransposeOpen,
+    isOptimizeConfirmOpen,
+    isRenumberConfirmOpen,
+    isNewSongConfirmOpen,
+    isResetConfirmOpen,
+    handleCancelTranspose,
+    handleConfirmTranspose,
+    handleCancelOptimize,
+    handleConfirmOptimize,
+    handleCancelRenumber,
+    handleConfirmRenumber,
+    handleCancelNewSong,
+    handleConfirmNewSong,
+    handleCancelReset,
+    handleConfirmReset,
+    handleCloseTransposeSummary,
+    handleCloseOptimizeSummary,
+    handleCloseSoundExportSummary,
+    handleCloseDumpExportSummary,
+    handleCloseRenumberSummary,
+    handleCloseChangelog,
+    setInstrumentError,
+    setTrackClipboardError,
+    setIsAboutOpen
+  ]);
+
   try {
     return (
       <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
