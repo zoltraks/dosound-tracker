@@ -1232,11 +1232,27 @@ const App: React.FC = () => {
       flushRun();
 
       const exportData = { steps: compressedSteps };
-      const yamlContent = yaml.dump(exportData, {
+      let yamlContent = yaml.dump(exportData, {
         indent: 2,
         lineWidth: -1,
         quotingType: '"'
       });
+
+      const quoteNoteValues = (text: string): string => {
+        const noteLineRegex = /^(\s*-\s+|\s+)(note):\s*(.+)$/gm;
+        return text.replace(noteLineRegex, (_match, indent, key, value) => {
+          let inner = String(value).trim();
+          if (
+            (inner.startsWith('"') && inner.endsWith('"')) ||
+            (inner.startsWith('\'') && inner.endsWith('\''))
+          ) {
+            inner = inner.slice(1, -1);
+          }
+          return `${indent}${key}: "${inner}"`;
+        });
+      };
+
+      yamlContent = quoteNoteValues(yamlContent);
 
       await navigator.clipboard.writeText(yamlContent);
     } catch (error) {
