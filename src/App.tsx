@@ -319,6 +319,7 @@ const App: React.FC = () => {
   const wasPlayingRef = useRef(false);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
+  const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
 
   useEffect(() => {
     if (activeSection === 'trackA') {
@@ -2551,6 +2552,8 @@ const App: React.FC = () => {
                     currentInstrumentData={currentInstrument}
                     isTargetTrack={targetTrackId === 'A'}
                     onTogglePatternFromCursor={handleTogglePatternFromCursor}
+                    currentColumn={currentTrackColumn}
+                    setCurrentColumn={setCurrentTrackColumn}
                   />
 
                   <TrackPanel
@@ -2567,6 +2570,8 @@ const App: React.FC = () => {
                     currentInstrumentData={currentInstrument}
                     isTargetTrack={targetTrackId === 'B'}
                     onTogglePatternFromCursor={handleTogglePatternFromCursor}
+                    currentColumn={currentTrackColumn}
+                    setCurrentColumn={setCurrentTrackColumn}
                   />
 
                   <TrackPanel
@@ -2583,6 +2588,8 @@ const App: React.FC = () => {
                     currentInstrumentData={currentInstrument}
                     isTargetTrack={targetTrackId === 'C'}
                     onTogglePatternFromCursor={handleTogglePatternFromCursor}
+                    currentColumn={currentTrackColumn}
+                    setCurrentColumn={setCurrentTrackColumn}
                   />
                 </div>
               </div>

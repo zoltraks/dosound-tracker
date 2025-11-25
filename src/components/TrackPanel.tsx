@@ -10,7 +10,7 @@ interface TrackPanelProps {
   setActiveSection: (section: NavigationSection) => void;
   currentOctave: number;
   currentLine: number;
-   patternLength: number;
+  patternLength: number;
   onLineChange: (lineIndex: number) => void;
   pattern: Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
@@ -18,6 +18,8 @@ interface TrackPanelProps {
   currentInstrumentData: Instrument;
   isTargetTrack: boolean;
   onTogglePatternFromCursor: (lineIndex: number) => void;
+  currentColumn: 'note' | 'volume';
+  setCurrentColumn: (column: 'note' | 'volume') => void;
 }
 
 export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
@@ -34,11 +36,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     ym2149,
     currentInstrumentData,
     isTargetTrack,
-    onTogglePatternFromCursor
+    onTogglePatternFromCursor,
+    currentColumn,
+    setCurrentColumn
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
-  const [currentColumn, setCurrentColumn] = useState<'note' | 'volume'>('note');
   const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -169,13 +172,41 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
       if (!pattern) return;
-      // Move to note column within this track
-      setCurrentColumn('note');
+      if (currentColumn === 'volume') {
+        // Move from volume to note within the same track
+        setCurrentColumn('note');
+      } else {
+        // Move to previous track and select its volume column
+        let targetTrack: NavigationSection;
+        if (trackId === 'A') {
+          targetTrack = 'trackC';
+        } else if (trackId === 'B') {
+          targetTrack = 'trackA';
+        } else {
+          targetTrack = 'trackB';
+        }
+        setActiveSection(targetTrack);
+        setCurrentColumn('volume');
+      }
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
       if (!pattern) return;
-      // Move to volume column within this track
-      setCurrentColumn('volume');
+      if (currentColumn === 'note') {
+        // Move from note to volume within the same track
+        setCurrentColumn('volume');
+      } else {
+        // Move to next track and select its note column
+        let targetTrack: NavigationSection;
+        if (trackId === 'A') {
+          targetTrack = 'trackB';
+        } else if (trackId === 'B') {
+          targetTrack = 'trackC';
+        } else {
+          targetTrack = 'trackA';
+        }
+        setActiveSection(targetTrack);
+        setCurrentColumn('note');
+      }
     } else if (key === 'ENTER') {
       event.preventDefault();
       onTogglePatternFromCursor(currentLine);
@@ -285,13 +316,31 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
       }
     }
-  }, [isActive, currentLine, currentOctave, currentInstrument, onLineChange, patternLength, playPreviewNote, pattern, trackId, onPatternChange, onTogglePatternFromCursor]);
+  }, [
+    isActive,
+    currentLine,
+    currentOctave,
+    currentInstrument,
+    onLineChange,
+    patternLength,
+    playPreviewNote,
+    pattern,
+    trackId,
+    onPatternChange,
+    onTogglePatternFromCursor,
+    currentColumn,
+    setCurrentColumn,
+    setActiveSection
+  ]);
 
-  const handleLineClick = useCallback((lineIndex: number) => {
-    onLineChange(lineIndex);
-    setActiveSection(sectionName);
-    setCurrentColumn('note');
-  }, [setActiveSection, sectionName, onLineChange]);
+  const handleLineClick = useCallback(
+    (lineIndex: number, column: 'note' | 'volume' = 'note') => {
+      onLineChange(lineIndex);
+      setActiveSection(sectionName);
+      setCurrentColumn(column);
+    },
+    [setActiveSection, sectionName, onLineChange, setCurrentColumn]
+  );
 
   const formatNoteDisplay = useCallback((noteData: Note | null) => {
     if (!noteData) return '---';
@@ -336,22 +385,31 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           const noteIsActive = isCurrentLine && currentColumn === 'note';
 
           return (
-          <div
-            key={lineIndex}
-            className={getLineClass(lineIndex)}
-            onClick={() => handleLineClick(lineIndex)}
-          >
-            <span className="note-data">
-              <span className={`note-text ${noteIsActive ? 'active' : ''}`}>
-                {formatNoteDisplay(noteData as any)}
+            <div
+              key={lineIndex}
+              className={getLineClass(lineIndex)}
+              onClick={() => handleLineClick(lineIndex, 'note')}
+            >
+              <span className="note-data">
+                <span
+                  className={`note-text ${noteIsActive ? 'active' : ''}`}
+                  onClick={() => handleLineClick(lineIndex, 'note')}
+                >
+                  {formatNoteDisplay(noteData as any)}
+                </span>
+                <span
+                  className={`volume-data ${volumeIsActive ? 'active' : ''}`}
+                  onClick={(event: React.MouseEvent<HTMLSpanElement>) => {
+                    event.stopPropagation();
+                    handleLineClick(lineIndex, 'volume');
+                  }}
+                >
+                  {volume === undefined || volume === null
+                    ? '.'
+                    : (Math.max(0, Math.min(0x0f, (volume as number) | 0))).toString(16).toUpperCase()}
+                </span>
               </span>
-              <span className={`volume-data ${volumeIsActive ? 'active' : ''}`}>
-                {volume === undefined || volume === null
-                  ? '.'
-                  : (Math.max(0, Math.min(0x0f, (volume as number) | 0))).toString(16).toUpperCase()}
-              </span>
-            </span>
-          </div>
+            </div>
           );
         })}
       </div>
