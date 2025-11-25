@@ -392,7 +392,7 @@ body {
 }
 
 .right-column {
-  flex: 2;
+  flex: 1.6;
   min-height: 0;
 }
 
@@ -787,6 +787,22 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.song-info-grid {
+  display: flex;
+  gap: 4px;
+}
+
+.song-info-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.song-info-column-right {
+  align-items: flex-end;
 }
 
 .info-field {

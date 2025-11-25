@@ -71,6 +71,7 @@ const createDefaultSong = (): Song => {
     year: new Date().getFullYear(),
     speed: 6,
     patternLength: defaultPatternLength,
+    loop: null,
     patterns: [defaultPatternA, defaultPatternB, defaultPatternC],
     playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
     instruments: [
@@ -217,6 +218,7 @@ export const useDataManagement = () => {
       year: new Date().getFullYear(),
       speed: 6,
       patternLength: targetLength,
+      loop: null,
       patterns,
       playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
       instruments: [newCurrentInstrument]
@@ -394,17 +396,23 @@ export const useDataManagement = () => {
         };
       });
 
+      const songNode: any = {
+        title: currentSong.title,
+        author: currentSong.author,
+        length: currentSong.patternLength,
+        speed: currentSong.speed,
+        year: currentSong.year,
+        playlist,
+        pattern: patterns,
+        instrument: instruments
+      };
+
+      if (typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop)) {
+        songNode.loop = Math.max(0, Math.floor(currentSong.loop));
+      }
+
       const exportData = {
-        song: {
-          title: currentSong.title,
-          author: currentSong.author,
-          length: currentSong.patternLength,
-          speed: currentSong.speed,
-          year: currentSong.year,
-          playlist,
-          pattern: patterns,
-          instrument: instruments
-        }
+        song: songNode
       };
 
       let yamlContent = yaml.dump(exportData, {

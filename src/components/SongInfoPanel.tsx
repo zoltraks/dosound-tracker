@@ -21,8 +21,9 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
   const yearRef = useRef<HTMLInputElement>(null);
   const speedRef = useRef<HTMLInputElement>(null);
   const lengthRef = useRef<HTMLInputElement>(null);
+  const loopRef = useRef<HTMLInputElement>(null);
   const isActive = activeSection === 'songInfo';
-  const [lastFocusedField, setLastFocusedField] = useState<'title' | 'author' | 'year' | 'speed' | 'length'>('title');
+  const [lastFocusedField, setLastFocusedField] = useState<'title' | 'author' | 'year' | 'speed' | 'length' | 'loop'>('title');
 
   useEffect(() => {
     if (!isActive) return;
@@ -32,7 +33,8 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
       author: authorRef,
       year: yearRef,
       speed: speedRef,
-      length: lengthRef
+      length: lengthRef,
+      loop: loopRef
     } as const;
 
     const targetRef = fieldMap[lastFocusedField] || titleRef;
@@ -41,7 +43,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
     }
   }, [isActive, lastFocusedField]);
 
-  const handleFieldChange = useCallback((field: keyof Song, value: string | number) => {
+  const handleFieldChange = useCallback((field: keyof Song, value: string | number | null) => {
     onChange({ [field]: value });
   }, [onChange]);
 
@@ -58,7 +60,14 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
 
     if (!target) return;
 
-    const fields = [titleRef.current, authorRef.current, yearRef.current, speedRef.current, lengthRef.current];
+    const fields = [
+      titleRef.current,
+      authorRef.current,
+      yearRef.current,
+      speedRef.current,
+      lengthRef.current,
+      loopRef.current
+    ];
     const index = fields.findIndex((el) => el === target);
 
     if (index === -1) return;
@@ -97,6 +106,36 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
     handleFieldChange('patternLength', clamped);
   }, [handleFieldChange]);
 
+  const handleLoopChange = useCallback((next: number | null) => {
+    if (typeof next !== 'number' || !Number.isFinite(next)) {
+      handleFieldChange('loop', null);
+      return;
+    }
+    const base = Math.floor(next as number);
+    const clamped = Math.max(0, base);
+    handleFieldChange('loop', clamped);
+  }, [handleFieldChange]);
+
+  const handleLoopInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Backspace') {
+      const input = event.currentTarget;
+      const value = input.value || '';
+      const selectionStart = input.selectionStart ?? 0;
+      const selectionEnd = input.selectionEnd ?? 0;
+
+      const deletingAll =
+        value.length === 0 ||
+        (selectionStart === 0 && selectionEnd === value.length) ||
+        (value.length === 1 && selectionStart === 1 && selectionEnd === 1);
+
+      if (deletingAll) {
+        handleLoopChange(null);
+      }
+    }
+
+    (handleKeyDown as (e: React.KeyboardEvent) => void)(event);
+  }, [handleKeyDown, handleLoopChange]);
+
   return (
     <div 
       className={`song-info-panel ${isActive ? 'active' : ''}`}
@@ -130,50 +169,70 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
             className="info-input"
           />
         </div>
-        
-        <div className="info-field">
-          <label>Year:</label>
-          <NumberSpinner
-            value={song.year}
-            onChange={handleYearChange}
-            min={1980}
-            max={2030}
-            step={1}
-            ariaLabel="Song year"
-            inputRef={yearRef}
-            onInputKeyDown={handleKeyDown as any}
-            onInputFocus={() => setLastFocusedField('year')}
-          />
-        </div>
-        
-        <div className="info-field">
-          <label>Speed:</label>
-          <NumberSpinner
-            value={song.speed}
-            onChange={handleSpeedChange}
-            min={2}
-            max={255}
-            step={2}
-            ariaLabel="Song speed"
-            inputRef={speedRef}
-            onInputKeyDown={handleKeyDown as any}
-            onInputFocus={() => setLastFocusedField('speed')}
-          />
-        </div>
-        
-        <div className="info-field">
-          <label>Length:</label>
-          <NumberSpinner
-            value={song.patternLength ?? 64}
-            onChange={handleLengthChange}
-            min={4}
-            max={256}
-            step={1}
-            ariaLabel="Pattern length"
-            inputRef={lengthRef}
-            onInputKeyDown={handleKeyDown as any}
-            onInputFocus={() => setLastFocusedField('length')}
-          />
+
+        <div className="song-info-grid">
+          <div className="song-info-column">
+            <div className="info-field">
+              <label>Year:</label>
+              <NumberSpinner
+                value={song.year}
+                onChange={handleYearChange}
+                min={1980}
+                max={2030}
+                step={1}
+                ariaLabel="Song year"
+                inputRef={yearRef}
+                onInputKeyDown={handleKeyDown as any}
+                onInputFocus={() => setLastFocusedField('year')}
+              />
+            </div>
+            
+            <div className="info-field">
+              <label>Speed:</label>
+              <NumberSpinner
+                value={song.speed}
+                onChange={handleSpeedChange}
+                min={2}
+                max={255}
+                step={2}
+                ariaLabel="Song speed"
+                inputRef={speedRef}
+                onInputKeyDown={handleKeyDown as any}
+                onInputFocus={() => setLastFocusedField('speed')}
+              />
+            </div>
+          </div>
+
+          <div className="song-info-column song-info-column-right">
+            <div className="info-field">
+              <label>Length:</label>
+              <NumberSpinner
+                value={song.patternLength ?? 64}
+                onChange={handleLengthChange}
+                min={4}
+                max={256}
+                step={1}
+                ariaLabel="Pattern length"
+                inputRef={lengthRef}
+                onInputKeyDown={handleKeyDown as any}
+                onInputFocus={() => setLastFocusedField('length')}
+              />
+            </div>
+
+            <div className="info-field">
+              <label>Loop:</label>
+              <NumberSpinner
+                value={typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null}
+                onChange={handleLoopChange}
+                min={0}
+                step={1}
+                ariaLabel="Playlist loop position"
+                inputRef={loopRef}
+                onInputKeyDown={handleLoopInputKeyDown}
+                onInputFocus={() => setLastFocusedField('loop')}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

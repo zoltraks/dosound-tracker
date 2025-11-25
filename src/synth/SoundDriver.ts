@@ -48,6 +48,7 @@ export interface Song {
   year: number;
   speed: number;
   patternLength: number;
+  loop?: number | null;
   patterns: Pattern[];
   playlist: { trackA: string; trackB: string; trackC: string }[];
   instruments: Instrument[];

@@ -65,6 +65,21 @@ export const parseSongFromYaml = (content: string): Song => {
   const yearRaw = Number(node.year);
   const year = Number.isFinite(yearRaw) ? yearRaw : new Date().getFullYear();
 
+  // Optional loop position (0-based playlist index)
+  let loop: number | null = null;
+  const rawLoop = (node as any).loop;
+  if (typeof rawLoop === 'number' && Number.isFinite(rawLoop)) {
+    loop = Math.max(0, Math.floor(rawLoop));
+  } else if (typeof rawLoop === 'string') {
+    const trimmed = rawLoop.trim();
+    if (trimmed) {
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed)) {
+        loop = Math.max(0, Math.floor(parsed));
+      }
+    }
+  }
+
   const playlistNodes = Array.isArray(node.playlist) ? node.playlist : [];
   if (playlistNodes.length === 0) {
     throw new Error('Song playlist is missing or empty');
@@ -268,12 +283,22 @@ export const parseSongFromYaml = (content: string): Song => {
     };
   });
 
+  // Ensure loop index stays within playlist bounds
+  if (loop != null) {
+    if (playlist.length === 0) {
+      loop = null;
+    } else {
+      loop = Math.max(0, Math.min(playlist.length - 1, loop | 0));
+    }
+  }
+
   return {
     title,
     author,
     year,
     speed,
     patternLength: clampedLength,
+    loop,
     patterns,
     playlist,
     instruments,
