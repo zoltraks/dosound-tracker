@@ -1,5 +1,15 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.0.20
+
+- Added a per-row hexadecimal **volume column** to the pattern editor that attenuates instrument volume envelopes and is fully integrated with playback, WAV export and assembly export.
+- Added real-time volume display to track headers, showing the currently effective volume in hexadecimal based on instrument envelopes and the new volume column.
+- Improved keyboard and mouse navigation in the pattern editor so left/right arrows move between note and volume columns across tracks and clicking a cell selects its column with clear visual highlighting.
+- Extended the YAML song format and compression logic to support the new volume column while keeping backward compatibility with existing songs and space-run encoding.
+- Updated the dark mode palette to a blue‑purple scheme with better contrast and refreshed the theme toggle icon.
+- Added a new example song `Arp_Loop_2.yaml`, extended the `Warmball.yaml` playlist and refined instrument ordering and naming in example songs.
+- Improved the **CHANGES** modal with better spacing and added global keyboard shortcuts (ESC / ENTER) for closing or confirming dialogs.
+
 ## Version 1.0.19
 
 - Added a **CHANGES** button in the About dialog that opens this changelog in a modal window.
