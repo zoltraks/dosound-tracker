@@ -1,0 +1,460 @@
+song:
+  title: Warmball
+  author: Zoltar X / New Generation
+  length: 32
+  speed: 6
+  year: 2025
+  playlist:
+    - A: "31"
+      B: "09"
+      C: "00"
+    - A: "32"
+      B: "09"
+      C: "00"
+    - A: "31"
+      B: "09"
+      C: "0D"
+    - A: "32"
+      B: "09"
+      C: "01"
+    - A: "31"
+      B: "41"
+      C: "44"
+    - A: "32"
+      B: "41"
+      C: "45"
+    - A: "31"
+      B: "42"
+      C: "44"
+    - A: "32"
+      B: "42"
+      C: "45"
+    - A: "31"
+      B: "41"
+      C: "44"
+    - A: "32"
+      B: "41"
+      C: "45"
+    - A: "31"
+      B: "09"
+      C: "0D"
+    - A: "32"
+      B: "09"
+      C: "29"
+  patterns:
+    - name: Pattern 09
+      number: "09"
+      steps:
+        - space: 2
+        - note: D-2
+          instrument: "02"
+        - space: 9
+        - note: D-2
+          instrument: "02"
+        - space: 5
+        - note: D-2
+          instrument: "02"
+        - space: 9
+        - note: D-2
+          instrument: "02"
+    - name: Pattern 0D
+      number: 0D
+      steps:
+        - note: D-2
+          instrument: "03"
+        - space: 3
+        - note: D-2
+          instrument: "04"
+        - space: 5
+        - note: C-3
+          instrument: "04"
+        - space: 3
+        - note: C-3
+          instrument: "04"
+        - space: 5
+        - note: D-2
+          instrument: "04"
+        - space: 5
+        - note: D-3
+          instrument: "04"
+        - space: 3
+        - note: D-2
+          instrument: "03"
+    - name: Pattern 01
+      number: "01"
+      steps:
+        - note: D-2
+          instrument: "03"
+        - space: 3
+        - note: D-2
+          instrument: "04"
+        - space: 5
+        - note: C-3
+          instrument: "04"
+        - space: 3
+        - note: C-3
+          instrument: "04"
+        - space: 5
+        - note: D-2
+          instrument: "04"
+        - space: 5
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: D-3
+          instrument: "06"
+    - name: Pattern 00
+      number: "00"
+      steps: []
+    - name: Pattern 29
+      number: "29"
+      steps:
+        - note: D-2
+          instrument: "03"
+        - space: 3
+        - note: D-2
+          instrument: "04"
+        - space: 5
+        - note: C-3
+          instrument: "04"
+        - space: 3
+        - note: C-3
+          instrument: "04"
+        - space: 5
+        - note: D-2
+          instrument: "04"
+    - name: Pattern 31
+      number: "31"
+      steps:
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: F-3
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 3
+        - note: G-2
+          instrument: "00"
+        - space: 1
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 1
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: F-3
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 5
+        - note: A-1
+          instrument: "00"
+        - space: 1
+        - note: C-2
+          instrument: "00"
+    - name: Pattern 32
+      number: "32"
+      steps:
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: F-3
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 3
+        - note: G-2
+          instrument: "00"
+        - space: 1
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 1
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: F-3
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 3
+        - note: A-2
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "00"
+        - space: 1
+        - note: F-3
+          instrument: "00"
+    - name: Pattern 41
+      number: "41"
+      steps:
+        - note: D-6
+          instrument: "07"
+        - space: 1
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "02"
+        - space: 1
+        - note: D-3
+          instrument: "02"
+        - space: 3
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: A-4
+          instrument: "05"
+        - note: D-4
+          instrument: "07"
+        - note: C-5
+          instrument: "05"
+        - note: A-4
+          instrument: "07"
+        - note: G-5
+          instrument: "05"
+        - note: C-5
+          instrument: "07"
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: G-5
+          instrument: "07"
+        - note: A-5
+          instrument: "07"
+        - space: 2
+        - note: A-5
+          instrument: "05"
+        - space: 1
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: C-6
+          instrument: "05"
+        - note: A-5
+          instrument: "07"
+        - note: D-6
+          instrument: "05"
+        - note: C-6
+          instrument: "07"
+    - name: Pattern 42
+      number: "42"
+      steps:
+        - note: D-6
+          instrument: "07"
+        - space: 1
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: C-3
+          instrument: "02"
+        - space: 1
+        - note: D-3
+          instrument: "02"
+        - space: 3
+        - note: D-2
+          instrument: "00"
+        - space: 1
+        - note: D-5
+          instrument: "05"
+        - note: A-3
+          instrument: "07"
+        - note: F-5
+          instrument: "05"
+        - note: D-5
+          instrument: "07"
+        - note: C-5
+          instrument: "05"
+        - note: F-5
+          instrument: "07"
+        - note: D-2
+          instrument: "00"
+        - note: C-5
+          instrument: "07"
+        - note: G-5
+          instrument: "07"
+        - note: A-5
+          instrument: "07"
+        - note: C-5
+          instrument: "07"
+        - note: D-5
+          instrument: "07"
+        - note: A-5
+          instrument: "05"
+        - note: D-5
+          instrument: "07"
+        - note: D-2
+          instrument: "00"
+        - note: A-5
+          instrument: "07"
+        - note: A-4
+          instrument: "05"
+        - note: E-5
+          instrument: "07"
+        - note: C-5
+          instrument: "05"
+        - note: A-4
+          instrument: "07"
+    - name: Pattern 44
+      number: "44"
+      steps:
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: D-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: D-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: D-3
+          instrument: "04"
+        - note: D-3
+          instrument: "04"
+    - name: Pattern 45
+      number: "45"
+      steps:
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: D-3
+          instrument: "04"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: C-3
+          instrument: "04"
+        - space: 1
+        - note: D-2
+          instrument: "03"
+        - space: 1
+        - note: A-2
+          instrument: "06"
+        - space: 1
+        - note: D-3
+          instrument: "04"
+        - note: D-3
+          instrument: "04"
+  instruments:
+    - name: Bass 4
+      number: "00"
+      base: C-3
+      volume: [14, 14, 12, 12, 0]
+    - name: ""
+      number: "01"
+      volume: [0]
+    - name: Bass 5
+      number: "02"
+      base: C-2
+      volume: [11, 11, 11, 11, 7, 0]
+    - name: Kick
+      number: "03"
+      base: D-2
+      volume: [11, 15, 11, 7, 4, 2, 0]
+      noise: [9, 0, 0, 6, 5, 4, 0]
+      mode: [1, 0, 0, 1, 1, 1, 0]
+    - name: Hihat
+      number: "04"
+      volume: [10, 2, 0]
+      noise: [2, 1, 0]
+      mode: [1, 1, 1, 0]
+    - name: Pim 1
+      number: "05"
+      volume: [12, 14, 10, 4, 0]
+      arpeggio: [12, 0]
+    - name: Snare
+      number: "06"
+      base: A-2
+      volume: [11, 15, 13, 10, 9, 8, 6, 5, 0]
+      noise: [9, 0, 0, 8, 6, 4, 3, 2, 0]
+      mode: [1, 0, 1, 1, 1, 1, 1, 1, 0]
+    - name: Pim 2
+      number: "07"
+      volume: [10, 6, 0]
