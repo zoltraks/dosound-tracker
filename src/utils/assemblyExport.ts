@@ -1,5 +1,5 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
-import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE } from '../constants/music';
+import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
 
@@ -576,7 +576,7 @@ function frequencyToPeriod(frequency: number): number {
  * volume envelope and arpeggio envelope. Tone (TA) follows arpeggio over time.
  * Output follows strict formatting rules.
  */
-export function exportInstrumentToAssembly(instrument: Instrument): string {
+export function exportInstrumentToAssembly(instrument: Instrument, song?: Song): string {
   const base = parseBaseKeyForExport(instrument.base || 'C-4');
 
   // Base frequency for the instrument's root note
@@ -605,6 +605,30 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
     noiseEnv.length || 1
   );
 
+  // Optionally cap the number of steps based on the current song's
+  // speed (ticks per row) and pattern length so the dump matches the
+  // duration of one pattern in the sequencer.
+  let maxSteps = stepsCount;
+  if (song) {
+    const rawSpeed = Number(song.speed);
+    const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
+    const clampedSpeed = Math.max(2, baseSpeed);
+    const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
+
+    const rawLength = Number((song as any).patternLength);
+    const patternLength = Number.isFinite(rawLength) && rawLength > 0
+      ? Math.floor(rawLength)
+      : PATTERN_LENGTH;
+
+    // Envelopes advance every 40ms, i.e. every 2 ticks. With a speed
+    // of S ticks per row this yields S/2 envelope steps per row.
+    const stepsPerRow = Math.max(1, Math.floor(evenSpeed / 2));
+    const maxBySong = patternLength * stepsPerRow;
+    maxSteps = Math.min(stepsCount, maxBySong);
+  }
+
+  const totalSteps = Math.max(1, maxSteps);
+
   type StepState = { 
     volume: number; 
     period: number; 
@@ -615,7 +639,7 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
   };
   const states: StepState[] = [];
 
-  for (let i = 0; i < stepsCount; i++) {
+  for (let i = 0; i < totalSteps; i++) {
     const vol = i < vols.length ? vols[i] : vols[vols.length - 1] ?? 0;
 
     // Get mode for this step
@@ -714,13 +738,11 @@ export function exportInstrumentToAssembly(instrument: Instrument): string {
   const initialMixer = getMixerForMode(first.mode, 0);
   const mixerComment = getRegisterComment(0x07, initialMixer) || 'MX';
   asm += formatAsmLine([0x07, initialMixer], mixerComment);
-  asm += '\n';
 
   // Initial volumes
   asm += formatAsmLine([0x08, first.volume], `VA ${first.volume}`);
   asm += formatAsmLine([0x09, 0x0], 'VB 0');
   asm += formatAsmLine([0x0A, 0x0], 'VC 0');
-  asm += '\n';
 
   // Initial tone period (only if tone is active)
   const firstToneActive = first.mode === 0 || first.mode === 2;

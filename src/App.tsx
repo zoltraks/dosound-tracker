@@ -1704,7 +1704,7 @@ const App: React.FC = () => {
 
   const handleExportInstrumentAssembly = useCallback(() => {
     try {
-      const asm = exportInstrumentToAssembly(currentInstrument);
+      const asm = exportInstrumentToAssembly(currentInstrument, currentSong);
       const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`)
         .replace(/[^a-z0-9]/gi, '_')
         .toLowerCase();
@@ -1712,7 +1712,7 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Instrument assembly export failed:', error);
     }
-  }, [currentInstrument]);
+  }, [currentInstrument, currentSong]);
 
   const handleCloneInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
