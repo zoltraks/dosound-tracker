@@ -160,15 +160,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Navigation
     if (key === 'ARROWUP') {
       event.preventDefault();
-      if (!pattern) return;
       onLineChange(Math.max(0, currentLine - 1));
     } else if (key === 'ARROWDOWN') {
       event.preventDefault();
-      if (!pattern) return;
       onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
     } else if (key === 'PAGEUP') {
       event.preventDefault();
-      if (!pattern) return;
       const length = Math.max(1, patternLength || 1);
       const step = 16;
       const rawIndex = currentLine - step;
@@ -176,23 +173,19 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onLineChange(wrappedIndex);
     } else if (key === 'PAGEDOWN') {
       event.preventDefault();
-      if (!pattern) return;
       const length = Math.max(1, patternLength || 1);
       const step = 16;
       const wrappedIndex = (currentLine + step) % length;
       onLineChange(wrappedIndex);
     } else if (key === 'HOME') {
       event.preventDefault();
-      if (!pattern) return;
       onLineChange(0);
     } else if (key === 'END') {
       event.preventDefault();
-      if (!pattern) return;
       const length = Math.max(1, patternLength || 1);
       onLineChange(length - 1);
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
-      if (!pattern) return;
       if (currentColumn === 'volume') {
         // Move from volume to note within the same track
         setCurrentColumn('note');
@@ -211,7 +204,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       }
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
-      if (!pattern) return;
       if (currentColumn === 'note') {
         // Move from note to volume within the same track
         setCurrentColumn('volume');
