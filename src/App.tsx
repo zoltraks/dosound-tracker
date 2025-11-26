@@ -498,8 +498,9 @@ const App: React.FC = () => {
             continue;
           }
 
-          // Explicit note-off event on this row
-          if (noteOnRow && noteOnRow.note === '===') {
+          // Explicit note-off event on this row. Only act on the first
+          // tick of the row so we match the offline export logic.
+          if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
             const sustainIndex = channelSustainRef.current[ch];
 
             if (
@@ -623,10 +624,13 @@ const App: React.FC = () => {
             }
             lastNotes[ch] = activeNote;
           } else {
-            // No active note at all - reset and silence
+            // No active note at all. Explicit rests and hard mutes are
+            // already handled above (no pattern, note-off without
+            // sustain, or initial startup row). Leaving the YM2149
+            // registers as-is here avoids brief drop-outs if state
+            // transiently reports no note for a single tick.
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
             channelSustainRef.current[ch] = null;
             channelReleasedRef.current[ch] = false;
