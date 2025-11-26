@@ -290,10 +290,8 @@ export const parseSongFromYaml = (content: string): Song => {
       throw new Error(`Invalid instrument number "${rawNumber}"`);
     }
 
-    const name =
-      typeof instNode.name === 'string' && instNode.name.trim()
-        ? instNode.name
-        : `Instrument ${number}`;
+    const rawName = typeof instNode.name === 'string' ? instNode.name : '';
+    const name = rawName.trim() ? rawName : '';
 
     const baseParsed = parseBaseKey((instNode as any).base);
     const base = baseParsed
