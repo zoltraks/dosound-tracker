@@ -323,6 +323,8 @@ const App: React.FC = () => {
   const channelVolumeModifierRef = useRef<number[]>([0x0f, 0x0f, 0x0f]);
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
+  const lastUiLineRef = useRef(0);
+  const lastPatternPlayingRef = useRef(false);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
@@ -347,6 +349,36 @@ const App: React.FC = () => {
   // Track pattern playing state
   const [isPatternPlaying, setIsPatternPlaying] = useState(false);
 
+  const playlistPatternMap = useMemo(() => {
+    const patternsById: Record<string, any> = {};
+    for (const pattern of currentSong.patterns) {
+      if (pattern && pattern.id) {
+        patternsById[pattern.id] = pattern;
+      }
+    }
+
+    const length = currentSong.playlist.length;
+    const patternsA = new Array(length);
+    const patternsB = new Array(length);
+    const patternsC = new Array(length);
+
+    for (let i = 0; i < length; i++) {
+      const entry = currentSong.playlist[i];
+      if (!entry) {
+        patternsA[i] = null;
+        patternsB[i] = null;
+        patternsC[i] = null;
+        continue;
+      }
+
+      patternsA[i] = entry.trackA && entry.trackA !== '--' ? patternsById[entry.trackA] || null : null;
+      patternsB[i] = entry.trackB && entry.trackB !== '--' ? patternsById[entry.trackB] || null : null;
+      patternsC[i] = entry.trackC && entry.trackC !== '--' ? patternsById[entry.trackC] || null : null;
+    }
+
+    return { A: patternsA, B: patternsB, C: patternsC };
+  }, [currentSong.playlist, currentSong.patterns]);
+
   // Handle stop playback with silence
   const handleStopPlayback = useCallback(() => {
     // Reset cycle counters when stopping
@@ -367,10 +399,17 @@ const App: React.FC = () => {
   // Basic sequencer callback for playback
   const sequencerCallback = useCallback((state: any) => {
     // Update current line for UI
-    setSharedCurrentLine(state.currentLine);
+    if (state.currentLine !== lastUiLineRef.current) {
+      lastUiLineRef.current = state.currentLine;
+      setSharedCurrentLine(state.currentLine);
+    }
     
     // Track pattern playing state
-    setIsPatternPlaying(state.isPatternLoop && state.isPlaying);
+    const patternPlaying = state.isPatternLoop && state.isPlaying;
+    if (patternPlaying !== lastPatternPlayingRef.current) {
+      lastPatternPlayingRef.current = patternPlaying;
+      setIsPatternPlaying(patternPlaying);
+    }
     
     if (ym2149Ref.current) {
       const ym2149 = ym2149Ref.current;
@@ -452,9 +491,9 @@ const App: React.FC = () => {
       
       if (currentPlaylistEntry) {
         // Get pattern data for each track
-        const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
-        const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
-        const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
+        const patternA = playlistPatternMap.A[currentPatternIndex] || null;
+        const patternB = playlistPatternMap.B[currentPatternIndex] || null;
+        const patternC = playlistPatternMap.C[currentPatternIndex] || null;
         
         // Allow playback even if some tracks are empty (using --)
         // Get current line data (patterns are track-agnostic - read trackA data for any track)
@@ -610,7 +649,7 @@ const App: React.FC = () => {
         }
       }
     }
-  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition, channelMutes]);
+  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition, channelMutes, playlistPatternMap]);
 
   // Register sequencer callback
   useEffect(() => {
@@ -636,6 +675,17 @@ const App: React.FC = () => {
     return '';
   }, []);
 
+  const instrumentMap = useMemo(() => {
+    const map: Record<string, any> = {};
+    for (const inst of currentSong.instruments) {
+      const key = normalizeInstrumentId(inst.id);
+      if (key) {
+        map[key] = inst;
+      }
+    }
+    return map;
+  }, [currentSong.instruments, normalizeInstrumentId]);
+
   // Helper function to update a YM2149 channel with the resolved instrument,
   // current note, envelope step and optional volume modifier. The `released`
   // flag controls sustain behaviour inside YM2149.
@@ -651,7 +701,7 @@ const App: React.FC = () => {
     const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
     const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
 
-    const instrument = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
+    const instrument = instrumentMap[resolvedInstrumentId];
     
     if (!instrument || !noteData || noteData.note === '===') {
       // No instrument or no active note - silence channel
@@ -668,7 +718,7 @@ const App: React.FC = () => {
       volumeModifier,
       released
     );
-  }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
+  }, [instrumentMap, currentInstrument?.id, normalizeInstrumentId]);
 
   const handlePatternChange = useCallback((newPattern: any) => {
     if (!newPattern || !newPattern.id) {
