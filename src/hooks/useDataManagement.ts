@@ -157,6 +157,9 @@ export const useDataManagement = () => {
     };
   });
 
+  const songSaveTimerRef = useRef<number | null>(null);
+  const instrumentSaveTimerRef = useRef<number | null>(null);
+
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
     const songInstrument = currentSong.instruments.find(inst => inst.id === currentInstrument.id);
@@ -167,19 +170,45 @@ export const useDataManagement = () => {
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    try {
-      localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(currentSong));
-    } catch (error) {
-      console.warn('Failed to save song to localStorage:', error);
+    if (songSaveTimerRef.current !== null) {
+      window.clearTimeout(songSaveTimerRef.current);
     }
+
+    songSaveTimerRef.current = window.setTimeout(() => {
+      try {
+        localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(currentSong));
+      } catch (error) {
+        console.warn('Failed to save song to localStorage:', error);
+      }
+    }, 300);
+
+    return () => {
+      if (songSaveTimerRef.current !== null) {
+        window.clearTimeout(songSaveTimerRef.current);
+        songSaveTimerRef.current = null;
+      }
+    };
   }, [currentSong]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(INSTRUMENT_STORAGE_KEY, JSON.stringify(currentInstrument));
-    } catch (error) {
-      console.warn('Failed to save instrument to localStorage:', error);
+    if (instrumentSaveTimerRef.current !== null) {
+      window.clearTimeout(instrumentSaveTimerRef.current);
     }
+
+    instrumentSaveTimerRef.current = window.setTimeout(() => {
+      try {
+        localStorage.setItem(INSTRUMENT_STORAGE_KEY, JSON.stringify(currentInstrument));
+      } catch (error) {
+        console.warn('Failed to save instrument to localStorage:', error);
+      }
+    }, 300);
+
+    return () => {
+      if (instrumentSaveTimerRef.current !== null) {
+        window.clearTimeout(instrumentSaveTimerRef.current);
+        instrumentSaveTimerRef.current = null;
+      }
+    };
   }, [currentInstrument]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
