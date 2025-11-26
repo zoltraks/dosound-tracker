@@ -10,7 +10,7 @@ export const escapeHtml = (str: string): string => {
 const renderInlineMarkdown = (text: string): string => {
   const escaped = escapeHtml(text);
   // Bold **text**
-  return escaped.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  return escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
 };
 
 export const renderMarkdown = (md: string): string => {

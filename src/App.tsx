@@ -230,16 +230,16 @@ const App: React.FC = () => {
         for (const line of lines) {
           if (!line.trim()) {
             if (current.length > 0) {
-              blocks.push(current.join('\n'));
+              blocks.push(current.join(' '));
               current = [];
             }
           } else {
-            current.push(line);
+            current.push(line.trim());
           }
         }
 
         if (current.length > 0) {
-          blocks.push(current.join('\n'));
+          blocks.push(current.join(' '));
         }
 
         setMessages(blocks);
@@ -260,6 +260,46 @@ const App: React.FC = () => {
   const notesIntervalRef = useRef<number | null>(null);
   const notesFadeTimeoutRef = useRef<number | null>(null);
 
+  const handleNotesClick = useCallback(() => {
+    const messagesLength = messages.length;
+
+    if (messagesLength <= 1) {
+      return;
+    }
+
+    if (notesIntervalRef.current !== null) {
+      window.clearInterval(notesIntervalRef.current);
+    }
+
+    notesIntervalRef.current = window.setInterval(() => {
+      handleNotesClick();
+    }, 10000);
+
+    setIsNotesVisible(false);
+
+    if (notesFadeTimeoutRef.current !== null) {
+      window.clearTimeout(notesFadeTimeoutRef.current);
+    }
+
+    notesFadeTimeoutRef.current = window.setTimeout(() => {
+      setCurrentMessageIndex(prevIndex => {
+        if (messagesLength <= 1) {
+          return prevIndex;
+        }
+
+        let nextIndex = Math.floor(Math.random() * messagesLength);
+
+        if (nextIndex === prevIndex && messagesLength > 1) {
+          nextIndex = (prevIndex + 1) % messagesLength;
+        }
+
+        return nextIndex;
+      });
+
+      setIsNotesVisible(true);
+    }, 800);
+  }, [messages]);
+
   useEffect(() => {
     if (notesIntervalRef.current !== null) {
       window.clearInterval(notesIntervalRef.current);
@@ -278,29 +318,7 @@ const App: React.FC = () => {
     }
 
     notesIntervalRef.current = window.setInterval(() => {
-      setIsNotesVisible(false);
-
-      if (notesFadeTimeoutRef.current !== null) {
-        window.clearTimeout(notesFadeTimeoutRef.current);
-      }
-
-      notesFadeTimeoutRef.current = window.setTimeout(() => {
-        setCurrentMessageIndex(prevIndex => {
-          if (messagesLength <= 1) {
-            return prevIndex;
-          }
-
-          let nextIndex = Math.floor(Math.random() * messagesLength);
-
-          if (nextIndex === prevIndex && messagesLength > 1) {
-            nextIndex = (prevIndex + 1) % messagesLength;
-          }
-
-          return nextIndex;
-        });
-
-        setIsNotesVisible(true);
-      }, 800);
+      handleNotesClick();
     }, 10000);
 
     return () => {
@@ -313,7 +331,7 @@ const App: React.FC = () => {
         notesFadeTimeoutRef.current = null;
       }
     };
-  }, [messages]);
+  }, [messages, handleNotesClick]);
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -2955,7 +2973,7 @@ const App: React.FC = () => {
               }}
             />
 
-            <div className="notes-panel" aria-hidden="true">
+            <div className="notes-panel" aria-hidden="true" onClick={handleNotesClick}>
               <div
                 className={`notes-content${isNotesVisible ? '' : ' notes-hidden'}`}
                 dangerouslySetInnerHTML={{

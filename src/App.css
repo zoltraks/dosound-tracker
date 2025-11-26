@@ -837,6 +837,7 @@ body {
   padding: 4px;
   box-shadow: var(--shadow-small);
   overflow: hidden;
+  cursor: pointer;
 }
 
 .notes-content {
@@ -846,6 +847,7 @@ body {
   color: var(--text-secondary);
   opacity: 1;
   transition: opacity 0.8s ease-in-out;
+  user-select: none;
 }
 
 .notes-content.notes-hidden {
