@@ -1,0 +1,19 @@
+---
+
+In "Renumber Summary" don't show mapping items where nothing changes, for example:
+
+```
+Pattern ID mapping (old -> new):
+- 00 -> 00 (Pattern 02)
+- 01 -> 01 (Pattern 09)
+
+Instrument ID mapping (old -> new):
+- 00 -> 00 (Arp Quick)
+- 01 -> 01 (Bass Flat)
+```
+
+Show only what was really renumbered.
+
+If no changes was made, just show message that nothing was made without detail mapping.
+
+---

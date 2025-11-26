@@ -1284,31 +1284,51 @@ export const useDataManagement = () => {
     const summaryLines: string[] = [];
     summaryLines.push('Renumbering complete.');
     summaryLines.push('');
-    summaryLines.push(`Patterns: ${song.patterns.length} -> ${renumberedSong.patterns.length}`);
-    summaryLines.push(
-      `Instruments: ${song.instruments.length} -> ${renumberedSong.instruments.length}`
-    );
 
-    if (orderedPatternIds.length > 0) {
-      summaryLines.push('');
-      summaryLines.push('Pattern ID mapping (old -> new):');
-      orderedPatternIds.forEach(oldId => {
-        const newId = patternIdMap[oldId];
-        const pattern = patternById.get(oldId);
-        const name = pattern && pattern.name ? pattern.name : '';
-        summaryLines.push(`- ${oldId} -> ${newId}${name ? ` (${name})` : ''}`);
-      });
-    }
+    const patternMappingLines: string[] = [];
+    orderedPatternIds.forEach(oldId => {
+      const newId = patternIdMap[oldId];
+      if (!newId || newId === oldId) {
+        return;
+      }
+      const pattern = patternById.get(oldId);
+      const name = pattern && pattern.name ? pattern.name : '';
+      patternMappingLines.push(`- ${oldId} -> ${newId}${name ? ` (${name})` : ''}`);
+    });
 
-    if (instrumentsSorted.length > 0) {
-      summaryLines.push('');
-      summaryLines.push('Instrument ID mapping (old -> new):');
-      instrumentsSorted.forEach(inst => {
-        const oldIdNorm = (inst.id || '').trim().toUpperCase();
-        const mapped = instrumentIdMap[oldIdNorm];
-        const name = inst.name || '';
-        summaryLines.push(`- ${inst.id} -> ${mapped}${name ? ` (${name})` : ''}`);
-      });
+    const instrumentMappingLines: string[] = [];
+    instrumentsSorted.forEach(inst => {
+      const oldIdRaw = inst.id || '';
+      const oldIdNorm = oldIdRaw.trim().toUpperCase();
+      const mapped = oldIdNorm ? instrumentIdMap[oldIdNorm] : '';
+      if (!mapped || mapped === oldIdNorm) {
+        return;
+      }
+      const name = inst.name || '';
+      instrumentMappingLines.push(`- ${oldIdRaw} -> ${mapped}${name ? ` (${name})` : ''}`);
+    });
+
+    const hasPatternChanges = patternMappingLines.length > 0;
+    const hasInstrumentChanges = instrumentMappingLines.length > 0;
+
+    if (hasPatternChanges || hasInstrumentChanges) {
+      summaryLines.push(`Patterns: ${song.patterns.length} -> ${renumberedSong.patterns.length}`);
+      summaryLines.push(
+        `Instruments: ${song.instruments.length} -> ${renumberedSong.instruments.length}`
+      );
+
+      if (hasPatternChanges) {
+        summaryLines.push('');
+        summaryLines.push('Pattern ID mapping (old -> new):');
+        patternMappingLines.forEach(line => summaryLines.push(line));
+      }
+      if (hasInstrumentChanges) {
+        summaryLines.push('');
+        summaryLines.push('Instrument ID mapping (old -> new):');
+        instrumentMappingLines.forEach(line => summaryLines.push(line));
+      }
+    } else {
+      summaryLines.push('No pattern or instrument IDs were renumbered.');
     }
 
     return summaryLines.join('\n');
