@@ -152,6 +152,15 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
 
+    // Precompute volume envelope tail information so we know when to auto-stop
+    const volumeEnv: number[] =
+      Array.isArray(instrument.volumeEnvelope) && instrument.volumeEnvelope.length > 0
+        ? instrument.volumeEnvelope
+        : [0x0f];
+    const lastVolumeIndex = volumeEnv.length - 1;
+    const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
+    const volumeRegister = 0x08 + channel;
+
     // Start envelope timer - 20ms tick, but advance envelope step every 40ms (every 2 ticks)
     envelopeTimersRef.current[keyId] = window.setInterval(() => {
       const sustain = previewSustainIndexRef.current[keyId];
@@ -188,6 +197,36 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       }
 
       ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
+
+      // If this note has been released and the envelope has reached the end
+      // of the volume envelope with a final value of 0, automatically stop
+      // the preview to avoid leaving runaway timers.
+      if (
+        released &&
+        lastVolumeIndex >= 0 &&
+        effectiveRawStep >= lastVolumeIndex &&
+        lastVolumeValue <= 0
+      ) {
+        const timerId = envelopeTimersRef.current[keyId];
+        if (timerId) {
+          clearInterval(timerId);
+          delete envelopeTimersRef.current[keyId];
+        }
+        if (previewSubTicksRef.current[keyId] !== undefined) {
+          delete previewSubTicksRef.current[keyId];
+        }
+        if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
+          delete previewEnvelopeStepsRef.current[keyId];
+        }
+        if (previewSustainIndexRef.current[keyId] !== undefined) {
+          delete previewSustainIndexRef.current[keyId];
+        }
+        if (previewReleasedRef.current[keyId] !== undefined) {
+          delete previewReleasedRef.current[keyId];
+        }
+
+        ym2149.writeRegister(volumeRegister, 0x00);
+      }
     }, 20); // 20ms base tick, 40ms per envelope step
   }, [ym2149, currentInstrument, previewChannel]);
 
