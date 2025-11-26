@@ -582,10 +582,15 @@ const App: React.FC = () => {
           let activeNote = last as any;
           const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
 
-          // Update per-channel volume modifier when a volume nibble is present on this row.
-          if (volumeOnRow !== undefined && volumeOnRow !== null) {
+          // Update per-channel volume modifier once at the start of the row
+          // when a volume nibble is present. This avoids reapplying the same
+          // volume on every tick of the row while still responding immediately
+          // to row-level volume changes.
+          let volumeNibbleThisTick = false;
+          if (volumeOnRow !== undefined && volumeOnRow !== null && state.currentTick === 0) {
             const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
             channelVolumeModifierRef.current[ch] = clamped;
+            volumeNibbleThisTick = true;
           }
 
           if (hasExplicitNote) {
@@ -613,35 +618,53 @@ const App: React.FC = () => {
           }
 
           if (activeNote && activeNote.note && activeNote.note !== '===') {
-            // Use current step as envelope tick (so a freshly triggered note
-            // starts at step 0, matching the piano keyboard behaviour), then
-            // advance the step every 40ms (every 2 x 20ms ticks).
-            const step = channelEnvelopeStepRef.current[ch];
+            const isRowStart = state.currentTick === 0;
+            const prevStep = channelEnvelopeStepRef.current[ch];
+            const prevSub = channelSubTickRef.current[ch];
+
+            // Advance sub-tick and, on every second tick, advance the envelope
+            // step (25 Hz envelope progression on top of 50 Hz ticks).
+            const newSub = (prevSub + 1) % 2;
+            channelSubTickRef.current[ch] = newSub;
+
+            let stepToUse = prevStep;
+
+            if (newSub === 0) {
+              const sustainIndex = channelSustainIndexRef.current[ch];
+              const releasedFlag = channelReleasedRef.current[ch];
+
+              if (typeof sustainIndex === 'number' && !releasedFlag) {
+                // While the key is held and sustain is defined, do not advance
+                // the envelope past the sustain index.
+                const nextStep = prevStep + 1;
+                if (nextStep <= sustainIndex) {
+                  channelEnvelopeStepRef.current[ch] = nextStep;
+                  stepToUse = nextStep;
+                } else {
+                  channelEnvelopeStepRef.current[ch] = sustainIndex;
+                  stepToUse = sustainIndex;
+                }
+              } else {
+                const nextStep = prevStep + 1;
+                channelEnvelopeStepRef.current[ch] = nextStep;
+                stepToUse = nextStep;
+              }
+            }
+
             const volumeModifier = channelVolumeModifierRef.current[ch];
             const released = channelReleasedRef.current[ch];
 
-            updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier, released);
+            // Only touch the YM2149 when necessary:
+            // - at the start of a row with an explicit note,
+            // - when a row-level volume nibble is applied,
+            // - or when the envelope step actually changes.
+            const noteJustStarted = hasExplicitNote && isRowStart;
+            const shouldUpdateNow = noteJustStarted || volumeNibbleThisTick || newSub === 0;
 
-            // Envelope progression at 25 Hz: only advance on every second tick
-            const sub = (channelSubTickRef.current[ch] + 1) % 2;
-            channelSubTickRef.current[ch] = sub;
-            if (sub === 0) {
-              const sustainIndex = channelSustainIndexRef.current[ch];
-              const released = channelReleasedRef.current[ch];
-
-              if (typeof sustainIndex === 'number' && !released) {
-                // While the key is held and sustain is defined, do not advance
-                // the envelope past the sustain index.
-                const nextStep = step + 1;
-                if (nextStep <= sustainIndex) {
-                  channelEnvelopeStepRef.current[ch] = nextStep;
-                } else {
-                  channelEnvelopeStepRef.current[ch] = sustainIndex;
-                }
-              } else {
-                channelEnvelopeStepRef.current[ch] = step + 1;
-              }
+            if (shouldUpdateNow) {
+              updateChannelWithInstrument(ym2149, ch, activeNote, stepToUse, volumeModifier, released);
             }
+
             lastNotes[ch] = activeNote;
           } else {
             // No active note at all - reset and silence
