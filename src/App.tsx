@@ -427,16 +427,48 @@ const App: React.FC = () => {
 
       wasPlayingRef.current = true;
 
+      const playlistLength = currentSong.playlist.length;
+
+      if (playlistLength === 0) {
+        stop();
+        handleStopPlayback();
+        return;
+      }
+      
+      let playbackPatternIndex = state.currentPattern;
+      let playbackLine = state.currentLine;
+      let playbackTick = state.currentTick;
+
+      if (playbackPatternIndex < 0 || playbackPatternIndex >= playlistLength) {
+        const rawLoop = currentSong.loop;
+        const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
+
+        if (!hasLoop) {
+          handleStopPlayback();
+          stop(0);
+          return;
+        }
+
+        const base = Math.floor(rawLoop as number);
+        const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
+
+        playbackPatternIndex = loopIndex;
+        playbackLine = 0;
+        playbackTick = 0;
+
+        setPosition(loopIndex, 0, 0);
+      }
+
       const lastPos = lastSequencerPositionRef.current;
       const wrappedOrJumped =
-        lastPos && state.currentPattern !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
+        lastPos && playbackPatternIndex !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
 
       // Detect if this is the first tick after starting playback
       const isFirstTick = !lastPos;
 
       lastSequencerPositionRef.current = {
-        pattern: state.currentPattern,
-        line: state.currentLine
+        pattern: playbackPatternIndex,
+        line: playbackLine
       };
 
       if (wrappedOrJumped || isFirstTick) {
@@ -445,7 +477,7 @@ const App: React.FC = () => {
 
         // Reset envelopes and notes when we change pattern (song mode) 
         // or when not looping a single pattern, or on first tick
-        const patternChanged = lastPos && state.currentPattern !== lastPos.pattern;
+        const patternChanged = lastPos && playbackPatternIndex !== lastPos.pattern;
         if (patternChanged || !state.isPatternLoop || isFirstTick) {
           channelEnvelopeStepRef.current = [0, 0, 0];
           channelSustainIndexRef.current = [null, null, null];
@@ -459,33 +491,7 @@ const App: React.FC = () => {
         }
       }
 
-      const playlistLength = currentSong.playlist.length;
-
-      if (playlistLength === 0) {
-        stop();
-        handleStopPlayback();
-        return;
-      }
-      
-      const currentPatternIndex = state.currentPattern;
-      
-      if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
-        const rawLoop = currentSong.loop;
-        const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
-
-        if (!hasLoop) {
-          handleStopPlayback();
-          stop(0);
-          return;
-        }
-
-        const base = Math.floor(rawLoop as number);
-        const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
-
-        lastSequencerPositionRef.current = null;
-        setPosition(loopIndex, 0, 0);
-        return;
-      }
+      const currentPatternIndex = playbackPatternIndex;
       
       const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
       
@@ -497,9 +503,9 @@ const App: React.FC = () => {
         
         // Allow playback even if some tracks are empty (using --)
         // Get current line data (patterns are track-agnostic - read trackA data for any track)
-        const lineA = patternA?.lines[state.currentLine];
-        const lineB = patternB?.lines[state.currentLine];
-        const lineC = patternC?.lines[state.currentLine];
+        const lineA = patternA?.lines[playbackLine];
+        const lineB = patternB?.lines[playbackLine];
+        const lineC = patternC?.lines[playbackLine];
 
         const noteA = lineA?.trackA || null;
         const noteB = patternB ? (lineB?.trackA || null) : null; // Read trackA for track B
