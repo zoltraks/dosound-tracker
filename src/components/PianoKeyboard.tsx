@@ -117,6 +117,71 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     }
   }, [isActive]);
 
+  const stopNote = useCallback((note?: string, octave?: number) => {
+    if (!ym2149) return;
+
+    const volumeRegister = 0x08 + previewChannel;
+
+    // If note and octave provided, handle per-key release
+    if (note && octave) {
+      const keyId = `${note}${octave}`;
+      const hasTimer = !!envelopeTimersRef.current[keyId];
+      const hasState =
+        previewSubTicksRef.current[keyId] !== undefined ||
+        previewEnvelopeStepsRef.current[keyId] !== undefined ||
+        previewSustainIndexRef.current[keyId] !== undefined ||
+        previewReleasedRef.current[keyId] !== undefined;
+
+      // If there is no active preview state for this note, treat this as a
+      // stale key-up event and ignore it so we don't accidentally mute a
+      // newer note that is currently playing on the same preview channel.
+      if (!hasTimer && !hasState) {
+        return;
+      }
+
+      const sustain = previewSustainIndexRef.current[keyId];
+      const hasSustain = typeof sustain === 'number' && sustain >= 0;
+
+      if (hasSustain) {
+        // For instruments with sustain, key release acts as a release trigger:
+        // keep the timer/envelope running and allow it to progress past sustain.
+        previewReleasedRef.current[keyId] = true;
+        return;
+      }
+
+      // No sustain for this note: perform immediate hard stop as before.
+      if (envelopeTimersRef.current[keyId]) {
+        clearInterval(envelopeTimersRef.current[keyId]);
+        delete envelopeTimersRef.current[keyId];
+      }
+      if (previewSubTicksRef.current[keyId] !== undefined) {
+        delete previewSubTicksRef.current[keyId];
+      }
+      if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
+        delete previewEnvelopeStepsRef.current[keyId];
+      }
+      if (previewSustainIndexRef.current[keyId] !== undefined) {
+        delete previewSustainIndexRef.current[keyId];
+      }
+      if (previewReleasedRef.current[keyId] !== undefined) {
+        delete previewReleasedRef.current[keyId];
+      }
+
+      ym2149.writeRegister(volumeRegister, 0x00);
+      return;
+    }
+
+    // Clear all timers (fallback)
+    Object.values(envelopeTimersRef.current).forEach(timer => clearInterval(timer));
+    envelopeTimersRef.current = {};
+    previewSubTicksRef.current = {};
+    previewEnvelopeStepsRef.current = {};
+    previewSustainIndexRef.current = {};
+    previewReleasedRef.current = {};
+
+    ym2149.writeRegister(volumeRegister, 0x00);
+  }, [ym2149, previewChannel]);
+
   const playNote = useCallback((note: string, octave: number) => {
     if (!ym2149) return;
 
@@ -124,10 +189,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     if (!baseFreq) return;
     const keyId = `${note}${octave}`;
 
-    // Clear any existing timer for this key
-    if (envelopeTimersRef.current[keyId]) {
-      clearInterval(envelopeTimersRef.current[keyId]);
-    }
+    // For preview, treat the channel as strictly monophonic: before starting
+    // a new note, stop any existing preview envelopes on this channel to
+    // avoid overlapping timers fighting over the same YM2149 registers.
+    stopNote();
 
     const channel = previewChannel;
     const instrument = currentInstrument as any;
@@ -228,58 +293,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         ym2149.writeRegister(volumeRegister, 0x00);
       }
     }, 20); // 20ms base tick, 40ms per envelope step
-  }, [ym2149, currentInstrument, previewChannel]);
-
-  const stopNote = useCallback((note?: string, octave?: number) => {
-    if (!ym2149) return;
-
-    const volumeRegister = 0x08 + previewChannel;
-
-    // If note and octave provided, handle per-key release
-    if (note && octave) {
-      const keyId = `${note}${octave}`;
-      const sustain = previewSustainIndexRef.current[keyId];
-      const hasSustain = typeof sustain === 'number' && sustain >= 0;
-
-      if (hasSustain) {
-        // For instruments with sustain, key release acts as a release trigger:
-        // keep the timer/envelope running and allow it to progress past sustain.
-        previewReleasedRef.current[keyId] = true;
-        return;
-      }
-
-      // No sustain for this note: perform immediate hard stop as before.
-      if (envelopeTimersRef.current[keyId]) {
-        clearInterval(envelopeTimersRef.current[keyId]);
-        delete envelopeTimersRef.current[keyId];
-      }
-      if (previewSubTicksRef.current[keyId] !== undefined) {
-        delete previewSubTicksRef.current[keyId];
-      }
-      if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
-        delete previewEnvelopeStepsRef.current[keyId];
-      }
-      if (previewSustainIndexRef.current[keyId] !== undefined) {
-        delete previewSustainIndexRef.current[keyId];
-      }
-      if (previewReleasedRef.current[keyId] !== undefined) {
-        delete previewReleasedRef.current[keyId];
-      }
-
-      ym2149.writeRegister(volumeRegister, 0x00);
-      return;
-    }
-
-    // Clear all timers (fallback)
-    Object.values(envelopeTimersRef.current).forEach(timer => clearInterval(timer));
-    envelopeTimersRef.current = {};
-    previewSubTicksRef.current = {};
-    previewEnvelopeStepsRef.current = {};
-    previewSustainIndexRef.current = {};
-    previewReleasedRef.current = {};
-
-    ym2149.writeRegister(volumeRegister, 0x00);
-  }, [ym2149, previewChannel]);
+  }, [ym2149, currentInstrument, previewChannel, stopNote]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
