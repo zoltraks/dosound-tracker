@@ -295,9 +295,14 @@ export const useDataManagement = () => {
             ? inst.id
             : index.toString(16).padStart(2, '0').toUpperCase();
 
-        const instrumentNode: any = {};
-        instrumentNode.name = inst.name;
-        instrumentNode.number = number;
+        const instrumentNode: any = {
+          number,
+        };
+
+        const trimmedName = (inst.name || '').trim();
+        if (trimmedName) {
+          instrumentNode.name = trimmedName;
+        }
 
         const baseKey = inst.base || DEFAULT_BASE_KEY;
         if (baseKey !== DEFAULT_BASE_KEY) {
@@ -626,9 +631,12 @@ export const useDataManagement = () => {
       const isZeroDefault = (values: number[]): boolean =>
         values.length === 0 || (values.length === 1 && values[0] === 0);
 
-      const instrumentNode: Record<string, any> = {
-        name: currentInstrument.name || ''
-      };
+      const instrumentNode: Record<string, any> = {};
+
+      const trimmedName = (currentInstrument.name || '').trim();
+      if (trimmedName) {
+        instrumentNode.name = trimmedName;
+      }
 
       const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
       if (baseKey !== DEFAULT_BASE_KEY) {
@@ -757,6 +765,11 @@ export const useDataManagement = () => {
           }
         }
 
+        octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
+
+        const rawName = typeof node.name === 'string' ? node.name : '';
+        const parsedName = rawName.trim() ? rawName : '';
+
         const volumeEnvelope = expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F);
         const modeEnvelope = expandEnvelope('mode', ENVELOPE_LENGTH, 0);
         const arpeggioEnvelope = expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0);
@@ -792,7 +805,7 @@ export const useDataManagement = () => {
 
         const newInstrument: Instrument = {
           id: currentInstrument.id,
-          name: typeof node.name === 'string' && node.name.trim() ? node.name : currentInstrument.name,
+          name: parsedName,
           modeEnvelope,
           volumeEnvelope,
           arpeggioEnvelope,

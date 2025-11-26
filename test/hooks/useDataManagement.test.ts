@@ -66,4 +66,33 @@ song:
     expect(song.patterns[0].lines[0].trackA?.note.toUpperCase()).toBe('C');
     expect(song.patterns[0].lines[0].trackA?.octave).toBe(4);
   });
+
+  it('treats missing instrument name as empty string', () => {
+    const yamlText = `
+song:
+  title: No Name Song
+  author: Test Author
+  length: 16
+  speed: 6
+  year: 2025
+  playlist:
+    - A: "00"
+      B: "00"
+      C: "00"
+  pattern:
+    - name: Pattern 00
+      number: "00"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlText);
+
+    expect(song.instruments.length).toBeGreaterThan(0);
+    expect(song.instruments[0].name).toBe('');
+  });
 });
