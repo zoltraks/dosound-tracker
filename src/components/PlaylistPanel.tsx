@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { NavigationSection } from '../constants/navigation';
 
 interface PlaylistEntry {
@@ -35,6 +36,32 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   const linesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = activeSection === 'playlist';
+
+  const moveLine = useCallback(
+    (lineIndex: number, direction: 'up' | 'down') => {
+      if (playlist.length === 0) {
+        return;
+      }
+
+      if (direction === 'up' && lineIndex <= 0) {
+        return;
+      }
+
+      if (direction === 'down' && lineIndex >= playlist.length - 1) {
+        return;
+      }
+
+      const targetIndex = direction === 'up' ? lineIndex - 1 : lineIndex + 1;
+      const newPlaylist = [...playlist];
+      const [moved] = newPlaylist.splice(lineIndex, 1);
+      newPlaylist.splice(targetIndex, 0, moved);
+
+      onPlaylistChange(newPlaylist);
+      setCurrentLine(targetIndex);
+      onPositionSelect(targetIndex);
+    },
+    [playlist, onPlaylistChange, onPositionSelect]
+  );
 
   const updatePattern = useCallback((lineIndex: number, track: 'A' | 'B' | 'C', patternId: string) => {
     const newPlaylist = [...playlist];
@@ -123,6 +150,20 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
+
+    // Ctrl+ArrowUp / Ctrl+ArrowDown: move current line up/down
+    if (!editingPattern && event.ctrlKey) {
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        moveLine(currentLine, 'up');
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        moveLine(currentLine, 'down');
+        return;
+      }
+    }
 
     const key = event.key.toUpperCase();
 
@@ -224,7 +265,19 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         startEditingPattern(currentLine, currentTrack);
         break;
     }
-  }, [isActive, playlist.length, currentLine, currentTrack, editingPattern, startEditingPattern, finishEditingPattern, updatePattern]);
+  }, [
+    isActive,
+    playlist.length,
+    currentLine,
+    currentTrack,
+    editingPattern,
+    startEditingPattern,
+    finishEditingPattern,
+    updatePattern,
+    moveLine,
+    onCreatePatternAt,
+    onPositionSelect
+  ]);
 
   const handleLineClick = useCallback((lineIndex: number) => {
     setCurrentLine(lineIndex);
@@ -280,6 +333,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           <span className={`track-header ${targetTrack === 'A' ? 'target-track' : ''}`}>A</span>
           <span className={`track-header ${targetTrack === 'B' ? 'target-track' : ''}`}>B</span>
           <span className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}>C</span>
+          <span className="playlist-move-header"></span>
         </div>
         
         <div className="playlist-lines" ref={linesContainerRef}>
@@ -401,6 +455,28 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     {formatPatternDisplay(entry.trackC)}
                   </span>
                 )}
+                
+                <div
+                  className="playlist-move-buttons"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => moveLine(actualIndex, 'down')}
+                    aria-label="Move position down"
+                    disabled={actualIndex === playlist.length - 1}
+                  >
+                    <ChevronDown className="h-3 w-3 rotate-90" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => moveLine(actualIndex, 'up')}
+                    aria-label="Move position up"
+                    disabled={actualIndex === 0}
+                  >
+                    <ChevronUp className="h-3 w-3 rotate-90" />
+                  </button>
+                </div>
               </div>
             );
           })}

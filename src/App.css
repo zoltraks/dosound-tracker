@@ -991,6 +991,11 @@ body {
   text-align: center;
 }
 
+.playlist-move-header {
+  width: 32px;
+  text-align: center;
+}
+
 .playlist-lines {
   flex: 1;
   overflow-y: auto;
@@ -1043,6 +1048,37 @@ body {
   background-color: var(--button-bg);
   border: 1px solid var(--button-border);
   color: var(--button-text);
+}
+
+.playlist-move-buttons {
+  display: inline-flex;
+  flex-direction: row;
+  gap: 2px;
+  align-items: center;
+  justify-content: center;
+}
+
+.playlist-move-buttons button {
+  width: 16px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin: 0;
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  cursor: pointer;
+}
+
+.playlist-move-buttons button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.playlist-move-buttons button:not(:disabled):hover {
+  background-color: var(--button-hover);
 }
 
 .pattern-input {

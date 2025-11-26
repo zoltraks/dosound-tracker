@@ -1,0 +1,12 @@
+---
+
+I need functionality of the Playlist to be able to change the order of lines by moving them up or down.
+In every row of playlist add another column with the same buttons like these used with NumberSpinner for "Decrease value" and "Increase value" but use them for moving position down or up. When moving, change the selected position in the playlist so the moved one remain selected.
+
+---
+
+Add Ctrl+Up and Ctrl+Down to allow moving up and down with keys.
+
+Change the way the buttons are placed, I want the button layout horizontally, so there should be first a button to move down and next to it button to move up, like it is with NumberSpinner, not one over another.
+
+---
