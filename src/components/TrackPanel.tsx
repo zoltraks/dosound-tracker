@@ -192,7 +192,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onLineChange(length - 1);
     } else if (key === 'ARROWLEFT') {
       event.preventDefault();
-      if (!pattern) return;
       if (currentColumn === 'volume') {
         // Move from volume to note within the same track
         setCurrentColumn('note');
@@ -211,7 +210,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       }
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
-      if (!pattern) return;
       if (currentColumn === 'note') {
         // Move from note to volume within the same track
         setCurrentColumn('volume');
