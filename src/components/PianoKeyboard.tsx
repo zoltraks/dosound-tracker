@@ -33,6 +33,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const envelopeTimersRef = useRef<{ [key: string]: number }>({});
   const previewSubTicksRef = useRef<{ [key: string]: number }>({});
   const previewEnvelopeStepsRef = useRef<{ [key: string]: number }>({});
+  const previewSustainIndexRef = useRef<{ [key: string]: number | null }>({});
+  const previewReleasedRef = useRef<{ [key: string]: boolean }>({});
 
   // Generate piano keys for 5 octaves with proper layout
   const generatePianoKeys = () => {
@@ -131,6 +133,18 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     const instrument = currentInstrument as any;
     const noteData = { note, octave };
 
+    // Initialize sustain state for this preview note
+    const rawSustain = (instrument && typeof instrument.sustain === 'number')
+      ? instrument.sustain
+      : null;
+    const sustainIndex =
+      typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
+        ? Math.floor(rawSustain)
+        : null;
+
+    previewSustainIndexRef.current[keyId] = sustainIndex;
+    previewReleasedRef.current[keyId] = false;
+
     // Initialize envelope timing
     previewSubTicksRef.current[keyId] = 0;
     previewEnvelopeStepsRef.current[keyId] = 0;
@@ -140,26 +154,62 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
     // Start envelope timer - 20ms tick, but advance envelope step every 40ms (every 2 ticks)
     envelopeTimersRef.current[keyId] = window.setInterval(() => {
-      const currentSub = (previewSubTicksRef.current[keyId] ?? 0) + 1;
-      previewSubTicksRef.current[keyId] = currentSub;
+      const sustain = previewSustainIndexRef.current[keyId];
+      const released = previewReleasedRef.current[keyId] ?? false;
 
-      let currentStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
-      // Advance envelope step only on every second 20ms tick
-      if (currentSub % 2 === 0) {
-        currentStep = currentStep + 1;
-        previewEnvelopeStepsRef.current[keyId] = currentStep;
+      const nextSub = ((previewSubTicksRef.current[keyId] ?? 0) + 1) % 2;
+      previewSubTicksRef.current[keyId] = nextSub;
+
+      let rawStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
+      // Advance envelope step only on every second 20ms tick, with sustain hold
+      if (nextSub === 0) {
+        if (
+          sustain === null ||
+          sustain === undefined ||
+          sustain < 0 ||
+          released ||
+          rawStep < sustain
+        ) {
+          rawStep = rawStep + 1;
+          previewEnvelopeStepsRef.current[keyId] = rawStep;
+        }
       }
 
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
+      const effectiveRawStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
+      let stepForApply = effectiveRawStep;
+      if (
+        sustain !== null &&
+        sustain !== undefined &&
+        sustain >= 0 &&
+        !released &&
+        effectiveRawStep >= sustain
+      ) {
+        stepForApply = sustain;
+      }
+
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
     }, 20); // 20ms base tick, 40ms per envelope step
   }, [ym2149, currentInstrument, previewChannel]);
 
   const stopNote = useCallback((note?: string, octave?: number) => {
     if (!ym2149) return;
-    
-    // If note and octave provided, clear specific timer
+
+    const volumeRegister = 0x08 + previewChannel;
+
+    // If note and octave provided, handle per-key release
     if (note && octave) {
       const keyId = `${note}${octave}`;
+      const sustain = previewSustainIndexRef.current[keyId];
+      const hasSustain = typeof sustain === 'number' && sustain >= 0;
+
+      if (hasSustain) {
+        // For instruments with sustain, key release acts as a release trigger:
+        // keep the timer/envelope running and allow it to progress past sustain.
+        previewReleasedRef.current[keyId] = true;
+        return;
+      }
+
+      // No sustain for this note: perform immediate hard stop as before.
       if (envelopeTimersRef.current[keyId]) {
         clearInterval(envelopeTimersRef.current[keyId]);
         delete envelopeTimersRef.current[keyId];
@@ -170,15 +220,25 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
         delete previewEnvelopeStepsRef.current[keyId];
       }
-    } else {
-      // Clear all timers (fallback)
-      Object.values(envelopeTimersRef.current).forEach(timer => clearInterval(timer));
-      envelopeTimersRef.current = {};
-      previewSubTicksRef.current = {};
-      previewEnvelopeStepsRef.current = {};
+      if (previewSustainIndexRef.current[keyId] !== undefined) {
+        delete previewSustainIndexRef.current[keyId];
+      }
+      if (previewReleasedRef.current[keyId] !== undefined) {
+        delete previewReleasedRef.current[keyId];
+      }
+
+      ym2149.writeRegister(volumeRegister, 0x00);
+      return;
     }
-    
-    const volumeRegister = 0x08 + previewChannel;
+
+    // Clear all timers (fallback)
+    Object.values(envelopeTimersRef.current).forEach(timer => clearInterval(timer));
+    envelopeTimersRef.current = {};
+    previewSubTicksRef.current = {};
+    previewEnvelopeStepsRef.current = {};
+    previewSustainIndexRef.current = {};
+    previewReleasedRef.current = {};
+
     ym2149.writeRegister(volumeRegister, 0x00);
   }, [ym2149, previewChannel]);
 
