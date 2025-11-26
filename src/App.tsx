@@ -1199,7 +1199,25 @@ const App: React.FC = () => {
 
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
-    const currentPatternIndex = sequencerState.currentPattern;
+    const playlistLength = currentSong.playlist.length;
+    if (playlistLength === 0) {
+      return null;
+    }
+
+    let currentPatternIndex = sequencerState.currentPattern;
+
+    if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
+      const rawLoop = currentSong.loop;
+      const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
+
+      if (hasLoop) {
+        const base = Math.floor(rawLoop as number);
+        currentPatternIndex = Math.max(0, Math.min(playlistLength - 1, base));
+      } else {
+        currentPatternIndex = Math.max(0, Math.min(playlistLength - 1, currentPatternIndex));
+      }
+    }
+
     const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
     
     if (!currentPlaylistEntry) {
