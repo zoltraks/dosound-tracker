@@ -8,6 +8,8 @@ interface EnvelopePanelProps {
   setActiveSection: (section: NavigationSection) => void;
   data?: number[];
   onChange?: (data: number[]) => void;
+  sustainIndex?: number | null;
+  onSustainChange?: (index: number | null) => void;
 }
 
 export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
@@ -15,7 +17,9 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   activeSection,
   setActiveSection,
   data,
-  onChange
+  onChange,
+  sustainIndex,
+  onSustainChange
 }) => {
   const [currentPosition, setCurrentPosition] = useState(0);
   const [envelopeData, setEnvelopeData] = useState<number[]>(
@@ -150,8 +154,24 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+    } else if (type === 'volume' && key === 'S' && onSustainChange) {
+      event.preventDefault();
+      const current = typeof sustainIndex === 'number' && sustainIndex >= 0 ? sustainIndex : null;
+      if (current === currentPosition) {
+        onSustainChange(null);
+      } else {
+        onSustainChange(currentPosition);
+      }
     }
-  }, [isActive, handleValueChange, currentPosition, envelopeData, onChange]);
+  }, [
+    isActive,
+    handleValueChange,
+    currentPosition,
+    envelopeData,
+    onChange,
+    sustainIndex,
+    onSustainChange
+  ]);
 
   const handlePositionClick = useCallback((position: number) => {
     lastPositionRef.current = currentPosition;
@@ -288,17 +308,56 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       ) : (
         // Bar rendering for volume and noise
         <div className="envelope-content">
-          <div className="envelope-graph">
-            {envelopeData.map((value, index) => (
+          <div
+            className="envelope-graph"
+            onContextMenu={event => {
+              if (type !== 'volume' || !onSustainChange) {
+                return;
+              }
+
+              event.preventDefault();
+
+              const rect = event.currentTarget.getBoundingClientRect();
+              const x = event.clientX - rect.left;
+              const relative = rect.width > 0 ? x / rect.width : 0;
+
+              let index = Math.floor(relative * envelopeData.length);
+              if (index < 0) index = 0;
+              if (index >= envelopeData.length) index = envelopeData.length - 1;
+
+              const current =
+                typeof sustainIndex === 'number' && sustainIndex >= 0 ? sustainIndex : null;
+
+              if (current === index) {
+                onSustainChange(null);
+              } else {
+                onSustainChange(index);
+              }
+            }}
+          >
+            {envelopeData.map((value, index) => {
+              const isCurrent = index === currentPosition && isActive;
+              const isSustain = typeof sustainIndex === 'number' && sustainIndex === index;
+              return (
+                <div
+                  key={index}
+                  className={`envelope-bar ${isCurrent ? 'current' : ''} ${isSustain ? 'sustain' : ''}`}
+                  style={{ height: `${getBarHeight(value)}%` }}
+                  onClick={() => handlePositionClick(index)}
+                  title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
+                >
+                </div>
+              );
+            })}
+
+            {typeof sustainIndex === 'number' && sustainIndex >= 0 && sustainIndex < envelopeData.length && (
               <div
-                key={index}
-                className={`envelope-bar ${index === currentPosition && isActive ? 'current' : ''}`}
-                style={{ height: `${getBarHeight(value)}%` }}
-                onClick={() => handlePositionClick(index)}
-                title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
-              >
-              </div>
-            ))}
+                className="envelope-sustain-dot"
+                style={{
+                  left: `${((sustainIndex + 0.5) / envelopeData.length) * 100}%`
+                }}
+              />
+            )}
           </div>
           
           <div className="envelope-values">

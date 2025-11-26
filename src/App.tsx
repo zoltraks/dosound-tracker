@@ -2791,6 +2791,14 @@ const App: React.FC = () => {
               onChange={(data: number[]) => {
                 updateInstrument({ volumeEnvelope: data });
               }}
+              sustainIndex={
+                typeof currentInstrument.sustain === 'number' && currentInstrument.sustain >= 0
+                  ? Math.floor(currentInstrument.sustain)
+                  : null
+              }
+              onSustainChange={index => {
+                updateInstrument({ sustain: index });
+              }}
             />
             
             <EnvelopePanel
