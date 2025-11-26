@@ -14,8 +14,8 @@ export const InformationModal: React.FC<InformationModalProps> = ({
   onClose,
 }) => {
   if (!isOpen) return null;
-
-  const lines = message.split('\n');
+  const normalizedMessage = message.replace(/\\n/g, '\n');
+  const lines = normalizedMessage.split('\n');
 
   return (
     <div className="modal-backdrop">
