@@ -161,30 +161,56 @@ export const useDataManagement = () => {
     };
   });
 
+  const songSaveTimeoutRef = useRef<number | null>(null);
+  const instrumentSaveTimeoutRef = useRef<number | null>(null);
+
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
     const songInstrument = currentSong.instruments.find(inst => inst.id === currentInstrument.id);
-    if (songInstrument && JSON.stringify(songInstrument) !== JSON.stringify(currentInstrument)) {
+    if (songInstrument && songInstrument !== currentInstrument) {
       setCurrentInstrument(songInstrument);
     }
-  }, [currentSong.instruments, currentInstrument.id]);
+  }, [currentSong.instruments, currentInstrument]);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
-    try {
-      localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(currentSong));
-    } catch (error) {
-      console.warn('Failed to save song to localStorage:', error);
+    if (songSaveTimeoutRef.current !== null) {
+      window.clearTimeout(songSaveTimeoutRef.current);
     }
+
+    songSaveTimeoutRef.current = window.setTimeout(() => {
+      try {
+        localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(currentSong));
+      } catch (error) {
+        console.warn('Failed to save song to localStorage:', error);
+      }
+    }, 300);
   }, [currentSong]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(INSTRUMENT_STORAGE_KEY, JSON.stringify(currentInstrument));
-    } catch (error) {
-      console.warn('Failed to save instrument to localStorage:', error);
+    if (instrumentSaveTimeoutRef.current !== null) {
+      window.clearTimeout(instrumentSaveTimeoutRef.current);
     }
+
+    instrumentSaveTimeoutRef.current = window.setTimeout(() => {
+      try {
+        localStorage.setItem(INSTRUMENT_STORAGE_KEY, JSON.stringify(currentInstrument));
+      } catch (error) {
+        console.warn('Failed to save instrument to localStorage:', error);
+      }
+    }, 300);
   }, [currentInstrument]);
+
+  useEffect(() => {
+    return () => {
+      if (songSaveTimeoutRef.current !== null) {
+        window.clearTimeout(songSaveTimeoutRef.current);
+      }
+      if (instrumentSaveTimeoutRef.current !== null) {
+        window.clearTimeout(instrumentSaveTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 

@@ -325,6 +325,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
               if (index < 0) index = 0;
               if (index >= envelopeData.length) index = envelopeData.length - 1;
 
+              handlePositionClick(index);
+
               const current =
                 typeof sustainIndex === 'number' && sustainIndex >= 0 ? sustainIndex : null;
 

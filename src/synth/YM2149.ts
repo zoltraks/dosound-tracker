@@ -111,8 +111,13 @@ export class YM2149 {
 
   writeRegister(register: number, value: number): void {
     if (register < 0 || register >= YM_REGISTER_COUNT) return;
-    
-    this.registers[register] = value & 0xFF;
+
+    const masked = value & 0xFF;
+    if (this.registers[register] === masked) {
+      return;
+    }
+
+    this.registers[register] = masked;
     this.updateState();
     this.updateAudioNodes();
   }

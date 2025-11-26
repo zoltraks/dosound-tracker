@@ -2382,6 +2382,10 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (sequencerState.isPlaying) {
+      return;
+    }
+
     const positionContent = document.querySelector('.position-content') as HTMLDivElement | null;
     const primaryTrack = (document.querySelector('.track-panel.track-a .track-content') ||
       document.querySelector('.track-content')) as HTMLDivElement | null;
@@ -2435,7 +2439,7 @@ const App: React.FC = () => {
         (track as HTMLDivElement).scrollTop = newScrollTop;
       }
     });
-  }, [sharedCurrentLine]);
+  }, [sharedCurrentLine, sequencerState.isPlaying]);
 
   const previewChannel =
     activeSection === 'trackA'

@@ -1,0 +1,93 @@
+## Detailed Instructions to Implement Changes from 'sustain+fresh' in 'volume+sustain' Branch
+
+Since you prefer the 'volume+sustain' branch but want the performance optimizations, better sustain release behavior, and improved UI interactions from 'sustain+fresh', here are step-by-step instructions to manually implement these changes. Ensure you are on the 'volume+sustain' branch and have backed up your work.
+
+### 1. Improved UI Interactions: Change Envelope Sustain Interaction to Right-Click Toggle
+
+**Objective**: Modify the volume envelope editor so left-click only moves the cursor, and right-click toggles the sustain point on/off.
+
+**Steps**:
+1. **Update `src/App.css`**:
+   - Add the following CSS class for the sustain dot visual indicator:
+     ```
+     .envelope-sustain-dot {
+       position: absolute;
+       left: 50%;
+       bottom: 50%;
+       transform: translate(-50%, 50%);
+       width: 6px;
+       height: 6px;
+       border-radius: 50%;
+       background-color: #000;
+     }
+     ```
+
+2. **Update `src/components/EnvelopePanel.tsx`**:
+   - Locate the `onMouseDown` event handler for envelope bars.
+   - Change the left-click behavior (event.button === 0) to only call `handlePositionClick(index)`, removing any sustain logic.
+   - Update the `onContextMenu` event handler to:
+     - Prevent default context menu.
+     - Call `handlePositionClick(index)`.
+     - For volume envelopes, toggle sustain: if `sustainPosition === index`, set to null; else set to index.
+   - Ensure the sustain dot is rendered when sustain is active (add conditional rendering in the bar element).
+
+### 2. Better Sustain Release Behavior: Note-Off Events Allow Envelope Progression Past Sustain
+
+**Objective**: Implement per-channel sustain index and release state tracking so note-off events mark channels as released, allowing envelope progression past sustain point.
+
+**Steps**:
+1. **Update `src/App.tsx`**:
+   - Add per-channel sustain index and release state tracking in the sequencer or playback engine.
+   - Modify note-off handling to set release state instead of immediate mute when sustain is defined.
+   - Update envelope advancement logic to clamp to sustain index while key is held, and allow progression after release.
+
+2. **Update `src/components/HeaderPanel.tsx`**, `src/components/PianoKeyboard.tsx`**, `src/components/TrackPanel.tsx`**:
+   - Ensure note-off events (===) are properly handled in UI components to trigger release state.
+
+3. **Update `src/synth/YM2149.ts`**:
+   - Integrate sustain index and release state into YM2149 register updates.
+   - Modify envelope step advancement to respect sustain and release logic.
+
+4. **Update `src/utils/assemblyExport.ts`**:
+   - Extend assembly export to include sustain and release behavior in generated code.
+   - Ensure WAV export handles sustain progression correctly.
+
+### 3. Performance Optimizations
+
+Implement the following optimizations to reduce redundant operations and improve efficiency:
+
+**3.1 Optimize YM2149 Register Writes (6730cca)**:
+- Modify `src/synth/YM2149.ts` to only update registers when envelope step changes, volume nibble is applied, or note starts.
+- Track sub-tick progression and envelope advancement separately before applying changes to hardware.
+
+**3.2 Skip Scroll Synchronization During Playback (52334e7)**:
+- Update scroll synchronization logic in `src/App.tsx` or relevant component to add early return when sequencer is playing.
+- Include `isPlaying` in dependency arrays to prevent updates during playback.
+
+**3.3 Replace Deep JSON Comparison with Reference Equality (0d29f32)**:
+- In instrument sync effects, replace deep JSON comparisons with reference equality checks.
+- Add `currentInstrument` to dependency arrays for proper updates.
+
+**3.4 Add 300ms Debounce to localStorage Saves (b5c2133)**:
+- Implement debouncing for song and instrument data saves using timer refs.
+- Delay saves by 300ms and cancel pending saves on new changes.
+- Add cleanup on component unmount.
+
+**3.5 Move Playlist Bounds Checking (73321b3)**:
+- Relocate playlist bounds checking and loop handling before sequencer position tracking.
+- Fix pattern change detection and prevent redundant position updates.
+
+**3.6 Add Early Return to YM2149 writeRegister (e18800f)**:
+- In `YM2149.ts`, add early return when register value is unchanged to prevent redundant updates.
+
+**3.7 Prevent Redundant State Updates and Memoize Lookups (b82116b)**:
+- In sequencer callback, prevent redundant state updates.
+- Memoize playlist pattern lookups and instrument mapping to avoid repeated searches.
+
+**3.8 Remove Pattern Existence Checks from TrackPanel Navigation (44825ac)**:
+- Update keyboard navigation handlers in `TrackPanel.tsx` to allow cursor movement even when no pattern is loaded.
+
+**3.9 Add Bounds Checking to getCurrentPatternForTrack (f06cb03)**:
+- Implement bounds checking in `getCurrentPatternForTrack` to clamp `currentPatternIndex` to valid playlist bounds.
+- Handle loop position for out-of-range indices and return null for empty playlists.
+
