@@ -112,9 +112,10 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
       return;
     }
     const base = Math.floor(next as number);
-    const clamped = Math.max(0, base);
+    const maxPos = Math.max(0, song.playlist.length - 1);
+    const clamped = Math.max(0, Math.min(maxPos, base));
     handleFieldChange('loop', clamped);
-  }, [handleFieldChange]);
+  }, [handleFieldChange, song.playlist.length]);
 
   const handleLoopInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Backspace') {
@@ -225,6 +226,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 value={typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null}
                 onChange={handleLoopChange}
                 min={0}
+                max={Math.max(0, song.playlist.length - 1)}
                 step={1}
                 ariaLabel="Playlist loop position"
                 inputRef={loopRef}

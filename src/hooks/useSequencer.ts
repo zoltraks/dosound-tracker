@@ -161,20 +161,18 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     startPlayback(false);
   }, [startPlayback]);
 
-  const stop = useCallback((preservePattern?: number) => {
+  const stop = useCallback(() => {
     const stoppedState: SequencerState = {
       ...sequencerState,
       isPlaying: false,
       currentTick: 0,
-      currentLine: 0,
-      // Use provided pattern or keep current pattern to maintain playlist position
-      currentPattern: preservePattern !== undefined ? preservePattern : sequencerState.currentPattern
+      currentLine: sequencerState.currentLine,
+      currentPattern: sequencerState.currentPattern,
     };
 
     setSequencerState(stoppedState);
     playbackStateRef.current = stoppedState;
 
-    // Stop worker-based timing
     if (workerRef.current) {
       workerRef.current.postMessage({ type: 'stop' });
     }

@@ -88,28 +88,23 @@ function startSequencer() {
 }
 
 function stopSequencer() {
-  isPlaying = false;
-  isPatternLoop = false;
   if (intervalId !== null) {
     clearTimeout(intervalId);
     intervalId = null;
   }
-  lastTickTime = 0;
-  nextTickTime = 0;
-  
-  // Reset position
+
+  isPlaying = false;
+  isPatternLoop = false;
   currentTick = 0;
-  currentLine = 0;
-  currentPattern = 0;
-  
+
   self.postMessage({
     type: 'stop',
     data: {
       isPlaying: false,
-      currentPattern: 0,
-      currentLine: 0,
-      currentTick: 0
-    }
+      currentPattern,
+      currentLine,
+      currentTick,
+    },
   } as WorkerMessage);
 }
 

@@ -436,7 +436,8 @@ const App: React.FC = () => {
 
         if (!hasLoop) {
           handleStopPlayback();
-          stop(0);
+          setPosition(0, 0, 0);
+          stop();
           return;
         }
 
@@ -1221,11 +1222,14 @@ const App: React.FC = () => {
     setPosition(position, 0, 0);
   }, [setPosition]);
 
-// ... (rest of the code remains the same)
-
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
-    const currentPatternIndex = sequencerState.currentPattern;
+    const playlistLength = currentSong.playlist.length;
+    if (playlistLength === 0) {
+      return null;
+    }
+
+    const currentPatternIndex = Math.max(0, Math.min(playlistLength - 1, sequencerState.currentPattern));
     const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
     
     if (!currentPlaylistEntry) {
@@ -2076,7 +2080,8 @@ const App: React.FC = () => {
 
       if (!hasLoop) {
         handleStopPlayback();
-        stop(0);
+        setPosition(0, 0, 0);
+        stop();
         return;
       }
 
@@ -2642,6 +2647,12 @@ const App: React.FC = () => {
     setIsAboutOpen
   ]);
 
+  const playlistLength = currentSong.playlist.length;
+  const clampedPlaybackPosition =
+    playlistLength === 0
+      ? 0
+      : Math.max(0, Math.min(playlistLength - 1, sequencerState.currentPattern));
+
   try {
     return (
       <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
@@ -2849,7 +2860,7 @@ const App: React.FC = () => {
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               onPlaylistChange={handlePlaylistChange}
-              currentPlaybackPosition={sequencerState.currentPattern}
+              currentPlaybackPosition={clampedPlaybackPosition}
               onPositionSelect={handlePositionSelect}
               onCreatePatternAt={handleCreatePatternAt}
               targetTrack={targetTrackId}
