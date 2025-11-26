@@ -1,13 +1,13 @@
 import React from 'react';
 
-interface InfoDialogProps {
+interface InformationModalProps {
   isOpen: boolean;
   title: string;
   message: string;
   onClose: () => void;
 }
 
-export const InfoDialog: React.FC<InfoDialogProps> = ({
+export const InformationModal: React.FC<InformationModalProps> = ({
   isOpen,
   title,
   message,

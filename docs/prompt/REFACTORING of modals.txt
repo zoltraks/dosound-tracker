@@ -1,3 +1,5 @@
+---
+
 Looking at `App.tsx`, it's definitely grown quite large (over 1500 lines), and moving the modal dialogs to separate components would significantly improve maintainability. 
 
 Here's proposed refactoring:
@@ -286,3 +288,294 @@ const App: React.FC = () => {
 2. Move to confirmation dialogs
 3. Tackle complex modals like TransposeModal last
 4. Extract the keyboard event handler logic into a separate hook
+
+---
+
+# Quick Guide: Extracting Modals from App.tsx
+
+## Step 1: Create Modal Components Directory
+```bash
+mkdir src/modals
+touch src/modals/InfoDialog.tsx
+touch src/modals/ConfirmDialog.tsx
+touch src/modals/TransposeModal.tsx
+touch src/modals/AboutModal.tsx
+touch src/modals/ChangelogModal.tsx
+touch src/modals/index.ts
+```
+
+## Step 2: Create Reusable Base Components
+
+**`src/modals/InfoDialog.tsx`** - For all info/summary modals:
+```tsx
+import React from 'react';
+
+interface InfoDialogProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onClose: () => void;
+}
+
+export const InfoDialog: React.FC<InfoDialogProps> = ({
+  isOpen,
+  title,
+  message,
+  onClose
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-dialog">
+        <div className="modal-title">{title}</div>
+        <div className="modal-body">
+          {message.split('\n').map((line, index) => (
+            <React.Fragment key={index}>
+              {line}
+              {index < message.split('\n').length - 1 && <br />}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="modal-actions">
+          <button className="command-btn" onClick={onClose}>OK</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+**`src/modals/ConfirmDialog.tsx`** - For all confirmation modals:
+```tsx
+import React from 'react';
+
+interface ConfirmDialogProps {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  confirmLabel?: string;
+  cancelLabel?: string;
+}
+
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+  isOpen,
+  title,
+  message,
+  onConfirm,
+  onCancel,
+  confirmLabel = 'OK',
+  cancelLabel = 'Cancel'
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-dialog">
+        <div className="modal-title">{title}</div>
+        <div className="modal-body">
+          {message.split('\n').map((line, index) => (
+            <React.Fragment key={index}>
+              {line}
+              {index < message.split('\n').length - 1 && <br />}
+            </React.Fragment>
+          ))}
+        </div>
+        <div className="modal-actions">
+          <button className="command-btn" onClick={onConfirm}>{confirmLabel}</button>
+          <button className="command-btn" onClick={onCancel}>{cancelLabel}</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+```
+
+## Step 3: Extract Complex Modals
+
+**`src/modals/TransposeModal.tsx`** - Copy entire transpose modal JSX:
+```tsx
+import React from 'react';
+
+interface TransposeModalProps {
+  isOpen: boolean;
+  scope: 'line' | 'song';
+  trackScope: 'current' | 'all';
+  instrumentScope: 'all' | 'selected';
+  amount: number;
+  amountInput: string;
+  onScopeChange: (scope: 'line' | 'song') => void;
+  onTrackScopeChange: (scope: 'current' | 'all') => void;
+  onInstrumentScopeChange: (scope: 'all' | 'selected') => void;
+  onAmountChange: (value: string) => void;
+  onAmountAdjust: (delta: number) => void;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
+export const TransposeModal: React.FC<TransposeModalProps> = ({
+  isOpen,
+  scope,
+  trackScope,
+  instrumentScope,
+  amountInput,
+  onScopeChange,
+  onTrackScopeChange,
+  onInstrumentScopeChange,
+  onAmountChange,
+  onAmountAdjust,
+  onConfirm,
+  onCancel
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-backdrop">
+      {/* Copy your entire transpose modal JSX here */}
+    </div>
+  );
+};
+```
+
+**`src/modals/AboutModal.tsx`** & **`ChangelogModal.tsx`** - Similar pattern
+
+## Step 4: Create Barrel Export
+
+**`src/modals/index.ts`**:
+```tsx
+export { InfoDialog } from './InfoDialog';
+export { ConfirmDialog } from './ConfirmDialog';
+export { TransposeModal } from './TransposeModal';
+export { AboutModal } from './AboutModal';
+export { ChangelogModal } from './ChangelogModal';
+```
+
+## Step 5: Update App.tsx
+
+Replace all modal JSX with components:
+
+```tsx
+import { InfoDialog, ConfirmDialog, TransposeModal, AboutModal, ChangelogModal } from './modals';
+
+// ... in return statement, replace modals with:
+
+{/* Info/Error Dialogs - use InfoDialog for all these */}
+<InfoDialog
+  isOpen={!!instrumentError}
+  title="Instrument Load Error"
+  message={instrumentError}
+  onClose={() => setInstrumentError('')}
+/>
+
+<InfoDialog
+  isOpen={!!trackClipboardError}
+  title="Track Clipboard Error"
+  message={trackClipboardError}
+  onClose={() => setTrackClipboardError('')}
+/>
+
+<InfoDialog
+  isOpen={!!optimizeSummary}
+  title="Optimization Summary"
+  message={optimizeSummary}
+  onClose={handleCloseOptimizeSummary}
+/>
+
+<InfoDialog
+  isOpen={!!soundExportSummary}
+  title="Sound Export Summary"
+  message={soundExportSummary}
+  onClose={handleCloseSoundExportSummary}
+/>
+
+<InfoDialog
+  isOpen={!!dumpExportSummary}
+  title="Dump Export Summary"
+  message={dumpExportSummary}
+  onClose={handleCloseDumpExportSummary}
+/>
+
+<InfoDialog
+  isOpen={!!transposeSummary}
+  title="Transpose Summary"
+  message={transposeSummary}
+  onClose={handleCloseTransposeSummary}
+/>
+
+<InfoDialog
+  isOpen={!!renumberSummary}
+  title="Renumber Summary"
+  message={renumberSummary}
+  onClose={handleCloseRenumberSummary}
+/>
+
+{/* Confirmation Dialogs */}
+<ConfirmDialog
+  isOpen={isNewSongConfirmOpen}
+  title="Create new song?"
+  message="Current song data will be lost.\n\nContinue?"
+  onConfirm={handleConfirmNewSong}
+  onCancel={handleCancelNewSong}
+/>
+
+<ConfirmDialog
+  isOpen={isOptimizeConfirmOpen}
+  title="Optimize song?"
+  message="Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.\n\nContinue?"
+  onConfirm={handleConfirmOptimize}
+  onCancel={handleCancelOptimize}
+/>
+
+<ConfirmDialog
+  isOpen={isRenumberConfirmOpen}
+  title="Renumber song?"
+  message="Renumber all patterns according to their order of appearance in the playlist (then any hidden patterns), and renumber all instruments alphabetically by name.\n\nThis will update all references in the playlist and patterns.\n\nContinue?"
+  onConfirm={handleConfirmRenumber}
+  onCancel={handleCancelRenumber}
+/>
+
+<ConfirmDialog
+  isOpen={isResetConfirmOpen}
+  title="Reset application?"
+  message="All saved data will be permanently deleted and the application will reload to default state.\n\nThis action cannot be undone.\n\nContinue with reset?"
+  onConfirm={handleConfirmReset}
+  onCancel={handleCancelReset}
+  confirmLabel="Reset"
+/>
+
+{/* Complex Modals */}
+<TransposeModal
+  isOpen={isTransposeOpen}
+  scope={transposeScope}
+  trackScope={transposeTrackScope}
+  instrumentScope={transposeInstrumentScope}
+  amount={transposeAmount}
+  amountInput={transposeAmountInput}
+  onScopeChange={setTransposeScope}
+  onTrackScopeChange={setTransposeTrackScope}
+  onInstrumentScopeChange={setTransposeInstrumentScope}
+  onAmountChange={handleTransposeAmountChange}
+  onAmountAdjust={(delta) => {
+    const next = transposeAmount + delta;
+    setTransposeAmount(next);
+    setTransposeAmountInput(String(next));
+  }}
+  onConfirm={handleConfirmTranspose}
+  onCancel={handleCancelTranspose}
+/>
+
+<AboutModal
+  isOpen={isAboutOpen}
+  version={APP_VERSION}
+  onClose={() => setIsAboutOpen(false)}
+  onShowChangelog={handleShowChangelog}
+/>
+
+<ChangelogModal
+  isOpen={isChangelogOpen}
+  content={changelogContent}
+  onClose={handleCloseChangelog}
+/>
+```

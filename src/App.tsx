@@ -19,7 +19,7 @@ import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
-import { InfoDialog, ConfirmDialog } from './modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal } from './modals';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -3066,354 +3066,121 @@ const App: React.FC = () => {
             }
           }}
         />
-        <InfoDialog
+
+        <InformationModal
           isOpen={!!instrumentError}
           title="Instrument Load Error"
           message={instrumentError}
           onClose={() => setInstrumentError('')}
         />
-        {isTransposeOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Transpose</div>
-              <div className="modal-body">
-                <div style={{ marginBottom: '8px' }}>
-                  <div>Song scope:</div>
-                  <label>
-                    <input
-                      type="radio"
-                      name="transpose-scope"
-                      checked={transposeScope === 'line'}
-                      onChange={() => setTransposeScope('line')}
-                    />{' '}
-                    Current playlist position only
-                  </label>
-                  <br />
-                  <label>
-                    <input
-                      type="radio"
-                      name="transpose-scope"
-                      checked={transposeScope === 'song'}
-                      onChange={() => setTransposeScope('song')}
-                    />{' '}
-                    Entire song (all playlist positions)
-                  </label>
-                </div>
 
-                <div style={{ marginBottom: '8px' }}>
-                  <div>Track scope:</div>
-                  <label>
-                    <input
-                      type="radio"
-                      name="transpose-track-scope"
-                      checked={transposeTrackScope === 'current'}
-                      onChange={() => setTransposeTrackScope('current')}
-                    />{' '}
-                    Current track only
-                  </label>
-                  <br />
-                  <label>
-                    <input
-                      type="radio"
-                      name="transpose-track-scope"
-                      checked={transposeTrackScope === 'all'}
-                      onChange={() => setTransposeTrackScope('all')}
-                    />{' '}
-                    All tracks (A, B, C)
-                  </label>
-                </div>
-
-                <div style={{ marginBottom: '8px' }}>
-                  <div>Instrument scope:</div>
-                  <label>
-                    <input
-                      type="radio"
-                      name="transpose-inst-scope"
-                      checked={transposeInstrumentScope === 'all'}
-                      onChange={() => setTransposeInstrumentScope('all')}
-                    />{' '}
-                    All instruments
-                  </label>
-                  <br />
-                  <label>
-                    <input
-                      type="radio"
-                      name="transpose-inst-scope"
-                      checked={transposeInstrumentScope === 'selected'}
-                      onChange={() => setTransposeInstrumentScope('selected')}
-                    />{' '}
-                    Selected instrument only
-                  </label>
-                </div>
-
-                <div style={{ marginBottom: '8px' }}>
-                  <div>Semitone offset:</div>
-                  <div
-                    style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-                      gap: '4px',
-                      marginBottom: '4px'
-                    }}
-                  >
-                    <button
-                      type="button"
-                      className="command-btn"
-                      style={{ width: '100%' }}
-                      onClick={() => {
-                        setTransposeAmount(prev => {
-                          const next = prev - 12;
-                          setTransposeAmountInput(String(next));
-                          return next;
-                        });
-                      }}
-                    >
-                      -12 (OCTAVE DOWN)
-                    </button>
-                    <button
-                      type="button"
-                      className="command-btn"
-                      style={{ width: '100%' }}
-                      onClick={() => {
-                        setTransposeAmount(prev => {
-                          const next = prev - 1;
-                          setTransposeAmountInput(String(next));
-                          return next;
-                        });
-                      }}
-                    >
-                      -1 (NOTE DOWN)
-                    </button>
-                    <button
-                      type="button"
-                      className="command-btn"
-                      style={{ width: '100%' }}
-                      onClick={() => {
-                        setTransposeAmount(prev => {
-                          const next = prev + 12;
-                          setTransposeAmountInput(String(next));
-                          return next;
-                        });
-                      }}
-                    >
-                      +12 (OCTAVE UP)
-                    </button>
-                    <button
-                      type="button"
-                      className="command-btn"
-                      style={{ width: '100%' }}
-                      onClick={() => {
-                        setTransposeAmount(prev => {
-                          const next = prev + 1;
-                          setTransposeAmountInput(String(next));
-                          return next;
-                        });
-                      }}
-                    >
-                      +1 (NOTE UP)
-                    </button>
-                  </div>
-                  <div>
-                    Semitones:{' '}
-                    <input
-                      type="number"
-                      value={transposeAmountInput}
-                      onChange={e => handleTransposeAmountChange(e.target.value)}
-                      style={{ width: '80px' }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleConfirmTranspose}>OK</button>
-                <button className="command-btn" onClick={handleCancelTranspose}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
-        <InfoDialog
-          isOpen={!!transposeSummary}
-          title="Transpose Summary"
-          message={transposeSummary}
-          onClose={handleCloseTransposeSummary}
-        />
-        <InfoDialog
+        <InformationModal
           isOpen={!!trackClipboardError}
           title="Track Clipboard Error"
           message={trackClipboardError}
           onClose={() => setTrackClipboardError('')}
         />
-        {isOptimizeConfirmOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Optimize song?</div>
-              <div className="modal-body">
-                Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.
-                <br />
-                <br />
-                Continue?
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleConfirmOptimize}>OK</button>
-                <button className="command-btn" onClick={handleCancelOptimize}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
-        <InfoDialog
+
+        <InformationModal
           isOpen={!!optimizeSummary}
           title="Optimization Summary"
           message={optimizeSummary}
           onClose={handleCloseOptimizeSummary}
         />
-        <InfoDialog
+
+        <InformationModal
           isOpen={!!soundExportSummary}
           title="Sound Export Summary"
           message={soundExportSummary}
           onClose={handleCloseSoundExportSummary}
         />
-        <InfoDialog
+
+        <InformationModal
           isOpen={!!dumpExportSummary}
           title="Dump Export Summary"
           message={dumpExportSummary}
           onClose={handleCloseDumpExportSummary}
         />
-        {isOptimizeConfirmOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Optimize song?</div>
-              <div className="modal-body">
-                Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.
-                <br />
-                <br />
-                Continue?
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleConfirmOptimize}>OK</button>
-                <button className="command-btn" onClick={handleCancelOptimize}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {optimizeSummary && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Optimization Summary</div>
-              <div className="modal-body">
-                {optimizeSummary.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < optimizeSummary.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseOptimizeSummary}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isRenumberConfirmOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Renumber song?</div>
-              <div className="modal-body">
-                Renumber all patterns according to their order of appearance in the playlist (then any hidden patterns), and renumber all instruments alphabetically by name.
-                <br />
-                <br />
-                This will update all references in the playlist and patterns.
-                <br />
-                <br />
-                Continue?
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleConfirmRenumber}>OK</button>
-                <button className="command-btn" onClick={handleCancelRenumber}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
-        <InfoDialog
+
+        <InformationModal
+          isOpen={!!transposeSummary}
+          title="Transpose Summary"
+          message={transposeSummary}
+          onClose={handleCloseTransposeSummary}
+        />
+
+        <InformationModal
           isOpen={!!renumberSummary}
           title="Renumber Summary"
           message={renumberSummary}
           onClose={handleCloseRenumberSummary}
         />
-        {isAboutOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">About</div>
-              <div className="modal-body">
-                DOSOUND Tracker
-                <br />
-                <br />
-                Made by Zoltar X / New Generation
-                <br />
-                <br />
-                Version: {APP_VERSION}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleShowChangelog}>
-                  CHANGES
-                </button>
-                <button className="command-btn" onClick={() => setIsAboutOpen(false)}>
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isNewSongConfirmOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Create new song?</div>
-              <div className="modal-body">
-                Current song data will be lost.
-                <br />
-                <br />
-                Continue?
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleConfirmNewSong}>OK</button>
-                <button className="command-btn" onClick={handleCancelNewSong}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isResetConfirmOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Reset application?</div>
-              <div className="modal-body">
-                All saved data will be permanently deleted and the application will reload to default state.
-                <br />
-                <br />
-                This action cannot be undone.
-                <br />
-                <br />
-                Continue with reset?
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleConfirmReset}>Reset</button>
-                <button className="command-btn" onClick={handleCancelReset}>Cancel</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {isChangelogOpen && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog changelog-modal">
-              <div className="modal-title">Changes</div>
-              <div
-                className="modal-body changelog-modal-body"
-                dangerouslySetInnerHTML={{ __html: renderMarkdown(changelogContent) }}
-              />
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseChangelog}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
+
+        <ConfirmationModal
+          isOpen={isNewSongConfirmOpen}
+          title="Create new song?"
+          message="Current song data will be lost.\n\nContinue?"
+          onConfirm={handleConfirmNewSong}
+          onCancel={handleCancelNewSong}
+        />
+
+        <ConfirmationModal
+          isOpen={isOptimizeConfirmOpen}
+          title="Optimize song?"
+          message="Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.\n\nContinue?"
+          onConfirm={handleConfirmOptimize}
+          onCancel={handleCancelOptimize}
+        />
+
+        <ConfirmationModal
+          isOpen={isRenumberConfirmOpen}
+          title="Renumber song?"
+          message="Renumber all patterns according to their order of appearance in the playlist (then any hidden patterns), and renumber all instruments alphabetically by name.\n\nThis will update all references in the playlist and patterns.\n\nContinue?"
+          onConfirm={handleConfirmRenumber}
+          onCancel={handleCancelRenumber}
+        />
+
+        <ConfirmationModal
+          isOpen={isResetConfirmOpen}
+          title="Reset application?"
+          message="All saved data will be permanently deleted and the application will reload to default state.\n\nThis action cannot be undone.\n\nContinue with reset?"
+          onConfirm={handleConfirmReset}
+          onCancel={handleCancelReset}
+          confirmLabel="Reset"
+        />
+
+        <TransposeModal
+          isOpen={isTransposeOpen}
+          scope={transposeScope}
+          trackScope={transposeTrackScope}
+          instrumentScope={transposeInstrumentScope}
+          amount={transposeAmount}
+          amountInput={transposeAmountInput}
+          onScopeChange={setTransposeScope}
+          onTrackScopeChange={setTransposeTrackScope}
+          onInstrumentScopeChange={setTransposeInstrumentScope}
+          onAmountChange={handleTransposeAmountChange}
+          onAmountAdjust={(delta) => {
+            const next = transposeAmount + delta;
+            setTransposeAmount(next);
+            setTransposeAmountInput(String(next));
+          }}
+          onConfirm={handleConfirmTranspose}
+          onCancel={handleCancelTranspose}
+        />
+
+        <AboutModal
+          isOpen={isAboutOpen}
+          version={APP_VERSION}
+          onClose={() => setIsAboutOpen(false)}
+          onShowChangelog={handleShowChangelog}
+        />
+
+        <ChangesModal
+          isOpen={isChangelogOpen}
+          content={changelogContent}
+          onClose={handleCloseChangelog}
+        />
       </div>
     );
   } catch (error) {

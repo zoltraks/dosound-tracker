@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface ConfirmDialogProps {
+interface ConfirmationModalProps {
   isOpen: boolean;
   title: string;
   message: string;
@@ -10,7 +10,7 @@ interface ConfirmDialogProps {
   cancelLabel?: string;
 }
 
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
+export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   isOpen,
   title,
   message,

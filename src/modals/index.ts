@@ -1,2 +1,5 @@
-export { InfoDialog } from './InfoDialog';
-export { ConfirmDialog } from './ConfirmDialog';
+export { InformationModal } from './InformationModal';
+export { ConfirmationModal } from './ConfirmationModal';
+export { TransposeModal } from './TransposeModal';
+export { AboutModal } from './AboutModal';
+export { ChangesModal } from './ChangesModal';

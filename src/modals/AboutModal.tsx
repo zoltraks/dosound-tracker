@@ -1,0 +1,42 @@
+import React from 'react';
+
+interface AboutModalProps {
+  isOpen: boolean;
+  version: string;
+  onClose: () => void;
+  onShowChangelog: () => void;
+}
+
+export const AboutModal: React.FC<AboutModalProps> = ({
+  isOpen,
+  version,
+  onClose,
+  onShowChangelog,
+}) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-dialog">
+        <div className="modal-title">About</div>
+        <div className="modal-body">
+          DOSOUND Tracker
+          <br />
+          <br />
+          Made by Zoltar X / New Generation
+          <br />
+          <br />
+          Version: {version}
+        </div>
+        <div className="modal-actions">
+          <button className="command-btn" onClick={onShowChangelog}>
+            CHANGES
+          </button>
+          <button className="command-btn" onClick={onClose}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
