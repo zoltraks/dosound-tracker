@@ -769,6 +769,17 @@ body {
   opacity: 1;
 }
 
+.envelope-sustain-dot {
+  position: absolute;
+  left: 50%;
+  bottom: 50%;
+  transform: translate(-50%, 50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #000;
+}
+
 .value-display {
   position: absolute;
   top: -16px;

@@ -321,21 +321,22 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
                 style={{ height: `${getBarHeight(value)}%` }}
                 onMouseDown={(event) => {
                   event.preventDefault();
-                  // Left click: move cursor and, for volume, set sustain here.
+                  // Left click: just move cursor (no sustain change).
                   if (event.button === 0) {
                     handlePositionClick(index);
-                    if (type === 'volume' && onChangeSustain) {
-                      onChangeSustain(index);
-                    }
-                  }
-                  // Right click: clear sustain for volume envelope
-                  if (event.button === 2 && type === 'volume' && onChangeSustain) {
-                    onChangeSustain(null);
                   }
                 }}
                 onContextMenu={(event) => {
-                  // Prevent default context menu so right-click is usable
+                  // Right click / context menu: toggle sustain for volume envelope
                   event.preventDefault();
+                  handlePositionClick(index);
+                  if (type === 'volume' && onChangeSustain) {
+                    if (sustainPosition === index) {
+                      onChangeSustain(null);
+                    } else {
+                      onChangeSustain(index);
+                    }
+                  }
                 }}
                 title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
               >
