@@ -310,6 +310,12 @@ const App: React.FC = () => {
   // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
   const channelSubTickRef = useRef([0, 0, 0]);
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
+  // Per-channel sustain handling: sustainIndex is the envelope index where
+  // progression should pause while the note is held. When `released` is true,
+  // progression continues past sustain; when false, envelopeStep is clamped
+  // to sustainIndex.
+  const channelSustainIndexRef = useRef<(number | null)[]>([null, null, null]);
+  const channelReleasedRef = useRef<boolean[]>([false, false, false]);
   const lastNotesRef = useRef<any[]>([null, null, null]);
   const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   // Per-channel volume modifier nibble (0-15) from the pattern "volume column".
@@ -346,6 +352,8 @@ const App: React.FC = () => {
     // Reset cycle counters when stopping
     channelSubTickRef.current = [0, 0, 0];
     channelEnvelopeStepRef.current = [0, 0, 0];
+    channelSustainIndexRef.current = [null, null, null];
+    channelReleasedRef.current = [false, false, false];
     lastNotesRef.current = [null, null, null];
     lastSequencerPositionRef.current = null;
     channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
@@ -401,6 +409,8 @@ const App: React.FC = () => {
         const patternChanged = lastPos && state.currentPattern !== lastPos.pattern;
         if (patternChanged || !state.isPatternLoop || isFirstTick) {
           channelEnvelopeStepRef.current = [0, 0, 0];
+          channelSustainIndexRef.current = [null, null, null];
+          channelReleasedRef.current = [false, false, false];
           lastNotesRef.current = [null, null, null];
         }
 
@@ -481,6 +491,8 @@ const App: React.FC = () => {
           if (!pattern) {
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
+            channelSustainIndexRef.current[ch] = null;
+            channelReleasedRef.current[ch] = false;
             updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
             continue;
@@ -488,10 +500,21 @@ const App: React.FC = () => {
 
           // Explicit note-off event on this row
           if (noteOnRow && noteOnRow.note === '===') {
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(ym2149, ch, null, 0);
-            lastNotes[ch] = null;
+            const sustainIndex = channelSustainIndexRef.current[ch];
+            if (typeof sustainIndex === 'number') {
+              // Instrument has a sustain point: mark channel as released so
+              // envelopes can progress past sustain, but do not cut sound.
+              // Keep last note and current envelopeStep/SubTick.
+              channelReleasedRef.current[ch] = true;
+            } else {
+              // No sustain defined: treat note-off as a hard cut.
+              channelEnvelopeStepRef.current[ch] = 0;
+              channelSubTickRef.current[ch] = 0;
+              channelSustainIndexRef.current[ch] = null;
+              channelReleasedRef.current[ch] = false;
+              updateChannelWithInstrument(ym2149, ch, null, 0);
+              lastNotes[ch] = null;
+            }
             continue;
           }
 
@@ -502,6 +525,8 @@ const App: React.FC = () => {
           if ((wrappedOrJumped || isFirstTick) && !noteOnRow && state.currentPattern !== lastPos?.pattern) {
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
+            channelSustainIndexRef.current[ch] = null;
+            channelReleasedRef.current[ch] = false;
             updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
             continue;
@@ -527,6 +552,18 @@ const App: React.FC = () => {
             if (state.currentTick === 0) {
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
+              // Reset sustain/release state for this channel and capture
+              // sustain index from the instrument used by this note.
+              channelReleasedRef.current[ch] = false;
+              const noteInstId = (noteOnRow.instrument || '').toString().toUpperCase();
+              const instForNote = currentSong.instruments.find(inst => {
+                return (inst.id || '').toString().toUpperCase() === noteInstId;
+              });
+              const sustainIndex =
+                instForNote && typeof instForNote.sustain === 'number' && Number.isFinite(instForNote.sustain)
+                  ? Math.max(0, Math.floor(instForNote.sustain))
+                  : null;
+              channelSustainIndexRef.current[ch] = sustainIndex;
             }
           }
 
@@ -536,20 +573,37 @@ const App: React.FC = () => {
             // advance the step every 40ms (every 2 x 20ms ticks).
             const step = channelEnvelopeStepRef.current[ch];
             const volumeModifier = channelVolumeModifierRef.current[ch];
+            const released = channelReleasedRef.current[ch];
 
-            updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier);
+            updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier, released);
 
             // Envelope progression at 25 Hz: only advance on every second tick
             const sub = (channelSubTickRef.current[ch] + 1) % 2;
             channelSubTickRef.current[ch] = sub;
             if (sub === 0) {
-              channelEnvelopeStepRef.current[ch] = step + 1;
+              const sustainIndex = channelSustainIndexRef.current[ch];
+              const released = channelReleasedRef.current[ch];
+
+              if (typeof sustainIndex === 'number' && !released) {
+                // While the key is held and sustain is defined, do not advance
+                // the envelope past the sustain index.
+                const nextStep = step + 1;
+                if (nextStep <= sustainIndex) {
+                  channelEnvelopeStepRef.current[ch] = nextStep;
+                } else {
+                  channelEnvelopeStepRef.current[ch] = sustainIndex;
+                }
+              } else {
+                channelEnvelopeStepRef.current[ch] = step + 1;
+              }
             }
             lastNotes[ch] = activeNote;
           } else {
             // No active note at all - reset and silence
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
+            channelSustainIndexRef.current[ch] = null;
+            channelReleasedRef.current[ch] = false;
             updateChannelWithInstrument(ym2149, ch, null, 0);
             lastNotes[ch] = null;
           }
@@ -582,13 +636,16 @@ const App: React.FC = () => {
     return '';
   }, []);
 
-  // Helper function to update channel with instrument and all envelopes
+  // Helper function to update a YM2149 channel with the resolved instrument,
+  // current note, envelope step and optional volume modifier. The `released`
+  // flag controls sustain behaviour inside YM2149.
   const updateChannelWithInstrument = useCallback((
     ym2149: YM2149,
     channel: number,
     noteData: any | null,
     envelopeStep: number = 0,
-    volumeModifier?: number | null
+    volumeModifier?: number | null,
+    released: boolean = false
   ) => {
     const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
     const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
@@ -603,32 +660,31 @@ const App: React.FC = () => {
       return;
     }
 
-    // Use YM2149's built-in method to update channel with instrument
     ym2149.updateChannelWithInstrument(
       channel,
       instrument as any,
       { note: noteData.note, octave: noteData.octave },
       envelopeStep,
-      volumeModifier
+      volumeModifier,
+      released
     );
   }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
 
-  // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: any) => {
     if (!newPattern || !newPattern.id) {
       console.error('No pattern ID provided to handlePatternChange');
       return;
     }
-    
+
     // Find and update the pattern by ID
     const updatedPatterns = [...currentSong.patterns];
     const patternIndex = updatedPatterns.findIndex(p => p.id === newPattern.id);
-    
+
     if (patternIndex === -1) {
       console.error('Pattern not found with ID:', newPattern.id);
       return;
     }
-    
+
     updatedPatterns[patternIndex] = newPattern;
     updateSong({ patterns: updatedPatterns });
   }, [currentSong.patterns, updateSong]);

@@ -370,13 +370,29 @@ export class YM2149 {
     instrument: Instrument,
     noteData?: { note: string; octave: number },
     envelopeTick: number = 0,
-    volumeModifier?: number | null
+    volumeModifier?: number | null,
+    released: boolean = false
   ) => {
     const volumeRegister = 8 + channel; // R8, R9, R10
     const fineRegister = channel * 2;        // R0, R2, R4
     const coarseRegister = channel * 2 + 1;  // R1, R3, R5
 
-    const safeTick = Math.max(0, envelopeTick | 0);
+    let safeTick = Math.max(0, envelopeTick | 0);
+
+    // If the instrument defines a sustain index, clamp the effective envelope
+    // tick to that index while the note is held (released === false). Once the
+    // channel is marked as released, allow safeTick to progress normally so
+    // that the envelopes continue past sustain.
+    if (
+      !released &&
+      typeof instrument.sustain === 'number' &&
+      Number.isFinite(instrument.sustain)
+    ) {
+      const sustainIndex = Math.max(0, Math.floor(instrument.sustain));
+      if (safeTick > sustainIndex) {
+        safeTick = sustainIndex;
+      }
+    }
 
     const { toneActive, noiseActive } = this.getToneNoiseState(instrument, safeTick);
     this.updateMixerForChannel(channel, toneActive, noiseActive);

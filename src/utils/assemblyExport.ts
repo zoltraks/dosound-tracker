@@ -39,12 +39,14 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
     subTick: number;
     isNewNote: boolean; // Flag to ensure tone registers are written on first frame
     volumeModifier: number; // Per-channel volume modifier nibble (0-15)
+    sustainIndex: number | null;
+    released: boolean;
   }
   
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
   ];
   
   // Process each playlist entry
@@ -100,16 +102,24 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = false;
+              channelState.sustainIndex = null;
+              channelState.released = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
             }
             
             if (noteOnRow && noteOnRow.note === '===') {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              newRegs[0x08 + ch] = 0x00;
+              if (typeof channelState.sustainIndex === 'number') {
+                channelState.released = true;
+              } else {
+                channelState.note = null;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+                channelState.isNewNote = false;
+                channelState.sustainIndex = null;
+                channelState.released = false;
+                newRegs[0x08 + ch] = 0x00;
+              }
               continue;
             }
             
@@ -124,6 +134,12 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
                 channelState.envelopeStep = 0;
                 channelState.subTick = 0;
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
+                channelState.released = false;
+                const inst = song.instruments.find(i => i.id === noteOnRow.instrument);
+                const sustain = inst && typeof inst.sustain === 'number' && Number.isFinite(inst.sustain)
+                  ? Math.max(0, Math.floor(inst.sustain))
+                  : null;
+                channelState.sustainIndex = sustain;
               } else {
                 channelState.isNewNote = false;
               }
@@ -159,7 +175,17 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
             const sub = (channelState.subTick + 1) % 2;
             channelState.subTick = sub;
             if (sub === 0) {
-              channelState.envelopeStep++;
+              const sustainIndex = channelState.sustainIndex;
+              if (typeof sustainIndex === 'number' && !channelState.released) {
+                const nextStep = channelState.envelopeStep + 1;
+                if (nextStep <= sustainIndex) {
+                  channelState.envelopeStep = nextStep;
+                } else {
+                  channelState.envelopeStep = sustainIndex;
+                }
+              } else {
+                channelState.envelopeStep++;
+              }
             }
           }
         }
@@ -971,12 +997,14 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
     subTick: number;
     isNewNote: boolean;
     volumeModifier: number;
+    sustainIndex: number | null;
+    released: boolean;
   }
 
   const channels: DumpChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f }
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false }
   ];
 
   const lines: string[] = [];
@@ -1029,16 +1057,24 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = false;
+              channelState.sustainIndex = null;
+              channelState.released = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
             }
 
             if (noteOnRow && noteOnRow.note === '===') {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              newRegs[0x08 + ch] = 0x00;
+              if (typeof channelState.sustainIndex === 'number') {
+                channelState.released = true;
+              } else {
+                channelState.note = null;
+                channelState.envelopeStep = 0;
+                channelState.subTick = 0;
+                channelState.isNewNote = false;
+                channelState.sustainIndex = null;
+                channelState.released = false;
+                newRegs[0x08 + ch] = 0x00;
+              }
               continue;
             }
 
@@ -1049,6 +1085,12 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = true;
+              channelState.released = false;
+              const inst = song.instruments.find(i => i.id === noteOnRow.instrument);
+              const sustain = inst && typeof inst.sustain === 'number' && Number.isFinite(inst.sustain)
+                ? Math.max(0, Math.floor(inst.sustain))
+                : null;
+              channelState.sustainIndex = sustain;
             } else {
               channelState.isNewNote = false;
             }
@@ -1078,7 +1120,17 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
             const sub = (channelState.subTick + 1) % 2;
             channelState.subTick = sub;
             if (sub === 0) {
-              channelState.envelopeStep++;
+              const sustainIndex = channelState.sustainIndex;
+              if (typeof sustainIndex === 'number' && !channelState.released) {
+                const nextStep = channelState.envelopeStep + 1;
+                if (nextStep <= sustainIndex) {
+                  channelState.envelopeStep = nextStep;
+                } else {
+                  channelState.envelopeStep = sustainIndex;
+                }
+              } else {
+                channelState.envelopeStep++;
+              }
             }
           }
         }
@@ -1139,12 +1191,14 @@ export function exportSongToWav(song: Song): WavExportResult {
     subTick: number;
     isNewNote: boolean;
     volumeModifier: number;
+    sustainIndex: number | null;
+    released: boolean;
   }
 
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f }
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false }
   ];
 
   const phases = [0, 0, 0];
