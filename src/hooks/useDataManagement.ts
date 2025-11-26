@@ -1066,24 +1066,39 @@ export const useDataManagement = () => {
     const summaryLines: string[] = [];
     summaryLines.push('Optimization complete.');
     summaryLines.push('');
-    summaryLines.push(
-      `Removed patterns: ${removedPatternIds.length}` +
-        (removedPatternIds.length ? ` (${removedPatternIds.join(', ')})` : '')
-    );
-    summaryLines.push(
-      `Removed instruments: ${removedInstrumentIds.length}` +
-        (removedInstrumentIds.length ? ` (${removedInstrumentIds.join(', ')})` : '')
-    );
 
-    if (trimmedLinesInfo.length > 0) {
+    const hasRemovedPatterns = removedPatternIds.length > 0;
+    const hasRemovedInstruments = removedInstrumentIds.length > 0;
+    const hasTrimmedLines = trimmedLinesInfo.length > 0;
+
+    if (hasRemovedPatterns) {
+      summaryLines.push(
+        `Removed patterns: ${removedPatternIds.length}` +
+          ` (${removedPatternIds.join(', ')})`
+      );
+    }
+
+    if (hasRemovedInstruments) {
+      summaryLines.push(
+        `Removed instruments: ${removedInstrumentIds.length}` +
+          ` (${removedInstrumentIds.join(', ')})`
+      );
+    }
+
+    if (hasTrimmedLines) {
+      if (hasRemovedPatterns || hasRemovedInstruments) {
+        summaryLines.push('');
+      }
       summaryLines.push('Trimmed pattern lines:');
       trimmedLinesInfo.forEach(info => {
         summaryLines.push(
           `- Pattern ${info.id} (${info.name || 'unnamed'}): ${info.removed} lines above length ${patternLength}`
         );
       });
-    } else {
-      summaryLines.push('Trimmed pattern lines: 0');
+    }
+
+    if (!hasRemovedPatterns && !hasRemovedInstruments && !hasTrimmedLines) {
+      summaryLines.push('No patterns or instruments were removed and no pattern lines were trimmed.');
     }
 
     return summaryLines.join('\n');
