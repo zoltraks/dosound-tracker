@@ -54,6 +54,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const envelopeTimerRef = useRef<number | null>(null);
   const previewSubTickRef = useRef<number>(0);
   const previewEnvelopeStepRef = useRef<number>(0);
+  const previewLastTickTimeRef = useRef<number | null>(null);
+  const previewNextTickTimeRef = useRef<number | null>(null);
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
@@ -83,7 +85,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const playPreviewNote = useCallback((note: string, octave: number) => {
     if (!ym2149) return;
 
-    // Clear any existing envelope timer
     if (envelopeTimerRef.current) {
       clearInterval(envelopeTimerRef.current);
     }
@@ -94,26 +95,43 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     const noteData = { note, octave };
 
     // Initialize envelope timing
+    const now = performance.now();
     previewSubTickRef.current = 0;
     previewEnvelopeStepRef.current = 0;
+    previewLastTickTimeRef.current = now;
+    previewNextTickTimeRef.current = now + 20;
 
     // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
 
-    // Start envelope timer: 20ms tick, advance envelope step every 20ms
-    envelopeTimerRef.current = window.setInterval(() => {
-      // Track raw sub-ticks for potential future use
-      const currentSub = previewSubTickRef.current + 1;
-      previewSubTickRef.current = currentSub;
+    const TICK_INTERVAL_MS = 20;
 
-      let currentStep = previewEnvelopeStepRef.current;
-      if (currentSub % 2 === 0) {
-        currentStep = currentStep + 1;
-        previewEnvelopeStepRef.current = currentStep;
+    envelopeTimerRef.current = window.setInterval(() => {
+      const nowTick = performance.now();
+
+      let nextTickTime = previewNextTickTimeRef.current;
+      if (!nextTickTime) {
+        nextTickTime = nowTick + TICK_INTERVAL_MS;
       }
 
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
-    }, 20); // 20ms = 50Hz, envelope step every tick
+      let subTick = previewSubTickRef.current;
+      let step = previewEnvelopeStepRef.current;
+
+      while (nowTick >= nextTickTime) {
+        subTick = (subTick + 1) % 2;
+        if (subTick === 0) {
+          step = step + 1;
+        }
+        nextTickTime += TICK_INTERVAL_MS;
+      }
+
+      previewSubTickRef.current = subTick;
+      previewEnvelopeStepRef.current = step;
+      previewLastTickTimeRef.current = nowTick;
+      previewNextTickTimeRef.current = nextTickTime;
+
+      ym2149.updateChannelWithInstrument(channel, instrument, noteData, step, 0x0f);
+    }, 20);
 
     // Auto-silence after 500ms for preview (longer to hear envelope)
     const volumeRegister = 8 + channel;
@@ -122,6 +140,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         clearInterval(envelopeTimerRef.current);
         envelopeTimerRef.current = null;
       }
+      previewLastTickTimeRef.current = null;
+      previewNextTickTimeRef.current = null;
       ym2149.writeRegister(volumeRegister, 0x00); // Silence channel
     }, 500);
   }, [ym2149, trackId, currentInstrumentData]);

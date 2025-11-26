@@ -35,6 +35,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const previewEnvelopeStepsRef = useRef<{ [key: string]: number }>({});
   const previewSustainIndexRef = useRef<{ [key: string]: number | null }>({});
   const previewReleasedRef = useRef<{ [key: string]: boolean }>({});
+  const previewLastTickTimeRef = useRef<{ [key: string]: number }>({});
+  const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
 
   // Generate piano keys for 5 octaves with proper layout
   const generatePianoKeys = () => {
@@ -166,6 +168,12 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       if (previewReleasedRef.current[keyId] !== undefined) {
         delete previewReleasedRef.current[keyId];
       }
+      if (previewLastTickTimeRef.current[keyId] !== undefined) {
+        delete previewLastTickTimeRef.current[keyId];
+      }
+      if (previewNextTickTimeRef.current[keyId] !== undefined) {
+        delete previewNextTickTimeRef.current[keyId];
+      }
 
       ym2149.writeRegister(volumeRegister, 0x00);
       return;
@@ -178,6 +186,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     previewEnvelopeStepsRef.current = {};
     previewSustainIndexRef.current = {};
     previewReleasedRef.current = {};
+    previewLastTickTimeRef.current = {};
+    previewNextTickTimeRef.current = {};
 
     ym2149.writeRegister(volumeRegister, 0x00);
   }, [ym2149, previewChannel]);
@@ -211,8 +221,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     previewReleasedRef.current[keyId] = false;
 
     // Initialize envelope timing
+    const now = performance.now();
     previewSubTicksRef.current[keyId] = 0;
     previewEnvelopeStepsRef.current[keyId] = 0;
+    previewLastTickTimeRef.current[keyId] = now;
+    previewNextTickTimeRef.current[keyId] = now + 20;
 
     // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
@@ -226,30 +239,48 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
     const volumeRegister = 0x08 + channel;
 
-    // Start envelope timer - 20ms tick, but advance envelope step every 40ms (every 2 ticks)
+    // Start envelope timer - 20ms base tick, advance envelope step every
+    // second virtual tick (40ms), with catch-up for missed ticks.
     envelopeTimersRef.current[keyId] = window.setInterval(() => {
       const sustain = previewSustainIndexRef.current[keyId];
       const released = previewReleasedRef.current[keyId] ?? false;
 
-      const nextSub = ((previewSubTicksRef.current[keyId] ?? 0) + 1) % 2;
-      previewSubTicksRef.current[keyId] = nextSub;
+      const TICK_INTERVAL_MS = 20;
+      const nowTick = performance.now();
 
-      let rawStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
-      // Advance envelope step only on every second 20ms tick, with sustain hold
-      if (nextSub === 0) {
-        if (
-          sustain === null ||
-          sustain === undefined ||
-          sustain < 0 ||
-          released ||
-          rawStep < sustain
-        ) {
-          rawStep = rawStep + 1;
-          previewEnvelopeStepsRef.current[keyId] = rawStep;
-        }
+      let nextTickTime = previewNextTickTimeRef.current[keyId];
+      if (!nextTickTime) {
+        nextTickTime = nowTick + TICK_INTERVAL_MS;
       }
 
-      const effectiveRawStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
+      let subTick = previewSubTicksRef.current[keyId] ?? 0;
+      let rawStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
+
+      // Catch up on any missed 20ms ticks due to timer jitter.
+      while (nowTick >= nextTickTime) {
+        subTick = (subTick + 1) % 2;
+
+        if (subTick === 0) {
+          if (
+            sustain === null ||
+            sustain === undefined ||
+            sustain < 0 ||
+            released ||
+            rawStep < sustain
+          ) {
+            rawStep = rawStep + 1;
+          }
+        }
+
+        nextTickTime += TICK_INTERVAL_MS;
+      }
+
+      previewSubTicksRef.current[keyId] = subTick;
+      previewEnvelopeStepsRef.current[keyId] = rawStep;
+      previewLastTickTimeRef.current[keyId] = nowTick;
+      previewNextTickTimeRef.current[keyId] = nextTickTime;
+
+      const effectiveRawStep = rawStep;
       let stepForApply = effectiveRawStep;
       if (
         sustain !== null &&
@@ -288,6 +319,12 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         }
         if (previewReleasedRef.current[keyId] !== undefined) {
           delete previewReleasedRef.current[keyId];
+        }
+        if (previewLastTickTimeRef.current[keyId] !== undefined) {
+          delete previewLastTickTimeRef.current[keyId];
+        }
+        if (previewNextTickTimeRef.current[keyId] !== undefined) {
+          delete previewNextTickTimeRef.current[keyId];
         }
 
         ym2149.writeRegister(volumeRegister, 0x00);
