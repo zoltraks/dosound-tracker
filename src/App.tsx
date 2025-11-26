@@ -242,7 +242,13 @@ const App: React.FC = () => {
         }
 
         setMessages(blocks);
-        setCurrentMessageIndex(0);
+
+        if (blocks.length > 0) {
+          const initialIndex = Math.floor(Math.random() * blocks.length);
+          setCurrentMessageIndex(initialIndex);
+        } else {
+          setCurrentMessageIndex(0);
+        }
       })
       .catch(() => {
         setMessages([]);
