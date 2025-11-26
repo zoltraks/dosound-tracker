@@ -403,21 +403,19 @@ const App: React.FC = () => {
       };
 
       if (wrappedOrJumped || isFirstTick) {
-        // Always reset sub-tick timing on wrap/jump or first tick so 40ms envelope steps realign
+        // Always reset sub-tick timing on wrap/jump or first tick so 40ms
+        // envelope steps realign, but avoid forcibly clearing notes just
+        // because the playlist advanced to the next pattern.
         channelSubTickRef.current = [0, 0, 0];
 
-        // Reset envelopes and notes when we change pattern (song mode) 
-        // or when not looping a single pattern, or on first tick
-        const patternChanged = lastPos && state.currentPattern !== lastPos.pattern;
-        if (patternChanged || !state.isPatternLoop || isFirstTick) {
+        // On the very first tick after starting playback, reset envelopes,
+        // notes, sustain state and per-channel volume modifiers so that any
+        // stale state from a previous run does not leak into the new one.
+        if (isFirstTick) {
           channelEnvelopeStepRef.current = [0, 0, 0];
           lastNotesRef.current = [null, null, null];
           channelSustainRef.current = [null, null, null];
           channelReleasedRef.current = [false, false, false];
-        }
-
-        // Volume modifiers default to 0xF only on the very first tick after starting playback.
-        if (isFirstTick) {
           channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
         }
       }
@@ -528,11 +526,13 @@ const App: React.FC = () => {
             // Do not reset envelope step or clear lastNotes; fall through
           }
 
-          // If we just wrapped/jumped to a different pattern and there is no explicit note on this
-          // row, do NOT carry the previous note across the pattern boundary.
-          // This ensures that channels whose patterns start with spaces
-          // remain silent at line 0 when switching patterns.
-          if ((wrappedOrJumped || isFirstTick) && !noteOnRow && state.currentPattern !== lastPos?.pattern) {
+          // On the very first tick after starting playback, if there is no
+          // explicit note on this row, ensure the channel starts from a
+          // silent state so we do not accidentally reuse a stale note from a
+          // previous run. Afterwards, notes are allowed to sustain naturally
+          // across pattern boundaries unless an explicit note-off or rest is
+          // present in the data.
+          if (isFirstTick && !noteOnRow) {
             channelEnvelopeStepRef.current[ch] = 0;
             channelSubTickRef.current[ch] = 0;
             updateChannelWithInstrument(ym2149, ch, null, 0);
