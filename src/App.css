@@ -369,6 +369,7 @@ body {
   font-size: 10px;
   color: var(--text-secondary);
   margin-bottom: 12px;
+  line-height: 1.2rem;
 }
 
 .modal-body.changelog-modal-body {
@@ -426,6 +427,7 @@ body {
 
 .middle-column {
   flex: 3;
+  min-height: 0;
 }
 
 .right-column {
@@ -723,6 +725,7 @@ body {
   padding: 4px;
   cursor: pointer;
   outline: none;
+  flex-shrink: 0;
 }
 
 .envelope-panel.active {
@@ -823,6 +826,34 @@ body {
   border-top: 1px solid var(--border-color);
   font-size: 10px;
   color: var(--text-secondary);
+}
+
+/* Notes Panel (middle column filler) */
+.notes-panel {
+  flex: 1;
+  min-height: 0;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  padding: 4px;
+  box-shadow: var(--shadow-small);
+  overflow: hidden;
+}
+
+.notes-content {
+  height: 100%;
+  overflow: hidden;
+  font-size: 9px;
+  color: var(--text-secondary);
+  opacity: 1;
+  transition: opacity 0.8s ease-in-out;
+}
+
+.notes-content.notes-hidden {
+  opacity: 0;
+}
+
+.notes-content p {
+  margin-bottom: 4px;
 }
 
 /* Tone/Noise Panel */

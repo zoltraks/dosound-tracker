@@ -32,6 +32,9 @@ const App: React.FC = () => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [changelogContent, setChangelogContent] = useState('');
+  const [messages, setMessages] = useState<string[]>([]);
+  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
+  const [isNotesVisible, setIsNotesVisible] = useState(true);
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -209,6 +212,101 @@ const App: React.FC = () => {
       // ignore
     }
   }, [transposeScope, transposeTrackScope, transposeInstrumentScope, transposeAmount]);
+
+  useEffect(() => {
+    fetch('MESSAGES.md')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load messages.');
+        }
+        return response.text();
+      })
+      .then(text => {
+        const lines = text.split('\n');
+        const blocks: string[] = [];
+        let current: string[] = [];
+
+        for (const line of lines) {
+          if (!line.trim()) {
+            if (current.length > 0) {
+              blocks.push(current.join('\n'));
+              current = [];
+            }
+          } else {
+            current.push(line);
+          }
+        }
+
+        if (current.length > 0) {
+          blocks.push(current.join('\n'));
+        }
+
+        setMessages(blocks);
+        setCurrentMessageIndex(0);
+      })
+      .catch(() => {
+        setMessages([]);
+        setCurrentMessageIndex(0);
+      });
+  }, []);
+
+  const notesIntervalRef = useRef<number | null>(null);
+  const notesFadeTimeoutRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (notesIntervalRef.current !== null) {
+      window.clearInterval(notesIntervalRef.current);
+      notesIntervalRef.current = null;
+    }
+
+    if (notesFadeTimeoutRef.current !== null) {
+      window.clearTimeout(notesFadeTimeoutRef.current);
+      notesFadeTimeoutRef.current = null;
+    }
+
+    const messagesLength = messages.length;
+
+    if (messagesLength <= 1) {
+      return;
+    }
+
+    notesIntervalRef.current = window.setInterval(() => {
+      setIsNotesVisible(false);
+
+      if (notesFadeTimeoutRef.current !== null) {
+        window.clearTimeout(notesFadeTimeoutRef.current);
+      }
+
+      notesFadeTimeoutRef.current = window.setTimeout(() => {
+        setCurrentMessageIndex(prevIndex => {
+          if (messagesLength <= 1) {
+            return prevIndex;
+          }
+
+          let nextIndex = Math.floor(Math.random() * messagesLength);
+
+          if (nextIndex === prevIndex && messagesLength > 1) {
+            nextIndex = (prevIndex + 1) % messagesLength;
+          }
+
+          return nextIndex;
+        });
+
+        setIsNotesVisible(true);
+      }, 800);
+    }, 10000);
+
+    return () => {
+      if (notesIntervalRef.current !== null) {
+        window.clearInterval(notesIntervalRef.current);
+        notesIntervalRef.current = null;
+      }
+      if (notesFadeTimeoutRef.current !== null) {
+        window.clearTimeout(notesFadeTimeoutRef.current);
+        notesFadeTimeoutRef.current = null;
+      }
+    };
+  }, [messages]);
 
   // Audio setup
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -2849,6 +2947,18 @@ const App: React.FC = () => {
                 updateInstrument({ noiseEnvelope: data });
               }}
             />
+
+            <div className="notes-panel" aria-hidden="true">
+              <div
+                className={`notes-content${isNotesVisible ? '' : ' notes-hidden'}`}
+                dangerouslySetInnerHTML={{
+                  __html:
+                    messages.length > 0 && currentMessageIndex >= 0 && currentMessageIndex < messages.length
+                      ? renderMarkdown(messages[currentMessageIndex])
+                      : ''
+                }}
+              />
+            </div>
           </div>
 
           <div className="right-column">

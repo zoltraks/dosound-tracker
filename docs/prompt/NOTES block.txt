@@ -1,0 +1,23 @@
+Add another block "Notes" in the same column where "Mode", "Volume", "Arpeggio", "Pitch" and "Noise" are that will have no title, only a simple text.
+
+Create a static file with list of texts that will be displayed in that block.
+Call it MESSAGES.md.
+It must be available for web application as well as Electron.
+Use the utitlity function to convert markdown to HTML as you use it in "CHANGES".
+Fill the file with some random texts. 
+Separate texts with at least two empty lines. 
+If only one empty line is there, use it and properly display in HTML.
+
+The block must fill the available space, and the text must not cause overflow beyond the viewport.
+
+The text can be hidden when there is insufficient space.
+
+Block is not focusable and not available for navigation, it's only information block to fill the UI so no empty space is left on the bottom in the middle of the viewport when application is stretched vertically.
+
+---
+
+Text in "Notes" should change every 10 seconds randomly.
+
+Use only one empty line to separate texts.
+
+When changing text use slow CSS transition.
