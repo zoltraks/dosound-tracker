@@ -19,6 +19,7 @@ import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
+import { InfoDialog, ConfirmDialog } from './modals';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -3047,26 +3048,12 @@ const App: React.FC = () => {
             }
           }}
         />
-        {instrumentError && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Instrument Load Error</div>
-              <div className="modal-body">
-                {instrumentError.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < instrumentError.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={() => setInstrumentError('')}>
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <InfoDialog
+          isOpen={!!instrumentError}
+          title="Instrument Load Error"
+          message={instrumentError}
+          onClose={() => setInstrumentError('')}
+        />
         {isTransposeOpen && (
           <div className="modal-backdrop">
             <div className="modal-dialog">
@@ -3226,46 +3213,18 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
-        {transposeSummary && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Transpose Summary</div>
-              <div className="modal-body">
-                {transposeSummary.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < transposeSummary.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseTransposeSummary}>
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {trackClipboardError && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Track Clipboard Error</div>
-              <div className="modal-body">
-                {trackClipboardError.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < trackClipboardError.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={() => setTrackClipboardError('')}>
-                  OK
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
+        <InfoDialog
+          isOpen={!!transposeSummary}
+          title="Transpose Summary"
+          message={transposeSummary}
+          onClose={handleCloseTransposeSummary}
+        />
+        <InfoDialog
+          isOpen={!!trackClipboardError}
+          title="Track Clipboard Error"
+          message={trackClipboardError}
+          onClose={() => setTrackClipboardError('')}
+        />
         {isOptimizeConfirmOpen && (
           <div className="modal-backdrop">
             <div className="modal-dialog">
@@ -3283,60 +3242,24 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
-        {optimizeSummary && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Optimization Summary</div>
-              <div className="modal-body">
-                {optimizeSummary.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < optimizeSummary.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseOptimizeSummary}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {soundExportSummary && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Sound Export Summary</div>
-              <div className="modal-body">
-                {soundExportSummary.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < soundExportSummary.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseSoundExportSummary}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
-        {dumpExportSummary && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Dump Export Summary</div>
-              <div className="modal-body">
-                {dumpExportSummary.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < dumpExportSummary.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseDumpExportSummary}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <InfoDialog
+          isOpen={!!optimizeSummary}
+          title="Optimization Summary"
+          message={optimizeSummary}
+          onClose={handleCloseOptimizeSummary}
+        />
+        <InfoDialog
+          isOpen={!!soundExportSummary}
+          title="Sound Export Summary"
+          message={soundExportSummary}
+          onClose={handleCloseSoundExportSummary}
+        />
+        <InfoDialog
+          isOpen={!!dumpExportSummary}
+          title="Dump Export Summary"
+          message={dumpExportSummary}
+          onClose={handleCloseDumpExportSummary}
+        />
         {isOptimizeConfirmOpen && (
           <div className="modal-backdrop">
             <div className="modal-dialog">
@@ -3392,24 +3315,12 @@ const App: React.FC = () => {
             </div>
           </div>
         )}
-        {renumberSummary && (
-          <div className="modal-backdrop">
-            <div className="modal-dialog">
-              <div className="modal-title">Renumber Summary</div>
-              <div className="modal-body">
-                {renumberSummary.split('\n').map((line, index) => (
-                  <React.Fragment key={index}>
-                    {line}
-                    {index < renumberSummary.split('\n').length - 1 && <br />}
-                  </React.Fragment>
-                ))}
-              </div>
-              <div className="modal-actions">
-                <button className="command-btn" onClick={handleCloseRenumberSummary}>OK</button>
-              </div>
-            </div>
-          </div>
-        )}
+        <InfoDialog
+          isOpen={!!renumberSummary}
+          title="Renumber Summary"
+          message={renumberSummary}
+          onClose={handleCloseRenumberSummary}
+        />
         {isAboutOpen && (
           <div className="modal-backdrop">
             <div className="modal-dialog">
