@@ -292,6 +292,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     onPositionSelect(lineIndex);
   }, [setActiveSection, onPositionSelect]);
 
+  const handleTrackHeaderClick = useCallback((track: 'A' | 'B' | 'C') => {
+    setCurrentTrack(track);
+
+    const section: NavigationSection =
+      track === 'A' ? 'trackA' : track === 'B' ? 'trackB' : 'trackC';
+
+    setActiveSection(section);
+  }, [setActiveSection]);
+
   const formatPatternDisplay = useCallback((patternId: string) => {
     if (patternId === '--') return '--';
     if (patternId.startsWith('^^')) return patternId;
@@ -330,9 +339,33 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       <div className="playlist-content">
         <div className="playlist-header-row">
           <span className="line-number-header">Pos</span>
-          <span className={`track-header ${targetTrack === 'A' ? 'target-track' : ''}`}>A</span>
-          <span className={`track-header ${targetTrack === 'B' ? 'target-track' : ''}`}>B</span>
-          <span className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}>C</span>
+          <span
+            className={`track-header ${targetTrack === 'A' ? 'target-track' : ''}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleTrackHeaderClick('A');
+            }}
+          >
+            A
+          </span>
+          <span
+            className={`track-header ${targetTrack === 'B' ? 'target-track' : ''}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleTrackHeaderClick('B');
+            }}
+          >
+            B
+          </span>
+          <span
+            className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}
+            onClick={(event) => {
+              event.stopPropagation();
+              handleTrackHeaderClick('C');
+            }}
+          >
+            C
+          </span>
           <span className="playlist-move-header"></span>
         </div>
         

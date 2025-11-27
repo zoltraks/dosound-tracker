@@ -93,14 +93,6 @@ export class SoundDriver {
     
     for (let lineIndex = 0; lineIndex < song.playlist.length; lineIndex++) {
       const playlistEntry = song.playlist[lineIndex];
-      
-      // Check for GOTO command
-      if (playlistEntry.trackA.startsWith('^^') || 
-          playlistEntry.trackB.startsWith('^^') || 
-          playlistEntry.trackC.startsWith('^^')) {
-        break; // End playback on GOTO
-      }
-
       // Process each track
       const tracks = [
         { patternId: playlistEntry.trackA, channel: 0 },

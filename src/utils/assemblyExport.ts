@@ -53,14 +53,6 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
   // Process each playlist entry
   for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
     const playlistEntry = song.playlist[playlistIdx];
-
-    // Check for GOTO command
-    if (playlistEntry.trackA.startsWith('^^') || 
-        playlistEntry.trackB.startsWith('^^') || 
-        playlistEntry.trackC.startsWith('^^')) {
-      break;
-    }
-    
     // Get patterns for each track
     const patterns = [
       song.patterns.find(p => p.id === playlistEntry.trackA),
@@ -1174,15 +1166,6 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
 
   for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
     const playlistEntry = song.playlist[playlistIdx];
-
-    if (
-      playlistEntry.trackA.startsWith('^^') ||
-      playlistEntry.trackB.startsWith('^^') ||
-      playlistEntry.trackC.startsWith('^^')
-    ) {
-      break;
-    }
-
     const patterns = [
       song.patterns.find(p => p.id === playlistEntry.trackA),
       song.patterns.find(p => p.id === playlistEntry.trackB),
@@ -1388,15 +1371,6 @@ export function exportSongToWav(song: Song): WavExportResult {
 
   for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
     const playlistEntry = song.playlist[playlistIdx];
-
-    if (
-      playlistEntry.trackA.startsWith('^^') ||
-      playlistEntry.trackB.startsWith('^^') ||
-      playlistEntry.trackC.startsWith('^^')
-    ) {
-      break;
-    }
-
     const patterns = [
       song.patterns.find(p => p.id === playlistEntry.trackA),
       song.patterns.find(p => p.id === playlistEntry.trackB),

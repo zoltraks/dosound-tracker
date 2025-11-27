@@ -191,8 +191,8 @@ song:
     - name: Pattern 09
       number: "09"
       steps:
-        - note: "D-4"
-          instrument: "07"
+        - note: "E-3"
+          instrument: "00"
         - space: 5
         - note: "E-3"
           instrument: "00"

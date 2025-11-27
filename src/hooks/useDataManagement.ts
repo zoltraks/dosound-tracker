@@ -999,13 +999,13 @@ export const useDataManagement = () => {
     const song = currentSong;
     const patternLength = song.patternLength || PATTERN_LENGTH;
 
-    // Determine used pattern IDs from playlist (ignore '--' and GOTO markers starting with '^^')
+    // Determine used pattern IDs from playlist (ignore '--' placeholders)
     const usedPatternIds = new Set<string>();
     song.playlist.forEach(entry => {
       [entry.trackA, entry.trackB, entry.trackC].forEach(id => {
         if (typeof id === 'string') {
           const trimmed = id.trim();
-          if (trimmed && trimmed !== '--' && !trimmed.startsWith('^^')) {
+          if (trimmed && trimmed !== '--') {
             usedPatternIds.add(trimmed);
           }
         }
@@ -1144,7 +1144,7 @@ export const useDataManagement = () => {
     });
 
     // Determine pattern order by first occurrence in playlist (A/B/C),
-    // ignoring '--' and GOTO markers ('^^..'), then append any hidden
+    // ignoring '--' placeholders, then append any hidden
     // patterns that are not referenced from the playlist.
     const orderedPatternIds: string[] = [];
     const seenPatternIds = new Set<string>();
@@ -1154,19 +1154,10 @@ export const useDataManagement = () => {
       if (!trimmed || trimmed === '--') {
         return;
       }
-
-      if (trimmed.startsWith('^^')) {
-        const suffix = trimmed.slice(2).trim().toUpperCase();
-        if (!suffix) return;
-        if (!patternById.has(suffix) || seenPatternIds.has(suffix)) return;
-        seenPatternIds.add(suffix);
-        orderedPatternIds.push(suffix);
-        return;
-      }
-
       if (!patternById.has(trimmed) || seenPatternIds.has(trimmed)) {
         return;
       }
+
       seenPatternIds.add(trimmed);
       orderedPatternIds.push(trimmed);
     };
@@ -1200,14 +1191,6 @@ export const useDataManagement = () => {
       const trimmed = rawId.trim();
       if (!trimmed) return rawId;
       if (trimmed === '--') return trimmed;
-
-      if (trimmed.startsWith('^^')) {
-        const suffix = trimmed.slice(2).trim().toUpperCase();
-        if (!suffix) return trimmed;
-        const mapped = patternIdMap[suffix];
-        return mapped ? `^^${mapped}` : trimmed;
-      }
-
       const mapped = patternIdMap[trimmed.toUpperCase()];
       return mapped || trimmed;
     };
