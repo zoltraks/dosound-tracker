@@ -16,6 +16,8 @@ interface HeaderPanelProps {
   ym2149: YM2149 | null;
   currentInstrument: Instrument;
   previewChannel: number;
+  hasDownloads: boolean;
+  onShowDownloads: () => void;
 }
 
 export const HeaderPanel: React.FC<HeaderPanelProps> = ({
@@ -29,7 +31,9 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   setActiveSection,
   ym2149,
   currentInstrument,
-  previewChannel
+  previewChannel,
+  hasDownloads,
+  onShowDownloads
 }) => {
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
@@ -205,6 +209,15 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       </div>
       
       <div className="header-right">
+        {hasDownloads && (
+          <button
+            className="theme-toggle download-toggle"
+            onClick={onShowDownloads}
+            title="Show available downloads"
+          >
+            ⏬
+          </button>
+        )}
         {/* Octave Selection */}
         <div
           ref={octaveRef}

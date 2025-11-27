@@ -191,6 +191,7 @@ body {
 .header-right {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .theme-toggle {
@@ -358,6 +359,15 @@ body {
   flex-direction: column;
 }
 
+.modal-dialog.download-modal {
+  width: 60vw;
+  max-width: 540px;
+  height: 50vh;
+  max-height: 50vh;
+  display: flex;
+  flex-direction: column;
+}
+
 .modal-title {
   font-size: 12px;
   font-weight: bold;
@@ -376,6 +386,32 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+.modal-body.download-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.download-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.download-list li + li {
+  margin-top: 4px;
+}
+
+.download-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+}
+
+.download-link:hover {
+  color: var(--text-primary);
+  text-decoration: underline;
 }
 
 .modal-body.changelog-modal-body h1,

@@ -20,7 +20,7 @@ import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal } from './modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal } from './modals';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -51,6 +51,8 @@ const App: React.FC = () => {
   const [transposeSummary, setTransposeSummary] = useState('');
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
+  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
     // Load dump mode preference from localStorage. Default to complex mode
@@ -255,6 +257,53 @@ const App: React.FC = () => {
       .catch(() => {
         setMessages([]);
         setCurrentMessageIndex(0);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch('download/LIST.txt')
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Failed to load download list.');
+        }
+
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+          // Likely SPA fallback (index.html) instead of a real LIST.txt file.
+          throw new Error('LIST.txt appears to be HTML, treating as missing.');
+        }
+
+        return response.text();
+      })
+      .then(text => {
+        const lines = text.split(/\r?\n/);
+        const trimmed = lines.map(line => line.trim());
+        const nonEmpty = trimmed.filter(line => line.length > 0);
+        const validFiles = nonEmpty.filter(line => {
+          const base = (line.split(/[\\/]/).pop() || '').toLowerCase();
+          return base !== '.gitkeep' && base !== 'list.txt';
+        });
+
+        if (validFiles.length === 0) {
+          setDownloadFiles([]);
+          return;
+        }
+
+        // Make the list unique and sort alphabetically in reverse order.
+        const uniqueFiles = Array.from(new Set(validFiles));
+        uniqueFiles.sort((a, b) => b.localeCompare(a, undefined, { sensitivity: 'base' }));
+
+        const first = uniqueFiles[0].toLowerCase();
+        if (first.startsWith('<!doctype') || first.startsWith('<html')) {
+          // Defensive check: HTML content instead of plain filename list.
+          setDownloadFiles([]);
+          return;
+        }
+
+        setDownloadFiles(uniqueFiles);
+      })
+      .catch(() => {
+        setDownloadFiles([]);
       });
   }, []);
 
@@ -2588,7 +2637,8 @@ const App: React.FC = () => {
         !!dumpExportSummary ||
         !!renumberSummary ||
         isAboutOpen ||
-        isChangelogOpen;
+        isChangelogOpen ||
+        isDownloadOpen;
 
       const hasConfirmModal =
         isTransposeOpen ||
@@ -2667,6 +2717,10 @@ const App: React.FC = () => {
         }
         if (isChangelogOpen) {
           handleCloseChangelog();
+          return;
+        }
+        if (isDownloadOpen) {
+          setIsDownloadOpen(false);
           return;
         }
 
@@ -2748,6 +2802,7 @@ const App: React.FC = () => {
     renumberSummary,
     isAboutOpen,
     isChangelogOpen,
+    isDownloadOpen,
     isTransposeOpen,
     isOptimizeConfirmOpen,
     isRenumberConfirmOpen,
@@ -2771,7 +2826,8 @@ const App: React.FC = () => {
     handleCloseChangelog,
     setInstrumentError,
     setTrackClipboardError,
-    setIsAboutOpen
+    setIsAboutOpen,
+    setIsDownloadOpen
   ]);
 
   const playlistLength = currentSong.playlist.length;
@@ -2795,6 +2851,8 @@ const App: React.FC = () => {
           ym2149={ym2149Ref.current}
           currentInstrument={currentInstrument}
           previewChannel={previewChannel}
+          hasDownloads={downloadFiles.length > 0}
+          onShowDownloads={() => setIsDownloadOpen(true)}
         />
         
         <CommandPanel
@@ -3182,6 +3240,12 @@ const App: React.FC = () => {
           isOpen={isChangelogOpen}
           content={changelogContent}
           onClose={handleCloseChangelog}
+        />
+
+        <DownloadModal
+          isOpen={isDownloadOpen}
+          files={downloadFiles}
+          onClose={() => setIsDownloadOpen(false)}
         />
       </div>
     );
