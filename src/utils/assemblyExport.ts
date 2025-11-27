@@ -3,6 +3,21 @@ import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../co
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
 
+interface RegisterState {
+  [register: number]: number;
+}
+
+interface ToneMetaByChannel {
+  [channel: number]: { note?: string; octave?: number; pitchDelta?: number };
+}
+
+interface FrameState {
+  registers: RegisterState;
+  lineIndex: number;
+  tick: number;
+  toneMeta?: ToneMetaByChannel;
+}
+
 /**
  * Converts a song to DOSOUND XBIOS assembly format
  * @param song The song to export
@@ -11,17 +26,6 @@ import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
  */
 export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false): string {
   // Simulate playback and collect register states per frame
-  interface RegisterState {
-    [register: number]: number;
-  }
-  
-  interface FrameState {
-    registers: RegisterState;
-    lineIndex: number;
-    tick: number;
-    toneMeta?: { [channel: number]: { note?: string; octave?: number; pitchDelta?: number } };
-  }
-  
   const frames: FrameState[] = [];
   const ticksPerRow = song.speed || 6;
   
@@ -156,7 +160,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
 
                 const instrument = song.instruments.find(i => i.id === noteOnRow.instrument);
-                const rawSustain = instrument ? (instrument as any).sustain : null;
+                const rawSustain = instrument?.sustain ?? null;
                 if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
                   channelState.sustainIndex = Math.floor(rawSustain);
                 } else {
@@ -348,7 +352,7 @@ function applyInstrumentToRegisters(
   }
 }
 
-function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: boolean = false): string {
+function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpMode: boolean = false): string {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // song parameter will be used for future optimization logic and pattern markers
   let asm = 'music:\n\n\t; START\n\n';
@@ -691,7 +695,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     const clampedSpeed = Math.max(2, baseSpeed);
     const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
 
-    const rawLength = Number((song as any).patternLength);
+    const rawLength = Number(song.patternLength);
     const patternLength = Number.isFinite(rawLength) && rawLength > 0
       ? Math.floor(rawLength)
       : PATTERN_LENGTH;
@@ -1234,7 +1238,7 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
               channelState.isNewNote = true;
 
               const instrument = song.instruments.find(i => i.id === noteOnRow.instrument);
-              const rawSustain = instrument ? (instrument as any).sustain : null;
+              const rawSustain = instrument?.sustain ?? null;
               if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
                 channelState.sustainIndex = Math.floor(rawSustain);
               } else {

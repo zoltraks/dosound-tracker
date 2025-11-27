@@ -3,7 +3,8 @@ import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
-import type { Instrument } from './synth/SoundDriver';
+import type { SequencerState } from './hooks/useSequencer';
+import type { Instrument, Note, Pattern, Song } from './synth/SoundDriver';
 import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -149,7 +150,7 @@ const App: React.FC = () => {
     const id = currentInstrument?.id;
     if (!id) return;
 
-    const instOctave = (currentInstrument as any).octave;
+    const instOctave = currentInstrument.octave;
     if (typeof instOctave === 'number' && Number.isFinite(instOctave)) {
       const clamped = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(instOctave)));
       setCurrentOctave(clamped);
@@ -433,7 +434,7 @@ const App: React.FC = () => {
   // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
   const channelSubTickRef = useRef([0, 0, 0]);
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
-  const lastNotesRef = useRef<any[]>([null, null, null]);
+  const lastNotesRef = useRef<Array<Note | null>>([null, null, null]);
   const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   // Per-channel volume modifier nibble (0-15) from the pattern "volume column".
   // Default is 0x0F (no attenuation) at the start of playback.
@@ -490,7 +491,7 @@ const App: React.FC = () => {
   }, []);
 
   // Basic sequencer callback for playback
-  const sequencerCallback = useCallback((state: any) => {
+  const sequencerCallback = useCallback((state: SequencerState) => {
     // Update current line for UI
     setSharedCurrentLine(state.currentLine);
     
@@ -668,7 +669,7 @@ const App: React.FC = () => {
 
           // Determine active note: explicit note on this row if present, otherwise
           // continue holding the last active note.
-          let activeNote = last as any;
+          let activeNote: Note | null = last;
           const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
 
           // Update per-channel volume modifier when a volume nibble is present on this row.
@@ -693,7 +694,7 @@ const App: React.FC = () => {
               ? activeNote.instrument
               : '';
             const instrument = currentSong.instruments.find(i => i.id === instId);
-            const rawSustain = instrument ? (instrument as any).sustain : null;
+            const rawSustain = instrument?.sustain ?? null;
             if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
               channelSustainRef.current[ch] = Math.floor(rawSustain);
             } else {
@@ -791,7 +792,7 @@ const App: React.FC = () => {
   const updateChannelWithInstrument = useCallback((
     ym2149: YM2149,
     channel: number,
-    noteData: any | null,
+    noteData: Note | null,
     envelopeStep: number = 0,
     volumeModifier?: number | null
   ) => {
@@ -811,7 +812,7 @@ const App: React.FC = () => {
     // Use YM2149's built-in method to update channel with instrument
     ym2149.updateChannelWithInstrument(
       channel,
-      instrument as any,
+      instrument,
       { note: noteData.note, octave: noteData.octave },
       envelopeStep,
       volumeModifier
@@ -819,7 +820,7 @@ const App: React.FC = () => {
   }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
 
   // Handle stop playback with silence
-  const handlePatternChange = useCallback((newPattern: any) => {
+  const handlePatternChange = useCallback((newPattern: Pattern) => {
     if (!newPattern || !newPattern.id) {
       console.error('No pattern ID provided to handlePatternChange');
       return;
@@ -838,7 +839,7 @@ const App: React.FC = () => {
     updateSong({ patterns: updatedPatterns });
   }, [currentSong.patterns, updateSong]);
 
-  const handlePlaylistChange = useCallback((newPlaylist: any[]) => {
+  const handlePlaylistChange = useCallback((newPlaylist: Song['playlist']) => {
     updateSong({ playlist: newPlaylist });
   }, [updateSong]);
 
