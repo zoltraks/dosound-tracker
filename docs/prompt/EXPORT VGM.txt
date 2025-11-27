@@ -1,3 +1,18 @@
+
+
+Add new command "EXPORT VGM", place it before "EXPORT SOUND".
+
+Read VGM file format specification from https://vgmrips.net/wiki/VGM_Specification
+
+If you can't read the file don't do anything.
+
+Implement function that will export song similar way as other exports work (data dump, assembly data).
+
+Create tests that will prove that exporting data works for a specific song.
+
+For "EXPORT VGM" test fixture use default song YAML:
+
+```yaml
 song:
   title: Arp Loop
   author: Zoltar X / New Generation
@@ -282,3 +297,4 @@ song:
       volume: [11, 15, 13, 10, 9, 8, 6, 5, 0]
       noise: [9, 0, 0, 10, 7, 5, 4, 3, 3, 3, 2, 2, 0]
       mode: [1, 0, 1, 1, 1, 1, 1, 1, 0]
+```

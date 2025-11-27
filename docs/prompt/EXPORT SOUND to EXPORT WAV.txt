@@ -1,0 +1,6 @@
+
+Remove label "Pos" in "Playlist".
+Remove the whole "instrument-header-row" row.
+
+Change the name "EXPORT SOUND" to "EXPORT WAV".
+Refactor code to apply this name change too.
