@@ -43,16 +43,14 @@ song:
       B: "08"
       C: "0E"
   pattern:
-    - name: Pattern 02
-      number: "00"
+    - number: "00"
       steps:
         - note: "D-4"
           instrument: "07"
         - space: 5
         - note: "E-3"
           instrument: "00"
-    - name: Pattern 09
-      number: "01"
+    - number: "01"
       steps:
         - space: 2
         - note: "E-2"
@@ -72,8 +70,7 @@ song:
         - space: 1
         - note: "E-1"
           instrument: "02"
-    - name: Pattern 0D
-      number: "02"
+    - number: "02"
       steps:
         - note: "D-3"
           instrument: "05"
@@ -98,19 +95,14 @@ song:
         - space: 1
         - note: "C-3"
           instrument: "04"
-    - name: Pattern 03
-      number: "03"
+    - number: "03"
       steps:
         - note: "G-3"
           instrument: "00"
         - space: 5
         - note: "G-3"
           instrument: "00"
-        - space: 5
-        - note: "E-4"
-          instrument: "03"
-    - name: Pattern 0A
-      number: "04"
+    - number: "04"
       steps:
         - space: 2
         - note: "G-2"
@@ -130,16 +122,14 @@ song:
         - space: 1
         - note: "G-1"
           instrument: "02"
-    - name: Pattern 04
-      number: "05"
+    - number: "05"
       steps:
         - note: "C-3"
           instrument: "00"
         - space: 5
         - note: "C-3"
           instrument: "00"
-    - name: Pattern 0B
-      number: "06"
+    - number: "06"
       steps:
         - space: 2
         - note: "C-2"
@@ -159,16 +149,14 @@ song:
         - space: 1
         - note: "C-2"
           instrument: "02"
-    - name: Pattern 05
-      number: "07"
+    - number: "07"
       steps:
         - note: "D-3"
           instrument: "00"
         - space: 5
         - note: "D-4"
           instrument: "06"
-    - name: Pattern 0C
-      number: "08"
+    - number: "08"
       steps:
         - space: 2
         - note: "D-2"
@@ -188,8 +176,7 @@ song:
         - space: 1
         - note: "D-2"
           instrument: "02"
-    - name: Pattern 09
-      number: "09"
+    - number: "09"
       steps:
         - note: "E-3"
           instrument: "00"
@@ -199,8 +186,7 @@ song:
         - space: 5
         - note: "E-4"
           instrument: "03"
-    - name: Pattern 0A
-      number: 0A
+    - number: 0A
       steps:
         - note: "G-3"
           instrument: "00"
@@ -210,8 +196,7 @@ song:
         - space: 5
         - note: "E-4"
           instrument: "03"
-    - name: Pattern 0B
-      number: 0B
+    - number: 0B
       steps:
         - note: "C-3"
           instrument: "00"
@@ -221,8 +206,7 @@ song:
         - space: 5
         - note: "C-4"
           instrument: "03"
-    - name: Pattern 0E
-      number: 0C
+    - number: 0C
       steps:
         - note: "D-3"
           instrument: "00"
@@ -232,8 +216,7 @@ song:
         - space: 5
         - note: "D-4"
           instrument: "03"
-    - name: Pattern 0C
-      number: 0D
+    - number: 0D
       steps:
         - note: "D-3"
           instrument: "00"
@@ -246,8 +229,7 @@ song:
         - space: 1
         - note: "D-4"
           instrument: "03"
-    - name: Pattern 0D
-      number: 0E
+    - number: 0E
       steps:
         - note: "D-3"
           instrument: "05"
