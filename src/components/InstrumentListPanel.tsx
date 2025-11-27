@@ -136,11 +136,6 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       <div className="instrument-list-header">Instrument</div>
 
       <div className="instrument-list-content">
-        <div className="instrument-header-row">
-          <span className="instrument-id-header">ID</span>
-          <span className="instrument-name-header">Name</span>
-        </div>
-
         <div className="instrument-items" ref={itemsContainerRef}>
           {Array.from({ length: MAX_INSTRUMENTS }, (_, slotIndex) => {
             const instrument = instruments[slotIndex];

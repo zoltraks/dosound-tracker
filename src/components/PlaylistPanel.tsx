@@ -338,7 +338,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       
       <div className="playlist-content">
         <div className="playlist-header-row">
-          <span className="line-number-header">Pos</span>
+          <span className="line-number-header"></span>
           <span
             className={`track-header ${targetTrack === 'A' ? 'target-track' : ''}`}
             onClick={(event) => {

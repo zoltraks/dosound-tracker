@@ -1315,7 +1315,7 @@ const App: React.FC = () => {
     }
   }, [currentSong]);
 
-  const handleExportSound = useCallback(() => {
+  const handleExportWav = useCallback(() => {
     try {
       const result = exportSongToWav(currentSong);
       const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
@@ -1324,7 +1324,7 @@ const App: React.FC = () => {
       downloadWavFile(result.buffer, filename);
 
       const lines: string[] = [];
-      lines.push('Sound export completed.');
+      lines.push('WAV export completed.');
       lines.push('');
       lines.push(`File: ${filename}`);
       lines.push(`Sample rate: ${result.sampleRate} Hz`);
@@ -1340,9 +1340,9 @@ const App: React.FC = () => {
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      console.error('Sound export failed:', error);
+      console.error('WAV export failed:', error);
       const lines: string[] = [];
-      lines.push('Sound export failed.');
+      lines.push('WAV export failed.');
       if (error instanceof Error) {
         lines.push(`Error: ${error.message}`);
       }
@@ -2884,7 +2884,7 @@ const App: React.FC = () => {
           onStopPattern={handleStopPattern}
           onExportData={handleExportData}
           onExportVgm={handleExportVgm}
-          onExportSound={handleExportSound}
+          onExportWav={handleExportWav}
           onAddLine={handleAddLine}
           onDeleteLine={handleDeleteLine}
           onCloneLine={handleCloneLine}
@@ -3162,7 +3162,7 @@ const App: React.FC = () => {
 
         <InformationModal
           isOpen={!!soundExportSummary}
-          title="Sound Export Summary"
+          title="WAV Export Summary"
           message={soundExportSummary}
           onClose={handleCloseSoundExportSummary}
         />

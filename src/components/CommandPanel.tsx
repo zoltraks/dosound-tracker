@@ -19,7 +19,7 @@ interface CommandPanelProps {
   onStopPattern: () => void;
   onExportData: () => void;
   onExportVgm: () => void;
-  onExportSound: () => void;
+  onExportWav: () => void;
   onAddLine: () => void;
   onDeleteLine: () => void;
   onCloneLine: () => void;
@@ -61,7 +61,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onStopPattern,
   onExportData,
   onExportVgm,
-  onExportSound,
+  onExportWav,
   onAddLine,
   onDeleteLine,
   onCloneLine,
@@ -290,7 +290,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         </button>
         <button onClick={onExportData} className="command-btn">EXPORT DATA</button>
         <button onClick={onExportVgm} className="command-btn">EXPORT VGM</button>
-        <button onClick={onExportSound} className="command-btn">EXPORT SOUND</button>
+        <button onClick={onExportWav} className="command-btn">EXPORT WAV</button>
       </div>
     </div>
   );
