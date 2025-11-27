@@ -611,15 +611,14 @@ const App: React.FC = () => {
           const volumeOnRow = volumes[ch];
           const last = lastNotes[ch];
 
-          // If no pattern is assigned on this channel, always treat as rest
+          // If no pattern is assigned on this channel for the current
+          // playlist position, treat it as sustain/no-op: keep any
+          // previously playing note sounding instead of forcing an
+          // immediate rest here. Initial startup silence is still
+          // handled separately by the isFirstTick logic below.
           if (!pattern) {
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(ym2149, ch, null, 0);
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
-            continue;
+            // Nothing to do on this row for this channel; fall through so
+            // envelope timing and note-hold behaviour continue unchanged.
           }
 
           // Explicit note-off event on this row. Only act on the first

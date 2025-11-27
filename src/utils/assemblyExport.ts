@@ -54,19 +54,6 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
   for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
     const playlistEntry = song.playlist[playlistIdx];
 
-    // Reset per-channel playback state at the beginning of each playlist
-    // position so that repeating a pattern retriggers the note and its
-    // envelopes from step 0, matching song playback semantics.
-    for (let ch = 0; ch < channels.length; ch++) {
-      const channelState = channels[ch];
-      channelState.note = null;
-      channelState.envelopeStep = 0;
-      channelState.subTick = 0;
-      channelState.isNewNote = false;
-      channelState.sustainIndex = null;
-      channelState.released = false;
-    }
-    
     // Check for GOTO command
     if (playlistEntry.trackA.startsWith('^^') || 
         playlistEntry.trackB.startsWith('^^') || 
@@ -80,6 +67,26 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
       song.patterns.find(p => p.id === playlistEntry.trackB),
       song.patterns.find(p => p.id === playlistEntry.trackC),
     ];
+
+    // At the beginning of each playlist position, only reset playback
+    // state for channels that actually reference a pattern. Tracks with
+    // "--" should allow any previously playing note to continue
+    // sustaining across this playlist position.
+    const trackIds = [playlistEntry.trackA, playlistEntry.trackB, playlistEntry.trackC];
+    for (let ch = 0; ch < channels.length; ch++) {
+      const id = trackIds[ch];
+      const hasPattern = typeof id === 'string' && id.trim() !== '' && id !== '--';
+      if (!hasPattern) {
+        continue;
+      }
+      const channelState = channels[ch];
+      channelState.note = null;
+      channelState.envelopeStep = 0;
+      channelState.subTick = 0;
+      channelState.isNewNote = false;
+      channelState.sustainIndex = null;
+      channelState.released = false;
+    }
     
     // Process each line in the pattern
     const lineCount = song.patternLength || 64;
@@ -110,20 +117,16 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
           const channelState = channels[ch];
           const volumeOnRow = volumes[ch];
           
-          // On first tick of row, check for new note or note-off
+          // On first tick of row, check for new note or note-off. If no
+          // pattern is assigned on this channel for the current playlist
+          // position, treat it as a sustain/no-op: do not reset the
+          // channel or force it silent here.
           if (tick === 0) {
             if (!pattern) {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              channelState.sustainIndex = null;
-              channelState.released = false;
-              newRegs[0x08 + ch] = 0x00;
-              continue;
-            }
-            
-            if (noteOnRow && noteOnRow.note === '===') {
+              // No pattern for this channel in this playlist position -
+              // leave channelState and newRegs unchanged so any
+              // previously playing note keeps sounding.
+            } else if (noteOnRow && noteOnRow.note === '===') {
               const sustainIndex = channelState.sustainIndex;
 
               if (
@@ -1210,17 +1213,11 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
 
           if (tick === 0) {
             if (!pattern) {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              channelState.sustainIndex = null;
-              channelState.released = false;
-              newRegs[0x08 + ch] = 0x00;
-              continue;
-            }
-
-            if (noteOnRow && noteOnRow.note === '===') {
+              // No pattern for this channel in this playlist position:
+              // treat as sustain/no-op and leave channelState/newRegs
+              // unchanged so any previously playing note can continue
+              // sounding.
+            } else if (noteOnRow && noteOnRow.note === '===') {
               const sustainIndex = channelState.sustainIndex;
 
               if (
@@ -1430,24 +1427,18 @@ export function exportSongToWav(song: Song): WavExportResult {
 
           if (tick === 0) {
             if (!pattern) {
+              // No pattern for this channel in this playlist position:
+              // treat as sustain/no-op and leave channelState/newRegs
+              // unchanged so any previously playing note can continue
+              // sounding.
+            } else if (noteOnRow && noteOnRow.note === '===') {
               channelState.note = null;
               channelState.envelopeStep = 0;
               channelState.subTick = 0;
               channelState.isNewNote = false;
               newRegs[0x08 + ch] = 0x00;
               continue;
-            }
-
-            if (noteOnRow && noteOnRow.note === '===') {
-              channelState.note = null;
-              channelState.envelopeStep = 0;
-              channelState.subTick = 0;
-              channelState.isNewNote = false;
-              newRegs[0x08 + ch] = 0x00;
-              continue;
-            }
-
-            if (noteOnRow && noteOnRow.note) {
+            } else if (noteOnRow && noteOnRow.note) {
               // Explicit note on this row: always treat as a new note and
               // retrigger the envelopes, matching the live sequencer.
               channelState.note = noteOnRow;

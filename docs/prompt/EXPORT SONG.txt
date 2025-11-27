@@ -111,3 +111,9 @@ music:
 
 Investigate the problem and correct it.
 
+
+---
+
+When playing song or export song data, don't silence the channel if there is no pattern assigned with it.
+
+---
