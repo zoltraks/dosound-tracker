@@ -1,0 +1,40 @@
+Add new command button in last row before "EXPORT VGM" called "EXPORT BIN".
+
+This should export song data in binary format very similar way as "EXPORT DATA" does as it needs to be binary array of bytes that "EXPORT DATA" writes in assembly format. This must be a binary set of bytes for DOSOUND XBIOS function.
+
+Assuming that "EXPORT DATA" produces this content:
+
+```
+music:
+
+	; START
+
+	dc.b $7,$38        ; MX T+T+T
+	dc.b $1,$1,$0,$1C  ; TA A-4
+	dc.b $8,$F         ; VA 15
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+	dc.b $6,$0         ; NS 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $8,$0         ; VA 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+
+	; END
+
+	dc.b $8,$0         ; VA 0
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+
+	dc.b $FF,$0        ; STOP
+```
+
+Then "EXPORT BIN" should create binary file with the following bytes (written as hexadecimals):
+
+```
+07 38 01 01 00 1C 08 0F 
+09 00 0A 00 06 00 FF 01
+08 00 FF 01 FF 01 FF 01
+08 00 09 00 0A 00 FF 00
+```

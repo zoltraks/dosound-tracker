@@ -971,6 +971,67 @@ export function downloadAssemblyFile(content: string, filename: string = 'music.
   URL.revokeObjectURL(url);
 }
 
+export function parseAssemblyToBinary(assembly: string): Uint8Array {
+  const lines = assembly.split(/\r?\n/);
+  const bytes: number[] = [];
+
+  for (const line of lines) {
+    const idx = line.indexOf('dc.b');
+    if (idx === -1) {
+      continue;
+    }
+
+    const after = line.slice(idx + 'dc.b'.length);
+    const codePart = after.split(';', 1)[0];
+    const tokens = codePart
+      .split(',')
+      .map(token => token.trim())
+      .filter(token => token.length > 0);
+
+    for (const token of tokens) {
+      if (!token.startsWith('$')) {
+        continue;
+      }
+
+      const hex = token.slice(1);
+      if (!hex) {
+        continue;
+      }
+
+      const value = parseInt(hex, 16);
+      if (!Number.isFinite(value)) {
+        continue;
+      }
+
+      bytes.push(value & 0xff);
+    }
+  }
+
+  return new Uint8Array(bytes);
+}
+
+export function exportToBinary(song: Song, isComplexDumpMode: boolean = false): Uint8Array {
+  const assembly = exportToAssembly(song, isComplexDumpMode);
+  return parseAssemblyToBinary(assembly);
+}
+
+export function downloadBinaryFile(bytes: Uint8Array, filename: string = 'music.bin'): void {
+  const arrayBuffer: ArrayBuffer = bytes.buffer as ArrayBuffer;
+  const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
+
 const WAV_SAMPLE_RATE = 44100;
 
 interface YmNoiseState {

@@ -20,7 +20,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
-import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile } from './utils/assemblyExport';
+import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal } from './modals';
 import './App.css';
@@ -1437,6 +1437,16 @@ const App: React.FC = () => {
     } catch (error) {
       console.error('Export failed:', error);
       // Could add user notification here
+    }
+  }, [currentSong, isComplexDumpMode]);
+
+  const handleExportBin = useCallback(() => {
+    try {
+      const bytes = exportToBinary(currentSong, isComplexDumpMode);
+      const filename = `${currentSong.title.replace(/[^a-zA-Z0-9]/g, '_')}.bin`;
+      downloadBinaryFile(bytes, filename);
+    } catch (error) {
+      console.error('Binary export failed:', error);
     }
   }, [currentSong, isComplexDumpMode]);
 
@@ -3208,6 +3218,7 @@ const App: React.FC = () => {
           onPlayPattern={handleStartPattern}
           onStop={handleStop}
           onExportData={handleExportData}
+          onExportBin={handleExportBin}
           onExportVgm={handleExportVgm}
           onExportWav={handleExportWav}
           onAddLine={handleAddLine}
