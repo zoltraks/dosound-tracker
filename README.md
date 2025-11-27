@@ -2,15 +2,17 @@
 
 ## Overview
 
-**DOSOUND Tracker** is a music application designed for retro computing enthusiasts and chiptune developers. 
+**DOSOUND Tracker** is a music application designed for retro computing enthusiasts and chiptune developers.
 
-It functions as a complete **three-track music tracker** that leverages the unique audio capabilities of the **Yamaha YM2149** Programmable Sound Generator (PSG).
+It functions as a complete three-track music tracker that leverages the unique audio capabilities of the Yamaha YM2149 Programmable Sound Generator (PSG).
 
-The application's core feature is its ability to **export music data directly into the assembly format** compatible with the **DOSOUND** function of the **XBIOS** subsystem on the **Atari ST's TOS** operating system.
+The application's core feature is its ability to export music data directly into the assembly format compatible with the DOSOUND function of the XBIOS subsystem on the Atari ST's TOS operating system.
 
-**Author:** ZoltarX / New Generation
+Designed for retro computing enthusiasts, chiptune composers, and anyone who appreciates the raw, unfiltered sound of retro synthesis.
 
-## Features
+**Author:** ZoltarX / New Generation  
+
+## Core Features
 
 **Three Track System:** Supports composition across three independent audio channels (Tracks A, B, and C).
 
@@ -20,39 +22,109 @@ The application's core feature is its ability to **export music data directly in
 
 **Data Management:** Supports loading and saving complete songs or individual instrument definitions.
 
-## Instrument Parameters
+### Complete Tracker Architecture
 
-The instrument editor provides granular control over the YM2149's parameters, editable on a timeline:
+- **Three independent audio channels** with simultaneous playback
 
-**Mode:** Choose between **tone** (square wave) or **noise** generation.
+- **Pattern-based composition** with 64-step pattern length
 
-**Volume:** Define the amplitude over time for precise sound shaping (similar to ADSR).
+- **Playlist arrangement system** for song structure
 
-**Arpeggio:** Define pitch shifts using **semitone offsets** to create arpeggiated patterns.
+- **256 instrument slots** with full parameter control
 
-**Pitch:** Control the **pitch deviation (cents)** for vibrato effects.
+- **Real-time sequencer** with pattern loop and position tracking
 
-**Noise:** Optional setting for the noise register.
+### Advanced Instrument Editor
 
-## Project Guidelines
+DOSOUND's instrument system provides unprecedented control over the YM2149's capabilities:
 
-All detailed guidelines regarding code style, component structure, YM2149 emulation, and DOSOUND implementation are located in the `docs/` directory.
+- **Mode Control**: Pure tone, pure noise, or mixed tone+noise generation
 
-Please refer to the `docs/GUIDELINES.md` file when making changes.
+- **Volume Envelope**: 32-step amplitude control (ADSR-like shaping)
 
-## Technology Stack
+- **Arpeggio Engine**: Real-time pitch shifting in semitone increments (-24 to +24)
 
-**Frontend:** React (for UI/Component structure)
+- **Pitch Modulation**: Direct frequency deviation for vibrato and fine-tuning
 
-**Audio/Emulation:** Web Audio API, custom YM2149/DOSOUND JavaScript modules.
+- **Noise Generation**: Dynamic noise period control (0-31 range)
 
-## Development Methodology
+- **Sustain Points**: Realistic note release behavior with configurable sustain
 
-This project was developed using AI-assisted programming methodology, combining human creativity and direction with AI-powered code generation and assistance.
+### Authentic YM2149 Emulation
 
-## Assembly Format
+- **Bit-perfect register simulation** of all 16 YM2149 registers
 
-The exported data stream is a sequence of register addresses and values (`$XX,$YY`) followed by a delay command (`$FF, <delay>`).
+- **Proper AY/YM logarithmic volume curves** (16 levels, ~-2dB per step)
+
+- **Accurate noise generation** using 17-bit LFSR algorithm
+
+- **2MHz clock precision** with proper frequency calculations
+
+- **Square wave synthesis** with period-accurate tone generation
+
+### Multiple Export Formats
+
+- **DOSOUND Assembly**: Native Atari ST format with optimization
+
+- **WAV Audio Export**: 44.1kHz 16-bit stereo rendering
+
+- **Register Dump**: Raw YM2149 register state sequences
+
+- **Instrument-only Export**: Individual instrument definitions
+
+### Professional Workflow Features
+
+- **Real-time audio playback** with sub-millisecond timing
+
+- **Keyboard input support** with piano keyboard mapping
+
+- **Copy/paste functionality** for pattern sharing
+
+- **Transposition tools** with scope targeting
+
+- **Song optimization** and pattern renumbering
+
+- **YAML file format** for human-readable song storage
+
+## Technical Excellence
+
+### Accurate Timing and Sequencing
+
+- **50Hz VBLANK timing** matching original Atari ST DOSOUND behavior
+
+- **Envelope advancement** every 40ms (every 2 ticks)
+
+- **Pattern-based playback** with seamless loop detection
+
+- **Position tracking** with GOTO command support
+
+### Modern Web Implementation
+
+- **React + TypeScript** architecture for type safety
+
+- **Web Audio API** for low-latency synthesis
+
+- **Vite build system** for fast development
+
+- **Electron wrapper** for cross-platform desktop deployment
+
+- **Responsive design** with automatic scaling (HD/4K displays)
+
+### Authentic Retro UI
+
+- **DOS-style monospaced interface** with hexadecimal values throughout
+
+- **Dark theme (default) and light theme** for accessibility
+
+- **Keyboard navigation** with TAB/Shift+TAB cycling
+
+- **Visual envelope editing** with real-time feedback
+
+- **EQ visualization** with channel muting
+
+## Assembly Format Compatibility
+
+DOSOUND Tracker generates **100% compatible assembly code** for the original Atari ST DOSOUND XBIOS function:
 
 ```assembly
 music:
@@ -122,3 +194,67 @@ music:
 
     dc.b $ff,0
 ```
+
+### Optimized Export Features
+
+- **Register change tracking**: Only outputs changed registers
+
+- **Automatic delay insertion**: Maintains proper timing resolution
+
+- **Volume-based optimization**: Removes unnecessary data when channels are silent
+
+- **Pattern boundary markers**: Clear section separation with comments
+
+## Development
+
+### **Technology Stack**
+
+- **Frontend**: React 19, TypeScript, Vite 7
+
+- **Audio**: Web Audio API, custom YM2149 emulator
+
+- **Build**: Electron 28, Electron Builder 24
+
+- **Testing**: Vitest, jsdom
+
+- **Linting**: ESLint 9 with TypeScript support
+
+### **Key Implementation Details**
+
+- **2MHz YM2149 clock** with precise frequency calculations
+
+- **Logarithmic volume mapping** matching AY/YM chip characteristics
+
+- **Real-time envelope processing** at 25Hz update rate
+
+- **Pattern-based sequencing** with 64-step resolution
+
+- **Optimized export pipeline** for minimal assembly output
+
+## Retro Computing Heritage
+
+DOSOUND Tracker pays homage to the golden age of tracker software:
+
+- **Authentic tracker terminology**: Patterns, samples, loops, pattern data
+
+- **Hexadecimal UI**: All values displayed in hex (0x00-0xFF)
+
+- **Keyboard-centric workflow**: Minimal mouse dependency
+
+- **DOS aesthetic**: Monospaced fonts and command-line inspired design
+
+- **Resource efficiency**: Optimized for older hardware
+
+## Cross-Platform Compatibility
+
+- **Web Browsers**: Chrome, Firefox, Safari, Edge (Web Audio API required)
+
+- **Desktop**: Windows, macOS, Linux via Electron
+
+- **Mobile**: Supported via responsive web interface
+
+- **Atari ST**: Exported assembly runs natively on TOS/DOSOUND
+
+---
+
+*Built with dedication to authentic retro computing and the timeless appeal of 8-bit chiptune music. Every envelope, every register write, every frequency calculation aims to capture the pure essence of what made the YM2149 chip a cornerstone of computer music history.*
