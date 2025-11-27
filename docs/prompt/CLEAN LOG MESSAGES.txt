@@ -1,0 +1,3 @@
+Get rid of "Test tone registers written" and "Test tone stopped" console log message.
+Change console log message "Setting test tone - frequency: 261.63 period: 477" to be like "YM2149 test tone frequency 261.63" without period information.
+

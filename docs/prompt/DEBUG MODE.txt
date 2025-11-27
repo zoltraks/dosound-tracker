@@ -1,0 +1,6 @@
+Add another value between time and cycle counter with the difference between the time of debug log entry and the time of previous one and format it as 3-digit value, padded from the left with zeroes, like this:
+
+```
+16:29:21.468 | 000 | 0000 | 01 | --- -- - | --- -- - | --- -- - |
+16:29:21.523 | 055 | 0002 | 02 | --- -- - | E-2 01 - | C-3 04 - |
+```

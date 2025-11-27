@@ -1,0 +1,9 @@
+For this web application I want to add download page.
+
+Add download icon in the top row before octave but it must be visible only if directory "download" contains any files.
+Check for special file download/LIST.txt inside as web application may be hosted by web server.
+If this file is not accessible, download button must be not present.
+
+The file contains list of possible file names inside download directory line, by line. Ignore empty lines inside.
+
+When download icon is clicked you need to open modal window for about 60% of the viewport width and 80% of the height, just like "CHANGES" and show the list of possible files to download with short clickable names with URL to download.

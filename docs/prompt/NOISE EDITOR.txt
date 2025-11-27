@@ -1,0 +1,1 @@
+When editing envelope in "Noise" block I can press Shift + A to have $1A value but I want also to be able to press Shift + digit (0-9) to have values $10,$11,etc.

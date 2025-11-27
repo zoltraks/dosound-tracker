@@ -1,0 +1,9 @@
+
+I saw that you are still using variables like "isDosoundMode" or "onToggleDosoundMode".
+We don't have "DOSOUND MODE" button and we don't want to have it.
+That looks like a remaining part of an unused dosound timing mode which is not used and we don't want to support it. 
+We must stick to 40 ms cycle (2 ticks) and don't want to change that.
+Get rid of that residue and check logic if anything is dependent on timing mode, there should be only one timing mode which is currently used.
+That means, that also F4 binding should be removed as it was ment to change timing mode.
+Analyze the code, specially the playback one, so there is nothing related to removed non dosound timing mode used.
+
