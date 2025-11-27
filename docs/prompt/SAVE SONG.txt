@@ -1,0 +1,54 @@
+Get rid of pattern names in song YAML format, we don't use names for patterns.
+Remove the unused key "name" from "pattern" array items.
+If no pattern is assigned to a track at the playlist row, don't write it as "--", just omit it.
+
+Instead of:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 2
+  length: 4
+  playlist:
+    - A: "01"
+      B: "--"
+      C: "--"
+    - A: "01"
+      B: "--"
+      C: "--"
+  pattern:
+    - name: Pattern 01
+      number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      volume: [15, 0]
+      pitch: [98, 0]
+```
+
+Write it as this:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 2
+  length: 4
+  playlist:
+    - A: "01"
+    - A: "01"
+  pattern:
+    - number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      volume: [15, 0]
+      pitch: [98, 0]
+```

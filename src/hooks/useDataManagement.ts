@@ -372,12 +372,15 @@ export const useDataManagement = () => {
         return instrumentNode;
       });
 
-      // Playlist: A/B/C keys instead of trackA/trackB/trackC
-      const playlist = currentSong.playlist.map(entry => ({
-        A: entry.trackA,
-        B: entry.trackB,
-        C: entry.trackC
-      }));
+      // Playlist: A/B/C keys instead of trackA/trackB/trackC.
+      // Omit tracks that have no pattern assigned ("--").
+      const playlist = currentSong.playlist.map(entry => {
+        const row: any = {};
+        if (entry.trackA && entry.trackA !== '--') row.A = entry.trackA;
+        if (entry.trackB && entry.trackB !== '--') row.B = entry.trackB;
+        if (entry.trackC && entry.trackC !== '--') row.C = entry.trackC;
+        return row;
+      });
 
       // Patterns: single-track (track A) steps with note strings or space,
       // plus optional per-line volume modifier.
@@ -502,7 +505,6 @@ export const useDataManagement = () => {
         flushRun();
 
         return {
-          name: pattern.name,
           number,
           steps: compressedLines
         };
