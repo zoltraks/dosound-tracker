@@ -31,8 +31,6 @@ interface CommandPanelProps {
   onToggleDebug: () => void;
   isPlaying: boolean;
   isPatternPlaying: boolean;
-  isDosoundMode: boolean;
-  onToggleDosoundMode: () => void;
   onPlayInstrument: () => void;
   onCopyTrack: () => void;
   onPasteTrack: () => void;

@@ -452,18 +452,16 @@ const App: React.FC = () => {
 
       const testFrequency = 261.63;
       const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-      console.log('Setting test tone - frequency:', testFrequency, 'period:', testPeriod);
+      console.log('YM2149 test tone frequency', testFrequency);
 
       ym2149.writeRegister(0x00, testPeriod & 0xFF);
       ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);
-      console.log('Test tone registers written');
 
       const stopToneTimeout = window.setTimeout(() => {
         if (ym2149Ref.current) {
           ym2149Ref.current.writeRegister(0x08, 0x00);
           ym2149Ref.current.writeRegister(0x09, 0x00);
           ym2149Ref.current.writeRegister(0x0A, 0x00);
-          console.log('Test tone stopped');
         }
       }, 100);
 
@@ -3143,8 +3141,6 @@ const App: React.FC = () => {
           onToggleDebug={handleToggleDebugMode}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
-          isDosoundMode={false} // TODO: Implement settings property on Song interface
-          onToggleDosoundMode={() => console.log('DOSOUND mode toggle not implemented')}
           onPlayInstrument={handlePlayInstrument}
           onCopyTrack={handleCopyTrack}
           onPasteTrack={handlePasteTrack}
