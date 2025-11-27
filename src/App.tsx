@@ -1379,12 +1379,27 @@ const App: React.FC = () => {
 
   const handleConfirmReset = useCallback(() => {
     // Clear all localStorage data
-    localStorage.clear();
+    try {
+      const preservedTheme = localStorage.getItem('dosound-tracker-theme');
+      const preservedDebug = localStorage.getItem('dosound-tracker-debug-mode');
+
+      localStorage.clear();
+
+      if (preservedTheme !== null) {
+        localStorage.setItem('dosound-tracker-theme', preservedTheme);
+      }
+
+      if (preservedDebug !== null) {
+        localStorage.setItem('dosound-tracker-debug-mode', preservedDebug);
+      }
+    } catch {
+      // ignore
+    }
     setChannelMutes([false, false, false]);
     setCurrentOctave(3);
     // Reload the application to start fresh
     window.location.reload();
-  }, []);
+  }, [setChannelMutes, setCurrentOctave]);
 
   const handleCancelReset = useCallback(() => {
     setIsResetConfirmOpen(false);
