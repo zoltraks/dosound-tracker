@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
+import { useAudioContext } from './hooks/useAudioContext';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
@@ -15,6 +16,7 @@ import { ToneNoisePanel } from './components/ToneNoisePanel';
 import { SongInfoPanel } from './components/SongInfoPanel';
 import { PlaylistPanel } from './components/PlaylistPanel';
 import { InstrumentListPanel } from './components/InstrumentListPanel';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
@@ -393,7 +395,7 @@ const App: React.FC = () => {
   }, [messages, handleNotesClick]);
 
   // Audio setup
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const { audioContext } = useAudioContext();
   const ym2149Ref = useRef<YM2149 | null>(null);
   const [, forceYmRender] = useState(0);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -402,91 +404,72 @@ const App: React.FC = () => {
 
   // Initialize audio on component mount
   useEffect(() => {
-    const initAudio = () => {
-      try {
-        console.log('Starting audio initialization...');
-        
-        // Create audio context
-        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
-        if (!AudioContextClass) {
-          throw new Error('Web Audio API not supported');
+    if (!audioContext || ym2149Ref.current) {
+      return;
+    }
+
+    try {
+      console.log('Starting audio initialization...');
+
+      console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
+      console.log('AudioContext state:', audioContext.state);
+
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+        console.log('AudioContext resumed');
+      }
+
+      const ym2149 = new YM2149(audioContext);
+      ym2149Ref.current = ym2149;
+      forceYmRender(v => v + 1);
+      console.log('YM2149 initialized');
+
+      (window as any).ym2149 = ym2149;
+
+      ym2149.writeRegister(0x08, 0x0F);
+      ym2149.writeRegister(0x09, 0x0F);
+      ym2149.writeRegister(0x0A, 0x0F);
+      ym2149.writeRegister(0x07, 0x38);
+      console.log('YM2149 registers set');
+
+      const testFrequency = 261.63;
+      const testPeriod = Math.floor(2000000 / (16 * testFrequency));
+      console.log('Setting test tone - frequency:', testFrequency, 'period:', testPeriod);
+
+      ym2149.writeRegister(0x00, testPeriod & 0xFF);
+      ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);
+      console.log('Test tone registers written');
+
+      const stopToneTimeout = window.setTimeout(() => {
+        if (ym2149Ref.current) {
+          ym2149Ref.current.writeRegister(0x08, 0x00);
+          ym2149Ref.current.writeRegister(0x09, 0x00);
+          ym2149Ref.current.writeRegister(0x0A, 0x00);
+          console.log('Test tone stopped');
         }
-        
-        const audioContext = new AudioContextClass();
-        console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-        console.log('AudioContext state:', audioContext.state);
-        
-        // Resume context if suspended (browser policy)
+      }, 100);
+
+      const handleUserInteraction = () => {
         if (audioContext.state === 'suspended') {
           audioContext.resume();
-          console.log('AudioContext resumed');
+          console.log('AudioContext resumed by user interaction');
         }
-        
-        audioContextRef.current = audioContext;
-        
-        // Initialize YM2149
-        const ym2149 = new YM2149(audioContext);
-        ym2149Ref.current = ym2149;
-        forceYmRender(v => v + 1);
-        console.log('YM2149 initialized');
-        
-        // Expose YM2149 instance globally for debugging
-        (window as any).ym2149 = ym2149;
-        
-        // Set initial volume for all channels
-        ym2149.writeRegister(0x08, 0x0F); // Channel A volume
-        ym2149.writeRegister(0x09, 0x0F); // Channel B volume  
-        ym2149.writeRegister(0x0A, 0x0F); // Channel C volume
-        ym2149.writeRegister(0x07, 0x38); // Enable tone channels, disable noise
-        console.log('YM2149 registers set');
-        
-        // Test tone to verify audio is working (play C4 for 100ms)
-        const testFrequency = 261.63; // C4
-        const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-        console.log('Setting test tone - frequency:', testFrequency, 'period:', testPeriod);
-        
-        ym2149.writeRegister(0x00, testPeriod & 0xFF);        // Fine tone A
-        ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);  // Coarse tone A
-        console.log('Test tone registers written');
-        
-        // Stop test tone after 100ms
-        setTimeout(() => {
-          if (ym2149Ref.current) {
-            ym2149Ref.current.writeRegister(0x08, 0x00); // Silence channel A
-            ym2149Ref.current.writeRegister(0x09, 0x00);
-            ym2149Ref.current.writeRegister(0x0A, 0x00);
-            console.log('Test tone stopped');
-          }
-        }, 100);
-        
-        console.log('Audio initialized successfully');
-      } catch (error) {
-        console.error('Failed to initialize audio:', error);
-      }
-    };
+      };
 
-    // Add a click handler to resume audio context (browser requirement)
-    const handleUserInteraction = () => {
-      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
-        audioContextRef.current.resume();
-        console.log('AudioContext resumed by user interaction');
-      }
-    };
+      document.addEventListener('click', handleUserInteraction);
 
-    document.addEventListener('click', handleUserInteraction);
-    initAudio();
-
-    // Cleanup on unmount
-    return () => {
-      document.removeEventListener('click', handleUserInteraction);
-      if (ym2149Ref.current) {
-        ym2149Ref.current.dispose();
-      }
-      if (audioContextRef.current) {
-        audioContextRef.current.close();
-      }
-    };
-  }, []);
+      return () => {
+        window.clearTimeout(stopToneTimeout);
+        document.removeEventListener('click', handleUserInteraction);
+        if (ym2149Ref.current) {
+          ym2149Ref.current.dispose();
+          ym2149Ref.current = null;
+        }
+      };
+    } catch (error) {
+      console.error('Failed to initialize audio:', error);
+    }
+  }, [audioContext]);
 
   // Track envelope timing for each channel
   // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
@@ -2862,7 +2845,8 @@ const App: React.FC = () => {
 
   try {
     return (
-      <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
+      <ErrorBoundary>
+        <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
         <HeaderPanel
           title={currentSong.title}
           isDarkMode={isDarkMode}
@@ -3272,7 +3256,7 @@ const App: React.FC = () => {
           files={downloadFiles}
           onClose={() => setIsDownloadOpen(false)}
         />
-      </div>
+      </ErrorBoundary>
     );
   } catch (error) {
     console.error('Error rendering App:', error);
