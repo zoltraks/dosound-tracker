@@ -101,6 +101,7 @@ export const useKeyboardNavigation = () => {
     const tagName = target?.tagName;
     const isInPianoKeyboard = target?.closest('.piano-keyboard') != null;
     const isInOctaveSelection = target?.closest('.octave-selection') != null;
+    const isInTrackPanel = target?.closest('.track-panel') != null;
     const isEditable =
       tagName === 'INPUT' ||
       tagName === 'TEXTAREA' ||
@@ -154,6 +155,16 @@ export const useKeyboardNavigation = () => {
         shortcut = 'SHIFT+TAB';
       }
     } else {
+      // When focus is inside a track panel, let the TrackPanel component handle
+      // Arrow key navigation directly so we avoid double-handling and extra
+      // work in the global navigation layer.
+      if (
+        isInTrackPanel &&
+        (key === 'ARROWUP' || key === 'ARROWDOWN' || key === 'ARROWLEFT' || key === 'ARROWRIGHT')
+      ) {
+        return;
+      }
+
       switch (key) {
         case 'TAB': 
           event.preventDefault();

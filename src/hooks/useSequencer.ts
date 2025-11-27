@@ -104,7 +104,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
               setSequencerState(prev => ({ ...prev, ...data }));
             }
             break;
-            
+
           case 'stop':
             playbackStateRef.current = {
               ...playbackStateRef.current,

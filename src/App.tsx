@@ -3,10 +3,11 @@ import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { useAudioContext } from './hooks/useAudioContext';
-import { YM2149 } from './synth/YM2149';
+import { YM2149, YM_CLOCK, YM_LOG_VOLUME_TABLE } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
-import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
+import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE, NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from './constants/music';
+import { YM2149WorkletController } from './audio/YM2149WorkletController';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
@@ -134,6 +135,7 @@ const App: React.FC = () => {
     optimizeSong,
     renumberSong
   } = useDataManagement();
+
   const {
     sequencerState,
     stop,
@@ -415,6 +417,7 @@ const App: React.FC = () => {
   // Audio setup
   const { audioContext } = useAudioContext();
   const ym2149Ref = useRef<YM2149 | null>(null);
+  const ym2149WorkletRef = useRef<YM2149WorkletController | null>(null);
   const [, forceYmRender] = useState(0);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
@@ -422,7 +425,7 @@ const App: React.FC = () => {
 
   // Initialize audio on component mount
   useEffect(() => {
-    if (!audioContext || ym2149Ref.current) {
+    if (!audioContext || ym2149Ref.current || ym2149WorkletRef.current) {
       return;
     }
 
@@ -432,6 +435,11 @@ const App: React.FC = () => {
       console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
       console.log('AudioContext initial state:', audioContext.state);
 
+      // Initialize AudioWorklet-based YM2149 engine for realtime playback.
+      const workletController = new YM2149WorkletController(audioContext);
+      ym2149WorkletRef.current = workletController;
+
+      // Keep existing YM2149 instance for instrument preview, EQ and dump views.
       const ym2149 = new YM2149(audioContext);
       ym2149Ref.current = ym2149;
       forceYmRender(v => v + 1);
@@ -483,6 +491,10 @@ const App: React.FC = () => {
         if (ym2149Ref.current) {
           ym2149Ref.current.dispose();
           ym2149Ref.current = null;
+        }
+        if (ym2149WorkletRef.current) {
+          ym2149WorkletRef.current.dispose();
+          ym2149WorkletRef.current = null;
         }
       };
     } catch (error) {
@@ -553,6 +565,9 @@ const App: React.FC = () => {
     // Silence all channels
     if (ym2149Ref.current) {
       ym2149Ref.current.silenceAll();
+    }
+    if (ym2149WorkletRef.current) {
+      ym2149WorkletRef.current.silenceAll();
     }
   }, []);
 
@@ -763,8 +778,8 @@ const App: React.FC = () => {
 
         for (let ch = 0; ch < 3; ch++) {
           if (channelMutes[ch]) {
-            const volumeRegister = 8 + ch;
-            ym2149.writeRegister(volumeRegister, 0x00);
+            // Hard mute via AudioWorklet engine.
+            updateChannelWithInstrument(ym2149, ch, null, 0);
             continue;
           }
 
@@ -958,7 +973,26 @@ const App: React.FC = () => {
     return '';
   }, []);
 
-  // Helper function to update channel with instrument and all envelopes
+  const resolveInstrumentForNote = useCallback((noteData: Note | null): Instrument | null => {
+    if (!noteData || noteData.note === '===') {
+      return null;
+    }
+
+    const normalizedNoteInstrumentId = normalizeInstrumentId(noteData.instrument);
+    const normalizedFallbackId =
+      normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
+    const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
+
+    if (!resolvedInstrumentId) {
+      return null;
+    }
+
+    const found = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
+    return found || null;
+  }, [currentInstrument?.id, currentSong.instruments, normalizeInstrumentId]);
+
+  // Helper function to update channel audio via the AudioWorklet-based engine using
+  // the same envelope/arpeggio/pitch semantics as the YM2149 helper utilities.
   const updateChannelWithInstrument = useCallback((
     ym2149: YM2149,
     channel: number,
@@ -966,28 +1000,143 @@ const App: React.FC = () => {
     envelopeStep: number = 0,
     volumeModifier?: number | null
   ) => {
-    const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
-    const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
-    const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
+    // This helper now targets the AudioWorklet engine for realtime playback.
+    // The underlying YM2149 instance is kept for previews and tools but is
+    // no longer driven on every sequencer tick to avoid main-thread audio work.
+    void ym2149;
 
-    const instrument = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
-    
-    if (!instrument || !noteData || noteData.note === '===') {
-      // No instrument or no active note - silence channel
-      const volumeRegister = 8 + channel;
-      ym2149.writeRegister(volumeRegister, 0x00);
+    const worklet = ym2149WorkletRef.current;
+    if (!worklet) {
       return;
     }
 
-    // Use YM2149's built-in method to update channel with instrument
-    ym2149.updateChannelWithInstrument(
-      channel,
-      instrument,
-      { note: noteData.note, octave: noteData.octave },
-      envelopeStep,
-      volumeModifier
-    );
-  }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
+    if (!noteData || noteData.note === '===') {
+      worklet.setChannelParams(channel, {
+        frequency: 0,
+        volume: 0,
+        toneActive: false,
+        noiseActive: false
+      });
+      return;
+    }
+
+    const instrument = resolveInstrumentForNote(noteData);
+    if (!instrument) {
+      worklet.setChannelParams(channel, {
+        frequency: 0,
+        volume: 0,
+        toneActive: false,
+        noiseActive: false
+      });
+      return;
+    }
+
+    const safeTick = Math.max(0, envelopeStep | 0);
+
+    // Tone/noise mode from instrument.modeEnvelope
+    let modeValue = 0;
+    if (instrument.modeEnvelope && instrument.modeEnvelope.length > 0) {
+      const modeIndex = Math.min(safeTick, instrument.modeEnvelope.length - 1);
+      const rawMode = instrument.modeEnvelope[modeIndex];
+      if (typeof rawMode === 'number') {
+        modeValue = rawMode | 0;
+      }
+    }
+    const toneActive = modeValue === 0 || modeValue === 2;
+    const noiseActive = modeValue === 1 || modeValue === 2;
+
+    // Base frequency using note + octave
+    const baseFreq = NOTE_FREQUENCIES[noteData.note];
+    if (!baseFreq) {
+      worklet.setChannelParams(channel, {
+        frequency: 0,
+        volume: 0,
+        toneActive: false,
+        noiseActive: false
+      });
+      return;
+    }
+
+    let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
+
+    // Arpeggio envelope as semitone offsets
+    if (instrument.arpeggioEnvelope && instrument.arpeggioEnvelope.length > 0) {
+      const arpeggioIndex = Math.min(safeTick, instrument.arpeggioEnvelope.length - 1);
+      const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
+      if (typeof arpeggioValue === 'number' && arpeggioValue !== 0) {
+        const semitones = arpeggioValue | 0;
+        frequency = frequency * Math.pow(2, semitones / 12);
+      }
+    }
+
+    // Pitch envelope as a direct delta on the YM divider period, then map back
+    // to frequency so the behaviour matches the YM2149 helper logic.
+    if (instrument.pitchEnvelope && instrument.pitchEnvelope.length > 0) {
+      const pitchIndex = Math.min(safeTick, instrument.pitchEnvelope.length - 1);
+      const pitchValue = instrument.pitchEnvelope[pitchIndex];
+      if (typeof pitchValue === 'number' && pitchValue !== 0) {
+        const pitchDelta = pitchValue | 0;
+        let period = Math.floor(YM_CLOCK / (16 * frequency));
+        period -= pitchDelta;
+        if (period <= 0) {
+          period = 1;
+        }
+        frequency = YM_CLOCK / (16 * period);
+      }
+    }
+
+    // Volume envelope with optional per-step modifier (0-15) as attenuation.
+    const volumeEnvelope = instrument.volumeEnvelope && instrument.volumeEnvelope.length
+      ? instrument.volumeEnvelope
+      : [0];
+    const volumeIndex = Math.min(safeTick, volumeEnvelope.length - 1);
+    const rawVolume = volumeEnvelope[volumeIndex] ?? 0;
+    let volumeNibble = Math.max(0, Math.min(15, rawVolume | 0));
+
+    if (volumeModifier !== undefined && volumeModifier !== null) {
+      const mod = Math.max(0, Math.min(15, volumeModifier | 0));
+      volumeNibble = Math.floor((volumeNibble * mod) / 15);
+    }
+
+    const tableIndex = Math.max(0, Math.min(15, volumeNibble));
+    // Use the raw YM_LOG_VOLUME_TABLE value here; the AudioWorklet applies its
+    // own master gain so the overall loudness matches the classic YM2149 path.
+    const baseLevel = YM_LOG_VOLUME_TABLE[tableIndex];
+
+    if (!toneActive && !noiseActive) {
+      worklet.setChannelParams(channel, {
+        frequency: 0,
+        volume: 0,
+        toneActive: false,
+        noiseActive: false
+      });
+      return;
+    }
+
+    worklet.setChannelParams(channel, {
+      frequency: toneActive ? frequency : 0,
+      volume: baseLevel,
+      toneActive,
+      noiseActive
+    });
+
+    // Noise envelope mapped to a simple noise clock frequency for the shared
+    // noise generator inside the AudioWorklet.
+    if (noiseActive) {
+      let noisePeriod = 0;
+      if (instrument.noiseEnvelope && instrument.noiseEnvelope.length > 0) {
+        const noiseIndex = Math.min(safeTick, instrument.noiseEnvelope.length - 1);
+        const noiseValue = instrument.noiseEnvelope[noiseIndex];
+        if (typeof noiseValue === 'number') {
+          noisePeriod = Math.max(0, Math.min(31, noiseValue | 0));
+        }
+      }
+
+      const effectiveNoisePeriod = noisePeriod === 0 ? 1 : noisePeriod;
+      const noiseFrequency = YM_CLOCK / (16 * effectiveNoisePeriod);
+      worklet.setNoiseFrequency(noiseFrequency);
+    }
+  }, [resolveInstrumentForNote]);
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: Pattern) => {

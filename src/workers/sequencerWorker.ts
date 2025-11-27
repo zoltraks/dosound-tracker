@@ -100,9 +100,14 @@ function tickLoop() {
     nextTickTime = now + tickInterval;
   }
 
-  // Catch up on any ticks that were missed due to timer jitter or clamping
-  while (isPlaying && now >= nextTickTime) {
+  // Advance at most one logical tick per call. If the timer fires late and
+  // multiple ticks have "accumulated", we process only a single
+  // scheduleTick here and let subsequent calls gradually catch up. This
+  // avoids bursts of back-to-back ticks that create one very short row
+  // followed by an overly long one.
+  if (now >= nextTickTime) {
     scheduleTick();
+    lastTickTime = now;
     nextTickTime += tickInterval;
   }
 
