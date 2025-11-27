@@ -88,14 +88,14 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
     if (event.ctrlKey) {
       if (event.key === 'ArrowUp') {
         event.preventDefault();
-        if (currentIndex > 0) {
+        if (currentIndex > 0 && currentIndex < instruments.length && instruments[currentIndex]) {
           onMoveInstrument(currentIndex, 'up');
         }
         return;
       }
       if (event.key === 'ArrowDown') {
         event.preventDefault();
-        if (currentIndex < instruments.length - 1) {
+        if (currentIndex < instruments.length - 1 && instruments[currentIndex]) {
           onMoveInstrument(currentIndex, 'down');
         }
         return;
@@ -215,7 +215,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                     type="button"
                     onClick={() => onMoveInstrument(slotIndex, 'down')}
                     aria-label="Move instrument down"
-                    disabled={slotIndex >= instruments.length - 1}
+                    disabled={!instrument || slotIndex >= instruments.length - 1}
                   >
                     <ChevronDown className="h-3 w-3 rotate-90" />
                   </button>
@@ -223,7 +223,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                     type="button"
                     onClick={() => onMoveInstrument(slotIndex, 'up')}
                     aria-label="Move instrument up"
-                    disabled={slotIndex === 0}
+                    disabled={!instrument || slotIndex === 0}
                   >
                     <ChevronUp className="h-3 w-3 rotate-90" />
                   </button>
