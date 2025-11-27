@@ -2,6 +2,37 @@ import yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 
+type SongYamlRoot = {
+  song?: unknown;
+};
+
+interface SongYamlNode {
+  title?: unknown;
+  author?: unknown;
+  length?: unknown;
+  speed?: unknown;
+  year?: unknown;
+  loop?: unknown;
+  playlist?: unknown;
+  pattern?: unknown;
+  patterns?: unknown;
+  instrument?: unknown;
+  instruments?: unknown;
+}
+
+interface InstrumentNodeYaml {
+  number?: unknown;
+  name?: unknown;
+  base?: unknown;
+  octave?: unknown;
+  sustain?: unknown;
+  volume?: unknown;
+  arpeggio?: unknown;
+  pitch?: unknown;
+  noise?: unknown;
+  mode?: unknown;
+}
+
 export const DEFAULT_BASE_KEY = 'C-4';
 export const DEFAULT_SONG_TITLE = 'New Song';
 export const DEFAULT_SONG_AUTHOR = 'Author Name';
@@ -62,37 +93,40 @@ const parseVolumeNibble = (value: unknown): number | null => {
 };
 
 export const parseSongFromYaml = (content: string): Song => {
-  const parsed = yaml.load(content) as any;
+  const parsed = yaml.load(content) as unknown;
 
-  if (!parsed || typeof parsed !== 'object' || !parsed.song) {
+  if (!parsed || typeof parsed !== 'object' || !('song' in parsed)) {
     throw new Error('Root "song" key not found.');
   }
 
-  const node = parsed.song as any;
+  const root = parsed as SongYamlRoot;
+  const node = root.song;
   if (!node || typeof node !== 'object') {
     throw new Error('Invalid song file format');
   }
 
-  const rawLength = Number(node.length);
+  const songNode = node as SongYamlNode;
+
+  const rawLength = Number(songNode.length);
   const patternLengthRaw = Number.isFinite(rawLength) ? rawLength : PATTERN_LENGTH;
   const clampedLength = Math.max(4, Math.min(256, Math.floor(patternLengthRaw)));
 
   const title =
-    typeof node.title === 'string' && node.title.trim() ? node.title : DEFAULT_SONG_TITLE;
+    typeof songNode.title === 'string' && songNode.title.trim() ? songNode.title : DEFAULT_SONG_TITLE;
   const author =
-    typeof node.author === 'string' && node.author.trim() ? node.author : DEFAULT_SONG_AUTHOR;
+    typeof songNode.author === 'string' && songNode.author.trim() ? songNode.author : DEFAULT_SONG_AUTHOR;
 
-  const speedRaw = Number(node.speed);
+  const speedRaw = Number(songNode.speed);
   const baseSpeed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
   const clampedSpeed = Math.max(2, baseSpeed);
   const speed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
 
-  const yearRaw = Number(node.year);
+  const yearRaw = Number(songNode.year);
   const year = Number.isFinite(yearRaw) ? yearRaw : new Date().getFullYear();
 
   // Optional loop position (0-based playlist index)
   let loop: number | null = null;
-  const rawLoop = (node as any).loop;
+  const rawLoop = songNode.loop;
   if (typeof rawLoop === 'number' && Number.isFinite(rawLoop)) {
     loop = Math.max(0, Math.floor(rawLoop));
   } else if (typeof rawLoop === 'string') {
@@ -105,24 +139,25 @@ export const parseSongFromYaml = (content: string): Song => {
     }
   }
 
-  const playlistNodes = Array.isArray(node.playlist) ? node.playlist : [];
+  const playlistNodes = Array.isArray(songNode.playlist) ? songNode.playlist : [];
   if (playlistNodes.length === 0) {
     throw new Error('Song playlist is missing or empty');
   }
 
-  const playlist = playlistNodes.map((entry: any, index: number) => {
+  const playlist = playlistNodes.map((entry, index: number) => {
     if (!entry || typeof entry !== 'object') {
       throw new Error(`Invalid playlist entry at index ${index}`);
     }
 
-    const trackA = typeof entry.A === 'string' ? entry.A : '--';
-    const trackB = typeof entry.B === 'string' ? entry.B : '--';
-    const trackC = typeof entry.C === 'string' ? entry.C : '--';
+    const e = entry as { A?: unknown; B?: unknown; C?: unknown };
+    const trackA = typeof e.A === 'string' ? e.A : '--';
+    const trackB = typeof e.B === 'string' ? e.B : '--';
+    const trackC = typeof e.C === 'string' ? e.C : '--';
 
     return { trackA, trackB, trackC };
   });
 
-  const rawPatternNodes = Array.isArray(node.pattern) ? node.pattern : node.patterns;
+  const rawPatternNodes = Array.isArray(songNode.pattern) ? songNode.pattern : songNode.patterns;
   const patternNodes = Array.isArray(rawPatternNodes) ? rawPatternNodes : [];
   if (patternNodes.length === 0) {
     throw new Error('Song patterns are missing');
@@ -213,7 +248,7 @@ export const parseSongFromYaml = (content: string): Song => {
             note: '===',
             octave: 0,
             instrument: '00',
-          } as any;
+          };
         } else if (ln.space === true) {
           // Empty or note-off line: currently treated as space
         } else if (typeof ln.note === 'string') {
@@ -252,7 +287,7 @@ export const parseSongFromYaml = (content: string): Song => {
     };
   });
 
-  const rawInstrumentNodes = Array.isArray(node.instrument) ? node.instrument : node.instruments;
+  const rawInstrumentNodes = Array.isArray(songNode.instrument) ? songNode.instrument : songNode.instruments;
   const instrumentNodes = Array.isArray(rawInstrumentNodes) ? rawInstrumentNodes : [];
   if (instrumentNodes.length === 0) {
     throw new Error('Song instruments are missing');
@@ -260,8 +295,8 @@ export const parseSongFromYaml = (content: string): Song => {
 
   const instruments: Instrument[] = [];
 
-  const expandEnvelope = (values: any, length: number, defaultValue: number): number[] => {
-    const rawArray = Array.isArray(values) ? (values as any[]) : [];
+  const expandEnvelope = (values: unknown, length: number, defaultValue: number): number[] => {
+    const rawArray = Array.isArray(values) ? (values as unknown[]) : [];
     const numericValues = rawArray
       .map((v) => Number(v))
       .filter((v) => Number.isFinite(v));
@@ -281,12 +316,14 @@ export const parseSongFromYaml = (content: string): Song => {
     return result;
   };
 
-  instrumentNodes.forEach((instNode: any, index: number) => {
+  instrumentNodes.forEach((instNode, index: number) => {
     if (!instNode || typeof instNode !== 'object') {
       throw new Error(`Invalid instrument at index ${index}`);
     }
 
-    const rawNumber = instNode.number;
+    const nodeObj = instNode as InstrumentNodeYaml;
+
+    const rawNumber = nodeObj.number;
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
         ? rawNumber.trim().toUpperCase()
@@ -297,15 +334,15 @@ export const parseSongFromYaml = (content: string): Song => {
       throw new Error(`Invalid instrument number "${rawNumber}"`);
     }
 
-    const rawName = typeof instNode.name === 'string' ? instNode.name : '';
+    const rawName = typeof nodeObj.name === 'string' ? nodeObj.name : '';
     const name = rawName.trim() ? rawName : '';
 
-    const baseParsed = parseBaseKey((instNode as any).base);
+    const baseParsed = parseBaseKey(nodeObj.base);
     const base = baseParsed
       ? formatBaseKey(baseParsed.note, baseParsed.octave)
       : DEFAULT_BASE_KEY;
 
-    const rawOctave = (instNode as any).octave;
+    const rawOctave = nodeObj.octave;
     let octave = DEFAULT_OCTAVE;
     if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
       octave = rawOctave;
@@ -320,17 +357,17 @@ export const parseSongFromYaml = (content: string): Song => {
     }
     octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
-    const volumeEnvelope = expandEnvelope(instNode.volume, ENVELOPE_LENGTH, 0x0f);
-    const arpeggioEnvelope = expandEnvelope(instNode.arpeggio, ENVELOPE_LENGTH, 0);
-    const pitchEnvelope = expandEnvelope(instNode.pitch, ENVELOPE_LENGTH, 0);
-    const noiseEnvelope = expandEnvelope(instNode.noise, ENVELOPE_LENGTH, 0);
-    const modeEnvelope = expandEnvelope(instNode.mode, ENVELOPE_LENGTH, 0);
+    const volumeEnvelope = expandEnvelope(nodeObj.volume, ENVELOPE_LENGTH, 0x0f);
+    const arpeggioEnvelope = expandEnvelope(nodeObj.arpeggio, ENVELOPE_LENGTH, 0);
+    const pitchEnvelope = expandEnvelope(nodeObj.pitch, ENVELOPE_LENGTH, 0);
+    const noiseEnvelope = expandEnvelope(nodeObj.noise, ENVELOPE_LENGTH, 0);
+    const modeEnvelope = expandEnvelope(nodeObj.mode, ENVELOPE_LENGTH, 0);
 
     // Optional sustain position for this instrument (0-based envelope index).
     // Accept either numeric or string values in YAML and clamp to a
     // non-negative integer. If out of range or invalid, treat as unset.
     let sustain: number | null = null;
-    const rawSustain = (instNode as any).sustain;
+    const rawSustain = nodeObj.sustain;
     if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
       const s = Math.floor(rawSustain);
       if (s >= 0) {

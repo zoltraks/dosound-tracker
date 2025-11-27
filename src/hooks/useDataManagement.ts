@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
+import type { Instrument, Song, Pattern, PatternLine, Note } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import yaml from 'js-yaml';
 import defaultSongYaml from '../assets/song.yaml?raw';
@@ -11,6 +11,8 @@ import {
   parseBaseKey,
   parseSongFromYaml,
 } from '../utils/songParser';
+
+type TrackKey = 'trackA' | 'trackB' | 'trackC';
 
 // Storage keys
 const SONG_STORAGE_KEY = 'dosound-tracker-song';
@@ -127,7 +129,7 @@ export const useDataManagement = () => {
       const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
       if (savedSong) {
         const parsedSong = JSON.parse(savedSong) as Song;
-        const rawSpeed = Number((parsedSong as any).speed);
+        const rawSpeed = Number(parsedSong.speed);
         const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
         const clampedSpeed = Math.max(2, baseSpeed);
         const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
@@ -327,7 +329,7 @@ export const useDataManagement = () => {
             ? inst.id
             : index.toString(16).padStart(2, '0').toUpperCase();
 
-        const instrumentNode: any = {
+        const instrumentNode: Record<string, unknown> = {
           number,
         };
 
@@ -341,7 +343,7 @@ export const useDataManagement = () => {
           instrumentNode.base = baseKey;
         }
 
-        const rawOctave = (inst as any).octave;
+        const rawOctave = inst.octave;
         if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
           const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(rawOctave)));
           if (clampedOctave !== DEFAULT_OCTAVE) {
@@ -375,7 +377,7 @@ export const useDataManagement = () => {
       // Playlist: A/B/C keys instead of trackA/trackB/trackC.
       // Omit tracks that have no pattern assigned ("--").
       const playlist = currentSong.playlist.map(entry => {
-        const row: any = {};
+        const row: { A?: string; B?: string; C?: string } = {};
         if (entry.trackA && entry.trackA !== '--') row.A = entry.trackA;
         if (entry.trackB && entry.trackB !== '--') row.B = entry.trackB;
         if (entry.trackC && entry.trackC !== '--') row.C = entry.trackC;
@@ -392,16 +394,24 @@ export const useDataManagement = () => {
             : index.toString(16).padStart(2, '0').toUpperCase();
 
         const rawLines = pattern.lines || [];
-        const lines: any[] = [];
+        type PatternStep = {
+          space?: boolean | number;
+          off?: boolean;
+          note?: string;
+          instrument?: string;
+          volume?: number;
+        };
+
+        const lines: PatternStep[] = [];
 
         for (let i = 0; i < targetLength; i++) {
           const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
           const cell = raw.trackA;
 
-          const volRaw: any = (raw as any).volume;
+          const volRaw = raw.volume;
           const hasVolume = volRaw !== undefined && volRaw !== null;
 
-          let step: any;
+          let step: PatternStep;
 
           if (!cell) {
             // Space line. Use `space: 1` when there is an explicit volume nibble,
@@ -433,7 +443,7 @@ export const useDataManagement = () => {
         // Trim trailing pure-space lines
         let lastNonSpace = lines.length - 1;
         while (lastNonSpace >= 0) {
-          const ln: any = lines[lastNonSpace];
+          const ln = lines[lastNonSpace];
           if (ln && ln.space === true && Object.keys(ln).length === 1) {
             lastNonSpace--;
           } else {
@@ -445,7 +455,7 @@ export const useDataManagement = () => {
 
         // Compress consecutive pure-space lines and volume-only lines into
         // aggregated runs, e.g. `space: 3` or `space: 3, volume: 14`.
-        const compressedLines: any[] = [];
+        const compressedLines: PatternStep[] = [];
 
         type RunType = 'none' | 'space' | 'volume-space';
         let runType: RunType = 'none';
@@ -469,10 +479,10 @@ export const useDataManagement = () => {
           runCount = 0;
         };
 
-        const isPureSpace = (ln: any) =>
+        const isPureSpace = (ln: PatternStep) =>
           ln && ln.space === true && Object.keys(ln).length === 1;
 
-        const isVolumeSpace = (ln: any) =>
+        const isVolumeSpace = (ln: PatternStep) =>
           ln &&
           ln.space === 1 &&
           typeof ln.volume === 'number' &&
@@ -488,7 +498,7 @@ export const useDataManagement = () => {
               runCount = 1;
             }
           } else if (isVolumeSpace(ln)) {
-            const vol = (ln as any).volume;
+            const vol = ln.volume as number;
             if (runType === 'volume-space' && vol === runVolume) {
               runCount++;
             } else {
@@ -513,7 +523,7 @@ export const useDataManagement = () => {
       const hasLoop =
         typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop);
 
-      const songNode: any = {
+      const songNode = {
         title: currentSong.title,
         author: currentSong.author,
         year: currentSong.year,
@@ -664,7 +674,7 @@ export const useDataManagement = () => {
       const isZeroDefault = (values: number[]): boolean =>
         values.length === 0 || (values.length === 1 && values[0] === 0);
 
-      const instrumentNode: Record<string, any> = {};
+      const instrumentNode: Record<string, unknown> = {};
 
       const trimmedName = (currentInstrument.name || '').trim();
       if (trimmedName) {
@@ -676,7 +686,7 @@ export const useDataManagement = () => {
         instrumentNode.base = baseKey;
       }
 
-      const rawOctave = (currentInstrument as any).octave;
+      const rawOctave = currentInstrument.octave;
       if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
         const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(rawOctave)));
         if (clampedOctave !== DEFAULT_OCTAVE) {
@@ -700,7 +710,7 @@ export const useDataManagement = () => {
         instrumentNode.noise = noiseEnv;
       }
 
-      const sustain = (currentInstrument as any).sustain;
+      const sustain = currentInstrument.sustain;
       if (typeof sustain === 'number' && Number.isFinite(sustain) && sustain >= 0) {
         instrumentNode.sustain = Math.floor(sustain);
       }
@@ -751,21 +761,36 @@ export const useDataManagement = () => {
     reader.onload = (e) => {
       try {
         const content = e.target?.result as string;
-        const parsed = yaml.load(content) as any;
+        const parsed = yaml.load(content) as unknown;
 
-        if (!parsed || typeof parsed !== 'object' || !parsed.instrument) {
+        if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {
           setInstrumentError('Error loading instrument file.\n\nRoot "instrument" key not found.');
           return;
         }
 
-        const node = parsed.instrument;
+        type InstrumentFileRoot = {
+          instrument?: unknown;
+        };
+
+        interface InstrumentFileNode {
+          [key: string]: unknown;
+          name?: unknown;
+          base?: unknown;
+          octave?: unknown;
+          sustain?: unknown;
+        }
+
+        const root = parsed as InstrumentFileRoot;
+        const node = root.instrument;
 
         if (!node || typeof node !== 'object') {
           throw new Error('Invalid instrument file format');
         }
 
+        const instNode = node as InstrumentFileNode;
+
         const expandEnvelope = (field: string, length: number, defaultValue: number): number[] => {
-          const raw = Array.isArray(node[field]) ? node[field] as any[] : [];
+          const raw = Array.isArray(instNode[field]) ? (instNode[field] as unknown[]) : [];
           const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
 
           if (values.length === 0) {
@@ -783,7 +808,7 @@ export const useDataManagement = () => {
           return result;
         };
 
-        const rawOctave = (node as any).octave;
+        const rawOctave = instNode.octave;
         let octave = DEFAULT_OCTAVE;
         if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
           octave = rawOctave;
@@ -799,7 +824,7 @@ export const useDataManagement = () => {
         octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
         let sustain: number | null = null;
-        const rawSustain = (node as any).sustain;
+        const rawSustain = instNode.sustain;
         if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
           const s = Math.floor(rawSustain);
           if (s >= 0) {
@@ -818,7 +843,7 @@ export const useDataManagement = () => {
           }
         }
 
-        const rawName = typeof node.name === 'string' ? node.name : '';
+        const rawName = typeof instNode.name === 'string' ? instNode.name : '';
         const parsedName = rawName.trim() ? rawName : '';
 
         const newInstrument: Instrument = {
@@ -830,7 +855,7 @@ export const useDataManagement = () => {
           pitchEnvelope: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
           noiseEnvelope: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
           base: (() => {
-            const parsedBase = parseBaseKey((node as any).base);
+            const parsedBase = parseBaseKey(instNode.base);
             if (!parsedBase) return DEFAULT_BASE_KEY;
             return formatBaseKey(parsedBase.note, parsedBase.octave);
           })(),
@@ -1046,9 +1071,10 @@ export const useDataManagement = () => {
     const usedInstrumentIds = new Set<string>();
     newPatterns.forEach(pattern => {
       (pattern.lines || []).forEach(line => {
-        const tracks: (keyof PatternLine)[] = ['trackA', 'trackB', 'trackC'];
+        const tracks: TrackKey[] = ['trackA', 'trackB', 'trackC'];
         tracks.forEach(trackKey => {
-          const note = line[trackKey] as any;
+          type NoteWithLegacyInstrument = Note & { instrument: string | number };
+          const note = line[trackKey] as NoteWithLegacyInstrument | null;
           if (note && note.instrument !== undefined && note.instrument !== null) {
             // Normalize instrument ID to uppercase string
             let id = '';
@@ -1207,10 +1233,10 @@ export const useDataManagement = () => {
 
     // Build new patterns in the newly defined order and apply new IDs.
     const remappedPatterns: Pattern[] = orderedPatternIds
-      .map(oldId => {
+      .map<Pattern | null>(oldId => {
         const original = patternById.get(oldId);
         if (!original) {
-          return null as any;
+          return null;
         }
 
         const newId = patternIdMap[oldId];
@@ -1226,7 +1252,7 @@ export const useDataManagement = () => {
           lines: newLines
         };
       })
-      .filter(Boolean);
+      .filter((pattern): pattern is Pattern => Boolean(pattern));
 
     // Prepare instrument renumbering: sort instruments by name (case-insensitive)
     // and then assign hexadecimal IDs in that order.
@@ -1260,8 +1286,8 @@ export const useDataManagement = () => {
       const lines = (pattern.lines || []).map(line => {
         const newLine: PatternLine = { ...line };
 
-        (['trackA', 'trackB', 'trackC'] as (keyof PatternLine)[]).forEach(key => {
-          const note = newLine[key] as any;
+        (['trackA', 'trackB', 'trackC'] as TrackKey[]).forEach(key => {
+          const note = newLine[key] as Note | null;
           if (note && typeof note.instrument === 'string') {
             const raw = note.instrument.trim().toUpperCase();
             const mapped = instrumentIdMap[raw];
@@ -1269,7 +1295,7 @@ export const useDataManagement = () => {
               newLine[key] = {
                 ...note,
                 instrument: mapped
-              } as any;
+              };
             }
           }
         });

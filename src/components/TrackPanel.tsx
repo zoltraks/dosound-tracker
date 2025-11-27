@@ -63,7 +63,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const effectiveVolume = useMemo(() => {
     if (!pattern) return 0x0f;
 
-    const lines = pattern.lines || [];
+    const lines = pattern.lines;
     if (lines.length === 0) return 0x0f;
 
     const maxIndex = Math.min(currentLine, lines.length - 1);
@@ -71,9 +71,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     for (let i = 0; i <= maxIndex; i++) {
       const line = lines[i];
-      const vol = line && (line as any).volume;
+      const vol = line?.volume;
       if (vol !== undefined && vol !== null) {
-        const clamped = Math.max(0, Math.min(0x0f, (vol as number) | 0));
+        const clamped = Math.max(0, Math.min(0x0f, vol | 0));
         current = clamped;
       }
     }
@@ -91,7 +91,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     // Map track to channel
     const channel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-    const instrument = currentInstrumentData as any;
+    const instrument = currentInstrumentData;
     const noteData = { note, octave };
 
     // Initialize envelope timing
@@ -252,11 +252,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       if (currentColumn === 'volume') {
         // Clear only the per-line volume modifier
-        (newPattern.lines[currentLine] as any).volume = undefined;
+        newPattern.lines[currentLine].volume = undefined;
       } else {
         // Clear the note (and implicitly any volume) for shared pattern (trackA)
         newPattern.lines[currentLine].trackA = null;
-        (newPattern.lines[currentLine] as any).volume = undefined;
+        newPattern.lines[currentLine].volume = undefined;
       }
 
       onPatternChange(newPattern);
@@ -283,10 +283,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine] = { ...newPattern.lines[currentLine] };
 
         if (currentColumn === 'volume') {
-          (newPattern.lines[currentLine] as any).volume = undefined;
+          newPattern.lines[currentLine].volume = undefined;
         } else {
           newPattern.lines[currentLine].trackA = null;
-          (newPattern.lines[currentLine] as any).volume = undefined;
+          newPattern.lines[currentLine].volume = undefined;
         }
 
         onPatternChange(newPattern);
@@ -333,7 +333,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
         const value = parseInt(key, 16);
         const clamped = Math.max(0, Math.min(0x0f, value));
-        (newPattern.lines[currentLine] as any).volume = clamped;
+        newPattern.lines[currentLine].volume = clamped;
 
         onPatternChange(newPattern);
         // Move to next line after entering a volume nibble
@@ -445,7 +445,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
                   className={`note-text ${noteIsActive ? 'active' : ''}`}
                   onClick={() => handleLineClick(lineIndex, 'note')}
                 >
-                  {formatNoteDisplay(noteData as any)}
+                  {formatNoteDisplay(noteData)}
                 </span>
                 <span
                   className={`volume-data ${volumeIsActive ? 'active' : ''}`}
@@ -456,7 +456,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
                 >
                   {volume === undefined || volume === null
                     ? '.'
-                    : (Math.max(0, Math.min(0x0f, (volume as number) | 0))).toString(16).toUpperCase()}
+                    : (Math.max(0, Math.min(0x0f, volume | 0))).toString(16).toUpperCase()}
                 </span>
               </span>
             </div>

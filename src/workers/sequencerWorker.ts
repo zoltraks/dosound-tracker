@@ -1,5 +1,5 @@
 // Web Worker for precise sequencer timing
-let intervalId: number | null = null;
+let intervalId: ReturnType<typeof setTimeout> | null = null;
 let tickInterval = 20; // 50Hz = 20ms
 let isPlaying = false;
 let isPatternLoop = false;
@@ -11,10 +11,44 @@ let patternLength = 64;
 let lastTickTime = 0;
 let nextTickTime = 0;
 
-interface WorkerMessage {
-  type: 'start' | 'stop' | 'update' | 'tick' | 'setParams';
-  data?: any;
-};
+interface WorkerStartMessage {
+  type: 'start';
+  data?: {
+    pattern?: number;
+    line?: number;
+    tick?: number;
+    patternLoop?: boolean;
+  };
+}
+
+interface WorkerUpdateMessage {
+  type: 'update';
+  data?: {
+    pattern: number;
+    line: number;
+    tick: number;
+  };
+}
+
+interface WorkerSetParamsMessage {
+  type: 'setParams';
+  data?: {
+    ticksPerRow?: number;
+    patternLength?: number;
+    tickInterval?: number;
+  };
+}
+
+interface WorkerStopMessage {
+  type: 'stop';
+  data?: unknown;
+}
+
+type WorkerIncomingMessage =
+  | WorkerStartMessage
+  | WorkerUpdateMessage
+  | WorkerSetParamsMessage
+  | WorkerStopMessage;
 
 function scheduleTick() {
   if (!isPlaying) return;
@@ -51,7 +85,7 @@ function scheduleTick() {
       currentLine,
       currentTick
     }
-  } as WorkerMessage);
+  });
 }
 
 function tickLoop() {
@@ -73,7 +107,7 @@ function tickLoop() {
   }
 
   const delay = Math.max(0, nextTickTime - performance.now());
-  intervalId = setTimeout(tickLoop, delay) as any;
+  intervalId = setTimeout(tickLoop, delay);
 }
 
 function startSequencer() {
@@ -84,7 +118,7 @@ function startSequencer() {
   isPlaying = true;
   lastTickTime = 0;
   nextTickTime = 0;
-  intervalId = setTimeout(tickLoop, tickInterval) as any;
+  intervalId = setTimeout(tickLoop, tickInterval);
 }
 
 function stopSequencer() {
@@ -105,7 +139,7 @@ function stopSequencer() {
       currentLine,
       currentTick,
     },
-  } as WorkerMessage);
+  });
 }
 
 function updatePosition(pattern: number, line: number, tick: number) {
@@ -121,7 +155,7 @@ function updatePosition(pattern: number, line: number, tick: number) {
       currentLine,
       currentTick
     }
-  } as WorkerMessage);
+  });
 }
 
 function setParams(params: { ticksPerRow?: number; patternLength?: number; tickInterval?: number }) {
@@ -142,16 +176,17 @@ function setParams(params: { ticksPerRow?: number; patternLength?: number; tickI
 }
 
 // Handle messages from main thread
-self.addEventListener('message', (event: MessageEvent<WorkerMessage>) => {
+self.addEventListener('message', (event: MessageEvent<WorkerIncomingMessage>) => {
   const { type, data } = event.data;
   
   switch (type) {
     case 'start':
       if (data) {
-        currentPattern = data.pattern || 0;
-        currentLine = data.line || 0;
-        currentTick = data.tick || 0;
-        isPatternLoop = !!(data as any).patternLoop;
+        const { pattern, line, tick, patternLoop } = data;
+        currentPattern = pattern ?? 0;
+        currentLine = line ?? 0;
+        currentTick = tick ?? 0;
+        isPatternLoop = !!patternLoop;
       }
       startSequencer();
       break;

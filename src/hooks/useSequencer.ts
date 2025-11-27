@@ -11,6 +11,18 @@ export interface SequencerState {
   ticksPerRow: number;
 }
 
+interface SequencerWorkerTickData {
+  isPlaying: boolean;
+  currentPattern: number;
+  currentLine: number;
+  currentTick: number;
+}
+
+type SequencerWorkerMessage =
+  | { type: 'tick'; data: SequencerWorkerTickData }
+  | { type: 'update'; data: SequencerWorkerTickData }
+  | { type: 'stop'; data: SequencerWorkerTickData };
+
 export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) => {
   const [sequencerState, setSequencerState] = useState<SequencerState>({
     isPlaying: false,
@@ -57,7 +69,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
         type: 'module'
       });
 
-      workerRef.current.addEventListener('message', (event: MessageEvent) => {
+      workerRef.current.addEventListener('message', (event: MessageEvent<SequencerWorkerMessage>) => {
         const { type, data } = event.data;
         
         switch (type) {
