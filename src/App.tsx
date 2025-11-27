@@ -22,7 +22,8 @@ import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal } from './modals';
+import { isInstrumentEmpty } from './utils/instrument';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal } from './modals';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -62,9 +63,22 @@ const App: React.FC = () => {
   const [transposeSummary, setTransposeSummary] = useState('');
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
+  const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
   const [trackClipboardError, setTrackClipboardError] = useState('');
+  const [isInstrumentDeleteOpen, setIsInstrumentDeleteOpen] = useState(false);
+  const [instrumentDeleteUsage, setInstrumentDeleteUsage] = useState<{
+    instrumentId: string;
+    instrumentName: string;
+    usageCount: number;
+    patternCount: number;
+  }>({
+    instrumentId: '',
+    instrumentName: '',
+    usageCount: 0,
+    patternCount: 0
+  });
   const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('dosound-tracker-debug-mode');
@@ -131,6 +145,8 @@ const App: React.FC = () => {
     loadInstrument,
     instrumentError,
     setInstrumentError,
+    songError,
+    setSongError,
     optimizeSong,
     renumberSong
   } = useDataManagement();
@@ -2050,13 +2066,13 @@ const App: React.FC = () => {
   const handleCloneInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
     if (instruments.length >= MAX_INSTRUMENTS) {
-      alert('No free instrument slots available.');
+      setInstrumentOperationSummary('No free instrument slots available.');
       return;
     }
 
     const currentIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
 
-    const isSlotFree = (inst: Instrument | undefined) => !inst || !inst.name;
+    const isSlotFree = (inst: Instrument | undefined) => !inst || isInstrumentEmpty(inst);
 
     let slotIndex = -1;
 
@@ -2083,7 +2099,7 @@ const App: React.FC = () => {
     }
 
     if (slotIndex >= MAX_INSTRUMENTS) {
-      alert('No free instrument slots available.');
+      setInstrumentOperationSummary('No free instrument slots available.');
       return;
     }
 
@@ -2104,38 +2120,105 @@ const App: React.FC = () => {
     updateSong({ instruments: updatedInstruments });
     setCurrentInstrument(clonedInstrument);
     setActiveSection('instrumentList');
-  }, [currentSong.instruments, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]);
+  }, [currentSong.instruments, currentInstrument, updateSong, setCurrentInstrument, setActiveSection, setInstrumentOperationSummary]);
 
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
-    if (instruments.length === 0) {
+    if (!currentInstrument || instruments.length === 0) {
       return;
     }
 
-    const index = instruments.findIndex(inst => inst.id === currentInstrument.id);
+    const targetIdNorm = normalizeInstrumentId(currentInstrument.id);
+    if (!targetIdNorm) {
+      return;
+    }
+
+    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
     if (index === -1) {
-      alert('Current instrument not found in song instruments.');
+      setInstrumentOperationSummary('Current instrument not found in song instruments.');
       return;
     }
 
-    const slotId = instruments[index].id;
+    let usageCount = 0;
+    let patternCount = 0;
 
-    const clearedInstrument: Instrument = {
-      id: slotId,
-      name: '',
-      volumeEnvelope: Array(32).fill(0),
-      arpeggioEnvelope: Array(32).fill(0),
-      pitchEnvelope: Array(32).fill(0),
-      noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0)
-    };
+    currentSong.patterns.forEach(pattern => {
+      if (!pattern) {
+        return;
+      }
 
-    const newInstruments = [...instruments];
-    newInstruments[index] = clearedInstrument;
+      let patternHasUsage = false;
 
-    updateSong({ instruments: newInstruments });
-    setCurrentInstrument(clearedInstrument);
-  }, [currentSong.instruments, currentInstrument.id, updateSong, setCurrentInstrument]);
+      (pattern.lines || []).forEach(line => {
+        if (!line) {
+          return;
+        }
+
+        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
+          const note = line[key];
+          if (!note) {
+            return;
+          }
+
+          const noteInstIdNorm = normalizeInstrumentId((note as any).instrument as any);
+          if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
+            usageCount++;
+            patternHasUsage = true;
+          }
+        });
+      });
+
+      if (patternHasUsage) {
+        patternCount++;
+      }
+    });
+
+    if (usageCount === 0) {
+      const slot = instruments[index];
+      const slotId = slot?.id || currentInstrument.id;
+
+      const clearedInstrument: Instrument = {
+        id: slotId,
+        name: '',
+        volumeEnvelope: Array(32).fill(0),
+        arpeggioEnvelope: Array(32).fill(0),
+        pitchEnvelope: Array(32).fill(0),
+        noiseEnvelope: Array(32).fill(0),
+        modeEnvelope: Array(32).fill(0)
+      };
+
+      const newInstruments = [...instruments];
+      newInstruments[index] = clearedInstrument;
+
+      updateSong({ instruments: newInstruments });
+      setCurrentInstrument(clearedInstrument);
+      setActiveSection('instrumentList');
+      return;
+    }
+
+    const slot = instruments[index];
+    const slotId = slot?.id || currentInstrument.id;
+    const slotName = slot?.name || currentInstrument.name || '';
+
+    setInstrumentDeleteUsage({
+      instrumentId: slotId,
+      instrumentName: slotName,
+      usageCount,
+      patternCount
+    });
+    setIsInstrumentDeleteOpen(true);
+  }, [
+    currentSong.instruments,
+    currentSong.patterns,
+    currentInstrument,
+    normalizeInstrumentId,
+    updateSong,
+    setCurrentInstrument,
+    setActiveSection,
+    setInstrumentOperationSummary,
+    setInstrumentDeleteUsage,
+    setIsInstrumentDeleteOpen
+  ]);
 
   const handleMoveInstrument = useCallback((index: number, direction: 'up' | 'down') => {
     const instruments = currentSong.instruments;
@@ -2235,6 +2318,210 @@ const App: React.FC = () => {
 
     setActiveSection('instrumentList');
   }, [currentSong.instruments, currentSong.patterns, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]);
+
+  const handleCancelInstrumentDelete = useCallback(() => {
+    setIsInstrumentDeleteOpen(false);
+  }, []);
+
+  const handleConfirmDeleteInstrumentAndNotes = useCallback(() => {
+    if (!instrumentDeleteUsage.instrumentId) {
+      setIsInstrumentDeleteOpen(false);
+      return;
+    }
+
+    const targetIdNorm = normalizeInstrumentId(instrumentDeleteUsage.instrumentId);
+    if (!targetIdNorm) {
+      setIsInstrumentDeleteOpen(false);
+      return;
+    }
+
+    const instruments = currentSong.instruments;
+    const patterns = currentSong.patterns;
+
+    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
+    if (index === -1) {
+      setIsInstrumentDeleteOpen(false);
+      setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
+      return;
+    }
+
+    const slot = instruments[index];
+    const slotId = slot?.id || instrumentDeleteUsage.instrumentId;
+    const slotName = slot?.name || instrumentDeleteUsage.instrumentName || '';
+
+    const clearedInstrument: Instrument = {
+      id: slotId,
+      name: '',
+      volumeEnvelope: Array(32).fill(0),
+      arpeggioEnvelope: Array(32).fill(0),
+      pitchEnvelope: Array(32).fill(0),
+      noiseEnvelope: Array(32).fill(0),
+      modeEnvelope: Array(32).fill(0)
+    };
+
+    const newInstruments = [...instruments];
+    newInstruments[index] = clearedInstrument;
+
+    let notesCleared = 0;
+    let patternsTouched = 0;
+
+    const updatedPatterns = patterns.map(pattern => {
+      if (!pattern) {
+        return pattern;
+      }
+
+      let patternChanged = false;
+      const newLines = (pattern.lines || []).map(line => {
+        if (!line) {
+          return line;
+        }
+
+        const newLine: PatternLine = { ...line };
+        let lineChanged = false;
+
+        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
+          const note = newLine[key];
+          if (!note) {
+            return;
+          }
+
+          const noteInstIdNorm = normalizeInstrumentId((note as any).instrument as any);
+          if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
+            newLine[key] = null;
+            lineChanged = true;
+            notesCleared++;
+          }
+        });
+
+        if (lineChanged) {
+          patternChanged = true;
+        }
+
+        return newLine;
+      });
+
+      if (patternChanged) {
+        patternsTouched++;
+        return {
+          ...pattern,
+          lines: newLines
+        };
+      }
+
+      return pattern;
+    });
+
+    updateSong({
+      instruments: newInstruments,
+      patterns: updatedPatterns
+    });
+
+    setCurrentInstrument(clearedInstrument);
+    setActiveSection('instrumentList');
+    setIsInstrumentDeleteOpen(false);
+
+    const idLabel = slotId.trim() || '--';
+    const nameLabel = slotName || '';
+
+    const lines: string[] = [];
+    lines.push('Instrument removal complete.');
+    lines.push('');
+    lines.push(`Instrument: ${idLabel}${nameLabel ? ` (${nameLabel})` : ''}`);
+    lines.push('Mode: Delete notes using this instrument and clear slot.');
+    lines.push('');
+    lines.push(`Patterns with this instrument before delete: ${instrumentDeleteUsage.patternCount}`);
+    lines.push(`Notes using this instrument before delete: ${instrumentDeleteUsage.usageCount}`);
+    lines.push('');
+    lines.push(`Patterns changed in this operation: ${patternsTouched}`);
+    lines.push(`Notes cleared in this operation: ${notesCleared}`);
+
+    setInstrumentOperationSummary(lines.join('\n'));
+  }, [
+    currentSong.instruments,
+    currentSong.patterns,
+    instrumentDeleteUsage.instrumentId,
+    instrumentDeleteUsage.instrumentName,
+    instrumentDeleteUsage.patternCount,
+    instrumentDeleteUsage.usageCount,
+    normalizeInstrumentId,
+    updateSong,
+    setCurrentInstrument,
+    setActiveSection,
+    setIsInstrumentDeleteOpen,
+    setInstrumentOperationSummary
+  ]);
+
+  const handleConfirmDeleteInstrumentOnly = useCallback(() => {
+    if (!instrumentDeleteUsage.instrumentId) {
+      setIsInstrumentDeleteOpen(false);
+      return;
+    }
+
+    const targetIdNorm = normalizeInstrumentId(instrumentDeleteUsage.instrumentId);
+    if (!targetIdNorm) {
+      setIsInstrumentDeleteOpen(false);
+      return;
+    }
+
+    const instruments = currentSong.instruments;
+    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
+    if (index === -1) {
+      setIsInstrumentDeleteOpen(false);
+      setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
+      return;
+    }
+
+    const slot = instruments[index];
+    const slotId = slot?.id || instrumentDeleteUsage.instrumentId;
+    const slotName = slot?.name || instrumentDeleteUsage.instrumentName || '';
+
+    const clearedInstrument: Instrument = {
+      id: slotId,
+      name: '',
+      volumeEnvelope: Array(32).fill(0),
+      arpeggioEnvelope: Array(32).fill(0),
+      pitchEnvelope: Array(32).fill(0),
+      noiseEnvelope: Array(32).fill(0),
+      modeEnvelope: Array(32).fill(0)
+    };
+
+    const newInstruments = [...instruments];
+    newInstruments[index] = clearedInstrument;
+
+    updateSong({ instruments: newInstruments });
+    setCurrentInstrument(clearedInstrument);
+    setActiveSection('instrumentList');
+    setIsInstrumentDeleteOpen(false);
+
+    const idLabel = slotId.trim() || '--';
+    const nameLabel = slotName || '';
+
+    const lines: string[] = [];
+    lines.push('Instrument removal complete.');
+    lines.push('');
+    lines.push(`Instrument: ${idLabel}${nameLabel ? ` (${nameLabel})` : ''}`);
+    lines.push('Mode: Clear instrument only (keep notes).');
+    lines.push('');
+    lines.push(`Patterns that reference this instrument: ${instrumentDeleteUsage.patternCount}`);
+    lines.push(`Notes that reference this instrument: ${instrumentDeleteUsage.usageCount}`);
+    lines.push('');
+    lines.push('Patterns changed in this operation: 0');
+    lines.push('Notes cleared in this operation: 0');
+
+    setInstrumentOperationSummary(lines.join('\n'));
+  }, [
+    currentSong.instruments,
+    instrumentDeleteUsage.instrumentId,
+    instrumentDeleteUsage.instrumentName,
+    instrumentDeleteUsage.patternCount,
+    instrumentDeleteUsage.usageCount,
+    normalizeInstrumentId,
+    updateSong,
+    setCurrentInstrument,
+    setActiveSection,
+    setIsInstrumentDeleteOpen,
+    setInstrumentOperationSummary
+  ]);
 
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
@@ -2871,6 +3158,10 @@ const App: React.FC = () => {
     setDumpExportSummary('');
   }, []);
 
+  const handleCloseInstrumentOperationSummary = useCallback(() => {
+    setInstrumentOperationSummary('');
+  }, []);
+
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
@@ -2975,6 +3266,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const handleModalKeyDown = (event: KeyboardEvent) => {
       const hasInfoModal =
+        !!songError ||
         !!instrumentError ||
         !!transposeSummary ||
         !!trackClipboardError ||
@@ -2982,6 +3274,7 @@ const App: React.FC = () => {
         !!soundExportSummary ||
         !!dumpExportSummary ||
         !!renumberSummary ||
+        !!instrumentOperationSummary ||
         isAboutOpen ||
         isChangelogOpen ||
         isDownloadOpen;
@@ -2991,7 +3284,8 @@ const App: React.FC = () => {
         isOptimizeConfirmOpen ||
         isRenumberConfirmOpen ||
         isNewSongConfirmOpen ||
-        isResetConfirmOpen;
+        isResetConfirmOpen ||
+        isInstrumentDeleteOpen;
 
       if (!hasInfoModal && !hasConfirmModal) {
         return;
@@ -3008,6 +3302,10 @@ const App: React.FC = () => {
       }
 
       if (key === 'Escape' || key === 'Esc') {
+        if (isInstrumentDeleteOpen) {
+          handleCancelInstrumentDelete();
+          return;
+        }
         if (isTransposeOpen) {
           handleCancelTranspose();
           return;
@@ -3029,6 +3327,10 @@ const App: React.FC = () => {
           return;
         }
 
+        if (songError) {
+          setSongError('');
+          return;
+        }
         if (instrumentError) {
           setInstrumentError('');
           return;
@@ -3057,6 +3359,10 @@ const App: React.FC = () => {
           handleCloseRenumberSummary();
           return;
         }
+        if (instrumentOperationSummary) {
+          handleCloseInstrumentOperationSummary();
+          return;
+        }
         if (isAboutOpen) {
           setIsAboutOpen(false);
           return;
@@ -3074,6 +3380,10 @@ const App: React.FC = () => {
       }
 
       if (key === 'Enter') {
+        if (songError) {
+          setSongError('');
+          return;
+        }
         if (instrumentError) {
           setInstrumentError('');
           return;
@@ -3139,6 +3449,7 @@ const App: React.FC = () => {
       window.removeEventListener('keydown', handleModalKeyDown, true);
     };
   }, [
+    songError,
     instrumentError,
     transposeSummary,
     trackClipboardError,
@@ -3146,6 +3457,7 @@ const App: React.FC = () => {
     soundExportSummary,
     dumpExportSummary,
     renumberSummary,
+    instrumentOperationSummary,
     isAboutOpen,
     isChangelogOpen,
     isDownloadOpen,
@@ -3154,6 +3466,7 @@ const App: React.FC = () => {
     isRenumberConfirmOpen,
     isNewSongConfirmOpen,
     isResetConfirmOpen,
+    isInstrumentDeleteOpen,
     handleCancelTranspose,
     handleConfirmTranspose,
     handleCancelOptimize,
@@ -3170,6 +3483,9 @@ const App: React.FC = () => {
     handleCloseDumpExportSummary,
     handleCloseRenumberSummary,
     handleCloseChangelog,
+    handleCancelInstrumentDelete,
+    handleCloseInstrumentOperationSummary,
+    setSongError,
     setInstrumentError,
     setTrackClipboardError,
     setIsAboutOpen,
@@ -3477,6 +3793,13 @@ const App: React.FC = () => {
         />
 
         <InformationModal
+          isOpen={!!songError}
+          title="Song Load Error"
+          message={songError}
+          onClose={() => setSongError('')}
+        />
+
+        <InformationModal
           isOpen={!!instrumentError}
           title="Instrument Load Error"
           message={instrumentError}
@@ -3525,6 +3848,13 @@ const App: React.FC = () => {
           onClose={handleCloseRenumberSummary}
         />
 
+        <InformationModal
+          isOpen={!!instrumentOperationSummary}
+          title="Instrument Operation"
+          message={instrumentOperationSummary}
+          onClose={handleCloseInstrumentOperationSummary}
+        />
+
         <ConfirmationModal
           isOpen={isNewSongConfirmOpen}
           title="Create new song?"
@@ -3556,6 +3886,17 @@ const App: React.FC = () => {
           onConfirm={handleConfirmReset}
           onCancel={handleCancelReset}
           confirmLabel="Reset"
+        />
+
+        <InstrumentDeleteModal
+          isOpen={isInstrumentDeleteOpen}
+          instrumentId={instrumentDeleteUsage.instrumentId}
+          instrumentName={instrumentDeleteUsage.instrumentName}
+          usageCount={instrumentDeleteUsage.usageCount}
+          patternCount={instrumentDeleteUsage.patternCount}
+          onDeleteNotesAndInstrument={handleConfirmDeleteInstrumentAndNotes}
+          onDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
+          onCancel={handleCancelInstrumentDelete}
         />
 
         <TransposeModal

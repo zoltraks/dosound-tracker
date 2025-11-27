@@ -11,6 +11,7 @@ import {
   parseBaseKey,
   parseSongFromYaml,
 } from '../utils/songParser';
+import { isInstrumentEmpty } from '../utils/instrument';
 
 type TrackKey = 'trackA' | 'trackB' | 'trackC';
 
@@ -163,6 +164,9 @@ export const useDataManagement = () => {
     };
   });
 
+  const [songError, setSongError] = useState('');
+  const [instrumentError, setInstrumentError] = useState('');
+
   const songSaveTimeoutRef = useRef<number | null>(null);
   const instrumentSaveTimeoutRef = useRef<number | null>(null);
 
@@ -266,8 +270,8 @@ export const useDataManagement = () => {
   const createNewInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
 
-    // Find first cleared slot (identified by empty name)
-    let slotIndex = instruments.findIndex(inst => !inst.name);
+    // Find first cleared slot (identified by default/empty instrument parameters)
+    let slotIndex = instruments.findIndex(inst => isInstrumentEmpty(inst));
     if (slotIndex === -1) {
       slotIndex = instruments.length;
     }
@@ -659,11 +663,11 @@ export const useDataManagement = () => {
         }
       } catch (error) {
         console.error('Error loading song:', error);
-        alert('Error loading song file. Please check the file format.');
+        setSongError('Error loading song file. Please check the file format.');
       }
     };
     reader.readAsText(file);
-  }, [setCurrentInstrument]);
+  }, [setCurrentInstrument, setSongError]);
 
   const saveInstrument = useCallback(() => {
     try {
@@ -765,8 +769,6 @@ export const useDataManagement = () => {
       console.error('Failed to save instrument:', error);
     }
   }, [currentInstrument]);
-
-  const [instrumentError, setInstrumentError] = useState('');
 
   const loadInstrument = useCallback((file: File) => {
     const reader = new FileReader();
@@ -1408,6 +1410,8 @@ export const useDataManagement = () => {
     setCurrentInstrument,
     instrumentError,
     setInstrumentError,
+    songError,
+    setSongError,
     fileInputRef,
     createNewSong,
     createNewInstrument,

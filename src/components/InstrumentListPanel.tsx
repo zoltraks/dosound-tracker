@@ -3,6 +3,7 @@ import type { NavigationSection } from '../constants/navigation';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import type { Instrument } from '../synth/SoundDriver';
+import { isInstrumentEmpty } from '../utils/instrument';
 
 interface InstrumentListPanelProps {
   instruments: Instrument[];
@@ -62,7 +63,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
 
     for (let i = 0; i < instruments.length; i++) {
       const inst = instruments[i];
-      if (inst && inst.name && inst.name.trim()) {
+      if (inst && !isInstrumentEmpty(inst)) {
         lastIndex = i;
       }
     }
