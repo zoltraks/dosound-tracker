@@ -284,7 +284,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         </button>
         <button 
           onClick={onToggleDumpMode} 
-          className={`command-btn ${isComplexDumpMode ? 'active' : ''}`}
+          className={`command-btn ${!isComplexDumpMode ? 'active' : ''}`}
         >
           {isComplexDumpMode ? 'COMPLEX DUMP' : 'SIMPLE DUMP'}
         </button>
