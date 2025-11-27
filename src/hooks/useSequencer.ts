@@ -74,37 +74,55 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
         
         switch (type) {
           case 'tick':
-          case 'update':
-            // Update playback ref for immediate access
-            playbackStateRef.current = {
-              ...playbackStateRef.current,
-              ...data
+          case 'update': {
+            // If React has already marked playback as stopped, never allow
+            // late worker ticks to flip isPlaying back to true. This avoids
+            // UI flicker where transport controls briefly return to a
+            // "playing" state after the user presses STOP.
+            const prevPlayback = playbackStateRef.current;
+            const safeIsPlaying = prevPlayback.isPlaying ? data.isPlaying : false;
+
+            const mergedState: SequencerState = {
+              ...prevPlayback,
+              ...data,
+              isPlaying: safeIsPlaying
             };
+
+            playbackStateRef.current = mergedState;
             
             // Fire audio callbacks
             if (callbackRef.current) {
-              callbackRef.current(playbackStateRef.current);
+              callbackRef.current(mergedState);
             }
             if (tickCallbackRef.current) {
-              tickCallbackRef.current(data.currentTick);
+              tickCallbackRef.current(mergedState.currentTick);
             }
             
             // Update React state only for row changes
             if (type === 'tick') {
               setSequencerState(prev => {
-                const rowChanged = data.currentLine !== prev.currentLine || 
-                                 data.currentPattern !== prev.currentPattern;
-                if (rowChanged || data.isPlaying !== prev.isPlaying) {
-                  return { ...prev, ...data };
+                const rowChanged =
+                  data.currentLine !== prev.currentLine ||
+                  data.currentPattern !== prev.currentPattern;
+                if (rowChanged || mergedState.isPlaying !== prev.isPlaying) {
+                  return {
+                    ...prev,
+                    ...data,
+                    isPlaying: mergedState.isPlaying
+                  };
                 }
                 return prev;
               });
             } else {
               // Always update for explicit position updates
-              setSequencerState(prev => ({ ...prev, ...data }));
+              setSequencerState(prev => ({
+                ...prev,
+                ...data,
+                isPlaying: mergedState.isPlaying
+              }));
             }
             break;
-            
+          }
           case 'stop':
             playbackStateRef.current = {
               ...playbackStateRef.current,
