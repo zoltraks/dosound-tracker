@@ -35,9 +35,9 @@
   --button-hover: #343a52;
   --button-active: #3b425b;
   
-  --debug-btn-bg: #a09748;
-  --debug-btn-bg-2: #524818;
-  --debug-btn-border: #92879f;
+  --debug-btn-bg: #237d8dea;
+  --debug-btn-bg-2: #094e7c;
+  --debug-btn-border: #4b6b86cc;
   --debug-btn-active-bg: #5b2f7b;
   --debug-btn-active-bg-2: #7c3aed;
   --debug-btn-active-border: #a855f7;
@@ -46,6 +46,13 @@
   --reset-btn-bg: #5b1f24;
   --reset-btn-bg-2: #75303b91;
   --reset-btn-border: #ac3e3e;
+  
+  --play-song-idle-bg: #263a32;
+  --play-song-idle-border: #34a76d;
+  --play-pattern-idle-bg: #3a3024;
+  --play-pattern-idle-border: #c27a2a;
+  --stop-idle-bg: #3a2327;
+  --stop-idle-border: #e15b5b;
   
   /* Playback button accent colors (dark theme) */
   --play-song-bg: #1f4730;
@@ -130,6 +137,13 @@
   --reset-btn-bg: #fee2e2;
   --reset-btn-bg-2: #fecaca;
   --reset-btn-border: #b91c1c;
+  
+  --play-song-idle-bg: #e8f8ed;
+  --play-song-idle-border: #6cc896;
+  --play-pattern-idle-bg: #fff3e6;
+  --play-pattern-idle-border: #ea9a3a;
+  --stop-idle-bg: #ffe6ea;
+  --stop-idle-border: #f97373;
   
   /* Playback button accent colors (light theme) */
   --play-song-bg: #bbf7d0;
@@ -337,6 +351,21 @@ body {
   position: relative;
   overflow: hidden;
   outline: none;
+}
+
+.command-btn.play-song-btn {
+  background: linear-gradient(135deg, var(--play-song-idle-bg) 0%, var(--button-bg) 100%);
+  border-color: var(--play-song-idle-border);
+}
+
+.command-btn.play-pattern-btn {
+  background: linear-gradient(135deg, var(--play-pattern-idle-bg) 0%, var(--button-bg) 100%);
+  border-color: var(--play-pattern-idle-border);
+}
+
+.command-btn.stop-btn {
+  background: linear-gradient(135deg, var(--stop-idle-bg) 0%, var(--button-bg) 100%);
+  border-color: var(--stop-idle-border);
 }
 
 .command-btn::before {
