@@ -590,6 +590,7 @@ body {
 .track-header-title {
   flex: 1;
   text-align: left;
+  padding-left: 8px;
 }
 
 .track-header-volume {

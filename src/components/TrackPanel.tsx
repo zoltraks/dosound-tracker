@@ -421,7 +421,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onClick={() => setActiveSection(sectionName)}
     >
       <div className={`track-header ${isTargetTrack ? 'target-track' : ''}`}>
-        <span className="track-header-title">Track {trackId}</span>
+        <span className="track-header-title">{trackId}</span>
         <span className="track-header-volume">
           VOL {effectiveVolume.toString(16).toUpperCase()}
         </span>
