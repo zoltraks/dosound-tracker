@@ -23,3 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 /release
+
+# Ignore everything in public/download except .gitkeep
+public/download/*
+!public/download/.gitkeep
