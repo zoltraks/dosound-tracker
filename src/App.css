@@ -43,7 +43,7 @@
   --envelope-bar: #7aa2f7;
   --envelope-glow: rgba(122, 162, 247, 0.6);
   --volume-bar: #7aa2f7;
-  --track-cell-active-bg: #31374f;
+  --track-cell-active-bg: #51376f;
   --track-a-bg: #582537;
   --track-b-bg: #255837;
   --track-c-bg: #25256a;
@@ -104,7 +104,7 @@
   --envelope-bar: #f59e0b;
   --envelope-glow: rgba(245, 158, 11, 0.5);
   --volume-bar: #f59e0b;
-  --track-cell-active-bg: #f4f4f4;
+  --track-cell-active-bg: #f5fffc;
   --track-a-bg: #ffe8f0;
   --track-b-bg: #e2fff0;
   --track-c-bg: #e2e8ff;
@@ -687,6 +687,7 @@ body {
   gap: 8px;
   padding: 1px 2px;
   cursor: pointer;
+  border: 0px transparent;
 }
 
 .track-line:hover {
@@ -754,22 +755,23 @@ body {
   background-color: var(--track-cell-active-bg);
   color: var(--text-primary);
   padding-left: 2px;
-  border-left: 2px solid var(--active-border);
-  border-right: 2px solid var(--active-border);
+  border-left: 1px solid var(--active-border);
+  border-right: 1px solid var(--active-border);
 }
 
 .volume-data {
   width: 2ch;
   text-align: right;
   color: var(--text-secondary);
-  padding: 0 2px;
   padding-top: 1px;
+  padding-right: 2px;
 }
 
 .volume-data.active {
   color: var(--text-primary);
   background-color: var(--track-cell-active-bg);
-  border: 1px solid var(--active-border);
+  border-left: 1px solid var(--active-border);
+  border-right: 1px solid var(--active-border);
 }
 
 .track-footer {
@@ -1326,6 +1328,7 @@ body {
 
 .instrument-item.focused {
   background-color: var(--bg-active);
+  gap: 4px;
 }
 
 .instrument-item.empty {

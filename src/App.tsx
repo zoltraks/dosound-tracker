@@ -3356,6 +3356,7 @@ const App: React.FC = () => {
           files={downloadFiles}
           onClose={() => setIsDownloadOpen(false)}
         />
+        </div>
       </ErrorBoundary>
     );
   } catch (error) {
