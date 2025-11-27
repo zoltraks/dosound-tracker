@@ -1,0 +1,30 @@
+---
+
+There are still some not equal times between envelope steps, when I press piano key sometimes it gives me 50 ms + 30 ms + 70 ms, other time it's 60 ms + 30 ms + 40 ms, another is like 30 ms + 30 ms + 60 ms. It's better but still not accurate as one envelope step should last EXACTLY 40 ms (2 ticks, 1 cycle), and three envelope steps should last EXACTLY 120 ms (6 ticks, 3 cycles).
+
+When I play pattern the times are better but you still need to make some checks.
+The envelope progression while pattern playback for that instrument is 50 ms + 30 ms + 50 ms, other time is 40 ms + 30 ms + 50 ms  which is close to perfect but still a little bit not accurate.
+
+
+---
+
+When I play instrument from piano keyboard it sounds for about 170 ms.
+But when it's played by playback routine it sounds correctly for 120 ms like it should.
+
+Moreover, when it's played from playback the envelope progression is correct but when played from piano keyboard I can see that first envelope step last for 30 ms, then next one for 70 ms and last one for about 60 ms giving in total more than 120 ms.
+
+This is my instrument:
+
+```yaml
+instrument:
+  volume: [15, 15, 15, 0]
+  arpeggio: [0, 12, 0]
+```
+
+I used arpeggio only to distinct between envelope steps.
+
+There's still something wrong with piano and preview while editing a track playback.
+Make it consistent to the way as playback does.
+
+
+---

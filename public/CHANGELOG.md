@@ -1,5 +1,16 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.0.21
+
+- Added full **envelope sustain** and **key-release** support: instruments can define a sustain point in the volume envelope, notes now hold at sustain until you release the key, '===' key‑release steps are editable in the pattern editor (including '-' shortcut), and sustain / release metadata is serialized through YAML, clipboard and export paths.
+- Enhanced the volume envelope editor and piano preview: sustain points are shown as black dot markers with right‑click / `S` shortcuts to toggle sustain, piano keyboard preview is now strictly monophonic with robust key‑up handling, and preview automatically stops when a released note reaches zero volume.
+- Improved song and playlist playback behavior so notes can **sustain cleanly across pattern boundaries** in song mode instead of being forcibly cleared, empty playlist tracks keep sustaining instead of muting, and playback stop/position handling now preserves the current cursor while clamping playlist indices to valid bounds.
+- Refined assembly export and envelope timing by replacing the fixed 20ms envelope timer with a `performance.now`‑based catch‑up loop to reduce drift, aligning register‑dump envelope stepping with instrument export, capping exported envelope steps to the actual pattern duration, and adding volume column support to the assembly register dump.
+- Streamlined playlist editing with move up/down buttons and Ctrl+Arrow keyboard shortcuts to reorder playlist lines, removing legacy **GOTO** commands from the playlist, and letting track header clicks jump the playlist cursor to the selected track.
+- Simplified YAML song structure and instrument naming by removing pattern names and unassigned playlist entries from saved YAML, and stopping automatic placeholder naming so unnamed instruments stay empty in the file.
+- Introduced a **Notes** panel with rotating demoscene / tracker philosophy messages, click‑to‑advance behavior and many new messages, and adjusted the window layout and minimum size so Notes and editor panels fit cleanly alongside the changelog.
+- Reworked information/confirmation/export modals to use reusable dialog components, normalized escaped `\n` sequences to real newlines so multi‑line messages render correctly, and overhauled the README / internal docs with expanded usage and refactoring guidance.
+
 ## Version 1.0.20
 
 - Added a per-row hexadecimal **volume column** to the pattern editor that attenuates instrument volume envelopes and is fully integrated with playback, WAV export and assembly export.
