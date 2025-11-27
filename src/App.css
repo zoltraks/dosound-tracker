@@ -192,7 +192,7 @@ body {
   overflow: hidden;
   font-size: 12px;
   line-height: 1.2;
-  transition: background-color 1s ease, color 1s ease;
+  transition: background-color 1.5s ease, color 1.5s ease;
 }
 
 .app {
@@ -205,7 +205,7 @@ body {
   font-family: var(--font-mono);
   font-size: 12px;
   box-shadow: var(--shadow-large);
-  transition: background-color 1s ease, color 1s ease, border-color 1s ease, box-shadow 1s ease;
+  transition: background-color 0.3s ease, color 1s ease, border-color 1.5s ease, box-shadow 0.5s ease;
 }
 
 /* Header Panel */
@@ -349,7 +349,7 @@ body {
   letter-spacing: 0.5px;
   border-radius: 2px;
   box-shadow: var(--shadow-small);
-  transition: all 0.2s ease;
+  transition: all 0.5s ease;
   position: relative;
   overflow: hidden;
   outline: none;
@@ -705,7 +705,6 @@ body {
   box-shadow: var(--shadow-medium);
   border-radius: 3px;
   position: relative;
-  transition: all 0.3s ease;
   min-height: 0;
 }
 
@@ -728,17 +727,17 @@ body {
 
 .track-panel.track-a {
   background-color: var(--track-a-bg);
-  background: linear-gradient(180deg, var(--track-a-bg) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(180deg, var(--track-a-bg) 30%, var(--bg-tertiary) 80%);
 }
 
 .track-panel.track-b {
   background-color: var(--track-b-bg);
-  background: linear-gradient(180deg, var(--track-b-bg) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(180deg, var(--track-b-bg) 30%, var(--bg-tertiary) 80%);
 }
 
 .track-panel.track-c {
   background-color: var(--track-c-bg);
-  background: linear-gradient(180deg, var(--track-c-bg) 0%, var(--bg-tertiary) 100%);
+  background: linear-gradient(180deg, var(--track-c-bg) 30%, var(--bg-tertiary) 80%);
 }
 
 .track-panel.disabled .track-header,
