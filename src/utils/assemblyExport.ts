@@ -1341,6 +1341,246 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
   return { content, cycleCount };
 }
 
+export interface VgmExportResult {
+  buffer: ArrayBuffer;
+  totalSamples: number;
+}
+
+export function exportSongToVgm(song: Song): VgmExportResult {
+  const ticksPerRow = song.speed || 6;
+  const lineCount = song.patternLength || 64;
+
+  let regs: { [register: number]: number } = {
+    0x07: 0x38,
+    0x08: 0x00,
+    0x09: 0x00,
+    0x0a: 0x00
+  };
+
+  interface VgmChannelState {
+    note: { note: string; octave: number; instrument: string } | null;
+    envelopeStep: number;
+    subTick: number;
+    isNewNote: boolean;
+    volumeModifier: number;
+  }
+
+  const channels: VgmChannelState[] = [
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f },
+    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f }
+  ];
+
+  const commands: number[] = [];
+  const SAMPLES_PER_TICK = 882; // 1/50 second at 44100 Hz
+  let totalSamples = 0;
+
+  const relevantRegs = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a];
+  const lastRegs: { [register: number]: number } = {};
+  let hasFrame = false;
+
+   const playlistLength = song.playlist.length;
+   let loopPlaylistIndex: number | null = null;
+   if (song.loop != null && playlistLength > 0) {
+     const rawLoop = song.loop as number;
+     if (typeof rawLoop === 'number' && Number.isFinite(rawLoop)) {
+       loopPlaylistIndex = Math.max(0, Math.min(playlistLength - 1, rawLoop | 0));
+     }
+   }
+
+   let loopCommandOffset = -1;
+   let loopSampleOffset = 0;
+
+  const writeAyRegister = (register: number, value: number): void => {
+    commands.push(0xa0, register & 0xff, value & 0xff);
+  };
+
+  for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
+    const playlistEntry = song.playlist[playlistIdx];
+    const patterns = [
+      song.patterns.find(p => p.id === playlistEntry.trackA),
+      song.patterns.find(p => p.id === playlistEntry.trackB),
+      song.patterns.find(p => p.id === playlistEntry.trackC)
+    ];
+
+    for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
+      const notes = [
+        patterns[0]?.lines[lineIdx]?.trackA || null,
+        patterns[1]?.lines[lineIdx]?.trackA || null,
+        patterns[2]?.lines[lineIdx]?.trackA || null
+      ];
+
+      const volumes = [
+        patterns[0]?.lines[lineIdx]?.volume,
+        patterns[1]?.lines[lineIdx]?.volume,
+        patterns[2]?.lines[lineIdx]?.volume
+      ];
+
+      for (let tick = 0; tick < ticksPerRow; tick++) {
+        const newRegs: { [register: number]: number } = { ...regs };
+
+        for (let ch = 0; ch < 3; ch++) {
+          const pattern = patterns[ch];
+          const noteOnRow = notes[ch];
+          const channelState = channels[ch];
+          const volumeOnRow = volumes[ch];
+
+          if (tick === 0) {
+            if (!pattern) {
+              // No pattern for this channel in this playlist position:
+              // treat as sustain/no-op and leave channelState/newRegs
+              // unchanged so any previously playing note can continue
+              // sounding.
+            } else if (noteOnRow && noteOnRow.note === '===') {
+              channelState.note = null;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = false;
+              newRegs[0x08 + ch] = 0x00;
+              continue;
+            } else if (noteOnRow && noteOnRow.note) {
+              // Explicit note on this row: always treat as a new note and
+              // retrigger the envelopes, matching the live sequencer.
+              channelState.note = noteOnRow;
+              channelState.envelopeStep = 0;
+              channelState.subTick = 0;
+              channelState.isNewNote = true;
+            } else {
+              channelState.isNewNote = false;
+            }
+
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              channelState.volumeModifier = clamped;
+            }
+          }
+
+          if (channelState.note) {
+            const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
+            if (instrument) {
+              applyInstrumentToRegisters(
+                newRegs,
+                ch,
+                channelState.note,
+                instrument,
+                channelState.envelopeStep,
+                channelState.isNewNote,
+                channelState.volumeModifier
+              );
+            }
+          }
+
+          if (channelState.note) {
+            const sub = (channelState.subTick + 1) % 2;
+            channelState.subTick = sub;
+            if (sub === 0) {
+              channelState.envelopeStep++;
+            }
+          }
+        }
+
+        const isFirstFrame = !hasFrame;
+
+        if (
+          loopCommandOffset < 0 &&
+          loopPlaylistIndex !== null &&
+          playlistIdx === loopPlaylistIndex &&
+          lineIdx === 0 &&
+          tick === 0
+        ) {
+          loopCommandOffset = commands.length;
+          loopSampleOffset = totalSamples;
+        }
+
+        for (let i = 0; i < relevantRegs.length; i++) {
+          const reg = relevantRegs[i];
+          const defaultValue = reg === 0x07 ? 0x38 : 0x00;
+          const current = newRegs[reg] !== undefined ? newRegs[reg] : defaultValue;
+          const previous = lastRegs[reg];
+          if (isFirstFrame || previous !== current) {
+            writeAyRegister(reg, current);
+            lastRegs[reg] = current;
+          }
+        }
+        hasFrame = true;
+
+        commands.push(0x63);
+        totalSamples += SAMPLES_PER_TICK;
+
+        regs = newRegs;
+      }
+    }
+  }
+
+  commands.push(0x66);
+
+  const dataOffset = 0x100;
+  const headerSize = 0x100;
+  const fileSize = headerSize + commands.length;
+  const eofOffset = fileSize - 4;
+
+  const header = new Uint8Array(headerSize);
+  header[0] = 0x56;
+  header[1] = 0x67;
+  header[2] = 0x6d;
+  header[3] = 0x20;
+
+  const writeUint32LE = (offset: number, value: number): void => {
+    header[offset] = value & 0xff;
+    header[offset + 1] = (value >>> 8) & 0xff;
+    header[offset + 2] = (value >>> 16) & 0xff;
+    header[offset + 3] = (value >>> 24) & 0xff;
+  };
+
+  writeUint32LE(0x04, eofOffset);
+  writeUint32LE(0x08, 0x00000171);
+  writeUint32LE(0x18, totalSamples);
+
+  if (loopCommandOffset >= 0 && loopSampleOffset > 0 && totalSamples > loopSampleOffset) {
+    const loopDataOffset = dataOffset + loopCommandOffset;
+    const loopOffset = loopDataOffset - 0x1c;
+    const loopSamples = totalSamples - loopSampleOffset;
+    writeUint32LE(0x1c, loopOffset);
+    writeUint32LE(0x20, loopSamples);
+  } else {
+    writeUint32LE(0x1c, 0);
+    writeUint32LE(0x20, 0);
+  }
+  writeUint32LE(0x24, VBLANK_RATE);
+
+  const relativeDataOffset = dataOffset - 0x34;
+  writeUint32LE(0x34, relativeDataOffset);
+
+  writeUint32LE(0x74, YM_CLOCK);
+
+  const fileBytes = new Uint8Array(fileSize);
+  fileBytes.set(header, 0);
+  fileBytes.set(new Uint8Array(commands), headerSize);
+
+  const buffer = fileBytes.buffer;
+
+  return {
+    buffer,
+    totalSamples,
+  };
+}
+
+export function downloadVgmFile(buffer: ArrayBuffer, filename: string = 'music.vgm'): void {
+  const blob = new Blob([buffer], { type: 'application/octet-stream' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.style.display = 'none';
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+}
+
 export function exportSongToWav(song: Song): WavExportResult {
   const ticksPerRow = song.speed || 6;
   const lineCount = song.patternLength || 64;

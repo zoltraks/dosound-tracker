@@ -18,6 +18,7 @@ interface CommandPanelProps {
   onPlayPattern: () => void;
   onStopPattern: () => void;
   onExportData: () => void;
+  onExportVgm: () => void;
   onExportSound: () => void;
   onAddLine: () => void;
   onDeleteLine: () => void;
@@ -59,6 +60,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onPlayPattern,
   onStopPattern,
   onExportData,
+  onExportVgm,
   onExportSound,
   onAddLine,
   onDeleteLine,
@@ -287,6 +289,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           {isComplexDumpMode ? 'COMPLEX DUMP' : 'SIMPLE DUMP'}
         </button>
         <button onClick={onExportData} className="command-btn">EXPORT DATA</button>
+        <button onClick={onExportVgm} className="command-btn">EXPORT VGM</button>
         <button onClick={onExportSound} className="command-btn">EXPORT SOUND</button>
       </div>
     </div>

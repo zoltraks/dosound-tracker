@@ -18,7 +18,7 @@ import { InstrumentListPanel } from './components/InstrumentListPanel';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
-import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump } from './utils/assemblyExport';
+import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal } from './modals';
 import './App.css';
@@ -1303,6 +1303,17 @@ const App: React.FC = () => {
       // Could add user notification here
     }
   }, [currentSong, isComplexDumpMode]);
+
+  const handleExportVgm = useCallback(() => {
+    try {
+      const result = exportSongToVgm(currentSong);
+      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+      const filename = `${safeTitle}.vgm`;
+      downloadVgmFile(result.buffer, filename);
+    } catch (error) {
+      console.error('VGM export failed:', error);
+    }
+  }, [currentSong]);
 
   const handleExportSound = useCallback(() => {
     try {
@@ -2872,6 +2883,7 @@ const App: React.FC = () => {
           onPlayPattern={handleStartPattern}
           onStopPattern={handleStopPattern}
           onExportData={handleExportData}
+          onExportVgm={handleExportVgm}
           onExportSound={handleExportSound}
           onAddLine={handleAddLine}
           onDeleteLine={handleDeleteLine}

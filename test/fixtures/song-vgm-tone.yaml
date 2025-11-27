@@ -1,0 +1,29 @@
+song:
+  title: VGM Test Song
+  author: Test Suite
+  year: 2025
+  speed: 4
+  length: 4
+  loop: 1
+  playlist:
+    - A: "00"
+    - A: "01"
+    - {}
+  pattern:
+    - number: "00"
+      name: Pattern 00
+      steps:
+        - note: "C-4"
+          instrument: "00"
+        - space: 3
+    - number: "01"
+      name: Pattern 01
+      steps:
+        - space: 1
+        - note: "E-4"
+          instrument: "00"
+        - space: 2
+  instrument:
+    - number: "00"
+      name: Simple Lead
+      volume: [15, 14, 12, 0]
