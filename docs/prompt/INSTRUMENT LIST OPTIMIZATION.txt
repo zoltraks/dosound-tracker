@@ -1,0 +1,11 @@
+Optimize the way how instrument list is displayed.
+
+There is no point to show all 256 slots on the Instrument block.
+
+Show at least one empty slot even if no instrument is defined.
+
+If there are non-empty instruments on the list, show as many slots as needed to make the last non-empty instrument visible.
+
+If instrument is going to be deleted but there is at least one pattern that uses that instrument then show special instrument removal confirmation dialog that will allow user to cancel this operation, delete all the notes that uses that instrument or delete instrument only leaving slot empty as it is hapening now. 
+After confirmed operation show summary modal information and some numbers if some notes were deleted or patterns changed this way.
+

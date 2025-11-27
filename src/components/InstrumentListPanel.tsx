@@ -57,6 +57,32 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
     }
   }, [currentIndex, isActive]);
 
+  const visibleSlotCount = (() => {
+    let lastIndex = -1;
+
+    for (let i = 0; i < instruments.length; i++) {
+      const inst = instruments[i];
+      if (inst && inst.name && inst.name.trim()) {
+        lastIndex = i;
+      }
+    }
+
+    if (lastIndex < 0 && instruments.length > 0) {
+      lastIndex = instruments.length - 1;
+    }
+
+    if (lastIndex < currentIndex) {
+      lastIndex = currentIndex;
+    }
+
+    if (lastIndex < 0) {
+      return 1;
+    }
+
+    const count = lastIndex + 1;
+    return Math.max(1, Math.min(MAX_INSTRUMENTS, count));
+  })();
+
   const getInstrumentForSlot = useCallback((slotIndex: number): Instrument => {
     const existing = instruments[slotIndex];
     if (existing) {
@@ -121,7 +147,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       case 'ARROWDOWN':
         event.preventDefault();
         {
-          const newIndex = Math.min(MAX_INSTRUMENTS - 1, currentIndex + 1);
+          const newIndex = Math.min(visibleSlotCount - 1, currentIndex + 1);
           setCurrentIndex(newIndex);
           onSelectInstrument(getInstrumentForSlot(newIndex));
         }
@@ -131,6 +157,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
     isActive,
     currentIndex,
     instruments.length,
+    visibleSlotCount,
     getInstrumentForSlot,
     onSelectInstrument,
     onMoveInstrument
@@ -165,7 +192,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
 
       <div className="instrument-list-content">
         <div className="instrument-items" ref={itemsContainerRef}>
-          {Array.from({ length: MAX_INSTRUMENTS }, (_, slotIndex) => {
+          {Array.from({ length: visibleSlotCount }, (_, slotIndex) => {
             const instrument = instruments[slotIndex];
             const isCurrent = slotIndex === currentIndex;
             const displayName =
