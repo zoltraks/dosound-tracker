@@ -7,7 +7,7 @@ export const useAudioContext = () => {
   useEffect(() => {
     let context: AudioContext | null = null;
 
-    const initAudioContext = () => {
+    const initAudioContext = async () => {
       try {
         const AudioContextClass =
           window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
@@ -17,6 +17,11 @@ export const useAudioContext = () => {
         }
 
         context = new AudioContextClass();
+
+        if (context.state === 'suspended') {
+          await context.resume();
+        }
+
         setAudioContext(context);
       } catch (err) {
         setError('Failed to initialize audio context');
@@ -24,7 +29,7 @@ export const useAudioContext = () => {
       }
     };
 
-    initAudioContext();
+    void initAudioContext();
 
     return () => {
       if (context) {

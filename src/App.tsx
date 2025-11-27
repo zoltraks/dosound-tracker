@@ -430,7 +430,12 @@ const App: React.FC = () => {
       console.log('Starting audio initialization...');
 
       console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-      console.log('AudioContext initial state:', audioContext.state);
+      console.log('AudioContext state:', audioContext.state);
+
+      if (audioContext.state === 'suspended') {
+        audioContext.resume();
+        console.log('AudioContext resumed');
+      }
 
       const ym2149 = new YM2149(audioContext);
       ym2149Ref.current = ym2149;
@@ -447,39 +452,33 @@ const App: React.FC = () => {
 
       const testFrequency = 261.63;
       const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-      console.log('YM2149 test tone frequency', testFrequency);
+      console.log('Setting test tone - frequency:', testFrequency, 'period:', testPeriod);
 
       ym2149.writeRegister(0x00, testPeriod & 0xFF);
       ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);
+      console.log('Test tone registers written');
 
       const stopToneTimeout = window.setTimeout(() => {
         if (ym2149Ref.current) {
           ym2149Ref.current.writeRegister(0x08, 0x00);
           ym2149Ref.current.writeRegister(0x09, 0x00);
           ym2149Ref.current.writeRegister(0x0A, 0x00);
+          console.log('Test tone stopped');
         }
       }, 100);
 
       const handleUserInteraction = () => {
         if (audioContext.state === 'suspended') {
-          void audioContext.resume().then(() => {
-            console.log('AudioContext resumed by user interaction');
-          }).catch(err => {
-            console.error('AudioContext resume failed:', err);
-          });
+          audioContext.resume();
+          console.log('AudioContext resumed by user interaction');
         }
       };
 
-      const userEvents: Array<keyof DocumentEventMap> = ['click', 'keydown', 'pointerdown', 'touchstart'];
-      userEvents.forEach(eventType => {
-        document.addEventListener(eventType, handleUserInteraction);
-      });
+      document.addEventListener('click', handleUserInteraction);
 
       return () => {
         window.clearTimeout(stopToneTimeout);
-        userEvents.forEach(eventType => {
-          document.removeEventListener(eventType, handleUserInteraction);
-        });
+        document.removeEventListener('click', handleUserInteraction);
         if (ym2149Ref.current) {
           ym2149Ref.current.dispose();
           ym2149Ref.current = null;
@@ -3408,7 +3407,6 @@ const App: React.FC = () => {
           files={downloadFiles}
           onClose={() => setIsDownloadOpen(false)}
         />
-        </div>
       </ErrorBoundary>
     );
   } catch (error) {
