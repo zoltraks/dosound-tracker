@@ -1,11 +1,10 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
-import { useSequencer } from './hooks/useSequencer';
+import { useWorkletSequencer } from './hooks/useWorkletSequencer';
 import { useAudioContext } from './hooks/useAudioContext';
 import { YM2149 } from './synth/YM2149';
-import type { SequencerState } from './hooks/useSequencer';
-import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
+import type { Instrument, Pattern, PatternLine, Song } from './synth/SoundDriver';
 import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -134,24 +133,34 @@ const App: React.FC = () => {
     optimizeSong,
     renumberSong
   } = useDataManagement();
+  // Audio setup - get context first
+  const { audioContext } = useAudioContext();
+  
+  // AudioWorklet-based sequencer - runs audio on separate thread
   const {
     sequencerState,
+    isReady: isWorkletReady,
     stop,
-    setCallback,
     setPosition,
-    updateSpeed,
     startPatternLoop,
     startSong,
-    updatePatternLength
-  } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
-
+    updateSong: updateWorkletSong,
+    setMutes: setWorkletMutes
+  } = useWorkletSequencer(audioContext);
+  
+  // Keep worklet in sync with song data
   useEffect(() => {
-    updateSpeed(currentSong.speed);
-  }, [currentSong.speed, updateSpeed]);
-
+    if (isWorkletReady) {
+      updateWorkletSong(currentSong);
+    }
+  }, [currentSong, isWorkletReady, updateWorkletSong]);
+  
+  // Keep worklet in sync with mutes
   useEffect(() => {
-    updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
-  }, [currentSong.patternLength, updatePatternLength]);
+    if (isWorkletReady) {
+      setWorkletMutes(channelMutes);
+    }
+  }, [channelMutes, isWorkletReady, setWorkletMutes]);
 
   useEffect(() => {
     try {
@@ -412,106 +421,48 @@ const App: React.FC = () => {
     };
   }, [messages, handleNotesClick]);
 
-  // Audio setup
-  const { audioContext } = useAudioContext();
+  // Preview YM2149 for note previews in the editor (separate from playback worklet)
   const ym2149Ref = useRef<YM2149 | null>(null);
   const [, forceYmRender] = useState(0);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
 
-  // Initialize audio on component mount
+  // Initialize preview YM2149 on component mount
   useEffect(() => {
     if (!audioContext || ym2149Ref.current) {
       return;
     }
 
     try {
-      console.log('Starting audio initialization...');
-
-      console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-      console.log('AudioContext initial state:', audioContext.state);
-
+      console.log('Initializing preview YM2149...');
       const ym2149 = new YM2149(audioContext);
       ym2149Ref.current = ym2149;
       forceYmRender(v => v + 1);
-      console.log('YM2149 initialized');
 
-      (window as any).ym2149 = ym2149;
-
-      ym2149.writeRegister(0x08, 0x0F);
-      ym2149.writeRegister(0x09, 0x0F);
-      ym2149.writeRegister(0x0A, 0x0F);
-      ym2149.writeRegister(0x07, 0x38);
-      console.log('YM2149 registers set');
-
-      const testFrequency = 261.63;
-      const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-      console.log('YM2149 test tone frequency', testFrequency);
-
-      ym2149.writeRegister(0x00, testPeriod & 0xFF);
-      ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);
-
-      const stopToneTimeout = window.setTimeout(() => {
-        if (ym2149Ref.current) {
-          ym2149Ref.current.writeRegister(0x08, 0x00);
-          ym2149Ref.current.writeRegister(0x09, 0x00);
-          ym2149Ref.current.writeRegister(0x0A, 0x00);
-        }
-      }, 100);
-
+      // Resume audio context on user interaction
       const handleUserInteraction = () => {
         if (audioContext.state === 'suspended') {
-          void audioContext.resume().then(() => {
-            console.log('AudioContext resumed by user interaction');
-          }).catch(err => {
-            console.error('AudioContext resume failed:', err);
-          });
+          void audioContext.resume();
         }
       };
 
-      const userEvents: Array<keyof DocumentEventMap> = ['click', 'keydown', 'pointerdown', 'touchstart'];
-      userEvents.forEach(eventType => {
-        document.addEventListener(eventType, handleUserInteraction);
-      });
+      document.addEventListener('click', handleUserInteraction);
 
       return () => {
-        window.clearTimeout(stopToneTimeout);
-        userEvents.forEach(eventType => {
-          document.removeEventListener(eventType, handleUserInteraction);
-        });
+        document.removeEventListener('click', handleUserInteraction);
         if (ym2149Ref.current) {
           ym2149Ref.current.dispose();
           ym2149Ref.current = null;
         }
       };
     } catch (error) {
-      console.error('Failed to initialize audio:', error);
+      console.error('Failed to initialize preview audio:', error);
     }
   }, [audioContext]);
 
-  // Track envelope timing for each channel
-  // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
-  const channelSubTickRef = useRef([0, 0, 0]);
-  const channelEnvelopeStepRef = useRef([0, 0, 0]);
-  const lastNotesRef = useRef<Array<Note | null>>([null, null, null]);
-  const lastSequencerPositionRef = useRef<{ pattern: number; line: number } | null>(null);
-  // Per-channel volume modifier nibble (0-15) from the pattern "volume column".
-  // Default is 0x0F (no attenuation) at the start of playback.
-  const channelVolumeModifierRef = useRef<number[]>([0x0f, 0x0f, 0x0f]);
-  // Optional sustain position (0-based envelope index) for the currently held
-  // note on each channel. When non-null and not yet released, envelope
-  // progression is held at this position until a key-release step occurs.
-  const channelSustainRef = useRef<(number | null)[]>([null, null, null]);
-  // Per-channel flag indicating that a key-release (note-off) has occurred
-  // for a note whose instrument has a sustain point. Once released, the
-  // envelope continues past the sustain index instead of being hard-muted.
-  const channelReleasedRef = useRef<boolean[]>([false, false, false]);
+  // Pattern return position for pattern loop mode
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
-  const wasPlayingRef = useRef(false);
-  const debugTickCounterRef = useRef<number>(0);
-  const debugLastRowRef = useRef<{ pattern: number; line: number } | null>(null);
-  const debugLastTimeRef = useRef<number | null>(null);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
@@ -533,411 +484,22 @@ const App: React.FC = () => {
     return lastTrackId;
   }, [activeSection, lastTrackId]);
 
-  // Track pattern playing state
-  const [isPatternPlaying, setIsPatternPlaying] = useState(false);
-
-  // Handle stop playback with silence
+  // Track pattern playing state - derived from sequencer state
+  const isPatternPlaying = sequencerState.isPlaying;
+  
+  // Handle stop playback - silence preview YM2149
   const handleStopPlayback = useCallback(() => {
-    // Reset cycle counters when stopping
-    channelSubTickRef.current = [0, 0, 0];
-    channelEnvelopeStepRef.current = [0, 0, 0];
-    lastNotesRef.current = [null, null, null];
-    lastSequencerPositionRef.current = null;
-    channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
-    channelSustainRef.current = [null, null, null];
-    channelReleasedRef.current = [false, false, false];
-    debugTickCounterRef.current = 0;
-    debugLastRowRef.current = null;
-    debugLastTimeRef.current = null;
-    
-    // Silence all channels
     if (ym2149Ref.current) {
       ym2149Ref.current.silenceAll();
     }
   }, []);
-
-  // Basic sequencer callback for playback
-  const sequencerCallback = useCallback((state: SequencerState) => {
-    // Update current line for UI
-    setSharedCurrentLine(state.currentLine);
-    
-    // Track pattern playing state
-    setIsPatternPlaying(state.isPatternLoop && state.isPlaying);
-    
-    if (ym2149Ref.current) {
-      const ym2149 = ym2149Ref.current;
-
-      const wasPlaying = wasPlayingRef.current;
-
-      if (!state.isPlaying) {
-        if (wasPlaying) {
-          handleStopPlayback();
-        }
-        wasPlayingRef.current = false;
-        lastSequencerPositionRef.current = null;
-        return;
-      }
-
-      wasPlayingRef.current = true;
-
-      // Count each timing tick (20ms VBLANK) while playing so we can derive
-      // 40ms debug cycles independent of pattern/row boundaries.
-      debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
-
-      const lastPos = lastSequencerPositionRef.current;
-      const wrappedOrJumped =
-        lastPos && state.currentPattern !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
-
-      // Detect if this is the first tick after starting playback
-      const isFirstTick = !lastPos;
-
-      lastSequencerPositionRef.current = {
-        pattern: state.currentPattern,
-        line: state.currentLine
-      };
-
-      if (wrappedOrJumped || isFirstTick) {
-        // Always reset sub-tick timing on wrap/jump or first tick so 40ms
-        // envelope steps realign, but avoid forcibly clearing notes just
-        // because the playlist advanced to the next pattern.
-        channelSubTickRef.current = [0, 0, 0];
-
-        // On the very first tick after starting playback, reset envelopes,
-        // notes, sustain state and per-channel volume modifiers so that any
-        // stale state from a previous run does not leak into the new one.
-        if (isFirstTick) {
-          channelEnvelopeStepRef.current = [0, 0, 0];
-          lastNotesRef.current = [null, null, null];
-          channelSustainRef.current = [null, null, null];
-          channelReleasedRef.current = [false, false, false];
-          channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
-          debugTickCounterRef.current = 0;
-          debugLastRowRef.current = null;
-          debugLastTimeRef.current = null;
-        }
-      }
-
-      const playlistLength = currentSong.playlist.length;
-
-      if (playlistLength === 0) {
-        stop();
-        handleStopPlayback();
-        return;
-      }
-      
-      const currentPatternIndex = state.currentPattern;
-      
-      if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
-        const rawLoop = currentSong.loop;
-        const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
-
-        if (!hasLoop) {
-          handleStopPlayback();
-          setPosition(0, 0, 0);
-          stop();
-          return;
-        }
-
-        const base = Math.floor(rawLoop as number);
-        const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
-
-        lastSequencerPositionRef.current = null;
-        setPosition(loopIndex, 0, 0);
-        return;
-      }
-      
-      const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
-      
-      if (currentPlaylistEntry) {
-        // Get pattern data for each track
-        const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
-        const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
-        const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
-        
-        // Allow playback even if some tracks are empty (using --)
-        // Get current line data (patterns are track-agnostic - read trackA data for any track)
-        const lineA = patternA?.lines[state.currentLine];
-        const lineB = patternB?.lines[state.currentLine];
-        const lineC = patternC?.lines[state.currentLine];
-
-        const noteA = lineA?.trackA || null;
-        const noteB = patternB ? (lineB?.trackA || null) : null; // Read trackA for track B
-        const noteC = patternC ? (lineC?.trackA || null) : null; // Read trackA for track C
-
-        const notes = [noteA, noteB, noteC];
-        const patterns = [patternA, patternB, patternC];
-        const volumes = [
-          lineA?.volume,
-          patternB ? lineB?.volume : undefined,
-          patternC ? lineC?.volume : undefined
-        ];
-        const lastNotes = lastNotesRef.current;
-
-        const lastLogged = debugLastRowRef.current;
-        const shouldLogRow =
-          isDebugMode &&
-          state.isPlaying &&
-          (!lastLogged ||
-            lastLogged.pattern !== state.currentPattern ||
-            lastLogged.line !== state.currentLine);
-
-        if (shouldLogRow) {
-          try {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const ms = String(now.getMilliseconds()).padStart(3, '0');
-            const timeStr = `${hh}:${mm}:${ss}.${ms}`;
-
-            const nowMs = now.getTime();
-            const lastMs = debugLastTimeRef.current;
-            const rawDelta = lastMs != null ? nowMs - lastMs : 0;
-            const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
-            const deltaStr = String(clampedDelta).padStart(3, '0');
-
-            // Each worker tick is ~20ms; treat two ticks (40ms) as one cycle.
-            const tickCount = debugTickCounterRef.current;
-            const cycle = Math.floor(tickCount / 2) & 0xffff;
-            const cycleHex = cycle.toString(16).toUpperCase().padStart(4, '0');
-            const stepHex = state.currentLine.toString(16).toUpperCase().padStart(2, '0');
-
-            const channelStrings = [0, 1, 2].map(ch => {
-              const noteOnRow = notes[ch];
-              const volumeOnRow = volumes[ch];
-
-              let volText: string;
-              if (volumeOnRow === undefined || volumeOnRow === null) {
-                volText = '-';
-              } else {
-                const clampedVol = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-                volText = clampedVol.toString(16).toUpperCase();
-              }
-
-              if (!noteOnRow) {
-                return `--- -- ${volText}`;
-              }
-
-              if (noteOnRow.note === '===') {
-                return `=== -- ${volText}`;
-              }
-
-              const baseNote = noteOnRow.note || '';
-              const formattedNote = baseNote.includes('#') ? baseNote : `${baseNote}-`;
-              const noteText = `${formattedNote}${noteOnRow.octave}`;
-              const rawInst = noteOnRow.instrument as unknown;
-              let instText = '';
-
-              if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
-                instText = rawInst.toString(16).padStart(2, '0').toUpperCase();
-              } else if (typeof rawInst === 'string') {
-                const trimmed = rawInst.trim();
-                if (trimmed) {
-                  const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-                  const upper = sanitized.toUpperCase();
-                  if (/^[0-9A-F]{1,2}$/.test(upper)) {
-                    instText = upper.padStart(2, '0');
-                  } else {
-                    instText = upper;
-                  }
-                }
-              }
-
-              const safeInst = instText && instText.trim().length > 0 ? instText : '--';
-              return `${noteText} ${safeInst} ${volText}`;
-            });
-
-            const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
-            // eslint-disable-next-line no-console
-            console.log(debugLine);
-            debugLastRowRef.current = {
-              pattern: state.currentPattern,
-              line: state.currentLine
-            };
-            debugLastTimeRef.current = nowMs;
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Debug logging failed:', error);
-          }
-        }
-
-        for (let ch = 0; ch < 3; ch++) {
-          if (channelMutes[ch]) {
-            const volumeRegister = 8 + ch;
-            ym2149.writeRegister(volumeRegister, 0x00);
-            continue;
-          }
-
-          const pattern = patterns[ch];
-          const noteOnRow = notes[ch];
-          const volumeOnRow = volumes[ch];
-          const last = lastNotes[ch];
-
-          // If no pattern is assigned on this channel for the current
-          // playlist position, treat it as sustain/no-op: keep any
-          // previously playing note sounding instead of forcing an
-          // immediate rest here. Initial startup silence is still
-          // handled separately by the isFirstTick logic below.
-          if (!pattern) {
-            // Nothing to do on this row for this channel; fall through so
-            // envelope timing and note-hold behaviour continue unchanged.
-          }
-
-          // Explicit note-off event on this row. Only act on the first
-          // tick of the row so we match the offline export logic.
-          if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
-            const sustainIndex = channelSustainRef.current[ch];
-
-            if (
-              sustainIndex === null ||
-              sustainIndex === undefined ||
-              sustainIndex < 0 ||
-              !last
-            ) {
-              // No sustain defined (or no active note) - treat as hard mute
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
-              updateChannelWithInstrument(ym2149, ch, null, 0);
-              lastNotes[ch] = null;
-              channelSustainRef.current[ch] = null;
-              channelReleasedRef.current[ch] = false;
-              continue;
-            }
-
-            // Instrument has a sustain point and a note is active: this
-            // note-off acts as a release trigger instead of an immediate
-            // mute. Keep holding the last note and allow the envelope to
-            // continue past the sustain position.
-            channelReleasedRef.current[ch] = true;
-            // Do not reset envelope step or clear lastNotes; fall through
-          }
-
-          // On the very first tick after starting playback, if there is no
-          // explicit note on this row, ensure the channel starts from a
-          // silent state so we do not accidentally reuse a stale note from a
-          // previous run. Afterwards, notes are allowed to sustain naturally
-          // across pattern boundaries unless an explicit note-off or rest is
-          // present in the data.
-          if (isFirstTick && !noteOnRow) {
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(ym2149, ch, null, 0);
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
-            continue;
-          }
-
-          // Determine active note: explicit note on this row if present, otherwise
-          // continue holding the last active note.
-          let activeNote: Note | null = last;
-          const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
-
-          // Update per-channel volume modifier when a volume nibble is present on this row.
-          if (volumeOnRow !== undefined && volumeOnRow !== null) {
-            const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-            channelVolumeModifierRef.current[ch] = clamped;
-          }
-
-          if (hasExplicitNote) {
-            // New explicit note on this row
-            activeNote = noteOnRow;
-
-            // Retrigger envelopes only on the first tick of the row so that
-            // the same row is not restarted multiple times when ticksPerRow > 1.
-            if (state.currentTick === 0) {
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
-            }
-
-            // Resolve sustain position for the instrument used by this note.
-            const instId = activeNote && typeof activeNote.instrument === 'string'
-              ? activeNote.instrument
-              : '';
-            const instrument = currentSong.instruments.find(i => i.id === instId);
-            const rawSustain = instrument?.sustain ?? null;
-            if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
-              channelSustainRef.current[ch] = Math.floor(rawSustain);
-            } else {
-              channelSustainRef.current[ch] = null;
-            }
-            channelReleasedRef.current[ch] = false;
-          }
-
-          if (activeNote && activeNote.note && activeNote.note !== '===') {
-            // Use current step as envelope tick (so a freshly triggered note
-            // starts at step 0, matching the piano keyboard behaviour), then
-            // advance the step every 40ms (every 2 x 20ms ticks).
-            const rawStep = channelEnvelopeStepRef.current[ch];
-            const sustainIndex = channelSustainRef.current[ch];
-            const isReleased = channelReleasedRef.current[ch];
-
-            // While the key is held and a sustain index is defined, clamp
-            // the effective envelope position at the sustain step. Once a
-            // key-release has occurred, allow the envelope to continue.
-            let step = rawStep;
-            if (
-              sustainIndex !== null &&
-              sustainIndex !== undefined &&
-              sustainIndex >= 0 &&
-              !isReleased &&
-              rawStep >= sustainIndex
-            ) {
-              step = sustainIndex;
-            }
-            const volumeModifier = channelVolumeModifierRef.current[ch];
-
-            updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier);
-
-            // Envelope progression at 25 Hz: only advance on every second tick
-            const sub = (channelSubTickRef.current[ch] + 1) % 2;
-            channelSubTickRef.current[ch] = sub;
-            if (sub === 0) {
-              // Advance the underlying envelope step only if either there is
-              // no sustain point, the note has been released, or we have
-              // not yet reached the sustain index. This implements a
-              // classic hold-at-sustain-until-release behaviour.
-              if (
-                sustainIndex === null ||
-                sustainIndex === undefined ||
-                sustainIndex < 0 ||
-                isReleased ||
-                rawStep < sustainIndex
-              ) {
-                channelEnvelopeStepRef.current[ch] = rawStep + 1;
-              }
-            }
-            lastNotes[ch] = activeNote;
-          } else {
-            // No active note at all. Explicit rests and hard mutes are
-            // already handled above (no pattern, note-off without
-            // sustain, or initial startup row). Leaving the YM2149
-            // registers as-is here avoids brief drop-outs if state
-            // transiently reports no note for a single tick.
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
-          }
-        }
-      }
-    }
-  }, [
-    setSharedCurrentLine,
-    setIsPatternPlaying,
-    currentSong,
-    stop,
-    handleStopPlayback,
-    setPosition,
-    channelMutes,
-    isDebugMode
-  ]);
-
-  // Register sequencer callback
+  
+  // Sync UI with worklet position updates
   useEffect(() => {
-    setCallback(sequencerCallback);
-  }, [setCallback, sequencerCallback]);
+    if (sequencerState.isPlaying) {
+      setSharedCurrentLine(sequencerState.currentLine);
+    }
+  }, [sequencerState.currentLine, sequencerState.isPlaying]);
 
   const normalizeInstrumentId = useCallback((value?: string | number | null) => {
     if (typeof value === 'number' && Number.isFinite(value)) {
@@ -958,36 +520,6 @@ const App: React.FC = () => {
     return '';
   }, []);
 
-  // Helper function to update channel with instrument and all envelopes
-  const updateChannelWithInstrument = useCallback((
-    ym2149: YM2149,
-    channel: number,
-    noteData: Note | null,
-    envelopeStep: number = 0,
-    volumeModifier?: number | null
-  ) => {
-    const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
-    const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
-    const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
-
-    const instrument = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
-    
-    if (!instrument || !noteData || noteData.note === '===') {
-      // No instrument or no active note - silence channel
-      const volumeRegister = 8 + channel;
-      ym2149.writeRegister(volumeRegister, 0x00);
-      return;
-    }
-
-    // Use YM2149's built-in method to update channel with instrument
-    ym2149.updateChannelWithInstrument(
-      channel,
-      instrument,
-      { note: noteData.note, octave: noteData.octave },
-      envelopeStep,
-      volumeModifier
-    );
-  }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: Pattern) => {
@@ -2213,11 +1745,8 @@ const App: React.FC = () => {
 
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
-    // Stop the sequencer
+    // Stop the sequencer (worklet handles state)
     stop();
-
-    // Ensure pattern play state is cleared so buttons show PLAY again
-    setIsPatternPlaying(false);
     
     // Stop any instrument preview playback
     if (playInstTimerRef.current !== null) {
@@ -2225,17 +1754,14 @@ const App: React.FC = () => {
       playInstTimerRef.current = null;
     }
 
-    // Reset cycle counters and silence all channels
+    // Silence preview YM2149
     handleStopPlayback();
   }, [stop, handleStopPlayback]);
 
   // Handle stop pattern playback
   const handleStopPattern = useCallback(() => {
-    // Stop the sequencer
+    // Stop the sequencer (worklet handles state)
     stop();
-    
-    // Update pattern playing state
-    setIsPatternPlaying(false);
     
     // Stop any instrument preview playback
     if (playInstTimerRef.current !== null) {
@@ -2243,8 +1769,10 @@ const App: React.FC = () => {
       playInstTimerRef.current = null;
     }
     
-    // Reset cycle counters and silence all channels
+    // Silence preview YM2149
     handleStopPlayback();
+    
+    // Return to saved position
     const returnPos = patternReturnPositionRef.current;
     if (returnPos) {
       setPosition(returnPos.pattern, returnPos.line, 0);
@@ -2260,24 +1788,16 @@ const App: React.FC = () => {
     }
 
     const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
-
-    // Stop pattern mode if active
-    if (isPatternPlaying) {
-      setIsPatternPlaying(false);
-    }
     
     // Save return position (where cursor was before starting playback)
     patternReturnPositionRef.current = {
       pattern: clampedIndex,
       line: sharedCurrentLine
     };
-
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
     
     // Set position to beginning (line 0) of the current pattern and start song
     startSong(clampedIndex, 0);
-  }, [isPatternPlaying, startSong, sequencerState.currentPattern, currentSong.playlist]);
+  }, [startSong, sequencerState.currentPattern, currentSong.playlist, sharedCurrentLine]);
 
   // Handle start pattern playback
   const handleStartPattern = useCallback(() => {
@@ -2323,15 +1843,9 @@ const App: React.FC = () => {
       stop();
     }
     
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
-    
-    // Update pattern playing state
-    setIsPatternPlaying(true);
-    
     // Start pattern loop from line 0
     startPatternLoop(clampedIndex, 0);
-  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, currentSong.playlist, activeSection, lastTrackId]);
+  }, [stop, startPatternLoop, sequencerState.isPlaying, sequencerState.currentPattern, currentSong.playlist, activeSection, lastTrackId]);
 
   const handleStartPatternFromBeginning = useCallback(() => {
     if (currentSong.playlist.length === 0) {
@@ -2375,15 +1889,11 @@ const App: React.FC = () => {
       stop();
     }
 
-    if (isPatternPlaying) {
-      setIsPatternPlaying(false);
-    }
-
     // Start from the beginning (line 0) of the current pattern
     setPosition(clampedIndex, 0, 0);
 
     startSong();
-  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isPatternPlaying, currentSong.playlist, activeSection, lastTrackId]);
+  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, currentSong.playlist, activeSection, lastTrackId]);
 
   const handleStartPatternFromCurrentLine = useCallback((overrideLine?: number) => {
     if (currentSong.playlist.length === 0) {
@@ -2435,11 +1945,6 @@ const App: React.FC = () => {
     if (sequencerState.isPlaying) {
       stop();
     }
-
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
-
-    setIsPatternPlaying(true);
 
     // Start pattern loop from the current cursor line
     const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.patternLength || PATTERN_LENGTH) - 1));

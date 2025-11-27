@@ -58,7 +58,7 @@ export class SequencerEngine {
   processFrame(
     lineIndex: number,
     tick: number,
-    patternIndex: number,
+    _patternIndex: number,
     currentRegisters: RegisterState
   ): FrameState {
     const registers: RegisterState = { ...currentRegisters };
