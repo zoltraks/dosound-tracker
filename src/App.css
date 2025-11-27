@@ -35,6 +35,17 @@
   --button-hover: #343a52;
   --button-active: #3b425b;
   
+  /* Playback button accent colors (dark theme) */
+  --play-song-bg: #1f4730;
+  --play-song-border: #34d399;
+  --play-song-glow: rgba(52, 211, 153, 0.6);
+  --play-pattern-bg: #4b3415;
+  --play-pattern-border: #f59e0b;
+  --play-pattern-glow: rgba(245, 158, 11, 0.6);
+  --stop-bg: #4b1f24;
+  --stop-border: #f97373;
+  --stop-glow: rgba(248, 113, 113, 0.6);
+  
   --piano-white: #e9ecf4;
   --piano-black: #151521;
   --piano-pressed: #7aa2f7;
@@ -95,6 +106,17 @@
   --button-text: #1a202c;
   --button-hover: #f7fafc;
   --button-active: #fef3c7;
+  
+  /* Playback button accent colors (light theme) */
+  --play-song-bg: #bbf7d0;
+  --play-song-border: #16a34a;
+  --play-song-glow: rgba(22, 163, 74, 0.45);
+  --play-pattern-bg: #fed7aa;
+  --play-pattern-border: #c05621;
+  --play-pattern-glow: rgba(192, 86, 33, 0.45);
+  --stop-bg: #fecaca;
+  --stop-border: #e11d48;
+  --stop-glow: rgba(225, 29, 72, 0.45);
   
   --piano-white: #ffffff;
   --piano-black: #2d3748;
@@ -327,14 +349,37 @@ body {
   box-shadow: var(--shadow-medium), var(--glow-primary);
 }
 
-.command-btn.playing {
-  background-color: var(--active-bg);
-  border-color: var(--active-border);
-}
-
+.command-btn.playing,
 .command-btn.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium), var(--glow-primary);
+}
+
+/* Playback-specific emphasis: make active/playing states more colorful */
+.command-btn.play-song-btn.playing,
+.command-btn.play-song-btn.active {
+  background: linear-gradient(135deg, var(--play-song-bg) 0%, var(--bg-active) 100%);
+  border-color: var(--play-song-border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium), 0 0 8px var(--play-song-glow);
+}
+
+.command-btn.play-pattern-btn.playing,
+.command-btn.play-pattern-btn.active {
+  background: linear-gradient(135deg, var(--play-pattern-bg) 0%, var(--bg-active) 100%);
+  border-color: var(--play-pattern-border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium), 0 0 8px var(--play-pattern-glow);
+}
+
+.command-btn.stop-btn.playing,
+.command-btn.stop-btn.active {
+  background: linear-gradient(135deg, var(--stop-bg) 0%, var(--bg-active) 100%);
+  border-color: var(--stop-border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium), 0 0 8px var(--stop-glow);
 }
 
 .modal-backdrop {
