@@ -177,6 +177,21 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     const key = event.key.toUpperCase();
 
+    const isNavigationKey =
+      key === 'ARROWUP' ||
+      key === 'ARROWDOWN' ||
+      key === 'ARROWLEFT' ||
+      key === 'ARROWRIGHT' ||
+      key === 'PAGEUP' ||
+      key === 'PAGEDOWN' ||
+      key === 'HOME' ||
+      key === 'END';
+
+    if (event.repeat && !isNavigationKey) {
+      event.preventDefault();
+      return;
+    }
+
     // Navigation
     if (key === 'ARROWUP') {
       event.preventDefault();

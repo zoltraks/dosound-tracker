@@ -14,9 +14,8 @@ interface CommandPanelProps {
   onDeleteInstrument: () => void;
   onCloneInstrument: () => void;
   onPlaySong: () => void;
-  onStopSong: () => void;
   onPlayPattern: () => void;
-  onStopPattern: () => void;
+  onStop: () => void;
   onExportData: () => void;
   onExportVgm: () => void;
   onExportWav: () => void;
@@ -56,9 +55,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onDeleteInstrument,
   onCloneInstrument,
   onPlaySong,
-  onStopSong,
   onPlayPattern,
-  onStopPattern,
+  onStop,
   onExportData,
   onExportVgm,
   onExportWav,
@@ -272,20 +270,26 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
 
       {/* Playback Operations */}
       <div className="command-row">
-        <button 
-          onClick={isPlaying && !isPatternPlaying ? onStopSong : onPlaySong} 
+        <button
+          onClick={onPlaySong}
           className={`command-btn play-song-btn ${isPlaying && !isPatternPlaying ? 'playing' : ''}`}
         >
-          {isPlaying && !isPatternPlaying ? 'STOP SONG' : 'PLAY SONG'}
+          PLAY SONG
         </button>
-        <button 
-          onClick={isPatternPlaying ? onStopPattern : onPlayPattern} 
+        <button
+          onClick={onPlayPattern}
           className={`command-btn ${isPatternPlaying ? 'playing' : ''}`}
         >
-          {isPatternPlaying ? 'STOP PATTERN' : 'PLAY PATTERN'}
+          PLAY PATTERN
         </button>
-        <button 
-          onClick={onExportDump} 
+        <button
+          onClick={onStop}
+          className={`command-btn ${isPlaying ? 'playing' : ''}`}
+        >
+          STOP
+        </button>
+        <button
+          onClick={onExportDump}
           className="command-btn"
         >
           EXPORT DUMP

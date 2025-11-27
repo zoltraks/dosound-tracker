@@ -2274,14 +2274,27 @@ const App: React.FC = () => {
       return;
     }
 
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
+    const clampedIndex = Math.max(
+      0,
+      Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
+    );
 
-    // Stop pattern mode if active
+    // If we are currently in pattern-loop mode, switch to song playback
+    // and continue from the current position instead of restarting.
     if (isPatternPlaying) {
+      const currentLine = sequencerState.currentLine;
+
       setIsPatternPlaying(false);
+
+      // Clear position ref to ensure first tick detection works
+      lastSequencerPositionRef.current = null;
+
+      // Start song playback from the current pattern/line
+      startSong(clampedIndex, currentLine);
+      return;
     }
-    
-    // Save return position (where cursor was before starting playback)
+
+    // Otherwise start song from the beginning (line 0) of the current pattern.
     patternReturnPositionRef.current = {
       pattern: clampedIndex,
       line: sharedCurrentLine
@@ -2289,10 +2302,16 @@ const App: React.FC = () => {
 
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
-    
-    // Set position to beginning (line 0) of the current pattern and start song
+
     startSong(clampedIndex, 0);
-  }, [isPatternPlaying, startSong, sequencerState.currentPattern, currentSong.playlist]);
+  }, [
+    isPatternPlaying,
+    startSong,
+    sequencerState.currentPattern,
+    sequencerState.currentLine,
+    currentSong.playlist,
+    sharedCurrentLine
+  ]);
 
   // Handle start pattern playback
   const handleStartPattern = useCallback(() => {
@@ -2300,7 +2319,10 @@ const App: React.FC = () => {
       return;
     }
 
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
+    const clampedIndex = Math.max(
+      0,
+      Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
+    );
     const currentEntry = currentSong.playlist[clampedIndex];
 
     if (!currentEntry) {
@@ -2333,20 +2355,54 @@ const App: React.FC = () => {
       return;
     }
 
-    // Stop any current playback first
+    // If a song is currently playing, switch into pattern-loop mode and
+    // continue from the current playback line instead of restarting.
+    if (sequencerState.isPlaying && !isPatternPlaying) {
+      const effectiveLine = Math.max(
+        0,
+        Math.min(
+          sequencerState.currentLine,
+          (currentSong.patternLength || PATTERN_LENGTH) - 1
+        )
+      );
+
+      patternReturnPositionRef.current = {
+        pattern: clampedIndex,
+        line: effectiveLine
+      };
+
+      // Clear position ref to ensure first tick detection works
+      lastSequencerPositionRef.current = null;
+
+      setIsPatternPlaying(true);
+
+      startPatternLoop(clampedIndex, effectiveLine);
+      return;
+    }
+
+    // Otherwise (not playing, or already in pattern mode), start from the beginning.
     if (sequencerState.isPlaying) {
       stop();
     }
-    
+
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
-    
-    // Update pattern playing state
+
     setIsPatternPlaying(true);
-    
-    // Start pattern loop from line 0
+
     startPatternLoop(clampedIndex, 0);
-  }, [stop, startPatternLoop, sequencerState.isPlaying, sharedCurrentLine, sequencerState.currentPattern, currentSong.playlist, activeSection, lastTrackId]);
+  }, [
+    stop,
+    startPatternLoop,
+    sequencerState.isPlaying,
+    sequencerState.currentPattern,
+    sequencerState.currentLine,
+    currentSong.playlist,
+    currentSong.patternLength,
+    activeSection,
+    lastTrackId,
+    isPatternPlaying
+  ]);
 
   const handleStartPatternFromBeginning = useCallback(() => {
     if (currentSong.playlist.length === 0) {
@@ -2471,10 +2527,17 @@ const App: React.FC = () => {
   }, [isPatternPlaying, sequencerState.isPlaying, handleStopPattern, handleStartPatternFromCurrentLine]);
 
   useEffect(() => {
+    setGlobalShortcut('playSong', handleStartSong);
     setGlobalShortcut('playPatternFromStart', handleStartPatternFromBeginning);
     setGlobalShortcut('playPattern', handleStartPattern);
     setGlobalShortcut('stopPlayback', handleStop);
-  }, [setGlobalShortcut, handleStartPatternFromBeginning, handleStartPattern, handleStop]);
+  }, [
+    setGlobalShortcut,
+    handleStartSong,
+    handleStartPatternFromBeginning,
+    handleStartPattern,
+    handleStop
+  ]);
 
   // Safety guard: ensure sequencer position always stays within playlist bounds
   // and force a clean stop if playback runs past the end for any reason.
@@ -3142,9 +3205,8 @@ const App: React.FC = () => {
           onDeleteInstrument={handleDeleteInstrument}
           onCloneInstrument={handleCloneInstrument}
           onPlaySong={handleStartSong}
-          onStopSong={handleStop}
           onPlayPattern={handleStartPattern}
-          onStopPattern={handleStopPattern}
+          onStop={handleStop}
           onExportData={handleExportData}
           onExportVgm={handleExportVgm}
           onExportWav={handleExportWav}
