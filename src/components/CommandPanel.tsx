@@ -241,11 +241,11 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
         <button
           onClick={onToggleDebug}
-          className={`command-btn ${isDebugMode ? 'active' : ''}`}
+          className={`command-btn debug-btn ${isDebugMode ? 'active' : ''}`}
         >
           DEBUG
         </button>
-        <button onClick={onReset} className="command-btn">RESET</button>
+        <button onClick={onReset} className="command-btn reset-btn">RESET</button>
       </div>
 
       {/* Instrument Operations */}

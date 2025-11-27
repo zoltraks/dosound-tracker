@@ -35,6 +35,18 @@
   --button-hover: #343a52;
   --button-active: #3b425b;
   
+  --debug-btn-bg: #a09748;
+  --debug-btn-bg-2: #524818;
+  --debug-btn-border: #92879f;
+  --debug-btn-active-bg: #5b2f7b;
+  --debug-btn-active-bg-2: #7c3aed;
+  --debug-btn-active-border: #a855f7;
+  --debug-btn-active-glow: rgba(168, 85, 247, 0.6);
+
+  --reset-btn-bg: #5b1f24;
+  --reset-btn-bg-2: #75303b91;
+  --reset-btn-border: #ac3e3e;
+  
   /* Playback button accent colors (dark theme) */
   --play-song-bg: #1f4730;
   --play-song-border: #34d399;
@@ -106,6 +118,18 @@
   --button-text: #1a202c;
   --button-hover: #f7fafc;
   --button-active: #fef3c7;
+  
+  --debug-btn-bg: #fef9c3;
+  --debug-btn-bg-2: #fef3c7;
+  --debug-btn-border: #cc9d12;
+  --debug-btn-active-bg: #e9d5ff;
+  --debug-btn-active-bg-2: #ddd6fe;
+  --debug-btn-active-border: #7c3aed;
+  --debug-btn-active-glow: rgba(124, 58, 237, 0.45);
+
+  --reset-btn-bg: #fee2e2;
+  --reset-btn-bg-2: #fecaca;
+  --reset-btn-border: #b91c1c;
   
   /* Playback button accent colors (light theme) */
   --play-song-bg: #bbf7d0;
@@ -380,6 +404,34 @@ body {
   border-color: var(--stop-border);
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), 0 0 8px var(--stop-glow);
+}
+
+.command-btn.debug-btn {
+  background: linear-gradient(135deg, var(--debug-btn-bg) 0%, var(--debug-btn-bg-2) 100%);
+  border-color: var(--debug-btn-border);
+}
+
+.command-btn.debug-btn:hover {
+  background: linear-gradient(135deg, var(--debug-btn-bg-2) 0%, var(--debug-btn-bg) 100%);
+  border-color: var(--debug-btn-border);
+  box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
+}
+
+.command-btn.debug-btn.active {
+  background: linear-gradient(135deg, var(--debug-btn-active-bg) 0%, var(--debug-btn-active-bg-2) 100%);
+  border-color: var(--debug-btn-active-border);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
+}
+
+.command-btn.reset-btn {
+  background: linear-gradient(135deg, var(--reset-btn-bg) 0%, var(--reset-btn-bg-2) 100%);
+  border-color: var(--reset-btn-border);
+}
+
+.command-btn.reset-btn:hover {
+  background: linear-gradient(135deg, var(--reset-btn-bg-2) 0%, var(--reset-btn-bg) 100%);
+  border-color: var(--reset-btn-border);
 }
 
 .modal-backdrop {
