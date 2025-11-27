@@ -290,17 +290,17 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         >
           STOP
         </button>
-        <button
-          onClick={onExportDump}
-          className="command-btn"
-        >
-          EXPORT DUMP
-        </button>
         <button 
           onClick={onToggleDumpMode} 
           className={`command-btn ${!isComplexDumpMode ? 'active' : ''}`}
         >
           {isComplexDumpMode ? 'COMPLEX DUMP' : 'SIMPLE DUMP'}
+        </button>
+        <button
+          onClick={onExportDump}
+          className="command-btn"
+        >
+          EXPORT DUMP
         </button>
         <button onClick={onExportData} className="command-btn">EXPORT DATA</button>
         <button onClick={onExportBin} className="command-btn">EXPORT BIN</button>
