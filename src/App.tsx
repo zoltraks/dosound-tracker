@@ -3047,6 +3047,8 @@ const App: React.FC = () => {
             const file = e.target.files?.[0];
             if (file) {
               loadSong(file);
+              setPosition(0, 0, 0);
+              setSharedCurrentLine(0);
               setActiveSection('playlist');
               setChannelMutes([false, false, false]);
               // This will be handled by the useDataManagement hook

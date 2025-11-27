@@ -1,0 +1,113 @@
+Look at my song YAML:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 2
+  length: 4
+  playlist:
+    - A: "01"
+      B: "--"
+      C: "--"
+    - A: "01"
+      B: "--"
+      C: "--"
+  pattern:
+    - name: Pattern 01
+      number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      volume: [15, 0]
+      pitch: [98, 0]
+```
+
+Current "EXPORT DATA" shows:
+
+```
+music:
+
+	; START
+
+	dc.b $7,$38        ; MX T+T+T
+	dc.b $1,$1,$0,$7B  ; TA E-4
+	dc.b $3,$0,$2,$0   ; TB
+	dc.b $5,$0,$4,$0   ; TC
+	dc.b $8,$F         ; VA 15
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+	dc.b $6,$0         ; NS 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $1,$1,$0,$DD  ; TA C-4
+	dc.b $8,$0         ; VA 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+
+	; ---
+
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+
+	; END
+
+	dc.b $8,$0         ; VA 0
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+
+	dc.b $FF,$0        ; STOP
+```
+
+The problem is that you're setting second C-4 for A channel in wrong position, it appears only at the first step of a pattern.
+
+Also, for unknown reason, the second trigger of an instrument which is the same "C-4" with pitch +98 is $1DD instead of previously correct value of $17B, so you are messing something.
+
+Moreover, when you are writing a comment for a line that is setting a tone, use original note and if pitch is not zero then append the pitch value with sign character.
+
+So the final assembly data should look like this:
+
+```
+music:
+
+	; START
+
+	dc.b $7,$38        ; MX T+T+T
+	dc.b $1,$1,$0,$7B  ; TA C-4 +98
+	dc.b $3,$0,$2,$0   ; TB
+	dc.b $5,$0,$4,$0   ; TC
+	dc.b $8,$F         ; VA 15
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+	dc.b $6,$0         ; NS 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $8,$0         ; VA 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+
+	; ---
+
+	dc.b $1,$1,$0,$7B  ; TA C-4 +98
+	dc.b $FF,$1        ; DL 2
+	dc.b $8,$0         ; VA 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+
+	; END
+
+	dc.b $8,$0         ; VA 0
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+
+	dc.b $FF,$0        ; STOP
+```
+
+Investigate the problem and correct it.
+

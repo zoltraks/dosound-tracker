@@ -19,6 +19,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
     registers: RegisterState;
     lineIndex: number;
     tick: number;
+    toneMeta?: { [channel: number]: { note?: string; octave?: number; pitchDelta?: number } };
   }
   
   const frames: FrameState[] = [];
@@ -52,6 +53,19 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
   // Process each playlist entry
   for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
     const playlistEntry = song.playlist[playlistIdx];
+
+    // Reset per-channel playback state at the beginning of each playlist
+    // position so that repeating a pattern retriggers the note and its
+    // envelopes from step 0, matching song playback semantics.
+    for (let ch = 0; ch < channels.length; ch++) {
+      const channelState = channels[ch];
+      channelState.note = null;
+      channelState.envelopeStep = 0;
+      channelState.subTick = 0;
+      channelState.isNewNote = false;
+      channelState.sustainIndex = null;
+      channelState.released = false;
+    }
     
     // Check for GOTO command
     if (playlistEntry.trackA.startsWith('^^') || 
@@ -87,6 +101,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
       // Process each tick in this row
       for (let tick = 0; tick < ticksPerRow; tick++) {
         const newRegs: RegisterState = { ...currentRegs };
+        const toneMeta: { [channel: number]: { note?: string; octave?: number; pitchDelta?: number } } = {};
         
         // Process each channel
         for (let ch = 0; ch < 3; ch++) {
@@ -186,6 +201,25 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
                 step = sustainIndex;
               }
 
+              // Capture original note and pitch delta from the instrument's
+              // pitch envelope for this channel/frame so TA comments can use
+              // "C-4 +N" instead of an inferred note name.
+              let pitchDeltaForStep = 0;
+              const pitchEnv = instrument.pitchEnvelope || [];
+              if (pitchEnv.length > 0) {
+                const pitchIdx = Math.min(Math.max(step, 0), pitchEnv.length - 1);
+                const pitchValue = pitchEnv[pitchIdx];
+                if (typeof pitchValue === 'number') {
+                  pitchDeltaForStep = pitchValue | 0;
+                }
+              }
+
+              toneMeta[ch] = {
+                note: channelState.note.note,
+                octave: channelState.note.octave,
+                pitchDelta: pitchDeltaForStep,
+              };
+
               applyInstrumentToRegisters(
                 newRegs,
                 ch,
@@ -225,7 +259,8 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
           frames.push({
             registers: newRegs,
             lineIndex: playlistIdx * lineCount + lineIdx,
-            tick: tick
+            tick: tick,
+            toneMeta,
           });
         }
         
@@ -343,10 +378,19 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
       const frame = frames[i];
       const regs = frame.registers;
       const lineIndex = frame.lineIndex;
+      const toneMeta = frame.toneMeta || {};
       
-      // Add beat marker after each completed playlist position (every patternLength lines)
+      // Add beat marker after each completed playlist position (every patternLength lines).
+      // Also force tone registers to be re-emitted after the marker so that each
+      // playlist position starts with explicit TA/TB/TC writes, even if the
+      // underlying period value did not change.
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % (song.patternLength || 64) === 0) {
         asm += '\n\t; ---\n\n';
+
+        // Clear cached tone registers (R0-R5) so next frame writes them again.
+        for (let r = 0; r <= 5; r++) {
+          delete lastRegs[r];
+        }
       }
       lastLineIndex = lineIndex;
       
@@ -356,7 +400,7 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
         lastRegs[0x07] = regs[0x07] || 0x38;
       }
       
-      // Write tone registers for all three channels if changed
+      // Write tone registers for all three channels if changed and the channel is audible
       for (let ch = 0; ch < 3; ch++) {
         const fineReg = ch * 2;
         const coarseReg = ch * 2 + 1;
@@ -364,13 +408,35 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
         const coarse = regs[coarseReg] || 0;
         const lastFine = lastRegs[fineReg] || 0;
         const lastCoarse = lastRegs[coarseReg] || 0;
+
+        // Skip tone writes for fully silent channels (volume = 0) to avoid
+        // exporting pitch-only changes once the instrument is muted.
+        const volumeAtFrame = (regs[0x08 + ch] ?? 0) & 0x0f;
+        if (volumeAtFrame === 0) {
+          continue;
+        }
         
         if (i === 0 || fine !== lastFine || coarse !== lastCoarse) {
           const period = (coarse << 8) | fine;
-          const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
           const channelLabel = String.fromCharCode(65 + ch); // A, B, C
-          const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
-          const comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
+
+          // Prefer original note + pitch delta from playback simulation when available.
+          const meta = toneMeta[ch];
+          let comment: string;
+
+          if (meta && meta.note && typeof meta.octave === 'number') {
+            const baseLabel = meta.note.includes('#')
+              ? `${meta.note}${meta.octave}`
+              : `${meta.note}-${meta.octave}`;
+            const delta = meta.pitchDelta || 0;
+            const pitchText = delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
+            comment = `T${channelLabel} ${baseLabel}${pitchText}`;
+          } else {
+            const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
+            const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
+            comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
+          }
+
           asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
           lastRegs[fineReg] = fine;
           lastRegs[coarseReg] = coarse;
@@ -408,6 +474,7 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
       const frame = frames[i];
       const regs = frame.registers;
       const lineIndex = frame.lineIndex;
+      const toneMeta = frame.toneMeta || {};
       
       // Add beat marker after each completed playlist position (every patternLength lines)
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % (song.patternLength || 64) === 0) {
@@ -426,10 +493,24 @@ function formatFramesToAssembly(frames: any[], song: Song, isComplexDumpMode: bo
         const coarse = regs[coarseReg] || 0;
         
         const period = (coarse << 8) | fine;
-        const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
         const channelLabel = String.fromCharCode(65 + ch); // A, B, C
-        const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
-        const comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
+
+        const meta = toneMeta[ch];
+        let comment: string;
+
+        if (meta && meta.note && typeof meta.octave === 'number') {
+          const baseLabel = meta.note.includes('#')
+            ? `${meta.note}${meta.octave}`
+            : `${meta.note}-${meta.octave}`;
+          const delta = meta.pitchDelta || 0;
+          const pitchText = delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
+          comment = `T${channelLabel} ${baseLabel}${pitchText}`;
+        } else {
+          const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
+          const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
+          comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
+        }
+
         asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
       }
       
