@@ -14,6 +14,9 @@ export default defineConfig({
   server: {
     port: 8008
   },
+  preview: {
+    port: 8008
+  },
   build: {
     rollupOptions: {
       output: {
