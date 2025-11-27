@@ -69,23 +69,15 @@ export class SoundDriver {
   private eventIndex: number = 0;
   private events: SoundEvent[] = [];
   private playbackSpeed: number = 6;
-  private dosoundMode: boolean = true;
 
   constructor(ym2149: YM2149) {
     this.ym2149 = ym2149;
   }
 
-  setDosoundMode(enabled: boolean): void {
-    this.dosoundMode = enabled;
-  }
-
   setPlaybackSpeed(speed: number): void {
-    if (this.dosoundMode && speed % 2 !== 0) {
-      // In DOSOUND mode, only even values are allowed
-      this.playbackSpeed = speed + 1;
-    } else {
-      this.playbackSpeed = Math.max(MIN_DELAY_CYCLES, speed);
-    }
+    const raw = Number.isFinite(speed) && speed > 0 ? Math.floor(speed) : MIN_DELAY_CYCLES;
+    const clamped = Math.max(MIN_DELAY_CYCLES, raw);
+    this.playbackSpeed = clamped % 2 === 0 ? clamped : clamped + 1;
   }
 
   convertSongToSoundEvents(song: Song): SoundEvent[] {
