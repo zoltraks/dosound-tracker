@@ -27,6 +27,8 @@ interface CommandPanelProps {
   onInsertStep: () => void;
   onDeleteStep: () => void;
   onReset: () => void;
+  isDebugMode: boolean;
+  onToggleDebug: () => void;
   isPlaying: boolean;
   isPatternPlaying: boolean;
   isDosoundMode: boolean;
@@ -69,6 +71,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onInsertStep,
   onDeleteStep,
   onReset,
+  isDebugMode,
+  onToggleDebug,
   isPlaying,
   isPatternPlaying,
   onPlayInstrument,
@@ -237,6 +241,12 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
         <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
         <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
+        <button
+          onClick={onToggleDebug}
+          className={`command-btn ${isDebugMode ? 'active' : ''}`}
+        >
+          DEBUG
+        </button>
         <button onClick={onReset} className="command-btn">RESET</button>
       </div>
 
