@@ -63,6 +63,8 @@ export class SequencerEngine {
   ): FrameState {
     const registers: RegisterState = { ...currentRegisters };
 
+    void patternIndex;
+
     // Detailed note/envelope/register processing will be implemented later.
     // For now, this method simply returns a cloned register state with
     // the requested frame position so that callers can build on top of it.
