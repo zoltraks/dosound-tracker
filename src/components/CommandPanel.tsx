@@ -27,10 +27,10 @@ interface CommandPanelProps {
   onInsertStep: () => void;
   onDeleteStep: () => void;
   onReset: () => void;
-  isDebugMode: boolean;
-  onToggleDebug: () => void;
   isPlaying: boolean;
   isPatternPlaying: boolean;
+  isDosoundMode: boolean;
+  onToggleDosoundMode: () => void;
   onPlayInstrument: () => void;
   onCopyTrack: () => void;
   onPasteTrack: () => void;
@@ -41,6 +41,8 @@ interface CommandPanelProps {
   setActiveSection: (section: NavigationSection) => void;
   onTranspose: () => void;
   onExportDump: () => void;
+  isDebugMode: boolean;
+  onToggleDebug: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -69,8 +71,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onInsertStep,
   onDeleteStep,
   onReset,
-  isDebugMode,
-  onToggleDebug,
   isPlaying,
   isPatternPlaying,
   onPlayInstrument,
@@ -82,7 +82,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   activeSection,
   setActiveSection,
   onTranspose,
-  onExportDump
+  onExportDump,
+  isDebugMode,
+  onToggleDebug
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
@@ -239,12 +241,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
         <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
         <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
-        <button
-          onClick={onToggleDebug}
-          className={`command-btn ${isDebugMode ? 'active' : ''}`}
-        >
-          DEBUG
-        </button>
         <button onClick={onReset} className="command-btn">RESET</button>
       </div>
 
@@ -292,13 +288,19 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         </button>
         <button 
           onClick={onToggleDumpMode} 
-          className={`command-btn ${!isComplexDumpMode ? 'active' : ''}`}
+          className={`command-btn ${isComplexDumpMode ? 'active' : ''}`}
         >
           {isComplexDumpMode ? 'COMPLEX DUMP' : 'SIMPLE DUMP'}
         </button>
         <button onClick={onExportData} className="command-btn">EXPORT DATA</button>
         <button onClick={onExportVgm} className="command-btn">EXPORT VGM</button>
         <button onClick={onExportWav} className="command-btn">EXPORT WAV</button>
+        <button 
+          onClick={onToggleDebug} 
+          className={`command-btn ${isDebugMode ? 'active' : ''}`}
+        >
+          {isDebugMode ? 'DEBUG ON' : 'DEBUG OFF'}
+        </button>
       </div>
     </div>
   );

@@ -22,7 +22,7 @@ interface TrackPanelProps {
   setCurrentColumn: (column: 'note' | 'volume') => void;
 }
 
-export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
+export const TrackPanel: React.FC<TrackPanelProps> = React.memo((props) => {
   const {
     trackId,
     activeSection,
@@ -146,8 +146,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     }, 500);
   }, [ym2149, trackId, currentInstrumentData]);
 
-  // Get notes for this track from the pattern
-  const getTrackNotes = useCallback(() => {
+  // Get notes for this track from the pattern - memoized to avoid recreating on every render
+  const trackNotes = useMemo(() => {
     if (!pattern) return Array(Math.max(1, patternLength)).fill(null);
 
     // For shared patterns, show the same content in all tracks
@@ -163,8 +163,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     return notes;
   }, [pattern, patternLength]);
-
-  const trackNotes = getTrackNotes();
 
   useEffect(() => {
     if (isActive && trackRef.current) {
@@ -401,16 +399,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     return `${formattedNote}${noteData.octave} ${noteData.instrument}`;
   }, []);
 
-  const getLineClass = useCallback((lineIndex: number) => {
-    const classes = ['track-line'];
-    if (lineIndex === currentLine && isActive) {
-      classes.push('current');
-    }
-    if (lineIndex % 4 === 0) {
-      classes.push('beat-line');
-    }
-    return classes.join(' ');
-  }, [currentLine, isActive]);
+  // Compute line class inline to avoid callback recreation on currentLine change
+  const getLineClass = (lineIndex: number) => {
+    const isCurrent = lineIndex === currentLine && isActive;
+    const isBeat = lineIndex % 4 === 0;
+    return `track-line${isCurrent ? ' current' : ''}${isBeat ? ' beat-line' : ''}`;
+  };
 
   return (
     <div
@@ -465,4 +459,4 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       </div>
     </div>
   );
-};
+});

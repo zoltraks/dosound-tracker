@@ -2,10 +2,9 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
-import { useAudioContext } from './hooks/useAudioContext';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
-import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
+import type { Instrument, Note, Pattern, Song } from './synth/SoundDriver';
 import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -16,7 +15,6 @@ import { ToneNoisePanel } from './components/ToneNoisePanel';
 import { SongInfoPanel } from './components/SongInfoPanel';
 import { PlaylistPanel } from './components/PlaylistPanel';
 import { InstrumentListPanel } from './components/InstrumentListPanel';
-import { ErrorBoundary } from './components/ErrorBoundary';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
@@ -27,15 +25,6 @@ import './App.css';
 
 declare const __APP_VERSION__: string;
 const APP_VERSION = __APP_VERSION__;
-
-type TrackClipboardStep = {
-  space?: boolean | number;
-  off?: boolean | number;
-  note?: string;
-  instrument?: string;
-  volume?: number;
-  [key: string]: unknown;
-};
 
 const App: React.FC = () => {
   
@@ -69,7 +58,6 @@ const App: React.FC = () => {
     try {
       const stored = localStorage.getItem('dosound-tracker-debug-mode');
       if (stored === 'on') return true;
-      if (stored === 'off') return false;
     } catch {
       // ignore
     }
@@ -413,7 +401,7 @@ const App: React.FC = () => {
   }, [messages, handleNotesClick]);
 
   // Audio setup
-  const { audioContext } = useAudioContext();
+  const audioContextRef = useRef<AudioContext | null>(null);
   const ym2149Ref = useRef<YM2149 | null>(null);
   const [, forceYmRender] = useState(0);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
@@ -422,73 +410,91 @@ const App: React.FC = () => {
 
   // Initialize audio on component mount
   useEffect(() => {
-    if (!audioContext || ym2149Ref.current) {
-      return;
-    }
-
-    try {
-      console.log('Starting audio initialization...');
-
-      console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-      console.log('AudioContext initial state:', audioContext.state);
-
-      const ym2149 = new YM2149(audioContext);
-      ym2149Ref.current = ym2149;
-      forceYmRender(v => v + 1);
-      console.log('YM2149 initialized');
-
-      (window as any).ym2149 = ym2149;
-
-      ym2149.writeRegister(0x08, 0x0F);
-      ym2149.writeRegister(0x09, 0x0F);
-      ym2149.writeRegister(0x0A, 0x0F);
-      ym2149.writeRegister(0x07, 0x38);
-      console.log('YM2149 registers set');
-
-      const testFrequency = 261.63;
-      const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-      console.log('YM2149 test tone frequency', testFrequency);
-
-      ym2149.writeRegister(0x00, testPeriod & 0xFF);
-      ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);
-
-      const stopToneTimeout = window.setTimeout(() => {
-        if (ym2149Ref.current) {
-          ym2149Ref.current.writeRegister(0x08, 0x00);
-          ym2149Ref.current.writeRegister(0x09, 0x00);
-          ym2149Ref.current.writeRegister(0x0A, 0x00);
+    const initAudio = () => {
+      try {
+        console.log('Starting audio initialization...');
+        
+        // Create audio context
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (!AudioContextClass) {
+          throw new Error('Web Audio API not supported');
         }
-      }, 100);
-
-      const handleUserInteraction = () => {
+        
+        const audioContext = new AudioContextClass();
+        console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
+        console.log('AudioContext state:', audioContext.state);
+        
+        // Resume context if suspended (browser policy)
         if (audioContext.state === 'suspended') {
-          void audioContext.resume().then(() => {
-            console.log('AudioContext resumed by user interaction');
-          }).catch(err => {
-            console.error('AudioContext resume failed:', err);
-          });
+          audioContext.resume();
+          console.log('AudioContext resumed');
         }
-      };
+        
+        audioContextRef.current = audioContext;
+        
+        // Initialize YM2149
+        const ym2149 = new YM2149(audioContext);
+        ym2149Ref.current = ym2149;
+        forceYmRender(v => v + 1);
+        console.log('YM2149 initialized');
+        
+        // Expose YM2149 instance globally for debugging
+        (window as any).ym2149 = ym2149;
+        
+        // Set initial volume for all channels
+        ym2149.writeRegister(0x08, 0x0F); // Channel A volume
+        ym2149.writeRegister(0x09, 0x0F); // Channel B volume  
+        ym2149.writeRegister(0x0A, 0x0F); // Channel C volume
+        ym2149.writeRegister(0x07, 0x38); // Enable tone channels, disable noise
+        console.log('YM2149 registers set');
+        
+        // Test tone to verify audio is working (play C4 for 100ms)
+        const testFrequency = 261.63; // C4
+        const testPeriod = Math.floor(2000000 / (16 * testFrequency));
+        console.log('Setting test tone - frequency:', testFrequency, 'period:', testPeriod);
+        
+        ym2149.writeRegister(0x00, testPeriod & 0xFF);        // Fine tone A
+        ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);  // Coarse tone A
+        console.log('Test tone registers written');
+        
+        // Stop test tone after 100ms
+        setTimeout(() => {
+          if (ym2149Ref.current) {
+            ym2149Ref.current.writeRegister(0x08, 0x00); // Silence channel A
+            ym2149Ref.current.writeRegister(0x09, 0x00);
+            ym2149Ref.current.writeRegister(0x0A, 0x00);
+            console.log('Test tone stopped');
+          }
+        }, 100);
+        
+        console.log('Audio initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize audio:', error);
+      }
+    };
 
-      const userEvents: Array<keyof DocumentEventMap> = ['click', 'keydown', 'pointerdown', 'touchstart'];
-      userEvents.forEach(eventType => {
-        document.addEventListener(eventType, handleUserInteraction);
-      });
+    // Add a click handler to resume audio context (browser requirement)
+    const handleUserInteraction = () => {
+      if (audioContextRef.current && audioContextRef.current.state === 'suspended') {
+        audioContextRef.current.resume();
+        console.log('AudioContext resumed by user interaction');
+      }
+    };
 
-      return () => {
-        window.clearTimeout(stopToneTimeout);
-        userEvents.forEach(eventType => {
-          document.removeEventListener(eventType, handleUserInteraction);
-        });
-        if (ym2149Ref.current) {
-          ym2149Ref.current.dispose();
-          ym2149Ref.current = null;
-        }
-      };
-    } catch (error) {
-      console.error('Failed to initialize audio:', error);
-    }
-  }, [audioContext]);
+    document.addEventListener('click', handleUserInteraction);
+    initAudio();
+
+    // Cleanup on unmount
+    return () => {
+      document.removeEventListener('click', handleUserInteraction);
+      if (ym2149Ref.current) {
+        ym2149Ref.current.dispose();
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   // Track envelope timing for each channel
   // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
@@ -509,6 +515,7 @@ const App: React.FC = () => {
   const channelReleasedRef = useRef<boolean[]>([false, false, false]);
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
+  // Debug mode refs for timing analysis
   const debugTickCounterRef = useRef<number>(0);
   const debugLastRowRef = useRef<{ pattern: number; line: number } | null>(null);
   const debugLastTimeRef = useRef<number | null>(null);
@@ -558,11 +565,13 @@ const App: React.FC = () => {
 
   // Basic sequencer callback for playback
   const sequencerCallback = useCallback((state: SequencerState) => {
-    // Update current line for UI
-    setSharedCurrentLine(state.currentLine);
+    // Update current line for UI - only when it actually changes to avoid
+    // unnecessary React re-renders on every tick
+    setSharedCurrentLine(prev => prev !== state.currentLine ? state.currentLine : prev);
     
-    // Track pattern playing state
-    setIsPatternPlaying(state.isPatternLoop && state.isPlaying);
+    // Track pattern playing state - only update when changed
+    const newPatternPlaying = state.isPatternLoop && state.isPlaying;
+    setIsPatternPlaying(prev => prev !== newPatternPlaying ? newPatternPlaying : prev);
     
     if (ym2149Ref.current) {
       const ym2149 = ym2149Ref.current;
@@ -579,10 +588,6 @@ const App: React.FC = () => {
       }
 
       wasPlayingRef.current = true;
-
-      // Count each timing tick (20ms VBLANK) while playing so we can derive
-      // 40ms debug cycles independent of pattern/row boundaries.
-      debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
 
       const lastPos = lastSequencerPositionRef.current;
       const wrappedOrJumped =
@@ -611,9 +616,6 @@ const App: React.FC = () => {
           channelSustainRef.current = [null, null, null];
           channelReleasedRef.current = [false, false, false];
           channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
-          debugTickCounterRef.current = 0;
-          debugLastRowRef.current = null;
-          debugLastTimeRef.current = null;
         }
       }
 
@@ -673,93 +675,68 @@ const App: React.FC = () => {
         ];
         const lastNotes = lastNotesRef.current;
 
+        // Debug logging - uses refs to avoid affecting callback dependencies
+        // Only log when row changes to avoid flooding console
+        const debugMode = isDebugMode;
         const lastLogged = debugLastRowRef.current;
         const shouldLogRow =
-          isDebugMode &&
+          debugMode &&
           state.isPlaying &&
           (!lastLogged ||
             lastLogged.pattern !== state.currentPattern ||
             lastLogged.line !== state.currentLine);
 
         if (shouldLogRow) {
-          try {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const ms = String(now.getMilliseconds()).padStart(3, '0');
-            const timeStr = `${hh}:${mm}:${ss}.${ms}`;
+          const now = new Date();
+          const hh = String(now.getHours()).padStart(2, '0');
+          const mm = String(now.getMinutes()).padStart(2, '0');
+          const ss = String(now.getSeconds()).padStart(2, '0');
+          const ms = String(now.getMilliseconds()).padStart(3, '0');
+          const timeStr = `${hh}:${mm}:${ss}.${ms}`;
 
-            const nowMs = now.getTime();
-            const lastMs = debugLastTimeRef.current;
-            const rawDelta = lastMs != null ? nowMs - lastMs : 0;
-            const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
-            const deltaStr = String(clampedDelta).padStart(3, '0');
+          const nowMs = now.getTime();
+          const lastMs = debugLastTimeRef.current;
+          const rawDelta = lastMs != null ? nowMs - lastMs : 0;
+          const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
+          const deltaStr = String(clampedDelta).padStart(3, '0');
 
-            // Each worker tick is ~20ms; treat two ticks (40ms) as one cycle.
-            const tickCount = debugTickCounterRef.current;
-            const cycle = Math.floor(tickCount / 2) & 0xffff;
-            const cycleHex = cycle.toString(16).toUpperCase().padStart(4, '0');
-            const stepHex = state.currentLine.toString(16).toUpperCase().padStart(2, '0');
+          const tickCount = debugTickCounterRef.current;
+          const cycle = Math.floor(tickCount / 2) & 0xffff;
+          const cycleHex = cycle.toString(16).toUpperCase().padStart(4, '0');
+          const stepHex = state.currentLine.toString(16).toUpperCase().padStart(2, '0');
 
-            const channelStrings = [0, 1, 2].map(ch => {
-              const noteOnRow = notes[ch];
-              const volumeOnRow = volumes[ch];
+          const channelStrings = [0, 1, 2].map(ch => {
+            const noteOnRow = notes[ch];
+            const volumeOnRow = volumes[ch];
 
-              let volText: string;
-              if (volumeOnRow === undefined || volumeOnRow === null) {
-                volText = '-';
-              } else {
-                const clampedVol = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-                volText = clampedVol.toString(16).toUpperCase();
-              }
+            let volText = '-';
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              const clampedVol = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              volText = clampedVol.toString(16).toUpperCase();
+            }
 
-              if (!noteOnRow) {
-                return `--- -- ${volText}`;
-              }
+            if (!noteOnRow) return `--- -- ${volText}`;
+            if (noteOnRow.note === '===') return `=== -- ${volText}`;
 
-              if (noteOnRow.note === '===') {
-                return `=== -- ${volText}`;
-              }
+            const baseNote = noteOnRow.note || '';
+            const formattedNote = baseNote.includes('#') ? baseNote : `${baseNote}-`;
+            const noteText = `${formattedNote}${noteOnRow.octave}`;
+            const rawInst = noteOnRow.instrument;
+            let instText = '--';
+            if (typeof rawInst === 'string' && rawInst.trim()) {
+              instText = rawInst.trim().toUpperCase().padStart(2, '0');
+            }
+            return `${noteText} ${instText} ${volText}`;
+          });
 
-              const baseNote = noteOnRow.note || '';
-              const formattedNote = baseNote.includes('#') ? baseNote : `${baseNote}-`;
-              const noteText = `${formattedNote}${noteOnRow.octave}`;
-              const rawInst = noteOnRow.instrument as unknown;
-              let instText = '';
-
-              if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
-                instText = rawInst.toString(16).padStart(2, '0').toUpperCase();
-              } else if (typeof rawInst === 'string') {
-                const trimmed = rawInst.trim();
-                if (trimmed) {
-                  const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-                  const upper = sanitized.toUpperCase();
-                  if (/^[0-9A-F]{1,2}$/.test(upper)) {
-                    instText = upper.padStart(2, '0');
-                  } else {
-                    instText = upper;
-                  }
-                }
-              }
-
-              const safeInst = instText && instText.trim().length > 0 ? instText : '--';
-              return `${noteText} ${safeInst} ${volText}`;
-            });
-
-            const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
-            // eslint-disable-next-line no-console
-            console.log(debugLine);
-            debugLastRowRef.current = {
-              pattern: state.currentPattern,
-              line: state.currentLine
-            };
-            debugLastTimeRef.current = nowMs;
-          } catch (error) {
-            // eslint-disable-next-line no-console
-            console.error('Debug logging failed:', error);
-          }
+          // eslint-disable-next-line no-console
+          console.log(`${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`);
+          debugLastRowRef.current = { pattern: state.currentPattern, line: state.currentLine };
+          debugLastTimeRef.current = nowMs;
         }
+
+        // Increment tick counter for debug cycle tracking
+        debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
 
         for (let ch = 0; ch < 3; ch++) {
           if (channelMutes[ch]) {
@@ -923,16 +900,7 @@ const App: React.FC = () => {
         }
       }
     }
-  }, [
-    setSharedCurrentLine,
-    setIsPatternPlaying,
-    currentSong,
-    stop,
-    handleStopPlayback,
-    setPosition,
-    channelMutes,
-    isDebugMode
-  ]);
+  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition, channelMutes, isDebugMode]);
 
   // Register sequencer callback
   useEffect(() => {
@@ -1629,18 +1597,18 @@ const App: React.FC = () => {
 
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const rawLines = pattern.lines || [];
-      const steps: TrackClipboardStep[] = [];
+      const steps: any[] = [];
 
       // Patterns are single-track internally (trackA). Track selection only chooses
       // which pattern from the playlist we operate on.
       for (let i = 0; i < targetLength; i++) {
         const line = rawLines[i] || { trackA: null, trackB: null, trackC: null };
-        const cell = line.trackA;
+        const cell: any = line.trackA;
 
-        const volRaw = line.volume;
+        const volRaw: any = (line as any).volume;
         const hasVolume = volRaw !== undefined && volRaw !== null;
 
-        let step: TrackClipboardStep;
+        let step: any;
 
         if (!cell) {
           // Space line. Use `space: 1` when there is an explicit volume nibble,
@@ -1671,7 +1639,7 @@ const App: React.FC = () => {
 
       let lastNonSpace = steps.length - 1;
       while (lastNonSpace >= 0) {
-        const ln = steps[lastNonSpace];
+        const ln: any = steps[lastNonSpace];
         if (ln && ln.space === true && Object.keys(ln).length === 1) {
           lastNonSpace--;
         } else {
@@ -1681,7 +1649,7 @@ const App: React.FC = () => {
 
       const trimmedSteps = steps.slice(0, lastNonSpace + 1);
 
-      const compressedSteps: TrackClipboardStep[] = [];
+      const compressedSteps: any[] = [];
 
       type RunType = 'none' | 'space' | 'volume-space';
       let runType: RunType = 'none';
@@ -1705,10 +1673,10 @@ const App: React.FC = () => {
         runCount = 0;
       };
 
-      const isPureSpace = (ln: TrackClipboardStep) =>
+      const isPureSpace = (ln: any) =>
         ln && ln.space === true && Object.keys(ln).length === 1;
 
-      const isVolumeSpace = (ln: TrackClipboardStep) =>
+      const isVolumeSpace = (ln: any) =>
         ln &&
         ln.space === 1 &&
         typeof ln.volume === 'number' &&
@@ -1724,7 +1692,7 @@ const App: React.FC = () => {
             runCount = 1;
           }
         } else if (isVolumeSpace(ln)) {
-          const vol = ln.volume ?? 0;
+          const vol = (ln as any).volume;
           if (runType === 'volume-space' && vol === runVolume) {
             runCount++;
           } else {
@@ -1784,28 +1752,27 @@ const App: React.FC = () => {
         return;
       }
 
-      let parsed: unknown;
+      let parsed: any;
       try {
-        parsed = yaml.load(text);
+        parsed = yaml.load(text) as any;
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         setTrackClipboardError('Failed to parse track data from clipboard.\n\n' + message);
         return;
       }
 
-      const stepsNode =
-        parsed && typeof parsed === 'object' ? (parsed as { steps?: unknown }).steps ?? null : null;
+      const stepsNode = parsed && typeof parsed === 'object' ? (parsed as any).steps : null;
       if (!Array.isArray(stepsNode)) {
         setTrackClipboardError('Track clipboard data is invalid.\n\nExpected YAML with root "steps" list.');
         return;
       }
 
-      const rawSteps = stepsNode as unknown[];
-      const expandedSteps: TrackClipboardStep[] = [];
+      const rawSteps = stepsNode as any[];
+      const expandedSteps: any[] = [];
 
       for (const node of rawSteps) {
         if (node && typeof node === 'object') {
-          const ln = node as TrackClipboardStep;
+          const ln: any = node;
           const keys = Object.keys(ln);
           const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
           const onlySpaceOrOff = keys.every(k => k === 'space' || k === 'off');
@@ -1822,7 +1789,7 @@ const App: React.FC = () => {
 
           // Pure runs without volume
           if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
-            const count = (isNumericSpace ? spaceVal : offVal) as number;
+            const count = isNumericSpace ? spaceVal : offVal;
             const isOff = isNumericOff && !isNumericSpace;
             for (let i = 0; i < count; i++) {
               expandedSteps.push(isOff ? { off: true } : { space: true });
@@ -1832,7 +1799,7 @@ const App: React.FC = () => {
 
           // Volume-only runs
           if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
-            const count = (isNumericSpace ? spaceVal : offVal) as number;
+            const count = isNumericSpace ? spaceVal : offVal;
             const isOff = isNumericOff && !isNumericSpace;
             const vol = ln.volume;
             for (let i = 0; i < count; i++) {
@@ -1844,7 +1811,7 @@ const App: React.FC = () => {
           }
         }
 
-        expandedSteps.push(node as TrackClipboardStep);
+        expandedSteps.push(node);
       }
 
       let trackId: 'A' | 'B' | 'C' = lastTrackId;
@@ -1864,25 +1831,22 @@ const App: React.FC = () => {
 
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const existingLines = pattern.lines || [];
-      const newLines: PatternLine[] = [];
+      const newLines: any[] = [];
 
       // Overwrite the monotrack data (trackA) of the selected pattern with clipboard steps.
       for (let i = 0; i < targetLength; i++) {
         const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
-        const line: PatternLine = {
-          trackA: baseLine.trackA,
-          trackB: baseLine.trackB,
-          trackC: baseLine.trackC,
-        };
+        const line: any = { ...baseLine };
         // Overwrite any existing per-line volume; we'll set it from YAML if present.
+        delete (line as any).volume;
         const rawStep = expandedSteps[i];
 
         if (rawStep && typeof rawStep === 'object') {
-          const ln = rawStep as TrackClipboardStep;
+          const ln: any = rawStep;
 
           if (ln.off === true) {
             // Explicit key-release step: use internal '===' marker.
-            line.trackA = { note: '===', octave: 0, instrument: '00' };
+            line.trackA = { note: '===', octave: 0, instrument: '00' } as any;
           } else if (ln.space === true) {
             line.trackA = null;
           } else if (typeof ln.note === 'string') {
@@ -1909,12 +1873,12 @@ const App: React.FC = () => {
           }
 
           // Parse optional per-step volume nibble.
-          const volRaw = ln.volume;
+          const volRaw = (ln as any).volume;
           if (volRaw !== undefined && volRaw !== null) {
             const volNum = Number(volRaw);
             if (Number.isFinite(volNum)) {
               const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-              line.volume = clamped;
+              (line as any).volume = clamped;
             }
           }
         } else {
@@ -2111,105 +2075,6 @@ const App: React.FC = () => {
     updateSong({ instruments: newInstruments });
     setCurrentInstrument(clearedInstrument);
   }, [currentSong.instruments, currentInstrument.id, updateSong, setCurrentInstrument]);
-
-  const handleMoveInstrument = useCallback((index: number, direction: 'up' | 'down') => {
-    const instruments = currentSong.instruments;
-    const length = instruments.length;
-
-    if (length === 0) {
-      return;
-    }
-
-    const delta = direction === 'up' ? -1 : 1;
-    const targetIndex = index + delta;
-
-    if (targetIndex < 0 || targetIndex >= length) {
-      return;
-    }
-
-    const instrumentIdMap: Record<string, string> = {};
-    const newInstruments: Instrument[] = [];
-
-    for (let i = 0; i < length; i++) {
-      const inst = instruments[i];
-      if (!inst) {
-        continue;
-      }
-
-      let newIndex = i;
-      if (i === index) {
-        newIndex = targetIndex;
-      } else if (i === targetIndex) {
-        newIndex = index;
-      }
-
-      const newId = newIndex.toString(16).padStart(2, '0').toUpperCase();
-      const oldIdNorm = (inst.id || '').trim().toUpperCase();
-      if (oldIdNorm) {
-        instrumentIdMap[oldIdNorm] = newId;
-      }
-
-      newInstruments[newIndex] = {
-        ...inst,
-        id: newId
-      };
-    }
-
-    const remappedPatterns = currentSong.patterns.map(pattern => {
-      const lines = (pattern.lines || []).map(line => {
-        const newLine = { ...line };
-
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
-          const note = newLine[key];
-          if (note && typeof note.instrument === 'string') {
-            const raw = note.instrument.trim().toUpperCase();
-            const mapped = instrumentIdMap[raw];
-            if (mapped) {
-              newLine[key] = {
-                ...note,
-                instrument: mapped
-              };
-            }
-          }
-        });
-
-        return newLine;
-      });
-
-      return {
-        ...pattern,
-        lines
-      };
-    });
-
-    updateSong({
-      instruments: newInstruments,
-      patterns: remappedPatterns
-    });
-
-    let nextCurrentInstrument = currentInstrument;
-    if (currentInstrument) {
-      const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
-      const mappedId = instrumentIdMap[currentIdNorm];
-      if (mappedId) {
-        const updatedFromList = newInstruments.find(inst => inst && inst.id === mappedId);
-        if (updatedFromList) {
-          nextCurrentInstrument = updatedFromList;
-        } else {
-          nextCurrentInstrument = {
-            ...currentInstrument,
-            id: mappedId
-          };
-        }
-      }
-    }
-
-    if (nextCurrentInstrument) {
-      setCurrentInstrument(nextCurrentInstrument);
-    }
-
-    setActiveSection('instrumentList');
-  }, [currentSong.instruments, currentSong.patterns, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]);
 
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
@@ -2792,82 +2657,63 @@ const App: React.FC = () => {
     });
   }, []);
 
-  const pendingScrollLineRef = useRef<number | null>(null);
-  const scrollRafRef = useRef<number | null>(null);
-
   useEffect(() => {
     if (sequencerState.isPlaying) {
       return;
     }
 
-    pendingScrollLineRef.current = sharedCurrentLine;
+    const positionContent = document.querySelector('.position-content') as HTMLDivElement | null;
+    const primaryTrack = (document.querySelector('.track-panel.track-a .track-content') ||
+      document.querySelector('.track-content')) as HTMLDivElement | null;
 
-    if (scrollRafRef.current != null) {
+    if (!positionContent || !primaryTrack) {
       return;
     }
 
-    scrollRafRef.current = window.requestAnimationFrame(() => {
-      scrollRafRef.current = null;
-      const lineIndex = pendingScrollLineRef.current;
-      if (lineIndex == null) {
-        return;
+    const lineElements = primaryTrack.querySelectorAll('.track-line') as NodeListOf<HTMLDivElement>;
+    if (!lineElements.length) {
+      return;
+    }
+
+    const targetLine = lineElements[sharedCurrentLine] as HTMLDivElement | undefined;
+    if (!targetLine) {
+      return;
+    }
+
+    const container = primaryTrack;
+    const currentScrollTop = container.scrollTop;
+    const containerHeight = container.clientHeight;
+
+    const rowHeight = targetLine.offsetHeight || 14;
+    const targetTop = sharedCurrentLine * rowHeight;
+    const targetBottom = targetTop + rowHeight;
+
+    let newScrollTop = currentScrollTop;
+
+    if (targetTop < currentScrollTop) {
+      // Selected row is above the visible area
+      newScrollTop = targetTop;
+    } else if (targetBottom > currentScrollTop + containerHeight) {
+      // Selected row is below the visible area
+      newScrollTop = targetBottom - containerHeight;
+    }
+
+    const maxScrollTop = container.scrollHeight - containerHeight;
+    newScrollTop = Math.max(0, Math.min(newScrollTop, maxScrollTop));
+
+    if (newScrollTop === currentScrollTop) {
+      return;
+    }
+
+    // Apply synchronized scroll only to the pattern area
+    container.scrollTop = newScrollTop;
+    positionContent.scrollTop = newScrollTop;
+
+    const tracks = document.querySelectorAll('.track-content');
+    tracks.forEach(track => {
+      if (track !== container) {
+        (track as HTMLDivElement).scrollTop = newScrollTop;
       }
-
-      const positionContent = document.querySelector('.position-content') as HTMLDivElement | null;
-      const primaryTrack = (document.querySelector('.track-panel.track-a .track-content') ||
-        document.querySelector('.track-content')) as HTMLDivElement | null;
-
-      if (!positionContent || !primaryTrack) {
-        return;
-      }
-
-      const lineElements = primaryTrack.children as HTMLCollectionOf<HTMLDivElement>;
-      const totalLines = lineElements.length;
-      if (!totalLines) {
-        return;
-      }
-
-      const clampedIndex = Math.max(0, Math.min(lineIndex, totalLines - 1));
-      const targetLine = lineElements[clampedIndex];
-      if (!targetLine) {
-        return;
-      }
-
-      const container = primaryTrack;
-      const currentScrollTop = container.scrollTop;
-      const containerHeight = container.clientHeight;
-
-      const rowHeight = targetLine.offsetHeight || 14;
-      const targetTop = lineIndex * rowHeight;
-      const targetBottom = targetTop + rowHeight;
-
-      let newScrollTop = currentScrollTop;
-
-      if (targetTop < currentScrollTop) {
-        // Selected row is above the visible area
-        newScrollTop = targetTop;
-      } else if (targetBottom > currentScrollTop + containerHeight) {
-        // Selected row is below the visible area
-        newScrollTop = targetBottom - containerHeight;
-      }
-
-      const maxScrollTop = container.scrollHeight - containerHeight;
-      newScrollTop = Math.max(0, Math.min(newScrollTop, maxScrollTop));
-
-      if (newScrollTop === currentScrollTop) {
-        return;
-      }
-
-      // Apply synchronized scroll only to the pattern area
-      container.scrollTop = newScrollTop;
-      positionContent.scrollTop = newScrollTop;
-
-      const tracks = document.querySelectorAll('.track-content');
-      tracks.forEach(track => {
-        if (track !== container) {
-          (track as HTMLDivElement).scrollTop = newScrollTop;
-        }
-      });
     });
   }, [sharedCurrentLine, sequencerState.isPlaying]);
 
@@ -3096,8 +2942,7 @@ const App: React.FC = () => {
 
   try {
     return (
-      <ErrorBoundary>
-        <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
+      <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
         <HeaderPanel
           title={currentSong.title}
           isDarkMode={isDarkMode}
@@ -3140,10 +2985,10 @@ const App: React.FC = () => {
           onInsertStep={handleInsertStep}
           onDeleteStep={handleDeleteStep}
           onReset={handleRequestReset}
-          isDebugMode={isDebugMode}
-          onToggleDebug={handleToggleDebugMode}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
+          isDosoundMode={false} // TODO: Implement settings property on Song interface
+          onToggleDosoundMode={() => console.log('DOSOUND mode toggle not implemented')}
           onPlayInstrument={handlePlayInstrument}
           onCopyTrack={handleCopyTrack}
           onPasteTrack={handlePasteTrack}
@@ -3154,6 +2999,8 @@ const App: React.FC = () => {
           setActiveSection={setActiveSection}
           onTranspose={handleOpenTranspose}
           onExportDump={handleExportDump}
+          isDebugMode={isDebugMode}
+          onToggleDebug={handleToggleDebugMode}
         />
 
         <div className="main-content">
@@ -3330,7 +3177,6 @@ const App: React.FC = () => {
               setActiveSection={setActiveSection}
               onSelectInstrument={handleInstrumentSelect}
               onRenameInstrument={handleRenameInstrument}
-              onMoveInstrument={handleMoveInstrument}
             />
             
             <div className="bottom-panels">
@@ -3508,8 +3354,7 @@ const App: React.FC = () => {
           files={downloadFiles}
           onClose={() => setIsDownloadOpen(false)}
         />
-        </div>
-      </ErrorBoundary>
+      </div>
     );
   } catch (error) {
     console.error('Error rendering App:', error);

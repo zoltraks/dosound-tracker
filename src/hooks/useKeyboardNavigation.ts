@@ -85,6 +85,9 @@ export const useKeyboardNavigation = () => {
       case 'previousSection':
         navigateToPrevious();
         break;
+      case 'toggleDosoundMode':
+        setIsDarkMode(!isDarkMode);
+        break;
       default:
         // Try to execute callback for active section
         const callback = callbacksRef.current[activeSection];
@@ -93,7 +96,7 @@ export const useKeyboardNavigation = () => {
         }
         break;
     }
-  }, [activeSection, navigateToNext, navigateToPrevious]);
+  }, [activeSection, navigateToNext, navigateToPrevious, isDarkMode]);
 
   const handleKeyDown = useCallback((event: KeyboardEvent) => {
     const key = event.key.toUpperCase();
@@ -185,6 +188,7 @@ export const useKeyboardNavigation = () => {
         case 'F1': shortcut = 'F1'; break;
         case 'F2': shortcut = 'F2'; break;
         case 'F3': shortcut = 'F3'; break;
+        case 'F4': shortcut = 'F4'; break;
       }
     }
 
