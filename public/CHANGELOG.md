@@ -1,5 +1,17 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.0.22
+
+- Added **VGM file export** with loop support and proper noise envelope handling, alongside a new **binary export** path for DOSOUND XBIOS format, so songs can be used directly in external players and demos.
+- Cleaned up song YAML export by omitting empty title/author fields and invalid year values, removing redundant pattern name fields, and keeping the saved format focused on data that actually matters.
+- Enhanced the **instrument list workflow** with dynamic slot display, instrument reordering via up/down buttons and Ctrl+Arrow shortcuts that automatically remap instrument IDs in all patterns, and a deletion confirmation dialog that shows where an instrument is used before you remove it.
+- Improved playlist editing and playback controls: playlist editing now has better focus switching between tracks, playback mode switching continues from the current position instead of restarting, and play buttons act as toggles so pressing them again stops playback.
+- Refined the transport and command panel UI with accent-colored playback buttons, themed gradients and glows, idle-state styling, reordered dump/export buttons, and clearer labels (including renaming **EXPORT SOUND** to **EXPORT WAV** and simplifying instrument/playlist header text).
+- Added a **download modal** that reads available files from `LIST.txt` in the download directory and shows them in a selectable list, making it easier to fetch exported assets or example content.
+- Improved editor interaction and performance by fixing hexadecimal input handling in the envelope editor, optimizing pattern scrolling with `requestAnimationFrame`, correcting active cell borders and dump mode button states, and removing React StrictMode while fixing a sequencer playback race.
+- Strengthened audio and error handling by extracting AudioContext initialization into a dedicated hook, complying with browser autoplay policies using explicit user interactions, adding robust error handling for `resume()` calls, and introducing an `ErrorBoundary` around the app.
+- Expanded test coverage and documentation with new unit tests for instrument/register-dump exports (including noise envelope validation) and several refactoring / code-review documents that outline future cleanup work.
+
 ## Version 1.0.21
 
 - Added full **envelope sustain** and **key-release** support: instruments can define a sustain point in the volume envelope, notes now hold at sustain until you release the key, '===' key‑release steps are editable in the pattern editor (including '-' shortcut), and sustain / release metadata is serialized through YAML, clipboard and export paths.
