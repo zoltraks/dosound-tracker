@@ -65,6 +65,16 @@ const App: React.FC = () => {
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
   const [trackClipboardError, setTrackClipboardError] = useState('');
+  const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-debug-mode');
+      if (stored === 'on') return true;
+      if (stored === 'off') return false;
+    } catch {
+      // ignore
+    }
+    return false;
+  });
   const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
     // Load dump mode preference from localStorage. Default to complex mode
     // when no preference is stored.
@@ -158,6 +168,14 @@ const App: React.FC = () => {
       // ignore
     }
   }, [instrumentOctaves]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-debug-mode', isDebugMode ? 'on' : 'off');
+    } catch {
+      // ignore
+    }
+  }, [isDebugMode]);
 
   useEffect(() => {
     const id = currentInstrument?.id;
@@ -488,6 +506,9 @@ const App: React.FC = () => {
   const channelReleasedRef = useRef<boolean[]>([false, false, false]);
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
+  const debugTickCounterRef = useRef<number>(0);
+  const debugLastRowRef = useRef<{ pattern: number; line: number } | null>(null);
+  const debugLastTimeRef = useRef<number | null>(null);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
@@ -522,6 +543,9 @@ const App: React.FC = () => {
     channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
     channelSustainRef.current = [null, null, null];
     channelReleasedRef.current = [false, false, false];
+    debugTickCounterRef.current = 0;
+    debugLastRowRef.current = null;
+    debugLastTimeRef.current = null;
     
     // Silence all channels
     if (ym2149Ref.current) {
@@ -553,6 +577,10 @@ const App: React.FC = () => {
 
       wasPlayingRef.current = true;
 
+      // Count each timing tick (20ms VBLANK) while playing so we can derive
+      // 40ms debug cycles independent of pattern/row boundaries.
+      debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
+
       const lastPos = lastSequencerPositionRef.current;
       const wrappedOrJumped =
         lastPos && state.currentPattern !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
@@ -580,6 +608,9 @@ const App: React.FC = () => {
           channelSustainRef.current = [null, null, null];
           channelReleasedRef.current = [false, false, false];
           channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
+          debugTickCounterRef.current = 0;
+          debugLastRowRef.current = null;
+          debugLastTimeRef.current = null;
         }
       }
 
@@ -638,6 +669,94 @@ const App: React.FC = () => {
           patternC ? lineC?.volume : undefined
         ];
         const lastNotes = lastNotesRef.current;
+
+        const lastLogged = debugLastRowRef.current;
+        const shouldLogRow =
+          isDebugMode &&
+          state.isPlaying &&
+          (!lastLogged ||
+            lastLogged.pattern !== state.currentPattern ||
+            lastLogged.line !== state.currentLine);
+
+        if (shouldLogRow) {
+          try {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            const ss = String(now.getSeconds()).padStart(2, '0');
+            const ms = String(now.getMilliseconds()).padStart(3, '0');
+            const timeStr = `${hh}:${mm}:${ss}.${ms}`;
+
+            const nowMs = now.getTime();
+            const lastMs = debugLastTimeRef.current;
+            const rawDelta = lastMs != null ? nowMs - lastMs : 0;
+            const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
+            const deltaStr = String(clampedDelta).padStart(3, '0');
+
+            // Each worker tick is ~20ms; treat two ticks (40ms) as one cycle.
+            const tickCount = debugTickCounterRef.current;
+            const cycle = Math.floor(tickCount / 2) & 0xffff;
+            const cycleHex = cycle.toString(16).toUpperCase().padStart(4, '0');
+            const stepHex = state.currentLine.toString(16).toUpperCase().padStart(2, '0');
+
+            const channelStrings = [0, 1, 2].map(ch => {
+              const noteOnRow = notes[ch];
+              const volumeOnRow = volumes[ch];
+
+              let volText: string;
+              if (volumeOnRow === undefined || volumeOnRow === null) {
+                volText = '-';
+              } else {
+                const clampedVol = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+                volText = clampedVol.toString(16).toUpperCase();
+              }
+
+              if (!noteOnRow) {
+                return `--- -- ${volText}`;
+              }
+
+              if (noteOnRow.note === '===') {
+                return `=== -- ${volText}`;
+              }
+
+              const baseNote = noteOnRow.note || '';
+              const formattedNote = baseNote.includes('#') ? baseNote : `${baseNote}-`;
+              const noteText = `${formattedNote}${noteOnRow.octave}`;
+              const rawInst = noteOnRow.instrument as unknown;
+              let instText = '';
+
+              if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
+                instText = rawInst.toString(16).padStart(2, '0').toUpperCase();
+              } else if (typeof rawInst === 'string') {
+                const trimmed = rawInst.trim();
+                if (trimmed) {
+                  const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
+                  const upper = sanitized.toUpperCase();
+                  if (/^[0-9A-F]{1,2}$/.test(upper)) {
+                    instText = upper.padStart(2, '0');
+                  } else {
+                    instText = upper;
+                  }
+                }
+              }
+
+              const safeInst = instText && instText.trim().length > 0 ? instText : '--';
+              return `${noteText} ${safeInst} ${volText}`;
+            });
+
+            const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
+            // eslint-disable-next-line no-console
+            console.log(debugLine);
+            debugLastRowRef.current = {
+              pattern: state.currentPattern,
+              line: state.currentLine
+            };
+            debugLastTimeRef.current = nowMs;
+          } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Debug logging failed:', error);
+          }
+        }
 
         for (let ch = 0; ch < 3; ch++) {
           if (channelMutes[ch]) {
@@ -801,7 +920,16 @@ const App: React.FC = () => {
         }
       }
     }
-  }, [setSharedCurrentLine, setIsPatternPlaying, currentSong, stop, handleStopPlayback, setPosition, channelMutes]);
+  }, [
+    setSharedCurrentLine,
+    setIsPatternPlaying,
+    currentSong,
+    stop,
+    handleStopPlayback,
+    setPosition,
+    channelMutes,
+    isDebugMode
+  ]);
 
   // Register sequencer callback
   useEffect(() => {
@@ -2288,6 +2416,10 @@ const App: React.FC = () => {
     setSharedCurrentLine(lineIndex);
   }, []);
 
+  const handleToggleDebugMode = useCallback(() => {
+    setIsDebugMode(prev => !prev);
+  }, []);
+
   const handleOptimizeSong = useCallback(() => {
     setIsOptimizeConfirmOpen(true);
   }, [optimizeSong]);
@@ -2906,6 +3038,8 @@ const App: React.FC = () => {
           onInsertStep={handleInsertStep}
           onDeleteStep={handleDeleteStep}
           onReset={handleRequestReset}
+          isDebugMode={isDebugMode}
+          onToggleDebug={handleToggleDebugMode}
           isPlaying={sequencerState.isPlaying}
           isPatternPlaying={isPatternPlaying}
           onPlayInstrument={handlePlayInstrument}
