@@ -1987,105 +1987,6 @@ const App: React.FC = () => {
     setCurrentInstrument(clearedInstrument);
   }, [currentSong.instruments, currentInstrument.id, updateSong, setCurrentInstrument]);
 
-  const handleMoveInstrument = useCallback((index: number, direction: 'up' | 'down') => {
-    const instruments = currentSong.instruments;
-    const length = instruments.length;
-
-    if (length === 0) {
-      return;
-    }
-
-    const delta = direction === 'up' ? -1 : 1;
-    const targetIndex = index + delta;
-
-    if (targetIndex < 0 || targetIndex >= length) {
-      return;
-    }
-
-    const instrumentIdMap: Record<string, string> = {};
-    const newInstruments: Instrument[] = [];
-
-    for (let i = 0; i < length; i++) {
-      const inst = instruments[i];
-      if (!inst) {
-        continue;
-      }
-
-      let newIndex = i;
-      if (i === index) {
-        newIndex = targetIndex;
-      } else if (i === targetIndex) {
-        newIndex = index;
-      }
-
-      const newId = newIndex.toString(16).padStart(2, '0').toUpperCase();
-      const oldIdNorm = (inst.id || '').trim().toUpperCase();
-      if (oldIdNorm) {
-        instrumentIdMap[oldIdNorm] = newId;
-      }
-
-      newInstruments[newIndex] = {
-        ...inst,
-        id: newId
-      };
-    }
-
-    const remappedPatterns = currentSong.patterns.map(pattern => {
-      const lines = (pattern.lines || []).map(line => {
-        const newLine = { ...line };
-
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
-          const note = newLine[key];
-          if (note && typeof note.instrument === 'string') {
-            const raw = note.instrument.trim().toUpperCase();
-            const mapped = instrumentIdMap[raw];
-            if (mapped) {
-              newLine[key] = {
-                ...note,
-                instrument: mapped
-              };
-            }
-          }
-        });
-
-        return newLine;
-      });
-
-      return {
-        ...pattern,
-        lines
-      };
-    });
-
-    updateSong({
-      instruments: newInstruments,
-      patterns: remappedPatterns
-    });
-
-    let nextCurrentInstrument = currentInstrument;
-    if (currentInstrument) {
-      const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
-      const mappedId = instrumentIdMap[currentIdNorm];
-      if (mappedId) {
-        const updatedFromList = newInstruments.find(inst => inst && inst.id === mappedId);
-        if (updatedFromList) {
-          nextCurrentInstrument = updatedFromList;
-        } else {
-          nextCurrentInstrument = {
-            ...currentInstrument,
-            id: mappedId
-          };
-        }
-      }
-    }
-
-    if (nextCurrentInstrument) {
-      setCurrentInstrument(nextCurrentInstrument);
-    }
-
-    setActiveSection('instrumentList');
-  }, [currentSong.instruments, currentSong.patterns, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]);
-
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
     // Stop the sequencer
@@ -3181,7 +3082,6 @@ const App: React.FC = () => {
               setActiveSection={setActiveSection}
               onSelectInstrument={handleInstrumentSelect}
               onRenameInstrument={handleRenameInstrument}
-              onMoveInstrument={handleMoveInstrument}
             />
             
             <div className="bottom-panels">

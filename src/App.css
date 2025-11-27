@@ -1070,33 +1070,24 @@ body {
   gap: 8px;
   font-size: 10px;
   color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
   padding-bottom: 2px;
   margin-bottom: 2px;
 }
 
 .line-number-header {
   width: 20px;
-  flex: 0 0 23px;
   text-align: right;
 }
 
-.playlist-header-row .track-header {
+.track-header {
   flex: 1;
   text-align: center;
 }
 
 .playlist-move-header {
   width: 32px;
-  flex: 0 0 45px;
   text-align: center;
-}
-
-.playlist-line .line-number {
-  flex: 0 0 20px;
-}
-
-.playlist-move-buttons {
-  flex: 0 0 32px;
 }
 
 .playlist-lines {
@@ -1357,6 +1348,25 @@ body {
   outline: none;
   border-color: var(--active-border);
   background-color: var(--bg-hover);
+}
+
+.instrument-list-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 4px;
+  padding-top: 2px;
+  border-top: 1px solid var(--border-color);
+  font-size: 10px;
+}
+
+.instrument-info {
+  color: var(--text-secondary);
+}
+
+.instrument-controls {
+  display: flex;
+  gap: 4px;
 }
 
 /* Bottom Panels */
