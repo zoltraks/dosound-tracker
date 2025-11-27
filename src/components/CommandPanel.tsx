@@ -271,20 +271,20 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       {/* Playback Operations */}
       <div className="command-row">
         <button
-          onClick={onPlaySong}
+          onClick={isPlaying && !isPatternPlaying ? onStop : onPlaySong}
           className={`command-btn play-song-btn ${isPlaying && !isPatternPlaying ? 'playing' : ''}`}
         >
           PLAY SONG
         </button>
         <button
-          onClick={onPlayPattern}
-          className={`command-btn ${isPatternPlaying ? 'playing' : ''}`}
+          onClick={isPatternPlaying ? onStop : onPlayPattern}
+          className={`command-btn play-pattern-btn ${isPatternPlaying ? 'playing' : ''}`}
         >
           PLAY PATTERN
         </button>
         <button
           onClick={onStop}
-          className={`command-btn ${isPlaying ? 'playing' : ''}`}
+          className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
         >
           STOP
         </button>
