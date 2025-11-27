@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
+import { validateSongData } from './validation';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -445,7 +446,7 @@ export const parseSongFromYaml = (content: string): Song => {
     }
   }
 
-  return {
+  const song: Song = {
     title,
     author,
     year,
@@ -456,4 +457,6 @@ export const parseSongFromYaml = (content: string): Song => {
     playlist,
     instruments,
   };
+
+  return validateSongData(song);
 };
