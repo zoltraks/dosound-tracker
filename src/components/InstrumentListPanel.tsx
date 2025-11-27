@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
+import { ChevronUp, ChevronDown } from 'lucide-react';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import type { Instrument } from '../synth/SoundDriver';
 
@@ -10,6 +11,7 @@ interface InstrumentListPanelProps {
   setActiveSection: (section: NavigationSection) => void;
   onSelectInstrument: (instrument: Instrument) => void;
   onRenameInstrument: (name: string) => void;
+  onMoveInstrument: (index: number, direction: 'up' | 'down') => void;
 }
 
 export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
@@ -18,7 +20,8 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   activeSection,
   setActiveSection,
   onSelectInstrument,
-  onRenameInstrument
+  onRenameInstrument,
+  onMoveInstrument
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -81,6 +84,24 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
       return;
     }
 
+    // Ctrl+ArrowUp / Ctrl+ArrowDown: move current instrument up/down
+    if (event.ctrlKey) {
+      if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (currentIndex > 0) {
+          onMoveInstrument(currentIndex, 'up');
+        }
+        return;
+      }
+      if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (currentIndex < instruments.length - 1) {
+          onMoveInstrument(currentIndex, 'down');
+        }
+        return;
+      }
+    }
+
     switch (event.key.toUpperCase()) {
       case 'ENTER':
         event.preventDefault();
@@ -106,7 +127,14 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
         }
         break;
     }
-  }, [isActive, getInstrumentForSlot, onSelectInstrument, currentIndex]);
+  }, [
+    isActive,
+    currentIndex,
+    instruments.length,
+    getInstrumentForSlot,
+    onSelectInstrument,
+    onMoveInstrument
+  ]);
 
   const handleInstrumentClick = useCallback((slotIndex: number) => {
     setCurrentIndex(slotIndex);
@@ -179,42 +207,30 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                     displayName || '...'
                   )}
                 </span>
+                <div
+                  className="playlist-move-buttons"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    onClick={() => onMoveInstrument(slotIndex, 'down')}
+                    aria-label="Move instrument down"
+                    disabled={slotIndex >= instruments.length - 1}
+                  >
+                    <ChevronDown className="h-3 w-3 rotate-90" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onMoveInstrument(slotIndex, 'up')}
+                    aria-label="Move instrument up"
+                    disabled={slotIndex === 0}
+                  >
+                    <ChevronUp className="h-3 w-3 rotate-90" />
+                  </button>
+                </div>
               </div>
             );
           })}
-        </div>
-      </div>
-
-      <div className="instrument-list-footer">
-        <div className="instrument-info">
-          <span>
-            Current: {currentInstrument.id} {currentInstrument.name}
-          </span>
-        </div>
-
-        <div className="instrument-controls">
-          <button
-            className="nav-btn"
-            onClick={() => {
-              const newIndex = Math.max(0, currentIndex - 1);
-              setCurrentIndex(newIndex);
-              onSelectInstrument(getInstrumentForSlot(newIndex));
-            }}
-            disabled={currentIndex === 0}
-          >
-            ↑
-          </button>
-          <button
-            className="nav-btn"
-            onClick={() => {
-              const newIndex = Math.min(MAX_INSTRUMENTS - 1, currentIndex + 1);
-              setCurrentIndex(newIndex);
-              onSelectInstrument(getInstrumentForSlot(newIndex));
-            }}
-            disabled={currentIndex >= MAX_INSTRUMENTS - 1}
-          >
-            ↓
-          </button>
         </div>
       </div>
     </div>
