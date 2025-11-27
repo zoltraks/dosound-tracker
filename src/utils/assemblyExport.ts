@@ -1221,22 +1221,18 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
           }
 
           if (channelState.note) {
-            const sub = (channelState.subTick + 1) % 2;
-            channelState.subTick = sub;
-            if (sub === 0) {
-              const rawStep = channelState.envelopeStep;
-              const sustainIndex = channelState.sustainIndex;
-              const isReleased = channelState.released;
+            const rawStep = channelState.envelopeStep;
+            const sustainIndex = channelState.sustainIndex;
+            const isReleased = channelState.released;
 
-              if (
-                sustainIndex === null ||
-                sustainIndex === undefined ||
-                sustainIndex < 0 ||
-                isReleased ||
-                rawStep < sustainIndex
-              ) {
-                channelState.envelopeStep = rawStep + 1;
-              }
+            if (
+              sustainIndex === null ||
+              sustainIndex === undefined ||
+              sustainIndex < 0 ||
+              isReleased ||
+              rawStep < sustainIndex
+            ) {
+              channelState.envelopeStep = rawStep + 1;
             }
           }
         }

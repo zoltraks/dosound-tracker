@@ -20,3 +20,83 @@ For A-1 ($8E0) on channel A with volume $0A, D-2 ($6A6) on channel B with volume
 
 After export show summary dialog how many cycles were exported.
 Don't use alert function.
+
+
+---
+
+
+I have instrument with volume envelope that only has one step with full volume and the rest is silenced.
+
+When I do "EXPORT INST" assembly output is correct:
+
+```
+music:
+
+	; START
+
+	dc.b $7,$38        ; MX T+T+T
+	dc.b $8,$F         ; VA 15
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+	dc.b $1,$1,$0,$DD  ; TA C-4
+	dc.b $FF,$1        ; DL 2
+	dc.b $8,$0         ; VA 0
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+
+	; END
+
+	dc.b $8,$0         ; VA 0
+	dc.b $9,$0         ; VB 0
+	dc.b $A,$0         ; VC 0
+
+	dc.b $FF,$0        ; STOP
+```
+
+This is the song:
+
+```
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 2
+  length: 4
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - name: Pattern 01
+      number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+    - name: Pattern 02
+      number: "02"
+      steps: []
+    - name: Pattern 03
+      number: "03"
+      steps: []
+  instrument:
+    - number: "00"
+      volume: [15, 0]
+```
+
+When I use "EXPORT DUMP" gives me something like this:
+
+```
+music:
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$0F,$00,$00
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$0F,$00,$00
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$00,$00,$00
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$00,$00,$00
+```
+
+it has incorrect volume setting in second frame.
+Correct that.
+
+
+---
+
