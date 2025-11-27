@@ -4,7 +4,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
-import type { Instrument, Note, Pattern, Song } from './synth/SoundDriver';
+import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
 import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -25,6 +25,15 @@ import './App.css';
 
 declare const __APP_VERSION__: string;
 const APP_VERSION = __APP_VERSION__;
+
+type TrackClipboardStep = {
+  space?: boolean | number;
+  off?: boolean | number;
+  note?: string;
+  instrument?: string;
+  volume?: number;
+  [key: string]: unknown;
+};
 
 const App: React.FC = () => {
   
@@ -1508,18 +1517,18 @@ const App: React.FC = () => {
 
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const rawLines = pattern.lines || [];
-      const steps: any[] = [];
+      const steps: TrackClipboardStep[] = [];
 
       // Patterns are single-track internally (trackA). Track selection only chooses
       // which pattern from the playlist we operate on.
       for (let i = 0; i < targetLength; i++) {
         const line = rawLines[i] || { trackA: null, trackB: null, trackC: null };
-        const cell: any = line.trackA;
+        const cell = line.trackA;
 
-        const volRaw: any = (line as any).volume;
+        const volRaw = line.volume;
         const hasVolume = volRaw !== undefined && volRaw !== null;
 
-        let step: any;
+        let step: TrackClipboardStep;
 
         if (!cell) {
           // Space line. Use `space: 1` when there is an explicit volume nibble,
@@ -1550,7 +1559,7 @@ const App: React.FC = () => {
 
       let lastNonSpace = steps.length - 1;
       while (lastNonSpace >= 0) {
-        const ln: any = steps[lastNonSpace];
+        const ln = steps[lastNonSpace];
         if (ln && ln.space === true && Object.keys(ln).length === 1) {
           lastNonSpace--;
         } else {
@@ -1560,7 +1569,7 @@ const App: React.FC = () => {
 
       const trimmedSteps = steps.slice(0, lastNonSpace + 1);
 
-      const compressedSteps: any[] = [];
+      const compressedSteps: TrackClipboardStep[] = [];
 
       type RunType = 'none' | 'space' | 'volume-space';
       let runType: RunType = 'none';
@@ -1584,10 +1593,10 @@ const App: React.FC = () => {
         runCount = 0;
       };
 
-      const isPureSpace = (ln: any) =>
+      const isPureSpace = (ln: TrackClipboardStep) =>
         ln && ln.space === true && Object.keys(ln).length === 1;
 
-      const isVolumeSpace = (ln: any) =>
+      const isVolumeSpace = (ln: TrackClipboardStep) =>
         ln &&
         ln.space === 1 &&
         typeof ln.volume === 'number' &&
@@ -1603,7 +1612,7 @@ const App: React.FC = () => {
             runCount = 1;
           }
         } else if (isVolumeSpace(ln)) {
-          const vol = (ln as any).volume;
+          const vol = ln.volume ?? 0;
           if (runType === 'volume-space' && vol === runVolume) {
             runCount++;
           } else {
@@ -1663,27 +1672,28 @@ const App: React.FC = () => {
         return;
       }
 
-      let parsed: any;
+      let parsed: unknown;
       try {
-        parsed = yaml.load(text) as any;
+        parsed = yaml.load(text);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
         setTrackClipboardError('Failed to parse track data from clipboard.\n\n' + message);
         return;
       }
 
-      const stepsNode = parsed && typeof parsed === 'object' ? (parsed as any).steps : null;
+      const stepsNode =
+        parsed && typeof parsed === 'object' ? (parsed as { steps?: unknown }).steps ?? null : null;
       if (!Array.isArray(stepsNode)) {
         setTrackClipboardError('Track clipboard data is invalid.\n\nExpected YAML with root "steps" list.');
         return;
       }
 
-      const rawSteps = stepsNode as any[];
-      const expandedSteps: any[] = [];
+      const rawSteps = stepsNode as unknown[];
+      const expandedSteps: TrackClipboardStep[] = [];
 
       for (const node of rawSteps) {
         if (node && typeof node === 'object') {
-          const ln: any = node;
+          const ln = node as TrackClipboardStep;
           const keys = Object.keys(ln);
           const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
           const onlySpaceOrOff = keys.every(k => k === 'space' || k === 'off');
@@ -1700,7 +1710,7 @@ const App: React.FC = () => {
 
           // Pure runs without volume
           if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
-            const count = isNumericSpace ? spaceVal : offVal;
+            const count = (isNumericSpace ? spaceVal : offVal) as number;
             const isOff = isNumericOff && !isNumericSpace;
             for (let i = 0; i < count; i++) {
               expandedSteps.push(isOff ? { off: true } : { space: true });
@@ -1710,7 +1720,7 @@ const App: React.FC = () => {
 
           // Volume-only runs
           if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
-            const count = isNumericSpace ? spaceVal : offVal;
+            const count = (isNumericSpace ? spaceVal : offVal) as number;
             const isOff = isNumericOff && !isNumericSpace;
             const vol = ln.volume;
             for (let i = 0; i < count; i++) {
@@ -1722,7 +1732,7 @@ const App: React.FC = () => {
           }
         }
 
-        expandedSteps.push(node);
+        expandedSteps.push(node as TrackClipboardStep);
       }
 
       let trackId: 'A' | 'B' | 'C' = lastTrackId;
@@ -1742,22 +1752,25 @@ const App: React.FC = () => {
 
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const existingLines = pattern.lines || [];
-      const newLines: any[] = [];
+      const newLines: PatternLine[] = [];
 
       // Overwrite the monotrack data (trackA) of the selected pattern with clipboard steps.
       for (let i = 0; i < targetLength; i++) {
         const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
-        const line: any = { ...baseLine };
+        const line: PatternLine = {
+          trackA: baseLine.trackA,
+          trackB: baseLine.trackB,
+          trackC: baseLine.trackC,
+        };
         // Overwrite any existing per-line volume; we'll set it from YAML if present.
-        delete (line as any).volume;
         const rawStep = expandedSteps[i];
 
         if (rawStep && typeof rawStep === 'object') {
-          const ln: any = rawStep;
+          const ln = rawStep as TrackClipboardStep;
 
           if (ln.off === true) {
             // Explicit key-release step: use internal '===' marker.
-            line.trackA = { note: '===', octave: 0, instrument: '00' } as any;
+            line.trackA = { note: '===', octave: 0, instrument: '00' };
           } else if (ln.space === true) {
             line.trackA = null;
           } else if (typeof ln.note === 'string') {
@@ -1784,12 +1797,12 @@ const App: React.FC = () => {
           }
 
           // Parse optional per-step volume nibble.
-          const volRaw = (ln as any).volume;
+          const volRaw = ln.volume;
           if (volRaw !== undefined && volRaw !== null) {
             const volNum = Number(volRaw);
             if (Number.isFinite(volNum)) {
               const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-              (line as any).volume = clamped;
+              line.volume = clamped;
             }
           }
         } else {

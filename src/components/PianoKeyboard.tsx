@@ -15,6 +15,15 @@ interface PianoKeyboardProps {
   onChangeBaseKey: (note: string, octave: number) => void;
 }
 
+interface PianoKey {
+  note: string;
+  octave: number;
+  isBlackKey: boolean;
+  keyId: string;
+  position: number;
+  stableKey: string;
+}
+
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   activeSection,
   setActiveSection,
@@ -39,8 +48,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
 
   // Generate piano keys for 5 octaves with proper layout
-  const generatePianoKeys = () => {
-    const keys = [];
+  const generatePianoKeys = (): PianoKey[] => {
+    const keys: PianoKey[] = [];
     const startOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE - 4, currentOctave - 1));
     
     for (let octave = startOctave; octave <= startOctave + 4 && octave <= MAX_OCTAVE; octave++) {
@@ -441,7 +450,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     }
   }, [pressedKeys, stopNote]);
 
-  const getKeyClass = useCallback((key: any) => {
+  const getKeyClass = useCallback((key: PianoKey) => {
     const classes = ['piano-key'];
     
     if (key.isBlackKey) {

@@ -33,6 +33,22 @@ interface InstrumentNodeYaml {
   mode?: unknown;
 }
 
+interface PatternNodeYaml {
+  number?: unknown;
+  name?: unknown;
+  steps?: unknown;
+  lines?: unknown;
+}
+
+interface PatternStepNodeYaml {
+  space?: unknown;
+  off?: unknown;
+  volume?: unknown;
+  note?: unknown;
+  instrument?: unknown;
+  [key: string]: unknown;
+}
+
 export const DEFAULT_BASE_KEY = 'C-4';
 export const DEFAULT_SONG_TITLE = 'New Song';
 export const DEFAULT_SONG_AUTHOR = 'Author Name';
@@ -163,35 +179,37 @@ export const parseSongFromYaml = (content: string): Song => {
     throw new Error('Song patterns are missing');
   }
 
-  const patterns: Pattern[] = patternNodes.map((pNode: any, patternIndex: number) => {
+  const patterns: Pattern[] = patternNodes.map((pNode, patternIndex: number) => {
     if (!pNode || typeof pNode !== 'object') {
       throw new Error(`Invalid pattern at index ${patternIndex}`);
     }
 
-    const rawNumber = pNode.number;
+    const patternNode = pNode as PatternNodeYaml;
+
+    const rawNumber = patternNode.number;
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
         ? rawNumber.trim().toUpperCase()
         : patternIndex.toString(16).padStart(2, '0').toUpperCase();
 
     const name =
-      typeof pNode.name === 'string' && pNode.name.trim()
-        ? pNode.name
+      typeof patternNode.name === 'string' && patternNode.name.trim()
+        ? patternNode.name
         : `Pattern ${number}`;
 
-    const rawLineNodes = Array.isArray(pNode.steps)
-      ? pNode.steps
-      : Array.isArray(pNode.lines)
-        ? pNode.lines
+    const rawLineNodes = Array.isArray(patternNode.steps)
+      ? patternNode.steps
+      : Array.isArray(patternNode.lines)
+        ? patternNode.lines
         : [];
-    const expandedLineNodes: any[] = [];
+    const expandedLineNodes: unknown[] = [];
 
     // Expand compressed space/off runs (space: N / off: N) into individual logical lines.
     // Support both pure runs and volume-only runs, e.g. `space: 3` or
     // `space: 3, volume: 14`.
     for (const nodeLine of rawLineNodes) {
       if (nodeLine && typeof nodeLine === 'object') {
-        const ln: any = nodeLine;
+        const ln = nodeLine as PatternStepNodeYaml;
 
         const keys = Object.keys(ln);
         const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
@@ -206,7 +224,7 @@ export const parseSongFromYaml = (content: string): Song => {
 
         // Pure runs without volume
         if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
-          const count = isNumericSpace ? spaceVal : offVal;
+          const count = (isNumericSpace ? spaceVal : offVal) as number;
           const isOff = isNumericOff && !isNumericSpace;
           for (let i = 0; i < count; i++) {
             expandedLineNodes.push(isOff ? { off: true } : { space: true });
@@ -216,7 +234,7 @@ export const parseSongFromYaml = (content: string): Song => {
 
         // Volume-only runs: replicate the volume onto each expanded step.
         if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
-          const count = isNumericSpace ? spaceVal : offVal;
+          const count = (isNumericSpace ? spaceVal : offVal) as number;
           const isOff = isNumericOff && !isNumericSpace;
           const vol = ln.volume;
           for (let i = 0; i < count; i++) {
@@ -240,7 +258,7 @@ export const parseSongFromYaml = (content: string): Song => {
       const line: PatternLine = { trackA: null, trackB: null, trackC: null };
 
       if (rawLineNode && typeof rawLineNode === 'object') {
-        const ln: any = rawLineNode;
+        const ln = rawLineNode as PatternStepNodeYaml;
 
         if (ln.off === true) {
           // Empty or note-off line: currently treated as space
