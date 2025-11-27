@@ -430,12 +430,7 @@ const App: React.FC = () => {
       console.log('Starting audio initialization...');
 
       console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-      console.log('AudioContext state:', audioContext.state);
-
-      if (audioContext.state === 'suspended') {
-        audioContext.resume();
-        console.log('AudioContext resumed');
-      }
+      console.log('AudioContext initial state:', audioContext.state);
 
       const ym2149 = new YM2149(audioContext);
       ym2149Ref.current = ym2149;
@@ -467,16 +462,24 @@ const App: React.FC = () => {
 
       const handleUserInteraction = () => {
         if (audioContext.state === 'suspended') {
-          audioContext.resume();
-          console.log('AudioContext resumed by user interaction');
+          void audioContext.resume().then(() => {
+            console.log('AudioContext resumed by user interaction');
+          }).catch(err => {
+            console.error('AudioContext resume failed:', err);
+          });
         }
       };
 
-      document.addEventListener('click', handleUserInteraction);
+      const userEvents: Array<keyof DocumentEventMap> = ['click', 'keydown', 'pointerdown', 'touchstart'];
+      userEvents.forEach(eventType => {
+        document.addEventListener(eventType, handleUserInteraction);
+      });
 
       return () => {
         window.clearTimeout(stopToneTimeout);
-        document.removeEventListener('click', handleUserInteraction);
+        userEvents.forEach(eventType => {
+          document.removeEventListener(eventType, handleUserInteraction);
+        });
         if (ym2149Ref.current) {
           ym2149Ref.current.dispose();
           ym2149Ref.current = null;
