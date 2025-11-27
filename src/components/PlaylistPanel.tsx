@@ -95,7 +95,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     setEditingPattern(currentPattern === '--' ? '' : currentPattern);
   }, [playlist]);
 
-  const finishEditingPattern = useCallback(() => {
+  const finishEditingPattern = useCallback((options?: { refocusPlaylist?: boolean }) => {
     if (editingPattern.trim() === '') {
       updatePattern(currentLine, currentTrack, '--');
     } else {
@@ -104,6 +104,11 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     setEditingPattern('');
     
     // Refocus the playlist container after editing completes
+    const shouldRefocusPlaylist = options?.refocusPlaylist !== false;
+    if (!shouldRefocusPlaylist) {
+      return;
+    }
+
     setTimeout(() => {
       if (playlistRef.current) {
         playlistRef.current.focus();
@@ -301,6 +306,17 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     setActiveSection(section);
   }, [setActiveSection]);
 
+  const handlePatternRightClick = useCallback((
+    lineIndex: number,
+    track: 'A' | 'B' | 'C',
+    event: React.MouseEvent
+  ) => {
+    event.preventDefault();
+    event.stopPropagation();
+    handlePatternClick(lineIndex, track);
+    handleTrackHeaderClick(track);
+  }, [handlePatternClick, handleTrackHeaderClick]);
+
   const formatPatternDisplay = useCallback((patternId: string) => {
     if (patternId === '--') return '--';
     if (patternId.startsWith('^^')) return patternId;
@@ -345,6 +361,11 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
               event.stopPropagation();
               handleTrackHeaderClick('A');
             }}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              handleTrackHeaderClick('A');
+            }}
           >
             A
           </span>
@@ -354,12 +375,22 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
               event.stopPropagation();
               handleTrackHeaderClick('B');
             }}
+            onContextMenu={(event) => {
+              event.preventDefault();
+              event.stopPropagation();
+              handleTrackHeaderClick('B');
+            }}
           >
             B
           </span>
           <span
             className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}
             onClick={(event) => {
+              event.stopPropagation();
+              handleTrackHeaderClick('C');
+            }}
+            onContextMenu={(event) => {
+              event.preventDefault();
               event.stopPropagation();
               handleTrackHeaderClick('C');
             }}
@@ -379,6 +410,12 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                 key={actualIndex}
                 className={getLineClass(actualIndex)}
                 onClick={() => handleLineClick(actualIndex)}
+                onContextMenu={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  handlePatternClick(actualIndex, currentTrack);
+                  handleTrackHeaderClick(currentTrack);
+                }}
               >
                 <span className="line-number">
                   {actualIndex.toString(16).padStart(2, '0').toUpperCase()}
@@ -391,10 +428,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     className="pattern-input"
                     value={editingPattern}
                     onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
-                    onBlur={finishEditingPattern}
+                    onBlur={() => finishEditingPattern()}
                     onKeyDown={(e) => {
                       const key = e.key.toUpperCase();
-                      if (e.key === 'Enter') {
+                      if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        finishEditingPattern({ refocusPlaylist: false });
+                        handleTrackHeaderClick('A');
+                      } else if (e.key === 'Enter') {
                         finishEditingPattern();
                       } else if (e.key === 'Escape') {
                         setEditingPattern('');
@@ -414,6 +456,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                       e.stopPropagation();
                       handlePatternClick(actualIndex, 'A');
                     }}
+                    onContextMenu={(e) => handlePatternRightClick(actualIndex, 'A', e)}
                   >
                     {formatPatternDisplay(entry.trackA)}
                   </span>
@@ -426,10 +469,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     className="pattern-input"
                     value={editingPattern}
                     onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
-                    onBlur={finishEditingPattern}
+                    onBlur={() => finishEditingPattern()}
                     onKeyDown={(e) => {
                       const key = e.key.toUpperCase();
-                      if (e.key === 'Enter') {
+                      if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        finishEditingPattern({ refocusPlaylist: false });
+                        handleTrackHeaderClick('B');
+                      } else if (e.key === 'Enter') {
                         finishEditingPattern();
                       } else if (e.key === 'Escape') {
                         setEditingPattern('');
@@ -449,6 +497,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                       e.stopPropagation();
                       handlePatternClick(actualIndex, 'B');
                     }}
+                    onContextMenu={(e) => handlePatternRightClick(actualIndex, 'B', e)}
                   >
                     {formatPatternDisplay(entry.trackB)}
                   </span>
@@ -461,10 +510,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                     className="pattern-input"
                     value={editingPattern}
                     onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
-                    onBlur={finishEditingPattern}
+                    onBlur={() => finishEditingPattern()}
                     onKeyDown={(e) => {
                       const key = e.key.toUpperCase();
-                      if (e.key === 'Enter') {
+                      if (e.key === 'Enter' && e.ctrlKey) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        finishEditingPattern({ refocusPlaylist: false });
+                        handleTrackHeaderClick('C');
+                      } else if (e.key === 'Enter') {
                         finishEditingPattern();
                       } else if (e.key === 'Escape') {
                         setEditingPattern('');
@@ -484,6 +538,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                       e.stopPropagation();
                       handlePatternClick(actualIndex, 'C');
                     }}
+                    onContextMenu={(e) => handlePatternRightClick(actualIndex, 'C', e)}
                   >
                     {formatPatternDisplay(entry.trackC)}
                   </span>

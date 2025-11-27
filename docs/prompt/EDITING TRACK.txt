@@ -1,0 +1,9 @@
+When editing a track disable key repeat, I need to release key first and then press again.
+
+In Playlist when I click on a track header either left or right mouse I would like to switch focus to the corresponding track editor.
+
+In Playlist when I am editing pattern number I would like to be able to press Ctrl+Enter and it should apply the edited value and change the focus to the corresponding track editor.
+
+In Playlist when I click with right mouse button on any position and column, select that position and change focus to the corresponding track.
+
+Make track content (notes, volumes) to not be selectable by mouse.

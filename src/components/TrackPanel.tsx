@@ -442,7 +442,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         </span>
       </div>
 
-      <div className="track-content">
+      <div className="track-content" style={{ userSelect: 'none' }}>
         {trackNotes.map((noteData, lineIndex) => {
           const volume = pattern?.lines[lineIndex]?.volume;
           const isCurrentLine = lineIndex === currentLine && isActive;
