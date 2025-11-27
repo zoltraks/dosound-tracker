@@ -523,19 +523,31 @@ export const useDataManagement = () => {
       const hasLoop =
         typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop);
 
-      const songNode = {
-        title: currentSong.title,
-        author: currentSong.author,
-        year: currentSong.year,
-        speed: currentSong.speed,
-        length: currentSong.patternLength,
-        ...(hasLoop
-          ? { loop: Math.max(0, Math.floor(currentSong.loop as number)) }
-          : {}),
-        playlist,
-        pattern: patterns,
-        instrument: instruments
-      };
+      const songNode: Record<string, unknown> = {};
+
+      const trimmedTitle = (currentSong.title || '').trim();
+      if (trimmedTitle) {
+        songNode.title = currentSong.title;
+      }
+
+      const trimmedAuthor = (currentSong.author || '').trim();
+      if (trimmedAuthor) {
+        songNode.author = currentSong.author;
+      }
+
+      const yearValue = Number(currentSong.year);
+      if (Number.isFinite(yearValue) && yearValue > 0) {
+        songNode.year = yearValue;
+      }
+
+      songNode.speed = currentSong.speed;
+      songNode.length = currentSong.patternLength;
+      if (hasLoop) {
+        songNode.loop = Math.max(0, Math.floor(currentSong.loop as number));
+      }
+      songNode.playlist = playlist;
+      songNode.pattern = patterns;
+      songNode.instrument = instruments;
 
       const exportData = {
         song: songNode
