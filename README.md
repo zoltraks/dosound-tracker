@@ -24,26 +24,15 @@ The application's core feature is its ability to **export music data directly in
 
 The instrument editor provides granular control over the YM2149's parameters, editable on a timeline:
 
-**Volume Envelope:** Define the amplitude over time for precise sound shaping (similar to ADSR).
+**Mode:** Choose between **tone** (square wave) or **noise** generation.
 
-**Tone/Noise Selection:** Choose between **tone** (square wave) or **noise** generation.
-
-**Noise Generator Value:** Optional setting for the noise register.
-
-**Vibrato:** Control the **pitch deviation (cents)** for vibrato effects.
+**Volume:** Define the amplitude over time for precise sound shaping (similar to ADSR).
 
 **Arpeggio:** Define pitch shifts using **semitone offsets** to create arpeggiated patterns.
 
-## Timing Modes
+**Pitch:** Control the **pitch deviation (cents)** for vibrato effects.
 
-The tracker is designed around the Atari ST's system timing but offers flexibility.
-
-**Standard Playback Rate:** The application plays back sounds at a base frequency of **50 Hz** (synchronized with the ST's VBLANK interrupt).
-
-**DOSOUND Mode (Default):** This mode respects a critical limitation of the system **DOSOUND** function, where the smallest supported delay is **2 VBL cycles** (delay value of 1). Consequently, the smallest unit of time in this mode is **1/25th of a second**.
-
-**Fast Mode (DOSOUND Disabled):** By disabling the strict DOSOUND timing constraint, the minimum time unit becomes **1/50th of a second**, allowing for finer temporal resolution.
-*Note*: Music created in this mode **cannot** be guaranteed to play back correctly using the system's native XBIOS DOSOUND function.
+**Noise:** Optional setting for the noise register.
 
 ## Project Guidelines
 
