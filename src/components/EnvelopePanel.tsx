@@ -78,6 +78,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     if (!isActive) return;
 
     const key = event.key.toUpperCase();
+    const digitMatch = event.code.match(/^Digit([0-9])$/);
+    const hexKey = digitMatch ? digitMatch[1] : key;
     
     if (key === 'ARROWLEFT') {
       event.preventDefault();
@@ -106,23 +108,23 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
         setCurrentPosition(nextPosition);
       }
-    } else if (type === 'volume' && /^[0-9A-F]$/.test(key)) {
+    } else if (type === 'volume' && /^[0-9A-F]$/.test(hexKey)) {
       event.preventDefault();
       if (onChange) {
         const newData = [...envelopeData];
-        const newValue = parseInt(key, 16);
+        const newValue = parseInt(hexKey, 16);
         newData[currentPosition] = newValue;
         setEnvelopeData(newData);
         onChange(newData);
       }
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
-    } else if (type === 'arpeggio' && /^[0-9A-F]$/.test(key)) {
+    } else if (type === 'arpeggio' && /^[0-9A-F]$/.test(hexKey)) {
       event.preventDefault();
       if (onChange) {
         const newData = [...envelopeData];
-        let newValue = parseInt(key, 16);
-        if (event.shiftKey && key !== '0') {
+        let newValue = parseInt(hexKey, 16);
+        if (event.shiftKey && hexKey !== '0') {
           newValue = -newValue;
         }
         newData[currentPosition] = newValue;
@@ -131,12 +133,12 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       }
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
-    } else if (type === 'noise' && /^[0-9A-F]$/.test(key)) {
+    } else if (type === 'noise' && /^[0-9A-F]$/.test(hexKey)) {
       event.preventDefault();
       if (onChange) {
         const newData = [...envelopeData];
-        let newValue = parseInt(key, 16);
-        if (event.shiftKey && key !== '0') {
+        let newValue = parseInt(hexKey, 16);
+        if (event.shiftKey) {
           newValue = Math.min(NOISE_MAX, newValue + 16);
         }
         newData[currentPosition] = newValue;
