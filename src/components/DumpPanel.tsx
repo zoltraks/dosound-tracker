@@ -121,13 +121,23 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
   ];
 
   const handleCopyDump = () => {
+    const TARGET_LEFT_WIDTH = 10;
+
     const lines: string[] = rows.map((row) => {
-      const parts: string[] = [];
-      parts.push(`${row.leftLabel} ${row.leftValue}`);
-      if (row.rightLabel && row.rightValue) {
-        parts.push(`${row.rightLabel} ${row.rightValue}`);
+      const leftText = `${row.leftLabel} ${row.leftValue}`;
+      const hasRight = !!row.rightLabel && !!row.rightValue;
+
+      if (!hasRight) {
+        return leftText;
       }
-      return parts.join('  ');
+
+      const paddingSpaces = Math.max(1, TARGET_LEFT_WIDTH - leftText.length);
+      const paddedLeft = leftText + ' '.repeat(paddingSpaces);
+
+      const isNoiseRow = row.rightLabel === 'NS';
+      const rightSeparator = isNoiseRow ? ' ' : '  ';
+
+      return `${paddedLeft}${row.rightLabel}${rightSeparator}${row.rightValue}`;
     });
 
     copyToClipboard(lines.join('\n'));

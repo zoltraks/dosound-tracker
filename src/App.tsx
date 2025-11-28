@@ -67,6 +67,7 @@ const App: React.FC = () => {
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
   const [trackClipboardError, setTrackClipboardError] = useState('');
+  const [isDebugInfoOpen, setIsDebugInfoOpen] = useState(false);
   const [isInstrumentDeleteOpen, setIsInstrumentDeleteOpen] = useState(false);
   const [instrumentDeleteUsage, setInstrumentDeleteUsage] = useState<{
     instrumentId: string;
@@ -2894,7 +2895,29 @@ const App: React.FC = () => {
   }, []);
 
   const handleToggleDebugMode = useCallback(() => {
-    setIsDebugMode(prev => !prev);
+    setIsDebugMode(prev => {
+      const next = !prev;
+
+      if (!prev && next) {
+        let alreadyShown = false;
+        try {
+          alreadyShown = localStorage.getItem('dosound-tracker-debug-info-shown') === '1';
+        } catch {
+          // ignore
+        }
+
+        if (!alreadyShown) {
+          setIsDebugInfoOpen(true);
+          try {
+            localStorage.setItem('dosound-tracker-debug-info-shown', '1');
+          } catch {
+            // ignore
+          }
+        }
+      }
+
+      return next;
+    });
   }, []);
 
   const handleOptimizeSong = useCallback(() => {
@@ -3277,7 +3300,8 @@ const App: React.FC = () => {
         !!instrumentOperationSummary ||
         isAboutOpen ||
         isChangelogOpen ||
-        isDownloadOpen;
+        isDownloadOpen ||
+        isDebugInfoOpen;
 
       const hasConfirmModal =
         isTransposeOpen ||
@@ -3410,6 +3434,10 @@ const App: React.FC = () => {
         }
         if (renumberSummary) {
           handleCloseRenumberSummary();
+          return;
+        }
+        if (isDebugInfoOpen) {
+          setIsDebugInfoOpen(false);
           return;
         }
         if (isAboutOpen) {
@@ -3853,6 +3881,18 @@ const App: React.FC = () => {
           title="Instrument Operation"
           message={instrumentOperationSummary}
           onClose={handleCloseInstrumentOperationSummary}
+        />
+
+        <InformationModal
+          isOpen={isDebugInfoOpen}
+          title="Debug mode enabled"
+          message={
+            'Debug mode is now enabled.\n\n' +
+            'In this mode the tracker will output additional logging to the browser console.\n' +
+            'This extra logging may cause small delays or timing jitter in song playback due to performance overhead.\n\n' +
+            'For normal composing and playback, you can turn debug mode off again.'
+          }
+          onClose={() => setIsDebugInfoOpen(false)}
         />
 
         <ConfirmationModal
