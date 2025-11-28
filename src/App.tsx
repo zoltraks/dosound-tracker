@@ -3535,7 +3535,7 @@ const App: React.FC = () => {
         <HeaderPanel
           title={currentSong.title}
           isDarkMode={isDarkMode}
-          onToggleTheme={() => setIsDarkMode(!isDarkMode)}
+          onToggleTheme={toggleTheme}
           currentOctave={currentOctave}
           onOctaveChange={handleOctaveChange}
           onShowAbout={handleShowAbout}
