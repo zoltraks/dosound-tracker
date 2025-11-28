@@ -31,8 +31,8 @@ Examples of the YAML formats can be found under:
 
 ```yaml
 song:
-  title: "Title"          # optional string
-  author: "Author"        # optional string
+  title: "Title"           # optional string
+  author: "Author"         # optional string
   year: 2025               # optional integer
   speed: 6                 # required, positive integer (clamped and forced even)
   length: 64               # required, pattern length in rows (4..256)
@@ -59,8 +59,7 @@ song:
     - A: "00"  # pattern ID used for track A
       B: "01"  # pattern ID used for track B
       C: "02"  # pattern ID used for track C
-    - A: "03"
-      # B or C omitted → treated as "--"
+    - A: "03"  # B or C omitted → treated as "--"
 ```
 
 - `A`, `B`, `C` values should be strings (pattern identifiers such as `"01"`, `"1A"`).
@@ -75,8 +74,8 @@ song:
 Each pattern node has:
 
 ```yaml
-- number: "01"        # pattern ID (string recommended)
-  name: "Pattern 01"  # optional
+- number: "01"         # pattern ID (string recommended)
+  name: "Pattern 01"   # optional
   steps: [...]         # or `lines: [...]`
 ```
 
@@ -135,9 +134,8 @@ Loader behaviour:
 Each instrument node has:
 
 ```yaml
-- number: "00"          # instrument slot ID (hex string recommended)
-  name: "Bass"          # optional
-  base: "C-3"           # optional base key
+- name: "Bass"           # optional
+  base: "C-3"            # optional base key
   octave: 1              # optional, clamped
   sustain: 8             # optional, >=0 integer index
   volume: [ ... ]        # required envelope (trimmed)
