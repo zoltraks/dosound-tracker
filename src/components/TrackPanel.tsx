@@ -195,10 +195,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Navigation
     if (key === 'ARROWUP') {
       event.preventDefault();
-      onLineChange(Math.max(0, currentLine - 1));
+      const length = Math.max(1, patternLength || 1);
+      const wrappedIndex = ((currentLine - 1) % length + length) % length;
+      onLineChange(wrappedIndex);
     } else if (key === 'ARROWDOWN') {
       event.preventDefault();
-      onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+      const length = Math.max(1, patternLength || 1);
+      const wrappedIndex = (currentLine + 1) % length;
+      onLineChange(wrappedIndex);
     } else if (key === 'PAGEUP') {
       event.preventDefault();
       const length = Math.max(1, patternLength || 1);
@@ -305,8 +309,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         }
 
         onPatternChange(newPattern);
-        // Move to next line
-        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+        // Move to next line (wrap around pattern length)
+        const length = Math.max(1, patternLength || 1);
+        const wrappedIndex = (currentLine + 1) % length;
+        onLineChange(wrappedIndex);
       }
     } else if (!event.ctrlKey && key === '-') {
       event.preventDefault();
@@ -320,7 +326,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine].trackA = noteOff;
 
         onPatternChange(newPattern);
-        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+        const length = Math.max(1, patternLength || 1);
+        const wrappedIndex = (currentLine + 1) % length;
+        onLineChange(wrappedIndex);
       }
     } else if (event.ctrlKey && key === '-') {
       event.preventDefault();
@@ -351,8 +359,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine].volume = clamped;
 
         onPatternChange(newPattern);
-        // Move to next line after entering a volume nibble
-        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+        // Move to next line after entering a volume nibble (wrap around pattern length)
+        const length = Math.max(1, patternLength || 1);
+        const wrappedIndex = (currentLine + 1) % length;
+        onLineChange(wrappedIndex);
       }
     } else if (KEYBOARD_TO_NOTE[key]) {
       event.preventDefault();
