@@ -20,6 +20,7 @@ interface TrackPanelProps {
   onTogglePatternFromCursor: (lineIndex: number) => void;
   currentColumn: 'note' | 'volume';
   setCurrentColumn: (column: 'note' | 'volume') => void;
+  focusRevision: number;
 }
 
 export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
@@ -38,7 +39,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     isTargetTrack,
     onTogglePatternFromCursor,
     currentColumn,
-    setCurrentColumn
+    setCurrentColumn,
+    focusRevision
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -170,7 +172,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     if (isActive && trackRef.current) {
       trackRef.current.focus();
     }
-  }, [isActive]);
+  }, [isActive, focusRevision]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;

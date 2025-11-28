@@ -303,7 +303,6 @@ body {
   gap: 1px;
   padding: 4px;
   background-color: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-color);
   justify-content: center;
 }
 
@@ -1071,12 +1070,12 @@ body {
   margin-bottom: 4px;
 }
 
-/* Tone/Noise Panel */
-.tone-noise {
+/* Mode Panel */
+.mode-panel {
   min-height: 40px;
 }
 
-.tone-noise-content {
+.mode-content {
   display: flex;
   gap: 2px;
   flex-wrap: wrap;
@@ -1091,7 +1090,7 @@ body {
   height: 20px; /* Reduced height for mode panel */
 }
 
-.tone-noise-cell {
+.mode-cell {
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
   padding: 2px 4px;
@@ -1101,11 +1100,11 @@ body {
   text-align: center;
 }
 
-.tone-noise-cell:hover {
+.mode-cell:hover {
   background-color: var(--hover-bg);
 }
 
-.tone-noise-cell.current {
+.mode-cell.current {
   background-color: var(--active-bg);
   border-color: var(--active-border);
 }
@@ -1213,7 +1212,6 @@ body {
 
 .playlist-content {
   display: flex;
-  overflow-y: scroll;
   flex-direction: column;
   flex: 1;
   min-height: 0;
@@ -1255,7 +1253,7 @@ body {
 
 .playlist-lines {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   min-height: 0;
 }
 
@@ -1804,8 +1802,8 @@ body {
   text-align: right;
 }
 
-/* Tone/Noise Panel Styles */
-.tone-noise-bar {
+/* Mode Panel Styles */
+.mode-bar {
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -1851,18 +1849,18 @@ body {
   box-shadow: 0 0 4px var(--accent-color);
 }
 
-.tone-noise-emoji {
+.mode-emoji {
   font-size: 10px;
   line-height: 1;
   opacity: 0.8;
   pointer-events: none;
 }
 
-.tone-noise-bar:hover .tone-noise-emoji {
+.mode-bar:hover .mode-emoji {
   opacity: 1;
 }
 
-.tone-noise-bar.current .tone-noise-emoji {
+.mode-bar.current .mode-emoji {
   opacity: 1;
   transform: scale(1.1);
 }

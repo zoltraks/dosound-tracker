@@ -64,8 +64,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         newValue = Math.max(PITCH_MIN, Math.min(PITCH_MAX, currentValue + delta));
         break;
       case 'mode':
-        // Toggle between tone and noise
-        newValue = currentValue === 0 ? 1 : 0;
+        // Clamp between 0 (tone), 1 (noise) and 2 (tone+noise)
+        newValue = Math.max(0, Math.min(2, currentValue + delta));
         break;
     }
 
@@ -192,7 +192,9 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       case 'pitch':
         return value >= 0 ? `+${value}` : value.toString();
       case 'mode':
-        return value === 0 ? 'TONE' : 'NOISE';
+        if (value === 0) return 'TONE';
+        if (value === 1) return 'NOISE';
+        return 'BOTH';
       default:
         return value.toString();
     }
@@ -249,11 +251,11 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         onClick={() => setActiveSection(sectionName)}
       >
         <div className="envelope-header">{getTitle()}</div>
-        <div className="tone-noise-content">
+        <div className="mode-content">
           {envelopeData.slice(0, 16).map((value, index) => (
             <div
               key={index}
-              className={`tone-noise-cell ${index === currentPosition && isActive ? 'current' : ''}`}
+              className={`mode-cell ${index === currentPosition && isActive ? 'current' : ''}`}
               onClick={() => handlePositionClick(index)}
             >
               {formatValue(value)}

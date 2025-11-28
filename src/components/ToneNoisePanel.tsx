@@ -51,7 +51,8 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
       if (onChange) {
         const source = toneNoiseData;
         const newData = [...source];
-        newData[currentPosition] = Math.min(1, newData[currentPosition] + 1);
+        const currentValue = newData[currentPosition] ?? 0;
+        newData[currentPosition] = Math.min(2, currentValue + 1);
         onChange(newData);
       }
     } else if (key === 'ARROWDOWN') {
@@ -59,7 +60,16 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
       if (onChange) {
         const source = toneNoiseData;
         const newData = [...source];
-        newData[currentPosition] = Math.max(0, newData[currentPosition] - 1);
+        const currentValue = newData[currentPosition] ?? 0;
+        newData[currentPosition] = Math.max(0, currentValue - 1);
+        onChange(newData);
+      }
+    } else if (key === 'B') {
+      event.preventDefault();
+      if (onChange) {
+        const source = toneNoiseData;
+        const newData = [...source];
+        newData[currentPosition] = 2;
         onChange(newData);
       }
     } else if (key === ' ') {
@@ -67,7 +77,8 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
       if (onChange) {
         const source = toneNoiseData;
         const newData = [...source];
-        newData[currentPosition] = newData[currentPosition] === 0 ? 1 : 0;
+        const currentValue = newData[currentPosition] ?? 0;
+        newData[currentPosition] = (currentValue + 1) % 3;
         onChange(newData);
       }
     }
@@ -82,7 +93,8 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
     if (onChange) {
       const source = toneNoiseData;
       const newData = [...source];
-      newData[index] = newData[index] === 0 ? 1 : 0;
+      const currentValue = newData[index] ?? 0;
+      newData[index] = (currentValue + 1) % 3;
       onChange(newData);
     }
     setCurrentPosition(index);
@@ -94,9 +106,20 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   };
 
   const getBarColor = (value: number) => {
-    // Use different colors based on T (0) or N (1) value
-    const color = value === 0 ? '#f59e0b' : '#3fbbc8'; // Orange for T (tone), cyan for N (noise)
-    return color;
+    // Use different colors based on mode value: 0=T, 1=N, 2=T+N
+    if (value === 0) {
+      return '#f59e0b'; // Orange for T (tone)
+    }
+    if (value === 1) {
+      return '#3fbbc8'; // Cyan for N (noise)
+    }
+    return '#a855f7'; // Purple for B (both)
+  };
+
+  const getModeLabel = (value: number) => {
+    if (value === 0) return 'Tone';
+    if (value === 1) return 'Noise';
+    return 'Tone+Noise';
   };
 
   const getTitle = () => {
@@ -118,14 +141,14 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
           {toneNoiseData.map((value, index) => (
             <div
               key={index}
-              className={`envelope-bar tone-noise-bar ${index === currentPosition && isActive ? 'current' : ''}`}
+              className={`envelope-bar mode-bar ${index === currentPosition && isActive ? 'current' : ''}`}
               style={{ 
                 backgroundColor: getBarColor(value)
               }}
               onClick={() => handleBarClick(index)}
-              title={`Pos: ${index.toString(16).toUpperCase()} Mode: ${value === 0 ? 'Tone' : 'Noise'}`}
+              title={`Pos: ${index.toString(16).toUpperCase()} Mode: ${getModeLabel(value)}`}
             >
-              <div className="tone-noise-emoji">
+              <div className="mode-emoji">
                 {getBarEmoji()}
               </div>
             </div>
@@ -139,7 +162,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
               className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
               onClick={() => handlePositionClick(index)}
             >
-              {value === 0 ? 'T' : 'N'}
+              {value === 0 ? 'T' : value === 1 ? 'N' : 'B'}
             </div>
           ))}
         </div>
