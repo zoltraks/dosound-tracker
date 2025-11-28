@@ -87,6 +87,8 @@
   --glow-primary: 0 0 10px rgba(122, 162, 247, 0.6);
   --glow-secondary: 0 0 6px rgba(122, 162, 247, 0.35);
   
+  --logo-outline: rgba(100, 100, 100, 0.6);
+
   /* Font settings */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Consolas', monospace;
 }
@@ -175,6 +177,8 @@
   --shadow-large: 0 10px 15px rgba(0, 0, 0, 0.2);
   --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   
+  --logo-outline: rgba(150, 150, 150, 0.6);
+
   --glow-primary: 0 0 8px rgba(245, 158, 11, 0.3);
   --glow-secondary: 0 0 4px rgba(245, 158, 11, 0.15);
 }
@@ -250,6 +254,13 @@ body {
 .logo {
   font-size: 16px;
   cursor: pointer;
+  /* Outline effect for logo emoji */
+  text-shadow:
+    -1px -1px 0 var(--logo-outline),
+     1px -1px 0 var(--logo-outline),
+    -1px  1px 0 var(--logo-outline),
+     1px  1px 0 var(--logo-outline);
+  -webkit-text-stroke: 0.5px var(--logo-outline);
 }
 
 .title {
@@ -1451,6 +1462,7 @@ body {
 .instrument-item.current {
   background-color: var(--active-bg);
   box-shadow: 0 0 8px var(--active-glow);
+  gap: 5px;
 }
 
 .instrument-item.current .instrument-id,
