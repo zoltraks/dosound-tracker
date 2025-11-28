@@ -910,7 +910,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
 function getRegisterComment(register: number, value: number): string {
   switch (register) {
     case 0x07: // Mixer
-      const getChannelMode = (channel: 0 | 1 | 2): 'T' | 'N' => {
+      const getChannelMode = (channel: 0 | 1 | 2): 'T' | 'N' | 'B' => {
         const toneDisabledMask = 1 << channel;
         const noiseDisabledMask = 0x08 << channel;
         const toneEnabled = (value & toneDisabledMask) === 0;
@@ -918,7 +918,7 @@ function getRegisterComment(register: number, value: number): string {
 
         if (toneEnabled && !noiseEnabled) return 'T';
         if (noiseEnabled && !toneEnabled) return 'N';
-        if (toneEnabled && noiseEnabled) return 'T';
+        if (toneEnabled && noiseEnabled) return 'B';
         return 'N';
       };
 
