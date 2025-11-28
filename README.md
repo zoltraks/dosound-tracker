@@ -72,6 +72,12 @@ DOSOUND's instrument system provides unprecedented control over the YM2149's cap
 
 - **Instrument-only Export**: Individual instrument definitions
 
+### Data Format Documentation
+
+For a detailed technical specification of all save and export formats (song/instrument YAML, clipboard formats, assembly, binary, VGM, and WAV), see:
+
+- [docs/FORMAT.md](docs/FORMAT.md)
+
 ### Professional Workflow Features
 
 - **Real-time audio playback** with sub-millisecond timing
