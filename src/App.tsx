@@ -25,6 +25,8 @@ import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exp
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
 import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal } from './modals';
+import type { UiStore } from './stores/uiStore';
+import { useUiStore } from './stores/uiStore';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -41,8 +43,14 @@ type TrackClipboardStep = {
 
 const App: React.FC = () => {
   
-  const [currentOctave, setCurrentOctave] = useState(3);
-  const [sharedCurrentLine, setSharedCurrentLine] = useState(0);
+  const currentOctave = useUiStore((state: UiStore) => state.currentOctave);
+  const sharedCurrentLine = useUiStore((state: UiStore) => state.sharedCurrentLine);
+  const channelMutes = useUiStore((state: UiStore) => state.channelMutes);
+  const setCurrentOctave = useUiStore((state: UiStore) => state.setCurrentOctave);
+  const setSharedCurrentLine = useUiStore((state: UiStore) => state.setSharedCurrentLine);
+  const setChannelMutes = useUiStore((state: UiStore) => state.setChannelMutes);
+  const toggleChannelMute = useUiStore((state: UiStore) => state.toggleChannelMute);
+
   const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
@@ -98,23 +106,6 @@ const App: React.FC = () => {
     if (savedDumpMode === 'complex') return true;
     if (savedDumpMode === 'simple') return false;
     return true;
-  });
-  const [channelMutes, setChannelMutes] = useState<[boolean, boolean, boolean]>(() => {
-    try {
-      const stored = localStorage.getItem('dosound-tracker-eq-mutes');
-      if (!stored) return [false, false, false];
-      const parsed = JSON.parse(stored);
-      if (
-        Array.isArray(parsed) &&
-        parsed.length === 3 &&
-        parsed.every(v => typeof v === 'boolean')
-      ) {
-        return [parsed[0], parsed[1], parsed[2]] as [boolean, boolean, boolean];
-      }
-    } catch {
-      // ignore
-    }
-    return [false, false, false];
   });
   const [instrumentOctaves, setInstrumentOctaves] = useState<Record<string, number>>(() => {
     try {
@@ -1553,12 +1544,8 @@ const App: React.FC = () => {
   }, []);
 
   const handleToggleChannelMute = useCallback((channelIndex: number) => {
-    setChannelMutes(prev => {
-      const next: [boolean, boolean, boolean] = [...prev] as [boolean, boolean, boolean];
-      next[channelIndex] = !next[channelIndex];
-      return next;
-    });
-  }, []);
+    toggleChannelMute(channelIndex);
+  }, [toggleChannelMute]);
 
   const handleLoadInstrumentClick = useCallback(() => {
     if (instrumentFileInputRef.current) {
