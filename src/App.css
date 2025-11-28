@@ -1134,6 +1134,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-right: 10px;
+  padding-left: 10px;
 }
 
 .song-info-grid {
@@ -1211,6 +1213,7 @@ body {
 
 .playlist-content {
   display: flex;
+  overflow-y: scroll;
   flex-direction: column;
   flex: 1;
   min-height: 0;
