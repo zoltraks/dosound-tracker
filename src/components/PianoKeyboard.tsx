@@ -520,11 +520,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
           })}
         </div>
       </div>
-
-      {/* Keyboard mapping hint */}
-      <div className="keyboard-hint">
-        <span>Use computer keyboard Z-M, Q-P, etc. to play notes</span>
-      </div>
     </div>
   );
 };

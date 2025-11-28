@@ -183,6 +183,17 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+input[type="text"] {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
 }
 
 body {
@@ -1507,6 +1518,7 @@ body {
   text-align: center;
   padding-bottom: 2px;
   font-size: 10px;
+  cursor: pointer;
 }
 
 .dump-content {
@@ -1534,6 +1546,7 @@ body {
 .register-value {
   color: var(--text-primary);
   font-weight: bold;
+  cursor: pointer;
 }
 
 /* EQ Panel */
@@ -1607,7 +1620,7 @@ body {
 .piano-keyboard-container {
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-top: 2px solid var(--border-color);
-  padding: 8px;
+  padding: 4px;
   box-shadow: var(--shadow-medium);
 }
 
@@ -1761,14 +1774,6 @@ body {
 
 .piano-key.black-key .base-key-dot {
   background: #ffffff;
-}
-
-.keyboard-hint {
-  text-align: center;
-  margin-top: 8px;
-  font-size: 8px;
-  color: var(--text-dim);
-  font-style: italic;
 }
 
 /* Utility classes */

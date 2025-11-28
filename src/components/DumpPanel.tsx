@@ -64,6 +64,35 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     return value.toString(16).toUpperCase().padStart(width, '0');
   };
 
+  const copyToClipboard = (text: string) => {
+    if (!text) {
+      return;
+    }
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+        void navigator.clipboard.writeText(text).catch((error) => {
+          console.error('Failed to copy to clipboard:', error);
+        });
+        return;
+      }
+
+      if (typeof document !== 'undefined') {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+    } catch (error) {
+      console.error('Clipboard copy failed:', error);
+    }
+  };
+
   const rows = [
     {
       leftLabel: 'TA',
@@ -91,21 +120,44 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     },
   ];
 
+  const handleCopyDump = () => {
+    const lines: string[] = rows.map((row) => {
+      const parts: string[] = [];
+      parts.push(`${row.leftLabel} ${row.leftValue}`);
+      if (row.rightLabel && row.rightValue) {
+        parts.push(`${row.rightLabel} ${row.rightValue}`);
+      }
+      return parts.join('  ');
+    });
+
+    copyToClipboard(lines.join('\n'));
+  };
+
   return (
     <div className="dump-panel">
-      <div className="dump-header">Dump</div>
+      <div className="dump-header" onClick={handleCopyDump}>Dump</div>
       <div className="dump-content">
         <div className="register-grid">
           {rows.map((row, index) => (
             <React.Fragment key={index}>
               <div className="register-item">
                 <span className="register-name">{row.leftLabel}</span>
-                <span className="register-value">{row.leftValue}</span>
+                <span
+                  className="register-value"
+                  onClick={() => copyToClipboard(row.leftValue)}
+                >
+                  {row.leftValue}
+                </span>
               </div>
               {row.rightLabel && (
                 <div className="register-item">
                   <span className="register-name">{row.rightLabel}</span>
-                  <span className="register-value">{row.rightValue}</span>
+                  <span
+                    className="register-value"
+                    onClick={() => copyToClipboard(row.rightValue)}
+                  >
+                    {row.rightValue}
+                  </span>
                 </div>
               )}
             </React.Fragment>
