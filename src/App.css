@@ -89,6 +89,8 @@
   
   --logo-outline: rgba(100, 100, 100, 0.6);
 
+  --transparent: rgba(0,0,0,0);
+
   /* Font settings */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Consolas', monospace;
 }
@@ -980,7 +982,6 @@ body {
 }
 
 .envelope-bar.current {
-  border: 1px solid var(--active-border);
   opacity: 1;
 }
 
@@ -1020,8 +1021,9 @@ body {
   cursor: pointer;
   padding-left: 1px;
   padding-right: 1px;
-  padding-top: 3px;
-  padding-bottom: 1px;
+  padding-top: 2px;
+  padding-bottom: 0px;
+  border: 1px solid var(--transparent);
 }
 
 .envelope-value:hover {
@@ -1034,7 +1036,7 @@ body {
   padding-left: 1px;
   padding-right: 1px;
   padding-top: 2px;
-  padding-bottom: 1px;
+  padding-bottom: 0px;
 }
 
 .envelope-footer {
