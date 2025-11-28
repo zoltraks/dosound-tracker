@@ -230,7 +230,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 6px 12px;
+  padding: 2px 14px;
   background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-bottom: 2px solid var(--border-color);
   box-shadow: var(--shadow-medium);
