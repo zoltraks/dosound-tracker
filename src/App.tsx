@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
+import { useTheme } from './hooks/useTheme';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { useAudioContext } from './hooks/useAudioContext';
@@ -128,7 +129,8 @@ const App: React.FC = () => {
     }
     return {};
   });
-  const { activeSection, isDarkMode, setIsDarkMode, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
+  const { isDarkMode, toggleTheme } = useTheme();
+  const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
     currentInstrument,

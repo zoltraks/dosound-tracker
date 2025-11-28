@@ -5,20 +5,8 @@ import { NAVIGATION_ORDER, KEYBOARD_SHORTCUTS } from '../constants/navigation';
 export const useKeyboardNavigation = () => {
   const [activeSection, setActiveSectionInternal] = useState<NavigationSection>('octave');
   const [lastTrackSection, setLastTrackSection] = useState<'trackA' | 'trackB' | 'trackC'>('trackA');
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    // Load theme preference from localStorage
-    const savedTheme = localStorage.getItem('dosound-tracker-theme');
-    if (savedTheme === 'dark') return true;
-    if (savedTheme === 'light') return false;
-    return true; // Default to dark mode
-  });
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
-
-  // Save theme preference to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('dosound-tracker-theme', isDarkMode ? 'dark' : 'light');
-  }, [isDarkMode]);
 
   const setActiveSection = useCallback((section: NavigationSection) => {
     setActiveSectionInternal(section);
@@ -203,8 +191,6 @@ export const useKeyboardNavigation = () => {
   return {
     activeSection,
     setActiveSection,
-    isDarkMode,
-    setIsDarkMode,
     setCallback,
     setGlobalShortcut,
     navigateToNext,
