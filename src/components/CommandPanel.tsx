@@ -266,8 +266,24 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
         <button onClick={() => {}} className="command-btn">DELETE PATTERN</button>
         <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
-        <button onClick={onInsertStep} className="command-btn">INSERT STEP</button>
-        <button onClick={onDeleteStep} className="command-btn">DELETE STEP</button>
+        <button
+          onClick={event => {
+            event.stopPropagation();
+            onInsertStep();
+          }}
+          className="command-btn"
+        >
+          INSERT STEP
+        </button>
+        <button
+          onClick={event => {
+            event.stopPropagation();
+            onDeleteStep();
+          }}
+          className="command-btn"
+        >
+          DELETE STEP
+        </button>
       </div>
 
       {/* Playback Operations */}
