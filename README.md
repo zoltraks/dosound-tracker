@@ -22,7 +22,7 @@ Designed for retro computing enthusiasts, chiptune composers, and anyone who app
 
 **Data Management:** Supports loading and saving complete songs or individual instrument definitions.
 
-### Complete Tracker Architecture
+### Tracker Architecture
 
 - **Three independent audio channels** with simultaneous playback
 
@@ -34,7 +34,7 @@ Designed for retro computing enthusiasts, chiptune composers, and anyone who app
 
 - **Real-time sequencer** with pattern loop and position tracking
 
-### Advanced Instrument Editor
+### Instrument Editor
 
 DOSOUND's instrument system provides unprecedented control over the YM2149's capabilities:
 
@@ -62,7 +62,7 @@ DOSOUND's instrument system provides unprecedented control over the YM2149's cap
 
 - **Square wave synthesis** with period-accurate tone generation
 
-### Multiple Export Formats
+### Multiple Export Features
 
 - **DOSOUND Assembly**: Native Atari ST format with optimization
 
@@ -78,7 +78,7 @@ For a detailed technical specification of all save and export formats (song/inst
 
 - [docs/FORMAT.md](docs/FORMAT.md)
 
-### Professional Workflow Features
+### Musical Workflow
 
 - **Real-time audio playback** with sub-millisecond timing
 
@@ -92,9 +92,9 @@ For a detailed technical specification of all save and export formats (song/inst
 
 - **YAML file format** for human-readable song storage
 
-## Technical Excellence
+## Technical Details
 
-### Accurate Timing and Sequencing
+### Timing and Sequencing
 
 - **50Hz VBLANK timing** matching original Atari ST DOSOUND behavior
 
@@ -116,7 +116,7 @@ For a detailed technical specification of all save and export formats (song/inst
 
 - **Responsive design** with automatic scaling (HD/4K displays)
 
-### Authentic Retro UI
+### Retro UI
 
 - **DOS-style monospaced interface** with hexadecimal values throughout
 
@@ -201,7 +201,7 @@ music:
     dc.b $ff,0
 ```
 
-### Optimized Export Features
+### Export Features
 
 - **Register change tracking**: Only outputs changed registers
 
@@ -225,7 +225,7 @@ music:
 
 - **Linting**: ESLint 9 with TypeScript support
 
-### **Key Implementation Details**
+### **Implementation Details**
 
 - **2MHz YM2149 clock** with precise frequency calculations
 
