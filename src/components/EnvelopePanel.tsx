@@ -147,6 +147,17 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       }
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
+    } else if (type === 'mode' && (key === 'T' || key === 'N' || key === 'B')) {
+      event.preventDefault();
+      if (onChange) {
+        const newData = [...envelopeData];
+        const newValue = key === 'T' ? 0 : key === 'N' ? 1 : 2;
+        newData[currentPosition] = newValue;
+        setEnvelopeData(newData);
+        onChange(newData);
+      }
+      const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
+      setCurrentPosition(nextPosition);
     } else if (type === 'pitch' && event.key === ' ') {
       event.preventDefault();
       if (onChange && lastPositionRef.current !== null) {

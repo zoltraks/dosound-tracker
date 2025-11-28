@@ -61,6 +61,7 @@ describe('TrackPanel', () => {
         onTogglePatternFromCursor={handleTogglePatternFromCursor}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
+        focusRevision={0}
       />
     );
 
@@ -99,6 +100,7 @@ describe('TrackPanel', () => {
         onTogglePatternFromCursor={handleTogglePatternFromCursor}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
+        focusRevision={0}
       />
     );
 

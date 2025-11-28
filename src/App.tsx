@@ -534,6 +534,7 @@ const App: React.FC = () => {
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
+  const [trackFocusRevision, setTrackFocusRevision] = useState(0);
 
   useEffect(() => {
     if (activeSection === 'trackA') {
@@ -1297,7 +1298,8 @@ const App: React.FC = () => {
 
     const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
     setActiveSection(section);
-  }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection]);
+    setTrackFocusRevision(prev => prev + 1);
+  }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection, setTrackFocusRevision]);
 
   const handleDeleteStep = useCallback(() => {
     const playlistLength = currentSong.playlist.length;
@@ -3625,6 +3627,7 @@ const App: React.FC = () => {
                     onTogglePatternFromCursor={handleTogglePatternFromCursor}
                     currentColumn={currentTrackColumn}
                     setCurrentColumn={setCurrentTrackColumn}
+                    focusRevision={trackFocusRevision}
                   />
 
                   <TrackPanel
@@ -3643,6 +3646,7 @@ const App: React.FC = () => {
                     onTogglePatternFromCursor={handleTogglePatternFromCursor}
                     currentColumn={currentTrackColumn}
                     setCurrentColumn={setCurrentTrackColumn}
+                    focusRevision={trackFocusRevision}
                   />
 
                   <TrackPanel
@@ -3661,6 +3665,7 @@ const App: React.FC = () => {
                     onTogglePatternFromCursor={handleTogglePatternFromCursor}
                     currentColumn={currentTrackColumn}
                     setCurrentColumn={setCurrentTrackColumn}
+                    focusRevision={trackFocusRevision}
                   />
                 </div>
               </div>

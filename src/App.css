@@ -1018,7 +1018,10 @@ body {
 .envelope-value {
   flex: 1;
   cursor: pointer;
-  padding: 1px;
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-top: 3px;
+  padding-bottom: 1px;
 }
 
 .envelope-value:hover {
@@ -1028,6 +1031,10 @@ body {
 .envelope-value.current {
   background-color: var(--active-bg);
   border: 1px solid var(--active-border);
+  padding-left: 1px;
+  padding-right: 1px;
+  padding-top: 2px;
+  padding-bottom: 1px;
 }
 
 .envelope-footer {

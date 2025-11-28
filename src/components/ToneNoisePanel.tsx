@@ -64,14 +64,18 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         newData[currentPosition] = Math.max(0, currentValue - 1);
         onChange(newData);
       }
-    } else if (key === 'B') {
+    } else if (key === 'T' || key === 'N' || key === 'B') {
       event.preventDefault();
       if (onChange) {
         const source = toneNoiseData;
         const newData = [...source];
-        newData[currentPosition] = 2;
+        const newValue = key === 'T' ? 0 : key === 'N' ? 1 : 2;
+        newData[currentPosition] = newValue;
         onChange(newData);
       }
+      const length = toneNoiseData.length > 0 ? toneNoiseData.length : 32;
+      const nextPosition = (currentPosition + 1) % length;
+      setCurrentPosition(nextPosition);
     } else if (key === ' ') {
       event.preventDefault();
       if (onChange) {
