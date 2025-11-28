@@ -48,11 +48,11 @@
   --reset-btn-border: #ac3e3e;
   
   --play-song-idle-bg: #263a32;
-  --play-song-idle-border: #34a76d;
+  --play-song-idle-border: #3a8265;
   --play-pattern-idle-bg: #3a3024;
-  --play-pattern-idle-border: #c27a2a;
+  --play-pattern-idle-border: #91663c;
   --stop-idle-bg: #3a2327;
-  --stop-idle-border: #e15b5b;
+  --stop-idle-border: #a4535a;
   
   /* Playback button accent colors (dark theme) */
   --play-song-bg: #1f4730;
