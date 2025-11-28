@@ -10,7 +10,7 @@ export const useKeyboardNavigation = () => {
     const savedTheme = localStorage.getItem('dosound-tracker-theme');
     if (savedTheme === 'dark') return true;
     if (savedTheme === 'light') return false;
-    return false; // Default to light mode
+    return true; // Default to dark mode
   });
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
