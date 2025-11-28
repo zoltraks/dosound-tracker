@@ -1443,7 +1443,7 @@ body {
 
 .instrument-items {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   min-height: 0;
 }
 
