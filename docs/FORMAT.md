@@ -179,7 +179,7 @@ Loader (`parseSongFromYaml`) rules:
 ```yaml
 instrument:
   name: "Lead"
-  base: "C-4"       # optional
+  base: "C-4"        # optional
   octave: 2          # optional
   sustain: 5         # optional
   volume: [ ... ]    # required envelope
