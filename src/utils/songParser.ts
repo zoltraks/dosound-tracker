@@ -376,11 +376,11 @@ export const parseSongFromYaml = (content: string): Song => {
     }
     octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
-    const volumeEnvelope = expandEnvelope(nodeObj.volume, ENVELOPE_LENGTH, 0x0f);
-    const arpeggioEnvelope = expandEnvelope(nodeObj.arpeggio, ENVELOPE_LENGTH, 0);
-    const pitchEnvelope = expandEnvelope(nodeObj.pitch, ENVELOPE_LENGTH, 0);
+    const volume = expandEnvelope(nodeObj.volume, ENVELOPE_LENGTH, 0x0f);
+    const arpeggio = expandEnvelope(nodeObj.arpeggio, ENVELOPE_LENGTH, 0);
+    const pitch = expandEnvelope(nodeObj.pitch, ENVELOPE_LENGTH, 0);
     const noiseEnvelope = expandEnvelope(nodeObj.noise, ENVELOPE_LENGTH, 0);
-    const modeEnvelope = expandEnvelope(nodeObj.mode, ENVELOPE_LENGTH, 0);
+    const mode = expandEnvelope(nodeObj.mode, ENVELOPE_LENGTH, 0);
 
     // Optional sustain position for this instrument (0-based envelope index).
     // Accept either numeric or string values in YAML and clamp to a
@@ -411,11 +411,11 @@ export const parseSongFromYaml = (content: string): Song => {
         instruments[i] = {
           id: slotId,
           name: '',
-          volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-          arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-          pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+          volume: Array(ENVELOPE_LENGTH).fill(0),
+          arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+          pitch: Array(ENVELOPE_LENGTH).fill(0),
           noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-          modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+          mode: Array(ENVELOPE_LENGTH).fill(0),
           base: DEFAULT_BASE_KEY,
           octave: DEFAULT_OCTAVE,
           sustain: null,
@@ -426,11 +426,11 @@ export const parseSongFromYaml = (content: string): Song => {
     instruments[slotIndex] = {
       id: number,
       name,
-      volumeEnvelope,
-      arpeggioEnvelope,
-      pitchEnvelope,
+      volume,
+      arpeggio,
+      pitch,
       noiseEnvelope,
-      modeEnvelope,
+      mode,
       base,
       octave,
       sustain: sustain,

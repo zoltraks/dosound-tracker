@@ -26,11 +26,11 @@ const createTestPattern = (): Pattern => ({
 const createTestInstrument = (): Instrument => ({
   id: '00',
   name: 'Test Instrument',
-  volumeEnvelope: [0x0f],
-  arpeggioEnvelope: [0],
-  pitchEnvelope: [0],
+  volume: [0x0f],
+  arpeggio: [0],
+  pitch: [0],
   noiseEnvelope: [0],
-  modeEnvelope: [0],
+  mode: [0],
 });
 
 describe('TrackPanel', () => {

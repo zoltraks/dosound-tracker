@@ -15,7 +15,7 @@ const isAllZero = (values: number[] | undefined | null): boolean => {
  * - arpeggio envelope all zeroes
  * - pitch envelope all zeroes
  * - noise envelope all zeroes
- * - mode envelope all zeroes
+ * - mode all zeroes
  */
 export const isInstrumentEmpty = (inst: Instrument | undefined | null): boolean => {
   if (!inst) {
@@ -24,11 +24,11 @@ export const isInstrumentEmpty = (inst: Instrument | undefined | null): boolean 
 
   const nameEmpty = !inst.name || !inst.name.trim();
 
-  const volumeEmpty = isAllZero(inst.volumeEnvelope);
-  const arpeggioEmpty = isAllZero(inst.arpeggioEnvelope);
-  const pitchEmpty = isAllZero(inst.pitchEnvelope);
+  const volumeEmpty = isAllZero(inst.volume);
+  const arpeggioEmpty = isAllZero(inst.arpeggio);
+  const pitchEmpty = isAllZero(inst.pitch);
   const noiseEmpty = isAllZero(inst.noiseEnvelope);
-  const modeEmpty = isAllZero(inst.modeEnvelope);
+  const modeEmpty = isAllZero(inst.mode);
 
   return nameEmpty && volumeEmpty && arpeggioEmpty && pitchEmpty && noiseEmpty && modeEmpty;
 };

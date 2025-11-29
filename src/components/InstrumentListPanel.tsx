@@ -95,11 +95,11 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
     return {
       id: slotId,
       name: '',
-      volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      volume: Array(ENVELOPE_LENGTH).fill(0),
+      arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+      pitch: Array(ENVELOPE_LENGTH).fill(0),
       noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      modeEnvelope: Array(ENVELOPE_LENGTH).fill(0)
+      mode: Array(ENVELOPE_LENGTH).fill(0)
     };
   }, [instruments]);
 

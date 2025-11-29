@@ -204,7 +204,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
               // pitch envelope for this channel/frame so TA comments can use
               // "C-4 +N" instead of an inferred note name.
               let pitchDeltaForStep = 0;
-              const pitchEnv = instrument.pitchEnvelope || [];
+              const pitchEnv = instrument.pitch || [];
               if (pitchEnv.length > 0) {
                 const pitchIdx = Math.min(Math.max(step, 0), pitchEnv.length - 1);
                 const pitchValue = pitchEnv[pitchIdx];
@@ -284,10 +284,10 @@ function applyInstrumentToRegisters(
   const step = Math.max(0, envelopeStep);
   
   // Get envelope values
-  const volumeEnv = instrument.volumeEnvelope || [0x0F];
-  const arpeggioEnv = instrument.arpeggioEnvelope || [0];
-  const pitchEnv = instrument.pitchEnvelope || [0];
-  const modeEnv = instrument.modeEnvelope || [0];
+  const volumeEnv = instrument.volume || [0x0F];
+  const arpeggioEnv = instrument.arpeggio || [0];
+  const pitchEnv = instrument.pitch || [0];
+  const modeEnv = instrument.mode || [0];
   const noiseEnv = instrument.noiseEnvelope || [0];
   
   const volIdx = Math.min(step, volumeEnv.length - 1);
@@ -664,13 +664,13 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   const baseFrequency = baseFreq * Math.pow(2, base.octave - 4);
 
   const volumeEnv =
-    instrument.volumeEnvelope && instrument.volumeEnvelope.length
-      ? instrument.volumeEnvelope
+    instrument.volume && instrument.volume.length
+      ? instrument.volume
       : [0x0f, 0x0e, 0x0c, 0x08, 0x04, 0x00];
 
-  const arpeggioEnv = instrument.arpeggioEnvelope || [];
-  const pitchEnv = instrument.pitchEnvelope || [];
-  const modeEnv = instrument.modeEnvelope || [];
+  const arpeggioEnv = instrument.arpeggio || [];
+  const pitchEnv = instrument.pitch || [];
+  const modeEnv = instrument.mode || [];
   const noiseEnv = instrument.noiseEnvelope || [];
 
   const clampVol = (v: number) => Math.max(0, Math.min(0x0f, v | 0));

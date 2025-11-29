@@ -56,7 +56,7 @@ describe('parseSongFromYaml', () => {
     const inst0 = song.instruments[0];
     expect(inst0.id).toBe('00');
     expect(inst0.name).toBe('Simple Lead');
-    expect(inst0.volumeEnvelope.length).toBeGreaterThan(0);
+    expect(inst0.volume.length).toBeGreaterThan(0);
   });
 
   it('throws when root song key is missing', () => {

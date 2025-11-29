@@ -81,40 +81,40 @@ const createDefaultSong = (): Song => {
       {
         id: '00',
         name: 'Default Instrument',
-        volumeEnvelope: Array(32).fill(0x0F),
-        arpeggioEnvelope: [
+        volume: Array(32).fill(0x0F),
+        arpeggio: [
           0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20,
           -16, -12, -8, -4, ...Array(8).fill(0)
         ],
-        pitchEnvelope: Array(32).fill(0),
+        pitch: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
-        modeEnvelope: Array(32).fill(0),
+        mode: Array(32).fill(0),
         base: DEFAULT_BASE_KEY,
         sustain: null
       },
       {
         id: '01',
         name: 'Bass Instrument',
-        volumeEnvelope: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
-        arpeggioEnvelope: [
+        volume: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
+        arpeggio: [
           12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)
         ],
-        pitchEnvelope: Array(32).fill(0),
+        pitch: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
-        modeEnvelope: Array(32).fill(0),
+        mode: Array(32).fill(0),
         base: DEFAULT_BASE_KEY,
         sustain: null
       },
       {
         id: '02',
         name: 'Lead Instrument',
-        volumeEnvelope: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
-        arpeggioEnvelope: [
+        volume: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
+        arpeggio: [
           24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)
         ],
-        pitchEnvelope: Array(32).fill(0),
+        pitch: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
-        modeEnvelope: Array(32).fill(0),
+        mode: Array(32).fill(0),
         base: DEFAULT_BASE_KEY,
         sustain: null
       }
@@ -129,15 +129,26 @@ export const useDataManagement = () => {
     try {
       const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
       if (savedSong) {
-        const parsedSong = JSON.parse(savedSong) as Song;
-        const rawSpeed = Number(parsedSong.speed);
-        const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
-        const clampedSpeed = Math.max(2, baseSpeed);
-        const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
-        return {
-          ...parsedSong,
-          speed: evenSpeed
-        };
+        const parsedSong = JSON.parse(savedSong) as any;
+        const hasLegacyInstruments =
+          Array.isArray(parsedSong?.instruments) &&
+          parsedSong.instruments.some((inst: any) =>
+            inst && !Array.isArray(inst.volume) && Array.isArray(inst.volumeEnvelope)
+          );
+
+        if (!hasLegacyInstruments) {
+          const rawSpeed = Number(parsedSong.speed);
+          const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
+          const clampedSpeed = Math.max(2, baseSpeed);
+          const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
+          return {
+            ...(parsedSong as Song),
+            speed: evenSpeed
+          };
+        }
+
+        // Legacy/incompatible save format - clear and fall back to bundled/default song.
+        localStorage.removeItem(SONG_STORAGE_KEY);
       }
     } catch (error) {
       console.warn('Failed to load song from localStorage:', error);
@@ -154,11 +165,11 @@ export const useDataManagement = () => {
     return {
       id: '00',
       name: 'Default Instrument',
-      volumeEnvelope: Array(32).fill(0x0F),
-      arpeggioEnvelope: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
-      pitchEnvelope: Array(32).fill(0),
+      volume: Array(32).fill(0x0F),
+      arpeggio: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
+      pitch: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0),
+      mode: Array(32).fill(0),
       base: DEFAULT_BASE_KEY,
       sustain: null
     };
@@ -240,11 +251,11 @@ export const useDataManagement = () => {
     const newCurrentInstrument: Instrument = {
       id: '00',
       name: '',
-      volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      volume: Array(ENVELOPE_LENGTH).fill(0),
+      arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+      pitch: Array(ENVELOPE_LENGTH).fill(0),
       noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-      modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      mode: Array(ENVELOPE_LENGTH).fill(0),
       base: DEFAULT_BASE_KEY,
       sustain: null
     };
@@ -281,11 +292,11 @@ export const useDataManagement = () => {
     const newInstrument: Instrument = {
       id: slotId,
       name: `Instrument ${slotIndex}`,
-      volumeEnvelope: Array(32).fill(0x0F),
-      arpeggioEnvelope: Array(32).fill(0),
-      pitchEnvelope: Array(32).fill(0),
+      volume: Array(32).fill(0x0F),
+      arpeggio: Array(32).fill(0),
+      pitch: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0),
+      mode: Array(32).fill(0),
       base: DEFAULT_BASE_KEY,
       sustain: null
     };
@@ -322,11 +333,11 @@ export const useDataManagement = () => {
         values.length === 0 || (values.length === 1 && values[0] === 0);
 
       const instruments = currentSong.instruments.map((inst, index) => {
-        const volumeEnv = trimEnvelope(inst.volumeEnvelope);
-        const arpeggioEnv = trimEnvelope(inst.arpeggioEnvelope);
-        const pitchEnv = trimEnvelope(inst.pitchEnvelope);
+        const volumeEnv = trimEnvelope(inst.volume);
+        const arpeggioEnv = trimEnvelope(inst.arpeggio);
+        const pitchEnv = trimEnvelope(inst.pitch);
         const noiseEnv = trimEnvelope(inst.noiseEnvelope);
-        const modeEnv = trimEnvelope(inst.modeEnvelope);
+        const modeEnv = trimEnvelope(inst.mode);
 
         const number =
           typeof inst.id === 'string' && inst.id.trim()
@@ -681,11 +692,11 @@ export const useDataManagement = () => {
         return values.slice(0, i + 1).concat(last);
       };
 
-      const volumeEnv = trimEnvelope(currentInstrument.volumeEnvelope);
-      const arpeggioEnv = trimEnvelope(currentInstrument.arpeggioEnvelope);
-      const pitchEnv = trimEnvelope(currentInstrument.pitchEnvelope);
+      const volumeEnv = trimEnvelope(currentInstrument.volume);
+      const arpeggioEnv = trimEnvelope(currentInstrument.arpeggio);
+      const pitchEnv = trimEnvelope(currentInstrument.pitch);
       const noiseEnv = trimEnvelope(currentInstrument.noiseEnvelope);
-      const modeEnv = trimEnvelope(currentInstrument.modeEnvelope);
+      const modeEnv = trimEnvelope(currentInstrument.mode);
 
       const isZeroDefault = (values: number[]): boolean =>
         values.length === 0 || (values.length === 1 && values[0] === 0);
@@ -863,11 +874,11 @@ export const useDataManagement = () => {
         const newInstrument: Instrument = {
           id: currentInstrument.id,
           name: parsedName,
-          modeEnvelope: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
-          volumeEnvelope: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F),
-          arpeggioEnvelope: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
-          pitchEnvelope: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
-          noiseEnvelope: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
+          mode: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
+          volume: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F),
+          arpeggio: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
+          pitch: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
+          noiseEnvelope: expandEnvelope('noiseEnvelope', ENVELOPE_LENGTH, 0),
           base: (() => {
             const parsedBase = parseBaseKey(instNode.base);
             if (!parsedBase) return DEFAULT_BASE_KEY;
@@ -895,11 +906,11 @@ export const useDataManagement = () => {
                   instruments[i] = {
                     id: slotId,
                     name: '',
-                    volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                    arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                    pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    volume: Array(ENVELOPE_LENGTH).fill(0),
+                    arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+                    pitch: Array(ENVELOPE_LENGTH).fill(0),
                     noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                    modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                    mode: Array(ENVELOPE_LENGTH).fill(0),
                     sustain: null,
                   };
                 }
@@ -974,11 +985,11 @@ export const useDataManagement = () => {
               instruments[i] = {
                 id: slotId,
                 name: '',
-                volumeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                arpeggioEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                pitchEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                volume: Array(ENVELOPE_LENGTH).fill(0),
+                arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+                pitch: Array(ENVELOPE_LENGTH).fill(0),
                 noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                modeEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                mode: Array(ENVELOPE_LENGTH).fill(0),
                 sustain: null,
               };
             }

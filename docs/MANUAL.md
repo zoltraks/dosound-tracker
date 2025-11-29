@@ -182,16 +182,17 @@ Internally, an instrument has:
 - `base` – base key, e.g. `"C-4"`.
 - `octave` – base octave for some exports.
 - `sustain` – optional sustain index in the envelope (0‑based).
-- `volumeEnvelope[0..31]` – 0..15.
-- `arpeggioEnvelope[0..31]` – semitone offsets (approx. -24..+24).
-- `pitchEnvelope[0..31]` – raw divider delta, “vibrato / slide” in divider units.
-- `noiseEnvelope[0..31]` – 0..31.
-- `modeEnvelope[0..31]` – 0 = tone, 1 = noise, 2 = tone+noise.
+- `volume[0..31]` – 0..15 loudness per step.
+- `arpeggio[0..31]` – semitone offsets (approx. -24..+24).
+- `pitch[0..31]` – raw divider delta, “vibrato / slide” in divider units.
+- `noiseEnvelope[0..31]` – 0..31 noise period per step.
+- `mode[0..31]` – 0 = tone, 1 = noise, 2 = tone+noise.
 
 In YAML, each instrument element (inside `song.instrument` or `instrument.instrument`) looks like:
 
 - `number`: hex slot index string, e.g. `"00"`, `"1A"`.
 - `name`, `base`, `octave`, `sustain`.
+- `volume`, `arpeggio`, `pitch`, `noiseEnvelope`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
 - `volume`, `arpeggio`, `pitch`, `noise`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
 
 ### 4.1 Volume Envelope (Loudness over Time)

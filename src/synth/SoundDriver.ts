@@ -16,11 +16,11 @@ export interface SoundEvent {
 export interface Instrument {
   id: string;
   name: string;
-  volumeEnvelope: number[];
-  arpeggioEnvelope: number[];
-  pitchEnvelope: number[];
+  volume: number[];
+  arpeggio: number[];
+  pitch: number[];
   noiseEnvelope: number[];
-  modeEnvelope: number[];
+  mode: number[];
   base?: string;
   octave?: number;
   // Optional sustain position in the envelope (0-based index). When set,
@@ -157,7 +157,7 @@ export class SoundDriver {
     events.push({ type: 'register', register: 0x07, value: mixerValue });
 
     // Set volume (start with first envelope value)
-    const initialVolume = instrument.volumeEnvelope[0] || 0;
+    const initialVolume = instrument.volume[0] || 0;
     events.push({ type: 'register', register: volumeReg, value: initialVolume & 0x0F });
   }
 
@@ -167,11 +167,11 @@ export class SoundDriver {
     return {
       id: instrumentId,
       name: 'Default',
-      volumeEnvelope: [0x0F, 0x0E, 0x0D, 0x0C],
-      arpeggioEnvelope: [0, 0, 0, 0],
-      pitchEnvelope: [0, 0, 0, 0],
+      volume: [0x0F, 0x0E, 0x0D, 0x0C],
+      arpeggio: [0, 0, 0, 0],
+      pitch: [0, 0, 0, 0],
       noiseEnvelope: [0, 0, 0, 0],
-      modeEnvelope: Array(32).fill(0),
+      mode: Array(32).fill(0),
       sustain: null
     };
   }
@@ -190,8 +190,8 @@ export class SoundDriver {
     // Default mixer: enable tone for all channels, disable noise
     let mixer = 0x38; // 00111000 - noise enabled for all channels, tone disabled
 
-    const modeValue = (instrument.modeEnvelope && instrument.modeEnvelope.length > 0)
-      ? instrument.modeEnvelope[0] || 0
+    const modeValue = (instrument.mode && instrument.mode.length > 0)
+      ? instrument.mode[0] || 0
       : 0;
 
     const toneActive = modeValue === 0 || modeValue === 2;

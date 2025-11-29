@@ -241,8 +241,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
     // Precompute volume envelope tail information so we know when to auto-stop
     const volumeEnv: number[] =
-      Array.isArray(instrument.volumeEnvelope) && instrument.volumeEnvelope.length > 0
-        ? instrument.volumeEnvelope
+      Array.isArray(instrument.volume) && instrument.volume.length > 0
+        ? instrument.volume
         : [0x0f];
     const lastVolumeIndex = volumeEnv.length - 1;
     const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;

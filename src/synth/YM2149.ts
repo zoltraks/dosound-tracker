@@ -46,11 +46,11 @@ export interface YMState {
 export interface Instrument {
   id: string;
   name: string;
-  volumeEnvelope: number[];
-  arpeggioEnvelope: number[];
-  pitchEnvelope: number[];
+  volume: number[];
+  arpeggio: number[];
+  pitch: number[];
   noiseEnvelope: number[];
-  modeEnvelope: number[];
+  mode: number[];
   base?: string;
 }
 
@@ -322,12 +322,12 @@ export class YM2149 {
   public getModeValueForTick = (instrument: Instrument, tick: number): number => {
     const defaultMode = this.getDefaultModeValue(instrument);
 
-    if (!instrument.modeEnvelope || instrument.modeEnvelope.length === 0) {
+    if (!instrument.mode || instrument.mode.length === 0) {
       return defaultMode;
     }
 
-    const modeIndex = Math.min(Math.max(tick, 0), instrument.modeEnvelope.length - 1);
-    const envelopeValue = instrument.modeEnvelope[modeIndex];
+    const modeIndex = Math.min(Math.max(tick, 0), instrument.mode.length - 1);
+    const envelopeValue = instrument.mode[modeIndex];
     return typeof envelopeValue === 'number' ? envelopeValue : defaultMode;
   };
 
@@ -400,9 +400,9 @@ export class YM2149 {
 
         // Apply arpeggio as semitone offsets on top of the note
         let arpeggioSemitones = 0;
-        if (instrument.arpeggioEnvelope && instrument.arpeggioEnvelope.length > 0) {
-          const arpeggioIndex = Math.min(safeTick, instrument.arpeggioEnvelope.length - 1);
-          const arpeggioValue = instrument.arpeggioEnvelope[arpeggioIndex];
+        if (instrument.arpeggio && instrument.arpeggio.length > 0) {
+          const arpeggioIndex = Math.min(safeTick, instrument.arpeggio.length - 1);
+          const arpeggioValue = instrument.arpeggio[arpeggioIndex];
           if (typeof arpeggioValue === 'number') {
             arpeggioSemitones = arpeggioValue | 0;
           }
@@ -418,9 +418,9 @@ export class YM2149 {
         // Apply pitch envelope as an integer delta on the period:
         // positive values decrease the divider, negative values increase it.
         let pitchDelta = 0;
-        if (instrument.pitchEnvelope && instrument.pitchEnvelope.length > 0) {
-          const pitchIndex = Math.min(safeTick, instrument.pitchEnvelope.length - 1);
-          const pitchValue = instrument.pitchEnvelope[pitchIndex];
+        if (instrument.pitch && instrument.pitch.length > 0) {
+          const pitchIndex = Math.min(safeTick, instrument.pitch.length - 1);
+          const pitchValue = instrument.pitch[pitchIndex];
           if (typeof pitchValue === 'number') {
             pitchDelta = pitchValue | 0;
           }
@@ -442,8 +442,11 @@ export class YM2149 {
     }
 
     // Volume envelope with optional per-step modifier.
-    const volumeIndex = Math.min(safeTick, instrument.volumeEnvelope.length - 1);
-    const volumeValue = instrument.volumeEnvelope[volumeIndex];
+    const volumeArray = Array.isArray(instrument.volume) && instrument.volume.length > 0
+      ? instrument.volume
+      : [0];
+    const volumeIndex = Math.min(safeTick, volumeArray.length - 1);
+    const volumeValue = volumeArray[volumeIndex];
     let volume = Math.max(0, Math.min(15, volumeValue));
 
     if (volumeModifier !== undefined && volumeModifier !== null) {

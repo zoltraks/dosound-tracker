@@ -2172,11 +2172,11 @@ const App: React.FC = () => {
       const clearedInstrument: Instrument = {
         id: slotId,
         name: '',
-        volumeEnvelope: Array(32).fill(0),
-        arpeggioEnvelope: Array(32).fill(0),
-        pitchEnvelope: Array(32).fill(0),
+        volume: Array(32).fill(0),
+        arpeggio: Array(32).fill(0),
+        pitch: Array(32).fill(0),
         noiseEnvelope: Array(32).fill(0),
-        modeEnvelope: Array(32).fill(0)
+        mode: Array(32).fill(0)
       };
 
       const newInstruments = [...instruments];
@@ -2344,11 +2344,11 @@ const App: React.FC = () => {
     const clearedInstrument: Instrument = {
       id: slotId,
       name: '',
-      volumeEnvelope: Array(32).fill(0),
-      arpeggioEnvelope: Array(32).fill(0),
-      pitchEnvelope: Array(32).fill(0),
+      volume: Array(32).fill(0),
+      arpeggio: Array(32).fill(0),
+      pitch: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0)
+      mode: Array(32).fill(0)
     };
 
     const newInstruments = [...instruments];
@@ -2470,11 +2470,11 @@ const App: React.FC = () => {
     const clearedInstrument: Instrument = {
       id: slotId,
       name: '',
-      volumeEnvelope: Array(32).fill(0),
-      arpeggioEnvelope: Array(32).fill(0),
-      pitchEnvelope: Array(32).fill(0),
+      volume: Array(32).fill(0),
+      arpeggio: Array(32).fill(0),
+      pitch: Array(32).fill(0),
       noiseEnvelope: Array(32).fill(0),
-      modeEnvelope: Array(32).fill(0)
+      mode: Array(32).fill(0)
     };
 
     const newInstruments = [...instruments];
@@ -3663,9 +3663,9 @@ const App: React.FC = () => {
             <ToneNoisePanel
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.modeEnvelope}
+              data={currentInstrument.mode}
               onChange={(data: number[]) => {
-                updateInstrument({ modeEnvelope: data });
+                updateInstrument({ mode: data });
               }}
             />
             
@@ -3673,9 +3673,9 @@ const App: React.FC = () => {
               type="volume"
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.volumeEnvelope}
+              data={currentInstrument.volume}
               onChange={(data: number[]) => {
-                updateInstrument({ volumeEnvelope: data });
+                updateInstrument({ volume: data });
               }}
               sustainIndex={
                 typeof currentInstrument.sustain === 'number' && currentInstrument.sustain >= 0
@@ -3691,9 +3691,9 @@ const App: React.FC = () => {
               type="arpeggio"
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.arpeggioEnvelope}
+              data={currentInstrument.arpeggio}
               onChange={(data: number[]) => {
-                updateInstrument({ arpeggioEnvelope: data });
+                updateInstrument({ arpeggio: data });
               }}
             />
             
@@ -3701,9 +3701,9 @@ const App: React.FC = () => {
               type="pitch"
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.pitchEnvelope}
+              data={currentInstrument.pitch}
               onChange={(data: number[]) => {
-                updateInstrument({ pitchEnvelope: data });
+                updateInstrument({ pitch: data });
               }}
             />
             
