@@ -1,5 +1,16 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.0
+
+- Added a centralized **UI state store** using Zustand for octave, current line and channel mute flags so navigation and playback controls stay in sync across panels without prop drilling or duplicated local state.
+- Simplified instrument envelope property names from `volumeEnvelope` / `arpeggioEnvelope` / `pitchEnvelope` / `modeEnvelope` to shorter `volume` / `arpeggio` / `pitch` / `mode`, and introduced a one‑time localStorage migration to clear legacy keys so saved instruments remain compatible.
+- Extended the **tone/noise mode** selector to support three states (tone, noise, both) with a purple highlight for combined mode, added `T` / `N` / `B` keyboard shortcuts for quick mode selection, and refined envelope panel padding for a more compact layout.
+- Improved **track keyboard navigation** by adding pattern line wrapping for arrow‑key navigation and data entry in the Track panel, so moving past the top or bottom of a pattern wraps instead of getting stuck.
+- Tweaked playback controls and shortcuts by changing the default theme to **dark mode**, simplifying the theme toggle via a dedicated `useTheme` hook with safer localStorage handling, refining playback button borders in dark theme, and removing F1/F3 playback shortcuts so F2 is the single shortcut for pattern playback.
+- Polished the envelope editor and mixer output by removing the active border from the current envelope bar, tightening value padding, and updating mixer register comments to emit `B` when both tone and noise are enabled, better reflecting the actual mixer state.
+- Made editor interactions more robust by forcing scrollbar visibility in the instrument list to avoid layout shifts, enabling vertical scrolling in the playlist content area, adding padding around song info, and stopping event propagation from INSERT STEP / DELETE STEP buttons to prevent unintended parent interactions.
+- Refreshed overall **UI and documentation** with updated logo/icon styling and interaction polish, a dedicated debug mode information modal with clearer dump panel copy, a comprehensive data format reference for all save/export formats, and a full operational manual aimed at composers and assembly coders.
+
 ## Version 1.0.22
 
 - Added **VGM file export** with loop support and proper noise envelope handling, alongside a new **binary export** path for DOSOUND XBIOS format, so songs can be used directly in external players and demos.
