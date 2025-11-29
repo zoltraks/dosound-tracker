@@ -170,9 +170,9 @@ export const useKeyboardNavigation = () => {
           event.preventDefault();
           shortcut = 'SPACE'; 
           break;
-        case 'F1': shortcut = 'F1'; break;
-        case 'F2': shortcut = 'F2'; break;
-        case 'F3': shortcut = 'F3'; break;
+        case 'F2':
+          shortcut = 'F2';
+          break;
       }
     }
 
