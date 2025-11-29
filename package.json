@@ -59,6 +59,7 @@
     "directories": {
       "output": "release"
     },
+    "artifactName": "${name}-${version}-${os}-${arch}.${ext}",
     "mac": {
       "category": "public.app-category.music",
       "icon": "public/icons/icon-512.png"
