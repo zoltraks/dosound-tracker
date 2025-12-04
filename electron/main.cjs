@@ -17,6 +17,27 @@ function createWindow() {
       nodeIntegration: false
     }
   });
+  
+  const session = mainWindow.webContents.session;
+
+  if (session && typeof session.setPermissionRequestHandler === 'function') {
+    session.setPermissionRequestHandler((webContents, permission, callback) => {
+      if (permission === 'midi' || permission === 'midiSysex') {
+        callback(true);
+      } else {
+        callback(false);
+      }
+    });
+  }
+
+  if (session && typeof session.setPermissionCheckHandler === 'function') {
+    session.setPermissionCheckHandler((webContents, permission) => {
+      if (permission === 'midi' || permission === 'midiSysex') {
+        return true;
+      }
+      return false;
+    });
+  }
 
   if (app.isPackaged) {
     const indexPath = path.join(__dirname, '..', 'dist', 'index.html');
