@@ -1,5 +1,18 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.1
+
+Experimental MIDI support, improved track navigation, and safer exports and unsaved‑changes handling.
+
+- Introduced experimental **MIDI support** with configurable input/output devices, device selection and real‑time monitoring so external keyboards and synths can drive DOSOUND Tracker.
+- Added live MIDI playback features including enable/disable toggle, debug console logging of MIDI input/output events, note transposition based on instrument base pitch, and improved disabled‑state styling on MIDI controls.
+- Implemented MIDI‑driven envelope visualization with 20ms tick updates, sustain support and release handling so instrument volume envelopes animate in real time while playing from MIDI.
+- Improved track editing and navigation by adding step editing wrap‑around from the last to the first position, persistent current‑step highlighting even when the Track panel loses focus, and click‑to‑jump behavior in the position numbers panel.
+- Allowed scroll synchronization to keep following playback while the song is running by removing the playback‑state restriction from the scroll sync effect.
+- Hardened **SAVE INST** handling with an explicit `dosound` instrument type identifier and version field, and refined the Instrument Format Warning modal title capitalization and dialog width for clarity.
+- Enhanced Windows packaging and icons with a dedicated Electron/NSIS configuration, multi‑resolution icon support, an updated 256×256 PNG icon, and documentation covering ICO creation requirements and tool limitations.
+- Added unsaved‑changes protection with dirty‑state tracking so both Electron and browser builds show a confirmation dialog when quitting or reloading with pending edits.
+
 ## Version 1.1.0
 
 - Added a centralized **UI state store** using Zustand for octave, current line and channel mute flags so navigation and playback controls stay in sync across panels without prop drilling or duplicated local state.
