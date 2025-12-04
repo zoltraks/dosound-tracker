@@ -16,6 +16,7 @@ interface MidiModalProps {
   onCancel: () => void;
   onClear: () => void;
   onRescan: () => void;
+  onChangeConfig: (patch: Partial<MidiConfig>) => void;
 }
 
 export const MidiModal: React.FC<MidiModalProps> = ({
@@ -30,6 +31,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   onCancel,
   onClear,
   onRescan,
+  onChangeConfig,
 }) => {
   const [localConfig, setLocalConfig] = useState<MidiConfig>(config);
 
@@ -103,9 +105,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                     type="checkbox"
                     checked={localConfig.inputEnabled}
                     disabled={!isSupported || !hasInputs}
-                    onChange={event =>
-                      setLocalConfig(prev => ({ ...prev, inputEnabled: event.target.checked }))
-                    }
+                    onChange={event => {
+                      const checked = event.target.checked;
+                      setLocalConfig(prev => ({ ...prev, inputEnabled: checked }));
+                      onChangeConfig({ inputEnabled: checked });
+                    }}
                   />
                   <span>Enable MIDI input</span>
                 </label>
@@ -180,9 +184,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                     type="checkbox"
                     checked={localConfig.outputEnabled}
                     disabled={!isSupported || !hasOutputs}
-                    onChange={event =>
-                      setLocalConfig(prev => ({ ...prev, outputEnabled: event.target.checked }))
-                    }
+                    onChange={event => {
+                      const checked = event.target.checked;
+                      setLocalConfig(prev => ({ ...prev, outputEnabled: checked }));
+                      onChangeConfig({ outputEnabled: checked });
+                    }}
                   />
                   <span>Enable MIDI output</span>
                 </label>

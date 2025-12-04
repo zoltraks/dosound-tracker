@@ -3589,6 +3589,13 @@ const App: React.FC = () => {
     refreshDevices: refreshMidiDevices
   } = useMidi(handleMidiNoteEvent);
 
+  const handleLiveMidiConfigChange = useCallback(
+    (patch: Partial<MidiConfig>) => {
+      setMidiConfig({ ...midiConfig, ...patch });
+    },
+    [midiConfig, setMidiConfig]
+  );
+
   const handleShowMidi = useCallback(() => {
     setIsMidiModalOpen(true);
   }, []);
@@ -4471,6 +4478,7 @@ const App: React.FC = () => {
           onCancel={handleCloseMidi}
           onClear={handleClearMidiMonitors}
           onRescan={handleRescanMidiDevices}
+          onChangeConfig={handleLiveMidiConfigChange}
         />
 
         <DownloadModal
