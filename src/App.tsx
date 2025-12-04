@@ -3318,10 +3318,6 @@ const App: React.FC = () => {
   const scrollRafRef = useRef<number | null>(null);
 
   useEffect(() => {
-    if (sequencerState.isPlaying) {
-      return;
-    }
-
     pendingScrollLineRef.current = sharedCurrentLine;
 
     if (scrollRafRef.current != null) {
