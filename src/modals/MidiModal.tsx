@@ -117,9 +117,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                   <input
                     type="checkbox"
                     checked={localConfig.ignoreInputVolume}
-                    onChange={event =>
-                      setLocalConfig(prev => ({ ...prev, ignoreInputVolume: event.target.checked }))
-                    }
+                    onChange={event => {
+                      const checked = event.target.checked;
+                      setLocalConfig(prev => ({ ...prev, ignoreInputVolume: checked }));
+                      onChangeConfig({ ignoreInputVolume: checked });
+                    }}
                   />
                   <span>Ignore input volume</span>
                 </label>
@@ -133,9 +135,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                   id="midi-input-select"
                   className="midi-select"
                   value={effectiveInputId || ''}
-                  onChange={event =>
-                    setLocalConfig(prev => ({ ...prev, inputId: event.target.value || null }))
-                  }
+                  onChange={event => {
+                    const nextId = event.target.value || null;
+                    setLocalConfig(prev => ({ ...prev, inputId: nextId }));
+                    onChangeConfig({ inputId: nextId });
+                  }}
                   disabled={!isSupported || !hasInputs}
                 >
                   {!hasInputs && <option value="">No input devices</option>}
@@ -196,9 +200,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                   <input
                     type="checkbox"
                     checked={localConfig.ignoreOutputVolume}
-                    onChange={event =>
-                      setLocalConfig(prev => ({ ...prev, ignoreOutputVolume: event.target.checked }))
-                    }
+                    onChange={event => {
+                      const checked = event.target.checked;
+                      setLocalConfig(prev => ({ ...prev, ignoreOutputVolume: checked }));
+                      onChangeConfig({ ignoreOutputVolume: checked });
+                    }}
                   />
                   <span>Ignore output volume</span>
                 </label>
@@ -212,9 +218,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                   id="midi-output-select"
                   className="midi-select"
                   value={effectiveOutputId || ''}
-                  onChange={event =>
-                    setLocalConfig(prev => ({ ...prev, outputId: event.target.value || null }))
-                  }
+                  onChange={event => {
+                    const nextId = event.target.value || null;
+                    setLocalConfig(prev => ({ ...prev, outputId: nextId }));
+                    onChangeConfig({ outputId: nextId });
+                  }}
                   disabled={!isSupported || !hasOutputs}
                 >
                   {!hasOutputs && <option value="">No output devices</option>}

@@ -283,7 +283,7 @@ export class YM2149 {
   }
 
   getState(): YMState {
-    return JSON.parse(JSON.stringify(this.state));
+    return this.state;
   }
 
   reset(): void {

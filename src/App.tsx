@@ -176,6 +176,26 @@ const App: React.FC = () => {
     renumberSong,
     isSongDirty
   } = useDataManagement();
+
+  const patternsById = useMemo(() => {
+    const map = new Map<string, Pattern>();
+    for (const pattern of currentSong.patterns) {
+      if (pattern && pattern.id) {
+        map.set(pattern.id, pattern);
+      }
+    }
+    return map;
+  }, [currentSong.patterns]);
+
+  const instrumentsById = useMemo(() => {
+    const map = new Map<string, Instrument>();
+    for (const instrument of currentSong.instruments) {
+      if (instrument && instrument.id) {
+        map.set(instrument.id, instrument);
+      }
+    }
+    return map;
+  }, [currentSong.instruments]);
   const {
     sequencerState,
     stop,
@@ -652,6 +672,8 @@ const App: React.FC = () => {
   const debugTickCounterRef = useRef<number>(0);
   const debugLastRowRef = useRef<{ pattern: number; line: number } | null>(null);
   const debugLastTimeRef = useRef<number | null>(null);
+  const lastUiRowRef = useRef<{ pattern: number; line: number } | null>(null);
+  const patternPlayingRef = useRef(false);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
@@ -699,12 +721,25 @@ const App: React.FC = () => {
 
   // Basic sequencer callback for playback
   const sequencerCallback = useCallback((state: SequencerState) => {
-    // Update current line for UI
-    setSharedCurrentLine(state.currentLine);
-    
-    // Track pattern playing state
-    setIsPatternPlaying(state.isPatternLoop && state.isPlaying);
-    
+    const lastUiRow = lastUiRowRef.current;
+    if (
+      !lastUiRow ||
+      lastUiRow.pattern !== state.currentPattern ||
+      lastUiRow.line !== state.currentLine
+    ) {
+      lastUiRowRef.current = {
+        pattern: state.currentPattern,
+        line: state.currentLine
+      };
+      setSharedCurrentLine(state.currentLine);
+    }
+
+    const nextIsPatternPlaying = state.isPatternLoop && state.isPlaying;
+    if (patternPlayingRef.current !== nextIsPatternPlaying) {
+      patternPlayingRef.current = nextIsPatternPlaying;
+      setIsPatternPlaying(nextIsPatternPlaying);
+    }
+
     if (ym2149Ref.current) {
       const ym2149 = ym2149Ref.current;
 
@@ -791,9 +826,9 @@ const App: React.FC = () => {
       
       if (currentPlaylistEntry) {
         // Get pattern data for each track
-        const patternA = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackA);
-        const patternB = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackB);
-        const patternC = currentSong.patterns.find(p => p.id === currentPlaylistEntry.trackC);
+        const patternA = currentPlaylistEntry.trackA ? patternsById.get(currentPlaylistEntry.trackA) : undefined;
+        const patternB = currentPlaylistEntry.trackB ? patternsById.get(currentPlaylistEntry.trackB) : undefined;
+        const patternC = currentPlaylistEntry.trackC ? patternsById.get(currentPlaylistEntry.trackC) : undefined;
         
         // Allow playback even if some tracks are empty (using --)
         // Get current line data (patterns are track-agnostic - read trackA data for any track)
@@ -995,7 +1030,7 @@ const App: React.FC = () => {
             const instId = activeNote && typeof activeNote.instrument === 'string'
               ? activeNote.instrument
               : '';
-            const instrument = currentSong.instruments.find(i => i.id === instId);
+            const instrument = instrumentsById.get(instId);
             const rawSustain = instrument?.sustain ?? null;
             if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
               channelSustainRef.current[ch] = Math.floor(rawSustain);
