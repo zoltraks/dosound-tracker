@@ -44,8 +44,8 @@ export const InstrumentTypeWarningModal: React.FC<InstrumentTypeWarningModalProp
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-dialog">
-        <div className="modal-title">Instrument format warning</div>
+      <div className="modal-dialog instrument-type-warning-modal">
+        <div className="modal-title">Instrument Format Warning</div>
         <div className="modal-body">
           {messageLines.map((line, index) => (
             <React.Fragment key={index}>

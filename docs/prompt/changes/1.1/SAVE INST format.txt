@@ -33,3 +33,6 @@ Ignore this value on loading an instrument as for now.
 
 ---
 
+Make Instrument format warning modal changes: change title to "Instrument Format Warning" and make dialog wider about 30% more.
+
+---

@@ -525,6 +525,11 @@ body {
   flex-direction: column;
 }
 
+.modal-dialog.instrument-type-warning-modal {
+  min-width: 340px;
+  max-width: 468px;
+}
+
 .modal-title {
   font-size: 12px;
   font-weight: bold;
