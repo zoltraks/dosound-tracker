@@ -1,7 +1,8 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 let mainWindow;
+let isQuitting = false;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -26,6 +27,18 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   }
 
+  mainWindow.on('close', (event) => {
+    if (isQuitting) {
+      return;
+    }
+
+    event.preventDefault();
+
+    if (mainWindow && mainWindow.webContents) {
+      mainWindow.webContents.send('app-close-requested');
+    }
+  });
+
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
@@ -44,5 +57,20 @@ app.whenReady().then(() => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit();
+  }
+});
+
+ipcMain.on('app-close-confirmed', () => {
+  isQuitting = true;
+  if (mainWindow) {
+    mainWindow.close();
+  } else {
+    app.quit();
+  }
+});
+
+ipcMain.on('app-close-cancelled', () => {
+  if (mainWindow) {
+    mainWindow.focus();
   }
 });

@@ -177,6 +177,7 @@ export const useDataManagement = () => {
 
   const [songError, setSongError] = useState('');
   const [instrumentError, setInstrumentError] = useState('');
+  const [isSongDirty, setIsSongDirty] = useState(false);
 
   const songSaveTimeoutRef = useRef<number | null>(null);
   const instrumentSaveTimeoutRef = useRef<number | null>(null);
@@ -274,6 +275,7 @@ export const useDataManagement = () => {
 
     setCurrentSong(newSong);
     setCurrentInstrument(newCurrentInstrument);
+    setIsSongDirty(false);
 
     return newSong;
   }, []);
@@ -314,6 +316,7 @@ export const useDataManagement = () => {
     };
     setCurrentSong(updatedSong);
     setCurrentInstrument(newInstrument);
+    setIsSongDirty(true);
     return newInstrument;
   }, [currentSong]);
 
@@ -652,6 +655,7 @@ export const useDataManagement = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
+      setIsSongDirty(false);
     } catch (error) {
       console.error('Failed to save song:', error);
     }
@@ -672,6 +676,7 @@ export const useDataManagement = () => {
         if (firstInstrument) {
           setCurrentInstrument(firstInstrument);
         }
+        setIsSongDirty(false);
       } catch (error) {
         console.error('Error loading song:', error);
         setSongError('Error loading song file. Please check the file format.');
@@ -928,6 +933,7 @@ export const useDataManagement = () => {
 
           return { ...prev, instruments };
         });
+        setIsSongDirty(true);
       } catch (error) {
         console.error('Error loading instrument:', error);
         setInstrumentError('Error loading instrument file. Please check the file format.');
@@ -935,6 +941,7 @@ export const useDataManagement = () => {
   }, [currentInstrument.id, setInstrumentError]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
+    setIsSongDirty(true);
     setCurrentSong(prev => {
       // Handle pattern length updates with clamping and pattern resizing
       let next: Song = { ...prev, ...updates } as Song;
@@ -964,6 +971,7 @@ export const useDataManagement = () => {
   }, []);
 
   const updateInstrument = useCallback((updates: Partial<Instrument>) => {
+    setIsSongDirty(true);
     setCurrentInstrument(prev => ({ ...prev, ...updates }));
     
     setCurrentSong(prev => {
@@ -1029,6 +1037,7 @@ export const useDataManagement = () => {
       patterns: [...currentSong.patterns, newPattern]
     };
     setCurrentSong(updatedSong);
+    setIsSongDirty(true);
     return newPattern;
   }, [currentSong]);
 
@@ -1039,6 +1048,7 @@ export const useDataManagement = () => {
         playlist: [...currentSong.playlist, entry]
       };
       setCurrentSong(updatedSong);
+      setIsSongDirty(true);
     },
     [currentSong]
   );
@@ -1139,6 +1149,7 @@ export const useDataManagement = () => {
     };
 
     setCurrentSong(optimizedSong);
+    setIsSongDirty(true);
 
     const summaryLines: string[] = [];
     summaryLines.push('Optimization complete.');
@@ -1354,6 +1365,7 @@ export const useDataManagement = () => {
     if (nextCurrentInstrument) {
       setCurrentInstrument(nextCurrentInstrument);
     }
+    setIsSongDirty(true);
 
     // Build human-readable summary
     const summaryLines: string[] = [];
@@ -1434,6 +1446,7 @@ export const useDataManagement = () => {
     addPlaylistEntry,
     optimizeSong,
     renumberSong,
-    triggerFileLoad
+    triggerFileLoad,
+    isSongDirty
   };
 };

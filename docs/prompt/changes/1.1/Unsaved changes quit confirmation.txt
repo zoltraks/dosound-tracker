@@ -1,0 +1,4 @@
+Application can be run either in web browser or as standalone application packed with Electron.
+When any data in the song was modified and not saved then if user wants to close it, there should be a quit confirmation modal dialog so the user is warned that the data will be lost unless saved and should be able to cancel close operation.
+Track if data were modified by any change in the instrument, song information, playlist or pattern data.
+When one of the "RESET", "NEW SONG", "LOAD SONG" or "SAVE SONG" operation is completed, the song should be considered as unmodified and user should be able to close application or web page without warning.

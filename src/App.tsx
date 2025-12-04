@@ -61,6 +61,7 @@ const App: React.FC = () => {
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [isQuitConfirmOpen, setIsQuitConfirmOpen] = useState(false);
   const [optimizeSummary, setOptimizeSummary] = useState('');
   const [renumberSummary, setRenumberSummary] = useState('');
   const [isTransposeOpen, setIsTransposeOpen] = useState(false);
@@ -157,7 +158,8 @@ const App: React.FC = () => {
     songError,
     setSongError,
     optimizeSong,
-    renumberSong
+    renumberSong,
+    isSongDirty
   } = useDataManagement();
   const {
     sequencerState,
@@ -281,6 +283,65 @@ const App: React.FC = () => {
       // ignore
     }
   }, [transposeScope, transposeTrackScope, transposeInstrumentScope, transposeAmount]);
+
+  // Browser beforeunload guard for unsaved song changes (non-Electron only).
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const anyWindow: any = window;
+    const isElectronEnv = !!anyWindow.electronAPI;
+    if (isElectronEnv) {
+      // Electron uses explicit IPC-based quit confirmation instead.
+      return;
+    }
+
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      const isResetting = anyWindow.__dosoundTrackerIsResetting === true;
+      if (!isSongDirty || isResetting) {
+        return;
+      }
+
+      event.preventDefault();
+      event.returnValue = '';
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [isSongDirty]);
+
+  // Electron window-close interception: ask React whether to quit when song is dirty.
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const anyWindow: any = window;
+    const api = anyWindow.electronAPI;
+    if (!api || !api.onAppCloseRequested) {
+      return;
+    }
+
+    const handler = () => {
+      if (!isSongDirty) {
+        if (api.confirmAppClose) {
+          api.confirmAppClose();
+        }
+        return;
+      }
+      setIsQuitConfirmOpen(true);
+    };
+
+    api.onAppCloseRequested(handler);
+    return () => {
+      if (api.removeAppCloseRequestedListener) {
+        api.removeAppCloseRequestedListener(handler);
+      }
+    };
+  }, [isSongDirty]);
 
   useEffect(() => {
     fetch('MESSAGES.md')
@@ -1436,11 +1497,42 @@ const App: React.FC = () => {
     setChannelMutes([false, false, false]);
     setCurrentOctave(3);
     // Reload the application to start fresh
+    try {
+      (window as any).__dosoundTrackerIsResetting = true;
+    } catch {
+      // ignore
+    }
     window.location.reload();
   }, [setChannelMutes, setCurrentOctave]);
 
   const handleCancelReset = useCallback(() => {
     setIsResetConfirmOpen(false);
+  }, []);
+
+  const handleConfirmQuit = useCallback(() => {
+    setIsQuitConfirmOpen(false);
+
+    if (typeof window !== 'undefined') {
+      const api: any = (window as any).electronAPI;
+      if (api && api.confirmAppClose) {
+        api.confirmAppClose();
+        return;
+      }
+
+      // Fallback for non-Electron environments (may be ignored by the browser).
+      window.close();
+    }
+  }, []);
+
+  const handleCancelQuit = useCallback(() => {
+    setIsQuitConfirmOpen(false);
+
+    if (typeof window !== 'undefined') {
+      const api: any = (window as any).electronAPI;
+      if (api && api.cancelAppClose) {
+        api.cancelAppClose();
+      }
+    }
   }, []);
 
   const handleShowChangelog = useCallback(() => {
@@ -3520,6 +3612,10 @@ const App: React.FC = () => {
           setIsDownloadOpen(false);
           return;
         }
+        if (isQuitConfirmOpen) {
+          handleCancelQuit();
+          return;
+        }
 
         return;
       }
@@ -3594,6 +3690,10 @@ const App: React.FC = () => {
           handleConfirmReset();
           return;
         }
+        if (isQuitConfirmOpen) {
+          handleConfirmQuit();
+          return;
+        }
       }
     };
 
@@ -3619,6 +3719,7 @@ const App: React.FC = () => {
     isRenumberConfirmOpen,
     isNewSongConfirmOpen,
     isResetConfirmOpen,
+    isQuitConfirmOpen,
     isInstrumentDeleteOpen,
     handleCancelTranspose,
     handleConfirmTranspose,
@@ -3630,6 +3731,8 @@ const App: React.FC = () => {
     handleConfirmNewSong,
     handleCancelReset,
     handleConfirmReset,
+    handleCancelQuit,
+    handleConfirmQuit,
     handleCloseTransposeSummary,
     handleCloseOptimizeSummary,
     handleCloseSoundExportSummary,
@@ -4073,6 +4176,14 @@ const App: React.FC = () => {
           onConfirm={handleConfirmReset}
           onCancel={handleCancelReset}
           confirmLabel="Reset"
+        />
+
+        <ConfirmationModal
+          isOpen={isQuitConfirmOpen}
+          title="Quit without saving?"
+          message="Current song changes have not been saved.\n\nIf you quit now, any unsaved changes will be lost.\n\nDo you still want to quit?"
+          onConfirm={handleConfirmQuit}
+          onCancel={handleCancelQuit}
         />
 
         <InstrumentDeleteModal
