@@ -430,14 +430,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   const getLineClass = useCallback((lineIndex: number) => {
     const classes = ['track-line'];
-    if (lineIndex === currentLine && isActive) {
+    if (lineIndex === currentLine) {
       classes.push('current');
     }
     if (lineIndex % 4 === 0) {
       classes.push('beat-line');
     }
     return classes.join(' ');
-  }, [currentLine, isActive]);
+  }, [currentLine]);
 
   return (
     <div

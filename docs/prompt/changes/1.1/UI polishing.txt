@@ -1,0 +1,4 @@
+Make change in "Track" block so all the time the current selected step have different background so the current step is always visible no matter if "Track" block is focused or not.
+
+---
+

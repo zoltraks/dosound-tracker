@@ -77,7 +77,10 @@
   --track-a-bg: #582537;
   --track-b-bg: #255837;
   --track-c-bg: #25256a;
-  
+
+  --track-inactive-bg: #324569;
+  --track-active-bg: #62677e;
+
   /* Shadows and Effects */
   --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.7);
   --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.8);
@@ -172,7 +175,10 @@
   --track-a-bg: #ffe8f0;
   --track-b-bg: #e2fff0;
   --track-c-bg: #e2e8ff;
-  
+
+  --track-inactive-bg: #fef3c7;
+  --track-active-bg: #dfd7b4;
+
   /* Light mode shadows */
   --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1);
   --shadow-medium: 0 4px 6px rgba(0, 0, 0, 0.15);
@@ -850,7 +856,11 @@ body {
 }
 
 .track-line.current {
-  background-color: var(--active-bg);
+  background-color: var(--track-inactive-bg);
+}
+
+.track-panel.active .track-line.current {
+  background-color: var(--track-active-bg);
   border: 1px solid var(--active-border);
 }
 
@@ -897,36 +907,50 @@ body {
   gap: 8px;
   text-align: left;
   padding-left: 1rem;
+  height: 100%;
 }
 
 .note-text {
   min-width: 10ch;
   padding: 0 2px;
-  padding-top: 1px;
   padding-left: 4px;
+  padding-top: 1px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .note-text.active {
   background-color: var(--track-cell-active-bg);
   color: var(--text-primary);
-  padding-left: 2px;
-  border-left: 1px solid var(--active-border);
-  border-right: 1px solid var(--active-border);
 }
 
 .volume-data {
-  width: 2ch;
-  text-align: right;
+  width: 14px;
+  text-align: center;
   color: var(--text-secondary);
   padding-top: 1px;
-  padding-right: 2px;
+  padding-right: 0;
+  padding-left: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .volume-data.active {
   color: var(--text-primary);
   background-color: var(--track-cell-active-bg);
-  border-left: 1px solid var(--active-border);
-  border-right: 1px solid var(--active-border);
+}
+
+.track-panel.active .track-line.current .note-text {
+  padding-left: 3px;
+}
+
+.track-panel.active .track-line.current .volume-data {
+  padding-left: 0;
 }
 
 .track-footer {
