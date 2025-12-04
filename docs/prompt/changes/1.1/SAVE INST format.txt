@@ -1,0 +1,35 @@
+---
+
+When saving instrument data with "SAVE INST" command I would like to add additional information key "type" with static value of "dosound" that will inform other programs that this instrument comes from DOSOUND Tracker.
+
+Currently it looks like this:
+
+```yaml
+instrument:
+  name: Bass 5
+  base: "C-2"
+  octave: 2
+  volume: [11, 11, 11, 11, 7, 0]
+```
+
+Make it looks like this:
+
+```
+instrument:
+  name: Bass 5
+  type: dosound
+  base: "C-2"
+  octave: 2
+  volume: [11, 11, 11, 11, 7, 0]
+```
+
+When loading an instrument if that key is missing or its value differs than "dosound" (treat as case insensitive value) show modal warning about that with confirmation if the use wants to continue or abort with information about  value of the "type" it it was provided but is different than expected and checkbox to ignore this warning in the future and just try to load. Remember state of that option until "RESET" is invoked.
+
+---
+
+When saving instrument data with "SAVE INST" command in YAML format, add additional information field "version" after "type" field with default value of 1.
+
+Ignore this value on loading an instrument as for now.
+
+---
+

@@ -708,6 +708,9 @@ export const useDataManagement = () => {
         instrumentNode.name = trimmedName;
       }
 
+      instrumentNode.type = 'dosound';
+      instrumentNode.version = 1;
+
       const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
       if (baseKey !== DEFAULT_BASE_KEY) {
         instrumentNode.base = baseKey;
@@ -781,12 +784,9 @@ export const useDataManagement = () => {
     }
   }, [currentInstrument]);
 
-  const loadInstrument = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const parsed = yaml.load(content) as unknown;
+  const loadInstrument = useCallback((content: string) => {
+    try {
+      const parsed = yaml.load(content) as unknown;
 
         if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {
           setInstrumentError('Error loading instrument file.\n\nRoot "instrument" key not found.');
@@ -932,8 +932,6 @@ export const useDataManagement = () => {
         console.error('Error loading instrument:', error);
         setInstrumentError('Error loading instrument file. Please check the file format.');
       }
-    };
-    reader.readAsText(file);
   }, [currentInstrument.id, setInstrumentError]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {

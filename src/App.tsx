@@ -24,7 +24,7 @@ import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal } from './modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal } from './modals';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
 import './App.css';
@@ -89,6 +89,21 @@ const App: React.FC = () => {
     usageCount: 0,
     patternCount: 0
   });
+  const [isInstrumentTypeWarningOpen, setIsInstrumentTypeWarningOpen] = useState(false);
+  const [ignoreInstrumentTypeWarning, setIgnoreInstrumentTypeWarning] = useState<boolean>(() => {
+    try {
+      const raw = localStorage.getItem('dosound-tracker-ignore-inst-type-warning');
+      return raw === '1';
+    } catch {
+      return false;
+    }
+  });
+  const [instrumentTypeWarningIgnoreChecked, setInstrumentTypeWarningIgnoreChecked] = useState(false);
+  const [pendingInstrumentContent, setPendingInstrumentContent] = useState<string | null>(null);
+  const [pendingInstrumentTypeInfo, setPendingInstrumentTypeInfo] = useState<{
+    hasTypeField: boolean;
+    detectedType: string | null;
+  } | null>(null);
   const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('dosound-tracker-debug-mode');
@@ -186,6 +201,17 @@ const App: React.FC = () => {
       // ignore
     }
   }, [isDebugMode]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'dosound-tracker-ignore-inst-type-warning',
+        ignoreInstrumentTypeWarning ? '1' : '0'
+      );
+    } catch {
+      // ignore
+    }
+  }, [ignoreInstrumentTypeWarning]);
 
   useEffect(() => {
     const id = currentInstrument?.id;
@@ -1552,6 +1578,109 @@ const App: React.FC = () => {
       instrumentFileInputRef.current.value = '';
       instrumentFileInputRef.current.click();
     }
+  }, []);
+
+  const handleInstrumentFileContent = useCallback((content: string) => {
+    if (!content) {
+      return;
+    }
+
+    if (ignoreInstrumentTypeWarning) {
+      loadInstrument(content);
+      setActiveSection('instrumentList');
+      return;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = yaml.load(content) as unknown;
+    } catch (error) {
+      console.error('Error loading instrument:', error);
+      setInstrumentError('Error loading instrument file. Please check the file format.');
+      return;
+    }
+
+    if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {
+      loadInstrument(content);
+      setActiveSection('instrumentList');
+      return;
+    }
+
+    const root = parsed as { instrument?: unknown };
+    const node = root.instrument;
+
+    if (!node || typeof node !== 'object') {
+      loadInstrument(content);
+      setActiveSection('instrumentList');
+      return;
+    }
+
+    const instNode = node as { [key: string]: unknown; type?: unknown };
+    const hasTypeField = Object.prototype.hasOwnProperty.call(instNode, 'type');
+    const rawType = instNode.type;
+
+    let detectedType: string | null = null;
+    if (typeof rawType === 'string') {
+      detectedType = rawType;
+    } else if (rawType != null) {
+      detectedType = String(rawType);
+    }
+
+    const normalizedType = detectedType ? detectedType.trim().toLowerCase() : '';
+    const isDosoundType = normalizedType === 'dosound';
+
+    if (!hasTypeField || !isDosoundType) {
+      setPendingInstrumentContent(content);
+      setPendingInstrumentTypeInfo({ hasTypeField, detectedType });
+      setInstrumentTypeWarningIgnoreChecked(ignoreInstrumentTypeWarning);
+      setIsInstrumentTypeWarningOpen(true);
+      return;
+    }
+
+    loadInstrument(content);
+    setActiveSection('instrumentList');
+  }, [
+    ignoreInstrumentTypeWarning,
+    loadInstrument,
+    setActiveSection,
+    setInstrumentError,
+    setPendingInstrumentContent,
+    setPendingInstrumentTypeInfo,
+    setInstrumentTypeWarningIgnoreChecked,
+    setIsInstrumentTypeWarningOpen
+  ]);
+
+  const handleConfirmInstrumentTypeWarning = useCallback(() => {
+    if (!pendingInstrumentContent) {
+      setIsInstrumentTypeWarningOpen(false);
+      return;
+    }
+
+    if (instrumentTypeWarningIgnoreChecked && !ignoreInstrumentTypeWarning) {
+      setIgnoreInstrumentTypeWarning(true);
+    }
+
+    const content = pendingInstrumentContent;
+
+    setIsInstrumentTypeWarningOpen(false);
+    setPendingInstrumentContent(null);
+    setPendingInstrumentTypeInfo(null);
+
+    loadInstrument(content);
+    setActiveSection('instrumentList');
+  }, [
+    pendingInstrumentContent,
+    instrumentTypeWarningIgnoreChecked,
+    ignoreInstrumentTypeWarning,
+    setIgnoreInstrumentTypeWarning,
+    loadInstrument,
+    setActiveSection
+  ]);
+
+  const handleCancelInstrumentTypeWarning = useCallback(() => {
+    setIsInstrumentTypeWarningOpen(false);
+    setPendingInstrumentContent(null);
+    setPendingInstrumentTypeInfo(null);
   }, []);
 
   const handlePositionSelect = useCallback((position: number) => {
@@ -3300,7 +3429,8 @@ const App: React.FC = () => {
         isRenumberConfirmOpen ||
         isNewSongConfirmOpen ||
         isResetConfirmOpen ||
-        isInstrumentDeleteOpen;
+        isInstrumentDeleteOpen ||
+        isInstrumentTypeWarningOpen;
 
       if (!hasInfoModal && !hasConfirmModal) {
         return;
@@ -3335,6 +3465,10 @@ const App: React.FC = () => {
         }
         if (isNewSongConfirmOpen) {
           handleCancelNewSong();
+          return;
+        }
+        if (isInstrumentTypeWarningOpen) {
+          handleCancelInstrumentTypeWarning();
           return;
         }
         if (isResetConfirmOpen) {
@@ -3454,6 +3588,10 @@ const App: React.FC = () => {
         }
         if (isNewSongConfirmOpen) {
           handleConfirmNewSong();
+          return;
+        }
+        if (isInstrumentTypeWarningOpen) {
+          handleConfirmInstrumentTypeWarning();
           return;
         }
         if (isResetConfirmOpen) {
@@ -3807,10 +3945,18 @@ const App: React.FC = () => {
           style={{ display: 'none' }}
           onChange={(e) => {
             const file = e.target.files?.[0];
-            if (file) {
-              loadInstrument(file);
-              setActiveSection('instrumentList');
+            if (!file) {
+              return;
             }
+
+            const reader = new FileReader();
+            reader.onload = ev => {
+              const text = typeof ev.target?.result === 'string'
+                ? ev.target.result
+                : String(ev.target?.result ?? '');
+              handleInstrumentFileContent(text);
+            };
+            reader.readAsText(file);
           }}
         />
 
@@ -3887,6 +4033,16 @@ const App: React.FC = () => {
             'For normal composing and playback, you can turn debug mode off again.'
           }
           onClose={() => setIsDebugInfoOpen(false)}
+        />
+
+        <InstrumentTypeWarningModal
+          isOpen={isInstrumentTypeWarningOpen}
+          hasTypeField={!!pendingInstrumentTypeInfo?.hasTypeField}
+          detectedType={pendingInstrumentTypeInfo?.detectedType ?? null}
+          ignoreFuture={instrumentTypeWarningIgnoreChecked}
+          onIgnoreChange={setInstrumentTypeWarningIgnoreChecked}
+          onConfirm={handleConfirmInstrumentTypeWarning}
+          onCancel={handleCancelInstrumentTypeWarning}
         />
 
         <ConfirmationModal
