@@ -1,0 +1,1 @@
+When editing steps in track when I reach last position, then the next one should be the first step again (wrap).

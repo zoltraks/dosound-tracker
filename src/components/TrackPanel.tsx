@@ -386,8 +386,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         newPattern.lines[currentLine].trackA = newNote;
 
         onPatternChange(newPattern);
-        // Move to next line
-        onLineChange(Math.min((patternLength || 1) - 1, currentLine + 1));
+        // Move to next line (wrap around pattern length)
+        const length = Math.max(1, patternLength || 1);
+        const wrappedIndex = (currentLine + 1) % length;
+        onLineChange(wrappedIndex);
       }
     }
   }, [
