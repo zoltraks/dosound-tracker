@@ -501,8 +501,8 @@ body {
 
 .command-btn.midi-btn.midi-disabled {
   background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border-color: var(--border-dim);
-  color: var(--text-muted);
+  border-color: var(--border-bright);
+  color: var(--text-secondary);
 }
 
 .command-btn.midi-btn.midi-input-enabled {

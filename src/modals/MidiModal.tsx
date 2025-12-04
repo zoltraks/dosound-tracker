@@ -58,18 +58,12 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   const hasOutputs = devices.outputs.length > 0;
 
   const effectiveInputId = useMemo(() => {
-    if (!localConfig.inputId && hasInputs) {
-      return devices.inputs[0].id;
-    }
     return localConfig.inputId;
-  }, [localConfig.inputId, devices.inputs, hasInputs]);
+  }, [localConfig.inputId]);
 
   const effectiveOutputId = useMemo(() => {
-    if (!localConfig.outputId && hasOutputs) {
-      return devices.outputs[0].id;
-    }
     return localConfig.outputId;
-  }, [localConfig.outputId, devices.outputs, hasOutputs]);
+  }, [localConfig.outputId]);
 
   if (!isOpen) return null;
 

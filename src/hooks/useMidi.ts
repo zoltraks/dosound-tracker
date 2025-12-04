@@ -242,6 +242,13 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
 
     const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
 
+    let debugOn = false;
+    try {
+      debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+    } catch {
+      debugOn = false;
+    }
+
     let type = 'Unknown';
     let noteLabel = '';
     let value: number | null = null;
@@ -266,6 +273,23 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         note: noteLabel,
         value,
       });
+
+      if (debugOn) {
+        console.log('[DOSOUND MIDI IN]', {
+          direction: 'in',
+          type,
+          status,
+          data,
+          dataHex,
+          channel,
+          deviceId,
+          deviceName,
+          noteNumber,
+          noteName,
+          octave: midiOctave,
+          velocity: data2,
+        });
+      }
 
       onNoteEvent({
         type: 'noteOff',
@@ -295,6 +319,23 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         value,
       });
 
+      if (debugOn) {
+        console.log('[DOSOUND MIDI IN]', {
+          direction: 'in',
+          type,
+          status,
+          data,
+          dataHex,
+          channel,
+          deviceId,
+          deviceName,
+          noteNumber,
+          noteName,
+          octave: midiOctave,
+          velocity: data2,
+        });
+      }
+
       onNoteEvent({
         type: 'noteOn',
         noteNumber,
@@ -318,6 +359,21 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         note: noteLabel,
         value,
       });
+
+      if (debugOn) {
+        console.log('[DOSOUND MIDI IN]', {
+          direction: 'in',
+          type,
+          status,
+          data,
+          dataHex,
+          channel,
+          deviceId,
+          deviceName,
+          note: noteLabel,
+          value,
+        });
+      }
     } else {
       type = 'Other';
       noteLabel = '';
@@ -331,6 +387,21 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         note: noteLabel,
         value,
       });
+
+      if (debugOn) {
+        console.log('[DOSOUND MIDI IN]', {
+          direction: 'in',
+          type,
+          status,
+          data,
+          dataHex,
+          channel,
+          deviceId,
+          deviceName,
+          note: noteLabel,
+          value,
+        });
+      }
     }
 
     if (config.outputEnabled && currentOutputRef.current && config.outputId) {
@@ -347,9 +418,23 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
             note: noteLabel,
             value,
           });
+
+          if (debugOn) {
+            console.log('[DOSOUND MIDI OUT]', {
+              direction: 'out',
+              type,
+              status,
+              data,
+              dataHex,
+              channel,
+              deviceId: config.outputId,
+              deviceName: resolveDeviceName(config.outputId, 'MIDI Out'),
+              note: noteLabel,
+              value,
+            });
+          }
         }
       } catch {
-        // Ignore output errors
       }
     }
   }, [addInMonitorEntry, addOutMonitorEntry, config.outputEnabled, config.outputId, onNoteEvent, resolveDeviceName]);
