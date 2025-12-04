@@ -1,0 +1,9 @@
+There are some issues during play song or pattern when running on Electron application.
+
+Check for the possible delays in the code and optimize playback.
+
+Currently this effect is most felt when runing Electron build on macOS.
+
+Take a look on the sequncer loop for optimization possibilities without making big changes.
+
+---
