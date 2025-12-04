@@ -519,6 +519,11 @@ const App: React.FC = () => {
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
+  const midiPreviewTimerRef = useRef<number | null>(null);
+  const midiPreviewSubTickRef = useRef<number>(0);
+  const midiPreviewEnvelopeStepRef = useRef<number>(0);
+  const midiPreviewLastTickTimeRef = useRef<number | null>(null);
+  const midiPreviewNextTickTimeRef = useRef<number | null>(null);
   const midiPreviewTimeoutRef = useRef<number | null>(null);
   const lastMidiPreviewRef = useRef<{
     noteNumber: number;
@@ -3214,17 +3219,66 @@ const App: React.FC = () => {
 
         // Simple preview on the track's channel with auto-silence
         const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
+        const instrument = currentInstrument as any;
         const noteData = { note: transposedNoteName, octave: clampedOctave };
+
+        if (midiPreviewTimerRef.current !== null) {
+          window.clearInterval(midiPreviewTimerRef.current);
+          midiPreviewTimerRef.current = null;
+        }
 
         if (midiPreviewTimeoutRef.current !== null) {
           window.clearTimeout(midiPreviewTimeoutRef.current);
           midiPreviewTimeoutRef.current = null;
         }
 
-        ym2149.updateChannelWithInstrument(ymChannel, currentInstrument as any, noteData, 0, 0x0f);
+        const now = performance.now();
+        midiPreviewSubTickRef.current = 0;
+        midiPreviewEnvelopeStepRef.current = 0;
+        midiPreviewLastTickTimeRef.current = now;
+        midiPreviewNextTickTimeRef.current = now + 20;
+
+        ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
+
+        const TICK_INTERVAL_MS = 20;
+
+        midiPreviewTimerRef.current = window.setInterval(() => {
+          const nowTick = performance.now();
+
+          let nextTickTime = midiPreviewNextTickTimeRef.current;
+          if (!nextTickTime) {
+            nextTickTime = nowTick + TICK_INTERVAL_MS;
+          }
+
+          let subTick = midiPreviewSubTickRef.current;
+          let step = midiPreviewEnvelopeStepRef.current;
+
+          while (nowTick >= nextTickTime) {
+            subTick = (subTick + 1) % 2;
+            if (subTick === 0) {
+              step = step + 1;
+            }
+            nextTickTime += TICK_INTERVAL_MS;
+          }
+
+          midiPreviewSubTickRef.current = subTick;
+          midiPreviewEnvelopeStepRef.current = step;
+          midiPreviewLastTickTimeRef.current = nowTick;
+          midiPreviewNextTickTimeRef.current = nextTickTime;
+
+          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, step, 0x0f);
+        }, 20);
+
+        const volumeRegister = 0x08 + ymChannel;
 
         midiPreviewTimeoutRef.current = window.setTimeout(() => {
-          ym2149.writeRegister(0x08 + ymChannel, 0x00);
+          if (midiPreviewTimerRef.current !== null) {
+            window.clearInterval(midiPreviewTimerRef.current);
+            midiPreviewTimerRef.current = null;
+          }
+          midiPreviewLastTickTimeRef.current = null;
+          midiPreviewNextTickTimeRef.current = null;
+          ym2149.writeRegister(volumeRegister, 0x00);
           midiPreviewTimeoutRef.current = null;
         }, 500);
 
