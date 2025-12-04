@@ -27,3 +27,6 @@ dist-ssr
 # Ignore everything in public/download except .gitkeep
 public/download/*
 !public/download/.gitkeep
+
+# Ignore VSCode workspace file
+*.code-workspace
