@@ -72,6 +72,7 @@
   "build": {
     "appId": "com.dosound.tracker",
     "productName": "DOSOUND Tracker",
+    "copyright": "Copyright © 2024 Filip Golewski",
     "files": [
       "dist/**/*",
       "electron/**/*",
@@ -90,7 +91,21 @@
         "nsis",
         "zip"
       ],
-      "icon": "public/icons/icon-512.png"
+      "icon": "public/icons/icon.ico",
+      "publisherName": "Filip Golewski",
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "DOSOUND Tracker",
+      "uninstallDisplayName": "DOSOUND Tracker",
+      "installerIcon": "public/icons/icon.ico",
+      "uninstallerIcon": "public/icons/icon.ico",
+      "license": "LICENSE",
+      "warningsAsErrors": false
     },
     "linux": {
       "target": [
