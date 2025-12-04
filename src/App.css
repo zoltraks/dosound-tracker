@@ -79,7 +79,8 @@
   --track-c-bg: #25256a;
 
   --track-inactive-bg: #324569;
-  --track-active-bg: #62677e;
+  --track-active-bg: #182833;
+  --track-active-border: #8678b9;
 
   /* Shadows and Effects */
   --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.7);
@@ -178,6 +179,7 @@
 
   --track-inactive-bg: #fef3c7;
   --track-active-bg: #dfd7b4;
+  --track-active-border: #f59e0b;
 
   /* Light mode shadows */
   --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.1);
@@ -1068,7 +1070,7 @@ body {
 
 .track-panel.active .track-line.current {
   background-color: var(--track-active-bg);
-  border: 1px solid var(--active-border);
+  border: 1px solid var(--track-active-border);
 }
 
 .beat-line {

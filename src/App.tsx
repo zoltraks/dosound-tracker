@@ -9,7 +9,7 @@ import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
 import type { MidiConfig, MidiNoteEvent } from './hooks/useMidi';
-import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
+import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE, NOTE_BASE_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
@@ -3124,11 +3124,38 @@ const App: React.FC = () => {
       const { type, noteNumber, noteName, octave, channel: midiChannel } = event;
 
       const normalizedNote = noteName.toUpperCase();
-      if (!NOTES.includes(normalizedNote)) {
+      const noteIndex = NOTES.indexOf(normalizedNote);
+      if (noteIndex === -1) {
         return;
       }
 
-      const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, octave));
+      // Transpose incoming MIDI notes by the current instrument's base so that
+      // pressing C-4 on the controller corresponds to the instrument's base
+      // pitch (e.g. C-3), and all other keys shift by the same semitone offset.
+      const baseKey =
+        parseBaseKeyString(currentInstrument.base || 'C-4') ||
+        { note: 'C', octave: NOTE_BASE_OCTAVE };
+
+      const baseNoteName = baseKey.note.toUpperCase();
+      const baseIndexRaw = NOTES.indexOf(baseNoteName);
+      const baseNoteIndex = baseIndexRaw === -1 ? 0 : baseIndexRaw;
+
+      const inputSemis = noteIndex + octave * 12;
+      const refSemis = 0 + NOTE_BASE_OCTAVE * 12; // C-<NOTE_BASE_OCTAVE>
+      const baseSemis = baseNoteIndex + baseKey.octave * 12;
+      const offsetSemis = baseSemis - refSemis;
+
+      let transposedSemis = inputSemis + offsetSemis;
+      let transposedOctave = Math.floor(transposedSemis / 12);
+      let transposedNoteIndex = transposedSemis % 12;
+
+      if (transposedNoteIndex < 0) {
+        transposedNoteIndex += 12;
+        transposedOctave -= 1;
+      }
+
+      const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, transposedOctave));
+      const transposedNoteName = NOTES[transposedNoteIndex];
 
       const isTrackFocused =
         activeSection === 'trackA' ||
@@ -3172,7 +3199,7 @@ const App: React.FC = () => {
 
         const instrumentId = currentInstrument.id;
         const note: Note = {
-          note: normalizedNote,
+          note: transposedNoteName,
           octave: clampedOctave,
           instrument: instrumentId
         };
@@ -3187,7 +3214,7 @@ const App: React.FC = () => {
 
         // Simple preview on the track's channel with auto-silence
         const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-        const noteData = { note: normalizedNote, octave: clampedOctave };
+        const noteData = { note: transposedNoteName, octave: clampedOctave };
 
         if (midiPreviewTimeoutRef.current !== null) {
           window.clearTimeout(midiPreviewTimeoutRef.current);
@@ -3214,7 +3241,7 @@ const App: React.FC = () => {
             : 0;
 
         if (type === 'noteOn') {
-          const noteData = { note: normalizedNote, octave: clampedOctave };
+          const noteData = { note: transposedNoteName, octave: clampedOctave };
 
           if (midiPreviewTimeoutRef.current !== null) {
             window.clearTimeout(midiPreviewTimeoutRef.current);

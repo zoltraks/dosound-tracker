@@ -40,3 +40,50 @@ When MIDI input is enabled, the application should listen to the MIDI input when
 When "Track" block is not focused, the application should still listen to the MIDI input and just play current selected instrument on note on and stop playing on note off.
 
 ---
+
+When logging MIDI messages in console change title from "[DOSOUND MIDI IN]" to just "MIDI IN" and "[DOSOUNT MIDI OUT]" to just "MIDI OUT".
+
+Change field names of the log object from:
+
+```
+{
+    "direction": "in",
+    "type": "Note On",
+    "status": 144,
+    "data": [
+        144,
+        88,
+        32
+    ],
+    "dataHex": "90 58 20",
+    "channel": 1,
+    "deviceId": "input-10",
+    "deviceName": "FL STUDIO FIRE",
+    "noteNumber": 88,
+    "noteName": "E",
+    "octave": 6,
+    "velocity": 32
+}
+```
+
+To:
+
+```
+{
+    "time": "20:32:12.323",
+    "sink": "in",
+    "type": "Note On",
+    "data": "90 58 20",
+    "channel": 1,
+    "device": "FL STUDIO FIRE",
+    "number": 88,
+    "note": "E-6",
+    "velocity": 32,
+    "status": 144
+}
+```
+
+By removing original "data" field and changing "dataHex" to "data" and removing "deviceId" and changin name "deviceName" to just "device", changing "direction" to "sink" and changing "noteNumber" to just "number", and instead using "noteName" and "octave", just "note" with encoded note with octave like "C#3" or "E-6". Include "time" field with current local time in HH:MM:SS.fff (fff = miliseconds).
+
+---
+

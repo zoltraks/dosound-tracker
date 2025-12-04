@@ -107,7 +107,7 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
     const mm = now.getMinutes().toString().padStart(2, '0');
     const ss = now.getSeconds().toString().padStart(2, '0');
     const ms = now.getMilliseconds().toString().padStart(3, '0');
-    return `${hh}:${mm}:${ss}:${ms}`;
+    return `${hh}:${mm}:${ss}.${ms}`;
   };
 
   const addInMonitorEntry = useCallback((entry: Omit<MidiMonitorEntry, 'id' | 'time'>) => {
@@ -242,6 +242,8 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
 
     const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
 
+    const time = formatTime();
+
     let debugOn = false;
     try {
       debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
@@ -262,7 +264,8 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       const midiOctave = Math.floor(noteNumber / 12) - 1;
       const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
       const noteName = noteNames[noteNumber % 12] || 'C';
-      noteLabel = `${noteName}${midiOctave}`;
+      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
+      noteLabel = `${noteBase}${midiOctave}`;
       value = data2;
 
       addInMonitorEntry({
@@ -275,19 +278,16 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       });
 
       if (debugOn) {
-        console.log('[DOSOUND MIDI IN]', {
-          direction: 'in',
+        console.log('MIDI IN', {
+          time,
           type,
-          status,
-          data,
-          dataHex,
+          data: dataHex,
           channel,
-          deviceId,
-          deviceName,
-          noteNumber,
-          noteName,
-          octave: midiOctave,
+          device: deviceName,
+          number: noteNumber,
+          note: noteLabel,
           velocity: data2,
+          status,
         });
       }
 
@@ -307,7 +307,8 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       const midiOctave = Math.floor(noteNumber / 12) - 1;
       const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
       const noteName = noteNames[noteNumber % 12] || 'C';
-      noteLabel = `${noteName}${midiOctave}`;
+      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
+      noteLabel = `${noteBase}${midiOctave}`;
       value = data2;
 
       addInMonitorEntry({
@@ -320,19 +321,16 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       });
 
       if (debugOn) {
-        console.log('[DOSOUND MIDI IN]', {
-          direction: 'in',
+        console.log('MIDI IN', {
+          time,
           type,
-          status,
-          data,
-          dataHex,
+          data: dataHex,
           channel,
-          deviceId,
-          deviceName,
-          noteNumber,
-          noteName,
-          octave: midiOctave,
+          device: deviceName,
+          number: noteNumber,
+          note: noteLabel,
           velocity: data2,
+          status,
         });
       }
 
@@ -361,17 +359,15 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       });
 
       if (debugOn) {
-        console.log('[DOSOUND MIDI IN]', {
-          direction: 'in',
+        console.log('MIDI IN', {
+          time,
           type,
-          status,
-          data,
-          dataHex,
+          data: dataHex,
           channel,
-          deviceId,
-          deviceName,
+          device: deviceName,
           note: noteLabel,
           value,
+          status,
         });
       }
     } else {
@@ -389,17 +385,15 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       });
 
       if (debugOn) {
-        console.log('[DOSOUND MIDI IN]', {
-          direction: 'in',
+        console.log('MIDI IN', {
+          time,
           type,
-          status,
-          data,
-          dataHex,
+          data: dataHex,
           channel,
-          deviceId,
-          deviceName,
+          device: deviceName,
           note: noteLabel,
           value,
+          status,
         });
       }
     }
@@ -410,9 +404,11 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         if (output && typeof output.send === 'function') {
           output.send(event.data);
 
+          const outputDeviceName = resolveDeviceName(config.outputId, 'MIDI Out');
+
           addOutMonitorEntry({
             data: dataHex,
-            device: resolveDeviceName(config.outputId, 'MIDI Out'),
+            device: outputDeviceName,
             channel: channelHex,
             type,
             note: noteLabel,
@@ -420,18 +416,30 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
           });
 
           if (debugOn) {
-            console.log('[DOSOUND MIDI OUT]', {
-              direction: 'out',
-              type,
-              status,
-              data,
-              dataHex,
-              channel,
-              deviceId: config.outputId,
-              deviceName: resolveDeviceName(config.outputId, 'MIDI Out'),
-              note: noteLabel,
-              value,
-            });
+            if (type === 'Note On' || type === 'Note Off') {
+              console.log('MIDI OUT', {
+                time,
+                type,
+                data: dataHex,
+                channel,
+                device: outputDeviceName,
+                number: data1,
+                note: noteLabel,
+                velocity: data2,
+                status,
+              });
+            } else {
+              console.log('MIDI OUT', {
+                time,
+                type,
+                data: dataHex,
+                channel,
+                device: outputDeviceName,
+                note: noteLabel,
+                value,
+                status,
+              });
+            }
           }
         }
       } catch {
