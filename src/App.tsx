@@ -4,9 +4,11 @@ import { useTheme } from './hooks/useTheme';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { useAudioContext } from './hooks/useAudioContext';
+import { useMidi } from './hooks/useMidi';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
+import type { MidiConfig, MidiNoteEvent } from './hooks/useMidi';
 import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -24,7 +26,7 @@ import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal } from './modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal } from './modals';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
 import './App.css';
@@ -76,6 +78,7 @@ const App: React.FC = () => {
   const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
+  const [isMidiModalOpen, setIsMidiModalOpen] = useState(false);
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [isDebugInfoOpen, setIsDebugInfoOpen] = useState(false);
   const [isInstrumentDeleteOpen, setIsInstrumentDeleteOpen] = useState(false);
@@ -516,6 +519,12 @@ const App: React.FC = () => {
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
+  const midiPreviewTimeoutRef = useRef<number | null>(null);
+  const lastMidiPreviewRef = useRef<{
+    noteNumber: number;
+    midiChannel: number;
+    ymChannel: number;
+  } | null>(null);
 
   // Initialize audio on component mount
   useEffect(() => {
@@ -3106,6 +3115,150 @@ const App: React.FC = () => {
     setSharedCurrentLine(lineIndex);
   }, []);
 
+  const handleMidiNoteEvent = useCallback(
+    (event: MidiNoteEvent) => {
+      if (!ym2149Ref.current) {
+        return;
+      }
+
+      const { type, noteNumber, noteName, octave, channel: midiChannel } = event;
+
+      const normalizedNote = noteName.toUpperCase();
+      if (!NOTES.includes(normalizedNote)) {
+        return;
+      }
+
+      const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, octave));
+
+      const isTrackFocused =
+        activeSection === 'trackA' ||
+        activeSection === 'trackB' ||
+        activeSection === 'trackC';
+
+      const ym2149 = ym2149Ref.current;
+
+      // When a track panel is focused, insert notes into the current pattern and advance the cursor
+      if (isTrackFocused && type === 'noteOn') {
+        const trackId: 'A' | 'B' | 'C' =
+          activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
+
+        const pattern = getCurrentPatternForTrack(trackId);
+        if (!pattern) {
+          return;
+        }
+
+        const totalLines = currentSong.patternLength || PATTERN_LENGTH;
+        const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
+
+        const newPattern: Pattern = {
+          ...pattern,
+          lines: [...pattern.lines]
+        };
+
+        while (newPattern.lines.length < totalLines) {
+          newPattern.lines.push({
+            trackA: null,
+            trackB: null,
+            trackC: null
+          });
+        }
+
+        const baseLine = newPattern.lines[safeIndex] || {
+          trackA: null,
+          trackB: null,
+          trackC: null
+        };
+        const line: PatternLine = { ...baseLine };
+
+        const instrumentId = currentInstrument.id;
+        const note: Note = {
+          note: normalizedNote,
+          octave: clampedOctave,
+          instrument: instrumentId
+        };
+
+        line.trackA = note;
+        newPattern.lines[safeIndex] = line;
+
+        handlePatternChange(newPattern);
+
+        const nextIndex = Math.min(totalLines - 1, safeIndex + 1);
+        setSharedCurrentLine(nextIndex);
+
+        // Simple preview on the track's channel with auto-silence
+        const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
+        const noteData = { note: normalizedNote, octave: clampedOctave };
+
+        if (midiPreviewTimeoutRef.current !== null) {
+          window.clearTimeout(midiPreviewTimeoutRef.current);
+          midiPreviewTimeoutRef.current = null;
+        }
+
+        ym2149.updateChannelWithInstrument(ymChannel, currentInstrument as any, noteData, 0, 0x0f);
+
+        midiPreviewTimeoutRef.current = window.setTimeout(() => {
+          ym2149.writeRegister(0x08 + ymChannel, 0x00);
+          midiPreviewTimeoutRef.current = null;
+        }, 500);
+
+        return;
+      }
+
+      // When no track panel is focused, use MIDI to preview the current instrument
+      if (!isTrackFocused) {
+        const ymChannel =
+          lastTrackId === 'B'
+            ? 1
+            : lastTrackId === 'C'
+            ? 2
+            : 0;
+
+        if (type === 'noteOn') {
+          const noteData = { note: normalizedNote, octave: clampedOctave };
+
+          if (midiPreviewTimeoutRef.current !== null) {
+            window.clearTimeout(midiPreviewTimeoutRef.current);
+            midiPreviewTimeoutRef.current = null;
+          }
+
+          ym2149.updateChannelWithInstrument(ymChannel, currentInstrument as any, noteData, 0, 0x0f);
+
+          lastMidiPreviewRef.current = {
+            noteNumber,
+            midiChannel,
+            ymChannel
+          };
+
+          return;
+        }
+
+        if (type === 'noteOff') {
+          const last = lastMidiPreviewRef.current;
+          if (
+            last &&
+            last.noteNumber === noteNumber &&
+            last.midiChannel === midiChannel &&
+            last.ymChannel >= 0 &&
+            last.ymChannel <= 2
+          ) {
+            ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
+            lastMidiPreviewRef.current = null;
+          }
+        }
+      }
+    },
+    [
+      activeSection,
+      currentInstrument,
+      currentSong.patternLength,
+      getCurrentPatternForTrack,
+      handlePatternChange,
+      lastTrackId,
+      setSharedCurrentLine,
+      sharedCurrentLine
+    ]
+  );
+
   const handleToggleDebugMode = useCallback(() => {
     setIsDebugMode(prev => {
       const next = !prev;
@@ -3397,6 +3550,45 @@ const App: React.FC = () => {
     setInstrumentOperationSummary('');
   }, []);
 
+  const {
+    isSupported: isMidiSupported,
+    accessError: midiAccessError,
+    devices: midiDevices,
+    config: midiConfig,
+    setConfig: setMidiConfig,
+    inMonitor: midiInMonitor,
+    outMonitor: midiOutMonitor,
+    clearMonitors: clearMidiMonitors,
+    refreshDevices: refreshMidiDevices
+  } = useMidi(handleMidiNoteEvent);
+
+  const handleShowMidi = useCallback(() => {
+    setIsMidiModalOpen(true);
+  }, []);
+
+  const handleCloseMidi = useCallback(() => {
+    setIsMidiModalOpen(false);
+  }, []);
+
+  const handleSaveMidiConfig = useCallback(
+    (config: MidiConfig) => {
+      setMidiConfig(config);
+      setIsMidiModalOpen(false);
+    },
+    [setMidiConfig]
+  );
+
+  const handleClearMidiMonitors = useCallback(() => {
+    clearMidiMonitors();
+  }, [clearMidiMonitors]);
+
+  const handleRescanMidiDevices = useCallback(() => {
+    refreshMidiDevices();
+  }, [refreshMidiDevices]);
+
+  const midiInputEnabled = midiConfig.inputEnabled && !!midiConfig.inputId;
+  const midiOutputEnabled = midiConfig.outputEnabled && !!midiConfig.outputId;
+
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
@@ -3509,7 +3701,8 @@ const App: React.FC = () => {
         isAboutOpen ||
         isChangelogOpen ||
         isDownloadOpen ||
-        isDebugInfoOpen;
+        isDebugInfoOpen ||
+        isMidiModalOpen;
 
       const hasConfirmModal =
         isTransposeOpen ||
@@ -3535,6 +3728,10 @@ const App: React.FC = () => {
       }
 
       if (key === 'Escape' || key === 'Esc') {
+        if (isMidiModalOpen) {
+          handleCloseMidi();
+          return;
+        }
         if (isInstrumentDeleteOpen) {
           handleCancelInstrumentDelete();
           return;
@@ -3714,6 +3911,7 @@ const App: React.FC = () => {
     isAboutOpen,
     isChangelogOpen,
     isDownloadOpen,
+    isMidiModalOpen,
     isTransposeOpen,
     isOptimizeConfirmOpen,
     isRenumberConfirmOpen,
@@ -3741,6 +3939,7 @@ const App: React.FC = () => {
     handleCloseChangelog,
     handleCancelInstrumentDelete,
     handleCloseInstrumentOperationSummary,
+    handleCloseMidi,
     setSongError,
     setInstrumentError,
     setTrackClipboardError,
@@ -3814,6 +4013,9 @@ const App: React.FC = () => {
           setActiveSection={setActiveSection}
           onTranspose={handleOpenTranspose}
           onExportDump={handleExportDump}
+          midiInputEnabled={midiInputEnabled}
+          midiOutputEnabled={midiOutputEnabled}
+          onShowMidi={handleShowMidi}
         />
 
         <div className="main-content">
@@ -4228,6 +4430,20 @@ const App: React.FC = () => {
           isOpen={isChangelogOpen}
           content={changelogContent}
           onClose={handleCloseChangelog}
+        />
+
+        <MidiModal
+          isOpen={isMidiModalOpen}
+          isSupported={isMidiSupported}
+          accessError={midiAccessError}
+          config={midiConfig}
+          devices={midiDevices}
+          inMonitor={midiInMonitor}
+          outMonitor={midiOutMonitor}
+          onSave={handleSaveMidiConfig}
+          onCancel={handleCloseMidi}
+          onClear={handleClearMidiMonitors}
+          onRescan={handleRescanMidiDevices}
         />
 
         <DownloadModal

@@ -1,0 +1,271 @@
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
+
+interface MidiModalProps {
+  isOpen: boolean;
+  isSupported: boolean;
+  accessError: string | null;
+  config: MidiConfig;
+  devices: {
+    inputs: MidiDeviceInfo[];
+    outputs: MidiDeviceInfo[];
+  };
+  inMonitor: MidiMonitorEntry[];
+  outMonitor: MidiMonitorEntry[];
+  onSave: (config: MidiConfig) => void;
+  onCancel: () => void;
+  onClear: () => void;
+  onRescan: () => void;
+}
+
+export const MidiModal: React.FC<MidiModalProps> = ({
+  isOpen,
+  isSupported,
+  accessError,
+  config,
+  devices,
+  inMonitor,
+  outMonitor,
+  onSave,
+  onCancel,
+  onClear,
+  onRescan,
+}) => {
+  const [localConfig, setLocalConfig] = useState<MidiConfig>(config);
+
+  const inScrollRef = useRef<HTMLDivElement | null>(null);
+  const outScrollRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setLocalConfig(config);
+    }
+  }, [isOpen, config]);
+
+  useEffect(() => {
+    const container = inScrollRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [inMonitor.length]);
+
+  useEffect(() => {
+    const container = outScrollRef.current;
+    if (!container) return;
+    container.scrollTop = container.scrollHeight;
+  }, [outMonitor.length]);
+
+  const hasInputs = devices.inputs.length > 0;
+  const hasOutputs = devices.outputs.length > 0;
+
+  const effectiveInputId = useMemo(() => {
+    if (!localConfig.inputId && hasInputs) {
+      return devices.inputs[0].id;
+    }
+    return localConfig.inputId;
+  }, [localConfig.inputId, devices.inputs, hasInputs]);
+
+  const effectiveOutputId = useMemo(() => {
+    if (!localConfig.outputId && hasOutputs) {
+      return devices.outputs[0].id;
+    }
+    return localConfig.outputId;
+  }, [localConfig.outputId, devices.outputs, hasOutputs]);
+
+  if (!isOpen) return null;
+
+  const handleSave = () => {
+    onSave({
+      inputEnabled: localConfig.inputEnabled && !!effectiveInputId,
+      outputEnabled: localConfig.outputEnabled && !!effectiveOutputId,
+      inputId: effectiveInputId || null,
+      outputId: effectiveOutputId || null,
+    });
+  };
+
+  const supportMessage = !isSupported
+    ? 'Web MIDI API is not supported in this environment.'
+    : accessError
+    ? `Could not access MIDI devices: ${accessError}`
+    : '';
+
+  return (
+    <div className="modal-backdrop">
+      <div className="modal-dialog midi-modal">
+        <div className="modal-title">MIDI</div>
+        <div className="modal-body midi-modal-body">
+          {supportMessage && (
+            <div className="midi-warning">
+              {supportMessage}
+            </div>
+          )}
+
+          <div className="midi-top-row">
+            <label className="midi-checkbox">
+              <input
+                type="checkbox"
+                checked={localConfig.inputEnabled}
+                disabled={!isSupported || !hasInputs}
+                onChange={event =>
+                  setLocalConfig(prev => ({ ...prev, inputEnabled: event.target.checked }))
+                }
+              />
+              <span>Enable MIDI input</span>
+            </label>
+            <label className="midi-checkbox">
+              <input
+                type="checkbox"
+                checked={localConfig.outputEnabled}
+                disabled={!isSupported || !hasOutputs}
+                onChange={event =>
+                  setLocalConfig(prev => ({ ...prev, outputEnabled: event.target.checked }))
+                }
+              />
+              <span>Enable MIDI output</span>
+            </label>
+          </div>
+
+          <div className="midi-device-row">
+            <div className="midi-device-column">
+              <label className="midi-label" htmlFor="midi-input-select">
+                MIDI Input Device
+              </label>
+              <select
+                id="midi-input-select"
+                className="midi-select"
+                value={effectiveInputId || ''}
+                onChange={event =>
+                  setLocalConfig(prev => ({ ...prev, inputId: event.target.value || null }))
+                }
+                disabled={!isSupported || !hasInputs}
+              >
+                {!hasInputs && <option value="">No input devices</option>}
+                {hasInputs && (
+                  <option value="">(none)</option>
+                )}
+                {devices.inputs.map(device => (
+                  <option key={device.id} value={device.id}>
+                    {device.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="midi-device-column">
+              <label className="midi-label" htmlFor="midi-output-select">
+                MIDI Output Device
+              </label>
+              <select
+                id="midi-output-select"
+                className="midi-select"
+                value={effectiveOutputId || ''}
+                onChange={event =>
+                  setLocalConfig(prev => ({ ...prev, outputId: event.target.value || null }))
+                }
+                disabled={!isSupported || !hasOutputs}
+              >
+                {!hasOutputs && <option value="">No output devices</option>}
+                {hasOutputs && (
+                  <option value="">(none)</option>
+                )}
+                {devices.outputs.map(device => (
+                  <option key={device.id} value={device.id}>
+                    {device.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="midi-monitors">
+            <div className="midi-monitor-panel">
+              <div className="midi-monitor-title">MIDI IN</div>
+              <div className="midi-monitor-header">
+                <span className="midi-col time">Time</span>
+                <span className="midi-col data">Data</span>
+                <span className="midi-col device">Device</span>
+                <span className="midi-col channel">Ch</span>
+                <span className="midi-col type">Type</span>
+                <span className="midi-col note">Note</span>
+                <span className="midi-col value">Value</span>
+              </div>
+              <div className="midi-monitor-body" ref={inScrollRef}>
+                {inMonitor.map(entry => (
+                  <div key={entry.id} className="midi-monitor-row">
+                    <span className="midi-col time">{entry.time}</span>
+                    <span className="midi-col data">{entry.data}</span>
+                    <span className="midi-col device">{entry.device}</span>
+                    <span className="midi-col channel">{entry.channel}</span>
+                    <span className="midi-col type">{entry.type}</span>
+                    <span className="midi-col note">{entry.note}</span>
+                    <span className="midi-col value">{entry.value ?? ''}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="midi-monitor-panel">
+              <div className="midi-monitor-title">MIDI OUT</div>
+              <div className="midi-monitor-header">
+                <span className="midi-col time">Time</span>
+                <span className="midi-col data">Data</span>
+                <span className="midi-col device">Device</span>
+                <span className="midi-col channel">Ch</span>
+                <span className="midi-col type">Type</span>
+                <span className="midi-col note">Note</span>
+                <span className="midi-col value">Value</span>
+              </div>
+              <div className="midi-monitor-body" ref={outScrollRef}>
+                {outMonitor.map(entry => (
+                  <div key={entry.id} className="midi-monitor-row">
+                    <span className="midi-col time">{entry.time}</span>
+                    <span className="midi-col data">{entry.data}</span>
+                    <span className="midi-col device">{entry.device}</span>
+                    <span className="midi-col channel">{entry.channel}</span>
+                    <span className="midi-col type">{entry.type}</span>
+                    <span className="midi-col note">{entry.note}</span>
+                    <span className="midi-col value">{entry.value ?? ''}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="modal-actions midi-actions">
+          <div className="midi-actions-left">
+            <button
+              className="command-btn"
+              type="button"
+              onClick={onClear}
+            >
+              CLEAR
+            </button>
+            <button
+              className="command-btn"
+              type="button"
+              onClick={onRescan}
+            >
+              RESCAN
+            </button>
+          </div>
+          <div className="midi-actions-right">
+            <button
+              className="command-btn"
+              type="button"
+              onClick={onCancel}
+            >
+              CANCEL
+            </button>
+            <button
+              className="command-btn"
+              type="button"
+              onClick={handleSave}
+            >
+              SAVE
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

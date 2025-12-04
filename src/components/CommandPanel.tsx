@@ -41,6 +41,9 @@ interface CommandPanelProps {
   setActiveSection: (section: NavigationSection) => void;
   onTranspose: () => void;
   onExportDump: () => void;
+  midiInputEnabled: boolean;
+  midiOutputEnabled: boolean;
+  onShowMidi: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -82,7 +85,10 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   activeSection,
   setActiveSection,
   onTranspose,
-  onExportDump
+  onExportDump,
+  midiInputEnabled,
+  midiOutputEnabled,
+  onShowMidi
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
@@ -118,6 +124,22 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       focusDefaultButton();
     }
   }, [isActive]);
+
+  const getMidiButtonClassName = () => {
+    const classes = ['command-btn', 'midi-btn'];
+
+    if (midiInputEnabled && midiOutputEnabled) {
+      classes.push('midi-both-enabled');
+    } else if (midiInputEnabled) {
+      classes.push('midi-input-enabled');
+    } else if (midiOutputEnabled) {
+      classes.push('midi-output-enabled');
+    } else {
+      classes.push('midi-disabled');
+    }
+
+    return classes.join(' ');
+  };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (!isActive) {
@@ -257,6 +279,15 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
         <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
         <button onClick={onExportInstrument} className="command-btn">EXPORT INST</button>
+        <button
+          onClick={event => {
+            event.stopPropagation();
+            onShowMidi();
+          }}
+          className={getMidiButtonClassName()}
+        >
+          MIDI
+        </button>
       </div>
 
       {/* Pattern Operations */}

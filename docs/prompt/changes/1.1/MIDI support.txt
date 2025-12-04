@@ -1,0 +1,42 @@
+Add MIDI support to the application.
+
+Add "MIDI" button to the menu bar in the second row after "EXPORT INST".
+When clicked, it should open a configuration window.
+This window should have a title "MIDI" and should occupy 90% of the screen.
+
+It should have different color when it is enabled and when it is disabled.
+
+The content of the MIDI configuration window should be be arranged vertically.
+
+It should have checkbox "Enable MIDI input" and "Enable MIDI output". 
+
+The color of the "MIDI" button should different when MIDI output is enabled or MIDI input is enabled or both or when it is disabled.
+
+It should have a dropdown menu to select the MIDI input and output devices.
+
+Next to it it should have "MIDI IN" monitor section and "MIDI OUT" monitor section.
+
+Monitor section is a table box that shows the MIDI messages received or sent.
+
+It should have columns: 
+ - "Time" (in HH:MM:SS:MS format),
+ - "Data" (in hex like "90 11 7F"),
+ - "Device" (text name)
+ - "Channel" (hex like "01")
+ - "Type" (Note On, Note Off, Control Change, etc),
+ - "Note" ("C#3", "CC 17", etc), 
+ - "Value" (velocity for notes or value for CC)
+ 
+Monitor section should have always visible scrollbar on the right side.
+
+After a row is added, it should be scrolled to the bottom.
+
+The most bottom part of the window should have bar with buttons to "SAVE" and "CANCEL" like other modal dialogs.
+
+It should have also "CLEAR" button to clear the monitor sections and "RESCAN" button to rescan the MIDI devices.
+
+When MIDI input is enabled, the application should listen to the MIDI input when one of the "Track" block is focused and play the notes and enter it on the selected step and move to next one.
+
+When "Track" block is not focused, the application should still listen to the MIDI input and just play current selected instrument on note on and stop playing on note off.
+
+---
