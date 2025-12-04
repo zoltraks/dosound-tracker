@@ -6,6 +6,10 @@
   "background_color": "#000000",
   "theme_color": "#000000",
   "description": "DOSOUND Tracker",
+  "author": {
+    "name": "Filip Golewski",
+    "url": "https://home.alyx.pl"
+  },
   "icons": [
     {
       "src": "/icon.svg",
