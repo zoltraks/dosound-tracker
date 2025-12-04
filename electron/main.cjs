@@ -5,10 +5,10 @@ let mainWindow;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 980,
-    minWidth: 1200,
-    minHeight: 900,
+    width: 1300,
+    height: 950,
+    minWidth: 1300,
+    minHeight: 950,
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
