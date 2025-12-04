@@ -205,7 +205,41 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
   }, []);
 
   const refreshDevices = useCallback(() => {
-    scanDevices();
+    const access = midiAccessRef.current;
+    if (access) {
+      scanDevices();
+      return;
+    }
+
+    if (typeof navigator === 'undefined') {
+      return;
+    }
+
+    const nav: any = navigator as any;
+    if (typeof nav.requestMIDIAccess !== 'function') {
+      return;
+    }
+
+    nav.requestMIDIAccess({ sysex: false })
+      .then((newAccess: any) => {
+        midiAccessRef.current = newAccess;
+        setIsSupported(true);
+        setAccessError(null);
+        scanDevices();
+
+        try {
+          newAccess.onstatechange = () => {
+            scanDevices();
+          };
+        } catch {
+          // ignore onstatechange errors
+        }
+      })
+      .catch((error: any) => {
+        setIsSupported(false);
+        setAccessError(error instanceof Error ? error.message : String(error));
+        setDevices({ inputs: [], outputs: [] });
+      });
   }, [scanDevices]);
 
   const setConfig = useCallback((next: MidiConfig) => {
