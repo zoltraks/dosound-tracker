@@ -531,6 +531,16 @@ const App: React.FC = () => {
     ymChannel: number;
   } | null>(null);
 
+  const midiLiveTimerRef = useRef<number | null>(null);
+  const midiLiveSubTickRef = useRef<number>(0);
+  const midiLiveEnvelopeStepRef = useRef<number>(0);
+  const midiLiveLastTickTimeRef = useRef<number | null>(null);
+  const midiLiveNextTickTimeRef = useRef<number | null>(null);
+  const midiLiveSustainIndexRef = useRef<number | null>(null);
+  const midiLiveReleasedRef = useRef<boolean>(false);
+  const midiLiveLastVolumeIndexRef = useRef<number | null>(null);
+  const midiLiveLastVolumeValueRef = useRef<number | null>(null);
+
   // Initialize audio on component mount
   useEffect(() => {
     if (!audioContext || ym2149Ref.current) {
@@ -3296,19 +3306,132 @@ const App: React.FC = () => {
 
         if (type === 'noteOn') {
           const noteData = { note: transposedNoteName, octave: clampedOctave };
+          const instrument = currentInstrument as any;
 
-          if (midiPreviewTimeoutRef.current !== null) {
-            window.clearTimeout(midiPreviewTimeoutRef.current);
-            midiPreviewTimeoutRef.current = null;
+          if (midiLiveTimerRef.current !== null) {
+            window.clearInterval(midiLiveTimerRef.current);
+            midiLiveTimerRef.current = null;
           }
 
-          ym2149.updateChannelWithInstrument(ymChannel, currentInstrument as any, noteData, 0, 0x0f);
+          midiLiveReleasedRef.current = false;
+
+          const rawSustain = instrument && typeof instrument.sustain === 'number'
+            ? instrument.sustain
+            : null;
+          const sustainIndex =
+            typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
+              ? Math.floor(rawSustain)
+              : null;
+
+          midiLiveSustainIndexRef.current = sustainIndex;
+
+          const nowTick = performance.now();
+          midiLiveSubTickRef.current = 0;
+          midiLiveEnvelopeStepRef.current = 0;
+          midiLiveLastTickTimeRef.current = nowTick;
+          midiLiveNextTickTimeRef.current = nowTick + 20;
+
+          const volumeEnv: number[] =
+            Array.isArray(instrument.volume) && instrument.volume.length > 0
+              ? instrument.volume
+              : [0x0f];
+
+          const lastVolumeIndex = volumeEnv.length - 1;
+          const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
+
+          midiLiveLastVolumeIndexRef.current = lastVolumeIndex;
+          midiLiveLastVolumeValueRef.current = lastVolumeValue;
+
+          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
 
           lastMidiPreviewRef.current = {
             noteNumber,
             midiChannel,
             ymChannel
           };
+
+          const TICK_INTERVAL_MS = 20;
+
+          midiLiveTimerRef.current = window.setInterval(() => {
+            const sustain = midiLiveSustainIndexRef.current;
+            const released = midiLiveReleasedRef.current;
+
+            const now = performance.now();
+
+            let nextTickTime = midiLiveNextTickTimeRef.current;
+            if (!nextTickTime) {
+              nextTickTime = now + TICK_INTERVAL_MS;
+            }
+
+            let subTick = midiLiveSubTickRef.current ?? 0;
+            let rawStep = midiLiveEnvelopeStepRef.current ?? 0;
+
+            while (now >= nextTickTime) {
+              subTick = (subTick + 1) % 2;
+
+              if (subTick === 0) {
+                if (
+                  sustain === null ||
+                  sustain === undefined ||
+                  sustain < 0 ||
+                  released ||
+                  rawStep < sustain
+                ) {
+                  rawStep = rawStep + 1;
+                }
+              }
+
+              nextTickTime += TICK_INTERVAL_MS;
+            }
+
+            midiLiveSubTickRef.current = subTick;
+            midiLiveEnvelopeStepRef.current = rawStep;
+            midiLiveLastTickTimeRef.current = now;
+            midiLiveNextTickTimeRef.current = nextTickTime;
+
+            const effectiveRawStep = rawStep;
+            let stepForApply = effectiveRawStep;
+
+            if (
+              sustain !== null &&
+              sustain !== undefined &&
+              sustain >= 0 &&
+              !released &&
+              effectiveRawStep >= sustain
+            ) {
+              stepForApply = sustain;
+            }
+
+            ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, 0x0f);
+
+            const tailIndex = midiLiveLastVolumeIndexRef.current;
+            const tailValue = midiLiveLastVolumeValueRef.current;
+
+            if (
+              released &&
+              tailIndex != null &&
+              tailIndex >= 0 &&
+              effectiveRawStep >= tailIndex &&
+              (tailValue ?? 0) <= 0
+            ) {
+              const timerId = midiLiveTimerRef.current;
+              if (timerId != null) {
+                window.clearInterval(timerId);
+                midiLiveTimerRef.current = null;
+              }
+
+              midiLiveSubTickRef.current = 0;
+              midiLiveEnvelopeStepRef.current = 0;
+              midiLiveLastTickTimeRef.current = null;
+              midiLiveNextTickTimeRef.current = null;
+              midiLiveSustainIndexRef.current = null;
+              midiLiveReleasedRef.current = false;
+              midiLiveLastVolumeIndexRef.current = null;
+              midiLiveLastVolumeValueRef.current = null;
+
+              ym2149.writeRegister(0x08 + ymChannel, 0x00);
+            }
+          }, 20);
 
           return;
         }
@@ -3322,7 +3445,30 @@ const App: React.FC = () => {
             last.ymChannel >= 0 &&
             last.ymChannel <= 2
           ) {
-            ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
+            const hasSustain =
+              typeof midiLiveSustainIndexRef.current === 'number' &&
+              midiLiveSustainIndexRef.current >= 0;
+
+            if (hasSustain && midiLiveTimerRef.current !== null) {
+              midiLiveReleasedRef.current = true;
+            } else {
+              if (midiLiveTimerRef.current !== null) {
+                window.clearInterval(midiLiveTimerRef.current);
+                midiLiveTimerRef.current = null;
+              }
+
+              midiLiveSubTickRef.current = 0;
+              midiLiveEnvelopeStepRef.current = 0;
+              midiLiveLastTickTimeRef.current = null;
+              midiLiveNextTickTimeRef.current = null;
+              midiLiveSustainIndexRef.current = null;
+              midiLiveReleasedRef.current = false;
+              midiLiveLastVolumeIndexRef.current = null;
+              midiLiveLastVolumeValueRef.current = null;
+
+              ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
+            }
+
             lastMidiPreviewRef.current = null;
           }
         }
