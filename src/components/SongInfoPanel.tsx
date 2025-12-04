@@ -47,7 +47,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
     onChange({ [field]: value });
   }, [onChange]);
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (!isActive) return;
 
     const target = event.target as HTMLInputElement | null;
@@ -134,7 +134,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
       }
     }
 
-    (handleKeyDown as (e: React.KeyboardEvent) => void)(event);
+    handleKeyDown(event);
   }, [handleKeyDown, handleLoopChange]);
 
   return (
@@ -183,7 +183,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 step={1}
                 ariaLabel="Song year"
                 inputRef={yearRef}
-                onInputKeyDown={handleKeyDown as any}
+                onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('year')}
               />
             </div>
@@ -198,7 +198,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 step={2}
                 ariaLabel="Song speed"
                 inputRef={speedRef}
-                onInputKeyDown={handleKeyDown as any}
+                onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('speed')}
               />
             </div>
@@ -215,7 +215,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 step={1}
                 ariaLabel="Pattern length"
                 inputRef={lengthRef}
-                onInputKeyDown={handleKeyDown as any}
+                onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('length')}
               />
             </div>

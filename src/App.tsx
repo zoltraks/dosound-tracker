@@ -43,6 +43,18 @@ type TrackClipboardStep = {
   [key: string]: unknown;
 };
 
+type ElectronApi = {
+  onAppCloseRequested?: (handler: () => void) => void;
+  removeAppCloseRequestedListener?: (handler: () => void) => void;
+  confirmAppClose?: () => void;
+  cancelAppClose?: () => void;
+};
+
+type ExtendedWindow = Window & {
+  electronAPI?: ElectronApi;
+  __dosoundTrackerIsResetting?: boolean;
+};
+
 const App: React.FC = () => {
   
   const currentOctave = useUiStore((state: UiStore) => state.currentOctave);
@@ -250,20 +262,27 @@ const App: React.FC = () => {
       const raw = localStorage.getItem('dosound-tracker-transpose-settings');
       if (!raw) return;
 
-      const parsed = JSON.parse(raw) as any;
+      const parsed: unknown = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
-        if (parsed.scope === 'line' || parsed.scope === 'song') {
-          setTransposeScope(parsed.scope);
+        const obj = parsed as {
+          scope?: 'line' | 'song';
+          trackScope?: 'current' | 'all';
+          instrumentScope?: 'all' | 'selected';
+          amount?: number;
+        };
+
+        if (obj.scope === 'line' || obj.scope === 'song') {
+          setTransposeScope(obj.scope);
         }
-        if (parsed.trackScope === 'current' || parsed.trackScope === 'all') {
-          setTransposeTrackScope(parsed.trackScope);
+        if (obj.trackScope === 'current' || obj.trackScope === 'all') {
+          setTransposeTrackScope(obj.trackScope);
         }
-        if (parsed.instrumentScope === 'all' || parsed.instrumentScope === 'selected') {
-          setTransposeInstrumentScope(parsed.instrumentScope);
+        if (obj.instrumentScope === 'all' || obj.instrumentScope === 'selected') {
+          setTransposeInstrumentScope(obj.instrumentScope);
         }
-        if (typeof parsed.amount === 'number' && Number.isFinite(parsed.amount)) {
-          setTransposeAmount(parsed.amount);
-          setTransposeAmountInput(String(parsed.amount));
+        if (typeof obj.amount === 'number' && Number.isFinite(obj.amount)) {
+          setTransposeAmount(obj.amount);
+          setTransposeAmountInput(String(obj.amount));
         }
       }
     } catch {
@@ -293,15 +312,15 @@ const App: React.FC = () => {
       return;
     }
 
-    const anyWindow: any = window;
-    const isElectronEnv = !!anyWindow.electronAPI;
+    const extWindow = window as ExtendedWindow;
+    const isElectronEnv = !!extWindow.electronAPI;
     if (isElectronEnv) {
       // Electron uses explicit IPC-based quit confirmation instead.
       return;
     }
 
     const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const isResetting = anyWindow.__dosoundTrackerIsResetting === true;
+      const isResetting = extWindow.__dosoundTrackerIsResetting === true;
       if (!isSongDirty || isResetting) {
         return;
       }
@@ -322,8 +341,8 @@ const App: React.FC = () => {
       return;
     }
 
-    const anyWindow: any = window;
-    const api = anyWindow.electronAPI;
+    const extWindow = window as ExtendedWindow;
+    const api = extWindow.electronAPI;
     if (!api || !api.onAppCloseRequested) {
       return;
     }
@@ -1522,7 +1541,7 @@ const App: React.FC = () => {
     setCurrentOctave(3);
     // Reload the application to start fresh
     try {
-      (window as any).__dosoundTrackerIsResetting = true;
+      (window as ExtendedWindow).__dosoundTrackerIsResetting = true;
     } catch {
       // ignore
     }
@@ -1537,7 +1556,7 @@ const App: React.FC = () => {
     setIsQuitConfirmOpen(false);
 
     if (typeof window !== 'undefined') {
-      const api: any = (window as any).electronAPI;
+      const api = (window as ExtendedWindow).electronAPI;
       if (api && api.confirmAppClose) {
         api.confirmAppClose();
         return;
@@ -1552,7 +1571,7 @@ const App: React.FC = () => {
     setIsQuitConfirmOpen(false);
 
     if (typeof window !== 'undefined') {
-      const api: any = (window as any).electronAPI;
+      const api = (window as ExtendedWindow).electronAPI;
       if (api && api.cancelAppClose) {
         api.cancelAppClose();
       }
@@ -3957,8 +3976,8 @@ const App: React.FC = () => {
       }
 
       event.preventDefault();
-      if (typeof (event as any).stopImmediatePropagation === 'function') {
-        (event as any).stopImmediatePropagation();
+      if (typeof event.stopImmediatePropagation === 'function') {
+        event.stopImmediatePropagation();
       }
 
       if (key === 'Escape' || key === 'Esc') {
