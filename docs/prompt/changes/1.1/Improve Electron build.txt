@@ -59,3 +59,9 @@ Apply only changes that are safe and will not break the build process.
 
 ---
 
+Run "npm run electron:build" and check error about icon size.
+I can't make ico file with my png2ico tool as its limited and prints error "Width must be multiple of 8 and <256. Height must be <256".
+There is icon-256.png and other smaller resolutions icon-128.png, icon-48.png, icon-32.png, icon-24.png and icon-16.png which should also be included in .ico file.
+Create .ico file again.
+
+---
