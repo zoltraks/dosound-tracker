@@ -3727,6 +3727,7 @@ const App: React.FC = () => {
                     <div 
                       key={i} 
                       className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
+                      onClick={() => handleLineChange(i)}
                     >
                       {i.toString(16).toUpperCase().padStart(2, '0')}
                     </div>

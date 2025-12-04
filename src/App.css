@@ -674,8 +674,7 @@ body {
 
 .position-content {
   flex: 1;
-  overflow-y: auto;
-  /* Put vertical scrollbar on the left side */
+  overflow-y: scroll;
   direction: rtl;
 }
 
@@ -693,9 +692,11 @@ body {
   line-height: 10px;
   box-sizing: border-box;
   padding: 0;
+  padding-top: 1px;
   margin: 0;
   /* Keep numbers themselves left-to-right even though container is rtl */
   direction: ltr;
+  cursor: pointer;
 }
 
 .position-number.current {
@@ -823,7 +824,6 @@ body {
 
 .track-header.target-track {
   background: linear-gradient(180deg, var(--active-bg) 0%, var(--bg-secondary) 100%);
-  border: 1px solid var(--active-border);
   box-shadow: var(--glow-primary);
   color: var(--text-secondary);
 }
