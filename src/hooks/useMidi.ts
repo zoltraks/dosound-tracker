@@ -5,6 +5,8 @@ export interface MidiConfig {
   outputEnabled: boolean;
   inputId: string | null;
   outputId: string | null;
+  ignoreInputVolume: boolean;
+  ignoreOutputVolume: boolean;
 }
 
 export interface MidiDeviceInfo {
@@ -57,6 +59,8 @@ interface RawMidiConfig {
   outputEnabled?: boolean;
   inputId?: string | null;
   outputId?: string | null;
+  ignoreInputVolume?: boolean;
+  ignoreOutputVolume?: boolean;
 }
 
 export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiResult {
@@ -74,6 +78,8 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
           outputEnabled: false,
           inputId: null,
           outputId: null,
+          ignoreInputVolume: true,
+          ignoreOutputVolume: true,
         };
       }
       const parsed = JSON.parse(raw) as RawMidiConfig;
@@ -82,6 +88,10 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         outputEnabled: !!parsed.outputEnabled,
         inputId: parsed.inputId ?? null,
         outputId: parsed.outputId ?? null,
+        ignoreInputVolume:
+          typeof parsed.ignoreInputVolume === 'boolean' ? parsed.ignoreInputVolume : true,
+        ignoreOutputVolume:
+          typeof parsed.ignoreOutputVolume === 'boolean' ? parsed.ignoreOutputVolume : true,
       };
     } catch {
       return {
@@ -89,6 +99,8 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         outputEnabled: false,
         inputId: null,
         outputId: null,
+        ignoreInputVolume: true,
+        ignoreOutputVolume: true,
       };
     }
   });
@@ -204,6 +216,8 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
         outputEnabled: !!next.outputEnabled,
         inputId: next.inputId ?? null,
         outputId: next.outputId ?? null,
+        ignoreInputVolume: !!next.ignoreInputVolume,
+        ignoreOutputVolume: !!next.ignoreOutputVolume,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
     } catch {
@@ -280,14 +294,13 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       if (debugOn) {
         console.log('MIDI IN', {
           time,
-          type,
-          data: dataHex,
-          channel,
-          device: deviceName,
-          number: noteNumber,
           note: noteLabel,
+          channel,
           velocity: data2,
+          type,
           status,
+          data: dataHex,
+          device: deviceName,
         });
       }
 
@@ -323,14 +336,13 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       if (debugOn) {
         console.log('MIDI IN', {
           time,
-          type,
-          data: dataHex,
-          channel,
-          device: deviceName,
-          number: noteNumber,
           note: noteLabel,
+          channel,
           velocity: data2,
+          type,
           status,
+          data: dataHex,
+          device: deviceName,
         });
       }
 
@@ -361,13 +373,13 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       if (debugOn) {
         console.log('MIDI IN', {
           time,
-          type,
-          data: dataHex,
-          channel,
-          device: deviceName,
           note: noteLabel,
+          channel,
           value,
+          type,
           status,
+          data: dataHex,
+          device: deviceName,
         });
       }
     } else {
@@ -402,12 +414,26 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       try {
         const output = currentOutputRef.current;
         if (output && typeof output.send === 'function') {
-          output.send(event.data);
+          let forwardedBytes = data;
+
+          if (config.ignoreOutputVolume && (command === 0x90 || command === 0x80)) {
+            forwardedBytes = [...data];
+            if (forwardedBytes.length >= 3) {
+              forwardedBytes[2] = 0x7f; // maximum velocity
+            }
+          }
+
+          const outBuffer = new Uint8Array(forwardedBytes);
+          output.send(outBuffer);
+
+          const outDataHex = forwardedBytes
+            .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
+            .join(' ');
 
           const outputDeviceName = resolveDeviceName(config.outputId, 'MIDI Out');
 
           addOutMonitorEntry({
-            data: dataHex,
+            data: outDataHex,
             device: outputDeviceName,
             channel: channelHex,
             type,
@@ -416,28 +442,29 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
           });
 
           if (debugOn) {
+            const forwardedVelocity = forwardedBytes.length >= 3 ? forwardedBytes[2] : data2;
+
             if (type === 'Note On' || type === 'Note Off') {
               console.log('MIDI OUT', {
                 time,
-                type,
-                data: dataHex,
-                channel,
-                device: outputDeviceName,
-                number: data1,
                 note: noteLabel,
-                velocity: data2,
+                channel,
+                velocity: forwardedVelocity,
+                type,
                 status,
+                data: outDataHex,
+                device: outputDeviceName,
               });
             } else {
               console.log('MIDI OUT', {
                 time,
-                type,
-                data: dataHex,
-                channel,
-                device: outputDeviceName,
                 note: noteLabel,
+                channel,
                 value,
+                type,
                 status,
+                data: outDataHex,
+                device: outputDeviceName,
               });
             }
           }
@@ -445,7 +472,15 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       } catch {
       }
     }
-  }, [addInMonitorEntry, addOutMonitorEntry, config.outputEnabled, config.outputId, onNoteEvent, resolveDeviceName]);
+  }, [
+    addInMonitorEntry,
+    addOutMonitorEntry,
+    config.outputEnabled,
+    config.outputId,
+    config.ignoreOutputVolume,
+    onNoteEvent,
+    resolveDeviceName,
+  ]);
 
   useEffect(() => {
     if (typeof navigator === 'undefined') {

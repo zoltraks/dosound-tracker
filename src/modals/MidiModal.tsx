@@ -73,6 +73,8 @@ export const MidiModal: React.FC<MidiModalProps> = ({
       outputEnabled: localConfig.outputEnabled && !!effectiveOutputId,
       inputId: effectiveInputId || null,
       outputId: effectiveOutputId || null,
+      ignoreInputVolume: localConfig.ignoreInputVolume,
+      ignoreOutputVolume: localConfig.ignoreOutputVolume,
     });
   };
 
@@ -93,133 +95,158 @@ export const MidiModal: React.FC<MidiModalProps> = ({
             </div>
           )}
 
-          <div className="midi-top-row">
-            <label className="midi-checkbox">
-              <input
-                type="checkbox"
-                checked={localConfig.inputEnabled}
-                disabled={!isSupported || !hasInputs}
-                onChange={event =>
-                  setLocalConfig(prev => ({ ...prev, inputEnabled: event.target.checked }))
-                }
-              />
-              <span>Enable MIDI input</span>
-            </label>
-            <label className="midi-checkbox">
-              <input
-                type="checkbox"
-                checked={localConfig.outputEnabled}
-                disabled={!isSupported || !hasOutputs}
-                onChange={event =>
-                  setLocalConfig(prev => ({ ...prev, outputEnabled: event.target.checked }))
-                }
-              />
-              <span>Enable MIDI output</span>
-            </label>
-          </div>
-
-          <div className="midi-device-row">
-            <div className="midi-device-column">
-              <label className="midi-label" htmlFor="midi-input-select">
-                MIDI Input Device
-              </label>
-              <select
-                id="midi-input-select"
-                className="midi-select"
-                value={effectiveInputId || ''}
-                onChange={event =>
-                  setLocalConfig(prev => ({ ...prev, inputId: event.target.value || null }))
-                }
-                disabled={!isSupported || !hasInputs}
-              >
-                {!hasInputs && <option value="">No input devices</option>}
-                {hasInputs && (
-                  <option value="">(none)</option>
-                )}
-                {devices.inputs.map(device => (
-                  <option key={device.id} value={device.id}>
-                    {device.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="midi-device-column">
-              <label className="midi-label" htmlFor="midi-output-select">
-                MIDI Output Device
-              </label>
-              <select
-                id="midi-output-select"
-                className="midi-select"
-                value={effectiveOutputId || ''}
-                onChange={event =>
-                  setLocalConfig(prev => ({ ...prev, outputId: event.target.value || null }))
-                }
-                disabled={!isSupported || !hasOutputs}
-              >
-                {!hasOutputs && <option value="">No output devices</option>}
-                {hasOutputs && (
-                  <option value="">(none)</option>
-                )}
-                {devices.outputs.map(device => (
-                  <option key={device.id} value={device.id}>
-                    {device.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          <div className="midi-monitors">
-            <div className="midi-monitor-panel">
-              <div className="midi-monitor-title">MIDI IN</div>
-              <div className="midi-monitor-header">
-                <span className="midi-col time">Time</span>
-                <span className="midi-col data">Data</span>
-                <span className="midi-col device">Device</span>
-                <span className="midi-col channel">Ch</span>
-                <span className="midi-col type">Type</span>
-                <span className="midi-col note">Note</span>
-                <span className="midi-col value">Value</span>
+          <div className="midi-io-columns">
+            <div className="midi-io-column">
+              <div className="midi-checkbox-group">
+                <label className="midi-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={localConfig.inputEnabled}
+                    disabled={!isSupported || !hasInputs}
+                    onChange={event =>
+                      setLocalConfig(prev => ({ ...prev, inputEnabled: event.target.checked }))
+                    }
+                  />
+                  <span>Enable MIDI input</span>
+                </label>
+                <label className="midi-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={localConfig.ignoreInputVolume}
+                    onChange={event =>
+                      setLocalConfig(prev => ({ ...prev, ignoreInputVolume: event.target.checked }))
+                    }
+                  />
+                  <span>Ignore input volume</span>
+                </label>
               </div>
-              <div className="midi-monitor-body" ref={inScrollRef}>
-                {inMonitor.map(entry => (
-                  <div key={entry.id} className="midi-monitor-row">
-                    <span className="midi-col time">{entry.time}</span>
-                    <span className="midi-col data">{entry.data}</span>
-                    <span className="midi-col device">{entry.device}</span>
-                    <span className="midi-col channel">{entry.channel}</span>
-                    <span className="midi-col type">{entry.type}</span>
-                    <span className="midi-col note">{entry.note}</span>
-                    <span className="midi-col value">{entry.value ?? ''}</span>
-                  </div>
-                ))}
+
+              <div className="midi-device-column">
+                <label className="midi-label" htmlFor="midi-input-select">
+                  MIDI Input Device
+                </label>
+                <select
+                  id="midi-input-select"
+                  className="midi-select"
+                  value={effectiveInputId || ''}
+                  onChange={event =>
+                    setLocalConfig(prev => ({ ...prev, inputId: event.target.value || null }))
+                  }
+                  disabled={!isSupported || !hasInputs}
+                >
+                  {!hasInputs && <option value="">No input devices</option>}
+                  {hasInputs && (
+                    <option value="">(none)</option>
+                  )}
+                  {devices.inputs.map(device => (
+                    <option key={device.id} value={device.id}>
+                      {device.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="midi-monitor-panel">
+                <div className="midi-monitor-title">MIDI IN</div>
+                <div className="midi-monitor-header">
+                  <span className="midi-col time">Time</span>
+                  <span className="midi-col data">Data</span>
+                  <span className="midi-col device">Device</span>
+                  <span className="midi-col channel">Ch</span>
+                  <span className="midi-col type">Type</span>
+                  <span className="midi-col note">Note</span>
+                  <span className="midi-col value">Value</span>
+                </div>
+                <div className="midi-monitor-body" ref={inScrollRef}>
+                  {inMonitor.map(entry => (
+                    <div key={entry.id} className="midi-monitor-row">
+                      <span className="midi-col time">{entry.time}</span>
+                      <span className="midi-col data">{entry.data}</span>
+                      <span className="midi-col device">{entry.device}</span>
+                      <span className="midi-col channel">{entry.channel}</span>
+                      <span className="midi-col type">{entry.type}</span>
+                      <span className="midi-col note">{entry.note}</span>
+                      <span className="midi-col value">{entry.value ?? ''}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
 
-            <div className="midi-monitor-panel">
-              <div className="midi-monitor-title">MIDI OUT</div>
-              <div className="midi-monitor-header">
-                <span className="midi-col time">Time</span>
-                <span className="midi-col data">Data</span>
-                <span className="midi-col device">Device</span>
-                <span className="midi-col channel">Ch</span>
-                <span className="midi-col type">Type</span>
-                <span className="midi-col note">Note</span>
-                <span className="midi-col value">Value</span>
+            <div className="midi-io-column">
+              <div className="midi-checkbox-group">
+                <label className="midi-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={localConfig.outputEnabled}
+                    disabled={!isSupported || !hasOutputs}
+                    onChange={event =>
+                      setLocalConfig(prev => ({ ...prev, outputEnabled: event.target.checked }))
+                    }
+                  />
+                  <span>Enable MIDI output</span>
+                </label>
+                <label className="midi-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={localConfig.ignoreOutputVolume}
+                    onChange={event =>
+                      setLocalConfig(prev => ({ ...prev, ignoreOutputVolume: event.target.checked }))
+                    }
+                  />
+                  <span>Ignore output volume</span>
+                </label>
               </div>
-              <div className="midi-monitor-body" ref={outScrollRef}>
-                {outMonitor.map(entry => (
-                  <div key={entry.id} className="midi-monitor-row">
-                    <span className="midi-col time">{entry.time}</span>
-                    <span className="midi-col data">{entry.data}</span>
-                    <span className="midi-col device">{entry.device}</span>
-                    <span className="midi-col channel">{entry.channel}</span>
-                    <span className="midi-col type">{entry.type}</span>
-                    <span className="midi-col note">{entry.note}</span>
-                    <span className="midi-col value">{entry.value ?? ''}</span>
-                  </div>
-                ))}
+
+              <div className="midi-device-column">
+                <label className="midi-label" htmlFor="midi-output-select">
+                  MIDI Output Device
+                </label>
+                <select
+                  id="midi-output-select"
+                  className="midi-select"
+                  value={effectiveOutputId || ''}
+                  onChange={event =>
+                    setLocalConfig(prev => ({ ...prev, outputId: event.target.value || null }))
+                  }
+                  disabled={!isSupported || !hasOutputs}
+                >
+                  {!hasOutputs && <option value="">No output devices</option>}
+                  {hasOutputs && (
+                    <option value="">(none)</option>
+                  )}
+                  {devices.outputs.map(device => (
+                    <option key={device.id} value={device.id}>
+                      {device.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="midi-monitor-panel">
+                <div className="midi-monitor-title">MIDI OUT</div>
+                <div className="midi-monitor-header">
+                  <span className="midi-col time">Time</span>
+                  <span className="midi-col data">Data</span>
+                  <span className="midi-col device">Device</span>
+                  <span className="midi-col channel">Ch</span>
+                  <span className="midi-col type">Type</span>
+                  <span className="midi-col note">Note</span>
+                  <span className="midi-col value">Value</span>
+                </div>
+                <div className="midi-monitor-body" ref={outScrollRef}>
+                  {outMonitor.map(entry => (
+                    <div key={entry.id} className="midi-monitor-row">
+                      <span className="midi-col time">{entry.time}</span>
+                      <span className="midi-col data">{entry.data}</span>
+                      <span className="midi-col device">{entry.device}</span>
+                      <span className="midi-col channel">{entry.channel}</span>
+                      <span className="midi-col type">{entry.type}</span>
+                      <span className="midi-col note">{entry.note}</span>
+                      <span className="midi-col value">{entry.value ?? ''}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>

@@ -87,3 +87,52 @@ By removing original "data" field and changing "dataHex" to "data" and removing 
 
 ---
 
+Remove "number" from log object.
+
+Arrange fields in log object in different order.
+
+Instead of:
+
+{
+    "time": "20:36:05.951",
+    "type": "Note On",
+    "data": "90 5A 20",
+    "channel": 1,
+    "device": "FL STUDIO FIRE",
+    "number": 90,
+    "note": "F#6",
+    "velocity": 32,
+    "status": 144
+}
+
+Write:
+
+{
+    "time": "20:36:05.951",
+    "note": "F#6",
+    "channel": 1,
+    "velocity": 32,
+    "type": "Note On",
+    "status": 144,
+    "data": "90 5A 20",
+    "device": "FL STUDIO FIRE"
+}
+
+---
+
+
+Reorganize elements in MIDI configuration window.
+
+Main content begining with first checkbox "Enable MIDI input" until the MIDI Out monitor log should be organized into two columns for input and for output.
+
+Add two checkboxes: "Ignore input volume" and "Ignore output volume". 
+
+In the left column put "Enable MIDI input" and below "Ignore input volume" checkboxes and below device list and below monitor for MIDI IN.
+
+In the right column put "Enable MIDI output" and below "Ignore output volume" checkboxes and below device list and below monitor for MIDI OUT.
+
+When "Ignore input volume" is set, then consider that volume for a note from MIDI IN is always maximum value and when editing a track, don't set volume column value (leave it unset).
+
+When "Ignore output volume" is set, then if any message for a note to MIDI output should be sent, it will always be sent with maximum volume.
+
+---

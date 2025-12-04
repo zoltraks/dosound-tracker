@@ -95,8 +95,11 @@
 
   --transparent: rgba(0,0,0,0);
 
-  /* Font settings */
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Consolas', monospace;
+
+  --midi-input-enabled-bg: #1f4730;
+  --midi-output-enabled-bg: #4b3415;
+  --midi-both-enabled-bg: #3730a3;
 }
 
 .light {
@@ -191,6 +194,10 @@
 
   --glow-primary: 0 0 8px rgba(245, 158, 11, 0.3);
   --glow-secondary: 0 0 4px rgba(245, 158, 11, 0.15);
+
+  --midi-input-enabled-bg: #729e85;
+  --midi-output-enabled-bg: #9c8970;
+  --midi-both-enabled-bg: #d4d2f1;
 }
 
 * {
@@ -508,21 +515,21 @@ body {
 }
 
 .command-btn.midi-btn.midi-input-enabled {
-  background: linear-gradient(135deg, #1f4730 0%, var(--bg-active) 100%);
+  background: linear-gradient(135deg, var(--midi-input-enabled-bg) 0%, var(--bg-active) 100%);
   border-color: #34d399;
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), 0 0 6px rgba(52, 211, 153, 0.55);
 }
 
 .command-btn.midi-btn.midi-output-enabled {
-  background: linear-gradient(135deg, #4b3415 0%, var(--bg-active) 100%);
+  background: linear-gradient(135deg, var(--midi-output-enabled-bg) 0%, var(--bg-active) 100%);
   border-color: #f59e0b;
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), 0 0 6px rgba(245, 158, 11, 0.55);
 }
 
 .command-btn.midi-btn.midi-both-enabled {
-  background: linear-gradient(135deg, #3730a3 0%, #7c3aed 50%, var(--bg-active) 100%);
+  background: linear-gradient(135deg, var(--midi-both-enabled-bg) 0%, var(--bg-active) 100%);
   border-color: #a855f7;
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), 0 0 8px rgba(168, 85, 247, 0.7);
@@ -594,6 +601,27 @@ body {
   background-color: rgba(127, 29, 29, 0.25);
   color: var(--text-primary);
   font-size: 10px;
+}
+
+.midi-io-columns {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  min-height: 0;
+}
+
+.midi-io-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.midi-checkbox-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .midi-top-row {
