@@ -403,3 +403,8 @@ When MIDI configuration window is closed, forget the last program number sent an
 Add MIDI OUT for the track‑focused live MIDI recording path
 
 ---
+
+When app is running I saw that no other program can use available MIDI devices.
+In MIDI configuration only selected and active devices should be acquired and on change or when MIDI input or output is disabled, devices should be properly released so other software can use it.
+
+---

@@ -684,6 +684,26 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
           // ignore
         }
       }
+
+      // Explicitly close the currently active input and output ports so the
+      // underlying MIDI devices can be reused by other applications once the
+      // tracker is no longer using them.
+      try {
+        if (input && typeof input.close === 'function') {
+          input.close();
+        }
+      } catch {
+        // ignore
+      }
+
+      const output = currentOutputRef.current;
+      try {
+        if (output && typeof output.close === 'function') {
+          output.close();
+        }
+      } catch {
+        // ignore
+      }
       currentInputRef.current = null;
       currentOutputRef.current = null;
     };
@@ -721,12 +741,39 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
           // ignore
         }
       }
+
+      // When switching away from a previously selected input (or disabling
+      // input altogether), close the old port so the OS can release the
+      // underlying device for other software.
+      try {
+        if (typeof previousInput.close === 'function') {
+          previousInput.close();
+        }
+      } catch {
+        // ignore
+      }
     }
 
     currentInputRef.current = nextInput;
 
     if (nextInput && config.inputEnabled) {
       try {
+        // Ensure the selected input port is opened before attaching the
+        // message listener so we only actively acquire the device when it is
+        // enabled in the configuration.
+        try {
+          if (typeof nextInput.open === 'function') {
+            const result = nextInput.open();
+            if (result && typeof result.then === 'function') {
+              result.catch(() => {
+                // ignore open errors
+              });
+            }
+          }
+        } catch {
+          // ignore open errors
+        }
+
         if (typeof nextInput.addEventListener === 'function') {
           nextInput.addEventListener('midimessage', handleMidiMessage);
         } else {
@@ -741,6 +788,18 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
   useEffect(() => {
     const access = midiAccessRef.current;
     if (!access) {
+      const previousOutput = currentOutputRef.current;
+      if (previousOutput) {
+        // If MIDI access disappears (e.g. permissions revoked), make sure any
+        // previously selected output port is closed so the device is released.
+        try {
+          if (typeof previousOutput.close === 'function') {
+            previousOutput.close();
+          }
+        } catch {
+          // ignore
+        }
+      }
       currentOutputRef.current = null;
       return;
     }
@@ -753,6 +812,37 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
           : null;
       } catch {
         nextOutput = null;
+      }
+    }
+
+    const previousOutput = currentOutputRef.current;
+    if (previousOutput && previousOutput !== nextOutput) {
+      // Close the previously selected output port when changing devices or
+      // disabling output so that the underlying MIDI device is no longer held
+      // exclusively by this application.
+      try {
+        if (typeof previousOutput.close === 'function') {
+          previousOutput.close();
+        }
+      } catch {
+        // ignore
+      }
+    }
+
+    if (nextOutput && config.outputEnabled) {
+      // Explicitly open the selected output port only when output is enabled
+      // so we avoid acquiring devices that are not in active use.
+      try {
+        if (typeof nextOutput.open === 'function') {
+          const result = nextOutput.open();
+          if (result && typeof result.then === 'function') {
+            result.catch(() => {
+              // ignore open errors
+            });
+          }
+        }
+      } catch {
+        // ignore open errors
       }
     }
 
