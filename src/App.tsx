@@ -16,20 +16,16 @@ import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
-import { TrackPanel } from './components/TrackPanel';
-import { EnvelopePanel } from './components/EnvelopePanel';
-import { ToneNoisePanel } from './components/ToneNoisePanel';
-import { SongInfoPanel } from './components/SongInfoPanel';
-import { PlaylistPanel } from './components/PlaylistPanel';
-import { InstrumentListPanel } from './components/InstrumentListPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { DumpPanel } from './components/DumpPanel';
-import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
+import { ModalContainer } from './components/ModalContainer';
+import { AppLayout } from './components/AppLayout';
+import { TracksSection } from './components/TracksSection';
+import { InstrumentSection } from './components/InstrumentSection';
+import { InfoSection } from './components/InfoSection';
 import { exportInstrumentToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
-import { ModalContainer } from './components/ModalContainer';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
@@ -3364,417 +3360,281 @@ const App: React.FC = () => {
   try {
     return (
       <ErrorBoundary>
-        <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
-        <HeaderPanel
-          title={currentSong.title}
+        <AppLayout
           isDarkMode={isDarkMode}
-          onToggleTheme={toggleTheme}
-          currentOctave={currentOctave}
-          onOctaveChange={handleOctaveChange}
-          onShowAbout={handleShowAbout}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-          ym2149={ym2149Ref.current}
-          currentInstrument={currentInstrument}
-          previewChannel={previewChannel}
-          hasDownloads={downloadFiles.length > 0}
-          onShowDownloads={() => setIsDownloadOpen(true)}
-          onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-          onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-        />
-        
-        <CommandPanel
-          onNewSong={handleRequestNewSong}
-          onLoadSong={triggerFileLoad}
-          onSaveSong={saveSong}
-          onOptimize={handleOptimizeSong}
-          onRenumber={handleRenumberSong}
-          onNewInstrument={createNewInstrument}
-          onSaveInstrument={saveInstrument}
-          onExportInstrument={handleExportInstrumentAssembly}
-          onLoadInstrument={handleLoadInstrumentClick}
-          onDeleteInstrument={handleDeleteInstrument}
-          onCloneInstrument={handleCloneInstrument}
-          onPlaySong={handleStartSong}
-          onPlayPattern={handleStartPattern}
-          onStop={handleStop}
-          onExportData={handleExportData}
-          onExportBin={handleExportBin}
-          onExportVgm={handleExportVgm}
-          onExportWav={handleExportWav}
-          onAddLine={handleAddLine}
-          onDeleteLine={handleDeleteLine}
-          onCloneLine={handleCloneLine}
-          onDuplicateLine={handleDuplicateLine}
-          onInsertStep={handleInsertStep}
-          onDeleteStep={handleDeleteStep}
-          onReset={handleRequestReset}
-          isDebugMode={isDebugMode}
-          onToggleDebug={handleToggleDebugMode}
-          isPlaying={sequencerState.isPlaying}
-          isPatternPlaying={isPatternPlaying}
-          onPlayInstrument={handlePlayInstrument}
-          onCopyTrack={handleCopyTrack}
-          onPasteTrack={handlePasteTrack}
-          onNewTrack={handleCreateNewTrack}
-          isComplexDumpMode={isComplexDumpMode}
-          onToggleDumpMode={handleToggleDumpMode}
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-          onTranspose={handleOpenTranspose}
-          onExportDump={handleExportDump}
-          midiInputEnabled={midiInputEnabled}
-          midiOutputEnabled={midiOutputEnabled}
-          onShowMidi={handleShowMidi}
-        />
-
-        <div className="main-content">
-          <div className="left-column">
-            <div className="left-column-content">
-              <div className="position-block">
-                <div className="position-header"></div>
-                <div className="position-content" onScroll={handlePositionScroll}>
-                  {Array.from({ length: currentSong.patternLength || PATTERN_LENGTH }, (_, i) => (
-                    <div 
-                      key={i} 
-                      className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
-                      onClick={() => handleLineChange(i)}
-                    >
-                      {i.toString(16).toUpperCase().padStart(2, '0')}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="tracks-container">
-                <div className="tracks-row">
-                  <TrackPanel
-                    trackId="A"
-                    activeSection={activeSection}
-                    setActiveSection={setActiveSection}
-                    currentOctave={currentOctave}
-                    currentLine={sharedCurrentLine}
-                    patternLength={currentSong.patternLength || PATTERN_LENGTH}
-                    onLineChange={handleLineChange}
-                    pattern={getCurrentPatternForTrack('A')}
-                    onPatternChange={handlePatternChange}
-                    ym2149={ym2149Ref.current}
-                    currentInstrumentData={currentInstrument}
-                    isTargetTrack={targetTrackId === 'A'}
-                    onTogglePatternFromCursor={handleTogglePatternFromCursor}
-                    currentColumn={currentTrackColumn}
-                    setCurrentColumn={setCurrentTrackColumn}
-                    focusRevision={trackFocusRevision}
-                    onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-                    onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-                  />
-
-                  <TrackPanel
-                    trackId="B"
-                    activeSection={activeSection}
-                    setActiveSection={setActiveSection}
-                    currentOctave={currentOctave}
-                    currentLine={sharedCurrentLine}
-                    patternLength={currentSong.patternLength || PATTERN_LENGTH}
-                    onLineChange={handleLineChange}
-                    pattern={getCurrentPatternForTrack('B')}
-                    onPatternChange={handlePatternChange}
-                    ym2149={ym2149Ref.current}
-                    currentInstrumentData={currentInstrument}
-                    isTargetTrack={targetTrackId === 'B'}
-                    onTogglePatternFromCursor={handleTogglePatternFromCursor}
-                    currentColumn={currentTrackColumn}
-                    setCurrentColumn={setCurrentTrackColumn}
-                    focusRevision={trackFocusRevision}
-                    onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-                    onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-                  />
-
-                  <TrackPanel
-                    trackId="C"
-                    activeSection={activeSection}
-                    setActiveSection={setActiveSection}
-                    currentOctave={currentOctave}
-                    currentLine={sharedCurrentLine}
-                    patternLength={currentSong.patternLength || PATTERN_LENGTH}
-                    onLineChange={handleLineChange}
-                    pattern={getCurrentPatternForTrack('C')}
-                    onPatternChange={handlePatternChange}
-                    ym2149={ym2149Ref.current}
-                    currentInstrumentData={currentInstrument}
-                    isTargetTrack={targetTrackId === 'C'}
-                    onTogglePatternFromCursor={handleTogglePatternFromCursor}
-                    currentColumn={currentTrackColumn}
-                    setCurrentColumn={setCurrentTrackColumn}
-                    focusRevision={trackFocusRevision}
-                    onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-                    onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="middle-column">
-            <ToneNoisePanel
+          header={
+            <HeaderPanel
+              title={currentSong.title}
+              isDarkMode={isDarkMode}
+              onToggleTheme={toggleTheme}
+              currentOctave={currentOctave}
+              onOctaveChange={handleOctaveChange}
+              onShowAbout={handleShowAbout}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.mode}
-              onChange={(data: number[]) => {
-                updateInstrument({ mode: data });
-              }}
+              ym2149={ym2149Ref.current}
+              currentInstrument={currentInstrument}
+              previewChannel={previewChannel}
+              hasDownloads={downloadFiles.length > 0}
+              onShowDownloads={() => setIsDownloadOpen(true)}
+              onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+              onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
             />
-            
-            <EnvelopePanel
-              type="volume"
+          }
+          commandPanel={
+            <CommandPanel
+              onNewSong={handleRequestNewSong}
+              onLoadSong={triggerFileLoad}
+              onSaveSong={saveSong}
+              onOptimize={handleOptimizeSong}
+              onRenumber={handleRenumberSong}
+              onNewInstrument={createNewInstrument}
+              onSaveInstrument={saveInstrument}
+              onExportInstrument={handleExportInstrumentAssembly}
+              onLoadInstrument={handleLoadInstrumentClick}
+              onDeleteInstrument={handleDeleteInstrument}
+              onCloneInstrument={handleCloneInstrument}
+              onPlaySong={handleStartSong}
+              onPlayPattern={handleStartPattern}
+              onStop={handleStop}
+              onExportData={handleExportData}
+              onExportBin={handleExportBin}
+              onExportVgm={handleExportVgm}
+              onExportWav={handleExportWav}
+              onAddLine={handleAddLine}
+              onDeleteLine={handleDeleteLine}
+              onCloneLine={handleCloneLine}
+              onDuplicateLine={handleDuplicateLine}
+              onInsertStep={handleInsertStep}
+              onDeleteStep={handleDeleteStep}
+              onReset={handleRequestReset}
+              isDebugMode={isDebugMode}
+              onToggleDebug={handleToggleDebugMode}
+              isPlaying={sequencerState.isPlaying}
+              isPatternPlaying={isPatternPlaying}
+              onPlayInstrument={handlePlayInstrument}
+              onCopyTrack={handleCopyTrack}
+              onPasteTrack={handlePasteTrack}
+              onNewTrack={handleCreateNewTrack}
+              isComplexDumpMode={isComplexDumpMode}
+              onToggleDumpMode={handleToggleDumpMode}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.volume}
-              onChange={(data: number[]) => {
-                updateInstrument({ volume: data });
-              }}
-              sustainIndex={
-                typeof currentInstrument.sustain === 'number' && currentInstrument.sustain >= 0
-                  ? Math.floor(currentInstrument.sustain)
-                  : null
-              }
-              onSustainChange={index => {
-                updateInstrument({ sustain: index });
-              }}
+              onTranspose={handleOpenTranspose}
+              onExportDump={handleExportDump}
+              midiInputEnabled={midiInputEnabled}
+              midiOutputEnabled={midiOutputEnabled}
+              onShowMidi={handleShowMidi}
             />
-            
-            <EnvelopePanel
-              type="arpeggio"
+          }
+          tracksSection={
+            <TracksSection
+              song={currentSong}
+              sharedCurrentLine={sharedCurrentLine}
+              onLineChange={handleLineChange}
+              onPositionScroll={handlePositionScroll}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.arpeggio}
-              onChange={(data: number[]) => {
-                updateInstrument({ arpeggio: data });
-              }}
+              currentOctave={currentOctave}
+              getCurrentPatternForTrack={getCurrentPatternForTrack}
+              onPatternChange={handlePatternChange}
+              ym2149={ym2149Ref.current}
+              currentInstrument={currentInstrument}
+              targetTrackId={targetTrackId}
+              onTogglePatternFromCursor={handleTogglePatternFromCursor}
+              currentTrackColumn={currentTrackColumn}
+              setCurrentTrackColumn={setCurrentTrackColumn}
+              trackFocusRevision={trackFocusRevision}
+              onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+              onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
             />
-            
-            <EnvelopePanel
-              type="pitch"
+          }
+          instrumentSection={
+            <InstrumentSection
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              data={currentInstrument.pitch}
-              onChange={(data: number[]) => {
-                updateInstrument({ pitch: data });
-              }}
+              currentInstrument={currentInstrument}
+              updateInstrument={updateInstrument}
+              messages={messages}
+              currentMessageIndex={currentMessageIndex}
+              isNotesVisible={isNotesVisible}
+              onNotesClick={handleNotesClick}
             />
-            
-            <EnvelopePanel
-              type="noise"
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              data={currentInstrument.noiseEnvelope}
-              onChange={(data: number[]) => {
-                updateInstrument({ noiseEnvelope: data });
-              }}
-            />
-
-            <div className="notes-panel" aria-hidden="true" onClick={handleNotesClick}>
-              <div
-                className={`notes-content${isNotesVisible ? '' : ' notes-hidden'}`}
-                dangerouslySetInnerHTML={{
-                  __html:
-                    messages.length > 0 && currentMessageIndex >= 0 && currentMessageIndex < messages.length
-                      ? renderMarkdown(messages[currentMessageIndex])
-                      : ''
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="right-column">
-            <SongInfoPanel
+          }
+          infoSection={
+            <InfoSection
               song={currentSong}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
-              onChange={updateSong}
-            />
-            
-            <PlaylistPanel
-              playlist={currentSong.playlist}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              onPlaylistChange={handlePlaylistChange}
-              currentPlaybackPosition={clampedPlaybackPosition}
+              updateSong={updateSong}
+              clampedPlaybackPosition={clampedPlaybackPosition}
               onPositionSelect={handlePositionSelect}
+              onPlaylistChange={handlePlaylistChange}
               onCreatePatternAt={handleCreatePatternAt}
-              targetTrack={targetTrackId}
-            />
-            
-            <InstrumentListPanel
-              instruments={currentSong.instruments}
+              targetTrackId={targetTrackId}
               currentInstrument={currentInstrument}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
               onSelectInstrument={handleInstrumentSelect}
               onRenameInstrument={handleRenameInstrument}
               onMoveInstrument={handleMoveInstrument}
               onOpenInstrumentMidi={handleOpenInstrumentMidi}
-              focusRevision={instrumentListFocusRevision}
+              instrumentListFocusRevision={instrumentListFocusRevision}
+              ym2149={ym2149Ref.current}
+              channelMutes={channelMutes}
+              onToggleChannelMute={handleToggleChannelMute}
             />
-            
-            <div className="bottom-panels">
-              <DumpPanel ym2149={ym2149Ref.current} />
-              <EQPanel
-                ym2149={ym2149Ref.current}
-                channelMutes={channelMutes}
-                onToggleChannelMute={handleToggleChannelMute}
+          }
+          pianoKeyboard={
+            <PianoKeyboard
+              activeSection={activeSection}
+              setActiveSection={setActiveSection}
+              currentOctave={currentOctave}
+              onOctaveChange={handleOctaveChange}
+              ym2149={ym2149Ref.current}
+              currentInstrument={currentInstrument}
+              previewChannel={previewChannel}
+              onChangeBaseKey={handleChangeBaseKey}
+              onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+              onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+            />
+          }
+          fileInputs={
+            <>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".yaml,.yml"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    loadSong(file);
+                    setPosition(0, 0, 0);
+                    setSharedCurrentLine(0);
+                    setActiveSection('playlist');
+                    setChannelMutes([false, false, false]);
+                    // This will be handled by the useDataManagement hook
+                  }
+                }}
               />
-            </div>
-          </div>
-        </div>
+              <input
+                ref={instrumentFileInputRef}
+                type="file"
+                accept=".yaml,.yml"
+                style={{ display: 'none' }}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) {
+                    return;
+                  }
 
-        {/* Piano Keyboard */}
-        <PianoKeyboard
-          activeSection={activeSection}
-          setActiveSection={setActiveSection}
-          currentOctave={currentOctave}
-          onOctaveChange={handleOctaveChange}
-          ym2149={ym2149Ref.current}
-          currentInstrument={currentInstrument}
-          previewChannel={previewChannel}
-          onChangeBaseKey={handleChangeBaseKey}
-          onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-          onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+                  const reader = new FileReader();
+                  reader.onload = ev => {
+                    const text = typeof ev.target?.result === 'string'
+                      ? ev.target.result
+                      : String(ev.target?.result ?? '');
+                    handleInstrumentFileContent(text);
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+            </>
+          }
+          modals={
+            <ModalContainer
+              songError={songError}
+              setSongError={setSongError}
+              instrumentError={instrumentError}
+              setInstrumentError={setInstrumentError}
+              trackClipboardError={trackClipboardError}
+              setTrackClipboardError={setTrackClipboardError}
+              optimizeSummary={optimizeSummary}
+              onCloseOptimizeSummary={handleCloseOptimizeSummary}
+              soundExportSummary={soundExportSummary}
+              onCloseSoundExportSummary={handleCloseSoundExportSummary}
+              dumpExportSummary={dumpExportSummary}
+              onCloseDumpExportSummary={handleCloseDumpExportSummary}
+              transposeSummary={transposeSummary}
+              onCloseTransposeSummary={handleCloseTransposeSummary}
+              renumberSummary={renumberSummary}
+              onCloseRenumberSummary={handleCloseRenumberSummary}
+              instrumentOperationSummary={instrumentOperationSummary}
+              onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
+              isDebugInfoOpen={isDebugInfoOpen}
+              setIsDebugInfoOpen={setIsDebugInfoOpen}
+              isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
+              pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
+              instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
+              setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
+              onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
+              onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
+              isNewSongConfirmOpen={isNewSongConfirmOpen}
+              onConfirmNewSong={handleConfirmNewSong}
+              onCancelNewSong={handleCancelNewSong}
+              isOptimizeConfirmOpen={isOptimizeConfirmOpen}
+              onConfirmOptimize={handleConfirmOptimize}
+              onCancelOptimize={handleCancelOptimize}
+              isRenumberConfirmOpen={isRenumberConfirmOpen}
+              onConfirmRenumber={handleConfirmRenumber}
+              onCancelRenumber={handleCancelRenumber}
+              isResetConfirmOpen={isResetConfirmOpen}
+              onConfirmReset={handleConfirmReset}
+              onCancelReset={handleCancelReset}
+              isQuitConfirmOpen={isQuitConfirmOpen}
+              onConfirmQuit={handleConfirmQuit}
+              onCancelQuit={handleCancelQuit}
+              isInstrumentDeleteOpen={isInstrumentDeleteOpen}
+              instrumentDeleteUsage={instrumentDeleteUsage}
+              onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
+              onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
+              onCancelInstrumentDelete={handleCancelInstrumentDelete}
+              isInstrumentMidiOpen={isInstrumentMidiOpen}
+              instrumentMidiTarget={instrumentMidiTarget}
+              onSaveInstrumentMidi={handleSaveInstrumentMidi}
+              onCloseInstrumentMidi={handleCloseInstrumentMidi}
+              isTransposeOpen={isTransposeOpen}
+              transposeScope={transposeScope}
+              transposeTrackScope={transposeTrackScope}
+              transposeInstrumentScope={transposeInstrumentScope}
+              transposeAmount={transposeAmount}
+              transposeAmountInput={transposeAmountInput}
+              setTransposeScope={setTransposeScope}
+              setTransposeTrackScope={setTransposeTrackScope}
+              setTransposeInstrumentScope={setTransposeInstrumentScope}
+              onTransposeAmountChange={handleTransposeAmountChange}
+              onConfirmTranspose={handleConfirmTranspose}
+              onCancelTranspose={handleCancelTranspose}
+              setTransposeAmount={setTransposeAmount}
+              setTransposeAmountInput={setTransposeAmountInput}
+              isAboutOpen={isAboutOpen}
+              aboutVersion={APP_VERSION}
+              setIsAboutOpen={setIsAboutOpen}
+              isChangelogOpen={isChangelogOpen}
+              changelogContent={changelogContent}
+              onShowChangelog={handleShowChangelog}
+              onCloseChangelog={handleCloseChangelog}
+              isMidiModalOpen={isMidiModalOpen}
+              isMidiSupported={isMidiSupported}
+              midiAccessError={midiAccessError}
+              midiConfig={midiConfig}
+              midiDevices={midiDevices}
+              midiInMonitor={midiInMonitor}
+              midiOutMonitor={midiOutMonitor}
+              onSaveMidiConfig={handleSaveMidiConfig}
+              onCloseMidi={handleCloseMidi}
+              onClearMidiMonitors={handleClearMidiMonitors}
+              onRescanMidiDevices={handleRescanMidiDevices}
+              onLiveMidiConfigChange={handleLiveMidiConfigChange}
+              setMidiCopySummary={setMidiCopySummary}
+              setMidiLoadError={setMidiLoadError}
+              isDownloadOpen={isDownloadOpen}
+              downloadFiles={downloadFiles}
+              setIsDownloadOpen={setIsDownloadOpen}
+              midiLoadError={midiLoadError}
+              midiCopySummary={midiCopySummary}
+              onMidiSystemReset={handleMidiSystemReset}
+            />
+          }
         />
-        
-        {/* Hidden file input for loading songs */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".yaml,.yml"
-          style={{ display: 'none' }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (file) {
-              loadSong(file);
-              setPosition(0, 0, 0);
-              setSharedCurrentLine(0);
-              setActiveSection('playlist');
-              setChannelMutes([false, false, false]);
-              // This will be handled by the useDataManagement hook
-            }
-          }}
-        />
-        <input
-          ref={instrumentFileInputRef}
-          type="file"
-          accept=".yaml,.yml"
-          style={{ display: 'none' }}
-          onChange={(e) => {
-            const file = e.target.files?.[0];
-            if (!file) {
-              return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = ev => {
-              const text = typeof ev.target?.result === 'string'
-                ? ev.target.result
-                : String(ev.target?.result ?? '');
-              handleInstrumentFileContent(text);
-            };
-            reader.readAsText(file);
-          }}
-        />
-        <ModalContainer
-          songError={songError}
-          setSongError={setSongError}
-          instrumentError={instrumentError}
-          setInstrumentError={setInstrumentError}
-          trackClipboardError={trackClipboardError}
-          setTrackClipboardError={setTrackClipboardError}
-          optimizeSummary={optimizeSummary}
-          onCloseOptimizeSummary={handleCloseOptimizeSummary}
-          soundExportSummary={soundExportSummary}
-          onCloseSoundExportSummary={handleCloseSoundExportSummary}
-          dumpExportSummary={dumpExportSummary}
-          onCloseDumpExportSummary={handleCloseDumpExportSummary}
-          transposeSummary={transposeSummary}
-          onCloseTransposeSummary={handleCloseTransposeSummary}
-          renumberSummary={renumberSummary}
-          onCloseRenumberSummary={handleCloseRenumberSummary}
-          instrumentOperationSummary={instrumentOperationSummary}
-          onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
-          isDebugInfoOpen={isDebugInfoOpen}
-          setIsDebugInfoOpen={setIsDebugInfoOpen}
-          isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
-          pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
-          instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
-          setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
-          onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
-          onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
-          isNewSongConfirmOpen={isNewSongConfirmOpen}
-          onConfirmNewSong={handleConfirmNewSong}
-          onCancelNewSong={handleCancelNewSong}
-          isOptimizeConfirmOpen={isOptimizeConfirmOpen}
-          onConfirmOptimize={handleConfirmOptimize}
-          onCancelOptimize={handleCancelOptimize}
-          isRenumberConfirmOpen={isRenumberConfirmOpen}
-          onConfirmRenumber={handleConfirmRenumber}
-          onCancelRenumber={handleCancelRenumber}
-          isResetConfirmOpen={isResetConfirmOpen}
-          onConfirmReset={handleConfirmReset}
-          onCancelReset={handleCancelReset}
-          isQuitConfirmOpen={isQuitConfirmOpen}
-          onConfirmQuit={handleConfirmQuit}
-          onCancelQuit={handleCancelQuit}
-          isInstrumentDeleteOpen={isInstrumentDeleteOpen}
-          instrumentDeleteUsage={instrumentDeleteUsage}
-          onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
-          onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
-          onCancelInstrumentDelete={handleCancelInstrumentDelete}
-          isInstrumentMidiOpen={isInstrumentMidiOpen}
-          instrumentMidiTarget={instrumentMidiTarget}
-          onSaveInstrumentMidi={handleSaveInstrumentMidi}
-          onCloseInstrumentMidi={handleCloseInstrumentMidi}
-          isTransposeOpen={isTransposeOpen}
-          transposeScope={transposeScope}
-          transposeTrackScope={transposeTrackScope}
-          transposeInstrumentScope={transposeInstrumentScope}
-          transposeAmount={transposeAmount}
-          transposeAmountInput={transposeAmountInput}
-          setTransposeScope={setTransposeScope}
-          setTransposeTrackScope={setTransposeTrackScope}
-          setTransposeInstrumentScope={setTransposeInstrumentScope}
-          onTransposeAmountChange={handleTransposeAmountChange}
-          onConfirmTranspose={handleConfirmTranspose}
-          onCancelTranspose={handleCancelTranspose}
-          setTransposeAmount={setTransposeAmount}
-          setTransposeAmountInput={setTransposeAmountInput}
-          isAboutOpen={isAboutOpen}
-          aboutVersion={APP_VERSION}
-          setIsAboutOpen={setIsAboutOpen}
-          isChangelogOpen={isChangelogOpen}
-          changelogContent={changelogContent}
-          onShowChangelog={handleShowChangelog}
-          onCloseChangelog={handleCloseChangelog}
-          isMidiModalOpen={isMidiModalOpen}
-          isMidiSupported={isMidiSupported}
-          midiAccessError={midiAccessError}
-          midiConfig={midiConfig}
-          midiDevices={midiDevices}
-          midiInMonitor={midiInMonitor}
-          midiOutMonitor={midiOutMonitor}
-          onSaveMidiConfig={handleSaveMidiConfig}
-          onCloseMidi={handleCloseMidi}
-          onClearMidiMonitors={handleClearMidiMonitors}
-          onRescanMidiDevices={handleRescanMidiDevices}
-          onLiveMidiConfigChange={handleLiveMidiConfigChange}
-          setMidiCopySummary={setMidiCopySummary}
-          setMidiLoadError={setMidiLoadError}
-          isDownloadOpen={isDownloadOpen}
-          downloadFiles={downloadFiles}
-          setIsDownloadOpen={setIsDownloadOpen}
-          midiLoadError={midiLoadError}
-          midiCopySummary={midiCopySummary}
-          onMidiSystemReset={handleMidiSystemReset}
-        />
-        </div>
       </ErrorBoundary>
     );
   } catch (error) {
