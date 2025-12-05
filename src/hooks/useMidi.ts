@@ -54,7 +54,7 @@ interface UseMidiResult {
   sendProgramChange: (channel: number, program: number) => void;
 }
 
-const MAX_MONITOR_ENTRIES = 500;
+const MAX_MONITOR_ENTRIES = 1000;
 const STORAGE_KEY = 'dosound-tracker-midi-config';
 
 interface RawMidiConfig {
@@ -118,6 +118,7 @@ export function useMidi(
   const midiAccessRef = useRef<any | null>(null);
   const currentInputRef = useRef<any | null>(null);
   const currentOutputRef = useRef<any | null>(null);
+  const currentInputHandlerRef = useRef<((event: any) => void) | null>(null);
   const nextEntryIdRef = useRef<number>(1);
 
   const formatTime = () => {
@@ -323,28 +324,26 @@ export function useMidi(
       noteLabel = `${noteBase}${midiOctave}`;
       value = data2;
 
-      if (enableMonitors) {
-        addInMonitorEntry({
+      addInMonitorEntry({
+        data: dataHex,
+        device: deviceName,
+        channel: channelHex,
+        type,
+        note: noteLabel,
+        value,
+      });
+
+      if (debugOn && enableMonitors) {
+        console.log('MIDI IN', {
+          time,
+          note: noteLabel,
+          channel,
+          velocity: data2,
+          type,
+          status,
           data: dataHex,
           device: deviceName,
-          channel: channelHex,
-          type,
-          note: noteLabel,
-          value,
         });
-
-        if (debugOn) {
-          console.log('MIDI IN', {
-            time,
-            note: noteLabel,
-            channel,
-            velocity: data2,
-            type,
-            status,
-            data: dataHex,
-            device: deviceName,
-          });
-        }
       }
 
       onNoteEvent({
@@ -376,7 +375,7 @@ export function useMidi(
         value,
       });
 
-      if (debugOn) {
+      if (debugOn && enableMonitors) {
         console.log('MIDI IN', {
           time,
           note: noteLabel,
@@ -404,56 +403,52 @@ export function useMidi(
       noteLabel = `CC ${data1}`;
       value = data2;
 
-      if (enableMonitors) {
-        addInMonitorEntry({
+      addInMonitorEntry({
+        data: dataHex,
+        device: deviceName,
+        channel: channelHex,
+        type,
+        note: noteLabel,
+        value,
+      });
+
+      if (debugOn && enableMonitors) {
+        console.log('MIDI IN', {
+          time,
+          note: noteLabel,
+          channel,
+          value,
+          type,
+          status,
           data: dataHex,
           device: deviceName,
-          channel: channelHex,
-          type,
-          note: noteLabel,
-          value,
         });
-
-        if (debugOn) {
-          console.log('MIDI IN', {
-            time,
-            note: noteLabel,
-            channel,
-            value,
-            type,
-            status,
-            data: dataHex,
-            device: deviceName,
-          });
-        }
       }
     } else {
       type = 'Other';
       noteLabel = '';
       value = null;
 
-      if (enableMonitors) {
-        addInMonitorEntry({
-          data: dataHex,
-          device: deviceName,
-          channel: channelHex,
+      addInMonitorEntry({
+        data: dataHex,
+        device: deviceName,
+        channel: channelHex,
+        type,
+        note: noteLabel,
+        value,
+      });
+
+      if (debugOn && enableMonitors) {
+        console.log('MIDI IN', {
+          time,
           type,
+          data: dataHex,
+          channel,
+          device: deviceName,
           note: noteLabel,
           value,
+          status,
         });
-
-        if (debugOn) {
-          console.log('MIDI IN', {
-            time,
-            type,
-            data: dataHex,
-            channel,
-            device: deviceName,
-            note: noteLabel,
-            value,
-            status,
-          });
-        }
       }
     }
   }, [
@@ -506,37 +501,35 @@ export function useMidi(
 
       const type = kind === 'noteOn' ? 'Note On' : 'Note Off';
 
-      if (enableMonitors) {
-        addOutMonitorEntry({
+      addOutMonitorEntry({
+        data: dataHex,
+        device: outputDeviceName,
+        channel: channelHex,
+        type,
+        note: noteLabel,
+        value: vel,
+      });
+
+      let debugOn = false;
+      try {
+        debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+      } catch {
+        debugOn = false;
+      }
+
+      if (debugOn && enableMonitors) {
+        const time = formatTime();
+        // eslint-disable-next-line no-console
+        console.log('MIDI OUT', {
+          time,
+          note: noteLabel,
+          channel: safeChannel,
+          velocity: vel,
+          type,
+          status,
           data: dataHex,
           device: outputDeviceName,
-          channel: channelHex,
-          type,
-          note: noteLabel,
-          value: vel,
         });
-
-        let debugOn = false;
-        try {
-          debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
-        } catch {
-          debugOn = false;
-        }
-
-        if (debugOn) {
-          const time = formatTime();
-          // eslint-disable-next-line no-console
-          console.log('MIDI OUT', {
-            time,
-            note: noteLabel,
-            channel: safeChannel,
-            velocity: vel,
-            type,
-            status,
-            data: dataHex,
-            device: outputDeviceName,
-          });
-        }
       }
 
       const output = currentOutputRef.current;
@@ -595,37 +588,35 @@ export function useMidi(
       const type = 'Program Change';
       const noteLabel = `PC ${clampedProgram}`;
 
-      if (enableMonitors) {
-        addOutMonitorEntry({
+      addOutMonitorEntry({
+        data: dataHex,
+        device: outputDeviceName,
+        channel: channelHex,
+        type,
+        note: noteLabel,
+        value: clampedProgram,
+      });
+
+      let debugOn = false;
+      try {
+        debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+      } catch {
+        debugOn = false;
+      }
+
+      if (debugOn && enableMonitors) {
+        const time = formatTime();
+        // eslint-disable-next-line no-console
+        console.log('MIDI OUT', {
+          time,
+          note: noteLabel,
+          channel: safeChannel,
+          value: clampedProgram,
+          type,
+          status,
           data: dataHex,
           device: outputDeviceName,
-          channel: channelHex,
-          type,
-          note: noteLabel,
-          value: clampedProgram,
         });
-
-        let debugOn = false;
-        try {
-          debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
-        } catch {
-          debugOn = false;
-        }
-
-        if (debugOn) {
-          const time = formatTime();
-          // eslint-disable-next-line no-console
-          console.log('MIDI OUT', {
-            time,
-            note: noteLabel,
-            channel: safeChannel,
-            value: clampedProgram,
-            type,
-            status,
-            data: dataHex,
-            device: outputDeviceName,
-          });
-        }
       }
 
       const output = currentOutputRef.current;
@@ -688,17 +679,20 @@ export function useMidi(
     return () => {
       cancelled = true;
       const input = currentInputRef.current;
-      if (input && typeof input.removeEventListener === 'function') {
-        try {
-          input.removeEventListener('midimessage', handleMidiMessage);
-        } catch {
-          // ignore
-        }
-      } else if (input && 'onmidimessage' in input) {
-        try {
-          (input as any).onmidimessage = null;
-        } catch {
-          // ignore
+      const handler = currentInputHandlerRef.current;
+      if (input && handler) {
+        if (typeof input.removeEventListener === 'function') {
+          try {
+            input.removeEventListener('midimessage', handler);
+          } catch {
+            // ignore
+          }
+        } else if ('onmidimessage' in input) {
+          try {
+            (input as any).onmidimessage = null;
+          } catch {
+            // ignore
+          }
         }
       }
 
@@ -744,10 +738,13 @@ export function useMidi(
     }
 
     const previousInput = currentInputRef.current;
-    if (previousInput && previousInput !== nextInput) {
+    const previousHandler = currentInputHandlerRef.current;
+
+    // Always detach the previous handler if present to avoid duplicates.
+    if (previousInput && previousHandler) {
       if (typeof previousInput.removeEventListener === 'function') {
         try {
-          previousInput.removeEventListener('midimessage', handleMidiMessage);
+          previousInput.removeEventListener('midimessage', previousHandler);
         } catch {
           // ignore
         }
@@ -758,10 +755,12 @@ export function useMidi(
           // ignore
         }
       }
+    }
 
-      // When switching away from a previously selected input (or disabling
-      // input altogether), close the old port so the OS can release the
-      // underlying device for other software.
+    // When switching away from a previously selected input (or disabling
+    // input altogether), close the old port so the OS can release the
+    // underlying device for other software.
+    if (previousInput && previousInput !== nextInput) {
       try {
         if (typeof previousInput.close === 'function') {
           previousInput.close();
@@ -772,6 +771,7 @@ export function useMidi(
     }
 
     currentInputRef.current = nextInput;
+    currentInputHandlerRef.current = null;
 
     if (nextInput && config.inputEnabled) {
       try {
@@ -796,6 +796,7 @@ export function useMidi(
         } else {
           (nextInput as any).onmidimessage = handleMidiMessage;
         }
+        currentInputHandlerRef.current = handleMidiMessage;
       } catch {
         // ignore listener errors
       }

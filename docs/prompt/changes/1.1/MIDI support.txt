@@ -408,3 +408,255 @@ When app is running I saw that no other program can use available MIDI devices.
 In MIDI configuration only selected and active devices should be acquired and on change or when MIDI input or output is disabled, devices should be properly released so other software can use it.
 
 ---
+
+It's better now.
+But now when MIDI configuration window is not open, no MIDI OUT log messages are stored.
+They appear only when MIDI configuration window is open.
+You should remember all MIDI IN and MIDI OUT messages so I can open MIDI configuration window and find them.
+Remember only last 1000 messages.
+Now when I press a note on a MIDI controller I see lot of messages on MIDI IN.
+And when I change current instrument to "01" which has no MIDI settings I can still see in MIDI OUT when MIDI IN is triggered which is not correct as in this case input messages should not be routed.
+When playing pattern while having MIDI configuration window open, the output messages are correct.
+But something is wrong now.
+
+This is the song data:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 16
+  loop: 0
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      step:
+        - note: "C-4"
+          instrument: "00"
+          volume: 14
+        - space: 7
+        - note: "OFF"
+    - number: "02"
+    - number: "03"
+  instrument:
+    - number: "00"
+      base: "C-3"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 0
+      midi:
+        channel: 1
+        program: 1
+    - number: "01"
+      base: "C-3"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 9
+```
+
+And this is MIDI IN log when pressing F#3 note and release (should be 2 messages):
+
+```
+Time          Data               Device                Ch  Type        Note  Value
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.891  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.892  90 36 20           FL STUDIO FIRE        01  Note On     F#3      32
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.973  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.974  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.974  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.974  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.974  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+21:19:14.974  80 36 00           FL STUDIO FIRE        01  Note Off    F#3       0
+```
+
+And this is MIDI OUT log even that it should not be as currently selected instrument was "01".
+
+```
+Time          Data               Device                Ch  Type        Note  Value
+21:19:14.891  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.891  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.891  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.891  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.891  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.891  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.891  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.891  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.891  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.891  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.892  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.892  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.892  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.892  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.892  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.892  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+21:19:14.892  80 2A 40           JT-4000 MICRO         01  Note Off    F#2      64
+21:19:14.892  90 2A 7F           JT-4000 MICRO         01  Note On     F#2     127
+```
+
+---
