@@ -44,14 +44,14 @@ song:
       C: "0E"
   pattern:
     - number: "00"
-      steps:
+      step:
         - note: "D-4"
           instrument: "07"
         - space: 5
         - note: "E-3"
           instrument: "00"
     - number: "01"
-      steps:
+      step:
         - space: 2
         - note: "E-2"
           instrument: "01"
@@ -71,7 +71,7 @@ song:
         - note: "E-1"
           instrument: "02"
     - number: "02"
-      steps:
+      step:
         - note: "D-3"
           instrument: "05"
         - space: 1
@@ -96,14 +96,14 @@ song:
         - note: "C-3"
           instrument: "04"
     - number: "03"
-      steps:
+      step:
         - note: "G-3"
           instrument: "00"
         - space: 5
         - note: "G-3"
           instrument: "00"
     - number: "04"
-      steps:
+      step:
         - space: 2
         - note: "G-2"
           instrument: "01"
@@ -123,14 +123,14 @@ song:
         - note: "G-1"
           instrument: "02"
     - number: "05"
-      steps:
+      step:
         - note: "C-3"
           instrument: "00"
         - space: 5
         - note: "C-3"
           instrument: "00"
     - number: "06"
-      steps:
+      step:
         - space: 2
         - note: "C-2"
           instrument: "01"
@@ -150,14 +150,14 @@ song:
         - note: "C-2"
           instrument: "02"
     - number: "07"
-      steps:
+      step:
         - note: "D-3"
           instrument: "00"
         - space: 5
         - note: "D-4"
           instrument: "06"
     - number: "08"
-      steps:
+      step:
         - space: 2
         - note: "D-2"
           instrument: "01"
@@ -177,7 +177,7 @@ song:
         - note: "D-2"
           instrument: "02"
     - number: "09"
-      steps:
+      step:
         - note: "E-3"
           instrument: "00"
         - space: 5
@@ -187,7 +187,7 @@ song:
         - note: "E-4"
           instrument: "03"
     - number: 0A
-      steps:
+      step:
         - note: "G-3"
           instrument: "00"
         - space: 5
@@ -197,7 +197,7 @@ song:
         - note: "E-4"
           instrument: "03"
     - number: 0B
-      steps:
+      step:
         - note: "C-3"
           instrument: "00"
         - space: 5
@@ -207,7 +207,7 @@ song:
         - note: "C-4"
           instrument: "03"
     - number: 0C
-      steps:
+      step:
         - note: "D-3"
           instrument: "00"
         - space: 5
@@ -217,7 +217,7 @@ song:
         - note: "D-4"
           instrument: "03"
     - number: 0D
-      steps:
+      step:
         - note: "D-3"
           instrument: "00"
         - space: 7
@@ -230,7 +230,7 @@ song:
         - note: "D-4"
           instrument: "03"
     - number: 0E
-      steps:
+      step:
         - note: "D-3"
           instrument: "05"
         - space: 1
