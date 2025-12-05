@@ -463,7 +463,7 @@ export const useDataManagement = () => {
             step = { space: hasVolume ? 1 : true };
           } else if (cell.note === '===') {
             // Explicit key-release step: encode as off: true in YAML.
-            step = { off: true };
+            step = { note: 'OFF' };
           } else {
             const noteText = formatBaseKey(cell.note, cell.octave);
             step = {

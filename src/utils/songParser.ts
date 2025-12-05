@@ -262,7 +262,11 @@ export const parseSongFromYaml = (content: string): Song => {
       if (rawLineNode && typeof rawLineNode === 'object') {
         const ln = rawLineNode as PatternStepNodeYaml;
 
-        if (ln.off === true) {
+        const rawNote = ln.note;
+        const isOffNote =
+          typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
+
+        if (ln.off === true || isOffNote) {
           // Empty or note-off line: currently treated as space
           line.trackA = {
             note: '===',
@@ -271,11 +275,11 @@ export const parseSongFromYaml = (content: string): Song => {
           };
         } else if (ln.space === true) {
           // Empty or note-off line: currently treated as space
-        } else if (typeof ln.note === 'string') {
-          const parsedKey = parseBaseKey(ln.note);
+        } else if (typeof rawNote === 'string') {
+          const parsedKey = parseBaseKey(rawNote);
           if (!parsedKey) {
             throw new Error(
-              `Invalid note value "${ln.note}" in pattern ${number} at line ${i}`
+              `Invalid note value "${rawNote}" in pattern ${number} at line ${i}`
             );
           }
 

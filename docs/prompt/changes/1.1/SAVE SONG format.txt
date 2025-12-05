@@ -65,3 +65,73 @@ song:
         channel: 1
         program: 2
 ```
+
+---
+
+When saving song data in YAML format don't write "off" key in steps array.
+Use special note named "OFF" for note off step.
+When loading song keep compatibility when "off" key is present and has boolean value true.
+
+Instead:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 16
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+          volume: 14
+        - space: 7
+        - "off": true
+    - number: "02"
+    - number: "03"
+  instrument:
+    - number: "00"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 0
+      midi:
+        channel: 1
+        program: 2
+```
+
+Write just:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 16
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+          volume: 14
+        - space: 7
+        - note: "OFF"
+    - number: "02"
+    - number: "03"
+  instrument:
+    - number: "00"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 0
+      midi:
+        channel: 1
+        program: 2
+```
