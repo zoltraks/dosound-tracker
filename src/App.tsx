@@ -10,7 +10,7 @@ import { useTrackOperations } from './hooks/useTrackOperations';
 import { usePlaylistOperations } from './hooks/usePlaylistOperations';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
-import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
+import type { Instrument, Note, Pattern, PatternLine } from './synth/SoundDriver';
 import type { MidiConfig, MidiNoteEvent } from './hooks/useMidi';
 import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE, NOTE_BASE_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
@@ -1295,6 +1295,8 @@ const App: React.FC = () => {
     handleCloneLine,
     handleDeleteLine,
     handleDuplicateLine,
+    clampedPlaybackPosition,
+    handlePositionSelect,
   } = usePlaylistOperations({
     song: currentSong,
     targetTrackId,
@@ -1525,7 +1527,10 @@ const App: React.FC = () => {
     ignoreInstrumentTypeWarning,
     setIgnoreInstrumentTypeWarning,
     loadInstrument,
-    setActiveSection
+    setActiveSection,
+    setPendingInstrumentContent,
+    setPendingInstrumentTypeInfo,
+    setIsInstrumentTypeWarningOpen,
   ]);
 
   const handleCancelInstrumentTypeWarning = useCallback(() => {
@@ -1534,11 +1539,6 @@ const App: React.FC = () => {
     setPendingInstrumentTypeInfo(null);
   }, []);
 
-  const handlePositionSelect = useCallback((position: number) => {
-    // Set sequencer to the selected pattern position, reset line and tick to 0
-    setPosition(position, 0, 0);
-  }, [setPosition]);
-
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
     const playlistLength = currentSong.playlist.length;
@@ -1546,47 +1546,58 @@ const App: React.FC = () => {
       return null;
     }
 
-    const currentPatternIndex = Math.max(0, Math.min(playlistLength - 1, sequencerState.currentPattern));
+    const currentPatternIndex = Math.max(
+      0,
+      Math.min(playlistLength - 1, sequencerState.currentPattern),
+    );
     const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
-    
+
     if (!currentPlaylistEntry) {
       return null;
     }
-    
+
     // Return pattern based on which track is asking
     let patternId = '--';
     switch (trackId) {
-      case 'A': patternId = currentPlaylistEntry.trackA; break;
-      case 'B': patternId = currentPlaylistEntry.trackB; break;
-      case 'C': patternId = currentPlaylistEntry.trackC; break;
+      case 'A':
+        patternId = currentPlaylistEntry.trackA;
+        break;
+      case 'B':
+        patternId = currentPlaylistEntry.trackB;
+        break;
+      case 'C':
+        patternId = currentPlaylistEntry.trackC;
+        break;
     }
-    
+
     if (patternId === '--') {
       return null; // No pattern set for this track
     }
-    
+
     let foundPattern = currentSong.patterns.find(p => p.id === patternId);
-    
+
     // If pattern doesn't exist, create it with current pattern length
     if (!foundPattern) {
       const targetLength = currentSong.patternLength || PATTERN_LENGTH;
       const newPattern = {
         id: patternId,
         name: `Pattern ${patternId}`,
-        lines: Array(targetLength).fill(null).map(() => ({
-          trackA: null,
-          trackB: null,
-          trackC: null
-        }))
+        lines: Array(targetLength)
+          .fill(null)
+          .map(() => ({
+            trackA: null,
+            trackB: null,
+            trackC: null,
+          })),
       };
-      
+
       // Add the new pattern to the song
       const updatedPatterns = [...currentSong.patterns, newPattern];
       updateSong({ patterns: updatedPatterns });
-      
+
       foundPattern = newPattern;
     }
-    
+
     return foundPattern;
   }, [currentSong, sequencerState.currentPattern, updateSong]);
 
@@ -3419,12 +3430,6 @@ const App: React.FC = () => {
     handleCancelInstrumentTypeWarning,
     handleConfirmInstrumentTypeWarning,
   });
-
-  const playlistLength = currentSong.playlist.length;
-  const clampedPlaybackPosition =
-    playlistLength === 0
-      ? 0
-      : Math.max(0, Math.min(playlistLength - 1, sequencerState.currentPattern));
 
   try {
     return (

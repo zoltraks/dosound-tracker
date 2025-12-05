@@ -22,6 +22,8 @@ interface UsePlaylistOperationsResult {
   handleCloneLine: () => void;
   handleDeleteLine: () => void;
   handleDuplicateLine: () => void;
+  clampedPlaybackPosition: number;
+  handlePositionSelect: (position: number) => void;
 }
 
 export function usePlaylistOperations({
@@ -34,6 +36,12 @@ export function usePlaylistOperations({
   setSharedCurrentLine,
   setPosition,
 }: UsePlaylistOperationsArgs): UsePlaylistOperationsResult {
+  const playlistLength = song.playlist.length;
+  const clampedPlaybackPosition =
+    playlistLength === 0
+      ? 0
+      : Math.max(0, Math.min(currentPatternIndex, playlistLength - 1));
+
   const handlePlaylistChange = useCallback((newPlaylist: Song['playlist']) => {
     updateSong({ playlist: newPlaylist });
   }, [updateSong]);
@@ -235,6 +243,13 @@ export function usePlaylistOperations({
     setPosition(insertIndex, 0, 0);
   }, [song.playlist, song.patterns, currentPatternIndex, updateSong, setPosition]);
 
+  const handlePositionSelect = useCallback(
+    (position: number) => {
+      setPosition(position, 0, 0);
+    },
+    [setPosition],
+  );
+
   return {
     handlePlaylistChange,
     generateUniquePatternId,
@@ -244,5 +259,7 @@ export function usePlaylistOperations({
     handleCloneLine,
     handleDeleteLine,
     handleDuplicateLine,
+    clampedPlaybackPosition,
+    handlePositionSelect,
   };
 }
