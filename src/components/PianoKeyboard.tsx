@@ -13,6 +13,8 @@ interface PianoKeyboardProps {
   currentInstrument: Instrument;
   previewChannel: number;
   onChangeBaseKey: (note: string, octave: number) => void;
+  onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
+  onPreviewMidiNoteOff?: (ymChannel: number) => void;
 }
 
 interface PianoKey {
@@ -32,7 +34,9 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   ym2149,
   currentInstrument,
   previewChannel,
-  onChangeBaseKey
+  onChangeBaseKey,
+  onPreviewMidiNoteOn,
+  onPreviewMidiNoteOff
 }) => {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
@@ -129,6 +133,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   }, [isActive]);
 
   const stopNote = useCallback((note?: string, octave?: number) => {
+    if (onPreviewMidiNoteOff) {
+      onPreviewMidiNoteOff(previewChannel);
+    }
+
     if (!ym2149) return;
 
     const volumeRegister = 0x08 + previewChannel;
@@ -199,7 +207,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     previewNextTickTimeRef.current = {};
 
     ym2149.writeRegister(volumeRegister, 0x00);
-  }, [ym2149, previewChannel]);
+  }, [ym2149, previewChannel, onPreviewMidiNoteOff]);
 
   const playNote = useCallback((note: string, octave: number) => {
     if (!ym2149) return;
@@ -238,6 +246,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
     // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
+
+    if (onPreviewMidiNoteOn) {
+      onPreviewMidiNoteOn(channel, currentInstrument, note, octave);
+    }
 
     // Precompute volume envelope tail information so we know when to auto-stop
     const volumeEnv: number[] =
@@ -339,7 +351,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         ym2149.writeRegister(volumeRegister, 0x00);
       }
     }, 20); // 20ms base tick, 40ms per envelope step
-  }, [ym2149, currentInstrument, previewChannel, stopNote]);
+  }, [ym2149, currentInstrument, previewChannel, stopNote, onPreviewMidiNoteOn]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;

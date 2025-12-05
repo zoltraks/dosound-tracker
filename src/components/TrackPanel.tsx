@@ -21,6 +21,8 @@ interface TrackPanelProps {
   currentColumn: 'note' | 'volume';
   setCurrentColumn: (column: 'note' | 'volume') => void;
   focusRevision: number;
+  onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
+  onPreviewMidiNoteOff?: (ymChannel: number) => void;
 }
 
 export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
@@ -40,7 +42,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onTogglePatternFromCursor,
     currentColumn,
     setCurrentColumn,
-    focusRevision
+    focusRevision,
+    onPreviewMidiNoteOn,
+    onPreviewMidiNoteOff
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -58,6 +62,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const previewEnvelopeStepRef = useRef<number>(0);
   const previewLastTickTimeRef = useRef<number | null>(null);
   const previewNextTickTimeRef = useRef<number | null>(null);
+  const previewTokenRef = useRef<number>(0);
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
@@ -96,6 +101,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     const instrument = currentInstrumentData;
     const noteData = { note, octave };
 
+    const token = (previewTokenRef.current || 0) + 1;
+    previewTokenRef.current = token;
+
     // Initialize envelope timing
     const now = performance.now();
     previewSubTickRef.current = 0;
@@ -105,6 +113,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
+
+    if (onPreviewMidiNoteOn) {
+      onPreviewMidiNoteOn(channel, currentInstrumentData, note, octave);
+    }
 
     const TICK_INTERVAL_MS = 20;
 
@@ -138,6 +150,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Auto-silence after 500ms for preview (longer to hear envelope)
     const volumeRegister = 8 + channel;
     window.setTimeout(() => {
+      if (previewTokenRef.current !== token) {
+        return;
+      }
+
       if (envelopeTimerRef.current) {
         clearInterval(envelopeTimerRef.current);
         envelopeTimerRef.current = null;
@@ -145,8 +161,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       previewLastTickTimeRef.current = null;
       previewNextTickTimeRef.current = null;
       ym2149.writeRegister(volumeRegister, 0x00); // Silence channel
+      if (onPreviewMidiNoteOff) {
+        onPreviewMidiNoteOff(channel);
+      }
     }, 500);
-  }, [ym2149, trackId, currentInstrumentData]);
+  }, [ym2149, trackId, currentInstrumentData, onPreviewMidiNoteOn, onPreviewMidiNoteOff]);
 
   // Get notes for this track from the pattern
   const getTrackNotes = useCallback(() => {

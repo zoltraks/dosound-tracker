@@ -338,3 +338,64 @@ Check the routing as when I send a message on MIDI IN and instrument is played w
 Finally, check why I can see MIDI output message but the message is not being send (my MIDI device is not receiving anything but it should).
 
 ---
+
+This is song data:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 16
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+        - space: 1
+        - "off": true
+    - number: "02"
+      steps: []
+    - number: "03"
+      steps: []
+  instrument:
+    - number: "00"
+      volume: [15, 0]
+      sustain: 0
+      midi:
+        channel: 1
+        program: 0
+```
+
+This is my MIDI configuration:
+
+```yaml
+midi:
+  version: 1
+  input:
+    enable: true
+    agnostic: true
+    device: input-10
+  output:
+    enable: true
+    agnostic: true
+    device: output-12
+```
+
+When I press a note on MIDI input I see messages in and I can hear a sound of my instrument but I see no MIDI out messages.
+Output MIDI message should be generated automatically as instrument has channel set.
+
+Also when I play a note on piano keyboard or with a keys I don't see MIDI out messages but I should for the same reason.
+
+---
+
+Track MIDI program changes per channel and remember last program number sent to specific MIDI channel.
+If an instrument played has program number set then send program change MIDI message if the program number is not the same as previously sent on the same channel number.
+When MIDI configuration window is closed, forget the last program number sent and send it again during next instrument play on specific channel if the instrument has channel and program number set.
+
+----

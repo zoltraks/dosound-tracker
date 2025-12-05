@@ -709,6 +709,11 @@ const App: React.FC = () => {
   // Track the last program number sent per MIDI channel (1-16) so that
   // we only emit Program Change messages when the value actually changes.
   const midiProgramByChannelRef = useRef<Array<number | null>>(Array(16).fill(null));
+
+  const resetMidiProgramCache = useCallback(() => {
+    midiProgramByChannelRef.current = Array(16).fill(null);
+  }, []);
+
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
   const debugTickCounterRef = useRef<number>(0);
@@ -817,6 +822,19 @@ const App: React.FC = () => {
         noteNumber
       };
     }
+  };
+
+  const previewInstrumentMidiNoteOn = (
+    ymChannel: number,
+    instrument: Instrument,
+    note: string,
+    octave: number
+  ) => {
+    sendInstrumentMidiNoteOn(ymChannel, instrument, note, octave, null);
+  };
+
+  const previewInstrumentMidiNoteOff = (ymChannel: number) => {
+    sendInstrumentMidiNoteOffForChannel(ymChannel);
   };
 
   // Handle stop playback with silence
@@ -3651,6 +3669,9 @@ const App: React.FC = () => {
 
           ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
 
+          // Also send MIDI OUT for live preview using the instrument's MIDI settings.
+          sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
+
           lastMidiPreviewRef.current = {
             noteNumber,
             midiChannel,
@@ -3752,6 +3773,9 @@ const App: React.FC = () => {
             last.ymChannel >= 0 &&
             last.ymChannel <= 2
           ) {
+            // Send matching MIDI Note Off for the YM channel used by the live preview.
+            sendInstrumentMidiNoteOffForChannel(last.ymChannel);
+
             const hasSustain =
               typeof midiLiveSustainIndexRef.current === 'number' &&
               midiLiveSustainIndexRef.current >= 0;
@@ -4111,15 +4135,17 @@ const App: React.FC = () => {
   }, []);
 
   const handleCloseMidi = useCallback(() => {
+    resetMidiProgramCache();
     setIsMidiModalOpen(false);
-  }, []);
+  }, [resetMidiProgramCache]);
 
   const handleSaveMidiConfig = useCallback(
     (config: MidiConfig) => {
       setMidiConfig(config);
+      resetMidiProgramCache();
       setIsMidiModalOpen(false);
     },
-    [setMidiConfig]
+    [resetMidiProgramCache, setMidiConfig]
   );
 
   const handleClearMidiMonitors = useCallback(() => {
@@ -4539,6 +4565,8 @@ const App: React.FC = () => {
           previewChannel={previewChannel}
           hasDownloads={downloadFiles.length > 0}
           onShowDownloads={() => setIsDownloadOpen(true)}
+          onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+          onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
         />
         
         <CommandPanel
@@ -4623,6 +4651,8 @@ const App: React.FC = () => {
                     currentColumn={currentTrackColumn}
                     setCurrentColumn={setCurrentTrackColumn}
                     focusRevision={trackFocusRevision}
+                    onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+                    onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
                   />
 
                   <TrackPanel
@@ -4642,6 +4672,8 @@ const App: React.FC = () => {
                     currentColumn={currentTrackColumn}
                     setCurrentColumn={setCurrentTrackColumn}
                     focusRevision={trackFocusRevision}
+                    onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+                    onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
                   />
 
                   <TrackPanel
@@ -4661,6 +4693,8 @@ const App: React.FC = () => {
                     currentColumn={currentTrackColumn}
                     setCurrentColumn={setCurrentTrackColumn}
                     focusRevision={trackFocusRevision}
+                    onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+                    onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
                   />
                 </div>
               </div>
@@ -4790,6 +4824,8 @@ const App: React.FC = () => {
           currentInstrument={currentInstrument}
           previewChannel={previewChannel}
           onChangeBaseKey={handleChangeBaseKey}
+          onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+          onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
         />
         
         {/* Hidden file input for loading songs */}

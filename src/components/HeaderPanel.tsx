@@ -18,6 +18,8 @@ interface HeaderPanelProps {
   previewChannel: number;
   hasDownloads: boolean;
   onShowDownloads: () => void;
+  onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
+  onPreviewMidiNoteOff?: (ymChannel: number) => void;
 }
 
 export const HeaderPanel: React.FC<HeaderPanelProps> = ({
@@ -33,7 +35,9 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   currentInstrument,
   previewChannel,
   hasDownloads,
-  onShowDownloads
+  onShowDownloads,
+  onPreviewMidiNoteOn,
+  onPreviewMidiNoteOff
 }) => {
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
@@ -44,6 +48,10 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   const previewEnvelopeStepRef = useRef<number>(0);
 
   const stopPreview = () => {
+    if (onPreviewMidiNoteOff) {
+      onPreviewMidiNoteOff(previewChannel);
+    }
+
     if (!ym2149) return;
 
     if (previewTimerRef.current !== null) {
@@ -73,6 +81,10 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
 
     // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
     ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
+
+    if (onPreviewMidiNoteOn) {
+      onPreviewMidiNoteOn(channel, currentInstrument, note, octave);
+    }
 
     // Start envelope timer - 20ms tick, advance envelope step every 40ms
     previewTimerRef.current = window.setInterval(() => {
