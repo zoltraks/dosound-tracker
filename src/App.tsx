@@ -1134,6 +1134,23 @@ const App: React.FC = () => {
     return '';
   }, []);
 
+  const instrumentLookupByNormalizedId = useMemo(() => {
+    const map = new Map<string, Instrument>();
+    for (const inst of currentSong.instruments) {
+      if (!inst || !inst.id) {
+        continue;
+      }
+      const key = normalizeInstrumentId(inst.id);
+      if (!key) {
+        continue;
+      }
+      if (!map.has(key)) {
+        map.set(key, inst);
+      }
+    }
+    return map;
+  }, [currentSong.instruments, normalizeInstrumentId]);
+
   // Helper function to update channel with instrument and all envelopes
   const updateChannelWithInstrument = useCallback((
     ym2149: YM2149,
@@ -1143,10 +1160,16 @@ const App: React.FC = () => {
     volumeModifier?: number | null
   ) => {
     const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
-    const normalizedFallbackId = normalizeInstrumentId(currentInstrument?.id) || normalizeInstrumentId(currentSong.instruments[0]?.id);
-    const resolvedInstrumentId = normalizedNoteInstrumentId || normalizedFallbackId;
 
-    const instrument = currentSong.instruments.find(inst => normalizeInstrumentId(inst.id) === resolvedInstrumentId);
+    let resolvedInstrumentId = normalizedNoteInstrumentId;
+    if (!resolvedInstrumentId) {
+      const fallbackSourceId = currentInstrument?.id ?? currentSong.instruments[0]?.id;
+      resolvedInstrumentId = normalizeInstrumentId(fallbackSourceId);
+    }
+
+    const instrument = resolvedInstrumentId
+      ? instrumentLookupByNormalizedId.get(resolvedInstrumentId)
+      : undefined;
     
     if (!instrument || !noteData || noteData.note === '===') {
       // No instrument or no active note - silence channel
@@ -1163,7 +1186,12 @@ const App: React.FC = () => {
       envelopeStep,
       volumeModifier
     );
-  }, [currentSong.instruments, currentInstrument?.id, normalizeInstrumentId]);
+  }, [
+    currentSong.instruments,
+    currentInstrument?.id,
+    normalizeInstrumentId,
+    instrumentLookupByNormalizedId
+  ]);
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: Pattern) => {

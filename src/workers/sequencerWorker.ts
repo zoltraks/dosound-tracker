@@ -8,7 +8,6 @@ let currentLine = 0;
 let currentPattern = 0;
 let ticksPerRow = 3;
 let patternLength = 64;
-let lastTickTime = 0;
 let nextTickTime = 0;
 
 interface WorkerStartMessage {
@@ -95,8 +94,7 @@ function tickLoop() {
 
   const now = performance.now();
 
-  if (!lastTickTime) {
-    lastTickTime = now;
+  if (!nextTickTime) {
     nextTickTime = now + tickInterval;
   }
 
@@ -106,7 +104,7 @@ function tickLoop() {
     nextTickTime += tickInterval;
   }
 
-  const delay = Math.max(0, nextTickTime - performance.now());
+  const delay = Math.max(0, nextTickTime - now);
   intervalId = setTimeout(tickLoop, delay);
 }
 
@@ -116,7 +114,6 @@ function startSequencer() {
   }
   
   isPlaying = true;
-  lastTickTime = 0;
   nextTickTime = 0;
   intervalId = setTimeout(tickLoop, tickInterval);
 }
