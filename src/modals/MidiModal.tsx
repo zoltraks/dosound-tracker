@@ -53,16 +53,18 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   }, [isOpen, config]);
 
   useEffect(() => {
+    if (!isOpen) return;
     const container = inScrollRef.current;
     if (!container) return;
     container.scrollTop = container.scrollHeight;
-  }, [inMonitor.length]);
+  }, [isOpen, inMonitor.length]);
 
   useEffect(() => {
+    if (!isOpen) return;
     const container = outScrollRef.current;
     if (!container) return;
     container.scrollTop = container.scrollHeight;
-  }, [outMonitor.length]);
+  }, [isOpen, outMonitor.length]);
 
   const hasInputs = devices.inputs.length > 0;
   const hasOutputs = devices.outputs.length > 0;

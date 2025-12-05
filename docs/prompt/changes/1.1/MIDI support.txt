@@ -668,3 +668,7 @@ In MIDI configuration window add button "RESET" on the left side after "RESCAN" 
 Remember that you need to send system reset message everytime "Enable MIDI output" is checked or output MIDI device is changed and when application starts or is reloaded and "Enable MIDI output" is checked and MIDI output device is set.
 
 ---
+
+When MIDI configuration window is opened by clicking "MIDI" button and there are some log entries in MIDI IN or MIDI OUT monitor, scroll down the view so the last entries are visible.
+
+---
