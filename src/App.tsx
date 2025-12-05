@@ -26,7 +26,7 @@ import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal } from './modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from './modals';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
 import './App.css';
@@ -120,6 +120,8 @@ const App: React.FC = () => {
     hasTypeField: boolean;
     detectedType: string | null;
   } | null>(null);
+  const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
+  const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
   const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('dosound-tracker-debug-mode');
@@ -667,6 +669,16 @@ const App: React.FC = () => {
   // for a note whose instrument has a sustain point. Once released, the
   // envelope continues past the sustain index instead of being hard-muted.
   const channelReleasedRef = useRef<boolean[]>([false, false, false]);
+  // Track the most recent MIDI note sent for each YM2149 channel so that
+  // pattern note-off events can send matching MIDI Note Off messages.
+  const playbackMidiNotesRef = useRef<Array<{ midiChannel: number; noteNumber: number } | null>>([
+    null,
+    null,
+    null
+  ]);
+  // Track the last program number sent per MIDI channel (1-16) so that
+  // we only emit Program Change messages when the value actually changes.
+  const midiProgramByChannelRef = useRef<Array<number | null>>(Array(16).fill(null));
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
   const debugTickCounterRef = useRef<number>(0);
@@ -699,6 +711,83 @@ const App: React.FC = () => {
   // Track pattern playing state
   const [isPatternPlaying, setIsPatternPlaying] = useState(false);
 
+  const sendInstrumentMidiNoteOffForChannel = (
+    ymChannel: number
+  ) => {
+    if (ymChannel < 0 || ymChannel > 2) {
+      return;
+    }
+
+    const entry = playbackMidiNotesRef.current[ymChannel];
+    if (!entry) {
+      return;
+    }
+
+    sendNoteOff(entry.midiChannel, entry.noteNumber);
+    playbackMidiNotesRef.current[ymChannel] = null;
+  };
+
+  const sendInstrumentMidiNoteOn = (
+    ymChannel: number,
+    instrument: Instrument | undefined,
+    note: string,
+    octave: number,
+    volumeFromStep?: number | null
+  ) => {
+    if (!instrument || !instrument.midi) {
+      return;
+    }
+
+    const rawChannel = instrument.midi.channel;
+    if (rawChannel === null || rawChannel === undefined || !Number.isFinite(rawChannel as number)) {
+      return;
+    }
+
+    const safeChannel = Math.max(1, Math.min(16, Math.floor(rawChannel as number)));
+
+    const upperNote = note.toUpperCase();
+    const noteIndex = NOTES.indexOf(upperNote);
+    if (noteIndex < 0) {
+      return;
+    }
+
+    const noteNumber = (octave + 1) * 12 + noteIndex;
+
+    const rawProgram = instrument.midi.program;
+    if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
+      const clampedProgram = Math.max(0, Math.min(127, Math.floor(rawProgram)));
+      const lastProgram = midiProgramByChannelRef.current[safeChannel - 1];
+      if (lastProgram !== clampedProgram) {
+        sendProgramChange(safeChannel, clampedProgram);
+        midiProgramByChannelRef.current[safeChannel - 1] = clampedProgram;
+      }
+    }
+
+    let volumeNibble = 0x0f;
+    if (volumeFromStep !== undefined && volumeFromStep !== null) {
+      volumeNibble = Math.max(0, Math.min(0x0f, (volumeFromStep as number) | 0));
+    }
+
+    const velocity = Math.max(1, Math.min(127, Math.round((volumeNibble / 15) * 127)));
+
+    const lastEntry = ymChannel >= 0 && ymChannel <= 2 ? playbackMidiNotesRef.current[ymChannel] : null;
+    if (lastEntry) {
+      sendNoteOff(lastEntry.midiChannel, lastEntry.noteNumber);
+      if (ymChannel >= 0 && ymChannel <= 2) {
+        playbackMidiNotesRef.current[ymChannel] = null;
+      }
+    }
+
+    sendNoteOn(safeChannel, noteNumber, velocity);
+
+    if (ymChannel >= 0 && ymChannel <= 2) {
+      playbackMidiNotesRef.current[ymChannel] = {
+        midiChannel: safeChannel,
+        noteNumber
+      };
+    }
+  };
+
   // Handle stop playback with silence
   const handleStopPlayback = useCallback(() => {
     // Reset cycle counters when stopping
@@ -712,12 +801,19 @@ const App: React.FC = () => {
     debugTickCounterRef.current = 0;
     debugLastRowRef.current = null;
     debugLastTimeRef.current = null;
+    // Send MIDI Note Off for any active playback notes so external
+    // devices do not get stuck notes when playback stops.
+    playbackMidiNotesRef.current.forEach((entry, ch) => {
+      if (entry) {
+        sendInstrumentMidiNoteOffForChannel(ch);
+      }
+    });
     
     // Silence all channels
     if (ym2149Ref.current) {
       ym2149Ref.current.silenceAll();
     }
-  }, []);
+  }, [sendInstrumentMidiNoteOffForChannel]);
 
   // Basic sequencer callback for playback
   const sequencerCallback = useCallback((state: SequencerState) => {
@@ -962,6 +1058,11 @@ const App: React.FC = () => {
           // Explicit note-off event on this row. Only act on the first
           // tick of the row so we match the offline export logic.
           if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
+            // For MIDI output, treat this as an explicit key release and
+            // send a matching Note Off for any active note on this
+            // playback channel.
+            sendInstrumentMidiNoteOffForChannel(ch);
+
             const sustainIndex = channelSustainRef.current[ch];
 
             if (
@@ -1038,6 +1139,21 @@ const App: React.FC = () => {
               channelSustainRef.current[ch] = null;
             }
             channelReleasedRef.current[ch] = false;
+
+            let volumeForMidi: number | null = null;
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+            }
+
+            if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
+              sendInstrumentMidiNoteOn(
+                ch,
+                instrument,
+                activeNote.note,
+                activeNote.octave,
+                volumeForMidi
+              );
+            }
           }
 
           if (activeNote && activeNote.note && activeNote.note !== '===') {
@@ -1107,7 +1223,8 @@ const App: React.FC = () => {
     handleStopPlayback,
     setPosition,
     channelMutes,
-    isDebugMode
+    isDebugMode,
+    instrumentsById
   ]);
 
   // Register sequencer callback
@@ -2300,6 +2417,64 @@ const App: React.FC = () => {
   const handleInstrumentSelect = useCallback((instrument: Instrument) => {
     setCurrentInstrument(instrument);
   }, []);
+
+  const handleOpenInstrumentMidi = useCallback((instrument: Instrument) => {
+    setInstrumentMidiTarget(instrument);
+    setIsInstrumentMidiOpen(true);
+  }, []);
+
+  const handleCloseInstrumentMidi = useCallback(() => {
+    setIsInstrumentMidiOpen(false);
+    setInstrumentMidiTarget(null);
+  }, []);
+
+  const handleSaveInstrumentMidi = useCallback(
+    (midi: { channel: number | null; program: number | null }) => {
+      if (!instrumentMidiTarget) {
+        setIsInstrumentMidiOpen(false);
+        return;
+      }
+
+      const targetId = instrumentMidiTarget.id;
+
+      const nextInstruments = currentSong.instruments.map(inst => {
+        if (!inst || inst.id !== targetId) {
+          return inst;
+        }
+
+        const hasChannel = typeof midi.channel === 'number' && Number.isFinite(midi.channel);
+        const hasProgram = typeof midi.program === 'number' && Number.isFinite(midi.program);
+
+        let nextMidi: Instrument['midi'] | undefined;
+        if (hasChannel || hasProgram) {
+          nextMidi = {
+            channel: hasChannel ? midi.channel : null,
+            program: hasProgram ? midi.program : null
+          };
+        } else {
+          nextMidi = undefined;
+        }
+
+        return {
+          ...inst,
+          midi: nextMidi
+        };
+      });
+
+      updateSong({ instruments: nextInstruments });
+
+      if (currentInstrument && currentInstrument.id === targetId) {
+        const updated = nextInstruments.find(inst => inst && inst.id === targetId);
+        if (updated) {
+          setCurrentInstrument(updated);
+        }
+      }
+
+      setIsInstrumentMidiOpen(false);
+      setInstrumentMidiTarget(null);
+    },
+    [instrumentMidiTarget, currentSong.instruments, updateSong, currentInstrument, setCurrentInstrument]
+  );
 
   const handleRenameInstrument = useCallback((name: string) => {
     updateInstrument({ name });
@@ -3868,7 +4043,10 @@ const App: React.FC = () => {
     inMonitor: midiInMonitor,
     outMonitor: midiOutMonitor,
     clearMonitors: clearMidiMonitors,
-    refreshDevices: refreshMidiDevices
+    refreshDevices: refreshMidiDevices,
+    sendNoteOn,
+    sendNoteOff,
+    sendProgramChange
   } = useMidi(handleMidiNoteEvent);
 
   const handleLiveMidiConfigChange = useCallback(
@@ -4513,6 +4691,7 @@ const App: React.FC = () => {
               onSelectInstrument={handleInstrumentSelect}
               onRenameInstrument={handleRenameInstrument}
               onMoveInstrument={handleMoveInstrument}
+              onOpenInstrumentMidi={handleOpenInstrumentMidi}
             />
             
             <div className="bottom-panels">
@@ -4713,6 +4892,13 @@ const App: React.FC = () => {
           onDeleteNotesAndInstrument={handleConfirmDeleteInstrumentAndNotes}
           onDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
           onCancel={handleCancelInstrumentDelete}
+        />
+
+        <InstrumentMidiModal
+          isOpen={isInstrumentMidiOpen}
+          instrument={instrumentMidiTarget}
+          onSave={handleSaveInstrumentMidi}
+          onCancel={handleCloseInstrumentMidi}
         />
 
         <TransposeModal

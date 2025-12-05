@@ -27,6 +27,10 @@ export interface Instrument {
   // envelope progression should halt at this step until a key release
   // (note-off) occurs, after which the envelopes continue.
   sustain?: number | null;
+  midi?: {
+    channel?: number | null;
+    program?: number | null;
+  };
 }
 
 export interface Note {

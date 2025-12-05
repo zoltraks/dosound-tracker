@@ -1757,10 +1757,44 @@ body {
 
 .instrument-item.focused {
   background-color: var(--bg-active);
+  box-shadow: 0 0 0 1px var(--active-border) inset;
 }
 
-.instrument-item.empty {
-  color: var(--text-dim);
+.instrument-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.instrument-midi-btn {
+  min-width: 30px;
+  height: 14px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  font-size: 8px;
+  font-family: var(--font-mono);
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  color: var(--button-text);
+  cursor: pointer;
+}
+
+.instrument-midi-btn.instrument-midi-disabled {
+  background-color: var(--bg-tertiary);
+  border-color: var(--border-color);
+  color: var(--text-secondary);
+}
+
+.instrument-midi-btn.instrument-midi-enabled {
+  background: linear-gradient(135deg, var(--midi-output-enabled-bg) 0%, var(--bg-active) 100%);
+  border-color: #f59e0b;
+  color: var(--text-primary);
+  box-shadow: var(--shadow-small), 0 0 4px rgba(245, 158, 11, 0.7);
+}
+
+.instrument-midi-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .instrument-id {

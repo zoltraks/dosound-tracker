@@ -7,3 +7,4 @@ export { DownloadModal } from './DownloadModal';
 export { InstrumentDeleteModal } from './InstrumentDeleteModal';
 export { InstrumentTypeWarningModal } from './InstrumentTypeWarningModal';
 export { MidiModal } from './MidiModal';
+export { InstrumentMidiModal } from './InstrumentMidiModal';

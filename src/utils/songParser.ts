@@ -32,6 +32,7 @@ interface InstrumentNodeYaml {
   pitch?: unknown;
   noise?: unknown;
   mode?: unknown;
+  midi?: unknown;
 }
 
 interface PatternNodeYaml {
@@ -405,6 +406,51 @@ export const parseSongFromYaml = (content: string): Song => {
       }
     }
 
+    // Optional per-instrument MIDI output settings. Accept either numeric or
+    // string values in YAML and clamp to valid MIDI ranges. Only attach a
+    // midi object when at least one of channel/program is present.
+    let midi: Instrument['midi'] | undefined;
+    const rawMidi = (nodeObj as any).midi;
+    if (rawMidi && typeof rawMidi === 'object') {
+      const midiNode = rawMidi as { channel?: unknown; program?: unknown };
+
+      let channel: number | null = null;
+      const rawChannel = midiNode.channel;
+      if (typeof rawChannel === 'number' && Number.isFinite(rawChannel)) {
+        const clamped = Math.max(1, Math.min(16, Math.floor(rawChannel)));
+        channel = clamped;
+      } else if (typeof rawChannel === 'string') {
+        const trimmed = rawChannel.trim();
+        if (trimmed) {
+          const parsed = Number(trimmed);
+          if (Number.isFinite(parsed)) {
+            const clamped = Math.max(1, Math.min(16, Math.floor(parsed)));
+            channel = clamped;
+          }
+        }
+      }
+
+      let program: number | null = null;
+      const rawProgram = midiNode.program;
+      if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
+        const clamped = Math.max(0, Math.min(127, Math.floor(rawProgram)));
+        program = clamped;
+      } else if (typeof rawProgram === 'string') {
+        const trimmed = rawProgram.trim();
+        if (trimmed) {
+          const parsed = Number(trimmed);
+          if (Number.isFinite(parsed)) {
+            const clamped = Math.max(0, Math.min(127, Math.floor(parsed)));
+            program = clamped;
+          }
+        }
+      }
+
+      if (channel !== null || program !== null) {
+        midi = { channel, program };
+      }
+    }
+
     for (let i = instruments.length; i <= slotIndex; i++) {
       if (!instruments[i]) {
         const slotId = i.toString(16).padStart(2, '0').toUpperCase();
@@ -434,6 +480,7 @@ export const parseSongFromYaml = (content: string): Song => {
       base,
       octave,
       sustain: sustain,
+      ...(midi ? { midi } : {}),
     };
   });
 

@@ -136,3 +136,62 @@ When "Ignore input volume" is set, then consider that volume for a note from MID
 When "Ignore output volume" is set, then if any message for a note to MIDI output should be sent, it will always be sent with maximum volume.
 
 ---
+
+Extend "Instrument" panel by adding a small "MIDI" button to each instrument on the list.
+This button should have the same height as navigation buttons "Move instrument down" and "Move instrument up" and should be located on the right side before navigation buttons with a small gap before them.
+This button should have different color when instrument has MIDI output enabled or not.
+When user click "MIDI" button then modal window should be opened to allow user to enable Midi Ouput by selecting output channel and optionally program number.
+This information should be stored in song YAML data but not in instrument YAML data as it's a part of project, not instrument itself.
+Put midi settings for each instrument in the object with two properties: "channel" and "program" as the last key like in the following example:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 64
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      steps:
+        - note: "C-3"
+          instrument: "00"
+    - number: "02"
+      steps: []
+    - number: "03"
+      steps: []
+  instrument:
+    - number: "00"
+      name: Simple
+      volume: [0]
+      midi:
+        channel: 12
+        program: 32
+```
+
+Don't write "midi" object if instrument has no channel nor program number set.
+
+When playing an instrument either by playback from keyboard or on screen piano keyboard or while playing pattern or song, when MIDI is enabled and output device is set, then for each instrument that has MIDI settings send MIDI message. Track program number changes for each channel and if instrument has program number set, then send program change message too while playing.
+When "Ignore output volume" setting is enabled in MIDI configuration then always send maximum volume.
+If not, then translate volume value from the step - if unknown, send maximum value.
+While preview, send note off at the end of volume envelope or if instrument has sustain then when key is released.
+While playing a song or pattern, send note off when there is note off in a step.
+Track output messages in log when in debug mode and in MIDI configuration window too the same way as MIDI input messages are logged.
+
+---
+
+When focused on Instrument panel add keyboard shortcut Ctrl+M to show instrument MIDI options without the need to click the button.
+
+MIDI instrument option dialog should also react on keys Esc to cancel and Enter to approve settings (save) and close the window.
+Enable navigation also with arrow keys.
+
+---
+
+Don't route MIDI input messages automatically to MIDI output.
+Route them only if a selected instrument that receives MIDI input messages has MIDI settings set and you should send message obeying instrument MIDI settings (channel and optionally program number).
+
+---

@@ -13,6 +13,7 @@ interface InstrumentListPanelProps {
   onSelectInstrument: (instrument: Instrument) => void;
   onRenameInstrument: (name: string) => void;
   onMoveInstrument: (index: number, direction: 'up' | 'down') => void;
+  onOpenInstrumentMidi: (instrument: Instrument) => void;
 }
 
 export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
@@ -22,7 +23,8 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   setActiveSection,
   onSelectInstrument,
   onRenameInstrument,
-  onMoveInstrument
+  onMoveInstrument,
+  onOpenInstrumentMidi
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -196,6 +198,15 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
           {Array.from({ length: visibleSlotCount }, (_, slotIndex) => {
             const instrument = instruments[slotIndex];
             const isCurrent = slotIndex === currentIndex;
+            const midi = instrument && instrument.midi;
+            const hasMidiChannel =
+              !!midi && typeof midi.channel === 'number' && Number.isFinite(midi.channel);
+            const hasMidiProgram =
+              !!midi && typeof midi.program === 'number' && Number.isFinite(midi.program);
+            const isMidiEnabled = hasMidiChannel || hasMidiProgram;
+
+            const midiButtonClassNames = ['instrument-midi-btn'];
+            midiButtonClassNames.push(isMidiEnabled ? 'instrument-midi-enabled' : 'instrument-midi-disabled');
             const displayName =
               isCurrent
                 ? currentInstrument.name
@@ -236,9 +247,23 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                   )}
                 </span>
                 <div
-                  className="playlist-move-buttons"
+                  className="instrument-actions"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <button
+                    type="button"
+                    className={midiButtonClassNames.join(' ')}
+                    onClick={() => {
+                      const instForSlot = getInstrumentForSlot(slotIndex);
+                      handleInstrumentClick(slotIndex);
+                      onOpenInstrumentMidi(instForSlot);
+                    }}
+                    aria-label="Configure MIDI output for instrument"
+                    disabled={!instrument}
+                  >
+                    MIDI
+                  </button>
+                  <div className="playlist-move-buttons">
                   <button
                     type="button"
                     onClick={() => onMoveInstrument(slotIndex, 'down')}
@@ -255,6 +280,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                   >
                     <ChevronUp className="h-3 w-3 rotate-90" />
                   </button>
+                  </div>
                 </div>
               </div>
             );

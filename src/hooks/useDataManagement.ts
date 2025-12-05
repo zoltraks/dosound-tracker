@@ -389,6 +389,31 @@ export const useDataManagement = () => {
           instrumentNode.sustain = Math.floor(sustain);
         }
 
+        const midi = inst.midi;
+        if (midi) {
+          const midiNode: { channel?: number; program?: number } = {};
+          let hasChannel = false;
+          let hasProgram = false;
+
+          const rawChannel = midi.channel;
+          if (typeof rawChannel === 'number' && Number.isFinite(rawChannel)) {
+            const clamped = Math.max(1, Math.min(16, Math.floor(rawChannel)));
+            midiNode.channel = clamped;
+            hasChannel = true;
+          }
+
+          const rawProgram = midi.program;
+          if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
+            const clamped = Math.max(0, Math.min(127, Math.floor(rawProgram)));
+            midiNode.program = clamped;
+            hasProgram = true;
+          }
+
+          if (hasChannel || hasProgram) {
+            instrumentNode.midi = midiNode;
+          }
+        }
+
         return instrumentNode;
       });
 
