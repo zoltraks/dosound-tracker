@@ -14,12 +14,23 @@ try {
   const current = typeof pkg.version === 'string' ? pkg.version : '0.0.0';
   const parts = current.split('.').map((part) => parseInt(part, 10));
 
-  const major = Number.isFinite(parts[0]) ? parts[0] : 0;
-  const minor = Number.isFinite(parts[1]) ? parts[1] : 0;
-  const patch = Number.isFinite(parts[2]) ? parts[2] : 0;
+  let major = Number.isFinite(parts[0]) ? parts[0] : 0;
+  let minor = Number.isFinite(parts[1]) ? parts[1] : 0;
+  let patch = Number.isFinite(parts[2]) ? parts[2] : 0;
 
-  const nextPatch = patch + 1;
-  const nextVersion = `${major}.${minor}.${nextPatch}`;
+  patch += 1;
+
+  if (patch > 9) {
+    patch = 0;
+    minor += 1;
+  }
+
+  if (minor > 9) {
+    minor = 0;
+    major += 1;
+  }
+
+  const nextVersion = `${major}.${minor}.${patch}`;
 
   pkg.version = nextVersion;
 
