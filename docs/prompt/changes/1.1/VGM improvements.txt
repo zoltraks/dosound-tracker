@@ -1,0 +1,1 @@
+When exporting VGM you should write track title from the song title and composer from song author and release from song year.

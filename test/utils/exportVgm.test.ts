@@ -5,6 +5,26 @@ import { exportSongToVgm } from '../../src/utils/assemblyExport';
 import { YM_CLOCK } from '../../src/synth/YM2149';
 import { VBLANK_RATE } from '../../src/synth/SoundDriver';
 
+function readUtf16LeString(bytes: Uint8Array, offset: number): { value: string; nextOffset: number } {
+  let value = '';
+  let pos = offset;
+
+  while (pos + 1 < bytes.length) {
+    const lo = bytes[pos];
+    const hi = bytes[pos + 1];
+
+    if (lo === 0 && hi === 0) {
+      pos += 2;
+      break;
+    }
+
+    value += String.fromCharCode(lo | (hi << 8));
+    pos += 2;
+  }
+
+  return { value, nextOffset: pos };
+}
+
 describe('exportSongToVgm', () => {
   it('exports valid VGM data for the default song YAML', () => {
     const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
@@ -65,8 +85,47 @@ describe('exportSongToVgm', () => {
     }
     expect(hasAyWrite).toBe(true);
 
+    const gd3OffsetRel = view.getUint32(0x14, true);
+    expect(gd3OffsetRel).toBeGreaterThan(0);
+
+    const gd3Start = 0x14 + gd3OffsetRel;
+    expect(gd3Start).toBeGreaterThan(dataStart);
+
     // The stream should end with 0x66 (end of sound data)
-    expect(bytes[bytes.length - 1]).toBe(0x66);
+    expect(bytes[gd3Start - 1]).toBe(0x66);
+
+    expect(bytes[gd3Start]).toBe(0x47);
+    expect(bytes[gd3Start + 1]).toBe(0x64);
+    expect(bytes[gd3Start + 2]).toBe(0x33);
+    expect(bytes[gd3Start + 3]).toBe(0x20);
+
+    const gd3Version = view.getUint32(gd3Start + 4, true);
+    expect(gd3Version).toBe(0x00000100);
+
+    const gd3Length = view.getUint32(gd3Start + 8, true);
+    const gd3DataStart = gd3Start + 12;
+    expect(gd3DataStart + gd3Length).toBe(bytes.length);
+
+    let pos = gd3DataStart;
+    const trackNameEn = readUtf16LeString(bytes, pos);
+    pos = trackNameEn.nextOffset;
+
+    pos = readUtf16LeString(bytes, pos).nextOffset;
+    pos = readUtf16LeString(bytes, pos).nextOffset;
+    pos = readUtf16LeString(bytes, pos).nextOffset;
+    pos = readUtf16LeString(bytes, pos).nextOffset;
+    pos = readUtf16LeString(bytes, pos).nextOffset;
+
+    const authorEn = readUtf16LeString(bytes, pos);
+    pos = authorEn.nextOffset;
+
+    pos = readUtf16LeString(bytes, pos).nextOffset;
+
+    const releaseDate = readUtf16LeString(bytes, pos);
+
+    expect(trackNameEn.value).toBe(song.title);
+    expect(authorEn.value).toBe(song.author);
+    expect(releaseDate.value).toBe(String(song.year));
   });
 
   it('exports valid VGM data for a noise-only song without loop', () => {
@@ -106,12 +165,19 @@ describe('exportSongToVgm', () => {
     }
     expect(hasNoiseWrite).toBe(true);
 
+    const gd3OffsetRel = view.getUint32(0x14, true);
+    let gd3Start = bytes.length;
+    if (gd3OffsetRel > 0) {
+      gd3Start = 0x14 + gd3OffsetRel;
+      expect(gd3Start).toBeGreaterThan(dataStart);
+    }
+
+    // The stream should end with 0x66 (end of sound data)
+    expect(bytes[gd3Start - 1]).toBe(0x66);
+
     // Total samples should still be consistent and > 0
     const headerTotalSamples = view.getUint32(0x18, true);
     expect(headerTotalSamples).toBe(totalSamples);
     expect(totalSamples).toBeGreaterThan(0);
-
-    // The stream should end with 0x66 (end of sound data)
-    expect(bytes[bytes.length - 1]).toBe(0x66);
   });
 });

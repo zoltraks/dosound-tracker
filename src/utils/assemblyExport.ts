@@ -1407,6 +1407,64 @@ export interface VgmExportResult {
   totalSamples: number;
 }
 
+function encodeUtf16LeNullTerminated(value: string): number[] {
+  const bytes: number[] = [];
+  const text = value || '';
+
+  for (let i = 0; i < text.length; i++) {
+    const code = text.charCodeAt(i);
+    bytes.push(code & 0xff, (code >>> 8) & 0xff);
+  }
+
+  bytes.push(0x00, 0x00);
+  return bytes;
+}
+
+function buildGd3Tag(song: Song): Uint8Array | null {
+  if (!song) {
+    return null;
+  }
+
+  const title = (song.title || '').trim();
+  const author = (song.author || '').trim();
+  const yearValue =
+    typeof song.year === 'number' && Number.isFinite(song.year) ? song.year : null;
+  const release = yearValue !== null ? String(yearValue) : '';
+
+  const fields: string[] = [
+    title,
+    '',
+    '',
+    '',
+    '',
+    '',
+    author,
+    '',
+    release,
+    '',
+    ''
+  ];
+
+  if (!title && !author && !release) {
+    return null;
+  }
+
+  const payloadBytes: number[] = [];
+  for (const field of fields) {
+    payloadBytes.push(...encodeUtf16LeNullTerminated(field));
+  }
+
+  const length = payloadBytes.length;
+  const bytes: number[] = [];
+
+  bytes.push(0x47, 0x64, 0x33, 0x20);
+  bytes.push(0x00, 0x01, 0x00, 0x00);
+  bytes.push(length & 0xff, (length >>> 8) & 0xff, (length >>> 16) & 0xff, (length >>> 24) & 0xff);
+  bytes.push(...payloadBytes);
+
+  return new Uint8Array(bytes);
+}
+
 export function exportSongToVgm(song: Song): VgmExportResult {
   const ticksPerRow = song.speed || 6;
   const lineCount = song.patternLength || 64;
@@ -1657,7 +1715,11 @@ export function exportSongToVgm(song: Song): VgmExportResult {
 
   const dataOffset = 0x100;
   const headerSize = 0x100;
-  const fileSize = headerSize + commands.length;
+
+  const gd3Tag = buildGd3Tag(song);
+  const gd3Length = gd3Tag ? gd3Tag.length : 0;
+
+  const fileSize = headerSize + commands.length + gd3Length;
   const eofOffset = fileSize - 4;
 
   const header = new Uint8Array(headerSize);
@@ -1676,6 +1738,14 @@ export function exportSongToVgm(song: Song): VgmExportResult {
   writeUint32LE(0x04, eofOffset);
   writeUint32LE(0x08, 0x00000171);
   writeUint32LE(0x18, totalSamples);
+
+  if (gd3Tag && gd3Length > 0) {
+    const gd3Offset = headerSize + commands.length;
+    const gd3OffsetRel = gd3Offset - 0x14;
+    writeUint32LE(0x14, gd3OffsetRel);
+  } else {
+    writeUint32LE(0x14, 0);
+  }
 
   if (loopCommandOffset >= 0 && loopSampleOffset > 0 && totalSamples > loopSampleOffset) {
     const loopDataOffset = dataOffset + loopCommandOffset;
@@ -1697,6 +1767,10 @@ export function exportSongToVgm(song: Song): VgmExportResult {
   const fileBytes = new Uint8Array(fileSize);
   fileBytes.set(header, 0);
   fileBytes.set(new Uint8Array(commands), headerSize);
+
+  if (gd3Tag && gd3Length > 0) {
+    fileBytes.set(gd3Tag, headerSize + commands.length);
+  }
 
   const buffer = fileBytes.buffer;
 

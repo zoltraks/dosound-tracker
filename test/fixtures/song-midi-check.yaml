@@ -1,0 +1,41 @@
+song:
+  title: MIDI check
+  year: 2025
+  speed: 6
+  length: 16
+  loop: 0
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      step:
+        - note: "C-4"
+          instrument: "00"
+          volume: 14
+        - space: 7
+        - note: "OFF"
+    - number: "02"
+    - number: "03"
+      step:
+        - note: "C-3"
+          instrument: "01"
+          volume: 4
+        - space: 3
+        - note: "OFF"
+  instrument:
+    - number: "00"
+      base: "C-3"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 0
+      midi:
+        channel: 1
+        program: 1
+    - number: "01"
+      base: "C-3"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 0
