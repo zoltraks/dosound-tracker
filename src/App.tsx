@@ -24,10 +24,11 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { DumpPanel } from './components/DumpPanel';
 import { EQPanel } from './components/EQPanel';
 import { PianoKeyboard } from './components/PianoKeyboard';
-import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
+import { exportInstrumentToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
 import { ModalContainer } from './components/ModalContainer';
+import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
 import './App.css';
@@ -86,8 +87,6 @@ const App: React.FC = () => {
   const [transposeAmount, setTransposeAmount] = useState<number>(0);
   const [transposeAmountInput, setTransposeAmountInput] = useState<string>('0');
   const [transposeSummary, setTransposeSummary] = useState('');
-  const [soundExportSummary, setSoundExportSummary] = useState('');
-  const [dumpExportSummary, setDumpExportSummary] = useState('');
   const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
   const [midiLoadError, setMidiLoadError] = useState('');
   const [midiCopySummary, setMidiCopySummary] = useState('');
@@ -180,6 +179,18 @@ const App: React.FC = () => {
     renumberSong,
     isSongDirty
   } = useDataManagement();
+
+  const {
+    soundExportSummary,
+    dumpExportSummary,
+    handleExportData,
+    handleExportBin,
+    handleExportVgm,
+    handleExportWav,
+    handleExportDump,
+    handleCloseSoundExportSummary,
+    handleCloseDumpExportSummary,
+  } = useFileOperations({ song: currentSong, isComplexDumpMode });
 
   const isNavigationSuspended =
     !!songError ||
@@ -1735,104 +1746,6 @@ const App: React.FC = () => {
   const handleCloseChangelog = useCallback(() => {
     setIsChangelogOpen(false);
   }, []);
-
-  const handleExportData = useCallback(() => {
-    try {
-      const assemblyContent = exportToAssembly(currentSong, isComplexDumpMode);
-      const filename = `${currentSong.title.replace(/[^a-zA-Z0-9]/g, '_')}.s`;
-      downloadAssemblyFile(assemblyContent, filename);
-    } catch (error) {
-      console.error('Export failed:', error);
-      // Could add user notification here
-    }
-  }, [currentSong, isComplexDumpMode]);
-
-  const handleExportBin = useCallback(() => {
-    try {
-      const bytes = exportToBinary(currentSong, isComplexDumpMode);
-      const filename = `${currentSong.title.replace(/[^a-zA-Z0-9]/g, '_')}.bin`;
-      downloadBinaryFile(bytes, filename);
-    } catch (error) {
-      console.error('Binary export failed:', error);
-    }
-  }, [currentSong, isComplexDumpMode]);
-
-  const handleExportVgm = useCallback(() => {
-    try {
-      const result = exportSongToVgm(currentSong);
-      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}.vgm`;
-      downloadVgmFile(result.buffer, filename);
-    } catch (error) {
-      console.error('VGM export failed:', error);
-    }
-  }, [currentSong]);
-
-  const handleExportWav = useCallback(() => {
-    try {
-      const result = exportSongToWav(currentSong);
-      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}.wav`;
-
-      downloadWavFile(result.buffer, filename);
-
-      const lines: string[] = [];
-      lines.push('WAV export completed.');
-      lines.push('');
-      lines.push(`File: ${filename}`);
-      lines.push(`Sample rate: ${result.sampleRate} Hz`);
-      lines.push('Channels: 1 (mono)');
-      lines.push('Bit depth: 16-bit');
-      lines.push(`Total samples: ${result.totalSamples}`);
-      lines.push(`Duration: ${result.durationSeconds.toFixed(2)} seconds`);
-
-      if (result.totalSamples === 0) {
-        lines.push('');
-        lines.push('Warning: song produced 0 samples (empty playlist or no active notes).');
-      }
-
-      setSoundExportSummary(lines.join('\n'));
-    } catch (error) {
-      console.error('WAV export failed:', error);
-      const lines: string[] = [];
-      lines.push('WAV export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setSoundExportSummary(lines.join('\n'));
-    }
-  }, [currentSong]);
-
-  const handleExportDump = useCallback(() => {
-    try {
-      const { content, cycleCount } = exportSongRegisterDump(currentSong);
-      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}_dump.s`;
-
-      downloadAssemblyFile(content, filename);
-
-      const lines: string[] = [];
-      lines.push('Dump export completed.');
-      lines.push('');
-      lines.push(`File: ${filename}`);
-      lines.push(`Cycles: ${cycleCount}`);
-
-      if (cycleCount === 0) {
-        lines.push('');
-        lines.push('Warning: song produced 0 cycles (empty playlist or no active notes).');
-      }
-
-      setDumpExportSummary(lines.join('\n'));
-    } catch (error) {
-      console.error('Dump export failed:', error);
-      const lines: string[] = [];
-      lines.push('Dump export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setDumpExportSummary(lines.join('\n'));
-    }
-  }, [currentSong]);
 
   const handleToggleDumpMode = useCallback(() => {
     setIsComplexDumpMode(prev => !prev);
@@ -4021,14 +3934,6 @@ const App: React.FC = () => {
 
   const handleCloseTransposeSummary = useCallback(() => {
     setTransposeSummary('');
-  }, []);
-
-  const handleCloseSoundExportSummary = useCallback(() => {
-    setSoundExportSummary('');
-  }, []);
-
-  const handleCloseDumpExportSummary = useCallback(() => {
-    setDumpExportSummary('');
   }, []);
 
   const handleCloseInstrumentOperationSummary = useCallback(() => {
