@@ -2249,7 +2249,7 @@ const App: React.FC = () => {
       }
       flushRun();
 
-      const exportData = { steps: compressedSteps };
+      const exportData = { step: compressedSteps };
       let yamlContent = yaml.dump(exportData, {
         indent: 2,
         lineWidth: -1,
@@ -2302,14 +2302,14 @@ const App: React.FC = () => {
         return;
       }
 
-      const stepsNode =
-        parsed && typeof parsed === 'object' ? (parsed as { steps?: unknown }).steps ?? null : null;
-      if (!Array.isArray(stepsNode)) {
-        setTrackClipboardError('Track clipboard data is invalid.\n\nExpected YAML with root "steps" list.');
+      const stepNode =
+        parsed && typeof parsed === 'object' ? (parsed as { step?: unknown }).step ?? null : null;
+      if (!Array.isArray(stepNode)) {
+        setTrackClipboardError('Track clipboard data is invalid.\n\nExpected YAML with root "step" list.');
         return;
       }
 
-      const rawSteps = stepsNode as unknown[];
+      const rawSteps = stepNode as unknown[];
       const expandedSteps: TrackClipboardStep[] = [];
 
       for (const node of rawSteps) {

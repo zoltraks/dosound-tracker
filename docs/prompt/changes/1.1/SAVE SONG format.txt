@@ -145,3 +145,7 @@ Switch from "off": true to note: "OFF" in track clipboard YAML too.
 Drop compatibility with existing clipboard data that uses off: true.
 
 ---
+
+Change the name "steps" in track clipboard YAML to just "step" and don't maintain compatibility with previosly used "steps".
+
+---
