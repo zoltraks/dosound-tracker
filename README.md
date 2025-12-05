@@ -84,6 +84,12 @@ For a manual for composers and assembly wizards, see:
 
 - [MANUAL.md](docs/MANUAL.md)
 
+### Architecture Guidelines
+
+For guidelines on refactoring processes and architectural decisions, see:
+
+- [ARCHITECT.md](docs/ARCHITECT.md)
+
 ### Musical Workflow
 
 - **Real-time audio playback** with sub-millisecond timing
