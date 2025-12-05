@@ -7,6 +7,7 @@ import { useAudioContext } from './hooks/useAudioContext';
 import { useModalManager } from './hooks/useModalManager';
 import { useMidiHandling } from './hooks/useMidiHandling';
 import { useTrackOperations } from './hooks/useTrackOperations';
+import { usePlaylistOperations } from './hooks/usePlaylistOperations';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
@@ -1285,207 +1286,25 @@ const App: React.FC = () => {
     updateSong({ patterns: updatedPatterns });
   }, [currentSong.patterns, updateSong]);
 
-  const handlePlaylistChange = useCallback((newPlaylist: Song['playlist']) => {
-    updateSong({ playlist: newPlaylist });
-  }, [updateSong]);
 
-  const generateUniquePatternId = useCallback(() => {
-    const existingIds = currentSong.patterns.map(p => p.id);
-    let index = currentSong.patterns.length;
-    let patternId: string;
-    do {
-      patternId = index.toString(16).padStart(2, '0').toUpperCase();
-      index++;
-    } while (existingIds.includes(patternId));
-    return patternId;
-  }, [currentSong.patterns]);
-
-  const handleCreatePatternAt = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
-    if (lineIndex < 0 || lineIndex >= currentSong.playlist.length) {
-      return;
-    }
-
-    const patternId = generateUniquePatternId();
-    createNewPattern(patternId);
-
-    const newPlaylist = [...currentSong.playlist];
-    const entry = { ...newPlaylist[lineIndex] };
-
-    switch (track) {
-      case 'A':
-        entry.trackA = patternId;
-        break;
-      case 'B':
-        entry.trackB = patternId;
-        break;
-      case 'C':
-        entry.trackC = patternId;
-        break;
-    }
-
-    newPlaylist[lineIndex] = entry;
-    updateSong({ playlist: newPlaylist });
-  }, [currentSong.playlist, createNewPattern, updateSong, generateUniquePatternId]);
-
-  const handleCreateNewTrack = useCallback(() => {
-    const playlist = currentSong.playlist.length > 0
-      ? [...currentSong.playlist]
-      : [{ trackA: '--', trackB: '--', trackC: '--' }];
-
-    const targetLine = Math.max(0, Math.min(sequencerState.currentPattern, playlist.length - 1));
-    const patternId = generateUniquePatternId();
-    createNewPattern(patternId);
-
-    const entry = { ...playlist[targetLine] };
-    switch (targetTrackId) {
-      case 'A':
-        entry.trackA = patternId;
-        break;
-      case 'B':
-        entry.trackB = patternId;
-        break;
-      case 'C':
-        entry.trackC = patternId;
-        break;
-    }
-
-    playlist[targetLine] = entry;
-    updateSong({ playlist });
-
-    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
-    setActiveSection(section);
-    setSharedCurrentLine(0);
-    setPosition(targetLine, 0, 0);
-  }, [currentSong.playlist, sequencerState.currentPattern, targetTrackId, generateUniquePatternId, createNewPattern, updateSong, setActiveSection, setSharedCurrentLine, setPosition]);
-
-  const handleAddLine = useCallback(() => {
-    const newPlaylist = [...currentSong.playlist];
-    // Add a new empty playlist entry with all tracks set to '--'
-    newPlaylist.push({
-      trackA: '--',
-      trackB: '--', 
-      trackC: '--'
-    });
-    updateSong({ playlist: newPlaylist });
-
-    const newIndex = Math.max(0, newPlaylist.length - 1);
-    setPosition(newIndex, 0, 0);
-    setActiveSection('playlist');
-  }, [currentSong.playlist, updateSong, setPosition, setActiveSection]);
-
-  const handleCloneLine = useCallback(() => {
-    const length = currentSong.playlist.length;
-    if (length === 0) {
-      return;
-    }
-
-    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, length - 1));
-    const sourceEntry = currentSong.playlist[currentIndex];
-    const newPlaylist = [...currentSong.playlist];
-    const clonedEntry = { ...sourceEntry };
-    const insertIndex = currentIndex + 1;
-
-    newPlaylist.splice(insertIndex, 0, clonedEntry);
-    updateSong({ playlist: newPlaylist });
-    setPosition(insertIndex, 0, 0);
-  }, [currentSong.playlist, sequencerState.currentPattern, updateSong, setPosition]);
-
-  const handleDeleteLine = useCallback(() => {
-    const length = currentSong.playlist.length;
-    if (length === 0) {
-      return;
-    }
-
-    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, length - 1));
-    const newPlaylist = [...currentSong.playlist];
-    newPlaylist.splice(currentIndex, 1);
-    updateSong({ playlist: newPlaylist });
-
-    const newLength = newPlaylist.length;
-    if (newLength === 0) {
-      setPosition(0, 0, 0);
-      return;
-    }
-
-    const newIndex = Math.min(currentIndex, newLength - 1);
-    setPosition(newIndex, 0, 0);
-  }, [currentSong.playlist, sequencerState.currentPattern, updateSong, setPosition]);
-
-  const handleDuplicateLine = useCallback(() => {
-    const playlist = currentSong.playlist;
-    const patterns = currentSong.patterns;
-    const length = playlist.length;
-    if (length === 0) {
-      return;
-    }
-
-    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, length - 1));
-    const sourceEntry = playlist[currentIndex];
-
-    const newPlaylist = [...playlist];
-    const newEntry = { ...sourceEntry };
-    const newPatterns = [...patterns];
-
-    const existingIds = new Set(patterns.map(p => p.id));
-    let nextIndex = patterns.length;
-
-    const allocatePatternId = () => {
-      // Generate hex IDs like existing patterns (00, 01, 02, ...)
-      // Ensure the ID is unique across all patterns, including newly-added ones.
-      // eslint-disable-next-line no-constant-condition
-      while (true) {
-        const id = nextIndex.toString(16).padStart(2, '0').toUpperCase();
-        nextIndex++;
-        if (!existingIds.has(id)) {
-          existingIds.add(id);
-          return id;
-        }
-      }
-    };
-
-    const duplicateTrack = (key: 'trackA' | 'trackB' | 'trackC') => {
-      const patternId = sourceEntry[key];
-      if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
-        newEntry[key] = patternId;
-        return;
-      }
-
-      const original = patterns.find(p => p.id === patternId);
-      if (!original) {
-        newEntry[key] = patternId;
-        return;
-      }
-
-      const newId = allocatePatternId();
-      const newLines = original.lines.map(line => ({
-        trackA: line.trackA ? { ...line.trackA } : null,
-        trackB: line.trackB ? { ...line.trackB } : null,
-        trackC: line.trackC ? { ...line.trackC } : null
-      }));
-
-      newPatterns.push({
-        id: newId,
-        name: original.name,
-        lines: newLines
-      });
-
-      newEntry[key] = newId;
-    };
-
-    duplicateTrack('trackA');
-    duplicateTrack('trackB');
-    duplicateTrack('trackC');
-
-    const insertIndex = currentIndex + 1;
-    newPlaylist.splice(insertIndex, 0, newEntry);
-
-    updateSong({
-      playlist: newPlaylist,
-      patterns: newPatterns
-    });
-
-    setPosition(insertIndex, 0, 0);
-  }, [currentSong.playlist, currentSong.patterns, sequencerState.currentPattern, updateSong, setPosition]);
+  const {
+    handlePlaylistChange,
+    handleCreatePatternAt,
+    handleCreateNewTrack,
+    handleAddLine,
+    handleCloneLine,
+    handleDeleteLine,
+    handleDuplicateLine,
+  } = usePlaylistOperations({
+    song: currentSong,
+    targetTrackId,
+    currentPatternIndex: sequencerState.currentPattern,
+    createNewPattern,
+    updateSong,
+    setActiveSection,
+    setSharedCurrentLine,
+    setPosition,
+  });
 
   const handleShowAbout = useCallback(() => {
     setIsAboutOpen(true);
