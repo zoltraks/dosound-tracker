@@ -67,6 +67,10 @@ interface RawMidiConfig {
   ignoreOutputVolume?: boolean;
 }
 
+type NavigatorWithMidi = Navigator & {
+  requestMIDIAccess?: (options?: { sysex: boolean }) => Promise<MIDIAccess>;
+};
+
 export function useMidi(
   onNoteEvent: (event: MidiNoteEvent) => void,
   options?: { enableMonitors?: boolean }
@@ -116,10 +120,10 @@ export function useMidi(
   const [inMonitor, setInMonitor] = useState<MidiMonitorEntry[]>([]);
   const [outMonitor, setOutMonitor] = useState<MidiMonitorEntry[]>([]);
 
-  const midiAccessRef = useRef<any | null>(null);
-  const currentInputRef = useRef<any | null>(null);
-  const currentOutputRef = useRef<any | null>(null);
-  const currentInputHandlerRef = useRef<((event: any) => void) | null>(null);
+  const midiAccessRef = useRef<MIDIAccess | null>(null);
+  const currentInputRef = useRef<MIDIInput | null>(null);
+  const currentOutputRef = useRef<MIDIOutput | null>(null);
+  const currentInputHandlerRef = useRef<((event: MIDIMessageEvent) => void) | null>(null);
   const nextEntryIdRef = useRef<number>(1);
 
   const formatTime = () => {
@@ -171,13 +175,16 @@ export function useMidi(
     const outputs: MidiDeviceInfo[] = [];
 
     try {
-      const inputIterator = (access.inputs && access.inputs.values && access.inputs.values()) || null;
+      const inputIterator: IterableIterator<MIDIInput> | null =
+        access.inputs && typeof access.inputs.values === 'function'
+          ? access.inputs.values()
+          : null;
       if (inputIterator) {
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const result = inputIterator.next();
           if (result.done) break;
-          const input = result.value as any;
+          const input = result.value;
           if (input && typeof input.id === 'string') {
             inputs.push({
               id: input.id,
@@ -189,13 +196,16 @@ export function useMidi(
         }
       }
 
-      const outputIterator = (access.outputs && access.outputs.values && access.outputs.values()) || null;
+      const outputIterator: IterableIterator<MIDIOutput> | null =
+        access.outputs && typeof access.outputs.values === 'function'
+          ? access.outputs.values()
+          : null;
       if (outputIterator) {
         // eslint-disable-next-line no-constant-condition
         while (true) {
           const result = outputIterator.next();
           if (result.done) break;
-          const output = result.value as any;
+          const output = result.value;
           if (output && typeof output.id === 'string') {
             outputs.push({
               id: output.id,
@@ -224,13 +234,13 @@ export function useMidi(
       return;
     }
 
-    const nav: any = navigator as any;
+    const nav = navigator as NavigatorWithMidi;
     if (typeof nav.requestMIDIAccess !== 'function') {
       return;
     }
 
     nav.requestMIDIAccess({ sysex: false })
-      .then((newAccess: any) => {
+      .then(newAccess => {
         midiAccessRef.current = newAccess;
         setIsSupported(true);
         setAccessError(null);
@@ -244,9 +254,10 @@ export function useMidi(
           // ignore onstatechange errors
         }
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         setIsSupported(false);
-        setAccessError(error instanceof Error ? error.message : String(error));
+        const message = error instanceof Error ? error.message : String(error);
+        setAccessError(message);
         setDevices({ inputs: [], outputs: [] });
       });
   }, [scanDevices]);
@@ -278,12 +289,12 @@ export function useMidi(
     [devices.inputs, devices.outputs]
   );
 
-  const handleMidiMessage = useCallback((event: any) => {
+  const handleMidiMessage = useCallback((event: MIDIMessageEvent) => {
     if (!event || !event.data || !(event.data instanceof Uint8Array)) {
       return;
     }
 
-    const data: number[] = Array.from(event.data as Uint8Array);
+    const data: number[] = Array.from(event.data);
     if (data.length === 0) return;
 
     const status = data[0] | 0;
@@ -312,7 +323,11 @@ export function useMidi(
     let noteLabel = '';
     let value: number | null = null;
 
-    const deviceId: string = event?.target?.id || config.inputId || '';
+    let deviceId: string = config.inputId || '';
+    const target = event.target as MIDIInput | null;
+    if (target && typeof target.id === 'string') {
+      deviceId = target.id;
+    }
     const deviceName = resolveDeviceName(deviceId || null, 'MIDI In');
 
     if (command === 0x80 || (command === 0x90 && data2 === 0)) {
@@ -707,7 +722,7 @@ export function useMidi(
       return;
     }
 
-    const nav: any = navigator as any;
+    const nav = navigator as NavigatorWithMidi;
     if (typeof nav.requestMIDIAccess !== 'function') {
       setIsSupported(false);
       setAccessError('Web MIDI API is not supported in this browser.');
@@ -717,7 +732,7 @@ export function useMidi(
     let cancelled = false;
 
     nav.requestMIDIAccess({ sysex: false })
-      .then((access: any) => {
+      .then(access => {
         if (cancelled) return;
         midiAccessRef.current = access;
         setIsSupported(true);
@@ -732,10 +747,11 @@ export function useMidi(
           // ignore onstatechange errors
         }
       })
-      .catch((error: any) => {
+      .catch((error: unknown) => {
         if (cancelled) return;
         setIsSupported(false);
-        setAccessError(error instanceof Error ? error.message : String(error));
+        const message = error instanceof Error ? error.message : String(error);
+        setAccessError(message);
       });
 
     return () => {
@@ -751,7 +767,7 @@ export function useMidi(
           }
         } else if ('onmidimessage' in input) {
           try {
-            (input as any).onmidimessage = null;
+            (input as MIDIInput).onmidimessage = null;
           } catch {
             // ignore
           }
@@ -788,12 +804,13 @@ export function useMidi(
       return;
     }
 
-    let nextInput: any | null = null;
+    let nextInput: MIDIInput | null = null;
     if (config.inputEnabled && config.inputId) {
       try {
-        nextInput = access.inputs && typeof access.inputs.get === 'function'
+        const rawInput = access.inputs && typeof access.inputs.get === 'function'
           ? access.inputs.get(config.inputId)
           : null;
+        nextInput = rawInput ?? null;
       } catch {
         nextInput = null;
       }
@@ -812,7 +829,7 @@ export function useMidi(
         }
       } else if ('onmidimessage' in previousInput) {
         try {
-          (previousInput as any).onmidimessage = null;
+          (previousInput as MIDIInput).onmidimessage = null;
         } catch {
           // ignore
         }
@@ -856,7 +873,7 @@ export function useMidi(
         if (typeof nextInput.addEventListener === 'function') {
           nextInput.addEventListener('midimessage', handleMidiMessage);
         } else {
-          (nextInput as any).onmidimessage = handleMidiMessage;
+          (nextInput as MIDIInput).onmidimessage = handleMidiMessage;
         }
         currentInputHandlerRef.current = handleMidiMessage;
       } catch {
@@ -884,12 +901,13 @@ export function useMidi(
       return;
     }
 
-    let nextOutput: any | null = null;
+    let nextOutput: MIDIOutput | null = null;
     if (config.outputEnabled && config.outputId) {
       try {
-        nextOutput = access.outputs && typeof access.outputs.get === 'function'
+        const rawOutput = access.outputs && typeof access.outputs.get === 'function'
           ? access.outputs.get(config.outputId)
           : null;
+        nextOutput = rawOutput ?? null;
       } catch {
         nextOutput = null;
       }
