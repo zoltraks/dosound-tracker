@@ -8,6 +8,9 @@ import { useModalManager } from './hooks/useModalManager';
 import { useMidiHandling } from './hooks/useMidiHandling';
 import { useTrackOperations } from './hooks/useTrackOperations';
 import { usePlaylistOperations } from './hooks/usePlaylistOperations';
+import { useScrollSync } from './hooks/useScrollSync';
+import { useAppState } from './hooks/useAppState';
+import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine } from './synth/SoundDriver';
@@ -24,7 +27,6 @@ import { TracksSection } from './components/TracksSection';
 import { InstrumentSection } from './components/InstrumentSection';
 import { InfoSection } from './components/InfoSection';
 import { exportInstrumentToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
-import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
@@ -70,11 +72,6 @@ const App: React.FC = () => {
   const [optimizeSummary, setOptimizeSummary] = useState('');
   const [renumberSummary, setRenumberSummary] = useState('');
   const [isTransposeOpen, setIsTransposeOpen] = useState(false);
-  const [transposeScope, setTransposeScope] = useState<'line' | 'song'>('line');
-  const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
-  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>('all');
-  const [transposeAmount, setTransposeAmount] = useState<number>(0);
-  const [transposeAmountInput, setTransposeAmountInput] = useState<string>('0');
   const [transposeSummary, setTransposeSummary] = useState('');
   const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
   const [midiLoadError, setMidiLoadError] = useState('');
@@ -112,24 +109,24 @@ const App: React.FC = () => {
   } | null>(null);
   const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
-  const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
-    try {
-      const stored = localStorage.getItem('dosound-tracker-debug-mode');
-      if (stored === 'on') return true;
-      if (stored === 'off') return false;
-    } catch {
-      // ignore
-    }
-    return false;
-  });
-  const [isComplexDumpMode, setIsComplexDumpMode] = useState(() => {
-    // Load dump mode preference from localStorage. Default to complex mode
-    // when no preference is stored.
-    const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
-    if (savedDumpMode === 'complex') return true;
-    if (savedDumpMode === 'simple') return false;
-    return true;
-  });
+
+  const {
+    isDebugMode,
+    setIsDebugMode,
+    isComplexDumpMode,
+    setIsComplexDumpMode,
+    transposeScope,
+    setTransposeScope,
+    transposeTrackScope,
+    setTransposeTrackScope,
+    transposeInstrumentScope,
+    setTransposeInstrumentScope,
+    transposeAmount,
+    setTransposeAmount,
+    transposeAmountInput,
+    setTransposeAmountInput,
+  } = useAppState();
+
   const [instrumentOctaves, setInstrumentOctaves] = useState<Record<string, number>>(() => {
     try {
       const stored = localStorage.getItem('dosound-tracker-instrument-octaves');
@@ -251,15 +248,6 @@ const App: React.FC = () => {
       // ignore
     }
   }, [instrumentOctaves]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('dosound-tracker-debug-mode', isDebugMode ? 'on' : 'off');
-    } catch {
-      // ignore
-    }
-  }, [isDebugMode]);
-
   useEffect(() => {
     try {
       localStorage.setItem(
@@ -290,62 +278,6 @@ const App: React.FC = () => {
       setCurrentOctave(DEFAULT_OCTAVE);
     }
   }, [currentInstrument, instrumentOctaves]);
-
-  // Save dump mode preference to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('dosound-tracker-dump-mode', isComplexDumpMode ? 'complex' : 'simple');
-  }, [isComplexDumpMode]);
-
-  // Load transpose settings from localStorage on startup so they persist
-  // until the application is fully reset (RESET clears localStorage and reloads).
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('dosound-tracker-transpose-settings');
-      if (!raw) return;
-
-      const parsed: unknown = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        const obj = parsed as {
-          scope?: 'line' | 'song';
-          trackScope?: 'current' | 'all';
-          instrumentScope?: 'all' | 'selected';
-          amount?: number;
-        };
-
-        if (obj.scope === 'line' || obj.scope === 'song') {
-          setTransposeScope(obj.scope);
-        }
-        if (obj.trackScope === 'current' || obj.trackScope === 'all') {
-          setTransposeTrackScope(obj.trackScope);
-        }
-        if (obj.instrumentScope === 'all' || obj.instrumentScope === 'selected') {
-          setTransposeInstrumentScope(obj.instrumentScope);
-        }
-        if (typeof obj.amount === 'number' && Number.isFinite(obj.amount)) {
-          setTransposeAmount(obj.amount);
-          setTransposeAmountInput(String(obj.amount));
-        }
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
-
-  // Persist transpose settings whenever they change so they survive reloads
-  // until the RESET action clears localStorage.
-  useEffect(() => {
-    try {
-      const payload = {
-        scope: transposeScope,
-        trackScope: transposeTrackScope,
-        instrumentScope: transposeInstrumentScope,
-        amount: transposeAmount
-      };
-      localStorage.setItem('dosound-tracker-transpose-settings', JSON.stringify(payload));
-    } catch {
-      // ignore
-    }
-  }, [transposeScope, transposeTrackScope, transposeInstrumentScope, transposeAmount]);
 
   // Browser beforeunload guard for unsaved song changes (non-Electron only).
   useEffect(() => {
@@ -2495,18 +2427,13 @@ const App: React.FC = () => {
     handleStartPatternFromCurrentLine(lineIndex);
   }, [isPatternPlaying, sequencerState.isPlaying, handleStopPattern, handleStartPatternFromCurrentLine]);
 
-  useEffect(() => {
-    setGlobalShortcut('playSong', handleStartSong);
-    setGlobalShortcut('playPatternFromStart', handleStartPatternFromBeginning);
-    setGlobalShortcut('playPattern', handleStartPattern);
-    setGlobalShortcut('stopPlayback', handleStop);
-  }, [
+  useKeyboardShortcuts({
     setGlobalShortcut,
     handleStartSong,
     handleStartPatternFromBeginning,
     handleStartPattern,
-    handleStop
-  ]);
+    handleStop,
+  });
 
   // Safety guard: ensure sequencer position always stays within playlist bounds
   // and force a clean stop if playback runs past the end for any reason.
@@ -3202,90 +3129,7 @@ const App: React.FC = () => {
   const handleMidiSystemReset = useCallback(() => {
     sendSystemReset();
   }, [sendSystemReset]);
-
-  const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
-    const scrollTop = event.currentTarget.scrollTop;
-    // Sync all tracks scroll when position block is scrolled
-    const tracks = document.querySelectorAll('.track-content');
-    tracks.forEach(track => {
-      (track as HTMLDivElement).scrollTop = scrollTop;
-    });
-  }, []);
-
-  const pendingScrollLineRef = useRef<number | null>(null);
-  const scrollRafRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    pendingScrollLineRef.current = sharedCurrentLine;
-
-    if (scrollRafRef.current != null) {
-      return;
-    }
-
-    scrollRafRef.current = window.requestAnimationFrame(() => {
-      scrollRafRef.current = null;
-      const lineIndex = pendingScrollLineRef.current;
-      if (lineIndex == null) {
-        return;
-      }
-
-      const positionContent = document.querySelector('.position-content') as HTMLDivElement | null;
-      const primaryTrack = (document.querySelector('.track-panel.track-a .track-content') ||
-        document.querySelector('.track-content')) as HTMLDivElement | null;
-
-      if (!positionContent || !primaryTrack) {
-        return;
-      }
-
-      const lineElements = primaryTrack.children as HTMLCollectionOf<HTMLDivElement>;
-      const totalLines = lineElements.length;
-      if (!totalLines) {
-        return;
-      }
-
-      const clampedIndex = Math.max(0, Math.min(lineIndex, totalLines - 1));
-      const targetLine = lineElements[clampedIndex];
-      if (!targetLine) {
-        return;
-      }
-
-      const container = primaryTrack;
-      const currentScrollTop = container.scrollTop;
-      const containerHeight = container.clientHeight;
-
-      const rowHeight = targetLine.offsetHeight || 14;
-      const targetTop = lineIndex * rowHeight;
-      const targetBottom = targetTop + rowHeight;
-
-      let newScrollTop = currentScrollTop;
-
-      if (targetTop < currentScrollTop) {
-        // Selected row is above the visible area
-        newScrollTop = targetTop;
-      } else if (targetBottom > currentScrollTop + containerHeight) {
-        // Selected row is below the visible area
-        newScrollTop = targetBottom - containerHeight;
-      }
-
-      const maxScrollTop = container.scrollHeight - containerHeight;
-      newScrollTop = Math.max(0, Math.min(newScrollTop, maxScrollTop));
-
-      if (newScrollTop === currentScrollTop) {
-        return;
-      }
-
-      // Apply synchronized scroll only to the pattern area
-      container.scrollTop = newScrollTop;
-      positionContent.scrollTop = newScrollTop;
-
-      const tracks = document.querySelectorAll('.track-content');
-      tracks.forEach(track => {
-        if (track !== container) {
-          (track as HTMLDivElement).scrollTop = newScrollTop;
-        }
-      });
-    });
-  }, [sharedCurrentLine, sequencerState.isPlaying]);
+  const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
   const previewChannel =
     activeSection === 'trackA'
