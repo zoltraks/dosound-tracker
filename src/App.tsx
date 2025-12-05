@@ -2393,7 +2393,7 @@ const App: React.FC = () => {
           const isOffNote =
             typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
 
-          if (ln.off === true || isOffNote) {
+          if (isOffNote) {
             // Explicit key-release step: use internal '===' marker.
             line.trackA = { note: '===', octave: 0, instrument: '00' };
           } else if (ln.space === true) {

@@ -141,3 +141,7 @@ song:
 Switch from "off": true to note: "OFF" in track clipboard YAML too.
 
 ---
+
+Drop compatibility with existing clipboard data that uses off: true.
+
+---
