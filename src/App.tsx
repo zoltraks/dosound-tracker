@@ -1487,146 +1487,6 @@ const App: React.FC = () => {
     setPosition(insertIndex, 0, 0);
   }, [currentSong.playlist, currentSong.patterns, sequencerState.currentPattern, updateSong, setPosition]);
 
-  const handleInsertStep = useCallback(() => {
-    const playlistLength = currentSong.playlist.length;
-    if (playlistLength === 0) {
-      return;
-    }
-
-    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-    const entry = currentSong.playlist[currentIndex];
-
-    let patternId = '--';
-    switch (targetTrackId) {
-      case 'A':
-        patternId = entry.trackA;
-        break;
-      case 'B':
-        patternId = entry.trackB;
-        break;
-      case 'C':
-        patternId = entry.trackC;
-        break;
-    }
-
-    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
-      return;
-    }
-
-    const patterns = [...currentSong.patterns];
-    const patternIndex = patterns.findIndex(p => p.id === patternId);
-    if (patternIndex === -1) {
-      return;
-    }
-
-    const pattern = { ...patterns[patternIndex] };
-    const totalLines = currentSong.patternLength || PATTERN_LENGTH;
-    const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
-    const lines = [...pattern.lines];
-
-    while (lines.length < totalLines) {
-      lines.push({
-        trackA: null,
-        trackB: null,
-        trackC: null
-      });
-    }
-
-    for (let i = totalLines - 1; i > safeIndex; i--) {
-      const from = lines[i - 1] || { trackA: null, trackB: null, trackC: null };
-      const base = lines[i] || { trackA: null, trackB: null, trackC: null };
-      lines[i] = {
-        ...base,
-        trackA: from.trackA
-      };
-    }
-
-    const base = lines[safeIndex] || { trackA: null, trackB: null, trackC: null };
-    lines[safeIndex] = {
-      ...base,
-      trackA: null
-    };
-
-    pattern.lines = lines;
-    patterns[patternIndex] = pattern;
-
-    updateSong({ patterns });
-
-    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
-    setActiveSection(section);
-    setTrackFocusRevision(prev => prev + 1);
-  }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection, setTrackFocusRevision]);
-
-  const handleDeleteStep = useCallback(() => {
-    const playlistLength = currentSong.playlist.length;
-    if (playlistLength === 0) {
-      return;
-    }
-
-    const currentIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-    const entry = currentSong.playlist[currentIndex];
-
-    let patternId = '--';
-    switch (targetTrackId) {
-      case 'A':
-        patternId = entry.trackA;
-        break;
-      case 'B':
-        patternId = entry.trackB;
-        break;
-      case 'C':
-        patternId = entry.trackC;
-        break;
-    }
-
-    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
-      return;
-    }
-
-    const patterns = [...currentSong.patterns];
-    const patternIndex = patterns.findIndex(p => p.id === patternId);
-    if (patternIndex === -1) {
-      return;
-    }
-
-    const pattern = { ...patterns[patternIndex] };
-    const totalLines = currentSong.patternLength || PATTERN_LENGTH;
-    const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
-    const lines = [...pattern.lines];
-
-    while (lines.length < totalLines) {
-      lines.push({
-        trackA: null,
-        trackB: null,
-        trackC: null
-      });
-    }
-
-    for (let i = safeIndex; i < totalLines - 1; i++) {
-      const from = lines[i + 1] || { trackA: null, trackB: null, trackC: null };
-      const base = lines[i] || { trackA: null, trackB: null, trackC: null };
-      lines[i] = {
-        ...base,
-        trackA: from.trackA
-      };
-    }
-
-    const lastIndex = totalLines - 1;
-    const lastBase = lines[lastIndex] || { trackA: null, trackB: null, trackC: null };
-    lines[lastIndex] = {
-      ...lastBase,
-      trackA: null
-    };
-
-    pattern.lines = lines;
-    patterns[patternIndex] = pattern;
-
-    updateSong({ patterns });
-
-    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
-    setActiveSection(section);
-  }, [currentSong.playlist, currentSong.patterns, currentSong.patternLength, sequencerState.currentPattern, sharedCurrentLine, targetTrackId, updateSong, setActiveSection]);
-
   const handleShowAbout = useCallback(() => {
     setIsAboutOpen(true);
   }, []);
@@ -1944,6 +1804,8 @@ const App: React.FC = () => {
     setTrackClipboardError,
     handleCopyTrack,
     handlePasteTrack,
+    handleInsertStep,
+    handleDeleteStep,
   } = useTrackOperations({
     song: currentSong,
     activeSection,
@@ -1952,6 +1814,10 @@ const App: React.FC = () => {
     formatNoteKey,
     parseBaseKeyString,
     updateSong,
+    sharedCurrentLine,
+    sequencerPatternIndex: sequencerState.currentPattern,
+    setActiveSection,
+    setTrackFocusRevision,
   });
 
   // Handle instrument selection

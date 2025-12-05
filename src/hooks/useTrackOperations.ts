@@ -21,6 +21,10 @@ interface UseTrackOperationsArgs {
   formatNoteKey: (note: string, octave: number) => string;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
   updateSong: (patch: Partial<Song>) => void;
+  sharedCurrentLine: number;
+  sequencerPatternIndex: number;
+  setActiveSection: (section: NavigationSection) => void;
+  setTrackFocusRevision: (updater: (prev: number) => number) => void;
 }
 
 interface UseTrackOperationsResult {
@@ -28,6 +32,8 @@ interface UseTrackOperationsResult {
   setTrackClipboardError: (value: string) => void;
   handleCopyTrack: () => Promise<void>;
   handlePasteTrack: () => Promise<void>;
+  handleInsertStep: () => void;
+  handleDeleteStep: () => void;
 }
 
 export function useTrackOperations({
@@ -38,6 +44,10 @@ export function useTrackOperations({
   formatNoteKey,
   parseBaseKeyString,
   updateSong,
+  sharedCurrentLine,
+  sequencerPatternIndex,
+  setActiveSection,
+  setTrackFocusRevision,
 }: UseTrackOperationsArgs): UseTrackOperationsResult {
   const [trackClipboardError, setTrackClipboardError] = useState('');
 
@@ -374,10 +384,191 @@ export function useTrackOperations({
     updateSong,
   ]);
 
+  const handleInsertStep = useCallback(() => {
+    const playlistLength = song.playlist.length;
+    if (playlistLength === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerPatternIndex, playlistLength - 1));
+    const entry = song.playlist[currentIndex];
+
+    let trackId: 'A' | 'B' | 'C' = lastTrackId;
+    if (activeSection === 'trackA') {
+      trackId = 'A';
+    } else if (activeSection === 'trackB') {
+      trackId = 'B';
+    } else if (activeSection === 'trackC') {
+      trackId = 'C';
+    }
+
+    let patternId = '--';
+    switch (trackId) {
+      case 'A':
+        patternId = entry.trackA;
+        break;
+      case 'B':
+        patternId = entry.trackB;
+        break;
+      case 'C':
+        patternId = entry.trackC;
+        break;
+    }
+
+    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+      return;
+    }
+
+    const patterns = [...song.patterns];
+    const patternIndex = patterns.findIndex(p => p.id === patternId);
+    if (patternIndex === -1) {
+      return;
+    }
+
+    const pattern = { ...patterns[patternIndex] };
+    const totalLines = song.patternLength || PATTERN_LENGTH;
+    const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
+    const lines = [...(pattern.lines || [])];
+
+    while (lines.length < totalLines) {
+      lines.push({
+        trackA: null,
+        trackB: null,
+        trackC: null,
+      });
+    }
+
+    for (let i = totalLines - 1; i > safeIndex; i--) {
+      const from = lines[i - 1] || { trackA: null, trackB: null, trackC: null };
+      const base = lines[i] || { trackA: null, trackB: null, trackC: null };
+      lines[i] = {
+        ...base,
+        trackA: from.trackA,
+      };
+    }
+
+    const base = lines[safeIndex] || { trackA: null, trackB: null, trackC: null };
+    lines[safeIndex] = {
+      ...base,
+      trackA: null,
+    };
+
+    pattern.lines = lines;
+    patterns[patternIndex] = pattern;
+
+    updateSong({ patterns });
+
+    const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
+    setActiveSection(section);
+    setTrackFocusRevision(prev => prev + 1);
+  }, [
+    song.playlist,
+    song.patterns,
+    song.patternLength,
+    activeSection,
+    lastTrackId,
+    sequencerPatternIndex,
+    sharedCurrentLine,
+    updateSong,
+    setActiveSection,
+    setTrackFocusRevision,
+  ]);
+
+  const handleDeleteStep = useCallback(() => {
+    const playlistLength = song.playlist.length;
+    if (playlistLength === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(sequencerPatternIndex, playlistLength - 1));
+    const entry = song.playlist[currentIndex];
+
+    let trackId: 'A' | 'B' | 'C' = lastTrackId;
+    if (activeSection === 'trackA') {
+      trackId = 'A';
+    } else if (activeSection === 'trackB') {
+      trackId = 'B';
+    } else if (activeSection === 'trackC') {
+      trackId = 'C';
+    }
+
+    let patternId = '--';
+    switch (trackId) {
+      case 'A':
+        patternId = entry.trackA;
+        break;
+      case 'B':
+        patternId = entry.trackB;
+        break;
+      case 'C':
+        patternId = entry.trackC;
+        break;
+    }
+
+    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+      return;
+    }
+
+    const patterns = [...song.patterns];
+    const patternIndex = patterns.findIndex(p => p.id === patternId);
+    if (patternIndex === -1) {
+      return;
+    }
+
+    const pattern = { ...patterns[patternIndex] };
+    const totalLines = song.patternLength || PATTERN_LENGTH;
+    const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
+    const lines = [...(pattern.lines || [])];
+
+    while (lines.length < totalLines) {
+      lines.push({
+        trackA: null,
+        trackB: null,
+        trackC: null,
+      });
+    }
+
+    for (let i = safeIndex; i < totalLines - 1; i++) {
+      const from = lines[i + 1] || { trackA: null, trackB: null, trackC: null };
+      const base = lines[i] || { trackA: null, trackB: null, trackC: null };
+      lines[i] = {
+        ...base,
+        trackA: from.trackA,
+      };
+    }
+
+    const lastIndex = totalLines - 1;
+    const lastBase = lines[lastIndex] || { trackA: null, trackB: null, trackC: null };
+    lines[lastIndex] = {
+      ...lastBase,
+      trackA: null,
+    };
+
+    pattern.lines = lines;
+    patterns[patternIndex] = pattern;
+
+    updateSong({ patterns });
+
+    const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
+    setActiveSection(section);
+  }, [
+    song.playlist,
+    song.patterns,
+    song.patternLength,
+    activeSection,
+    lastTrackId,
+    sequencerPatternIndex,
+    sharedCurrentLine,
+    updateSong,
+    setActiveSection,
+  ]);
+
   return {
     trackClipboardError,
     setTrackClipboardError,
     handleCopyTrack,
     handlePasteTrack,
+    handleInsertStep,
+    handleDeleteStep,
   };
 }
