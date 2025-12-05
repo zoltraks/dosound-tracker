@@ -26,7 +26,7 @@ import { PianoKeyboard } from './components/PianoKeyboard';
 import { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile, exportSongToWav, downloadWavFile, exportSongRegisterDump, exportSongToVgm, downloadVgmFile, exportToBinary, downloadBinaryFile } from './utils/assemblyExport';
 import { renderMarkdown } from './utils/markdown';
 import { isInstrumentEmpty } from './utils/instrument';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from './modals';
+import { ModalContainer } from './components/ModalContainer';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
 import './App.css';
@@ -4881,219 +4881,97 @@ const App: React.FC = () => {
             reader.readAsText(file);
           }}
         />
-
-        <InformationModal
-          isOpen={!!songError}
-          title="Song Load Error"
-          message={songError}
-          onClose={() => setSongError('')}
-        />
-
-        <InformationModal
-          isOpen={!!instrumentError}
-          title="Instrument Load Error"
-          message={instrumentError}
-          onClose={() => setInstrumentError('')}
-        />
-
-        <InformationModal
-          isOpen={!!trackClipboardError}
-          title="Track Clipboard Error"
-          message={trackClipboardError}
-          onClose={() => setTrackClipboardError('')}
-        />
-
-        <InformationModal
-          isOpen={!!optimizeSummary}
-          title="Optimization Summary"
-          message={optimizeSummary}
-          onClose={handleCloseOptimizeSummary}
-        />
-
-        <InformationModal
-          isOpen={!!soundExportSummary}
-          title="WAV Export Summary"
-          message={soundExportSummary}
-          onClose={handleCloseSoundExportSummary}
-        />
-
-        <InformationModal
-          isOpen={!!dumpExportSummary}
-          title="Dump Export Summary"
-          message={dumpExportSummary}
-          onClose={handleCloseDumpExportSummary}
-        />
-
-        <InformationModal
-          isOpen={!!transposeSummary}
-          title="Transpose Summary"
-          message={transposeSummary}
-          onClose={handleCloseTransposeSummary}
-        />
-
-        <InformationModal
-          isOpen={!!renumberSummary}
-          title="Renumber Summary"
-          message={renumberSummary}
-          onClose={handleCloseRenumberSummary}
-        />
-
-        <InformationModal
-          isOpen={!!instrumentOperationSummary}
-          title="Instrument Operation"
-          message={instrumentOperationSummary}
-          onClose={handleCloseInstrumentOperationSummary}
-        />
-
-        <InformationModal
-          isOpen={isDebugInfoOpen}
-          title="Debug mode enabled"
-          message={
-            'Debug mode is now enabled.\n\n' +
-            'In this mode the tracker will output additional logging to the browser console.\n' +
-            'This extra logging may cause small delays or timing jitter in song playback due to performance overhead.\n\n' +
-            'For normal composing and playback, you can turn debug mode off again.'
-          }
-          onClose={() => setIsDebugInfoOpen(false)}
-        />
-
-        <InstrumentTypeWarningModal
-          isOpen={isInstrumentTypeWarningOpen}
-          hasTypeField={!!pendingInstrumentTypeInfo?.hasTypeField}
-          detectedType={pendingInstrumentTypeInfo?.detectedType ?? null}
-          ignoreFuture={instrumentTypeWarningIgnoreChecked}
-          onIgnoreChange={setInstrumentTypeWarningIgnoreChecked}
-          onConfirm={handleConfirmInstrumentTypeWarning}
-          onCancel={handleCancelInstrumentTypeWarning}
-        />
-
-        <ConfirmationModal
-          isOpen={isNewSongConfirmOpen}
-          title="Create new song?"
-          message="Current song data will be lost.\n\nContinue?"
-          onConfirm={handleConfirmNewSong}
-          onCancel={handleCancelNewSong}
-        />
-
-        <ConfirmationModal
-          isOpen={isOptimizeConfirmOpen}
-          title="Optimize song?"
-          message="Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.\n\nContinue?"
-          onConfirm={handleConfirmOptimize}
-          onCancel={handleCancelOptimize}
-        />
-
-        <ConfirmationModal
-          isOpen={isRenumberConfirmOpen}
-          title="Renumber song?"
-          message="Renumber all patterns according to their order of appearance in the playlist (then any hidden patterns), and renumber all instruments alphabetically by name.\n\nThis will update all references in the playlist and patterns.\n\nContinue?"
-          onConfirm={handleConfirmRenumber}
-          onCancel={handleCancelRenumber}
-        />
-
-        <ConfirmationModal
-          isOpen={isResetConfirmOpen}
-          title="Reset application?"
-          message="All saved data will be permanently deleted and the application will reload to default state.\n\nThis action cannot be undone.\n\nContinue with reset?"
-          onConfirm={handleConfirmReset}
-          onCancel={handleCancelReset}
-          confirmLabel="Reset"
-        />
-
-        <ConfirmationModal
-          isOpen={isQuitConfirmOpen}
-          title="Quit without saving?"
-          message="Current song changes have not been saved.\n\nIf you quit now, any unsaved changes will be lost.\n\nDo you still want to quit?"
-          onConfirm={handleConfirmQuit}
-          onCancel={handleCancelQuit}
-        />
-
-        <InstrumentDeleteModal
-          isOpen={isInstrumentDeleteOpen}
-          instrumentId={instrumentDeleteUsage.instrumentId}
-          instrumentName={instrumentDeleteUsage.instrumentName}
-          usageCount={instrumentDeleteUsage.usageCount}
-          patternCount={instrumentDeleteUsage.patternCount}
-          onDeleteNotesAndInstrument={handleConfirmDeleteInstrumentAndNotes}
-          onDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
-          onCancel={handleCancelInstrumentDelete}
-        />
-
-        <InstrumentMidiModal
-          isOpen={isInstrumentMidiOpen}
-          instrument={instrumentMidiTarget}
-          onSave={handleSaveInstrumentMidi}
-          onCancel={handleCloseInstrumentMidi}
-        />
-
-        <TransposeModal
-          isOpen={isTransposeOpen}
-          scope={transposeScope}
-          trackScope={transposeTrackScope}
-          instrumentScope={transposeInstrumentScope}
-          amount={transposeAmount}
-          amountInput={transposeAmountInput}
-          onScopeChange={setTransposeScope}
-          onTrackScopeChange={setTransposeTrackScope}
-          onInstrumentScopeChange={setTransposeInstrumentScope}
-          onAmountChange={handleTransposeAmountChange}
-          onAmountAdjust={(delta) => {
-            const next = transposeAmount + delta;
-            setTransposeAmount(next);
-            setTransposeAmountInput(String(next));
-          }}
-          onConfirm={handleConfirmTranspose}
-          onCancel={handleCancelTranspose}
-        />
-
-        <AboutModal
-          isOpen={isAboutOpen}
-          version={APP_VERSION}
-          onClose={() => setIsAboutOpen(false)}
+        <ModalContainer
+          songError={songError}
+          setSongError={setSongError}
+          instrumentError={instrumentError}
+          setInstrumentError={setInstrumentError}
+          trackClipboardError={trackClipboardError}
+          setTrackClipboardError={setTrackClipboardError}
+          optimizeSummary={optimizeSummary}
+          onCloseOptimizeSummary={handleCloseOptimizeSummary}
+          soundExportSummary={soundExportSummary}
+          onCloseSoundExportSummary={handleCloseSoundExportSummary}
+          dumpExportSummary={dumpExportSummary}
+          onCloseDumpExportSummary={handleCloseDumpExportSummary}
+          transposeSummary={transposeSummary}
+          onCloseTransposeSummary={handleCloseTransposeSummary}
+          renumberSummary={renumberSummary}
+          onCloseRenumberSummary={handleCloseRenumberSummary}
+          instrumentOperationSummary={instrumentOperationSummary}
+          onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
+          isDebugInfoOpen={isDebugInfoOpen}
+          setIsDebugInfoOpen={setIsDebugInfoOpen}
+          isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
+          pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
+          instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
+          setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
+          onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
+          onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
+          isNewSongConfirmOpen={isNewSongConfirmOpen}
+          onConfirmNewSong={handleConfirmNewSong}
+          onCancelNewSong={handleCancelNewSong}
+          isOptimizeConfirmOpen={isOptimizeConfirmOpen}
+          onConfirmOptimize={handleConfirmOptimize}
+          onCancelOptimize={handleCancelOptimize}
+          isRenumberConfirmOpen={isRenumberConfirmOpen}
+          onConfirmRenumber={handleConfirmRenumber}
+          onCancelRenumber={handleCancelRenumber}
+          isResetConfirmOpen={isResetConfirmOpen}
+          onConfirmReset={handleConfirmReset}
+          onCancelReset={handleCancelReset}
+          isQuitConfirmOpen={isQuitConfirmOpen}
+          onConfirmQuit={handleConfirmQuit}
+          onCancelQuit={handleCancelQuit}
+          isInstrumentDeleteOpen={isInstrumentDeleteOpen}
+          instrumentDeleteUsage={instrumentDeleteUsage}
+          onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
+          onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
+          onCancelInstrumentDelete={handleCancelInstrumentDelete}
+          isInstrumentMidiOpen={isInstrumentMidiOpen}
+          instrumentMidiTarget={instrumentMidiTarget}
+          onSaveInstrumentMidi={handleSaveInstrumentMidi}
+          onCloseInstrumentMidi={handleCloseInstrumentMidi}
+          isTransposeOpen={isTransposeOpen}
+          transposeScope={transposeScope}
+          transposeTrackScope={transposeTrackScope}
+          transposeInstrumentScope={transposeInstrumentScope}
+          transposeAmount={transposeAmount}
+          transposeAmountInput={transposeAmountInput}
+          setTransposeScope={setTransposeScope}
+          setTransposeTrackScope={setTransposeTrackScope}
+          setTransposeInstrumentScope={setTransposeInstrumentScope}
+          onTransposeAmountChange={handleTransposeAmountChange}
+          onConfirmTranspose={handleConfirmTranspose}
+          onCancelTranspose={handleCancelTranspose}
+          setTransposeAmount={setTransposeAmount}
+          setTransposeAmountInput={setTransposeAmountInput}
+          isAboutOpen={isAboutOpen}
+          aboutVersion={APP_VERSION}
+          setIsAboutOpen={setIsAboutOpen}
+          isChangelogOpen={isChangelogOpen}
+          changelogContent={changelogContent}
           onShowChangelog={handleShowChangelog}
-        />
-
-        <ChangesModal
-          isOpen={isChangelogOpen}
-          content={changelogContent}
-          onClose={handleCloseChangelog}
-        />
-
-        <MidiModal
-          isOpen={isMidiModalOpen}
-          isSupported={isMidiSupported}
-          accessError={midiAccessError}
-          config={midiConfig}
-          devices={midiDevices}
-          inMonitor={midiInMonitor}
-          outMonitor={midiOutMonitor}
-          onSave={handleSaveMidiConfig}
-          onCancel={handleCloseMidi}
-          onClear={handleClearMidiMonitors}
-          onRescan={handleRescanMidiDevices}
-          onChangeConfig={handleLiveMidiConfigChange}
-          onCopySummary={setMidiCopySummary}
-          onLoadError={setMidiLoadError}
-        />
-
-        <DownloadModal
-          isOpen={isDownloadOpen}
-          files={downloadFiles}
-          onClose={() => setIsDownloadOpen(false)}
-        />
-
-        <InformationModal
-          isOpen={!!midiLoadError}
-          title="MIDI Config Error"
-          message={midiLoadError}
-          onClose={() => setMidiLoadError('')}
-        />
-
-        <InformationModal
-          isOpen={!!midiCopySummary}
-          title="MIDI Monitor"
-          message={midiCopySummary}
-          onClose={() => setMidiCopySummary('')}
+          onCloseChangelog={handleCloseChangelog}
+          isMidiModalOpen={isMidiModalOpen}
+          isMidiSupported={isMidiSupported}
+          midiAccessError={midiAccessError}
+          midiConfig={midiConfig}
+          midiDevices={midiDevices}
+          midiInMonitor={midiInMonitor}
+          midiOutMonitor={midiOutMonitor}
+          onSaveMidiConfig={handleSaveMidiConfig}
+          onCloseMidi={handleCloseMidi}
+          onClearMidiMonitors={handleClearMidiMonitors}
+          onRescanMidiDevices={handleRescanMidiDevices}
+          onLiveMidiConfigChange={handleLiveMidiConfigChange}
+          setMidiCopySummary={setMidiCopySummary}
+          setMidiLoadError={setMidiLoadError}
+          isDownloadOpen={isDownloadOpen}
+          downloadFiles={downloadFiles}
+          setIsDownloadOpen={setIsDownloadOpen}
+          midiLoadError={midiLoadError}
+          midiCopySummary={midiCopySummary}
         />
         </div>
       </ErrorBoundary>
