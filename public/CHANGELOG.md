@@ -1,5 +1,17 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.3
+
+MIDI output and monitoring upgrades, live recording, YAML format cleanup, richer VGM metadata, and refactoring-focused layout and type-safety improvements.
+
+- Added **per‑instrument MIDI output** with configurable channel/program settings, keyboard shortcuts, and explicit port open/close lifecycle management so instruments can route to multiple external devices without locking MIDI ports.
+- Added track‑focused live MIDI recording that writes note‑on/note‑off events directly into the current pattern, keeping playback and recording in sync with the tracker grid.
+- Improved the MIDI monitor and modal behavior with auto‑scroll to latest messages, buffered history preserved while the modal is closed, optional debug logging to avoid overhead during normal playback, and better focus and keyboard navigation.
+- Introduced **YAML‑based MIDI configuration import/export** with error‑handling dialogs, plus a dedicated MIDI System Reset button and automatic System Reset on output activation to keep external devices in a known state.
+- Standardized YAML song and clipboard formats by renaming `steps` to `step`, replacing legacy `off: true` flags with explicit `note: OFF` entries, omitting empty pattern step arrays, and updating example songs to follow the canonical schema (note: new track clipboard exports are not backward‑compatible with older `off`/`steps` formats).
+- Enhanced exports by fixing sustain envelope handling and sequencer worker tick ordering for VGM/WAV output, and adding GD3 tags (including game name and song metadata encoded in UTF-16LE) to VGM files.
+- Refactored the application layout, modals and core hooks (state, keyboard shortcuts, scroll sync, audio setup, playlist/track/file operations, playback controls and MIDI handling) into dedicated modules and tightened TypeScript types to reduce App.tsx complexity and improve long‑term maintainability without changing workflows.
+
 ## Version 1.1.2
 
 Playback performance and Electron stability improvements, faster instrument resolution, and instant MIDI configuration updates.
