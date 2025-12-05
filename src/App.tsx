@@ -5,6 +5,7 @@ import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { useAudioContext } from './hooks/useAudioContext';
 import { useMidi } from './hooks/useMidi';
+import { useModalManager } from './hooks/useModalManager';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
@@ -4269,291 +4270,63 @@ const App: React.FC = () => {
       : lastTrackId === 'C'
       ? 2
       : 0;
-
-  useEffect(() => {
-    const handleModalKeyDown = (event: KeyboardEvent) => {
-      const hasInfoModal =
-        !!songError ||
-        !!instrumentError ||
-        !!transposeSummary ||
-        !!trackClipboardError ||
-        !!optimizeSummary ||
-        !!soundExportSummary ||
-        !!dumpExportSummary ||
-        !!renumberSummary ||
-        !!instrumentOperationSummary ||
-        !!midiLoadError ||
-        !!midiCopySummary ||
-        isAboutOpen ||
-        isChangelogOpen ||
-        isDownloadOpen ||
-        isDebugInfoOpen ||
-        isMidiModalOpen;
-
-      const hasConfirmModal =
-        isTransposeOpen ||
-        isOptimizeConfirmOpen ||
-        isRenumberConfirmOpen ||
-        isNewSongConfirmOpen ||
-        isResetConfirmOpen ||
-        isInstrumentDeleteOpen ||
-        isInstrumentTypeWarningOpen;
-
-      if (!hasInfoModal && !hasConfirmModal) {
-        return;
-      }
-
-      const key = event.key;
-      if (key !== 'Escape' && key !== 'Esc' && key !== 'Enter') {
-        return;
-      }
-
-      event.preventDefault();
-      if (typeof event.stopImmediatePropagation === 'function') {
-        event.stopImmediatePropagation();
-      }
-
-      if (key === 'Escape' || key === 'Esc') {
-        if (isMidiModalOpen) {
-          handleCloseMidi();
-          return;
-        }
-        if (isInstrumentDeleteOpen) {
-          handleCancelInstrumentDelete();
-          return;
-        }
-        if (isTransposeOpen) {
-          handleCancelTranspose();
-          return;
-        }
-        if (isOptimizeConfirmOpen) {
-          handleCancelOptimize();
-          return;
-        }
-        if (isRenumberConfirmOpen) {
-          handleCancelRenumber();
-          return;
-        }
-        if (isNewSongConfirmOpen) {
-          handleCancelNewSong();
-          return;
-        }
-        if (isInstrumentTypeWarningOpen) {
-          handleCancelInstrumentTypeWarning();
-          return;
-        }
-        if (isResetConfirmOpen) {
-          handleCancelReset();
-          return;
-        }
-
-        if (songError) {
-          setSongError('');
-          return;
-        }
-        if (instrumentError) {
-          setInstrumentError('');
-          return;
-        }
-        if (transposeSummary) {
-          handleCloseTransposeSummary();
-          return;
-        }
-        if (trackClipboardError) {
-          setTrackClipboardError('');
-          return;
-        }
-        if (optimizeSummary) {
-          handleCloseOptimizeSummary();
-          return;
-        }
-        if (soundExportSummary) {
-          handleCloseSoundExportSummary();
-          return;
-        }
-        if (dumpExportSummary) {
-          handleCloseDumpExportSummary();
-          return;
-        }
-        if (renumberSummary) {
-          handleCloseRenumberSummary();
-          return;
-        }
-        if (instrumentOperationSummary) {
-          handleCloseInstrumentOperationSummary();
-          return;
-        }
-        if (midiLoadError) {
-          setMidiLoadError('');
-          return;
-        }
-        if (midiCopySummary) {
-          setMidiCopySummary('');
-          return;
-        }
-        if (isAboutOpen) {
-          setIsAboutOpen(false);
-          return;
-        }
-        if (isChangelogOpen) {
-          handleCloseChangelog();
-          return;
-        }
-        if (isDownloadOpen) {
-          setIsDownloadOpen(false);
-          return;
-        }
-        if (isQuitConfirmOpen) {
-          handleCancelQuit();
-          return;
-        }
-
-        return;
-      }
-
-      if (key === 'Enter') {
-        if (songError) {
-          setSongError('');
-          return;
-        }
-        if (instrumentError) {
-          setInstrumentError('');
-          return;
-        }
-        if (transposeSummary) {
-          handleCloseTransposeSummary();
-          return;
-        }
-        if (trackClipboardError) {
-          setTrackClipboardError('');
-          return;
-        }
-        if (optimizeSummary) {
-          handleCloseOptimizeSummary();
-          return;
-        }
-        if (soundExportSummary) {
-          handleCloseSoundExportSummary();
-          return;
-        }
-        if (dumpExportSummary) {
-          handleCloseDumpExportSummary();
-          return;
-        }
-        if (renumberSummary) {
-          handleCloseRenumberSummary();
-          return;
-        }
-        if (midiLoadError) {
-          setMidiLoadError('');
-          return;
-        }
-        if (midiCopySummary) {
-          setMidiCopySummary('');
-          return;
-        }
-        if (isDebugInfoOpen) {
-          setIsDebugInfoOpen(false);
-          return;
-        }
-        if (isAboutOpen) {
-          setIsAboutOpen(false);
-          return;
-        }
-        if (isChangelogOpen) {
-          handleCloseChangelog();
-          return;
-        }
-
-        if (isTransposeOpen) {
-          handleConfirmTranspose();
-          return;
-        }
-        if (isOptimizeConfirmOpen) {
-          handleConfirmOptimize();
-          return;
-        }
-        if (isRenumberConfirmOpen) {
-          handleConfirmRenumber();
-          return;
-        }
-        if (isNewSongConfirmOpen) {
-          handleConfirmNewSong();
-          return;
-        }
-        if (isInstrumentTypeWarningOpen) {
-          handleConfirmInstrumentTypeWarning();
-          return;
-        }
-        if (isResetConfirmOpen) {
-          handleConfirmReset();
-          return;
-        }
-        if (isQuitConfirmOpen) {
-          handleConfirmQuit();
-          return;
-        }
-      }
-    };
-
-    window.addEventListener('keydown', handleModalKeyDown, true);
-    return () => {
-      window.removeEventListener('keydown', handleModalKeyDown, true);
-    };
-  }, [
+  useModalManager({
     songError,
+    setSongError,
     instrumentError,
+    setInstrumentError,
     transposeSummary,
+    handleCloseTransposeSummary,
     trackClipboardError,
+    setTrackClipboardError,
     optimizeSummary,
+    handleCloseOptimizeSummary,
     soundExportSummary,
+    handleCloseSoundExportSummary,
     dumpExportSummary,
+    handleCloseDumpExportSummary,
     renumberSummary,
+    handleCloseRenumberSummary,
     instrumentOperationSummary,
+    handleCloseInstrumentOperationSummary,
     midiLoadError,
+    setMidiLoadError,
     midiCopySummary,
+    setMidiCopySummary,
     isAboutOpen,
+    setIsAboutOpen,
     isChangelogOpen,
+    handleCloseChangelog,
     isDownloadOpen,
+    setIsDownloadOpen,
     isDebugInfoOpen,
+    setIsDebugInfoOpen,
     isMidiModalOpen,
+    handleCloseMidi,
     isTransposeOpen,
-    isOptimizeConfirmOpen,
-    isRenumberConfirmOpen,
-    isNewSongConfirmOpen,
-    isResetConfirmOpen,
-    isQuitConfirmOpen,
-    isInstrumentDeleteOpen,
-    isInstrumentTypeWarningOpen,
     handleCancelTranspose,
     handleConfirmTranspose,
+    isOptimizeConfirmOpen,
     handleCancelOptimize,
     handleConfirmOptimize,
+    isRenumberConfirmOpen,
     handleCancelRenumber,
     handleConfirmRenumber,
+    isNewSongConfirmOpen,
     handleCancelNewSong,
     handleConfirmNewSong,
+    isResetConfirmOpen,
     handleCancelReset,
     handleConfirmReset,
+    isQuitConfirmOpen,
     handleCancelQuit,
     handleConfirmQuit,
-    handleCloseTransposeSummary,
-    handleCloseOptimizeSummary,
-    handleCloseSoundExportSummary,
-    handleCloseDumpExportSummary,
-    handleCloseRenumberSummary,
-    handleCloseChangelog,
+    isInstrumentDeleteOpen,
     handleCancelInstrumentDelete,
-    handleCloseInstrumentOperationSummary,
-    handleCloseMidi,
-    setSongError,
-    setInstrumentError,
-    setTrackClipboardError,
-    setIsAboutOpen,
-    setIsDownloadOpen,
-    setMidiLoadError,
-    setMidiCopySummary,
-  ]);
+    isInstrumentTypeWarningOpen,
+    handleCancelInstrumentTypeWarning,
+    handleConfirmInstrumentTypeWarning,
+  });
 
   const playlistLength = currentSong.playlist.length;
   const clampedPlaybackPosition =
