@@ -156,7 +156,6 @@ const App: React.FC = () => {
     return {};
   });
   const { isDarkMode, toggleTheme } = useTheme();
-  const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation();
   const { 
     currentSong, 
     currentInstrument,
@@ -180,6 +179,35 @@ const App: React.FC = () => {
     renumberSong,
     isSongDirty
   } = useDataManagement();
+
+  const isNavigationSuspended =
+    !!songError ||
+    !!instrumentError ||
+    !!transposeSummary ||
+    !!trackClipboardError ||
+    !!optimizeSummary ||
+    !!soundExportSummary ||
+    !!dumpExportSummary ||
+    !!renumberSummary ||
+    !!instrumentOperationSummary ||
+    !!midiLoadError ||
+    !!midiCopySummary ||
+    isAboutOpen ||
+    isChangelogOpen ||
+    isDownloadOpen ||
+    isDebugInfoOpen ||
+    isMidiModalOpen ||
+    isTransposeOpen ||
+    isOptimizeConfirmOpen ||
+    isRenumberConfirmOpen ||
+    isNewSongConfirmOpen ||
+    isResetConfirmOpen ||
+    isQuitConfirmOpen ||
+    isInstrumentDeleteOpen ||
+    isInstrumentTypeWarningOpen ||
+    isInstrumentMidiOpen;
+
+  const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(isNavigationSuspended);
 
   const patternsById = useMemo(() => {
     const map = new Map<string, Pattern>();
@@ -692,6 +720,7 @@ const App: React.FC = () => {
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
+  const [instrumentListFocusRevision, setInstrumentListFocusRevision] = useState(0);
 
   useEffect(() => {
     if (activeSection === 'trackA') {
@@ -1122,39 +1151,40 @@ const App: React.FC = () => {
             // New explicit note on this row
             activeNote = noteOnRow;
 
-            // Retrigger envelopes only on the first tick of the row so that
-            // the same row is not restarted multiple times when ticksPerRow > 1.
+            // Retrigger envelopes and send MIDI output only on the first tick of the
+            // row so that the same note is not re-sent multiple times when
+            // ticksPerRow > 1.
             if (state.currentTick === 0) {
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
-            }
 
-            // Resolve sustain position for the instrument used by this note.
-            const instId = activeNote && typeof activeNote.instrument === 'string'
-              ? activeNote.instrument
-              : '';
-            const instrument = instrumentsById.get(instId);
-            const rawSustain = instrument?.sustain ?? null;
-            if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
-              channelSustainRef.current[ch] = Math.floor(rawSustain);
-            } else {
-              channelSustainRef.current[ch] = null;
-            }
-            channelReleasedRef.current[ch] = false;
+              // Resolve sustain position for the instrument used by this note.
+              const instId = activeNote && typeof activeNote.instrument === 'string'
+                ? activeNote.instrument
+                : '';
+              const instrument = instrumentsById.get(instId);
+              const rawSustain = instrument?.sustain ?? null;
+              if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
+                channelSustainRef.current[ch] = Math.floor(rawSustain);
+              } else {
+                channelSustainRef.current[ch] = null;
+              }
+              channelReleasedRef.current[ch] = false;
 
-            let volumeForMidi: number | null = null;
-            if (volumeOnRow !== undefined && volumeOnRow !== null) {
-              volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-            }
+              let volumeForMidi: number | null = null;
+              if (volumeOnRow !== undefined && volumeOnRow !== null) {
+                volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              }
 
-            if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
-              sendInstrumentMidiNoteOn(
-                ch,
-                instrument,
-                activeNote.note,
-                activeNote.octave,
-                volumeForMidi
-              );
+              if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
+                sendInstrumentMidiNoteOn(
+                  ch,
+                  instrument,
+                  activeNote.note,
+                  activeNote.octave,
+                  volumeForMidi
+                );
+              }
             }
           }
 
@@ -2428,12 +2458,16 @@ const App: React.FC = () => {
   const handleCloseInstrumentMidi = useCallback(() => {
     setIsInstrumentMidiOpen(false);
     setInstrumentMidiTarget(null);
-  }, []);
+    setActiveSection('instrumentList');
+    setInstrumentListFocusRevision(prev => prev + 1);
+  }, [setActiveSection, setInstrumentListFocusRevision]);
 
   const handleSaveInstrumentMidi = useCallback(
     (midi: { channel: number | null; program: number | null }) => {
       if (!instrumentMidiTarget) {
         setIsInstrumentMidiOpen(false);
+        setActiveSection('instrumentList');
+        setInstrumentListFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -2474,8 +2508,18 @@ const App: React.FC = () => {
 
       setIsInstrumentMidiOpen(false);
       setInstrumentMidiTarget(null);
+      setActiveSection('instrumentList');
+      setInstrumentListFocusRevision(prev => prev + 1);
     },
-    [instrumentMidiTarget, currentSong.instruments, updateSong, currentInstrument, setCurrentInstrument]
+    [
+      instrumentMidiTarget,
+      currentSong.instruments,
+      updateSong,
+      currentInstrument,
+      setCurrentInstrument,
+      setActiveSection,
+      setInstrumentListFocusRevision
+    ]
   );
 
   const handleRenameInstrument = useCallback((name: string) => {
@@ -4718,6 +4762,7 @@ const App: React.FC = () => {
               onRenameInstrument={handleRenameInstrument}
               onMoveInstrument={handleMoveInstrument}
               onOpenInstrumentMidi={handleOpenInstrumentMidi}
+              focusRevision={instrumentListFocusRevision}
             />
             
             <div className="bottom-panels">

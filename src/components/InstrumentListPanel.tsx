@@ -14,6 +14,7 @@ interface InstrumentListPanelProps {
   onRenameInstrument: (name: string) => void;
   onMoveInstrument: (index: number, direction: 'up' | 'down') => void;
   onOpenInstrumentMidi: (instrument: Instrument) => void;
+  focusRevision: number;
 }
 
 export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
@@ -24,7 +25,8 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   onSelectInstrument,
   onRenameInstrument,
   onMoveInstrument,
-  onOpenInstrumentMidi
+  onOpenInstrumentMidi,
+  focusRevision
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -45,7 +47,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
     if (isActive && listRef.current) {
       listRef.current.focus();
     }
-  }, [isActive]);
+  }, [isActive, focusRevision]);
 
   useEffect(() => {
     if (!isActive || !itemsContainerRef.current) {
@@ -126,6 +128,14 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
         event.preventDefault();
         if (currentIndex < instruments.length - 1 && instruments[currentIndex]) {
           onMoveInstrument(currentIndex, 'down');
+        }
+        return;
+      }
+      if (event.key.toUpperCase() === 'M') {
+        event.preventDefault();
+        const instrument = instruments[currentIndex];
+        if (instrument) {
+          onOpenInstrumentMidi(instrument);
         }
         return;
       }

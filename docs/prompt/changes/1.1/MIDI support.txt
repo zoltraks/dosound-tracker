@@ -258,3 +258,83 @@ Information dialog about how many events were copied is shown below the MIDI con
 When loading MIDI configuration fails, show error information about that about wrong format or other error
 
 ---
+
+This is my song:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 16
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+    - number: "02"
+      steps: []
+    - number: "03"
+      steps: []
+  instrument:
+    - number: "00"
+      volume: [0]
+      midi:
+        channel: 1
+```
+
+This is my MIDI configuration:
+
+```yaml
+midi:
+  version: 1
+  input:
+    enable: true
+    agnostic: true
+    device: input-10
+  output:
+    enable: true
+    agnostic: true
+    device: output-12
+```
+
+When I play pattern or song I see to many MIDI output messages, this is a log copied:
+
+```
+Time          Data               Device                Ch  Type        Note  Value
+17:21:05.299  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:05.318  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:05.319  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:05.341  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:05.341  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:05.357  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:05.357  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:05.387  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:05.387  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.205  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:07.205  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.221  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:07.221  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.247  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:07.247  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.261  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:07.261  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.277  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:07.277  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.303  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+17:21:07.303  90 3C 7F           JT-4000 MICRO         01  Note On     C-4     127
+17:21:07.782  80 3C 40           JT-4000 MICRO         01  Note Off    C-4      64
+```
+
+But there should be only one "Note On" command send as there is only one note in a pattern and no "note off" step.
+
+Check the routing as when I send a message on MIDI IN and instrument is played with MIDI settings set (the same instrument as above), I see no message on the output.
+
+Finally, check why I can see MIDI output message but the message is not being send (my MIDI device is not receiving anything but it should).
+
+---

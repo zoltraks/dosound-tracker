@@ -2,11 +2,16 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import type { NavigationSection, KeyboardShortcut } from '../constants/navigation';
 import { NAVIGATION_ORDER, KEYBOARD_SHORTCUTS } from '../constants/navigation';
 
-export const useKeyboardNavigation = () => {
+export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) => {
   const [activeSection, setActiveSectionInternal] = useState<NavigationSection>('octave');
   const [lastTrackSection, setLastTrackSection] = useState<'trackA' | 'trackB' | 'trackC'>('trackA');
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
+  const navigationSuspendedRef = useRef<boolean>(isNavigationSuspended);
+
+  useEffect(() => {
+    navigationSuspendedRef.current = isNavigationSuspended;
+  }, [isNavigationSuspended]);
 
   const setActiveSection = useCallback((section: NavigationSection) => {
     setActiveSectionInternal(section);
@@ -96,6 +101,10 @@ export const useKeyboardNavigation = () => {
       (target != null && target.isContentEditable);
 
     const isTabKey = key === 'TAB';
+
+    if (navigationSuspendedRef.current && isTabKey) {
+      return;
+    }
 
     if (isEditable && !isTabKey) {
       return;

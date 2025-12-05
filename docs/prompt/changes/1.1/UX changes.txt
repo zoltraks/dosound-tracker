@@ -1,1 +1,16 @@
 When editing steps in track when I reach last position, then the next one should be the first step again (wrap).
+
+---
+
+
+When any modal dialog is shown, the TAB navigation through main UI interface should be disabled until modal dialog is closed. After modal dialog (or MIDI configuration which is also modal dialog) the TAB navigation should be resumed.
+---
+
+
+When I am focused on Instrument panel and press Ctrl+M instrument MIDI settings dialog is shown correctly but when it's closed I see that I am back on Instrument panel but I can't press Ctrl+M again or Enter to change instrument name, I need to click the Instrument panel again with mouse or navigate with Tab again to Instrument panel so it will work as usual alowing me to edit instrument names when Enter key is pressed.
+
+---
+
+I would also like to navigate with arrows through buttons "CLEAR", "CANCEL" and "SAVE" in instrument MIDI settings dialog.
+
+---
