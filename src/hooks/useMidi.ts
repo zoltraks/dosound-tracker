@@ -52,6 +52,7 @@ interface UseMidiResult {
   sendNoteOn: (channel: number, noteNumber: number, velocity: number) => void;
   sendNoteOff: (channel: number, noteNumber: number, velocity?: number) => void;
   sendProgramChange: (channel: number, program: number) => void;
+  sendSystemReset: () => void;
 }
 
 const MAX_MONITOR_ENTRIES = 1000;
@@ -638,6 +639,67 @@ export function useMidi(
       resolveDeviceName,
     ]);
 
+  const sendSystemReset = useCallback(() => {
+    if (!config.outputEnabled) {
+      return;
+    }
+
+    const output = currentOutputRef.current;
+    if (!output || typeof output.send !== 'function') {
+      return;
+    }
+
+    const status = 0xff;
+    const bytes = [status];
+
+    const dataHex = bytes
+      .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
+      .join(' ');
+
+    const outputDeviceName = resolveDeviceName(config.outputId ?? null, 'MIDI Out');
+
+    addOutMonitorEntry({
+      data: dataHex,
+      device: outputDeviceName,
+      channel: '--',
+      type: 'System Reset',
+      note: '',
+      value: null,
+    });
+
+    let debugOn = false;
+    try {
+      debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+    } catch {
+      debugOn = false;
+    }
+
+    if (debugOn && enableMonitors) {
+      const time = formatTime();
+      // eslint-disable-next-line no-console
+      console.log('MIDI OUT', {
+        time,
+        type: 'System Reset',
+        status,
+        data: dataHex,
+        device: outputDeviceName,
+      });
+    }
+
+    try {
+      const buffer = new Uint8Array(bytes);
+      output.send(buffer);
+    } catch {
+      // Ignore send errors
+    }
+  }, [
+    addOutMonitorEntry,
+    config.outputEnabled,
+    config.outputId,
+    enableMonitors,
+    resolveDeviceName,
+  ]);
+
   useEffect(() => {
     if (typeof navigator === 'undefined') {
       setIsSupported(false);
@@ -880,5 +942,6 @@ export function useMidi(
     sendNoteOn,
     sendNoteOff,
     sendProgramChange,
+    sendSystemReset,
   };
 }

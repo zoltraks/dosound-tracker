@@ -660,3 +660,7 @@ Time          Data               Device                Ch  Type        Note  Val
 ```
 
 ---
+
+In MIDI configuration window add button "RESET" on the left side after "RESCAN" and when this button is pressed, send system reset MIDI message to currently set output MIDI device. If MIDI device is not set or "Enable MIDI output" is unchecked, the "RESET" button should be disabled.
+
+---

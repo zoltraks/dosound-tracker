@@ -111,6 +111,7 @@ export interface ModalContainerProps {
   setIsDownloadOpen: (value: boolean) => void;
   midiLoadError: string;
   midiCopySummary: string;
+  onMidiSystemReset: () => void;
 }
 
 export const ModalContainer: React.FC<ModalContainerProps> = ({
@@ -204,6 +205,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   setIsDownloadOpen,
   midiLoadError,
   midiCopySummary,
+  onMidiSystemReset,
 }) => {
   return (
     <>
@@ -399,6 +401,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onChangeConfig={onLiveMidiConfigChange}
         onCopySummary={setMidiCopySummary}
         onLoadError={setMidiLoadError}
+        onSystemReset={onMidiSystemReset}
       />
 
       <DownloadModal

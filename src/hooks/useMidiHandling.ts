@@ -40,6 +40,7 @@ interface UseMidiHandlingResult {
   midiInputEnabled: boolean;
   midiOutputEnabled: boolean;
   resetMidiProgramCache: () => void;
+  sendSystemReset: () => void;
 }
 
 export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlingResult {
@@ -56,6 +57,7 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     sendNoteOn,
     sendNoteOff,
     sendProgramChange,
+    sendSystemReset,
   } = useMidi(options.onNoteEvent, { enableMonitors: options.monitorsEnabled });
 
   const playbackMidiNotesRef = useRef<Array<{ midiChannel: number; noteNumber: number } | null>>([
@@ -178,5 +180,6 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     midiInputEnabled,
     midiOutputEnabled,
     resetMidiProgramCache,
+    sendSystemReset,
   };
 }

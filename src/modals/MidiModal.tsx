@@ -20,6 +20,7 @@ interface MidiModalProps {
   onChangeConfig: (patch: Partial<MidiConfig>) => void;
   onCopySummary?: (summary: string) => void;
   onLoadError?: (message: string) => void;
+  onSystemReset: () => void;
 }
 
 export const MidiModal: React.FC<MidiModalProps> = ({
@@ -37,6 +38,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   onChangeConfig,
   onCopySummary,
   onLoadError,
+  onSystemReset,
 }) => {
   const [localConfig, setLocalConfig] = useState<MidiConfig>(config);
 
@@ -546,6 +548,14 @@ export const MidiModal: React.FC<MidiModalProps> = ({
               onClick={onRescan}
             >
               RESCAN
+            </button>
+            <button
+              className="command-btn"
+              type="button"
+              onClick={onSystemReset}
+              disabled={!localConfig.outputEnabled || !effectiveOutputId}
+            >
+              RESET
             </button>
           </div>
           <div className="midi-actions-right">

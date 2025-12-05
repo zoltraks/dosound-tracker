@@ -4062,6 +4062,7 @@ const App: React.FC = () => {
     midiInputEnabled,
     midiOutputEnabled,
     resetMidiProgramCache,
+    sendSystemReset,
   } = useMidiHandling({ onNoteEvent: handleMidiNoteEvent, monitorsEnabled: isDebugMode || isMidiModalOpen });
 
   // Keep MIDI helper ref in sync with the latest MIDI send functions from the
@@ -4103,6 +4104,10 @@ const App: React.FC = () => {
   const handleRescanMidiDevices = useCallback(() => {
     refreshMidiDevices();
   }, [refreshMidiDevices]);
+
+  const handleMidiSystemReset = useCallback(() => {
+    sendSystemReset();
+  }, [sendSystemReset]);
 
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
@@ -4675,6 +4680,7 @@ const App: React.FC = () => {
           setIsDownloadOpen={setIsDownloadOpen}
           midiLoadError={midiLoadError}
           midiCopySummary={midiCopySummary}
+          onMidiSystemReset={handleMidiSystemReset}
         />
         </div>
       </ErrorBoundary>
