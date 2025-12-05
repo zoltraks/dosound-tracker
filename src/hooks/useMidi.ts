@@ -927,7 +927,14 @@ export function useMidi(
     }
 
     currentOutputRef.current = nextOutput;
-  }, [config.outputEnabled, config.outputId]);
+
+    // Automatically send a System Reset whenever output becomes active on a
+    // specific device: when Enable MIDI output is turned on, when the output
+    // device is changed, or on initial setup when both are already set.
+    if (nextOutput && config.outputEnabled && nextOutput !== previousOutput) {
+      sendSystemReset();
+    }
+  }, [config.outputEnabled, config.outputId, sendSystemReset]);
 
   return {
     isSupported,
