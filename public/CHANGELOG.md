@@ -1,10 +1,20 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.2
+
+Playback performance and Electron stability improvements, faster instrument resolution, and instant MIDI configuration updates.
+
+- Improved Electron playback timing by disabling `backgroundThrottling` for the renderer process and tightening the sequencer worker tick loop to reduce drift and jitter, especially on Electron builds and macOS.
+- Optimized pattern and instrument lookup by using precomputed maps instead of repeated linear searches so large songs scroll and play back more smoothly during heavy editing.
+- Made MIDI configuration changes (input/output device selection and ignore-volume toggles) apply instantly when changed in the MIDI modal, instead of only on save, so routing tweaks take effect immediately.
+- Added automatic approval for `midi` and `midiSysex` permissions in the Electron app to avoid repeated prompts and make MIDI devices connect more reliably.
+- Expanded internal tests and refactoring documentation for MIDI, data management and UI state handling to improve long-term stability without changing existing workflows.
+
 ## Version 1.1.1
 
 Experimental MIDI support, improved track navigation, and safer exports and unsaved‑changes handling.
 
-- Introduced experimental **MIDI support** with configurable input/output devices, device selection and real‑time monitoring so external keyboards and synths can drive DOSOUND Tracker.
+- Introduced experimental **MIDI support** with configurable input/output devices, device selection and real-time monitoring so external keyboards and synths can drive DOSOUND Tracker.
 - Added live MIDI playback features including enable/disable toggle, debug console logging of MIDI input/output events, note transposition based on instrument base pitch, and improved disabled‑state styling on MIDI controls.
 - Implemented MIDI‑driven envelope visualization with 20ms tick updates, sustain support and release handling so instrument volume envelopes animate in real time while playing from MIDI.
 - Improved track editing and navigation by adding step editing wrap‑around from the last to the first position, persistent current‑step highlighting even when the Track panel loses focus, and click‑to‑jump behavior in the position numbers panel.
