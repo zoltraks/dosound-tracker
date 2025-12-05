@@ -4,8 +4,8 @@ import { useTheme } from './hooks/useTheme';
 import { useDataManagement } from './hooks/useDataManagement';
 import { useSequencer } from './hooks/useSequencer';
 import { useAudioContext } from './hooks/useAudioContext';
-import { useMidi } from './hooks/useMidi';
 import { useModalManager } from './hooks/useModalManager';
+import { useMidiHandling } from './hooks/useMidiHandling';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine, Song } from './synth/SoundDriver';
@@ -700,21 +700,6 @@ const App: React.FC = () => {
   // for a note whose instrument has a sustain point. Once released, the
   // envelope continues past the sustain index instead of being hard-muted.
   const channelReleasedRef = useRef<boolean[]>([false, false, false]);
-  // Track the most recent MIDI note sent for each YM2149 channel so that
-  // pattern note-off events can send matching MIDI Note Off messages.
-  const playbackMidiNotesRef = useRef<Array<{ midiChannel: number; noteNumber: number } | null>>([
-    null,
-    null,
-    null
-  ]);
-  // Track the last program number sent per MIDI channel (1-16) so that
-  // we only emit Program Change messages when the value actually changes.
-  const midiProgramByChannelRef = useRef<Array<number | null>>(Array(16).fill(null));
-
-  const resetMidiProgramCache = useCallback(() => {
-    midiProgramByChannelRef.current = Array(16).fill(null);
-  }, []);
-
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const wasPlayingRef = useRef(false);
   const debugTickCounterRef = useRef<number>(0);
@@ -748,95 +733,19 @@ const App: React.FC = () => {
   // Track pattern playing state
   const [isPatternPlaying, setIsPatternPlaying] = useState(false);
 
-  const sendInstrumentMidiNoteOffForChannel = (
-    ymChannel: number
-  ) => {
-    if (ymChannel < 0 || ymChannel > 2) {
-      return;
-    }
-
-    const entry = playbackMidiNotesRef.current[ymChannel];
-    if (!entry) {
-      return;
-    }
-
-    sendNoteOff(entry.midiChannel, entry.noteNumber);
-    playbackMidiNotesRef.current[ymChannel] = null;
-  };
-
-  const sendInstrumentMidiNoteOn = (
-    ymChannel: number,
-    instrument: Instrument | undefined,
-    note: string,
-    octave: number,
-    volumeFromStep?: number | null
-  ) => {
-    if (!instrument || !instrument.midi) {
-      return;
-    }
-
-    const rawChannel = instrument.midi.channel;
-    if (rawChannel === null || rawChannel === undefined || !Number.isFinite(rawChannel as number)) {
-      return;
-    }
-
-    const safeChannel = Math.max(1, Math.min(16, Math.floor(rawChannel as number)));
-
-    const upperNote = note.toUpperCase();
-    const noteIndex = NOTES.indexOf(upperNote);
-    if (noteIndex < 0) {
-      return;
-    }
-
-    const noteNumber = (octave + 1) * 12 + noteIndex;
-
-    const rawProgram = instrument.midi.program;
-    if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
-      const clampedProgram = Math.max(0, Math.min(127, Math.floor(rawProgram)));
-      const lastProgram = midiProgramByChannelRef.current[safeChannel - 1];
-      if (lastProgram !== clampedProgram) {
-        sendProgramChange(safeChannel, clampedProgram);
-        midiProgramByChannelRef.current[safeChannel - 1] = clampedProgram;
-      }
-    }
-
-    let volumeNibble = 0x0f;
-    if (volumeFromStep !== undefined && volumeFromStep !== null) {
-      volumeNibble = Math.max(0, Math.min(0x0f, (volumeFromStep as number) | 0));
-    }
-
-    const velocity = Math.max(1, Math.min(127, Math.round((volumeNibble / 15) * 127)));
-
-    const lastEntry = ymChannel >= 0 && ymChannel <= 2 ? playbackMidiNotesRef.current[ymChannel] : null;
-    if (lastEntry) {
-      sendNoteOff(lastEntry.midiChannel, lastEntry.noteNumber);
-      if (ymChannel >= 0 && ymChannel <= 2) {
-        playbackMidiNotesRef.current[ymChannel] = null;
-      }
-    }
-
-    sendNoteOn(safeChannel, noteNumber, velocity);
-
-    if (ymChannel >= 0 && ymChannel <= 2) {
-      playbackMidiNotesRef.current[ymChannel] = {
-        midiChannel: safeChannel,
-        noteNumber
-      };
-    }
-  };
-
-  const previewInstrumentMidiNoteOn = (
-    ymChannel: number,
-    instrument: Instrument,
-    note: string,
-    octave: number
-  ) => {
-    sendInstrumentMidiNoteOn(ymChannel, instrument, note, octave, null);
-  };
-
-  const previewInstrumentMidiNoteOff = (ymChannel: number) => {
-    sendInstrumentMidiNoteOffForChannel(ymChannel);
-  };
+  // MIDI helper ref so callbacks defined before useMidiHandling can safely
+  // call instrument MIDI send/stop functions without referencing them before
+  // their declaration.
+  const midiHelpersRef = useRef<{
+    sendInstrumentMidiNoteOn: (
+      ymChannel: number,
+      instrument: Instrument | undefined,
+      note: string,
+      octave: number,
+      volumeFromStep?: number | null
+    ) => void;
+    sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
+  } | null>(null);
 
   // Handle stop playback with silence
   const handleStopPlayback = useCallback(() => {
@@ -853,17 +762,18 @@ const App: React.FC = () => {
     debugLastTimeRef.current = null;
     // Send MIDI Note Off for any active playback notes so external
     // devices do not get stuck notes when playback stops.
-    playbackMidiNotesRef.current.forEach((entry, ch) => {
-      if (entry) {
-        sendInstrumentMidiNoteOffForChannel(ch);
+    const helpers = midiHelpersRef.current;
+    if (helpers) {
+      for (let ch = 0; ch < 3; ch += 1) {
+        helpers.sendInstrumentMidiNoteOffForChannel(ch);
       }
-    });
+    }
     
     // Silence all channels
     if (ym2149Ref.current) {
       ym2149Ref.current.silenceAll();
     }
-  }, [sendInstrumentMidiNoteOffForChannel]);
+  }, []);
 
   // Basic sequencer callback for playback
   const sequencerCallback = useCallback((state: SequencerState) => {
@@ -1196,13 +1106,16 @@ const App: React.FC = () => {
               }
 
               if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
-                sendInstrumentMidiNoteOn(
-                  ch,
-                  instrument,
-                  activeNote.note,
-                  activeNote.octave,
-                  volumeForMidi
-                );
+                const helpers = midiHelpersRef.current;
+                if (helpers) {
+                  helpers.sendInstrumentMidiNoteOn(
+                    ch,
+                    instrument,
+                    activeNote.note,
+                    activeNote.octave,
+                    volumeForMidi
+                  );
+                }
               }
             }
           }
@@ -3558,8 +3471,9 @@ const App: React.FC = () => {
         const instrument = currentInstrument as any;
         const noteData = { note: transposedNoteName, octave: clampedOctave };
 
-        if (currentInstrument) {
-          sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
+        const helpers = midiHelpersRef.current;
+        if (helpers && currentInstrument) {
+          helpers.sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
         }
 
         if (midiPreviewTimerRef.current !== null) {
@@ -3629,7 +3543,10 @@ const App: React.FC = () => {
         const trackId: 'A' | 'B' | 'C' =
           activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
         const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-        sendInstrumentMidiNoteOffForChannel(ymChannel);
+        const helpers = midiHelpersRef.current;
+        if (helpers) {
+          helpers.sendInstrumentMidiNoteOffForChannel(ymChannel);
+        }
         return;
       }
 
@@ -3683,7 +3600,10 @@ const App: React.FC = () => {
           ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
 
           // Also send MIDI OUT for live preview using the instrument's MIDI settings.
-          sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
+          const helpers = midiHelpersRef.current;
+          if (helpers) {
+            helpers.sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
+          }
 
           lastMidiPreviewRef.current = {
             noteNumber,
@@ -3787,7 +3707,10 @@ const App: React.FC = () => {
             last.ymChannel <= 2
           ) {
             // Send matching MIDI Note Off for the YM channel used by the live preview.
-            sendInstrumentMidiNoteOffForChannel(last.ymChannel);
+            const helpers = midiHelpersRef.current;
+            if (helpers) {
+              helpers.sendInstrumentMidiNoteOffForChannel(last.ymChannel);
+            }
 
             const hasSustain =
               typeof midiLiveSustainIndexRef.current === 'number' &&
@@ -3827,8 +3750,7 @@ const App: React.FC = () => {
       lastTrackId,
       setSharedCurrentLine,
       sharedCurrentLine,
-      sendInstrumentMidiNoteOn,
-      sendInstrumentMidiNoteOffForChannel
+      midiHelpersRef
     ]
   );
 
@@ -4124,19 +4046,30 @@ const App: React.FC = () => {
   }, []);
 
   const {
-    isSupported: isMidiSupported,
-    accessError: midiAccessError,
-    devices: midiDevices,
-    config: midiConfig,
-    setConfig: setMidiConfig,
-    inMonitor: midiInMonitor,
-    outMonitor: midiOutMonitor,
-    clearMonitors: clearMidiMonitors,
-    refreshDevices: refreshMidiDevices,
-    sendNoteOn,
-    sendNoteOff,
-    sendProgramChange
-  } = useMidi(handleMidiNoteEvent, { enableMonitors: isDebugMode || isMidiModalOpen });
+    isMidiSupported,
+    midiAccessError,
+    midiDevices,
+    midiConfig,
+    setMidiConfig,
+    midiInMonitor,
+    midiOutMonitor,
+    clearMidiMonitors,
+    refreshMidiDevices,
+    sendInstrumentMidiNoteOn,
+    sendInstrumentMidiNoteOffForChannel,
+    previewInstrumentMidiNoteOn,
+    previewInstrumentMidiNoteOff,
+    midiInputEnabled,
+    midiOutputEnabled,
+    resetMidiProgramCache,
+  } = useMidiHandling({ onNoteEvent: handleMidiNoteEvent, monitorsEnabled: isDebugMode || isMidiModalOpen });
+
+  // Keep MIDI helper ref in sync with the latest MIDI send functions from the
+  // useMidiHandling hook so callbacks defined earlier can use them safely.
+  midiHelpersRef.current = {
+    sendInstrumentMidiNoteOn,
+    sendInstrumentMidiNoteOffForChannel,
+  };
 
   const handleLiveMidiConfigChange = useCallback(
     (patch: Partial<MidiConfig>) => {
@@ -4170,9 +4103,6 @@ const App: React.FC = () => {
   const handleRescanMidiDevices = useCallback(() => {
     refreshMidiDevices();
   }, [refreshMidiDevices]);
-
-  const midiInputEnabled = midiConfig.inputEnabled && !!midiConfig.inputId;
-  const midiOutputEnabled = midiConfig.outputEnabled && !!midiConfig.outputId;
 
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
