@@ -88,6 +88,7 @@ const App: React.FC = () => {
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
   const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
+  const [midiCopySummary, setMidiCopySummary] = useState('');
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
   const [isMidiModalOpen, setIsMidiModalOpen] = useState(false);
@@ -4192,6 +4193,7 @@ const App: React.FC = () => {
         !!dumpExportSummary ||
         !!renumberSummary ||
         !!instrumentOperationSummary ||
+        !!midiCopySummary ||
         isAboutOpen ||
         isChangelogOpen ||
         isDownloadOpen ||
@@ -4291,6 +4293,10 @@ const App: React.FC = () => {
           handleCloseInstrumentOperationSummary();
           return;
         }
+        if (midiCopySummary) {
+          setMidiCopySummary('');
+          return;
+        }
         if (isAboutOpen) {
           setIsAboutOpen(false);
           return;
@@ -4342,6 +4348,10 @@ const App: React.FC = () => {
         }
         if (renumberSummary) {
           handleCloseRenumberSummary();
+          return;
+        }
+        if (midiCopySummary) {
+          setMidiCopySummary('');
           return;
         }
         if (isDebugInfoOpen) {
@@ -4402,9 +4412,11 @@ const App: React.FC = () => {
     dumpExportSummary,
     renumberSummary,
     instrumentOperationSummary,
+    midiCopySummary,
     isAboutOpen,
     isChangelogOpen,
     isDownloadOpen,
+    isDebugInfoOpen,
     isMidiModalOpen,
     isTransposeOpen,
     isOptimizeConfirmOpen,
@@ -4413,6 +4425,7 @@ const App: React.FC = () => {
     isResetConfirmOpen,
     isQuitConfirmOpen,
     isInstrumentDeleteOpen,
+    isInstrumentTypeWarningOpen,
     handleCancelTranspose,
     handleConfirmTranspose,
     handleCancelOptimize,
@@ -4438,7 +4451,8 @@ const App: React.FC = () => {
     setInstrumentError,
     setTrackClipboardError,
     setIsAboutOpen,
-    setIsDownloadOpen
+    setIsDownloadOpen,
+    setMidiCopySummary,
   ]);
 
   const playlistLength = currentSong.playlist.length;
@@ -4947,12 +4961,20 @@ const App: React.FC = () => {
           onClear={handleClearMidiMonitors}
           onRescan={handleRescanMidiDevices}
           onChangeConfig={handleLiveMidiConfigChange}
+          onCopySummary={setMidiCopySummary}
         />
 
         <DownloadModal
           isOpen={isDownloadOpen}
           files={downloadFiles}
           onClose={() => setIsDownloadOpen(false)}
+        />
+
+        <InformationModal
+          isOpen={!!midiCopySummary}
+          title="MIDI Monitor"
+          message={midiCopySummary}
+          onClose={() => setMidiCopySummary('')}
         />
         </div>
       </ErrorBoundary>

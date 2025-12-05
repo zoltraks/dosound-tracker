@@ -195,3 +195,62 @@ Don't route MIDI input messages automatically to MIDI output.
 Route them only if a selected instrument that receives MIDI input messages has MIDI settings set and you should send message obeying instrument MIDI settings (channel and optionally program number).
 
 ---
+
+When I click on "midi-monitor-title" of MIDI configuration window copy all existing log messages from MIDI IN or MIDI OUT to a clipboard. Use hand mouse cursor over the titles so I know that I can click them to copy log table content.
+
+---
+
+Check why "Enable MIDI input" and "Enable MIDI output" are not saved and when I check them in MIDI configuration and SAVE and open back configuration again these options are unchecked
+
+---
+
+Rename "SAVE" button in MIDI configuration window to "OK". 
+Introduce new buttons "LOAD" and "SAVE" so I can store and restore a MIDI configuration from a file. 
+Use YAML format for configuration settings.
+This is an example of how the file should look like:
+
+```yaml
+midi:
+  version: 1
+
+  input:
+    enable: true        # -> MidiConfig.inputEnabled
+    device: "output-2"  # -> MidiConfig.inputId (may be null)
+    agnostic: true      # -> MidiConfig.ignoreInputVolume
+
+  output:
+    enable: true        # -> MidiConfig.outputEnabled
+    device: "output-1"  # -> MidiConfig.outputId (may be null)
+    agnostic: false     # -> MidiConfig.ignoreOutputVolume
+```
+
+---
+
+Move "CANCEL" button to the left before "CLEAR" button in MIDI configuration window.
+
+---
+
+```
+Time	Data	Device	Ch	Type	Note	Value
+16:39:06.543	90 59 7F	JT-4000 MICRO	01	Note On	F-6	32
+16:39:06.748	80 59 7F	JT-4000 MICRO	01	Note Off	F-6	0
+16:39:10.853	90 5C 7F	JT-4000 MICRO	01	Note On	G#6	32
+```
+
+```
+Time          Data               Device                 Ch  Type       Note  Value
+16:39:06.543  90 59 7F           JT-4000 MICRO          01  Note On    F-6   32
+16:39:06.748  80 59 7F           JT-4000 MICRO          01  Note Off   F-6   0
+16:39:10.853  90 5C 7F           JT-4000 MICRO          01  Note On    G#6   32
+```
+
+---
+
+Don't use info message inside the MIDI modal for the information about log entries copied to clipboard.
+Use modal information dialog instead.
+
+---
+
+Information dialog about how many events were copied is shown below the MIDI configuration window but it must be above (in front of). Fix that.
+
+---

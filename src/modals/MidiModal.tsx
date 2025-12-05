@@ -18,6 +18,7 @@ interface MidiModalProps {
   onClear: () => void;
   onRescan: () => void;
   onChangeConfig: (patch: Partial<MidiConfig>) => void;
+  onCopySummary?: (summary: string) => void;
 }
 
 export const MidiModal: React.FC<MidiModalProps> = ({
@@ -33,6 +34,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   onClear,
   onRescan,
   onChangeConfig,
+  onCopySummary,
 }) => {
   const [localConfig, setLocalConfig] = useState<MidiConfig>(config);
 
@@ -235,6 +237,68 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     reader.readAsText(file);
   };
 
+  const handleCopyMonitor = (entries: MidiMonitorEntry[], label: string) => {
+    const count = entries.length;
+    if (count === 0) {
+      return;
+    }
+
+    if (
+      typeof navigator === 'undefined' ||
+      !navigator.clipboard ||
+      typeof navigator.clipboard.writeText !== 'function'
+    ) {
+      return;
+    }
+
+    const padRight = (value: string, width: number) => {
+      const truncated = value.length > width ? value.slice(0, width) : value;
+      if (truncated.length >= width) return truncated;
+      return truncated + ' '.repeat(width - truncated.length);
+    };
+
+    const padLeft = (value: string, width: number) => {
+      const truncated = value.length > width ? value.slice(0, width) : value;
+      if (truncated.length >= width) return truncated;
+      return ' '.repeat(width - truncated.length) + truncated;
+    };
+
+    const header =
+      `${padRight('Time', 12)}  ` +
+      `${padRight('Data', 17)}  ` +
+      `${padRight('Device', 20)}  ` +
+      `${padRight('Ch', 2)}  ` +
+      `${padRight('Type', 10)}  ` +
+      `${padRight('Note', 4)}  ` +
+      `${padRight('Value', 5)}`;
+
+    const lines = entries.map(entry => {
+      const device = entry.device ? entry.device.slice(0, 20) : '';
+      const valueText = entry.value == null ? '' : String(entry.value);
+
+      return (
+        `${padRight(entry.time, 12)}  ` +
+        `${padRight(entry.data, 17)}  ` +
+        `${padRight(device, 20)}  ` +
+        `${padRight(entry.channel, 2)}  ` +
+        `${padRight(entry.type, 10)}  ` +
+        `${padRight(entry.note, 4)}  ` +
+        `${padLeft(valueText, 5)}`
+      );
+    });
+
+    const text = [header, ...lines].join('\n');
+    navigator.clipboard
+      .writeText(text)
+      .then(() => {
+        if (onCopySummary) {
+          const eventsWord = count === 1 ? 'event' : 'events';
+          onCopySummary(`Copied ${count} ${label} ${eventsWord} to clipboard.`);
+        }
+      })
+      .catch(() => undefined);
+  };
+
   const supportMessage = !isSupported
     ? 'Web MIDI API is not supported in this environment.'
     : accessError
@@ -310,7 +374,17 @@ export const MidiModal: React.FC<MidiModalProps> = ({
               </div>
 
               <div className="midi-monitor-panel">
-                <div className="midi-monitor-title">MIDI IN</div>
+                <div className="midi-monitor-title">
+                  <span>MIDI IN</span>
+                  <button
+                    className="midi-monitor-copy-btn"
+                    type="button"
+                    onClick={() => handleCopyMonitor(inMonitor, 'MIDI IN')}
+                    disabled={inMonitor.length === 0}
+                  >
+                    COPY
+                  </button>
+                </div>
                 <div className="midi-monitor-header">
                   <span className="midi-col time">Time</span>
                   <span className="midi-col data">Data</span>
@@ -393,7 +467,17 @@ export const MidiModal: React.FC<MidiModalProps> = ({
               </div>
 
               <div className="midi-monitor-panel">
-                <div className="midi-monitor-title">MIDI OUT</div>
+                <div className="midi-monitor-title">
+                  <span>MIDI OUT</span>
+                  <button
+                    className="midi-monitor-copy-btn"
+                    type="button"
+                    onClick={() => handleCopyMonitor(outMonitor, 'MIDI OUT')}
+                    disabled={outMonitor.length === 0}
+                  >
+                    COPY
+                  </button>
+                </div>
                 <div className="midi-monitor-header">
                   <span className="midi-col time">Time</span>
                   <span className="midi-col data">Data</span>
