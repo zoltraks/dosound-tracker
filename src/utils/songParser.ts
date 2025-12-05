@@ -38,6 +38,7 @@ interface InstrumentNodeYaml {
 interface PatternNodeYaml {
   number?: unknown;
   name?: unknown;
+  step?: unknown;
   steps?: unknown;
   lines?: unknown;
 }
@@ -199,11 +200,13 @@ export const parseSongFromYaml = (content: string): Song => {
         ? patternNode.name
         : `Pattern ${number}`;
 
-    const rawLineNodes = Array.isArray(patternNode.steps)
-      ? patternNode.steps
-      : Array.isArray(patternNode.lines)
-        ? patternNode.lines
-        : [];
+    const rawLineNodes = Array.isArray(patternNode.step)
+      ? patternNode.step
+      : Array.isArray(patternNode.steps)
+        ? patternNode.steps
+        : Array.isArray(patternNode.lines)
+          ? patternNode.lines
+          : [];
     const expandedLineNodes: unknown[] = [];
 
     // Expand compressed space/off runs (space: N / off: N) into individual logical lines.

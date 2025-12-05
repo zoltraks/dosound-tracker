@@ -557,12 +557,12 @@ export const useDataManagement = () => {
         }
         flushRun();
 
-        const patternNode: { number: string; steps?: PatternStep[] } = {
+        const patternNode: { number: string; step?: PatternStep[] } = {
           number,
         };
 
         if (compressedLines.length > 0) {
-          patternNode.steps = compressedLines;
+          patternNode.step = compressedLines;
         }
 
         return patternNode;
