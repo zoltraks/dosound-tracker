@@ -66,7 +66,11 @@ interface RawMidiConfig {
   ignoreOutputVolume?: boolean;
 }
 
-export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiResult {
+export function useMidi(
+  onNoteEvent: (event: MidiNoteEvent) => void,
+  options?: { enableMonitors?: boolean }
+): UseMidiResult {
+  const enableMonitors = options?.enableMonitors ?? true;
   const [isSupported, setIsSupported] = useState<boolean>(false);
   const [accessError, setAccessError] = useState<string | null>(null);
   const [devices, setDevices] = useState<{ inputs: MidiDeviceInfo[]; outputs: MidiDeviceInfo[] }>(
@@ -319,26 +323,28 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       noteLabel = `${noteBase}${midiOctave}`;
       value = data2;
 
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn) {
-        console.log('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          velocity: data2,
-          type,
-          status,
+      if (enableMonitors) {
+        addInMonitorEntry({
           data: dataHex,
           device: deviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value,
         });
+
+        if (debugOn) {
+          console.log('MIDI IN', {
+            time,
+            note: noteLabel,
+            channel,
+            velocity: data2,
+            type,
+            status,
+            data: dataHex,
+            device: deviceName,
+          });
+        }
       }
 
       onNoteEvent({
@@ -398,52 +404,56 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       noteLabel = `CC ${data1}`;
       value = data2;
 
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn) {
-        console.log('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          value,
-          type,
-          status,
+      if (enableMonitors) {
+        addInMonitorEntry({
           data: dataHex,
           device: deviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value,
         });
+
+        if (debugOn) {
+          console.log('MIDI IN', {
+            time,
+            note: noteLabel,
+            channel,
+            value,
+            type,
+            status,
+            data: dataHex,
+            device: deviceName,
+          });
+        }
       }
     } else {
       type = 'Other';
       noteLabel = '';
       value = null;
 
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn) {
-        console.log('MIDI IN', {
-          time,
-          type,
+      if (enableMonitors) {
+        addInMonitorEntry({
           data: dataHex,
-          channel,
           device: deviceName,
+          channel: channelHex,
+          type,
           note: noteLabel,
           value,
-          status,
         });
+
+        if (debugOn) {
+          console.log('MIDI IN', {
+            time,
+            type,
+            data: dataHex,
+            channel,
+            device: deviceName,
+            note: noteLabel,
+            value,
+            status,
+          });
+        }
       }
     }
   }, [
@@ -452,6 +462,7 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
     config.outputEnabled,
     config.outputId,
     config.ignoreOutputVolume,
+    enableMonitors,
     onNoteEvent,
     resolveDeviceName,
   ]);
@@ -495,35 +506,37 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
 
       const type = kind === 'noteOn' ? 'Note On' : 'Note Off';
 
-      addOutMonitorEntry({
-        data: dataHex,
-        device: outputDeviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value: vel,
-      });
-
-      let debugOn = false;
-      try {
-        debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
-      } catch {
-        debugOn = false;
-      }
-
-      if (debugOn) {
-        const time = formatTime();
-        // eslint-disable-next-line no-console
-        console.log('MIDI OUT', {
-          time,
-          note: noteLabel,
-          channel: safeChannel,
-          velocity: vel,
-          type,
-          status,
+      if (enableMonitors) {
+        addOutMonitorEntry({
           data: dataHex,
           device: outputDeviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value: vel,
         });
+
+        let debugOn = false;
+        try {
+          debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+        } catch {
+          debugOn = false;
+        }
+
+        if (debugOn) {
+          const time = formatTime();
+          // eslint-disable-next-line no-console
+          console.log('MIDI OUT', {
+            time,
+            note: noteLabel,
+            channel: safeChannel,
+            velocity: vel,
+            type,
+            status,
+            data: dataHex,
+            device: outputDeviceName,
+          });
+        }
       }
 
       const output = currentOutputRef.current;
@@ -542,6 +555,7 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       config.ignoreOutputVolume,
       config.outputEnabled,
       config.outputId,
+      enableMonitors,
       resolveDeviceName,
     ]);
 
@@ -581,35 +595,37 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       const type = 'Program Change';
       const noteLabel = `PC ${clampedProgram}`;
 
-      addOutMonitorEntry({
-        data: dataHex,
-        device: outputDeviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value: clampedProgram,
-      });
-
-      let debugOn = false;
-      try {
-        debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
-      } catch {
-        debugOn = false;
-      }
-
-      if (debugOn) {
-        const time = formatTime();
-        // eslint-disable-next-line no-console
-        console.log('MIDI OUT', {
-          time,
-          note: noteLabel,
-          channel: safeChannel,
-          value: clampedProgram,
-          type,
-          status,
+      if (enableMonitors) {
+        addOutMonitorEntry({
           data: dataHex,
           device: outputDeviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value: clampedProgram,
         });
+
+        let debugOn = false;
+        try {
+          debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+        } catch {
+          debugOn = false;
+        }
+
+        if (debugOn) {
+          const time = formatTime();
+          // eslint-disable-next-line no-console
+          console.log('MIDI OUT', {
+            time,
+            note: noteLabel,
+            channel: safeChannel,
+            value: clampedProgram,
+            type,
+            status,
+            data: dataHex,
+            device: outputDeviceName,
+          });
+        }
       }
 
       const output = currentOutputRef.current;
@@ -627,6 +643,7 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       addOutMonitorEntry,
       config.outputEnabled,
       config.outputId,
+      enableMonitors,
       resolveDeviceName,
     ]);
 
@@ -707,7 +724,7 @@ export function useMidi(onNoteEvent: (event: MidiNoteEvent) => void): UseMidiRes
       currentInputRef.current = null;
       currentOutputRef.current = null;
     };
-  }, [handleMidiMessage, scanDevices]);
+  }, [scanDevices]);
 
   useEffect(() => {
     const access = midiAccessRef.current;

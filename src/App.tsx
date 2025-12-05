@@ -4135,7 +4135,7 @@ const App: React.FC = () => {
     sendNoteOn,
     sendNoteOff,
     sendProgramChange
-  } = useMidi(handleMidiNoteEvent);
+  } = useMidi(handleMidiNoteEvent, { enableMonitors: isDebugMode || isMidiModalOpen });
 
   const handleLiveMidiConfigChange = useCallback(
     (patch: Partial<MidiConfig>) => {
