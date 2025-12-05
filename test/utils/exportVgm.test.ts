@@ -110,20 +110,31 @@ describe('exportSongToVgm', () => {
     const trackNameEn = readUtf16LeString(bytes, pos);
     pos = trackNameEn.nextOffset;
 
-    pos = readUtf16LeString(bytes, pos).nextOffset;
-    pos = readUtf16LeString(bytes, pos).nextOffset;
-    pos = readUtf16LeString(bytes, pos).nextOffset;
-    pos = readUtf16LeString(bytes, pos).nextOffset;
-    pos = readUtf16LeString(bytes, pos).nextOffset;
+    const trackNameJp = readUtf16LeString(bytes, pos);
+    pos = trackNameJp.nextOffset;
+
+    const gameNameEn = readUtf16LeString(bytes, pos);
+    pos = gameNameEn.nextOffset;
+
+    const gameNameJp = readUtf16LeString(bytes, pos);
+    pos = gameNameJp.nextOffset;
+
+    const systemNameEn = readUtf16LeString(bytes, pos);
+    pos = systemNameEn.nextOffset;
+
+    const systemNameJp = readUtf16LeString(bytes, pos);
+    pos = systemNameJp.nextOffset;
 
     const authorEn = readUtf16LeString(bytes, pos);
     pos = authorEn.nextOffset;
 
-    pos = readUtf16LeString(bytes, pos).nextOffset;
+    const authorJp = readUtf16LeString(bytes, pos);
+    pos = authorJp.nextOffset;
 
     const releaseDate = readUtf16LeString(bytes, pos);
 
     expect(trackNameEn.value).toBe(song.title);
+    expect(gameNameEn.value).toBe('DOSOUND Tracker');
     expect(authorEn.value).toBe(song.author);
     expect(releaseDate.value).toBe(String(song.year));
   });

@@ -1434,7 +1434,7 @@ function buildGd3Tag(song: Song): Uint8Array | null {
   const fields: string[] = [
     title,
     '',
-    '',
+    'DOSOUND Tracker',
     '',
     '',
     '',
