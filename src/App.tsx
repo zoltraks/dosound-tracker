@@ -1633,12 +1633,12 @@ const App: React.FC = () => {
 
     const noteData = { note: base.note, octave: base.octave };
 
-    ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, 0, 0x0f);
+    ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, 0, 0x0f);
 
     playInstTimerRef.current = window.setInterval(() => {
       // Advance envelope step every 40ms (every 2 x 20ms ticks)
       const step = playInstStepRef.current;
-      ym2149.updateChannelWithInstrument(channel, currentInstrument as any, noteData, step, 0x0f);
+      ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, step, 0x0f);
 
       playInstSubTick = (playInstSubTick + 1) % 2;
       if (playInstSubTick === 0) {
@@ -1764,7 +1764,7 @@ const App: React.FC = () => {
             return;
           }
 
-          const noteInstIdNorm = normalizeInstrumentId((note as any).instrument as any);
+          const noteInstIdNorm = normalizeInstrumentId(note.instrument);
           if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
             usageCount++;
             patternHasUsage = true;
@@ -1989,7 +1989,7 @@ const App: React.FC = () => {
             return;
           }
 
-          const noteInstIdNorm = normalizeInstrumentId((note as any).instrument as any);
+          const noteInstIdNorm = normalizeInstrumentId(note.instrument);
           if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
             newLine[key] = null;
             lineChanged = true;
@@ -2591,7 +2591,7 @@ const App: React.FC = () => {
 
         // Simple preview on the track's channel with auto-silence
         const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-        const instrument = currentInstrument as any;
+        const instrument = currentInstrument;
         const noteData = { note: transposedNoteName, octave: clampedOctave };
 
         const helpers = midiHelpersRef.current;
@@ -2684,7 +2684,7 @@ const App: React.FC = () => {
 
         if (type === 'noteOn') {
           const noteData = { note: transposedNoteName, octave: clampedOctave };
-          const instrument = currentInstrument as any;
+          const instrument = currentInstrument;
 
           if (midiLiveTimerRef.current !== null) {
             window.clearInterval(midiLiveTimerRef.current);
