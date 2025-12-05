@@ -3,7 +3,7 @@ import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useTheme } from './hooks/useTheme';
 import { useDataManagement } from './hooks/useDataManagement';
 import { usePlaybackControls } from './hooks/usePlaybackControls';
-import { useAudioContext } from './hooks/useAudioContext';
+import { useAudioSetup } from './hooks/useAudioSetup';
 import { useModalManager } from './hooks/useModalManager';
 import { useMidiHandling } from './hooks/useMidiHandling';
 import { useTrackOperations } from './hooks/useTrackOperations';
@@ -577,9 +577,7 @@ const App: React.FC = () => {
   }, [messages, handleNotesClick]);
 
   // Audio setup
-  const { audioContext } = useAudioContext();
-  const ym2149Ref = useRef<YM2149 | null>(null);
-  const [, forceYmRender] = useState(0);
+  const { ym2149Ref } = useAudioSetup();
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
@@ -605,75 +603,7 @@ const App: React.FC = () => {
   const midiLiveLastVolumeIndexRef = useRef<number | null>(null);
   const midiLiveLastVolumeValueRef = useRef<number | null>(null);
 
-  // Initialize audio on component mount
-  useEffect(() => {
-    if (!audioContext || ym2149Ref.current) {
-      return;
-    }
-
-    try {
-      console.log('Starting audio initialization...');
-
-      console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-      console.log('AudioContext initial state:', audioContext.state);
-
-      const ym2149 = new YM2149(audioContext);
-      ym2149Ref.current = ym2149;
-      forceYmRender(v => v + 1);
-      console.log('YM2149 initialized');
-
-      (window as any).ym2149 = ym2149;
-
-      ym2149.writeRegister(0x08, 0x0F);
-      ym2149.writeRegister(0x09, 0x0F);
-      ym2149.writeRegister(0x0A, 0x0F);
-      ym2149.writeRegister(0x07, 0x38);
-      console.log('YM2149 registers set');
-
-      const testFrequency = 261.63;
-      const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-      console.log('YM2149 test tone frequency', testFrequency);
-
-      ym2149.writeRegister(0x00, testPeriod & 0xFF);
-      ym2149.writeRegister(0x01, (testPeriod >> 8) & 0x0F);
-
-      const stopToneTimeout = window.setTimeout(() => {
-        if (ym2149Ref.current) {
-          ym2149Ref.current.writeRegister(0x08, 0x00);
-          ym2149Ref.current.writeRegister(0x09, 0x00);
-          ym2149Ref.current.writeRegister(0x0A, 0x00);
-        }
-      }, 100);
-
-      const handleUserInteraction = () => {
-        if (audioContext.state === 'suspended') {
-          void audioContext.resume().then(() => {
-            console.log('AudioContext resumed by user interaction');
-          }).catch(err => {
-            console.error('AudioContext resume failed:', err);
-          });
-        }
-      };
-
-      const userEvents: Array<keyof DocumentEventMap> = ['click', 'keydown', 'pointerdown', 'touchstart'];
-      userEvents.forEach(eventType => {
-        document.addEventListener(eventType, handleUserInteraction);
-      });
-
-      return () => {
-        window.clearTimeout(stopToneTimeout);
-        userEvents.forEach(eventType => {
-          document.removeEventListener(eventType, handleUserInteraction);
-        });
-        if (ym2149Ref.current) {
-          ym2149Ref.current.dispose();
-          ym2149Ref.current = null;
-        }
-      };
-    } catch (error) {
-      console.error('Failed to initialize audio:', error);
-    }
-  }, [audioContext]);
+  // YM2149 is initialized and managed by useAudioSetup
 
   // Track envelope timing for each channel
   // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
