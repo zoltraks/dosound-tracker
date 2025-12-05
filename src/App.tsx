@@ -1806,6 +1806,7 @@ const App: React.FC = () => {
     handlePasteTrack,
     handleInsertStep,
     handleDeleteStep,
+    applyTranspose,
   } = useTrackOperations({
     song: currentSong,
     activeSection,
@@ -3292,118 +3293,25 @@ const App: React.FC = () => {
       return;
     }
 
-    const indices: number[] = [];
-    if (transposeScope === 'line') {
-      const idx = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-      indices.push(idx);
-    } else {
-      for (let i = 0; i < playlistLength; i++) {
-        indices.push(i);
-      }
-    }
+    const selectedInstrumentId = normalizeInstrumentId(currentInstrument.id);
 
-    const tracksToProcess: ('A' | 'B' | 'C')[] =
-      transposeTrackScope === 'current' ? [targetTrackId] : ['A', 'B', 'C'];
+    const result = applyTranspose({
+      semitones,
+      scope: transposeScope,
+      trackScope: transposeTrackScope,
+      instrumentScope: transposeInstrumentScope,
+      currentPatternIndex: sequencerState.currentPattern,
+      targetTrackId,
+      selectedInstrumentId,
+      normalizeInstrumentId,
+    });
 
-    const patternIds = new Set<string>();
-
-    for (const idx of indices) {
-      const entry = currentSong.playlist[idx];
-      if (!entry) continue;
-
-      for (const track of tracksToProcess) {
-        let patternId = '--';
-        switch (track) {
-          case 'A':
-            patternId = entry.trackA;
-            break;
-          case 'B':
-            patternId = entry.trackB;
-            break;
-          case 'C':
-            patternId = entry.trackC;
-            break;
-        }
-
-        if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
-          continue;
-        }
-
-        patternIds.add(patternId);
-      }
-    }
-
-    if (patternIds.size === 0) {
+    if (!result || result.patternCount === 0) {
       setTransposeSummary('No patterns found for the selected scope to transpose.');
       setIsTransposeOpen(false);
       return;
     }
 
-    const selectedInstrumentId = normalizeInstrumentId(currentInstrument.id);
-    const minSemitone = MIN_OCTAVE * 12;
-    const maxSemitone = MAX_OCTAVE * 12 + 11;
-
-    let notesChanged = 0;
-    let clippedLow = 0;
-    let clippedHigh = 0;
-
-    const updatedPatterns = currentSong.patterns.map(pattern => {
-      if (!patternIds.has(pattern.id)) {
-        return pattern;
-      }
-
-      const newLines = pattern.lines.map(line => {
-        const newLine = { ...line };
-        const cell = newLine.trackA;
-
-        if (!cell || cell.note === '===') {
-          return newLine;
-        }
-
-        if (
-          transposeInstrumentScope === 'selected' &&
-          normalizeInstrumentId(cell.instrument) !== selectedInstrumentId
-        ) {
-          return newLine;
-        }
-
-        const noteIndex = NOTES.indexOf(cell.note.toUpperCase());
-        if (noteIndex < 0) {
-          return newLine;
-        }
-
-        const originalSemitone = cell.octave * 12 + noteIndex;
-        let newSemitone = originalSemitone + semitones;
-
-        if (newSemitone < minSemitone) {
-          newSemitone = minSemitone;
-          clippedLow++;
-        } else if (newSemitone > maxSemitone) {
-          newSemitone = maxSemitone;
-          clippedHigh++;
-        }
-
-        if (newSemitone === originalSemitone) {
-          return newLine;
-        }
-
-        const newOctave = Math.floor(newSemitone / 12);
-        const newNoteIndex = newSemitone % 12;
-
-        newLine.trackA = {
-          ...cell,
-          note: NOTES[newNoteIndex],
-          octave: newOctave
-        };
-
-        notesChanged++;
-        return newLine;
-      });
-
-      return { ...pattern, lines: newLines };
-    });
-
-    updateSong({ patterns: updatedPatterns });
     setIsTransposeOpen(false);
 
     const directionLabel = semitones > 0 ? `+${semitones}` : `${semitones}`;
@@ -3428,28 +3336,27 @@ const App: React.FC = () => {
     lines.push(`Track scope: ${trackLabel}`);
     lines.push(`Instrument scope: ${instrumentLabel}`);
     lines.push('');
-    lines.push(`Patterns touched: ${patternIds.size}`);
-    lines.push(`Notes transposed: ${notesChanged}`);
+    lines.push(`Patterns touched: ${result.patternCount}`);
+    lines.push(`Notes transposed: ${result.notesChanged}`);
 
-    if (clippedLow > 0 || clippedHigh > 0) {
+    if (result.clippedLow > 0 || result.clippedHigh > 0) {
       lines.push('');
-      lines.push(`Notes clipped at bottom of range: ${clippedLow}`);
-      lines.push(`Notes clipped at top of range: ${clippedHigh}`);
+      lines.push(`Notes clipped at bottom of range: ${result.clippedLow}`);
+      lines.push(`Notes clipped at top of range: ${result.clippedHigh}`);
     }
 
     setTransposeSummary(lines.join('\n'));
   }, [
     transposeAmountInput,
-    currentSong.playlist,
-    currentSong.patterns,
+    currentSong.playlist.length,
     transposeScope,
     transposeTrackScope,
     transposeInstrumentScope,
     sequencerState.currentPattern,
     targetTrackId,
     currentInstrument.id,
-    updateSong,
-    normalizeInstrumentId
+    normalizeInstrumentId,
+    applyTranspose,
   ]);
 
   const handleTransposeAmountChange = useCallback((value: string) => {
