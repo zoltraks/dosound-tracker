@@ -26,6 +26,7 @@ docs/
 
 ## Guidelines
 
+- **File naming**: Always use `REFACTORING.md` (not `REFACTORING PROPOSAL.md`) for consistency
 - Use the existing `REFACTORING.md` and `ASSESSMENT.md` files as templates for structure and content
 - Focus on measurable improvements in type safety, testing, performance, and maintainability
 - Document both completed work and remaining gaps
