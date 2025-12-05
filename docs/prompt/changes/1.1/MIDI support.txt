@@ -254,3 +254,7 @@ Use modal information dialog instead.
 Information dialog about how many events were copied is shown below the MIDI configuration window but it must be above (in front of). Fix that.
 
 ---
+
+When loading MIDI configuration fails, show error information about that about wrong format or other error
+
+---

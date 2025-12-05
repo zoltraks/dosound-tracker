@@ -88,6 +88,7 @@ const App: React.FC = () => {
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
   const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
+  const [midiLoadError, setMidiLoadError] = useState('');
   const [midiCopySummary, setMidiCopySummary] = useState('');
   const [isDownloadOpen, setIsDownloadOpen] = useState(false);
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
@@ -4193,6 +4194,7 @@ const App: React.FC = () => {
         !!dumpExportSummary ||
         !!renumberSummary ||
         !!instrumentOperationSummary ||
+        !!midiLoadError ||
         !!midiCopySummary ||
         isAboutOpen ||
         isChangelogOpen ||
@@ -4293,6 +4295,10 @@ const App: React.FC = () => {
           handleCloseInstrumentOperationSummary();
           return;
         }
+        if (midiLoadError) {
+          setMidiLoadError('');
+          return;
+        }
         if (midiCopySummary) {
           setMidiCopySummary('');
           return;
@@ -4348,6 +4354,10 @@ const App: React.FC = () => {
         }
         if (renumberSummary) {
           handleCloseRenumberSummary();
+          return;
+        }
+        if (midiLoadError) {
+          setMidiLoadError('');
           return;
         }
         if (midiCopySummary) {
@@ -4412,6 +4422,7 @@ const App: React.FC = () => {
     dumpExportSummary,
     renumberSummary,
     instrumentOperationSummary,
+    midiLoadError,
     midiCopySummary,
     isAboutOpen,
     isChangelogOpen,
@@ -4452,6 +4463,7 @@ const App: React.FC = () => {
     setTrackClipboardError,
     setIsAboutOpen,
     setIsDownloadOpen,
+    setMidiLoadError,
     setMidiCopySummary,
   ]);
 
@@ -4962,12 +4974,20 @@ const App: React.FC = () => {
           onRescan={handleRescanMidiDevices}
           onChangeConfig={handleLiveMidiConfigChange}
           onCopySummary={setMidiCopySummary}
+          onLoadError={setMidiLoadError}
         />
 
         <DownloadModal
           isOpen={isDownloadOpen}
           files={downloadFiles}
           onClose={() => setIsDownloadOpen(false)}
+        />
+
+        <InformationModal
+          isOpen={!!midiLoadError}
+          title="MIDI Config Error"
+          message={midiLoadError}
+          onClose={() => setMidiLoadError('')}
         />
 
         <InformationModal

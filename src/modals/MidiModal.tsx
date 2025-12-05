@@ -19,6 +19,7 @@ interface MidiModalProps {
   onRescan: () => void;
   onChangeConfig: (patch: Partial<MidiConfig>) => void;
   onCopySummary?: (summary: string) => void;
+  onLoadError?: (message: string) => void;
 }
 
 export const MidiModal: React.FC<MidiModalProps> = ({
@@ -35,6 +36,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   onRescan,
   onChangeConfig,
   onCopySummary,
+  onLoadError,
 }) => {
   const [localConfig, setLocalConfig] = useState<MidiConfig>(config);
 
@@ -151,6 +153,9 @@ export const MidiModal: React.FC<MidiModalProps> = ({
         if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
           // eslint-disable-next-line no-console
           console.error('Invalid MIDI config file: missing "midi" root key.');
+          if (onLoadError) {
+            onLoadError('Invalid MIDI config file: missing "midi" root key.');
+          }
           return;
         }
 
@@ -163,6 +168,9 @@ export const MidiModal: React.FC<MidiModalProps> = ({
         if (!node || typeof node !== 'object') {
           // eslint-disable-next-line no-console
           console.error('Invalid MIDI config file: "midi" section is not an object.');
+          if (onLoadError) {
+            onLoadError('Invalid MIDI config file: "midi" section is not an object.');
+          }
           return;
         }
 
@@ -229,12 +237,23 @@ export const MidiModal: React.FC<MidiModalProps> = ({
       } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to load MIDI config file:', error);
+        if (onLoadError) {
+          const message = error instanceof Error ? error.message : String(error);
+          onLoadError(`Failed to load MIDI config file: ${message}`);
+        }
       } finally {
         input.value = '';
       }
     };
 
     reader.readAsText(file);
+    reader.onerror = () => {
+      const error = reader.error;
+      if (onLoadError) {
+        const message = error instanceof Error ? error.message : String(error ?? 'Unknown error');
+        onLoadError(`Failed to read MIDI config file: ${message}`);
+      }
+    };
   };
 
   const handleCopyMonitor = (entries: MidiMonitorEntry[], label: string) => {
@@ -510,6 +529,13 @@ export const MidiModal: React.FC<MidiModalProps> = ({
             <button
               className="command-btn"
               type="button"
+              onClick={onCancel}
+            >
+              CANCEL
+            </button>
+            <button
+              className="command-btn"
+              type="button"
               onClick={onClear}
             >
               CLEAR
@@ -536,13 +562,6 @@ export const MidiModal: React.FC<MidiModalProps> = ({
               onClick={handleExportConfig}
             >
               SAVE
-            </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onCancel}
-            >
-              CANCEL
             </button>
             <button
               className="command-btn"
