@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react'
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useTheme } from './hooks/useTheme';
 import { useDataManagement } from './hooks/useDataManagement';
-import { useSequencer } from './hooks/useSequencer';
+import { usePlaybackControls } from './hooks/usePlaybackControls';
 import { useAudioContext } from './hooks/useAudioContext';
 import { useModalManager } from './hooks/useModalManager';
 import { useMidiHandling } from './hooks/useMidiHandling';
@@ -234,19 +234,9 @@ const App: React.FC = () => {
     stop,
     setCallback,
     setPosition,
-    updateSpeed,
     startPatternLoop,
     startSong,
-    updatePatternLength
-  } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
-
-  useEffect(() => {
-    updateSpeed(currentSong.speed);
-  }, [currentSong.speed, updateSpeed]);
-
-  useEffect(() => {
-    updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
-  }, [currentSong.patternLength, updatePatternLength]);
+  } = usePlaybackControls({ currentSong });
 
   useEffect(() => {
     try {
