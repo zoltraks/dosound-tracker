@@ -1,0 +1,46 @@
+Check the playback routine. 
+It seems that sustain doesn't work as it should be.
+When playing with instrument with piano keyboard it correctly suspends at the first point where sustain is set and continues after releasing a key.
+But when playing pattern or song, the envelope progression doesn't pause until note off step is reached like sustain was not set at all.
+This situation happens only for the first pattern run of this song, when pattern is played in a loop then the second run plays instrument correctly with the sustain.
+Also when playing first playlist line I can't see MIDI out messages but they started to appear after next playlist line or next pattern loop.
+Fix that.
+Remember to check if export data in any format also honours sustain correctly and note off events from the begining of the song.
+
+This is song data with instrument I am using:
+
+```yaml
+song:
+  title: New Song
+  author: Author Name
+  year: 2025
+  speed: 6
+  length: 16
+  loop: 0
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      step:
+        - note: "C-4"
+          instrument: "00"
+          volume: 14
+        - space: 7
+        - note: "OFF"
+    - number: "02"
+    - number: "03"
+  instrument:
+    - number: "00"
+      volume: [15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
+      sustain: 0
+      midi:
+        channel: 1
+        program: 2
+```
+
+---

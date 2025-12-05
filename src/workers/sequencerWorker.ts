@@ -52,30 +52,9 @@ type WorkerIncomingMessage =
 function scheduleTick() {
   if (!isPlaying) return;
 
-  let newTick = currentTick + 1;
-  let newLine = currentLine;
-  let newPattern = currentPattern;
-
-  // Check if we need to advance to next line
-  if (newTick >= ticksPerRow) {
-    newTick = 0;
-    newLine++;
-
-    if (newLine >= patternLength) {
-      newLine = 0;
-      // In song mode, advance to the next playlist position when the pattern wraps.
-      // In pattern-loop mode, stay on the same playlist position and just wrap rows.
-      if (!isPatternLoop) {
-        newPattern++;
-      }
-    }
-  }
-
-  currentTick = newTick;
-  currentLine = newLine;
-  currentPattern = newPattern;
-
-  // Send tick message to main thread
+  // Emit the current position first so that each row begins at
+  // tick 0 and then advances through 1..ticksPerRow-1, matching
+  // the offline playback and export simulations.
   self.postMessage({
     type: 'tick',
     data: {
@@ -85,6 +64,30 @@ function scheduleTick() {
       currentTick
     }
   });
+
+  // Advance to the next tick/row for the following callback.
+  let nextTick = currentTick + 1;
+  let nextLine = currentLine;
+  let nextPattern = currentPattern;
+
+  // Check if we need to advance to the next line
+  if (nextTick >= ticksPerRow) {
+    nextTick = 0;
+    nextLine++;
+
+    if (nextLine >= patternLength) {
+      nextLine = 0;
+      // In song mode, advance to the next playlist position when the pattern wraps.
+      // In pattern-loop mode, stay on the same playlist position and just wrap rows.
+      if (!isPatternLoop) {
+        nextPattern++;
+      }
+    }
+  }
+
+  currentTick = nextTick;
+  currentLine = nextLine;
+  currentPattern = nextPattern;
 }
 
 function tickLoop() {
