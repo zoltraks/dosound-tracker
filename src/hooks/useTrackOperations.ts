@@ -97,10 +97,10 @@ export function useTrackOperations({
       const steps: TrackClipboardStep[] = [];
 
       for (let i = 0; i < targetLength; i++) {
-        const line = rawLines[i] || { trackA: null, trackB: null, trackC: null };
+        const line: PatternLine = rawLines[i] || { trackA: null, trackB: null, trackC: null };
         const cell = line.trackA;
 
-        const volRaw = (line as any).volume;
+        const volRaw = line.volume;
         const hasVolume = volRaw !== undefined && volRaw !== null;
 
         let step: TrackClipboardStep;
@@ -372,7 +372,7 @@ export function useTrackOperations({
             const volNum = Number(volRaw);
             if (Number.isFinite(volNum)) {
               const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-              (line as any).volume = clamped;
+              line.volume = clamped;
             }
           }
         } else {
@@ -663,7 +663,7 @@ export function useTrackOperations({
 
         const newLines = (pattern.lines || []).map(line => {
           const newLine = { ...line } as PatternLine;
-          const cell = newLine.trackA as any;
+          const cell = newLine.trackA;
 
           if (!cell || cell.note === '===') {
             return newLine;
