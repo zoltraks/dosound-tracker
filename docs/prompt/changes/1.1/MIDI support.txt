@@ -399,3 +399,7 @@ If an instrument played has program number set then send program change MIDI mes
 When MIDI configuration window is closed, forget the last program number sent and send it again during next instrument play on specific channel if the instrument has channel and program number set.
 
 ----
+
+Add MIDI OUT for the track‑focused live MIDI recording path
+
+---

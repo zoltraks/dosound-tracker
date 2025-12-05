@@ -3557,6 +3557,10 @@ const App: React.FC = () => {
         const instrument = currentInstrument as any;
         const noteData = { note: transposedNoteName, octave: clampedOctave };
 
+        if (currentInstrument) {
+          sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
+        }
+
         if (midiPreviewTimerRef.current !== null) {
           window.clearInterval(midiPreviewTimerRef.current);
           midiPreviewTimerRef.current = null;
@@ -3617,6 +3621,14 @@ const App: React.FC = () => {
           midiPreviewTimeoutRef.current = null;
         }, 500);
 
+        return;
+      }
+
+      if (isTrackFocused && type === 'noteOff') {
+        const trackId: 'A' | 'B' | 'C' =
+          activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
+        const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
+        sendInstrumentMidiNoteOffForChannel(ymChannel);
         return;
       }
 
@@ -3813,7 +3825,9 @@ const App: React.FC = () => {
       handlePatternChange,
       lastTrackId,
       setSharedCurrentLine,
-      sharedCurrentLine
+      sharedCurrentLine,
+      sendInstrumentMidiNoteOn,
+      sendInstrumentMidiNoteOffForChannel
     ]
   );
 
