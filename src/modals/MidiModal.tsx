@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import yaml from 'js-yaml';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 
 interface MidiModalProps {
@@ -37,6 +38,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
 
   const inScrollRef = useRef<HTMLDivElement | null>(null);
   const outScrollRef = useRef<HTMLDivElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -78,6 +80,159 @@ export const MidiModal: React.FC<MidiModalProps> = ({
       ignoreInputVolume: localConfig.ignoreInputVolume,
       ignoreOutputVolume: localConfig.ignoreOutputVolume,
     });
+  };
+
+  const handleExportConfig = () => {
+    try {
+      const inputNode: Record<string, unknown> = {
+        enable: !!localConfig.inputEnabled,
+        agnostic: !!localConfig.ignoreInputVolume,
+      };
+      if (localConfig.inputId) {
+        inputNode.device = localConfig.inputId;
+      }
+
+      const outputNode: Record<string, unknown> = {
+        enable: !!localConfig.outputEnabled,
+        agnostic: !!localConfig.ignoreOutputVolume,
+      };
+      if (localConfig.outputId) {
+        outputNode.device = localConfig.outputId;
+      }
+
+      const exportData = {
+        midi: {
+          version: 1,
+          input: inputNode,
+          output: outputNode,
+        },
+      };
+
+      const yamlContent = yaml.dump(exportData, {
+        indent: 2,
+        lineWidth: -1,
+        quotingType: '"',
+      });
+
+      const blob = new Blob([yamlContent], { type: 'text/yaml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'midi-config.yaml';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to export MIDI config:', error);
+    }
+  };
+
+  const handleLoadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+    const input = event.target;
+    const file = input.files && input.files[0];
+    if (!file) {
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const text = (e.target?.result ?? '') as string;
+        const parsed = yaml.load(text) as unknown;
+
+        if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
+          // eslint-disable-next-line no-console
+          console.error('Invalid MIDI config file: missing "midi" root key.');
+          return;
+        }
+
+        type MidiFileRoot = {
+          midi?: unknown;
+        };
+
+        const root = parsed as MidiFileRoot;
+        const node = root.midi;
+        if (!node || typeof node !== 'object') {
+          // eslint-disable-next-line no-console
+          console.error('Invalid MIDI config file: "midi" section is not an object.');
+          return;
+        }
+
+        const midiNode = node as {
+          version?: unknown;
+          input?: unknown;
+          output?: unknown;
+        };
+
+        const inputNode =
+          midiNode.input && typeof midiNode.input === 'object'
+            ? (midiNode.input as Record<string, unknown>)
+            : {};
+        const outputNode =
+          midiNode.output && typeof midiNode.output === 'object'
+            ? (midiNode.output as Record<string, unknown>)
+            : {};
+
+        const parseBool = (value: unknown, fallback: boolean): boolean => {
+          if (typeof value === 'boolean') return value;
+          if (typeof value === 'number') {
+            if (!Number.isFinite(value)) return fallback;
+            return value !== 0;
+          }
+          if (typeof value === 'string') {
+            const trimmed = value.trim().toLowerCase();
+            if (trimmed === 'true' || trimmed === 'yes' || trimmed === 'y' || trimmed === '1') {
+              return true;
+            }
+            if (trimmed === 'false' || trimmed === 'no' || trimmed === 'n' || trimmed === '0') {
+              return false;
+            }
+            return fallback;
+          }
+          return fallback;
+        };
+
+        const parseDeviceId = (value: unknown, fallback: string | null): string | null => {
+          if (value === null || value === undefined) return null;
+          if (typeof value === 'string') {
+            const trimmed = value.trim();
+            return trimmed || null;
+          }
+          return fallback;
+        };
+
+        const nextConfig: MidiConfig = {
+          inputEnabled: parseBool(inputNode.enable, localConfig.inputEnabled),
+          outputEnabled: parseBool(outputNode.enable, localConfig.outputEnabled),
+          inputId: parseDeviceId(inputNode.device, localConfig.inputId),
+          outputId: parseDeviceId(outputNode.device, localConfig.outputId),
+          ignoreInputVolume: parseBool(
+            inputNode.agnostic,
+            localConfig.ignoreInputVolume,
+          ),
+          ignoreOutputVolume: parseBool(
+            outputNode.agnostic,
+            localConfig.ignoreOutputVolume,
+          ),
+        };
+
+        setLocalConfig(nextConfig);
+        onChangeConfig(nextConfig);
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Failed to load MIDI config file:', error);
+      } finally {
+        input.value = '';
+      }
+    };
+
+    reader.readAsText(file);
   };
 
   const supportMessage = !isSupported
@@ -287,6 +442,20 @@ export const MidiModal: React.FC<MidiModalProps> = ({
             <button
               className="command-btn"
               type="button"
+              onClick={handleLoadClick}
+            >
+              LOAD
+            </button>
+            <button
+              className="command-btn"
+              type="button"
+              onClick={handleExportConfig}
+            >
+              SAVE
+            </button>
+            <button
+              className="command-btn"
+              type="button"
               onClick={onCancel}
             >
               CANCEL
@@ -296,10 +465,17 @@ export const MidiModal: React.FC<MidiModalProps> = ({
               type="button"
               onClick={handleSave}
             >
-              SAVE
+              OK
             </button>
           </div>
         </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".yaml,.yml,text/yaml,text/x-yaml"
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+        />
       </div>
     </div>
   );
