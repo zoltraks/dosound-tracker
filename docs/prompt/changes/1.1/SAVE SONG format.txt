@@ -135,3 +135,9 @@ song:
         channel: 1
         program: 2
 ```
+
+---
+
+Switch from "off": true to note: "OFF" in track clipboard YAML too.
+
+---

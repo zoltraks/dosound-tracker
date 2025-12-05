@@ -2158,7 +2158,7 @@ const App: React.FC = () => {
           step = { space: hasVolume ? 1 : true };
         } else if (cell.note === '===') {
           // Explicit key-release step: encode as off: true in clipboard YAML.
-          step = { off: true };
+          step = { note: 'OFF' };
         } else {
           const noteText = formatNoteKey(cell.note, cell.octave);
           step = {
@@ -2334,7 +2334,7 @@ const App: React.FC = () => {
             const count = (isNumericSpace ? spaceVal : offVal) as number;
             const isOff = isNumericOff && !isNumericSpace;
             for (let i = 0; i < count; i++) {
-              expandedSteps.push(isOff ? { off: true } : { space: true });
+              expandedSteps.push(isOff ? { note: 'OFF' } : { space: true });
             }
             continue;
           }
@@ -2346,7 +2346,7 @@ const App: React.FC = () => {
             const vol = ln.volume;
             for (let i = 0; i < count; i++) {
               expandedSteps.push(
-                isOff ? { off: true, volume: vol } : { space: true, volume: vol }
+                isOff ? { note: 'OFF', volume: vol } : { space: true, volume: vol }
               );
             }
             continue;
@@ -2389,15 +2389,19 @@ const App: React.FC = () => {
         if (rawStep && typeof rawStep === 'object') {
           const ln = rawStep as TrackClipboardStep;
 
-          if (ln.off === true) {
+          const rawNote = ln.note;
+          const isOffNote =
+            typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
+
+          if (ln.off === true || isOffNote) {
             // Explicit key-release step: use internal '===' marker.
             line.trackA = { note: '===', octave: 0, instrument: '00' };
           } else if (ln.space === true) {
             line.trackA = null;
-          } else if (typeof ln.note === 'string') {
-            const parsedKey = parseBaseKeyString(ln.note);
+          } else if (typeof rawNote === 'string') {
+            const parsedKey = parseBaseKeyString(rawNote);
             if (!parsedKey) {
-              setTrackClipboardError(`Invalid note value "${ln.note}" in track clipboard data at line ${i}.`);
+              setTrackClipboardError(`Invalid note value "${rawNote}" in track clipboard data at line ${i}.`);
               return;
             }
 
