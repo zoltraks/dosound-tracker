@@ -335,13 +335,9 @@ const App: React.FC = () => {
     }
 
     const handler = () => {
-      if (!isSongDirty) {
-        if (api.confirmAppClose) {
-          api.confirmAppClose();
-        }
-        return;
+      if (api.confirmAppClose) {
+        api.confirmAppClose();
       }
-      setIsQuitConfirmOpen(true);
     };
 
     api.onAppCloseRequested(handler);
@@ -350,7 +346,7 @@ const App: React.FC = () => {
         api.removeAppCloseRequestedListener(handler);
       }
     };
-  }, [isSongDirty]);
+  }, []);
 
   useEffect(() => {
     fetch('MESSAGES.md')
