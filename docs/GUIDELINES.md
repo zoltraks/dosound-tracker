@@ -6,6 +6,8 @@ This document outlines the coding conventions and specific implementation requir
 
 - All tools that generate, analyze, or refactor code must **ignore** every file under the `docs/prompt/` directory.
 - Files in `docs/prompt/` are project prompts and design notes, not source code, and must not be used as templates or modified automatically.
+- All tools that generate, analyze, or refactor code must **ignore** every file under the `docs/refactoring/` directory unless clearly specified.
+- Files in `docs/refactoring/` are refactoring notes and assessments, not source code, and must not be used as templates or modified automatically unless clearly specified.
 
 ## File Format
 
