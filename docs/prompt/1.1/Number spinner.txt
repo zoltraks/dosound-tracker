@@ -1,3 +1,7 @@
 In NumberSpinner component reverse order of buttons, first from the left should be "value up" button, and then "value down".
 
 ---
+
+In InstrumentMidiModal if the value of channel is empty and I click "value up" let it be "1" not "2".
+
+---

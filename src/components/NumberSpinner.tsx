@@ -99,6 +99,16 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
   };
 
   const adjustBy = (delta: number) => {
+    const parsed = parseValue(inputValue);
+    const hasCurrentValue =
+      parsed !== null || (typeof value === 'number' && Number.isFinite(value));
+
+    if (!hasCurrentValue && delta > 0) {
+      const initial = typeof min === 'number' ? min : 0;
+      commitValue(String(initial));
+      return;
+    }
+
     const base = getBaseForDelta();
     const next = base + delta;
     commitValue(String(next));
