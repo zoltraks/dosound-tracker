@@ -4,3 +4,16 @@ When I release key, the instrument must stop or if has sustain set it must be pl
 If I enter next note, stop playing previous one.
 
 ---
+
+Now when editing a track and pressing and not releasing key on keyboard instrument plays for a very short time.
+Take a look about preventing keyboard repeat when editing a track as there might be a clue why it happens.
+
+---
+
+Now I can not hear a sound when pressing and holding a key on PC keyboard when editing a track.
+When I enter a note with my MIDI controller it also almost immediately stops even that I am still holding piano key.
+When onscreen piano keyboard is focused, then playing notes with MIDI controller or PC keyboard works correctly.
+
+Currently, during playback, there is audible sound distortion and interruptions in the generated audio, lasting from 10 ms to 20 ms.
+
+---

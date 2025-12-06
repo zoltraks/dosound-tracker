@@ -65,6 +65,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const previewSustainIndexRef = useRef<number | null>(null);
   const previewReleasedRef = useRef<boolean>(false);
   const activePreviewKeyRef = useRef<string | null>(null);
+  const pressedNoteKeysRef = useRef<Set<string>>(new Set());
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
@@ -107,6 +108,13 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     previewSustainIndexRef.current = null;
     previewReleasedRef.current = false;
     activePreviewKeyRef.current = null;
+
+    // Clear any tracked pressed note keys when performing a hard stop so that
+    // stale state from a lost keyup (e.g. focus change while a key is held)
+    // cannot block future previews for the same key.
+    if (pressedNoteKeysRef.current.size > 0) {
+      pressedNoteKeysRef.current.clear();
+    }
 
     if (onPreviewMidiNoteOff) {
       onPreviewMidiNoteOff(channel);
@@ -292,7 +300,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     return () => {
       stopPreview();
     };
-  }, [isActive, stopPreview]);
+  }, [isActive]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -488,13 +496,18 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       }
     } else if (KEYBOARD_TO_NOTE[key]) {
       event.preventDefault();
-      // Insert note
       const { note, octaveOffset } = KEYBOARD_TO_NOTE[key];
       const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
+      const keyId = `${note}${finalOctave}`;
 
-      // Play preview note immediately and keep it playing while the key is held
+      if (pressedNoteKeysRef.current.has(keyId)) {
+        return;
+      }
+      pressedNoteKeysRef.current.add(keyId);
+
       playPreviewNote(note, finalOctave);
 
+      // Insert note
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.lines = [...newPattern.lines];
@@ -545,7 +558,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
       const keyId = `${note}${finalOctave}`;
 
-      // Only act if this key currently owns the active preview
+      if (pressedNoteKeysRef.current.has(keyId)) {
+        pressedNoteKeysRef.current.delete(keyId);
+      }
+
       if (activePreviewKeyRef.current !== keyId) {
         return;
       }
