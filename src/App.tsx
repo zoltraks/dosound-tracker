@@ -322,35 +322,6 @@ const App: React.FC = () => {
     }
   }, [currentInstrument, instrumentOctaves]);
 
-  // Browser beforeunload guard for unsaved song changes (non-Electron only).
-  useEffect(() => {
-    if (typeof window === 'undefined') {
-      return;
-    }
-
-    const extWindow = window as ExtendedWindow;
-    const isElectronEnv = !!extWindow.electronAPI;
-    if (isElectronEnv) {
-      // Electron uses explicit IPC-based quit confirmation instead.
-      return;
-    }
-
-    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
-      const isResetting = extWindow.__dosoundTrackerIsResetting === true;
-      if (!isSongDirty || isResetting) {
-        return;
-      }
-
-      event.preventDefault();
-      event.returnValue = '';
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
-  }, [isSongDirty]);
-
   // Electron window-close interception: ask React whether to quit when song is dirty.
   useEffect(() => {
     if (typeof window === 'undefined') {

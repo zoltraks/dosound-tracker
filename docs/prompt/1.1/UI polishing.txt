@@ -2,3 +2,6 @@ Make change in "Track" block so all the time the current selected step have diff
 
 ---
 
+Remove alert warning about "Changes you made may not be saved.", we don't need this confirmation.
+
+---
