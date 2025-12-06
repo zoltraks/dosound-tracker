@@ -1,0 +1,10 @@
+Don't write these messages on console log when application loads:
+
+- "Starting audio initialization..."
+- "YM2149 initialized"
+- "YM2149 registers set"
+
+Instead of these print only message if error occurs during initialization.
+
+---
+

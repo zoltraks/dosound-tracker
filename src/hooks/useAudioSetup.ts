@@ -19,16 +19,12 @@ export function useAudioSetup(): UseAudioSetupResult {
     }
 
     try {
-      // Initialize YM2149 with the existing AudioContext
-      console.log('Starting audio initialization...');
-      console.log('AudioContext created, sampleRate:', audioContext.sampleRate);
-      console.log('AudioContext initial state:', audioContext.state);
+      console.log('AudioContext created with rate', audioContext.sampleRate, audioContext.state);
 
       const ym2149 = new YM2149(audioContext);
       ym2149Ref.current = ym2149;
       // Force a re-render so any components depending on ym2149Ref can update
       forceRender(v => v + 1);
-      console.log('YM2149 initialized');
 
       // Expose on window for debugging
       (window as any).ym2149 = ym2149;
@@ -38,7 +34,6 @@ export function useAudioSetup(): UseAudioSetupResult {
       ym2149.writeRegister(0x09, 0x0f);
       ym2149.writeRegister(0x0a, 0x0f);
       ym2149.writeRegister(0x07, 0x38);
-      console.log('YM2149 registers set');
 
       // Short test tone to validate audio path
       const testFrequency = 261.63;
