@@ -1,0 +1,73 @@
+The instrument has first volume envelope step with maximum value which is also a sustain step and the second volume envelope step with silence.
+In a track in the same position as there is "note off" for an instrument on track A, there is a note for that instrument on track B.
+When a note off event is in the step, then volume envelope must resume progressing, and next one in order is the second one with volume 0.
+At the same time note off appears on track A and a note appears on track B, track A must be silenced while track B must have volume from the first step of a note.
+When I export dump data with "EXPORT DUMP" I can see that the volume value is not taken from the next volume envelope stop immediately.
+
+Analyse the problem in deep as it most likely is a problem how "note off" step is implemented in playback or how sustain works.
+
+It affects also other exports, like "EXPORT WAV".
+
+This is dump data:
+
+```
+music:
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$0F,$00,$00
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$0F,$00,$00
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$0F,$00,$00
+	dc.b $DD,$01,$00,$00,$00,$00,$00,$38,$0F,$00,$00
+	dc.b $DD,$01,$DD,$01,$00,$00,$00,$38,$0F,$0F,$00   ; <- here VA should be 0 because of note off
+	dc.b $DD,$01,$DD,$01,$00,$00,$00,$38,$00,$0F,$00
+	dc.b $DD,$01,$DD,$01,$00,$00,$00,$38,$00,$0F,$00
+	dc.b $DD,$01,$DD,$01,$00,$00,$00,$38,$00,$0F,$00
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$0F,$0F   ; <- here VB should be 0 because of note off
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$0F
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$0F
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$0F
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$0F   ; <- here VC should be 0 because of note off
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$00
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$00
+	dc.b $DD,$01,$DD,$01,$DD,$01,$00,$38,$00,$00,$00
+```
+
+The song I am using for that dump and test:
+
+```yaml
+song:
+  title: EXPORT C4
+  year: 2025
+  speed: 2
+  length: 16
+  loop: 0
+  playlist:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      step:
+        - note: "C-4"
+          instrument: "00"
+        - space: 3
+        - note: "OFF"
+    - number: "02"
+      step:
+        - space: 4
+        - note: "C-4"
+          instrument: "00"
+        - space: 3
+        - note: "OFF"
+    - number: "03"
+      step:
+        - space: 8
+        - note: "C-4"
+          instrument: "00"
+        - space: 3
+        - note: "OFF"
+  instrument:
+    - number: "00"
+      volume: [15, 0]
+      sustain: 0
+```
+
+---

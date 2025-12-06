@@ -999,16 +999,20 @@ const App: React.FC = () => {
 
             // While the key is held and a sustain index is defined, clamp
             // the effective envelope position at the sustain step. Once a
-            // key-release has occurred, allow the envelope to continue.
+            // key-release has occurred while at or before sustain, jump to
+            // the first post-sustain step immediately for this tick.
             let step = rawStep;
-            if (
+            const hasSustain =
               sustainIndex !== null &&
               sustainIndex !== undefined &&
-              sustainIndex >= 0 &&
-              !isReleased &&
-              rawStep >= sustainIndex
-            ) {
-              step = sustainIndex;
+              sustainIndex >= 0;
+
+            if (hasSustain) {
+              if (!isReleased && rawStep >= sustainIndex) {
+                step = sustainIndex;
+              } else if (isReleased && rawStep <= sustainIndex) {
+                step = sustainIndex + 1;
+              }
             }
             const volumeModifier = channelVolumeModifierRef.current[ch];
 

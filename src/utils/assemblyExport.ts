@@ -190,14 +190,20 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
               const isReleased = channelState.released;
 
               let step = rawStep;
-              if (
+              const hasSustain =
                 sustainIndex !== null &&
                 sustainIndex !== undefined &&
-                sustainIndex >= 0 &&
-                !isReleased &&
-                rawStep >= sustainIndex
-              ) {
-                step = sustainIndex;
+                sustainIndex >= 0;
+
+              if (hasSustain) {
+                if (!isReleased && rawStep >= sustainIndex) {
+                  // Key is still held: clamp to sustain step.
+                  step = sustainIndex;
+                } else if (isReleased && rawStep <= sustainIndex) {
+                  // Key was just released while held at sustain: jump to the
+                  // first post-sustain step immediately for this tick.
+                  step = sustainIndex + 1;
+                }
               }
 
               // Capture original note and pitch delta from the instrument's
@@ -1322,14 +1328,17 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
               const isReleased = channelState.released;
 
               let step = rawStep;
-              if (
+              const hasSustain =
                 sustainIndex !== null &&
                 sustainIndex !== undefined &&
-                sustainIndex >= 0 &&
-                !isReleased &&
-                rawStep >= sustainIndex
-              ) {
-                step = sustainIndex;
+                sustainIndex >= 0;
+
+              if (hasSustain) {
+                if (!isReleased && rawStep >= sustainIndex) {
+                  step = sustainIndex;
+                } else if (isReleased && rawStep <= sustainIndex) {
+                  step = sustainIndex + 1;
+                }
               }
 
               applyInstrumentToRegisters(
@@ -1633,14 +1642,17 @@ export function exportSongToVgm(song: Song): VgmExportResult {
               const isReleased = channelState.released;
 
               let step = rawStep;
-              if (
+              const hasSustain =
                 sustainIndex !== null &&
                 sustainIndex !== undefined &&
-                sustainIndex >= 0 &&
-                !isReleased &&
-                rawStep >= sustainIndex
-              ) {
-                step = sustainIndex;
+                sustainIndex >= 0;
+
+              if (hasSustain) {
+                if (!isReleased && rawStep >= sustainIndex) {
+                  step = sustainIndex;
+                } else if (isReleased && rawStep <= sustainIndex) {
+                  step = sustainIndex + 1;
+                }
               }
 
               applyInstrumentToRegisters(
@@ -1947,14 +1959,17 @@ export function exportSongToWav(song: Song): WavExportResult {
               const isReleased = channelState.released;
 
               let step = rawStep;
-              if (
+              const hasSustain =
                 sustainIndex !== null &&
                 sustainIndex !== undefined &&
-                sustainIndex >= 0 &&
-                !isReleased &&
-                rawStep >= sustainIndex
-              ) {
-                step = sustainIndex;
+                sustainIndex >= 0;
+
+              if (hasSustain) {
+                if (!isReleased && rawStep >= sustainIndex) {
+                  step = sustainIndex;
+                } else if (isReleased && rawStep <= sustainIndex) {
+                  step = sustainIndex + 1;
+                }
               }
 
               applyInstrumentToRegisters(
