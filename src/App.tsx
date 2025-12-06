@@ -748,7 +748,6 @@ const App: React.FC = () => {
           channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
           debugTickCounterRef.current = 0;
           debugLastRowRef.current = null;
-          debugLastTimeRef.current = null;
         }
       }
 
