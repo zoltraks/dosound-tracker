@@ -1,0 +1,6 @@
+When editing a track when I enter note with a keyboard, play it in preview mode the same way as when played with keyboard when piano keyboard is focused.
+The instrument must be played as long as I hold the key pressed.
+When I release key, the instrument must stop or if has sustain set it must be played until the release part.
+If I enter next note, stop playing previous one.
+
+---
