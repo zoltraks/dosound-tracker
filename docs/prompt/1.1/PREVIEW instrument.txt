@@ -17,3 +17,10 @@ When onscreen piano keyboard is focused, then playing notes with MIDI controller
 Currently, during playback, there is audible sound distortion and interruptions in the generated audio, lasting from 10 ms to 20 ms.
 
 ---
+
+Now the playback is working correctly and I sustain is honoured when editing a track with MIDI keyboard or PC keyboard.
+
+But there is another small issue - when I play note with MIDI keyboard first and then use PC keyboard, there are audio glitches again but only at the first note on PC keyboard after MIDI controller was used. Next notes from PC keyboard are played correctly.
+And when I enter note with PC keyboard and after that enter another note with MIDI controller the first note on MIDI controller is played with audio glitches, while next notes from MIDI controller are fine.
+
+---

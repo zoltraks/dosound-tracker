@@ -107,6 +107,49 @@ const App: React.FC = () => {
     hasTypeField: boolean;
     detectedType: string | null;
   } | null>(null);
+
+  const handleRegisterTrackStopPreview = useCallback(
+    (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => {
+      trackStopPreviewRef.current[trackId] = stopPreview;
+    },
+    []
+  );
+
+  const handleHardStopLivePreview = useCallback(
+    (ymChannel: number) => {
+      const ym2149 = ym2149Ref.current;
+
+      if (midiLiveTimerRef.current !== null) {
+        window.clearInterval(midiLiveTimerRef.current);
+        midiLiveTimerRef.current = null;
+      }
+
+      midiLiveSubTickRef.current = 0;
+      midiLiveEnvelopeStepRef.current = 0;
+      midiLiveLastTickTimeRef.current = null;
+      midiLiveNextTickTimeRef.current = null;
+      midiLiveSustainIndexRef.current = null;
+      midiLiveReleasedRef.current = false;
+      midiLiveLastVolumeIndexRef.current = null;
+      midiLiveLastVolumeValueRef.current = null;
+
+      const lastPreview = lastMidiPreviewRef.current;
+      if (lastPreview && lastPreview.ymChannel === ymChannel) {
+        const helpers = midiHelpersRef.current;
+        if (helpers) {
+          helpers.sendInstrumentMidiNoteOffForChannel(ymChannel);
+        }
+        lastMidiPreviewRef.current = null;
+      }
+
+      if (ym2149) {
+        const safeChannel = Math.max(0, Math.min(2, ymChannel | 0));
+        const volumeRegister = 0x08 + safeChannel;
+        ym2149.writeRegister(volumeRegister, 0x00);
+      }
+    },
+    []
+  );
   const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
 
@@ -530,6 +573,16 @@ const App: React.FC = () => {
   const midiLiveReleasedRef = useRef<boolean>(false);
   const midiLiveLastVolumeIndexRef = useRef<number | null>(null);
   const midiLiveLastVolumeValueRef = useRef<number | null>(null);
+
+  const trackStopPreviewRef = useRef<{
+    A: (() => void) | null;
+    B: (() => void) | null;
+    C: (() => void) | null;
+  }>({
+    A: null,
+    B: null,
+    C: null,
+  });
 
   // YM2149 is initialized and managed by useAudioSetup
 
@@ -2547,6 +2600,11 @@ const App: React.FC = () => {
         const trackId: 'A' | 'B' | 'C' =
           activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
 
+        const stopTrackPreview = trackStopPreviewRef.current[trackId];
+        if (stopTrackPreview) {
+          stopTrackPreview();
+        }
+
         const pattern = getCurrentPatternForTrack(trackId);
         if (!pattern) {
           return;
@@ -3395,6 +3453,8 @@ const App: React.FC = () => {
               trackFocusRevision={trackFocusRevision}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+              onHardStopLivePreview={handleHardStopLivePreview}
+              onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
             />
           }
           instrumentSection={

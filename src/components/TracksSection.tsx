@@ -24,6 +24,8 @@ interface TracksSectionProps {
   trackFocusRevision: number;
   onPreviewMidiNoteOn: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
   onPreviewMidiNoteOff: (ymChannel: number) => void;
+  onHardStopLivePreview?: (ymChannel: number) => void;
+  onRegisterTrackStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
 }
 
 export const TracksSection: React.FC<TracksSectionProps> = ({
@@ -45,6 +47,8 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
   trackFocusRevision,
   onPreviewMidiNoteOn,
   onPreviewMidiNoteOff,
+  onHardStopLivePreview,
+  onRegisterTrackStopPreview,
 }) => {
   const patternLength = song.patternLength || PATTERN_LENGTH;
 
@@ -89,6 +93,8 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
                 focusRevision={trackFocusRevision}
                 onPreviewMidiNoteOn={onPreviewMidiNoteOn}
                 onPreviewMidiNoteOff={onPreviewMidiNoteOff}
+                onHardStopLivePreview={onHardStopLivePreview}
+                onRegisterStopPreview={onRegisterTrackStopPreview}
               />
             ))}
           </div>

@@ -23,6 +23,8 @@ interface TrackPanelProps {
   focusRevision: number;
   onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
+  onHardStopLivePreview?: (ymChannel: number) => void;
+  onRegisterStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
 }
 
 export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
@@ -44,7 +46,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     setCurrentColumn,
     focusRevision,
     onPreviewMidiNoteOn,
-    onPreviewMidiNoteOff
+    onPreviewMidiNoteOff,
+    onHardStopLivePreview,
+    onRegisterStopPreview
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -116,6 +120,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       pressedNoteKeysRef.current.clear();
     }
 
+    if (onHardStopLivePreview) {
+      onHardStopLivePreview(channel);
+    }
+
     if (onPreviewMidiNoteOff) {
       onPreviewMidiNoteOff(channel);
     }
@@ -127,6 +135,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     const volumeRegister = 0x08 + channel;
     ym2149.writeRegister(volumeRegister, 0x00);
   }, [trackId, ym2149, onPreviewMidiNoteOff]);
+
+  useEffect(() => {
+    if (onRegisterStopPreview) {
+      onRegisterStopPreview(trackId, stopPreview);
+    }
+  }, [onRegisterStopPreview, trackId, stopPreview]);
 
   // Play preview note when entering notes (piano-like: hold key to sustain, stop on release)
   const playPreviewNote = useCallback(
