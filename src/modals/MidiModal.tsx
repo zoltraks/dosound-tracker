@@ -132,7 +132,6 @@ export const MidiModal: React.FC<MidiModalProps> = ({
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Failed to export MIDI config:', error);
     }
   };
@@ -155,7 +154,6 @@ export const MidiModal: React.FC<MidiModalProps> = ({
         const parsed = yaml.load(text) as unknown;
 
         if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
-          // eslint-disable-next-line no-console
           console.error('Invalid MIDI config file: missing "midi" root key.');
           if (onLoadError) {
             onLoadError('Invalid MIDI config file: missing "midi" root key.');
@@ -170,7 +168,6 @@ export const MidiModal: React.FC<MidiModalProps> = ({
         const root = parsed as MidiFileRoot;
         const node = root.midi;
         if (!node || typeof node !== 'object') {
-          // eslint-disable-next-line no-console
           console.error('Invalid MIDI config file: "midi" section is not an object.');
           if (onLoadError) {
             onLoadError('Invalid MIDI config file: "midi" section is not an object.');
@@ -239,7 +236,6 @@ export const MidiModal: React.FC<MidiModalProps> = ({
         setLocalConfig(nextConfig);
         onChangeConfig(nextConfig);
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Failed to load MIDI config file:', error);
         if (onLoadError) {
           const message = error instanceof Error ? error.message : String(error);

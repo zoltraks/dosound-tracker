@@ -222,7 +222,6 @@ export function useTrackOperations({
 
       await navigator.clipboard.writeText(yamlContent);
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Failed to copy track:', error);
       const message = error instanceof Error ? error.message : String(error);
       setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
@@ -388,7 +387,6 @@ export function useTrackOperations({
       );
       updateSong({ patterns: updatedPatterns });
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Failed to paste track:', error);
       const message = error instanceof Error ? error.message : String(error);
       setTrackClipboardError('Failed to paste track from clipboard.\n\n' + message);

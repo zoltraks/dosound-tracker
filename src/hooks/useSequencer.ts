@@ -49,7 +49,6 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     ticksPerRow: Math.max(1, songSpeed | 0)
   });
 
-  const intervalRef = useRef<number | null>(null);
   const workerRef = useRef<Worker | null>(null);
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const tickCallbackRef = useRef<((tick: number) => void) | null>(null);
@@ -351,9 +350,6 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
       if (workerRef.current) {
         workerRef.current.terminate();
       }

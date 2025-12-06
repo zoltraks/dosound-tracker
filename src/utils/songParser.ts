@@ -417,7 +417,7 @@ export const parseSongFromYaml = (content: string): Song => {
     // string values in YAML and clamp to valid MIDI ranges. Only attach a
     // midi object when at least one of channel/program is present.
     let midi: Instrument['midi'] | undefined;
-    const rawMidi = (nodeObj as any).midi;
+    const rawMidi = nodeObj.midi;
     if (rawMidi && typeof rawMidi === 'object') {
       const midiNode = rawMidi as { channel?: unknown; program?: unknown };
 

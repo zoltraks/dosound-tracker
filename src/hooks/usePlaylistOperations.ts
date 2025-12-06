@@ -188,7 +188,6 @@ export function usePlaylistOperations({
     const allocatePatternId = () => {
       // Generate hex IDs like existing patterns (00, 01, 02, ...)
       // Ensure the ID is unique across all patterns, including newly-added ones.
-      // eslint-disable-next-line no-constant-condition
       while (true) {
         const id = nextIndex.toString(16).padStart(2, '0').toUpperCase();
         nextIndex++;

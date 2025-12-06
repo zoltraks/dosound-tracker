@@ -317,10 +317,10 @@ export class YM2149 {
   }
 
   // Helper methods for instrument-based sound generation
-  private getDefaultModeValue = (_instrument: Instrument) => 0;
+  private getDefaultModeValue = () => 0;
 
   public getModeValueForTick = (instrument: Instrument, tick: number): number => {
-    const defaultMode = this.getDefaultModeValue(instrument);
+    const defaultMode = this.getDefaultModeValue();
 
     if (!instrument.mode || instrument.mode.length === 0) {
       return defaultMode;

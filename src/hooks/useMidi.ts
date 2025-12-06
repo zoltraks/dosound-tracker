@@ -184,7 +184,6 @@ export function useMidi(
           ? access.inputs.values()
           : null;
       if (inputIterator) {
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const result = inputIterator.next();
           if (result.done) break;
@@ -205,7 +204,6 @@ export function useMidi(
           ? access.outputs.values()
           : null;
       if (outputIterator) {
-        // eslint-disable-next-line no-constant-condition
         while (true) {
           const result = outputIterator.next();
           if (result.done) break;
@@ -476,6 +474,7 @@ export function useMidi(
     addOutMonitorEntry,
     config.outputEnabled,
     config.outputId,
+    config.inputId,
     config.ignoreOutputVolume,
     enableMonitors,
     onNoteEvent,

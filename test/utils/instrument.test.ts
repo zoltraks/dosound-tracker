@@ -16,7 +16,7 @@ const makeEmptyInstrument = (overrides: Partial<Instrument> = {}): Instrument =>
 describe('isInstrumentEmpty', () => {
   it('treats undefined and null as empty', () => {
     expect(isInstrumentEmpty(undefined)).toBe(true);
-    expect(isInstrumentEmpty(null as any)).toBe(true);
+    expect(isInstrumentEmpty(null)).toBe(true);
   });
 
   it('returns true when all parameters are at default/empty values', () => {

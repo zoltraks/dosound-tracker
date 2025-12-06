@@ -353,7 +353,6 @@ function applyInstrumentToRegisters(
 }
 
 function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpMode: boolean = false): string {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   // song parameter will be used for future optimization logic and pattern markers
   let asm = 'music:\n\n\t; START\n\n';
   
@@ -369,9 +368,8 @@ function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpM
   
   if (isComplexDumpMode) {
     // Optimized dump for complex mode - track changes and skip unchanged registers
-    let lastRegs: { [register: number]: number } = {};
+    const lastRegs: { [register: number]: number } = {};
     let lastLineIndex = -1;
-    let frameCount = 0;
     
     for (let i = 0; i < frames.length; i++) {
       const frame = frames[i];
@@ -462,7 +460,6 @@ function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpM
       
       // Always add delay of 2 frames to maintain resolution
       asm += formatAsmLine([0xff, 0x01], 'DL 2');
-      frameCount++;
     }
     
   } else {
@@ -909,7 +906,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
  */
 function getRegisterComment(register: number, value: number): string {
   switch (register) {
-    case 0x07: // Mixer
+    case 0x07: { // Mixer
       const getChannelMode = (channel: 0 | 1 | 2): 'T' | 'N' | 'B' => {
         const toneDisabledMask = 1 << channel;
         const noiseDisabledMask = 0x08 << channel;
@@ -926,6 +923,7 @@ function getRegisterComment(register: number, value: number): string {
       const b = getChannelMode(1);
       const c = getChannelMode(2);
       return `MX ${a}+${b}+${c}`;
+    }
       
     case 0x08: // Volume A
       return 'VA';
