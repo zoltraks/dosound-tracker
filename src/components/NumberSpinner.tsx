@@ -173,22 +173,6 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
       />
       <button
         type="button"
-        onClick={() => adjustBy(-step)}
-        aria-label="Decrease value"
-        style={{
-          width: 18,
-          height: 20,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          boxSizing: 'border-box'
-        }}
-      >
-        <ChevronDown className="h-3 w-3 rotate-90" />
-      </button>
-      <button
-        type="button"
         onClick={() => adjustBy(step)}
         aria-label="Increase value"
         style={{
@@ -202,6 +186,22 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         }}
       >
         <ChevronUp className="h-3 w-3 rotate-90" />
+      </button>
+      <button
+        type="button"
+        onClick={() => adjustBy(-step)}
+        aria-label="Decrease value"
+        style={{
+          width: 18,
+          height: 20,
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: 0,
+          boxSizing: 'border-box'
+        }}
+      >
+        <ChevronDown className="h-3 w-3 rotate-90" />
       </button>
     </span>
   );

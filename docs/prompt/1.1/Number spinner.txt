@@ -1,0 +1,3 @@
+In NumberSpinner component reverse order of buttons, first from the left should be "value up" button, and then "value down".
+
+---
