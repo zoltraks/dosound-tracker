@@ -1,5 +1,17 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.4
+
+Keyboard note entry and sustain refinements, smoother audio switching, and safer MIDI behavior on macOS, plus UX and cleanup improvements.
+
+- Refined track keyboard note entry with **piano-like preview playback** that honors sustain and added keyboard repeat prevention so held keys no longer flood patterns with duplicate notes.
+- Added a hard stop mechanism when switching between MIDI and PC keyboard input to prevent lingering notes and audio glitches during live playback.
+- Fixed sustain envelope progression so notes jump immediately to the post-sustain section on note-off, aligning playback and exports with instrument envelope settings.
+- Improved numeric input controls by initializing empty values to the minimum when incrementing and reversing NumberSpinner button order so increment appears before decrement for more intuitive editing.
+- Relaxed unsaved-changes protection by removing quit/reload confirmation dialogs in Electron and browser builds, so closing the app or refreshing no longer shows a warning when edits are pending.
+- Adjusted MIDI behavior on Electron by skipping automatic System Reset on output activation to avoid freezes on macOS while preserving Web MIDI functionality.
+- Trimmed verbose audio initialization logging and removed obsolete lint disables and unused code to keep console output and the codebase cleaner.
+
 ## Version 1.1.3
 
 MIDI output and monitoring upgrades, live recording, YAML format cleanup, richer VGM metadata, and refactoring-focused layout and type-safety improvements.

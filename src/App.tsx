@@ -204,8 +204,7 @@ const App: React.FC = () => {
     songError,
     setSongError,
     optimizeSong,
-    renumberSong,
-    isSongDirty
+    renumberSong
   } = useDataManagement();
 
   const {
@@ -519,12 +518,6 @@ const App: React.FC = () => {
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
-  const midiPreviewTimerRef = useRef<number | null>(null);
-  const midiPreviewSubTickRef = useRef<number>(0);
-  const midiPreviewEnvelopeStepRef = useRef<number>(0);
-  const midiPreviewLastTickTimeRef = useRef<number | null>(null);
-  const midiPreviewNextTickTimeRef = useRef<number | null>(null);
-  const midiPreviewTimeoutRef = useRef<number | null>(null);
   const lastMidiPreviewRef = useRef<{
     noteNumber: number;
     midiChannel: number;
