@@ -71,6 +71,10 @@ type NavigatorWithMidi = Navigator & {
   requestMIDIAccess?: (options?: { sysex: boolean }) => Promise<MIDIAccess>;
 };
 
+const isElectronEnv =
+  typeof window !== 'undefined' &&
+  !!(window as unknown as { electronAPI?: unknown }).electronAPI;
+
 export function useMidi(
   onNoteEvent: (event: MidiNoteEvent) => void,
   options?: { enableMonitors?: boolean }
@@ -947,9 +951,9 @@ export function useMidi(
     currentOutputRef.current = nextOutput;
 
     // Automatically send a System Reset whenever output becomes active on a
-    // specific device: when Enable MIDI output is turned on, when the output
-    // device is changed, or on initial setup when both are already set.
-    if (nextOutput && config.outputEnabled && nextOutput !== previousOutput) {
+    // specific device in browser builds. In Electron on macOS this can cause
+    // freezes on some systems, so we skip the auto-reset there.
+    if (!isElectronEnv && nextOutput && config.outputEnabled && nextOutput !== previousOutput) {
       sendSystemReset();
     }
   }, [config.outputEnabled, config.outputId, sendSystemReset]);
