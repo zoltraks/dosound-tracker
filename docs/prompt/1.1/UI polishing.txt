@@ -30,3 +30,15 @@ Row 3: "ADD INST", "LOAD INST", "SAVE INST", "PLAY INST", "CLONE INST", "DELETE 
 When clicking on any octave buttons automatically make the octave block focused.
 
 ---
+
+Rearange buttons in command panel:
+
+Row 1: "PLAY SONG", "PLAY PATTERN", "STOP", "MIDI", "NEW SONG", "LOAD SONG", "SAVE SONG", "OPTIMIZE", "RENUMBER", "TRANSPOSE", "BUG", "RESET"
+Row 2: "ADD LINE", "CLONE LINE", "DUPLICATE LINE", "DELETE LINE", "ADD TRACK", "COPY TRACK", "PASTE TRACK", "DELETE TRACK", "INSERT STEP", "DELETE STEP"
+Row 3: "ADD INST", "LOAD INST", "SAVE INST", "PLAY INST", "CLONE INST", "DELETE INST", "EXPORT"
+
+---
+
+Move "MIDI" button before "BUG".
+
+---
