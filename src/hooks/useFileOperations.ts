@@ -7,6 +7,8 @@ import {
   exportSongRegisterDump,
   exportSongToVgm,
   exportToBinary,
+  exportInstrumentToAssembly,
+  parseAssemblyToBinary,
   downloadAssemblyFile,
   downloadBinaryFile,
   downloadVgmFile,
@@ -52,9 +54,22 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       const assemblyContent = exportToAssembly(song, isComplexDumpMode);
       const filename = `${song.title.replace(/[^a-zA-Z0-9]/g, '_')}.s`;
       downloadAssemblyFile(assemblyContent, filename);
+
+      const lines: string[] = [];
+      lines.push('DATA export completed.');
+      lines.push('');
+      lines.push(`File: ${filename}`);
+
+      setSoundExportSummary(lines.join('\n'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Export failed:', error);
+      const lines: string[] = [];
+      lines.push('DATA export failed.');
+      if (error instanceof Error) {
+        lines.push(`Error: ${error.message}`);
+      }
+      setSoundExportSummary(lines.join('\n'));
     }
   }, [song, isComplexDumpMode]);
 
@@ -63,9 +78,23 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       const bytes = exportToBinary(song, isComplexDumpMode);
       const filename = `${song.title.replace(/[^a-zA-Z0-9]/g, '_')}.bin`;
       downloadBinaryFile(bytes, filename);
+
+      const lines: string[] = [];
+      lines.push('BIN export completed.');
+      lines.push('');
+      lines.push(`File: ${filename}`);
+      lines.push(`Bytes: ${bytes.length}`);
+
+      setSoundExportSummary(lines.join('\n'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('Binary export failed:', error);
+      const lines: string[] = [];
+      lines.push('BIN export failed.');
+      if (error instanceof Error) {
+        lines.push(`Error: ${error.message}`);
+      }
+      setSoundExportSummary(lines.join('\n'));
     }
   }, [song, isComplexDumpMode]);
 
@@ -75,9 +104,23 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
       const filename = `${safeTitle}.vgm`;
       downloadVgmFile(result.buffer, filename);
+
+      const lines: string[] = [];
+      lines.push('VGM export completed.');
+      lines.push('');
+      lines.push(`File: ${filename}`);
+      lines.push(`Total samples: ${result.totalSamples}`);
+
+      setSoundExportSummary(lines.join('\n'));
     } catch (error) {
       // eslint-disable-next-line no-console
       console.error('VGM export failed:', error);
+      const lines: string[] = [];
+      lines.push('VGM export failed.');
+      if (error instanceof Error) {
+        lines.push(`Error: ${error.message}`);
+      }
+      setSoundExportSummary(lines.join('\n'));
     }
   }, [song]);
 
@@ -151,28 +194,194 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
   const exportDataWithContext = useCallback(
     (ctx: ExportContext) => {
-      // Context-aware routing will be implemented together with the ExportModal.
-      // For now, delegate to the existing song-wide handler.
-      void ctx;
-      handleExportData();
+      try {
+        let assemblyContent: string;
+        let filenameBase: string;
+
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          assemblyContent = exportInstrumentToAssembly(ctx.instrument, song);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          const rawInstId = ctx.instrument.id || 'inst';
+          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
+          filenameBase = `${safeTitle}_inst_${safeInstId}`;
+        } else {
+          let scopedSong: Song = song;
+          if (ctx.type === 'pattern' && song.playlist.length > 0) {
+            const playlistLength = song.playlist.length;
+            const rawIndex = ctx.playlistIndex;
+            const index = Math.max(
+              0,
+              Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+            );
+            const entry = song.playlist[index];
+            scopedSong = {
+              ...song,
+              playlist: [entry],
+              loop: null,
+            };
+          }
+
+          assemblyContent = exportToAssembly(scopedSong, ctx.strategy);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          filenameBase = ctx.type === 'pattern' ? `${safeTitle}_pattern` : safeTitle;
+        }
+
+        const filename = `${filenameBase}.s`;
+        downloadAssemblyFile(assemblyContent, filename);
+
+        const lines: string[] = [];
+        lines.push('DATA export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        if (ctx.type === 'song') {
+          lines.push('Scope: Song');
+        } else if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else if (ctx.type === 'instrument') {
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument ? ctx.instrument.id : 'n/a'}`);
+        }
+        if (ctx.type !== 'instrument') {
+          lines.push(`Strategy: ${ctx.strategy}`);
+        }
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Context-aware DATA export failed:', error);
+        const lines: string[] = [];
+        lines.push('DATA export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
     },
-    [handleExportData]
+    [song]
   );
 
   const exportBinWithContext = useCallback(
     (ctx: ExportContext) => {
-      void ctx;
-      handleExportBin();
+      try {
+        let bytes: Uint8Array;
+        let filenameBase: string;
+
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          const asm = exportInstrumentToAssembly(ctx.instrument, song);
+          bytes = parseAssemblyToBinary(asm);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          const rawInstId = ctx.instrument.id || 'inst';
+          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
+          filenameBase = `${safeTitle}_inst_${safeInstId}`;
+        } else {
+          let scopedSong: Song = song;
+          if (ctx.type === 'pattern' && song.playlist.length > 0) {
+            const playlistLength = song.playlist.length;
+            const rawIndex = ctx.playlistIndex;
+            const index = Math.max(
+              0,
+              Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+            );
+            const entry = song.playlist[index];
+            scopedSong = {
+              ...song,
+              playlist: [entry],
+              loop: null,
+            };
+          }
+
+          bytes = exportToBinary(scopedSong, ctx.strategy);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          filenameBase = ctx.type === 'pattern' ? `${safeTitle}_pattern` : safeTitle;
+        }
+
+        const filename = `${filenameBase}.bin`;
+        downloadBinaryFile(bytes, filename);
+
+        const lines: string[] = [];
+        lines.push('BIN export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        lines.push(`Bytes: ${bytes.length}`);
+        if (ctx.type === 'song') {
+          lines.push('Scope: Song');
+        } else if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else if (ctx.type === 'instrument') {
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument ? ctx.instrument.id : 'n/a'}`);
+        }
+        if (ctx.type !== 'instrument') {
+          lines.push(`Strategy: ${ctx.strategy}`);
+        }
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Context-aware BIN export failed:', error);
+        const lines: string[] = [];
+        lines.push('BIN export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
     },
-    [handleExportBin]
+    [song]
   );
 
   const exportVgmWithContext = useCallback(
     (ctx: ExportContext) => {
-      void ctx;
-      handleExportVgm();
+      try {
+        let scopedSong: Song = song;
+        if (ctx.type === 'pattern' && song.playlist.length > 0) {
+          const playlistLength = song.playlist.length;
+          const rawIndex = ctx.playlistIndex;
+          const index = Math.max(
+            0,
+            Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+          );
+          const entry = song.playlist[index];
+          scopedSong = {
+            ...song,
+            playlist: [entry],
+            loop: null,
+          };
+        }
+
+        const result = exportSongToVgm(scopedSong);
+        const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+        const suffix = ctx.type === 'pattern' ? '_pattern' : '';
+        const filename = `${safeTitle}${suffix}.vgm`;
+        downloadVgmFile(result.buffer, filename);
+
+        const lines: string[] = [];
+        lines.push('VGM export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        lines.push(`Total samples: ${result.totalSamples}`);
+        if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else {
+          lines.push('Scope: Song');
+        }
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Context-aware VGM export failed:', error);
+        const lines: string[] = [];
+        lines.push('VGM export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
     },
-    [handleExportVgm]
+    [song]
   );
 
   const exportWavWithContext = useCallback(

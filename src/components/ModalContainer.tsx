@@ -239,7 +239,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
 
       <InformationModal
         isOpen={!!soundExportSummary}
-        title="WAV Export Summary"
+        title="Export Summary"
         message={soundExportSummary}
         onClose={onCloseSoundExportSummary}
       />
