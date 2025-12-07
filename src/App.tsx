@@ -851,7 +851,6 @@ const App: React.FC = () => {
             });
 
             const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
-            // eslint-disable-next-line no-console
             setTimeout(() => console.log(debugLine), 0);
             debugLastRowRef.current = {
               pattern: state.currentPattern,
@@ -859,7 +858,6 @@ const App: React.FC = () => {
             };
             debugLastTimeRef.current = nowMs;
           } catch (error) {
-            // eslint-disable-next-line no-console
             console.error('Debug logging failed:', error);
           }
         }

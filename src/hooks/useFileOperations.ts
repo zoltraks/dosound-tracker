@@ -64,7 +64,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Export failed:', error);
       const lines: string[] = [];
       lines.push('DATA export failed.');
@@ -89,7 +88,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Binary export failed:', error);
       const lines: string[] = [];
       lines.push('BIN export failed.');
@@ -115,7 +113,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('VGM export failed:', error);
       const lines: string[] = [];
       lines.push('VGM export failed.');
@@ -151,7 +148,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('WAV export failed:', error);
       const lines: string[] = [];
       lines.push('WAV export failed.');
@@ -183,7 +179,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
       setDumpExportSummary(lines.join('\n'));
     } catch (error) {
-      // eslint-disable-next-line no-console
       console.error('Dump export failed:', error);
       const lines: string[] = [];
       lines.push('Dump export failed.');
@@ -250,7 +245,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Context-aware DATA export failed:', error);
         const lines: string[] = [];
         lines.push('DATA export failed.');
@@ -321,7 +315,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Context-aware BIN export failed:', error);
         const lines: string[] = [];
         lines.push('BIN export failed.');
@@ -393,7 +386,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Context-aware VGM export failed:', error);
         const lines: string[] = [];
         lines.push('VGM export failed.');
@@ -483,7 +475,6 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        // eslint-disable-next-line no-console
         console.error('Context-aware WAV export failed:', error);
         const lines: string[] = [];
         lines.push('WAV export failed.');
