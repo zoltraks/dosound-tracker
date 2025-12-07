@@ -18,7 +18,7 @@ export const InformationModal: React.FC<InformationModalProps> = ({
   const lines = normalizedMessage.split('\n');
 
   return (
-    <div className="modal-backdrop">
+    <div className="modal-backdrop" style={{ zIndex: 1100 }}>
       <div className="modal-dialog">
         <div className="modal-title">{title}</div>
         <div className="modal-body">

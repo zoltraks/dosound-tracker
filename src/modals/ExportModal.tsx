@@ -58,7 +58,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-dialog">
+      <div className="modal-dialog export-modal">
         <div className="modal-title">Export</div>
         <div className="modal-body">
           <div style={{ marginBottom: '8px' }}>
@@ -155,13 +155,17 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </div>
           </div>
         </div>
-        <div className="modal-actions">
-          <button className="command-btn" onClick={onCancel}>
-            Cancel
-          </button>
-          <button className="command-btn" onClick={handleConfirm}>
-            OK
-          </button>
+        <div className="modal-actions export-actions">
+          <div className="export-actions-left">
+            <button className="command-btn" onClick={onCancel}>
+              Cancel
+            </button>
+          </div>
+          <div className="export-actions-right">
+            <button className="command-btn" onClick={handleConfirm}>
+              OK
+            </button>
+          </div>
         </div>
       </div>
     </div>

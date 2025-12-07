@@ -580,6 +580,12 @@ body {
   max-width: 468px;
 }
 
+/* Export options modal: make it slightly wider than default */
+.modal-dialog.export-modal {
+  min-width: 396px;
+  max-width: 396px;
+}
+
 /* MIDI configuration modal (90% of the screen) */
 .modal-dialog.midi-modal {
   width: 90vw;
@@ -869,6 +875,17 @@ body {
 .modal-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 6px;
+}
+
+/* Export modal actions: CANCEL on the left, OK on the right */
+.modal-actions.export-actions {
+  justify-content: space-between;
+}
+
+.export-actions-left,
+.export-actions-right {
+  display: flex;
   gap: 6px;
 }
 
