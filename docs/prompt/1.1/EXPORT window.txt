@@ -69,3 +69,8 @@ Then:
 3. Finally, update/add tests in test/utils for the new strategies and instrument export modes.
 
 ---
+
+There is no information dialog after export "DATA", "BIN", and "VGM" like it already is in "DUMP", and "WAV".
+Create similar information dialog for all remaining export formats.
+
+---
