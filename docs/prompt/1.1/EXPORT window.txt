@@ -56,3 +56,16 @@ Apply it to "DATA" and "BIN" and possibly "VGM".
 This strategy does not affect "DUMP" which must remain the same as it's always a frame by frame data stream nor "WAV".
 
 ---
+
+Fix the problem that the information dialog after export operation is shown below our "Export" window but should be in front of (above).
+The same problem we had with "MIDI" configuration dialog when "COPY" button is clicked.
+Make "Export" window 10% wider.
+Align "CANCEL" button to the left part of the window.
+
+Then:
+
+1. Implement actual context-aware behavior inside useFileOperations for each format (Song vs Pattern vs Instrument).
+2. Then implement the OPTIMIZED strategy in assemblyExport.ts and have DATA/BIN (and maybe VGM) respect exportStrategy.
+3. Finally, update/add tests in test/utils for the new strategies and instrument export modes.
+
+---

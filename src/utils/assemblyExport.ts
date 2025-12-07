@@ -2,6 +2,7 @@ import type { Song, Instrument } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
+import type { ExportStrategy } from '../constants/export';
 
 interface RegisterState {
   [register: number]: number;
@@ -24,7 +25,15 @@ interface FrameState {
  * @param isComplexDumpMode Whether to use complex dump mode (includes detailed comments and optimization)
  * @returns Assembly formatted string
  */
-export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false): string {
+export function exportToAssembly(
+  song: Song,
+  isComplexDumpMode: boolean | ExportStrategy = false
+): string {
+  const strategy: ExportStrategy =
+    typeof isComplexDumpMode === 'boolean'
+      ? (isComplexDumpMode ? 'complex' : 'simple')
+      : isComplexDumpMode;
+
   // Simulate playback and collect register states per frame
   const frames: FrameState[] = [];
   const ticksPerRow = song.speed || 6;
@@ -275,7 +284,7 @@ export function exportToAssembly(song: Song, isComplexDumpMode: boolean = false)
   }
   
   // Now convert frames to optimized assembly output
-  return formatFramesToAssembly(frames, song, isComplexDumpMode);
+  return formatFramesToAssembly(frames, song, strategy);
 }
 
 function applyInstrumentToRegisters(
@@ -358,7 +367,7 @@ function applyInstrumentToRegisters(
   }
 }
 
-function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpMode: boolean = false): string {
+function formatFramesToAssembly(frames: FrameState[], song: Song, strategy: ExportStrategy): string {
   // song parameter will be used for future optimization logic and pattern markers
   let asm = 'music:\n\n\t; START\n\n';
   
@@ -372,7 +381,7 @@ function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpM
     return asm;
   }
   
-  if (isComplexDumpMode) {
+  if (strategy === 'complex' || strategy === 'optimized') {
     // Optimized dump for complex mode - track changes and skip unchanged registers
     const lastRegs: { [register: number]: number } = {};
     let lastLineIndex = -1;
@@ -537,7 +546,44 @@ function formatFramesToAssembly(frames: FrameState[], song: Song, isComplexDumpM
   asm += '\n';
   asm += formatAsmLine([0xff, 0x00], 'STOP');
   
+  if (strategy === 'optimized') {
+    asm = combineDelayLines(asm);
+  }
+
   return asm;
+}
+
+function combineDelayLines(asm: string): string {
+  const lines = asm.split('\n');
+  const out: string[] = [];
+  let pendingFrames = 0;
+
+  const flush = () => {
+    if (pendingFrames > 0) {
+      const merged = formatDelayLine(pendingFrames).trimEnd();
+      out.push(merged);
+      pendingFrames = 0;
+    }
+  };
+
+  const delayRegex = /^\s*dc\.b\s+\$FF,\$[0-9A-Fa-f]+\s*;\s*DL\s+(\d+)\s*$/;
+
+  for (const line of lines) {
+    const match = delayRegex.exec(line);
+    if (match) {
+      const frames = parseInt(match[1], 10);
+      if (Number.isFinite(frames) && frames > 0) {
+        pendingFrames += frames;
+        continue;
+      }
+    }
+
+    flush();
+    out.push(line);
+  }
+
+  flush();
+  return out.join('\n');
 }
 
 function periodToNoteAndPitch(period: number): { label: string; pitchDelta: number } {
@@ -1014,7 +1060,10 @@ export function parseAssemblyToBinary(assembly: string): Uint8Array {
   return new Uint8Array(bytes);
 }
 
-export function exportToBinary(song: Song, isComplexDumpMode: boolean = false): Uint8Array {
+export function exportToBinary(
+  song: Song,
+  isComplexDumpMode: boolean | ExportStrategy = false
+): Uint8Array {
   const assembly = exportToAssembly(song, isComplexDumpMode);
   return parseAssemblyToBinary(assembly);
 }
