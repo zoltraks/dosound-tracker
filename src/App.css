@@ -820,6 +820,16 @@ body {
   line-height: 1.2rem;
 }
 
+.modal-body input[type=radio] {
+  vertical-align: middle;
+  margin-left: 10px;
+  margin-top: -2px;
+}
+
+.modal-body > div > div:first-child {
+  margin-bottom: 6px;
+}
+
 .modal-body.changelog-modal-body {
   flex: 1;
   overflow-y: auto;

@@ -62,7 +62,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <div className="modal-title">Export</div>
         <div className="modal-body">
           <div style={{ marginBottom: '8px' }}>
-            <div>Export what:</div>
+            <div>What:</div>
             <label>
               <input
                 type="radio"
@@ -95,7 +95,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           </div>
 
           <div style={{ marginBottom: '8px' }}>
-            <div>Dump strategy:</div>
+            <div>Strategy:</div>
             <label>
               <input
                 type="radio"
