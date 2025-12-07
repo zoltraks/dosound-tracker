@@ -22,15 +22,16 @@ import { CommandPanel } from './components/CommandPanel';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { ModalContainer } from './components/ModalContainer';
+import { ExportModal } from './modals/ExportModal';
 import { AppLayout } from './components/AppLayout';
 import { TracksSection } from './components/TracksSection';
 import { InstrumentSection } from './components/InstrumentSection';
 import { InfoSection } from './components/InfoSection';
-import { exportInstrumentToAssembly, downloadAssemblyFile } from './utils/assemblyExport';
 import { isInstrumentEmpty } from './utils/instrument';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
+import type { ExportType, ExportStrategy } from './constants/export';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -156,8 +157,11 @@ const App: React.FC = () => {
   const {
     isDebugMode,
     setIsDebugMode,
+    exportType,
+    setExportType,
+    exportStrategy,
+    setExportStrategy,
     isComplexDumpMode,
-    setIsComplexDumpMode,
     transposeScope,
     setTransposeScope,
     transposeTrackScope,
@@ -169,6 +173,10 @@ const App: React.FC = () => {
     transposeAmountInput,
     setTransposeAmountInput,
   } = useAppState();
+
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [pendingExportType, setPendingExportType] = useState<ExportType>(exportType);
+  const [pendingExportStrategy, setPendingExportStrategy] = useState<ExportStrategy>(exportStrategy);
 
   const [instrumentOctaves, setInstrumentOctaves] = useState<Record<string, number>>(() => {
     try {
@@ -210,11 +218,11 @@ const App: React.FC = () => {
   const {
     soundExportSummary,
     dumpExportSummary,
-    handleExportData,
-    handleExportBin,
-    handleExportVgm,
-    handleExportWav,
-    handleExportDump,
+    exportDataWithContext,
+    exportBinWithContext,
+    exportVgmWithContext,
+    exportWavWithContext,
+    exportDumpWithContext,
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,
   } = useFileOperations({ song: currentSong, isComplexDumpMode });
@@ -243,7 +251,8 @@ const App: React.FC = () => {
     isQuitConfirmOpen ||
     isInstrumentDeleteOpen ||
     isInstrumentTypeWarningOpen ||
-    isInstrumentMidiOpen;
+    isInstrumentMidiOpen ||
+    isExportModalOpen;
 
   const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(isNavigationSuspended);
 
@@ -1292,10 +1301,6 @@ const App: React.FC = () => {
     setIsChangelogOpen(false);
   }, []);
 
-  const handleToggleDumpMode = useCallback(() => {
-    setIsComplexDumpMode(prev => !prev);
-  }, []);
-
   const handleToggleChannelMute = useCallback((channelIndex: number) => {
     toggleChannelMute(channelIndex);
   }, [toggleChannelMute]);
@@ -1670,18 +1675,6 @@ const App: React.FC = () => {
       }
     }, 20);
   }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString]);
-
-  const handleExportInstrumentAssembly = useCallback(() => {
-    try {
-      const asm = exportInstrumentToAssembly(currentInstrument, currentSong);
-      const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`)
-        .replace(/[^a-z0-9]/gi, '_')
-        .toLowerCase();
-      downloadAssemblyFile(asm, `${safeName}.s`);
-    } catch (error) {
-      console.error('Instrument assembly export failed:', error);
-    }
-  }, [currentInstrument, currentSong]);
 
   const handleCloneInstrument = useCallback(() => {
     const instruments = currentSong.instruments;
@@ -3064,6 +3057,61 @@ const App: React.FC = () => {
     setRenumberSummary('');
   }, []);
 
+  const handleOpenExport = useCallback(() => {
+    setPendingExportType(exportType);
+    setPendingExportStrategy(exportStrategy);
+    setIsExportModalOpen(true);
+  }, [exportType, exportStrategy]);
+
+  const handleCancelExport = useCallback(() => {
+    setIsExportModalOpen(false);
+  }, []);
+
+  const handleConfirmExport = useCallback(() => {
+    setExportType(pendingExportType);
+    setExportStrategy(pendingExportStrategy);
+    setIsExportModalOpen(false);
+  }, [pendingExportType, pendingExportStrategy, setExportType, setExportStrategy]);
+
+  const handleExportTypeChange = useCallback((type: ExportType) => {
+    setPendingExportType(type);
+  }, []);
+
+  const handleExportStrategyChange = useCallback((strategy: ExportStrategy) => {
+    setPendingExportStrategy(strategy);
+  }, []);
+
+  const buildExportContext = useCallback(
+    () => ({
+      type: pendingExportType,
+      strategy: pendingExportStrategy,
+      playlistIndex: clampedPlaybackPosition,
+      currentLine: sharedCurrentLine,
+      instrument: currentInstrument ?? null,
+    }),
+    [pendingExportType, pendingExportStrategy, clampedPlaybackPosition, sharedCurrentLine, currentInstrument]
+  );
+
+  const handleExportDumpFromModal = useCallback(() => {
+    exportDumpWithContext(buildExportContext());
+  }, [buildExportContext, exportDumpWithContext]);
+
+  const handleExportDataFromModal = useCallback(() => {
+    exportDataWithContext(buildExportContext());
+  }, [buildExportContext, exportDataWithContext]);
+
+  const handleExportBinFromModal = useCallback(() => {
+    exportBinWithContext(buildExportContext());
+  }, [buildExportContext, exportBinWithContext]);
+
+  const handleExportVgmFromModal = useCallback(() => {
+    exportVgmWithContext(buildExportContext());
+  }, [buildExportContext, exportVgmWithContext]);
+
+  const handleExportWavFromModal = useCallback(() => {
+    exportWavWithContext(buildExportContext());
+  }, [buildExportContext, exportWavWithContext]);
+
   const handleOpenTranspose = useCallback(() => {
     // When opening, keep the last-used transpose settings and just ensure the
     // input text reflects the current numeric amount.
@@ -3324,6 +3372,9 @@ const App: React.FC = () => {
     isInstrumentTypeWarningOpen,
     handleCancelInstrumentTypeWarning,
     handleConfirmInstrumentTypeWarning,
+    isExportOpen: isExportModalOpen,
+    handleCancelExport,
+    handleConfirmExport,
   });
 
   try {
@@ -3359,17 +3410,13 @@ const App: React.FC = () => {
               onRenumber={handleRenumberSong}
               onNewInstrument={createNewInstrument}
               onSaveInstrument={saveInstrument}
-              onExportInstrument={handleExportInstrumentAssembly}
               onLoadInstrument={handleLoadInstrumentClick}
               onDeleteInstrument={handleDeleteInstrument}
               onCloneInstrument={handleCloneInstrument}
               onPlaySong={handleStartSong}
               onPlayPattern={handleStartPattern}
               onStop={handleStop}
-              onExportData={handleExportData}
-              onExportBin={handleExportBin}
-              onExportVgm={handleExportVgm}
-              onExportWav={handleExportWav}
+              onOpenExport={handleOpenExport}
               onAddLine={handleAddLine}
               onDeleteLine={handleDeleteLine}
               onCloneLine={handleCloneLine}
@@ -3385,12 +3432,9 @@ const App: React.FC = () => {
               onCopyTrack={handleCopyTrack}
               onPasteTrack={handlePasteTrack}
               onNewTrack={handleCreateNewTrack}
-              isComplexDumpMode={isComplexDumpMode}
-              onToggleDumpMode={handleToggleDumpMode}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               onTranspose={handleOpenTranspose}
-              onExportDump={handleExportDump}
               midiInputEnabled={midiInputEnabled}
               midiOutputEnabled={midiOutputEnabled}
               onShowMidi={handleShowMidi}
@@ -3511,6 +3555,7 @@ const App: React.FC = () => {
             </>
           }
           modals={
+            <>
             <ModalContainer
               songError={songError}
               setSongError={setSongError}
@@ -3604,6 +3649,21 @@ const App: React.FC = () => {
               midiCopySummary={midiCopySummary}
               onMidiSystemReset={handleMidiSystemReset}
             />
+            <ExportModal
+              isOpen={isExportModalOpen}
+              exportType={pendingExportType}
+              exportStrategy={pendingExportStrategy}
+              onChangeType={handleExportTypeChange}
+              onChangeStrategy={handleExportStrategyChange}
+              onExportDump={handleExportDumpFromModal}
+              onExportData={handleExportDataFromModal}
+              onExportBin={handleExportBinFromModal}
+              onExportVgm={handleExportVgmFromModal}
+              onExportWav={handleExportWavFromModal}
+              onConfirm={handleConfirmExport}
+              onCancel={handleCancelExport}
+            />
+            </>
           }
         />
       </ErrorBoundary>

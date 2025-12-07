@@ -1,9 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
+import type { ExportType, ExportStrategy } from '../constants/export';
 
 export interface UseAppStateResult {
   isDebugMode: boolean;
   setIsDebugMode: Dispatch<SetStateAction<boolean>>;
+  exportType: ExportType;
+  setExportType: Dispatch<SetStateAction<ExportType>>;
+  exportStrategy: ExportStrategy;
+  setExportStrategy: Dispatch<SetStateAction<ExportStrategy>>;
   isComplexDumpMode: boolean;
   setIsComplexDumpMode: Dispatch<SetStateAction<boolean>>;
   transposeScope: 'line' | 'song';
@@ -30,12 +35,52 @@ export function useAppState(): UseAppStateResult {
     return false;
   });
 
-  const [isComplexDumpMode, setIsComplexDumpMode] = useState<boolean>(() => {
-    const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
-    if (savedDumpMode === 'complex') return true;
-    if (savedDumpMode === 'simple') return false;
-    return true;
+  const [exportType, setExportType] = useState<ExportType>(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-export-type');
+      if (stored === 'song' || stored === 'pattern' || stored === 'instrument') {
+        return stored;
+      }
+    } catch {
+      // ignore
+    }
+    return 'song';
   });
+
+  const [exportStrategy, setExportStrategy] = useState<ExportStrategy>(() => {
+    try {
+      const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
+      if (savedDumpMode === 'simple' || savedDumpMode === 'complex' || savedDumpMode === 'optimized') {
+        return savedDumpMode;
+      }
+    } catch {
+      // ignore
+    }
+    return 'complex';
+  });
+
+  const isComplexDumpMode = exportStrategy !== 'simple';
+
+  const setIsComplexDumpMode: Dispatch<SetStateAction<boolean>> = useCallback(
+    (valueOrUpdater) => {
+      setExportStrategy(prevStrategy => {
+        const prevIsComplex = prevStrategy !== 'simple';
+        const nextIsComplex =
+          typeof valueOrUpdater === 'function'
+            ? (valueOrUpdater as (prev: boolean) => boolean)(prevIsComplex)
+            : valueOrUpdater;
+
+        if (!nextIsComplex) {
+          return 'simple';
+        }
+
+        // When switching to a complex-style mode, preserve "optimized" if it
+        // was already selected; otherwise fall back to "complex".
+        return prevStrategy === 'optimized' ? 'optimized' : 'complex';
+      });
+    },
+    []
+  );
 
   const [transposeScope, setTransposeScope] = useState<'line' | 'song'>('line');
   const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
@@ -53,11 +98,19 @@ export function useAppState(): UseAppStateResult {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-dump-mode', isComplexDumpMode ? 'complex' : 'simple');
+      localStorage.setItem('dosound-tracker-export-type', exportType);
     } catch {
       // ignore
     }
-  }, [isComplexDumpMode]);
+  }, [exportType]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-dump-mode', exportStrategy);
+    } catch {
+      // ignore
+    }
+  }, [exportStrategy]);
 
   // Load transpose settings from localStorage on startup so they persist
   // until the application is fully reset (RESET clears localStorage and reloads).
@@ -113,6 +166,10 @@ export function useAppState(): UseAppStateResult {
   return {
     isDebugMode,
     setIsDebugMode,
+    exportType,
+    setExportType,
+    exportStrategy,
+    setExportStrategy,
     isComplexDumpMode,
     setIsComplexDumpMode,
     transposeScope,

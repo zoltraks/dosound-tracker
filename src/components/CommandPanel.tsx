@@ -9,17 +9,13 @@ interface CommandPanelProps {
   onRenumber: () => void;
   onNewInstrument: () => void;
   onSaveInstrument: () => void;
-  onExportInstrument: () => void;
   onLoadInstrument: () => void;
   onDeleteInstrument: () => void;
   onCloneInstrument: () => void;
   onPlaySong: () => void;
   onPlayPattern: () => void;
   onStop: () => void;
-  onExportData: () => void;
-  onExportBin: () => void;
-  onExportVgm: () => void;
-  onExportWav: () => void;
+  onOpenExport: () => void;
   onAddLine: () => void;
   onDeleteLine: () => void;
   onCloneLine: () => void;
@@ -35,12 +31,9 @@ interface CommandPanelProps {
   onCopyTrack: () => void;
   onPasteTrack: () => void;
   onNewTrack: () => void;
-  isComplexDumpMode: boolean;
-  onToggleDumpMode: () => void;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   onTranspose: () => void;
-  onExportDump: () => void;
   midiInputEnabled: boolean;
   midiOutputEnabled: boolean;
   onShowMidi: () => void;
@@ -54,17 +47,13 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onRenumber,
   onNewInstrument,
   onSaveInstrument,
-  onExportInstrument,
   onLoadInstrument,
   onDeleteInstrument,
   onCloneInstrument,
   onPlaySong,
   onPlayPattern,
   onStop,
-  onExportData,
-  onExportBin,
-  onExportVgm,
-  onExportWav,
+  onOpenExport,
   onAddLine,
   onDeleteLine,
   onCloneLine,
@@ -80,12 +69,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onCopyTrack,
   onPasteTrack,
   onNewTrack,
-  isComplexDumpMode,
-  onToggleDumpMode,
   activeSection,
   setActiveSection,
   onTranspose,
-  onExportDump,
   midiInputEnabled,
   midiOutputEnabled,
   onShowMidi
@@ -278,7 +264,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
         <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
         <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
-        <button onClick={onExportInstrument} className="command-btn">EXPORT INST</button>
         <button
           onClick={event => {
             event.stopPropagation();
@@ -337,22 +322,15 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         >
           STOP
         </button>
-        <button 
-          onClick={onToggleDumpMode} 
-          className={`command-btn ${!isComplexDumpMode ? 'active' : ''}`}
-        >
-          {isComplexDumpMode ? 'COMPLEX DUMP' : 'SIMPLE DUMP'}
-        </button>
         <button
-          onClick={onExportDump}
+          onClick={event => {
+            event.stopPropagation();
+            onOpenExport();
+          }}
           className="command-btn"
         >
-          EXPORT DUMP
+          EXPORT
         </button>
-        <button onClick={onExportData} className="command-btn">EXPORT DATA</button>
-        <button onClick={onExportBin} className="command-btn">EXPORT BIN</button>
-        <button onClick={onExportVgm} className="command-btn">EXPORT VGM</button>
-        <button onClick={onExportWav} className="command-btn">EXPORT WAV</button>
       </div>
     </div>
   );

@@ -1,0 +1,58 @@
+Add new export modal window.
+
+It will be used to group all export operations in one place.
+
+First, there should be a list of radio buttons indicating what to export: "Song" (default), "Pattern" (current playlist line), or "Instrument" (currently selected instrument).
+
+For all export formats it should be possible to export the whole song as in "EXPORT SONG", only current playlist line (pattern) or only current selected instrument as in "EXPORT INST".
+
+Exporting an instrument should work exactly like "EXPORT INST" does but it should be possible to export in other formats like VGM or WAV too.
+It should be an instrument playback with its base note for a time that comes from current pattern length and song speed settings. 
+
+Currently we have two strategies how export data is made and are controlled by "SIMPLE DUMP" / "COMPLEX DUMP" option button.
+
+Remove this button as export strategy will be selected in export options window.
+
+Introduce new strategy "OPTIMIZED DUMP".
+We'll have three possible strategies.
+- "SIMPLE DUMP" strategy means that at each cycle we are writing all current register data values.
+- "COMPLEX DUMP" strategy means that we are writing only changes of register data each cycle.
+- "OPTIMIZED DUMP" strategy means that intervals between cycles are combined to save space.
+
+In export modal window after export type (song/pattern/instrument) there should be strategy selection below.
+
+After strategy selection, place the buttons moved from the main application view.
+
+Move buttons "EXPORT DUMP", "EXPORT DATA", "EXPORT BIN", "EXPORT VGM", "EXPORT WAV" from main window to this export options window and shorten names to "DUMP", "DATA", "BIN", "VGM", "WAV". They should work the same, so clicking it should export data in selected format.
+
+After every export type show information dialog like "EXPORT WAV" or "EXPORT DUMP" already does.
+
+Remove "EXPORT INST" from main window as it would not be used.
+
+In main application view instead of all buttons moved to export window, introduce one "EXPORT" button which will open this export options dialog.
+
+Finally this window should have at the bottom two buttons "CANCEL" on the left side, and "OK" on the right side.
+
+Remember settings of this window (export type and strategy) only when it's closed by hitting "OK".
+
+While this window is open, TAB key navigation must remain disabled until it's closed.
+
+When "OPTIMIZED DUMP" strategy is selected then if no other changes are in register, combine the delays, so for example when exporting an assembly dump and there's a part like:
+
+```
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+	dc.b $FF,$1        ; DL 2
+```
+
+You may combine them into one:
+
+```
+	dc.b $FF,$7        ; DL 8
+```
+
+Apply it to "DATA" and "BIN" and possibly "VGM".
+This strategy does not affect "DUMP" which must remain the same as it's always a frame by frame data stream nor "WAV".
+
+---

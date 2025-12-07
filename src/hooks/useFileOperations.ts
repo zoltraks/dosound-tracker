@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import type { Song } from '../synth/SoundDriver';
+import type { Song, Instrument } from '../synth/SoundDriver';
+import type { ExportType, ExportStrategy } from '../constants/export';
 import {
   exportToAssembly,
   exportSongToWav,
@@ -11,6 +12,14 @@ import {
   downloadVgmFile,
   downloadWavFile,
 } from '../utils/assemblyExport';
+
+interface ExportContext {
+  type: ExportType;
+  strategy: ExportStrategy;
+  playlistIndex: number;
+  currentLine: number;
+  instrument: Instrument | null;
+}
 
 interface UseFileOperationsArgs {
   song: Song;
@@ -25,6 +34,11 @@ interface UseFileOperationsResult {
   handleExportVgm: () => void;
   handleExportWav: () => void;
   handleExportDump: () => void;
+  exportDataWithContext: (ctx: ExportContext) => void;
+  exportBinWithContext: (ctx: ExportContext) => void;
+  exportVgmWithContext: (ctx: ExportContext) => void;
+  exportWavWithContext: (ctx: ExportContext) => void;
+  exportDumpWithContext: (ctx: ExportContext) => void;
   handleCloseSoundExportSummary: () => void;
   handleCloseDumpExportSummary: () => void;
 }
@@ -135,6 +149,48 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
     }
   }, [song]);
 
+  const exportDataWithContext = useCallback(
+    (ctx: ExportContext) => {
+      // Context-aware routing will be implemented together with the ExportModal.
+      // For now, delegate to the existing song-wide handler.
+      void ctx;
+      handleExportData();
+    },
+    [handleExportData]
+  );
+
+  const exportBinWithContext = useCallback(
+    (ctx: ExportContext) => {
+      void ctx;
+      handleExportBin();
+    },
+    [handleExportBin]
+  );
+
+  const exportVgmWithContext = useCallback(
+    (ctx: ExportContext) => {
+      void ctx;
+      handleExportVgm();
+    },
+    [handleExportVgm]
+  );
+
+  const exportWavWithContext = useCallback(
+    (ctx: ExportContext) => {
+      void ctx;
+      handleExportWav();
+    },
+    [handleExportWav]
+  );
+
+  const exportDumpWithContext = useCallback(
+    (ctx: ExportContext) => {
+      void ctx;
+      handleExportDump();
+    },
+    [handleExportDump]
+  );
+
   const handleCloseSoundExportSummary = useCallback(() => {
     setSoundExportSummary('');
   }, []);
@@ -151,6 +207,11 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
     handleExportVgm,
     handleExportWav,
     handleExportDump,
+    exportDataWithContext,
+    exportBinWithContext,
+    exportVgmWithContext,
+    exportWavWithContext,
+    exportDumpWithContext,
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,
   };

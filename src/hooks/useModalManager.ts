@@ -56,6 +56,9 @@ interface UseModalManagerOptions {
   isInstrumentTypeWarningOpen: boolean;
   handleCancelInstrumentTypeWarning: () => void;
   handleConfirmInstrumentTypeWarning: () => void;
+  isExportOpen: boolean;
+  handleCancelExport: () => void;
+  handleConfirmExport: () => void;
 }
 
 export function useModalManager(options: UseModalManagerOptions): void {
@@ -115,6 +118,9 @@ export function useModalManager(options: UseModalManagerOptions): void {
     isInstrumentTypeWarningOpen,
     handleCancelInstrumentTypeWarning,
     handleConfirmInstrumentTypeWarning,
+    isExportOpen,
+    handleCancelExport,
+    handleConfirmExport,
   } = options;
 
   useEffect(() => {
@@ -144,7 +150,8 @@ export function useModalManager(options: UseModalManagerOptions): void {
         isNewSongConfirmOpen ||
         isResetConfirmOpen ||
         isInstrumentDeleteOpen ||
-        isInstrumentTypeWarningOpen;
+        isInstrumentTypeWarningOpen ||
+        isExportOpen;
 
       if (!hasInfoModal && !hasConfirmModal) {
         return;
@@ -183,6 +190,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
         }
         if (isNewSongConfirmOpen) {
           handleCancelNewSong();
+          return;
+        }
+        if (isExportOpen) {
+          handleCancelExport();
           return;
         }
         if (isInstrumentTypeWarningOpen) {
@@ -328,6 +339,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
           handleConfirmNewSong();
           return;
         }
+        if (isExportOpen) {
+          handleConfirmExport();
+          return;
+        }
         if (isInstrumentTypeWarningOpen) {
           handleConfirmInstrumentTypeWarning();
           return;
@@ -403,5 +418,8 @@ export function useModalManager(options: UseModalManagerOptions): void {
     isInstrumentTypeWarningOpen,
     handleCancelInstrumentTypeWarning,
     handleConfirmInstrumentTypeWarning,
+    isExportOpen,
+    handleCancelExport,
+    handleConfirmExport,
   ]);
 }
