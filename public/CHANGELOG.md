@@ -1,5 +1,17 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.5
+
+Export options window with context-aware song/pattern/instrument exports, optimized assembly/VGM timing, reorganized command panel controls, and richer export feedback dialogs.
+
+- Introduced an **Export options modal** that moves DUMP/DATA/BIN/VGM/WAV buttons out of the main window into a dedicated dialog, groups settings into What/Strategy/Format sections, and remembers the chosen export type and strategy when closed with OK.
+- Made DATA, BIN and VGM exports **context-aware**, so each format respects the selected scope (Song, Pattern at the current playlist position, or Instrument) and generates appropriately named files for each case instead of always exporting the full song.
+- Added an **OPTIMIZED dump strategy** for assembly and binary exports that merges consecutive delay lines into combined waits while keeping register writes and comments intact, reducing file size without changing playback behavior.
+- Optimized VGM output by merging runs of frame waits into sample-based delay commands while preserving the loop point offset, and added instrument-only VGM/WAV exports by building a one-pattern preview song from the instrument base note and rendering just that instrument.
+- Reorganized the command panel into three clearer rows that match the tracker workflow, renamed several buttons (for example ADD TRACK / ADD INST and BUG), and introduced a **DELETE TRACK** action that clears the pattern assignment for the selected track on the current playlist line without deleting the underlying pattern.
+- Improved export feedback by showing information dialogs after DATA/BIN/VGM/WAV exports (matching existing DUMP/WAV behavior) with details such as filename, scope and byte/sample counts, and fixed dialog z-ordering so these messages now appear above the Export window.
+- Polished UI styling and internals by adjusting export modal layout and radio-button alignment, refining MIDI/debug button colors, tightening debug logging and React effect dependencies, and replacing remaining `any` types and console ESLint overrides with stronger TypeScript definitions.
+
 ## Version 1.1.4
 
 Keyboard note entry and sustain refinements, smoother audio switching, and safer MIDI behavior on macOS, plus UX and cleanup improvements.
