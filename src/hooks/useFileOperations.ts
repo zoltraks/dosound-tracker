@@ -8,6 +8,8 @@ import {
   exportSongToVgm,
   exportToBinary,
   exportInstrumentToAssembly,
+  exportInstrumentToVgm,
+  exportInstrumentToWav,
   parseAssemblyToBinary,
   downloadAssemblyFile,
   downloadBinaryFile,
@@ -335,6 +337,26 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   const exportVgmWithContext = useCallback(
     (ctx: ExportContext) => {
       try {
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          const result = exportInstrumentToVgm(ctx.instrument, song);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          const rawInstId = ctx.instrument.id || 'inst';
+          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
+          const filename = `${safeTitle}_inst_${safeInstId}.vgm`;
+          downloadVgmFile(result.buffer, filename);
+
+          const lines: string[] = [];
+          lines.push('VGM export completed.');
+          lines.push('');
+          lines.push(`File: ${filename}`);
+          lines.push(`Total samples: ${result.totalSamples}`);
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+
+          setSoundExportSummary(lines.join('\n'));
+          return;
+        }
+
         let scopedSong: Song = song;
         if (ctx.type === 'pattern' && song.playlist.length > 0) {
           const playlistLength = song.playlist.length;
@@ -351,7 +373,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
           };
         }
 
-        const result = exportSongToVgm(scopedSong);
+        const result = exportSongToVgm(scopedSong, ctx.strategy);
         const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
         const suffix = ctx.type === 'pattern' ? '_pattern' : '';
         const filename = `${safeTitle}${suffix}.vgm`;
@@ -386,10 +408,92 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
   const exportWavWithContext = useCallback(
     (ctx: ExportContext) => {
-      void ctx;
-      handleExportWav();
+      try {
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          const result = exportInstrumentToWav(ctx.instrument, song);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          const rawInstId = ctx.instrument.id || 'inst';
+          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
+          const filename = `${safeTitle}_inst_${safeInstId}.wav`;
+          downloadWavFile(result.buffer, filename);
+
+          const lines: string[] = [];
+          lines.push('WAV export completed.');
+          lines.push('');
+          lines.push(`File: ${filename}`);
+          lines.push(`Sample rate: ${result.sampleRate} Hz`);
+          lines.push('Channels: 1 (mono)');
+          lines.push('Bit depth: 16-bit');
+          lines.push(`Total samples: ${result.totalSamples}`);
+          lines.push(`Duration: ${result.durationSeconds.toFixed(2)} seconds`);
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+
+          if (result.totalSamples === 0) {
+            lines.push('');
+            lines.push('Warning: song produced 0 samples (empty playlist or no active notes).');
+          }
+
+          setSoundExportSummary(lines.join('\n'));
+          return;
+        }
+
+        let scopedSong: Song = song;
+        if (ctx.type === 'pattern' && song.playlist.length > 0) {
+          const playlistLength = song.playlist.length;
+          const rawIndex = ctx.playlistIndex;
+          const index = Math.max(
+            0,
+            Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+          );
+          const entry = song.playlist[index];
+          scopedSong = {
+            ...song,
+            playlist: [entry],
+            loop: null,
+          };
+        }
+
+        const result = exportSongToWav(scopedSong);
+        const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+        const suffix = ctx.type === 'pattern' ? '_pattern' : '';
+        const filename = `${safeTitle}${suffix}.wav`;
+        downloadWavFile(result.buffer, filename);
+
+        const lines: string[] = [];
+        lines.push('WAV export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        lines.push(`Sample rate: ${result.sampleRate} Hz`);
+        lines.push('Channels: 1 (mono)');
+        lines.push('Bit depth: 16-bit');
+        lines.push(`Total samples: ${result.totalSamples}`);
+        lines.push(`Duration: ${result.durationSeconds.toFixed(2)} seconds`);
+        if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else {
+          lines.push('Scope: Song');
+        }
+
+        if (result.totalSamples === 0) {
+          lines.push('');
+          lines.push('Warning: song produced 0 samples (empty playlist or no active notes).');
+        }
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('Context-aware WAV export failed:', error);
+        const lines: string[] = [];
+        lines.push('WAV export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
     },
-    [handleExportWav]
+    [song]
   );
 
   const exportDumpWithContext = useCallback(

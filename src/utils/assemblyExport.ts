@@ -1,4 +1,4 @@
-import type { Song, Instrument } from '../synth/SoundDriver';
+import type { Song, Instrument, Pattern, PatternLine } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
@@ -1021,6 +1021,98 @@ export function downloadAssemblyFile(content: string, filename: string = 'music.
   URL.revokeObjectURL(url);
 }
 
+function optimizeVgmDelays(
+  commands: number[],
+  loopCommandOffset: number
+): { commands: number[]; loopCommandOffset: number } {
+  if (commands.length === 0) {
+    return { commands, loopCommandOffset };
+  }
+
+  // If no valid loop point, just optimize the whole stream.
+  if (loopCommandOffset < 0 || loopCommandOffset > commands.length) {
+    const merged = mergeVgmDelaySequence(commands);
+    return { commands: merged, loopCommandOffset };
+  }
+
+  // Preserve the exact byte position of the loop command by optimizing the
+  // prefix and suffix separately, then recomputing the loop offset as the
+  // length of the optimized prefix.
+  const pre = commands.slice(0, loopCommandOffset);
+  const post = commands.slice(loopCommandOffset);
+
+  const preMerged = mergeVgmDelaySequence(pre);
+  const postMerged = mergeVgmDelaySequence(post);
+
+  return {
+    commands: preMerged.concat(postMerged),
+    loopCommandOffset: preMerged.length,
+  };
+}
+
+function mergeVgmDelaySequence(commands: number[]): number[] {
+  const out: number[] = [];
+  const len = commands.length;
+  let i = 0;
+  const SAMPLES_PER_TICK = 882; // Must match SAMPLES_PER_TICK in exportSongToVgm
+
+  while (i < len) {
+    const cmd = commands[i];
+
+    // Merge runs of 0x63 (wait 1/50s) into a single 0x61 (arbitrary sample wait)
+    if (cmd === 0x63) {
+      let run = 0;
+      while (i < len && commands[i] === 0x63) {
+        run++;
+        i++;
+      }
+
+      if (run >= 4) {
+        const total = run * SAMPLES_PER_TICK;
+        out.push(0x61, total & 0xff, (total >>> 8) & 0xff);
+      } else {
+        for (let k = 0; k < run; k++) {
+          out.push(0x63);
+        }
+      }
+      continue;
+    }
+
+    // AY8910 write (0xA0 rr vv)
+    if (cmd === 0xa0) {
+      if (i + 2 < len) {
+        out.push(commands[i], commands[i + 1], commands[i + 2]);
+        i += 3;
+      } else {
+        // Truncated command - copy remainder verbatim
+        while (i < len) {
+          out.push(commands[i++]);
+        }
+      }
+      continue;
+    }
+
+    // Generic wait with explicit sample count (0x61 nn nn) - already optimal
+    if (cmd === 0x61) {
+      if (i + 2 < len) {
+        out.push(commands[i], commands[i + 1], commands[i + 2]);
+        i += 3;
+      } else {
+        while (i < len) {
+          out.push(commands[i++]);
+        }
+      }
+      continue;
+    }
+
+    // Other single-byte commands (including 0x62 and 0x66)
+    out.push(cmd);
+    i++;
+  }
+
+  return out;
+}
+
 export function parseAssemblyToBinary(assembly: string): Uint8Array {
   const lines = assembly.split(/\r?\n/);
   const bytes: number[] = [];
@@ -1521,7 +1613,53 @@ function buildGd3Tag(song: Song): Uint8Array | null {
   return new Uint8Array(bytes);
 }
 
-export function exportSongToVgm(song: Song): VgmExportResult {
+function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): Song {
+  const patternLength = sourceSong.patternLength || PATTERN_LENGTH;
+  const speed = sourceSong.speed || 6;
+
+  const base = parseBaseKeyForExport(instrument.base || 'C-4');
+
+  const lines: PatternLine[] = [];
+  for (let i = 0; i < patternLength; i++) {
+    lines.push({
+      trackA: i === 0 ? { note: base.note, octave: base.octave, instrument: instrument.id } : null,
+      trackB: null,
+      trackC: null,
+      volume: undefined,
+    });
+  }
+
+  const patternId = 'IP';
+  const pattern: Pattern = {
+    id: patternId,
+    name: instrument.name || `Instrument ${instrument.id || ''}`,
+    lines,
+  };
+
+  const titleBase = sourceSong.title || '';
+  const suffix = instrument.name
+    ? ` - ${instrument.name}`
+    : instrument.id
+    ? ` - INST ${instrument.id}`
+    : ' - Instrument';
+  const title = titleBase ? `${titleBase}${suffix}` : `Instrument Preview${suffix}`;
+
+  return {
+    ...sourceSong,
+    title,
+    speed,
+    patternLength,
+    patterns: [pattern],
+    playlist: [{ trackA: patternId, trackB: '--', trackC: '--' }],
+    loop: null,
+    instruments: [instrument],
+  };
+}
+
+export function exportSongToVgm(
+  song: Song,
+  strategy: ExportStrategy = 'simple'
+): VgmExportResult {
   const ticksPerRow = song.speed || 6;
   const lineCount = song.patternLength || 64;
 
@@ -1572,7 +1710,7 @@ export function exportSongToVgm(song: Song): VgmExportResult {
     }
   ];
 
-  const commands: number[] = [];
+  let commands: number[] = [];
   const SAMPLES_PER_TICK = 882; // 1/50 second at 44100 Hz
   let totalSamples = 0;
 
@@ -1707,7 +1845,7 @@ export function exportSongToVgm(song: Song): VgmExportResult {
               applyInstrumentToRegisters(
                 newRegs,
                 ch,
-                channelState.note,
+                { note: channelState.note.note, octave: channelState.note.octave },
                 instrument,
                 step,
                 channelState.isNewNote,
@@ -1771,6 +1909,12 @@ export function exportSongToVgm(song: Song): VgmExportResult {
   }
 
   commands.push(0x66);
+
+  if (strategy === 'optimized') {
+    const optimized = optimizeVgmDelays(commands, loopCommandOffset);
+    commands = optimized.commands;
+    loopCommandOffset = optimized.loopCommandOffset;
+  }
 
   const dataOffset = 0x100;
   const headerSize = 0x100;
@@ -2070,6 +2214,16 @@ export function exportSongToWav(song: Song): WavExportResult {
     totalSamples,
     durationSeconds
   };
+}
+
+export function exportInstrumentToVgm(instrument: Instrument, song: Song): VgmExportResult {
+  const previewSong = buildInstrumentPreviewSong(instrument, song);
+  return exportSongToVgm(previewSong);
+}
+
+export function exportInstrumentToWav(instrument: Instrument, song: Song): WavExportResult {
+  const previewSong = buildInstrumentPreviewSong(instrument, song);
+  return exportSongToWav(previewSong);
 }
 
 export function downloadWavFile(buffer: ArrayBuffer, filename: string = 'music.wav'): void {
