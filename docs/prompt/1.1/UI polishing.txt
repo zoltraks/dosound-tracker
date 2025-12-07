@@ -9,3 +9,24 @@ Remove alert warning about "Changes you made may not be saved.", we don't need t
 Remove also Electron quit confirmation.
 
 ---
+
+Delete "DELETE PATTERN" button as it's not wired.
+Instead introduce "DELETE TRACK" which should clear pattern number in selected track in current selected playlist line (leave pattern in memory).
+
+Change name "DEBUG" to "BUG".
+Change name "NEW TRACK" to "ADD TRACK".
+Change name "NEW INST" to "ADD INST".
+
+Arrange buttons in three rows instead of currently used four.
+
+Row 1: "PLAY SONG", "PLAY PATTERN", "STOP", "OPTIMIZE", "RENUMBER", "TRANSPOSE", "EXPORT", "MIDI", "BUG", "RESET"
+
+Row 2: "NEW SONG", "LOAD SONG", "SAVE SONG", "ADD LINE", "CLONE LINE", "DUPLICATE LINE", "ADD TRACK", "COPY TRACK", "PASTE TRACK", "INSERT STEP", "DELETE STEP"
+
+Row 3: "ADD INST", "LOAD INST", "SAVE INST", "PLAY INST", "CLONE INST", "DELETE INST", "DELETE TRACK", "DELETE LINE"
+
+---
+
+When clicking on any octave buttons automatically make the octave block focused.
+
+---

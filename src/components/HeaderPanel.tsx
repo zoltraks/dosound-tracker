@@ -243,7 +243,12 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
             <button
               key={i}
               className={`octave-button ${currentOctave === i ? 'active' : ''}`}
-              onClick={() => onOctaveChange(i)}
+              onClick={() => {
+                onOctaveChange(i);
+                if (octaveRef.current) {
+                  octaveRef.current.focus();
+                }
+              }}
             >
               {i}
             </button>

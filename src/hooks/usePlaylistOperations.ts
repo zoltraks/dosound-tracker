@@ -22,6 +22,7 @@ interface UsePlaylistOperationsResult {
   handleCloneLine: () => void;
   handleDeleteLine: () => void;
   handleDuplicateLine: () => void;
+  handleDeleteTrack: () => void;
   clampedPlaybackPosition: number;
   handlePositionSelect: (position: number) => void;
 }
@@ -242,6 +243,32 @@ export function usePlaylistOperations({
     setPosition(insertIndex, 0, 0);
   }, [song.playlist, song.patterns, currentPatternIndex, updateSong, setPosition]);
 
+  const handleDeleteTrack = useCallback(() => {
+    const length = song.playlist.length;
+    if (length === 0) {
+      return;
+    }
+
+    const currentIndex = Math.max(0, Math.min(currentPatternIndex, length - 1));
+    const playlist = [...song.playlist];
+    const entry = { ...playlist[currentIndex] };
+
+    switch (targetTrackId) {
+      case 'A':
+        entry.trackA = '--';
+        break;
+      case 'B':
+        entry.trackB = '--';
+        break;
+      case 'C':
+        entry.trackC = '--';
+        break;
+    }
+
+    playlist[currentIndex] = entry;
+    updateSong({ playlist });
+  }, [song.playlist, currentPatternIndex, targetTrackId, updateSong]);
+
   const handlePositionSelect = useCallback(
     (position: number) => {
       setPosition(position, 0, 0);
@@ -258,6 +285,7 @@ export function usePlaylistOperations({
     handleCloneLine,
     handleDeleteLine,
     handleDuplicateLine,
+    handleDeleteTrack,
     clampedPlaybackPosition,
     handlePositionSelect,
   };

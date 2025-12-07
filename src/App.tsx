@@ -1178,6 +1178,7 @@ const App: React.FC = () => {
     handleCloneLine,
     handleDeleteLine,
     handleDuplicateLine,
+    handleDeleteTrack,
     clampedPlaybackPosition,
     handlePositionSelect,
   } = usePlaylistOperations({
@@ -3432,6 +3433,7 @@ const App: React.FC = () => {
               onCopyTrack={handleCopyTrack}
               onPasteTrack={handlePasteTrack}
               onNewTrack={handleCreateNewTrack}
+              onDeleteTrack={handleDeleteTrack}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               onTranspose={handleOpenTranspose}
