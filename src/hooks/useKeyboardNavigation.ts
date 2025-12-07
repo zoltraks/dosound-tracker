@@ -188,7 +188,7 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
     if (shortcut) {
       executeShortcut(shortcut);
     }
-  }, [executeShortcut]);
+  }, [executeShortcut, activeSection]);
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);

@@ -52,13 +52,17 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
 }) => {
   const patternLength = song.patternLength || PATTERN_LENGTH;
 
+  const positionIndices = React.useMemo(() => {
+    return Array.from({ length: patternLength }, (_, i) => i);
+  }, [patternLength]);
+
   return (
     <div className="left-column">
       <div className="left-column-content">
         <div className="position-block">
           <div className="position-header"></div>
           <div className="position-content" onScroll={onPositionScroll}>
-            {Array.from({ length: patternLength }, (_, i) => (
+            {positionIndices.map(i => (
               <div
                 key={i}
                 className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}

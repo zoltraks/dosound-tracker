@@ -852,7 +852,7 @@ const App: React.FC = () => {
 
             const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
             // eslint-disable-next-line no-console
-            console.log(debugLine);
+            setTimeout(() => console.log(debugLine), 0);
             debugLastRowRef.current = {
               pattern: state.currentPattern,
               line: state.currentLine
