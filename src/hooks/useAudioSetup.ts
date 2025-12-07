@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { YM2149 } from '../synth/YM2149';
 
+type WindowWithYm2149 = Window & {
+  ym2149?: YM2149;
+};
+
 export interface UseAudioSetupResult {
   audioContext: AudioContext | null;
   audioError: string | null;
@@ -27,7 +31,7 @@ export function useAudioSetup(): UseAudioSetupResult {
       forceRender(v => v + 1);
 
       // Expose on window for debugging
-      (window as any).ym2149 = ym2149;
+      (window as WindowWithYm2149).ym2149 = ym2149;
 
       // Basic initial register setup
       ym2149.writeRegister(0x08, 0x0f);

@@ -15,6 +15,17 @@ import { isInstrumentEmpty } from '../utils/instrument';
 
 type TrackKey = 'trackA' | 'trackB' | 'trackC';
 
+type StoredInstrumentForMigration = {
+  volume?: unknown;
+  volumeEnvelope?: unknown;
+};
+
+type StoredSongForMigration = {
+  instruments?: StoredInstrumentForMigration[] | undefined;
+  speed?: unknown;
+  [key: string]: unknown;
+};
+
 // Storage keys
 const SONG_STORAGE_KEY = 'dosound-tracker-song';
 const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
@@ -129,10 +140,11 @@ export const useDataManagement = () => {
     try {
       const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
       if (savedSong) {
-        const parsedSong = JSON.parse(savedSong) as any;
+        const parsedSong = JSON.parse(savedSong) as StoredSongForMigration;
+        const instruments = parsedSong.instruments;
         const hasLegacyInstruments =
-          Array.isArray(parsedSong?.instruments) &&
-          parsedSong.instruments.some((inst: any) =>
+          Array.isArray(instruments) &&
+          instruments.some(inst =>
             inst && !Array.isArray(inst.volume) && Array.isArray(inst.volumeEnvelope)
           );
 
@@ -142,7 +154,7 @@ export const useDataManagement = () => {
           const clampedSpeed = Math.max(2, baseSpeed);
           const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
           return {
-            ...(parsedSong as Song),
+            ...(parsedSong as unknown as Song),
             speed: evenSpeed
           };
         }
@@ -974,7 +986,7 @@ export const useDataManagement = () => {
     setIsSongDirty(true);
     setCurrentSong(prev => {
       // Handle pattern length updates with clamping and pattern resizing
-      let next: Song = { ...prev, ...updates } as Song;
+      const next: Song = { ...prev, ...updates } as Song;
 
       if (typeof updates.patternLength === 'number') {
         const rawLength = updates.patternLength;

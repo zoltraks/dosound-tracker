@@ -78,13 +78,14 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
       case 'previousSection':
         navigateToPrevious();
         break;
-      default:
+      default: {
         // Try to execute callback for active section
         const callback = callbacksRef.current[activeSection];
         if (callback) {
           callback();
         }
         break;
+      }
     }
   }, [activeSection, navigateToNext, navigateToPrevious]);
 
