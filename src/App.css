@@ -2366,13 +2366,13 @@ body {
   }
 
   .command-row {
-    flex-wrap: wrap;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
   }
 
   .command-btn {
-    flex: 0 0 calc(33.333% - 8px);
-    max-width: calc(33.333% - 8px);
+    max-width: 100%;
   }
 
   .piano-keyboard-container {

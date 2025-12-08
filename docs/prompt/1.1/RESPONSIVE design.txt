@@ -45,3 +45,7 @@ While arranging command buttons in "command-row" in mobile view is correct in th
 For now "DELETE STEP" and "EXPORT" are full width buttons but they should visually fit the other buttons.
 
 ---
+
+But now there is a left margin gap before first column on the left and there is a right margin gap after last (third) column on the right. Remove it.
+
+---
