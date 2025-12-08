@@ -60,7 +60,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   // PIANO_SHOW_EXTRA_TOP_C.
   const generatePianoKeys = (): PianoKey[] => {
     const keys: PianoKey[] = [];
-    const octaveSpan = isCompactLayout ? 3 : 5;
+    const octaveSpan = isCompactLayout ? 2 : 5;
     const maxStartOctave = MAX_OCTAVE - (octaveSpan - 1);
     const startOctave = Math.max(
       MIN_OCTAVE,

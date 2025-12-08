@@ -293,6 +293,7 @@ body {
 .title {
   font-size: 14px;
   font-weight: bold;
+  white-space: nowrap;
 }
 
 .header-center {
@@ -2356,6 +2357,10 @@ body {
     grid-row: 2;
   }
 
+  .title {
+    font-size: 12px;
+  }
+
   .command-panel {
     align-items: stretch;
   }
@@ -2366,7 +2371,7 @@ body {
   }
 
   .command-btn {
-    flex: 1 1 calc(50% - 8px);
+    flex: 1 1 calc(33.333% - 8px);
   }
 
   .piano-keyboard-container {

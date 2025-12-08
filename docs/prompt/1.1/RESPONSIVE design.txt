@@ -29,3 +29,14 @@ First should be the right section, followed by the left section, and the last sh
 Piano keyboard in mobile view must contain only three octaves as there is no room for such many keys.
 
 ---
+
+Make "DOSOUND Tracker" title text non breakable.
+In mobile view use slightly smaller font so it fits small width.
+
+As for command buttons in "command-row" they are wrapped and arranged in two columns.
+Make it three columns.
+
+In mobile view piano keyboard should contain one octave less:
+two octaves plus optional additional "C" key at the end if configured by PIANO_SHOW_EXTRA_TOP_C.
+
+---
