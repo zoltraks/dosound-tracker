@@ -143,11 +143,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 marginTop: '4px',
               }}
             >
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleDumpClick}>
-                DUMP
-              </button>
               <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleDataClick}>
                 DATA
+              </button>
+              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleDumpClick}>
+                DUMP
               </button>
               <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleBinClick}>
                 BIN
