@@ -44,6 +44,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
   const isActive = activeSection === 'piano';
+  const [isCompactLayout, setIsCompactLayout] = useState(false);
   
   // Envelope timing state per previewed key
   const envelopeTimersRef = useRef<{ [key: string]: number }>({});
@@ -54,12 +55,17 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const previewLastTickTimeRef = useRef<{ [key: string]: number }>({});
   const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
 
-  // Generate piano keys for 5 octaves with proper layout
+  // Generate piano keys for 5 octaves on desktop and fewer octaves on compact layouts
   const generatePianoKeys = (): PianoKey[] => {
     const keys: PianoKey[] = [];
-    const startOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE - 4, currentOctave - 1));
-    
-    for (let octave = startOctave; octave <= startOctave + 4 && octave <= MAX_OCTAVE; octave++) {
+    const octaveSpan = isCompactLayout ? 3 : 5;
+    const maxStartOctave = MAX_OCTAVE - (octaveSpan - 1);
+    const startOctave = Math.max(
+      MIN_OCTAVE,
+      Math.min(maxStartOctave, currentOctave - 1)
+    );
+
+    for (let octave = startOctave; octave <= startOctave + octaveSpan - 1 && octave <= MAX_OCTAVE; octave++) {
       const octaveOffset = (octave - startOctave) * 7; // 7 white keys per octave
       
       // White keys first
@@ -103,6 +109,30 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   };
 
   const pianoKeys = generatePianoKeys();
+
+  useEffect(() => {
+    const updateLayout = () => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      const width = window.innerWidth;
+      const height = window.innerHeight;
+      setIsCompactLayout(width <= 1100 || height <= 700);
+    };
+
+    updateLayout();
+
+    if (typeof window !== 'undefined') {
+      window.addEventListener('resize', updateLayout);
+    }
+
+    return () => {
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', updateLayout);
+      }
+    };
+  }, []);
 
   const parseBaseKey = (value?: string): { note: string; octave: number } | null => {
     if (!value) return null;

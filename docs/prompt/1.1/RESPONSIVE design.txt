@@ -1,0 +1,31 @@
+Make application responsive so its layout must adapt based on the runtime environment: desktop browser, Electron app, or mobile phone screen.
+
+If it is an Electron application or there is sufficient width and height, the appearance should remain unchanged as it is.
+The application is intended to run in such a way that the available area is at least 1100 px x 700 px
+(although Electron application specifies slighltly larger area),
+and the entire available space is filled with the application's elements so that scrolling the viewport is not necessary,
+and all elements are always visible.
+
+On a phone screen, however, this is not possible, and the elements need to be arranged differently.
+
+In mobile view application the application will be in portrait orientation,
+and the view must be scrollable vertically.
+
+A "header-center" block in header panel containing song title ("song-title") must be moved no another row below.
+In mobile view first header row must contain logo, program title, octave selection, theme toggle button,
+and the second row should contain centered song title only.
+
+Command panel contains command buttons arranged in three rows.
+In the mobile view, the buttons in each row should be arranged using a flex grid layout,
+distributed across several rows to fit the entire available width.
+
+In the standard view, the main-content is divided into three parts:
+the left "left-column" containing the position-block, tracks-container;
+the middle "middle-column" containing the mode envelope, volume envelope, arpeggio envelope, pitch envelope, noise envelope, notes panel;
+the right "right-column" containing "song-info", "playlist-panel", "instrument-list-panel", and "bottom-panels".
+In the mobile view, these three sections should be placed one above the other, but in a different order.
+First should be the right section, followed by the left section, and the last should be the middle section.
+
+Piano keyboard in mobile view must contain only three octaves as there is no room for such many keys.
+
+---
