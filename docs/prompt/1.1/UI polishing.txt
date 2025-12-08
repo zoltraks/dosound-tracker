@@ -42,3 +42,10 @@ Row 3: "ADD INST", "LOAD INST", "SAVE INST", "PLAY INST", "CLONE INST", "DELETE 
 Move "MIDI" button before "BUG".
 
 ---
+
+In instrument MIDI settings ("Instrument MIDI Output") there are two blocks with input fields and numeric up and down buttons using class "info-input".
+Extract CSS classes for elements of NumberSpinner. Currenlty a span containing input, input field and buttons contain lot of style definition that should be defined in CSS in separate class names.
+
+In Transpose modal window change input type number for "Semitones:" into NumberSpinner with proper settings for that window (number of semitones -99 to +99).
+
+---

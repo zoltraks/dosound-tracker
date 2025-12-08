@@ -365,9 +365,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onInstrumentScopeChange={setTransposeInstrumentScope}
         onAmountChange={onTransposeAmountChange}
         onAmountAdjust={delta => {
-          const next = transposeAmount + delta;
-          setTransposeAmount(next);
-          setTransposeAmountInput(String(next));
+          const rawNext = transposeAmount + delta;
+          const clamped = Math.max(-99, Math.min(99, rawNext));
+          setTransposeAmount(clamped);
+          setTransposeAmountInput(String(clamped));
         }}
         onConfirm={onConfirmTranspose}
         onCancel={onCancelTranspose}

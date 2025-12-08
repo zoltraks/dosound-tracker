@@ -1,4 +1,5 @@
 import React from 'react';
+import NumberSpinner from '../components/NumberSpinner';
 
 interface TransposeModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
   scope,
   trackScope,
   instrumentScope,
-  amountInput,
+  amount,
   onScopeChange,
   onTrackScopeChange,
   onInstrumentScopeChange,
@@ -151,11 +152,19 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
             </div>
             <div>
               Semitones:{' '}
-              <input
-                type="number"
-                value={amountInput}
-                onChange={(e) => onAmountChange(e.target.value)}
-                style={{ width: '80px' }}
+              <NumberSpinner
+                value={amount}
+                onChange={(next) => {
+                  const text =
+                    typeof next === 'number' && Number.isFinite(next)
+                      ? String(next)
+                      : '';
+                  onAmountChange(text);
+                }}
+                min={-99}
+                max={99}
+                step={1}
+                ariaLabel="Semitone offset"
               />
             </div>
           </div>

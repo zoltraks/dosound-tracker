@@ -3087,7 +3087,8 @@ const App: React.FC = () => {
 
     const parsed = Number(trimmed);
     if (Number.isFinite(parsed)) {
-      setTransposeAmount(parsed);
+      const clamped = Math.max(-99, Math.min(99, parsed));
+      setTransposeAmount(clamped);
     }
   }, []);
 

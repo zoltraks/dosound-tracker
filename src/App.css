@@ -1524,6 +1524,35 @@ body {
   background-color: #f4f4f4;
 }
 
+.number-spinner {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+  column-gap: 2px;
+  font-size: 10px;
+  min-width: 0;
+}
+
+.number-spinner-input {
+  flex: 0 0 auto;
+  width: 40px;
+  height: 20px;
+  text-align: center;
+  padding: 0 4px;
+  font-size: 10px;
+  box-sizing: border-box;
+}
+
+.number-spinner-button {
+  width: 18px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 /* Playlist Panel */
 .playlist-panel {
   flex: 1;

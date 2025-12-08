@@ -144,23 +144,13 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
   const currentParsed = parseValue(inputValue);
 
   return (
-    <span
-      className={className}
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        whiteSpace: 'nowrap',
-        columnGap: 2,
-        fontSize: '10px',
-        minWidth: 0
-      }}
-    >
+    <span className={`number-spinner ${className}`.trim()}>
       <input
         ref={setMergedRef}
         type="text"
         inputMode="numeric"
         pattern="-?[0-9]*"
-        className="info-input"
+        className="info-input number-spinner-input"
         value={inputValue}
         onChange={handleInputChange}
         onBlur={handleBlur}
@@ -171,29 +161,12 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         aria-valuenow={currentParsed ?? undefined}
         aria-valuemin={min}
         aria-valuemax={max}
-        style={{
-          flex: '0 0 auto',
-          width: 40,
-          height: 20,
-          textAlign: 'center',
-          padding: '0 4px',
-          fontSize: '10px',
-          boxSizing: 'border-box'
-        }}
       />
       <button
         type="button"
         onClick={() => adjustBy(step)}
         aria-label="Increase value"
-        style={{
-          width: 18,
-          height: 20,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          boxSizing: 'border-box'
-        }}
+        className="number-spinner-button"
       >
         <ChevronUp className="h-3 w-3 rotate-90" />
       </button>
@@ -201,15 +174,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         type="button"
         onClick={() => adjustBy(-step)}
         aria-label="Decrease value"
-        style={{
-          width: 18,
-          height: 20,
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 0,
-          boxSizing: 'border-box'
-        }}
+        className="number-spinner-button"
       >
         <ChevronDown className="h-3 w-3 rotate-90" />
       </button>
