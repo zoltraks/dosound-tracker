@@ -89,7 +89,6 @@ export function useAudioSetup(): UseAudioSetupResult {
         }
       };
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('Failed to initialize audio:', e);
     }
   }, [audioContext]);

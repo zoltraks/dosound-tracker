@@ -47,7 +47,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     if (!onChange) return;
 
     const newData = [...envelopeData];
-    let currentValue = newData[currentPosition];
+    const currentValue = newData[currentPosition];
     let newValue = currentValue;
 
     switch (type) {

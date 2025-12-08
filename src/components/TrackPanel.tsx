@@ -3,6 +3,9 @@ import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
+import type { Instrument as YmInstrument } from '../synth/YM2149';
+
+type PreviewInstrument = YmInstrument & { sustain?: number | null };
 
 interface TrackPanelProps {
   trackId: 'A' | 'B' | 'C';
@@ -149,7 +152,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       // Map track to channel
       const channel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-      const instrument = currentInstrumentData as any;
+      const instrument: PreviewInstrument = currentInstrumentData as unknown as PreviewInstrument;
       const noteData = { note, octave };
 
       // Monophonic per track: stop any existing preview first

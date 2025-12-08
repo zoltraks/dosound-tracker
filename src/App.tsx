@@ -2531,7 +2531,7 @@ const App: React.FC = () => {
       const baseSemis = baseNoteIndex + baseKey.octave * 12;
       const offsetSemis = baseSemis - refSemis;
 
-      let transposedSemis = inputSemis + offsetSemis;
+      const transposedSemis = inputSemis + offsetSemis;
       let transposedOctave = Math.floor(transposedSemis / 12);
       let transposedNoteIndex = transposedSemis % 12;
 

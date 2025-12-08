@@ -3,6 +3,7 @@ import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
+import type { Instrument as YmInstrument } from '../synth/YM2149';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;
@@ -72,7 +73,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     }
 
     const channel = previewChannel;
-    const instrument = currentInstrument as any;
+    const instrument: YmInstrument = currentInstrument as unknown as YmInstrument;
     const noteData = { note, octave };
 
     // Initialize envelope timing

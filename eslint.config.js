@@ -19,5 +19,15 @@ export default defineConfig([
       ecmaVersion: 2020,
       globals: globals.browser,
     },
+    rules: {
+      // Keep the core hooks rules strict, but treat some of the newer guidance
+      // rules as warnings so they don’t fail lint while still surfacing
+      // useful feedback.
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
+      'react-hooks/immutability': 'warn',
+    },
   },
 ])

@@ -155,7 +155,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
     }
 
     const activeElement = document.activeElement as HTMLElement | null;
-    let currentIndex = activeElement ? buttons.indexOf(activeElement as HTMLButtonElement) : -1;
+    const currentIndex = activeElement ? buttons.indexOf(activeElement as HTMLButtonElement) : -1;
 
     // If focus is on the panel container, move to the first button
     if (currentIndex === -1) {

@@ -3,6 +3,9 @@ import type { NavigationSection } from '../constants/navigation';
 import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
+import type { Instrument as YmInstrument } from '../synth/YM2149';
+
+type PreviewInstrument = YmInstrument & { sustain?: number | null };
 
 interface PianoKeyboardProps {
   activeSection: NavigationSection;
@@ -222,7 +225,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     stopNote();
 
     const channel = previewChannel;
-    const instrument = currentInstrument as any;
+    const instrument: PreviewInstrument = currentInstrument as unknown as PreviewInstrument;
     const noteData = { note, octave };
 
     // Initialize sustain state for this preview note

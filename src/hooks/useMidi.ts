@@ -471,11 +471,7 @@ export function useMidi(
     }
   }, [
     addInMonitorEntry,
-    addOutMonitorEntry,
-    config.outputEnabled,
-    config.outputId,
     config.inputId,
-    config.ignoreOutputVolume,
     enableMonitors,
     onNoteEvent,
     resolveDeviceName,
@@ -538,7 +534,6 @@ export function useMidi(
 
       if (debugOn && enableMonitors) {
         const time = formatTime();
-        // eslint-disable-next-line no-console
         console.log('MIDI OUT', {
           time,
           note: noteLabel,
@@ -625,7 +620,6 @@ export function useMidi(
 
       if (debugOn && enableMonitors) {
         const time = formatTime();
-        // eslint-disable-next-line no-console
         console.log('MIDI OUT', {
           time,
           note: noteLabel,
@@ -694,7 +688,6 @@ export function useMidi(
 
     if (debugOn && enableMonitors) {
       const time = formatTime();
-      // eslint-disable-next-line no-console
       console.log('MIDI OUT', {
         time,
         type: 'System Reset',
