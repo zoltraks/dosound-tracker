@@ -1364,9 +1364,35 @@ export function exportSongToMax(
   chipData.push(0xa9);
   chipData.push(0x00);
   chipData.push((VBLANK_RATE >>> 8) & 0xff, VBLANK_RATE & 0xff);
+
+  const ymClock = YM_CLOCK >>> 0;
+  chipData.push(
+    (ymClock >>> 24) & 0xff,
+    (ymClock >>> 16) & 0xff,
+    (ymClock >>> 8) & 0xff,
+    ymClock & 0xff
+  );
+
   fileBytes.push(...buildMaxShortChunk('C', chipData));
 
-  fileBytes.push(...buildMaxShortChunk('S', [streamFormat & 0xff]));
+  const compression = 0x00;
+
+  let streamDefData: number[];
+  if (streamFormat === 0x08) {
+    const frameSize = 11; // RAW8 AY/YM frame size in bytes
+    streamDefData = [
+      streamFormat & 0xff,
+      compression,
+      0x00,
+      0x00,
+      0x00,
+      frameSize & 0xff,
+    ];
+  } else {
+    streamDefData = [streamFormat & 0xff, compression];
+  }
+
+  fileBytes.push(...buildMaxShortChunk('S', streamDefData));
 
   fileBytes.push(...buildMaxLongChunk('d', streamData));
 

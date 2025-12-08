@@ -24,9 +24,13 @@
 
 ## Quick Overview
 
-**MAX**, an acronym for **Music Audio eXchange**, is a comprehensive audio file format designed for authentic playback of computer music using original sound chips.
+**MAX** is a comprehensive audio file format designed for authentic playback of computer music using original sound chips.
 
-Unlike executable music formats like **SID**, **SAP**, **SNDH**, **NSF**, this format is a register-change log format similar to **VGM**, designed to drive sound chips directly through their register interfaces.
+Unlike executable music formats like **SID**, **SAP**, **SNDH**, **NSF**,
+this format is a register-change log format similar to **VGM**,
+designed to drive sound chips directly through their register interfaces.
+
+The name **MAX** can be treated as an acronym for **Music Audio eXchange**
 
 ## Design Principles
 
@@ -65,7 +69,8 @@ Generally chunk order is not important, but the version chunk should be one of t
 
 Multi-byte numbers are written in the Big Endian byte order standard.
 
-This means that when a number consisting of multiple bytes like 32-bit integer 0x0A0B0C0D is stored, the most significant byte (MSB) comes first in the data stream.
+This means that when a number consisting of multiple bytes like 32-bit integer 0x0A0B0C0D is stored,
+the most significant byte (MSB) comes first in the data stream.
 
 ## File Header
 
@@ -99,7 +104,8 @@ Information data consists of a byte array representing characters using ASCII or
 
 This array consists of one or more lines terminated by a null byte.
 
-Each line begins with one character specifying the type of information (title, author, year), followed by ace character and the corresponding value.
+Each line begins with one character specifying the type of information (title, author, year),
+followed by ace character and the corresponding value.
 
 Maximum size of chunk is 256 bytes.
 
@@ -137,17 +143,34 @@ Extended configuration is specific to chip type.
 
 Values for one chip type may have different meaning for another chip type.
 
-### POKEY extension
+## Timing Relationship
 
-In case of **POKEY** chip there is an additional 4 bytes of data that specify chip clock.
+Frame duration is determined by the chip speed specified in the chip setup chunk.
+
+For a chip configured at 50 Hz (PAL VBL), each frame corresponds to a 20 ms interval.
+
+At 60 Hz (NTSC VBL), frame duration is approximately 16.67 ms.
+
+Multiple register writes may occur within a single frame.
+
+## Clock Speed Setup
+
+Chip setup chunk might be extended by additional information about chip clock speed.
 
 | Offset | Size | Example     | Description |
 |--------|------|-------------|-------------|
 | 8      | 4    | 00 1B 0F 87 | Chip clock  |
 
-If chip clock is not specified it should be filled with all zeroes.
+Chip clock speed is written as 4-bytes Big Endian with number of Hz of the chip clock.
 
-Two possible values for POKEY chip are ``00`` ``1B`` ``0F`` ``87`` for 1,77 MHz **PAL** clock and ``00`` ``1B`` ``4F`` ``4C`` for 1,79 MHz **NTSC** clock.
+If it is not specified it might be filled with all zeroes.
+
+Two possible values for **POKEY** chip are ``00`` ``1B`` ``0F`` ``87`` for 1,77 MHz **PAL** clock
+and ``00`` ``1B`` ``4F`` ``4C`` for 1,79 MHz **NTSC** clock.
+
+For **YM 2149** the default clock is 2 MHz and is encoded as ``00``, ``1E``, ``84``, ``80``.
+
+For **AY 8910** using 1 MHz clock this values will be encoded as `00``, ``0F``, ``42``, ``40``.
 
 ## Chip Model Value
 
@@ -238,7 +261,8 @@ This value determines on which stereo channel a given chip plays.
 
 If this value is not specified, the playback program will decide on its own.
 
-As a rule, in a multi-speaker configuration, odd-numbered units play on the left channel, and even-numbered units play on the right.
+As a rule, in a multi-speaker configuration, odd-numbered units play on the left channel,
+and even-numbered units play on the right.
 
 In the case of a single-unit stream, it is better to leave this value empty.
 
@@ -274,7 +298,23 @@ This block can have more data if it specifies original data length.
 
 Stream size in bytes is mandatory if the stream is compressed.
 
-When compression is not used, this block can be even more minimized.
+If stream size is not specified, it should be all filled with zeroes.
+
+Additionally, frame size might be included where each frame data block has a constant length,
+which is important for frame dump formats like RAW8.
+
+It's important for a frame dump format like RAW8.
+
+| Offset | Size | Example  | Description        |
+|--------|------|----------|--------------------|
+| 0      | 1    | 'S'      | Chunk type         |
+| 1      | 1    | 04       | Chunk size         |
+| 2      | 1    | 08       | Stream format      |
+| 3      | 1    | 00       | Stream compression |
+| 4      | 3    | 00 00 00 | Stream size        |
+| 7      | 1    | 09       | Frame size         |
+
+When no compression is used and frame size is not relevant, this block can be minimized.
 
 | Offset | Size | Example | Description        |
 |--------|------|---------|--------------------|
@@ -295,37 +335,76 @@ When compression is not used, this block can be even more minimized.
 | Name   | Code | Chip  | Description                                                                            |
 |--------|------|-------|----------------------------------------------------------------------------------------|
 | REG7   | 07   |       | Register number (0-127) followed by register value (0-127) or (128-255) as frame delay |
-| RAW8   | 08   |       | Dump of the values of all the registers one by one                                     |
+| RAW8   | 08   |       | Dump of the values of all the registers one by one, frame by frame                                    |
 | POKEY4 | 04   | POKEY | Specific to POKEY where register number is stored in 4 bits only                       |
 
-### REG7
-
-Data consists of the register number and the value in sequence. 
-
-Register number can range from 0 to 127. 
-If the highest bit of the register number is set, the value determines the end of the data.
-Lower 7 bits determine additional delay.
-
-Value ``$80`` simply means the end of the data frame.
+## REG7 Stream Format
 
 This is the default format for storing stream data.
+
 It is inspired by formats such as ``PSG`` and ``VGM``.
 
-### RAW8
+Data consists of sequential register address/value pairs.
+
+Each pair contains:
+
+- **Register address** (1 byte): Valid range 0x00-0x7F (0-127)
+
+- **Register value** (1 byte): Value to write to the specified register
+
+When the high bit (bit 7) of the register address byte is set (values 0x80-0xFF), that byte is a frame delimiter.
+
+The frame delimiter byte signals that all subsequent register writes belong to the next or a later frame.
+
+| Value       | Meaning                                            |
+|-------------|----------------------------------------------------|
+| ``$80``     | End of current frame (0 additional frames delay)   |
+| ``$81``     | End of frame + 1 frame delay (2 frames total)      |
+| ``$82``     | End of frame + 2 frames delay (3 frames total)     |
+| ``$FF``     | End of frame + 127 frames delay (128 frames total) |
+
+The lower 7 bits (0x00-0x7F) specify additional frame delays beyond the current frame.
+
+**Example Sequence**
+
+```
+00 A4    ; Write 0xA4 to register 0x00
+01 8F    ; Write 0x8F to register 0x01
+80       ; End of frame (next writes are 1 frame later)
+00 B2    ; Write 0xB2 to register 0x00
+82       ; End of frame + 2 frame delay (next writes are 3 frames later)
+```
+
+**Extended Delays**
+
+Since a single frame delimiter can encode a maximum delay of 128 frames (value ``$FF``), delays exceeding 128 frames must be split across multiple consecutive frame delimiters.
+
+For example, to encode a 200-frame delay:
+```
+FF       ; End of frame + 127 frames delay (128 frames)
+C7       ; End of frame + 71 frames delay (72 frames)
+         ; Total: 128 + 72 = 200 frames
+```
+
+## RAW8 Stream Format
 
 Simple dump of the values of all registers frame by frame.
 
 This is a very inefficient data storage format, although it can still be useful for diagnostic purposes. 
 
-The size of the frame, unfortunately, depends on the type of chip and can be 9 bytes for ``POKEY`` (it doesn't include ``STIMER`` nor ``SKCTL``), 14 bytes for ``AY``, or even 25 bytes for ``SID``.
+The size of the frame, unfortunately, depends on the type of chip and can be 9 bytes for ``POKEY``
+if it doesn't include ``STIMER`` nor ``SKCTL``, 11 or 14 bytes for ``AY``, or even 25 bytes for ``SID``.
 
-### POKEY4
+That's why it's important to include frame size information in stream definition chunk.
+
+## POKEY4 Stream Format
 
 This is special, experimental format, dedicated to ``POKEY`` chip. 
 
 It should not be used for other than diagnostic purposes.
 
-Since the ``POKEY`` circuit might use only 9 registers, not counting the values for the ``STIMER`` and ``SKCTL``, register number fits into a 4-bit value, leaving a few values that can only be used to change the channel volume.
+Since the ``POKEY`` circuit might use only 9 registers, not counting the values for the ``STIMER`` and ``SKCTL``,
+register number fits into a 4-bit value, leaving a few values that can only be used to change the channel volume.
 
 Tests so far indicate that this format is not very efficient for compression purposes and complicates the playback routine.
 
