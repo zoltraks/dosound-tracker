@@ -11,6 +11,7 @@ import { usePlaylistOperations } from './hooks/usePlaylistOperations';
 import { useScrollSync } from './hooks/useScrollSync';
 import { useAppState } from './hooks/useAppState';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
+import { useMessageSystem } from './hooks/useMessageSystem';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine } from './synth/SoundDriver';
@@ -63,9 +64,6 @@ const App: React.FC = () => {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [changelogContent, setChangelogContent] = useState('');
-  const [messages, setMessages] = useState<string[]>([]);
-  const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
-  const [isNotesVisible, setIsNotesVisible] = useState(true);
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -358,49 +356,6 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    fetch('MESSAGES.md')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to load messages.');
-        }
-        return response.text();
-      })
-      .then(text => {
-        const lines = text.split('\n');
-        const blocks: string[] = [];
-        let current: string[] = [];
-
-        for (const line of lines) {
-          if (!line.trim()) {
-            if (current.length > 0) {
-              blocks.push(current.join(' '));
-              current = [];
-            }
-          } else {
-            current.push(line.trim());
-          }
-        }
-
-        if (current.length > 0) {
-          blocks.push(current.join(' '));
-        }
-
-        setMessages(blocks);
-
-        if (blocks.length > 0) {
-          const initialIndex = Math.floor(Math.random() * blocks.length);
-          setCurrentMessageIndex(initialIndex);
-        } else {
-          setCurrentMessageIndex(0);
-        }
-      })
-      .catch(() => {
-        setMessages([]);
-        setCurrentMessageIndex(0);
-      });
-  }, []);
-
-  useEffect(() => {
     fetch('download/LIST.txt')
       .then(response => {
         if (!response.ok) {
@@ -447,81 +402,7 @@ const App: React.FC = () => {
       });
   }, []);
 
-  const notesIntervalRef = useRef<number | null>(null);
-  const notesFadeTimeoutRef = useRef<number | null>(null);
-
-  const handleNotesClick = useCallback(() => {
-    const messagesLength = messages.length;
-
-    if (messagesLength <= 1) {
-      return;
-    }
-
-    if (notesIntervalRef.current !== null) {
-      window.clearInterval(notesIntervalRef.current);
-    }
-
-    notesIntervalRef.current = window.setInterval(() => {
-      handleNotesClick();
-    }, 10000);
-
-    setIsNotesVisible(false);
-
-    if (notesFadeTimeoutRef.current !== null) {
-      window.clearTimeout(notesFadeTimeoutRef.current);
-    }
-
-    notesFadeTimeoutRef.current = window.setTimeout(() => {
-      setCurrentMessageIndex(prevIndex => {
-        if (messagesLength <= 1) {
-          return prevIndex;
-        }
-
-        let nextIndex = Math.floor(Math.random() * messagesLength);
-
-        if (nextIndex === prevIndex && messagesLength > 1) {
-          nextIndex = (prevIndex + 1) % messagesLength;
-        }
-
-        return nextIndex;
-      });
-
-      setIsNotesVisible(true);
-    }, 800);
-  }, [messages]);
-
-  useEffect(() => {
-    if (notesIntervalRef.current !== null) {
-      window.clearInterval(notesIntervalRef.current);
-      notesIntervalRef.current = null;
-    }
-
-    if (notesFadeTimeoutRef.current !== null) {
-      window.clearTimeout(notesFadeTimeoutRef.current);
-      notesFadeTimeoutRef.current = null;
-    }
-
-    const messagesLength = messages.length;
-
-    if (messagesLength <= 1) {
-      return;
-    }
-
-    notesIntervalRef.current = window.setInterval(() => {
-      handleNotesClick();
-    }, 10000);
-
-    return () => {
-      if (notesIntervalRef.current !== null) {
-        window.clearInterval(notesIntervalRef.current);
-        notesIntervalRef.current = null;
-      }
-      if (notesFadeTimeoutRef.current !== null) {
-        window.clearTimeout(notesFadeTimeoutRef.current);
-        notesFadeTimeoutRef.current = null;
-      }
-    };
-  }, [messages, handleNotesClick]);
+  const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
   // Audio setup
   const { ym2149Ref } = useAudioSetup();
