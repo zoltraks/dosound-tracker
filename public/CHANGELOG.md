@@ -1,5 +1,12 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.6
+
+MAX file export support aligned with the documented format, integrated into the export pipeline with spec-compliant timing metadata.
+
+- Added **MAX file export** based on the new MAX format specification and wired it into the context-aware export flow so MAX files can be generated alongside existing DATA/BIN/VGM/WAV outputs using the same export options.
+- Fixed MAX header encoding to write chip speed in big-endian byte order and removed stereo panning fields to better match real-world MAX players and avoid incorrect playback.
+
 ## Version 1.1.5
 
 Export options window with context-aware song/pattern/instrument exports, optimized assembly/VGM timing, reorganized command panel controls, and richer export feedback dialogs.
