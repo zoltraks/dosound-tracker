@@ -2379,4 +2379,8 @@ body {
   .piano-keyboard-container {
     padding-bottom: 8px;
   }
+
+  .download-toggle {
+    display: none;
+  }
 }
