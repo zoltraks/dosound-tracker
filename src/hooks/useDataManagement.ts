@@ -12,6 +12,7 @@ import {
   parseSongFromYaml,
 } from '../utils/songParser';
 import { isInstrumentEmpty } from '../utils/instrument';
+import { SongService } from '../services';
 
 type TrackKey = 'trackA' | 'trackB' | 'trackC';
 
@@ -1096,102 +1097,14 @@ export const useDataManagement = () => {
   );
 
   const optimizeSong = useCallback((): string => {
-    const song = currentSong;
-    const patternLength = song.patternLength || PATTERN_LENGTH;
-
-    // Determine used pattern IDs from playlist (ignore '--' placeholders)
-    const usedPatternIds = new Set<string>();
-    song.playlist.forEach(entry => {
-      [entry.trackA, entry.trackB, entry.trackC].forEach(id => {
-        if (typeof id === 'string') {
-          const trimmed = id.trim();
-          if (trimmed && trimmed !== '--') {
-            usedPatternIds.add(trimmed);
-          }
-        }
-      });
-    });
-
-    const newPatterns: Pattern[] = [];
-    const removedPatternIds: string[] = [];
-    const trimmedLinesInfo: { id: string; name: string; removed: number }[] = [];
-
-    song.patterns.forEach(pattern => {
-      if (!usedPatternIds.has(pattern.id)) {
-        removedPatternIds.push(pattern.id);
-        return;
-      }
-
-      const existingLines = pattern.lines || [];
-      const removedCount =
-        existingLines.length > patternLength ? existingLines.length - patternLength : 0;
-
-      let newLines = existingLines;
-
-      if (removedCount > 0) {
-        newLines = existingLines.slice(0, patternLength);
-        trimmedLinesInfo.push({ id: pattern.id, name: pattern.name, removed: removedCount });
-      } else if (existingLines.length < patternLength) {
-        const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
-        const extra = Array.from({ length: patternLength - existingLines.length }, () => ({
-          ...emptyLine
-        }));
-        newLines = [...existingLines, ...extra];
-      }
-
-      newPatterns.push({ ...pattern, lines: newLines });
-    });
-
-    // Determine used instruments from remaining patterns
-    const usedInstrumentIds = new Set<string>();
-    newPatterns.forEach(pattern => {
-      (pattern.lines || []).forEach(line => {
-        const tracks: TrackKey[] = ['trackA', 'trackB', 'trackC'];
-        tracks.forEach(trackKey => {
-          type NoteWithLegacyInstrument = Note & { instrument: string | number };
-          const note = line[trackKey] as NoteWithLegacyInstrument | null;
-          if (note && note.instrument !== undefined && note.instrument !== null) {
-            // Normalize instrument ID to uppercase string
-            let id = '';
-            if (typeof note.instrument === 'string') {
-              id = note.instrument.trim().toUpperCase();
-            } else if (typeof note.instrument === 'number') {
-              id = Math.floor(note.instrument)
-                .toString(16)
-                .padStart(2, '0')
-                .toUpperCase();
-            }
-            if (id) {
-              usedInstrumentIds.add(id);
-            }
-          }
-        });
-      });
-    });
-
-    const newInstruments: Instrument[] = [];
-    const removedInstrumentIds: string[] = [];
-
-    song.instruments.forEach(inst => {
-      if (!inst) return; // Skip null/undefined instruments
-
-      const idNorm = (inst.id || '').trim().toUpperCase();
-      if (idNorm && usedInstrumentIds.has(idNorm)) {
-        newInstruments.push(inst);
-      } else {
-        removedInstrumentIds.push(inst.id || 'unknown');
-      }
-    });
-
-    const optimizedSong: Song = {
-      ...song,
-      patternLength,
-      patterns: newPatterns,
-      instruments: newInstruments
-    };
+    const songService = new SongService();
+    const { optimizedSong, removedPatternIds, removedInstrumentIds, trimmedLinesInfo } =
+      songService.optimizeSong(currentSong);
 
     setCurrentSong(optimizedSong);
     setIsSongDirty(true);
+
+    const patternLength = optimizedSong.patternLength || PATTERN_LENGTH;
 
     const summaryLines: string[] = [];
     summaryLines.push('Optimization complete.');

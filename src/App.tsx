@@ -27,10 +27,15 @@ import { AppLayout } from './components/AppLayout';
 import { TracksSection } from './components/TracksSection';
 import { InstrumentSection } from './components/InstrumentSection';
 import { InfoSection } from './components/InfoSection';
+import { SectionErrorBoundary } from './components/error/SectionErrorBoundary';
+import { OperationErrorBoundary } from './components/error/OperationErrorBoundary';
 import { isInstrumentEmpty } from './utils/instrument';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
+import { useSongStore } from './stores/songStore';
+import { useInstrumentStore } from './stores/instrumentStore';
+import { useDataValidation } from './hooks/data/useDataValidation';
 import type { ExportType, ExportStrategy } from './constants/export';
 import './App.css';
 
@@ -154,6 +159,11 @@ const App: React.FC = () => {
   const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
 
+  const setSongStoreSong = useSongStore(state => state.setSong);
+  const setStoreCurrentInstrument = useInstrumentStore(state => state.setCurrentInstrument);
+  const setStoreInstruments = useInstrumentStore(state => state.setInstruments);
+  const { validateSong } = useDataValidation();
+
   const {
     isDebugMode,
     setIsDebugMode,
@@ -214,6 +224,29 @@ const App: React.FC = () => {
     optimizeSong,
     renumberSong
   } = useDataManagement();
+
+  useEffect(() => {
+    setSongStoreSong(currentSong);
+  }, [currentSong, setSongStoreSong]);
+
+  useEffect(() => {
+    setStoreCurrentInstrument(currentInstrument);
+    setStoreInstruments(currentSong.instruments);
+  }, [currentInstrument, currentSong.instruments, setStoreCurrentInstrument, setStoreInstruments]);
+
+  useEffect(() => {
+    if (!isDebugMode) {
+      return;
+    }
+    try {
+      const result = validateSong(currentSong);
+      if (!result.isValid) {
+        console.warn('Song validation errors:', result.errors);
+      }
+    } catch (error) {
+      console.warn('Song validation failed:', error);
+    }
+  }, [currentSong, isDebugMode, validateSong]);
 
   const {
     soundExportSummary,
@@ -3446,7 +3479,8 @@ const App: React.FC = () => {
             />
           }
           tracksSection={
-            <TracksSection
+            <SectionErrorBoundary>
+              <TracksSection
               song={currentSong}
               sharedCurrentLine={sharedCurrentLine}
               onLineChange={handleLineChange}
@@ -3468,9 +3502,11 @@ const App: React.FC = () => {
               onHardStopLivePreview={handleHardStopLivePreview}
               onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
             />
+            </SectionErrorBoundary>
           }
           instrumentSection={
-            <InstrumentSection
+            <SectionErrorBoundary>
+              <InstrumentSection
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               currentInstrument={currentInstrument}
@@ -3480,9 +3516,11 @@ const App: React.FC = () => {
               isNotesVisible={isNotesVisible}
               onNotesClick={handleNotesClick}
             />
+            </SectionErrorBoundary>
           }
           infoSection={
-            <InfoSection
+            <SectionErrorBoundary>
+              <InfoSection
               song={currentSong}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
@@ -3502,6 +3540,7 @@ const App: React.FC = () => {
               channelMutes={channelMutes}
               onToggleChannelMute={handleToggleChannelMute}
             />
+            </SectionErrorBoundary>
           }
           pianoKeyboard={
             <PianoKeyboard
@@ -3560,6 +3599,7 @@ const App: React.FC = () => {
             </>
           }
           modals={
+            <OperationErrorBoundary>
             <>
             <ModalContainer
               songError={songError}
@@ -3670,6 +3710,7 @@ const App: React.FC = () => {
               onCancel={handleCancelExport}
             />
             </>
+            </OperationErrorBoundary>
           }
         />
       </ErrorBoundary>
