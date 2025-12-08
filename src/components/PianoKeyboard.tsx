@@ -55,7 +55,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const previewLastTickTimeRef = useRef<{ [key: string]: number }>({});
   const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
 
-  // Generate piano keys for 5 octaves on desktop and fewer octaves on compact layouts
+  // Generate piano keys for 5 octaves on desktop and fewer octaves on compact layouts,
+  // and always append a highest C key at the right end of the keyboard.
   const generatePianoKeys = (): PianoKey[] => {
     const keys: PianoKey[] = [];
     const octaveSpan = isCompactLayout ? 3 : 5;
@@ -104,7 +105,22 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         });
       }
     }
-    
+
+    // Append an extra highest C white key at the right end so there is always
+    // a top C button available on the keyboard.
+    const highestDisplayedOctave = startOctave + octaveSpan - 1;
+    const extraCOctave = Math.min(MAX_OCTAVE, highestDisplayedOctave + 1);
+    const extraKeyId = `C${extraCOctave}`;
+
+    keys.push({
+      note: 'C',
+      octave: extraCOctave,
+      isBlackKey: false,
+      keyId: extraKeyId,
+      position: octaveSpan * 7,
+      stableKey: `extra-top-c-${extraCOctave}`
+    });
+
     return keys;
   };
 

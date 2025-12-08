@@ -53,3 +53,7 @@ In Transpose modal window change input type number for "Semitones:" into NumberS
 In "Export" modal window move "DATA" button before "DUMP" button.
 
 ---
+
+Add one key at the end of piano keyboard, so there should always be highest "C" button available.
+
+---
