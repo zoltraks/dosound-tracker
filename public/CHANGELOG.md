@@ -1,5 +1,14 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.7
+
+MAX format refinements for more accurate playback plus internal modal/message state refactors and tests.
+
+- Updated **MAX export** to track additional stream metadata (including YM2149 clock speed and frame size) and align the stream definition chunk size and register maps with the written specification, improving compatibility with MAX players.
+- Implemented a MAX **REG7 timing optimization** following the updated spec so delay behavior in exported MAX streams better matches the tracker’s internal sequencing.
+- Extracted modal and instrument warning state into dedicated hooks and pulled the message system into its own `useMessageSystem` hook to simplify `App.tsx` and make UI state easier to reason about.
+- Expanded test coverage with new suites for modal state and instrument warning hooks, and tightened ESLint React Hooks rules to catch dependency issues earlier during development.
+
 ## Version 1.1.6
 
 MAX file export support aligned with the documented format, integrated into the export pipeline with spec-compliant timing metadata.
