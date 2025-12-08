@@ -1,0 +1,15 @@
+Make refactoring proposal for the current version.
+Analyse the project deeply from scratch.
+Focus on extracting functionality to reduce the size of the source code files.
+Omit sound generation procedures, it's working properly and we don't want to break it.
+Read project documentation and guidelines for refactoring proposals.
+Forget about previous refactorings.
+Don't read files in docs/refactoring or docs/prompt directories.
+Remember that playback and sequencer needs to work efficently and frequently (20 ms or 40ms for a cycle).
+We don't need to support any other sound chip than YM2149.
+Remember about proper report file name REFACTORING.md in correct directory inside docs/refactoring followed by version number.
+Include only a few of the most important fixes to fit into one sprint.
+The proposed changes must be relatively safe.
+When creating document, avoid using emoji in section titles.
+
+----
