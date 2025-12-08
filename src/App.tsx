@@ -12,6 +12,8 @@ import { useScrollSync } from './hooks/useScrollSync';
 import { useAppState } from './hooks/useAppState';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useMessageSystem } from './hooks/useMessageSystem';
+import { useModalState } from './hooks/useModalState';
+import { useInstrumentWarnings } from './hooks/useInstrumentWarnings';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern, PatternLine } from './synth/SoundDriver';
@@ -60,52 +62,65 @@ const App: React.FC = () => {
   const setChannelMutes = useUiStore((state: UiStore) => state.setChannelMutes);
   const toggleChannelMute = useUiStore((state: UiStore) => state.toggleChannelMute);
 
-  const [isNewSongConfirmOpen, setIsNewSongConfirmOpen] = useState(false);
-  const [isAboutOpen, setIsAboutOpen] = useState(false);
-  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
-  const [changelogContent, setChangelogContent] = useState('');
-  const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
-  const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
-  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
-  const [isQuitConfirmOpen, setIsQuitConfirmOpen] = useState(false);
-  const [optimizeSummary, setOptimizeSummary] = useState('');
-  const [renumberSummary, setRenumberSummary] = useState('');
-  const [isTransposeOpen, setIsTransposeOpen] = useState(false);
-  const [transposeSummary, setTransposeSummary] = useState('');
-  const [instrumentOperationSummary, setInstrumentOperationSummary] = useState('');
-  const [midiLoadError, setMidiLoadError] = useState('');
-  const [midiCopySummary, setMidiCopySummary] = useState('');
-  const [isDownloadOpen, setIsDownloadOpen] = useState(false);
+  const {
+    isNewSongConfirmOpen,
+    setIsNewSongConfirmOpen,
+    isAboutOpen,
+    setIsAboutOpen,
+    isChangelogOpen,
+    setIsChangelogOpen,
+    changelogContent,
+    setChangelogContent,
+    isOptimizeConfirmOpen,
+    setIsOptimizeConfirmOpen,
+    isRenumberConfirmOpen,
+    setIsRenumberConfirmOpen,
+    isResetConfirmOpen,
+    setIsResetConfirmOpen,
+    isQuitConfirmOpen,
+    setIsQuitConfirmOpen,
+    optimizeSummary,
+    setOptimizeSummary,
+    renumberSummary,
+    setRenumberSummary,
+    isTransposeOpen,
+    setIsTransposeOpen,
+    transposeSummary,
+    setTransposeSummary,
+    instrumentOperationSummary,
+    setInstrumentOperationSummary,
+    midiLoadError,
+    setMidiLoadError,
+    midiCopySummary,
+    setMidiCopySummary,
+    isDownloadOpen,
+    setIsDownloadOpen,
+    isMidiModalOpen,
+    setIsMidiModalOpen,
+    isDebugInfoOpen,
+    setIsDebugInfoOpen,
+    isInstrumentDeleteOpen,
+    setIsInstrumentDeleteOpen,
+    instrumentDeleteUsage,
+    setInstrumentDeleteUsage,
+    isInstrumentMidiOpen,
+    setIsInstrumentMidiOpen,
+    isExportModalOpen,
+    setIsExportModalOpen,
+  } = useModalState();
+
   const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
-  const [isMidiModalOpen, setIsMidiModalOpen] = useState(false);
-  const [isDebugInfoOpen, setIsDebugInfoOpen] = useState(false);
-  const [isInstrumentDeleteOpen, setIsInstrumentDeleteOpen] = useState(false);
-  const [instrumentDeleteUsage, setInstrumentDeleteUsage] = useState<{
-    instrumentId: string;
-    instrumentName: string;
-    usageCount: number;
-    patternCount: number;
-  }>({
-    instrumentId: '',
-    instrumentName: '',
-    usageCount: 0,
-    patternCount: 0
-  });
-  const [isInstrumentTypeWarningOpen, setIsInstrumentTypeWarningOpen] = useState(false);
-  const [ignoreInstrumentTypeWarning, setIgnoreInstrumentTypeWarning] = useState<boolean>(() => {
-    try {
-      const raw = localStorage.getItem('dosound-tracker-ignore-inst-type-warning');
-      return raw === '1';
-    } catch {
-      return false;
-    }
-  });
-  const [instrumentTypeWarningIgnoreChecked, setInstrumentTypeWarningIgnoreChecked] = useState(false);
-  const [pendingInstrumentContent, setPendingInstrumentContent] = useState<string | null>(null);
-  const [pendingInstrumentTypeInfo, setPendingInstrumentTypeInfo] = useState<{
-    hasTypeField: boolean;
-    detectedType: string | null;
-  } | null>(null);
+
+  const {
+    isInstrumentTypeWarningOpen,
+    ignoreInstrumentTypeWarning,
+    instrumentTypeWarningIgnoreChecked,
+    pendingInstrumentTypeInfo,
+    setInstrumentTypeWarningIgnoreChecked,
+    openInstrumentTypeWarning,
+    confirmInstrumentTypeWarning,
+    cancelInstrumentTypeWarning,
+  } = useInstrumentWarnings();
 
   const handleRegisterTrackStopPreview = useCallback(
     (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => {
@@ -149,7 +164,6 @@ const App: React.FC = () => {
     },
     []
   );
-  const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
 
   const {
@@ -172,7 +186,6 @@ const App: React.FC = () => {
     setTransposeAmountInput,
   } = useAppState();
 
-  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [pendingExportType, setPendingExportType] = useState<ExportType>(exportType);
   const [pendingExportStrategy, setPendingExportStrategy] = useState<ExportStrategy>(exportStrategy);
 
@@ -298,16 +311,6 @@ const App: React.FC = () => {
       // ignore
     }
   }, [instrumentOctaves]);
-  useEffect(() => {
-    try {
-      localStorage.setItem(
-        'dosound-tracker-ignore-inst-type-warning',
-        ignoreInstrumentTypeWarning ? '1' : '0'
-      );
-    } catch {
-      // ignore
-    }
-  }, [ignoreInstrumentTypeWarning]);
 
   useEffect(() => {
     const id = currentInstrument?.id;
@@ -1198,12 +1201,6 @@ const App: React.FC = () => {
       return;
     }
 
-    if (ignoreInstrumentTypeWarning) {
-      loadInstrument(content);
-      setActiveSection('instrumentList');
-      return;
-    }
-
     let parsed: unknown;
     try {
       parsed = yaml.load(content) as unknown;
@@ -1243,10 +1240,13 @@ const App: React.FC = () => {
     const isDosoundType = normalizedType === 'dosound';
 
     if (!hasTypeField || !isDosoundType) {
-      setPendingInstrumentContent(content);
-      setPendingInstrumentTypeInfo({ hasTypeField, detectedType });
-      setInstrumentTypeWarningIgnoreChecked(ignoreInstrumentTypeWarning);
-      setIsInstrumentTypeWarningOpen(true);
+      if (ignoreInstrumentTypeWarning) {
+        loadInstrument(content);
+        setActiveSection('instrumentList');
+        return;
+      }
+
+      openInstrumentTypeWarning(content, { hasTypeField, detectedType });
       return;
     }
 
@@ -1257,47 +1257,22 @@ const App: React.FC = () => {
     loadInstrument,
     setActiveSection,
     setInstrumentError,
-    setPendingInstrumentContent,
-    setPendingInstrumentTypeInfo,
-    setInstrumentTypeWarningIgnoreChecked,
-    setIsInstrumentTypeWarningOpen
+    openInstrumentTypeWarning,
   ]);
 
   const handleConfirmInstrumentTypeWarning = useCallback(() => {
-    if (!pendingInstrumentContent) {
-      setIsInstrumentTypeWarningOpen(false);
+    const content = confirmInstrumentTypeWarning();
+    if (!content) {
       return;
     }
 
-    if (instrumentTypeWarningIgnoreChecked && !ignoreInstrumentTypeWarning) {
-      setIgnoreInstrumentTypeWarning(true);
-    }
-
-    const content = pendingInstrumentContent;
-
-    setIsInstrumentTypeWarningOpen(false);
-    setPendingInstrumentContent(null);
-    setPendingInstrumentTypeInfo(null);
-
     loadInstrument(content);
     setActiveSection('instrumentList');
-  }, [
-    pendingInstrumentContent,
-    instrumentTypeWarningIgnoreChecked,
-    ignoreInstrumentTypeWarning,
-    setIgnoreInstrumentTypeWarning,
-    loadInstrument,
-    setActiveSection,
-    setPendingInstrumentContent,
-    setPendingInstrumentTypeInfo,
-    setIsInstrumentTypeWarningOpen,
-  ]);
+  }, [confirmInstrumentTypeWarning, loadInstrument, setActiveSection]);
 
   const handleCancelInstrumentTypeWarning = useCallback(() => {
-    setIsInstrumentTypeWarningOpen(false);
-    setPendingInstrumentContent(null);
-    setPendingInstrumentTypeInfo(null);
-  }, []);
+    cancelInstrumentTypeWarning();
+  }, [cancelInstrumentTypeWarning]);
 
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
