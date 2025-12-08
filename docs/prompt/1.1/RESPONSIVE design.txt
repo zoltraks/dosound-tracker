@@ -40,3 +40,8 @@ In mobile view piano keyboard should contain one octave less:
 two octaves plus optional additional "C" key at the end if configured by PIANO_SHOW_EXTRA_TOP_C.
 
 ---
+
+While arranging command buttons in "command-row" in mobile view is correct in three columns, I would like that the last buttons which occupies the last row wrapped have the same width as the prevoius one (1/3 of width), not all the remaining space.
+For now "DELETE STEP" and "EXPORT" are full width buttons but they should visually fit the other buttons.
+
+---
