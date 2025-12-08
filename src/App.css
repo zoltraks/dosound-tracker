@@ -2363,6 +2363,7 @@ body {
 
   .command-panel {
     align-items: stretch;
+    gap: 4px;
   }
 
   .command-row {
