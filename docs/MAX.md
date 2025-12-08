@@ -161,6 +161,77 @@ These values are magic constants for different types of sound chips.
 | AA    | SID    | SID 8650 (new) |
 | AB    | SID    | SID 6581 (old) |
 
+## Chip Register Maps
+
+The following tables define the register addresses and names for each supported sound chip type.
+
+### POKEY Register Map
+
+| Offset | Name      | Description                    |
+|--------|-----------|--------------------------------|
+| $00    | AUDF1     | Audio frequency divider 1      |
+| $01    | AUDC1     | Audio control 1                |
+| $02    | AUDF2     | Audio frequency divider 2      |
+| $03    | AUDC2     | Audio control 2                |
+| $04    | AUDF3     | Audio frequency divider 3      |
+| $05    | AUDC3     | Audio control 3                |
+| $06    | AUDF4     | Audio frequency divider 4      |
+| $07    | AUDC4     | Audio control 4                |
+| $08    | AUDCTL    | Audio control global           |
+| $09    | STIMER    | Sample timer                   |
+| $0F    | SKCTL     | Serial port control            |
+
+### SID Register Map
+
+| Offset | Name     | Description                    |
+|--------|----------|--------------------------------|
+| $00    | FREQLO1  | Frequency low byte voice 1     |
+| $01    | FREQHI1  | Frequency high byte voice 1    |
+| $02    | PWLO1    | Pulse width low byte voice 1   |
+| $03    | PWHI1    | Pulse width high byte voice 1  |
+| $04    | CR1      | Control register 1             |
+| $05    | AD1      | Attack/Decay voice 1           |
+| $06    | SR1      | Sustain/Release voice 1        |
+| $07    | FREQLO2  | Frequency low byte voice 2     |
+| $08    | FREQHI2  | Frequency high byte voice 2    |
+| $09    | PWLO2    | Pulse width low byte voice 2   |
+| $0A    | PWHI2    | Pulse width high byte voice 2  |
+| $0B    | CR2      | Control register 2             |
+| $0C    | AD2      | Attack/Decay voice 2           |
+| $0D    | SR2      | Sustain/Release voice 2        |
+| $0E    | FREQLO3  | Frequency low byte voice 3     |
+| $0F    | FREQHI3  | Frequency high byte voice 3    |
+| $10    | PWLO3    | Pulse width low byte voice 3   |
+| $11    | PWHI3    | Pulse width high byte voice 3  |
+| $12    | CR3      | Control register 3             |
+| $13    | AD3      | Attack/Decay voice 3           |
+| $14    | SR3      | Sustain/Release voice 3        |
+| $15    | FCLO     | Filter cutoff low              |
+| $16    | FCHI     | Filter cutoff high             |
+| $17    | FILTER   | Filter resonance and routing   |
+| $18    | VOLUME   | Master volume                  |
+
+### AY/YM Register Map
+
+| Offset | Name                | Description                           |
+|--------|---------------------|---------------------------------------|
+| $00    | FREQ_FINE_A         | Channel A frequency fine adjustment   |
+| $01    | FREQ_HIGH_A         | Channel A frequency coarse adjustment |
+| $02    | FREQ_FINE_B         | Channel B frequency fine adjustment   |
+| $03    | FREQ_HIGH_B         | Channel B frequency coarse adjustment |
+| $04    | FREQ_FINE_C         | Channel C frequency fine adjustment   |
+| $05    | FREQ_HIGH_C         | Channel C frequency coarse adjustment |
+| $06    | NOISE               | Noise generator control               |
+| $07    | MIXER               | I/O mixer/enable                      |
+| $08    | VOLUME_A            | Channel A volume                      |
+| $09    | VOLUME_B            | Channel B volume                      |
+| $0A    | VOLUME_C            | Channel C volume                      |
+| $0B    | ENVELOPE_FINE       | Envelope fine adjustment              |
+| $0C    | ENVELOPE_HIGH       | Envelope coarse adjustment            |
+| $0D    | ENVELOPE_SHAPE      | Envelope shape                        |
+| $0E    | IO_A                | Port A data                           |
+| $0F    | IO_B                | Port B data                           |
+
 ## Stereo Panning Value
 
 This value determines on which stereo channel a given chip plays.

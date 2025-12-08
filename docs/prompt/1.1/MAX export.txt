@@ -9,3 +9,10 @@ Don't use stream compression.
 Read updated document docs/MAX.md and make a fix when writing chip speed (you must use big endian) and don't set stereo paning to center, leave it undefined (zero).
 
 ---
+
+Read updated documentation for MAX format docs/MAX.md
+Review MAX export code.
+Focus on AY/YM Register Map and correct register numbers in output stream if needed.
+In "OPTIMIZED DUMP" the delays should be combined. Instead of writing double $80 values, you should write one $81 (end of frame + 1 additional frame delay).
+
+---

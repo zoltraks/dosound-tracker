@@ -98,10 +98,13 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Consolas', monospace;
 
   --midi-input-enabled-bg: #126e3a;
+  --midi-input-enabled-border: #359773;
   --midi-output-enabled-bg: #4b3415;
   --midi-both-enabled-bg: #3730a3;
-  --midi-input-enabled-border: #359773;
   --midi-both-enabled-border: #735ab8;
+  --midi-disabled-bg-left: #746e3a;
+  --midi-disabled-bg-right: #252537;
+  --midi-disabled-border: #918811;
 }
 
 .light {
@@ -141,7 +144,7 @@
   
   --debug-btn-bg: #fef9c3;
   --debug-btn-bg-2: #fef3c7;
-  --debug-btn-border: #cc9d12;
+  --debug-btn-border: #9c8607;
   --debug-btn-active-bg: #e9d5ff;
   --debug-btn-active-bg-2: #ddd6fe;
   --debug-btn-active-border: #7c3aed;
@@ -198,10 +201,14 @@
   --glow-secondary: 0 0 4px rgba(245, 158, 11, 0.15);
 
   --midi-input-enabled-bg: #729e85;
+  --midi-input-enabled-border: #33af82;
   --midi-output-enabled-bg: #9c8970;
   --midi-both-enabled-bg: #d4d2f1;
-  --midi-input-enabled-border: #33af82;
-  --midi-both-enabled-border: #735ab8;}
+  --midi-both-enabled-border: #735ab8;
+  --midi-disabled-bg-left: #cbd5e0;
+  --midi-disabled-bg-right: #e2e8f0;
+  --midi-disabled-border: #1a202c;
+}
 
 * {
   margin: 0;
@@ -515,8 +522,8 @@ body {
 }
 
 .command-btn.midi-btn.midi-disabled {
-  background: linear-gradient(135deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
-  border-color: var(--border-bright);
+  background: linear-gradient(135deg, var(--midi-disabled-bg-left) 0%, var(--midi-disabled-bg-right) 100%);
+  border-color: var(--midi-disabled-border);
   color: var(--text-secondary);
 }
 

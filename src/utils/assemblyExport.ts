@@ -1290,7 +1290,49 @@ function buildMaxStreamFromDumpBytes(
     data.push(0x80, 0x80);
   }
 
-  return { streamFormat: 0x07, streamData: data, frameCount };
+  const streamData = strategy === 'optimized' ? optimizeReg7Delays(data) : data;
+
+  return { streamFormat: 0x07, streamData, frameCount };
+}
+
+function optimizeReg7Delays(input: number[]): number[] {
+  const out: number[] = [];
+  const len = input.length;
+  let i = 0;
+
+  while (i < len) {
+    const cmd = input[i] & 0xff;
+
+    if (cmd === 0x80 && i + 1 < len) {
+      let frames = 0;
+
+      while (i < len && input[i] === 0x80 && i + 1 < len) {
+        const value = input[i + 1] & 0xff;
+        if ((value & 0x80) === 0) {
+          break;
+        }
+
+        const extra = value & 0x7f;
+        frames += 1 + extra;
+        i += 2;
+      }
+
+      while (frames > 0) {
+        const chunk = frames > 128 ? 128 : frames;
+        const extra = chunk - 1;
+        const value = 0x80 | (extra & 0x7f);
+        out.push(0x80, value);
+        frames -= chunk;
+      }
+
+      continue;
+    }
+
+    out.push(cmd);
+    i++;
+  }
+
+  return out;
 }
 
 export function exportSongToMax(
