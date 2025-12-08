@@ -308,7 +308,7 @@ It's important for a frame dump format like RAW8.
 | Offset | Size | Example  | Description        |
 |--------|------|----------|--------------------|
 | 0      | 1    | 'S'      | Chunk type         |
-| 1      | 1    | 04       | Chunk size         |
+| 1      | 1    | 05       | Chunk size         |
 | 2      | 1    | 08       | Stream format      |
 | 3      | 1    | 00       | Stream compression |
 | 4      | 3    | 00 00 00 | Stream size        |
