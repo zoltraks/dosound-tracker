@@ -1320,8 +1320,8 @@ export function exportSongToMax(
 
   const chipData: number[] = [];
   chipData.push(0xa9);
-  chipData.push(0x03);
-  chipData.push(VBLANK_RATE & 0xff, (VBLANK_RATE >>> 8) & 0xff);
+  chipData.push(0x00);
+  chipData.push((VBLANK_RATE >>> 8) & 0xff, VBLANK_RATE & 0xff);
   fileBytes.push(...buildMaxShortChunk('C', chipData));
 
   fileBytes.push(...buildMaxShortChunk('S', [streamFormat & 0xff]));

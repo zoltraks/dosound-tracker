@@ -5,3 +5,7 @@ Use RAW8 (in SIMPLE DUMP mode) or REG7 (for COMPLEX DUMP and OPTIMIZED DUMP mode
 Don't use stream compression.
 
 ---
+
+Read updated document docs/MAX.md and make a fix when writing chip speed (you must use big endian) and don't set stereo paning to center, leave it undefined (zero).
+
+---

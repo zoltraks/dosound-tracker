@@ -2,16 +2,17 @@
 
 ## Document Information
 
-**Version**: 1.0
+**Version**: 1.1
 
-**Date**: 2025-12-06
+**Date**: 2025-12-08
 
-**State**: Release Candidate 1
+**State**: Release Candidate 2
 
 ## Version History
 
 | Date           | Version     |
 |----------------|-------------|
+| **2025-12-08** | Version 1.1 |
 | **2025-12-06** | Version 1.0 |
 | **2024-11-29** | Version 0.9 |
 | **2024-11-23** | Version 0.8 |
@@ -59,6 +60,12 @@ To distinguish between them, short chunk type is a uppercase letter and long chu
 Chunk size specifies the number of data bytes decremented by 1.
 
 Generally chunk order is not important, but the version chunk should be one of the first chunks in the file because of the format version number specified.
+
+## Number Format
+
+Multi-byte numbers are written in the Big Endian byte order standard.
+
+This means that when a number consisting of multiple bytes like 32-bit integer 0x0A0B0C0D is stored, the most significant byte (MSB) comes first in the data stream.
 
 ## File Header
 
@@ -153,6 +160,25 @@ These values are magic constants for different types of sound chips.
 | A9    | AY     | YM 2149        |
 | AA    | SID    | SID 8650 (new) |
 | AB    | SID    | SID 6581 (old) |
+
+## Stereo Panning Value
+
+This value determines on which stereo channel a given chip plays.
+
+If this value is not specified, the playback program will decide on its own.
+
+As a rule, in a multi-speaker configuration, odd-numbered units play on the left channel, and even-numbered units play on the right.
+
+In the case of a single-unit stream, it is better to leave this value empty.
+
+| Value | Panning       |
+|-------|---------------|
+| 00    | Not Specified |
+| 01    | Front Left    |
+| 02    | Front Right   |
+| 03    | Center        |
+| 04    | Rear Left     |
+| 05    | Rear Right    |
 
 ## Stream Definition Chunk
 
