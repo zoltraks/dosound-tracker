@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
+import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE, PIANO_SHOW_EXTRA_TOP_C } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
 import type { Instrument as YmInstrument } from '../synth/YM2149';
@@ -55,8 +55,9 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const previewLastTickTimeRef = useRef<{ [key: string]: number }>({});
   const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
 
-  // Generate piano keys for 5 octaves on desktop and fewer octaves on compact layouts,
-  // and always append a highest C key at the right end of the keyboard.
+  // Generate piano keys for 5 octaves on desktop and fewer octaves on compact layouts.
+  // Optionally append a highest C key at the right end when enabled by
+  // PIANO_SHOW_EXTRA_TOP_C.
   const generatePianoKeys = (): PianoKey[] => {
     const keys: PianoKey[] = [];
     const octaveSpan = isCompactLayout ? 3 : 5;
@@ -106,20 +107,22 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       }
     }
 
-    // Append an extra highest C white key at the right end so there is always
-    // a top C button available on the keyboard.
-    const highestDisplayedOctave = startOctave + octaveSpan - 1;
-    const extraCOctave = Math.min(MAX_OCTAVE, highestDisplayedOctave + 1);
-    const extraKeyId = `C${extraCOctave}`;
+    if (PIANO_SHOW_EXTRA_TOP_C) {
+      // Append an extra highest C white key at the right end so there can be
+      // a dedicated top C button on the keyboard when desired.
+      const highestDisplayedOctave = startOctave + octaveSpan - 1;
+      const extraCOctave = Math.min(MAX_OCTAVE, highestDisplayedOctave + 1);
+      const extraKeyId = `C${extraCOctave}`;
 
-    keys.push({
-      note: 'C',
-      octave: extraCOctave,
-      isBlackKey: false,
-      keyId: extraKeyId,
-      position: octaveSpan * 7,
-      stableKey: `extra-top-c-${extraCOctave}`
-    });
+      keys.push({
+        note: 'C',
+        octave: extraCOctave,
+        isBlackKey: false,
+        keyId: extraKeyId,
+        position: octaveSpan * 7,
+        stableKey: `extra-top-c-${extraCOctave}`
+      });
+    }
 
     return keys;
   };

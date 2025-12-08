@@ -57,3 +57,8 @@ In "Export" modal window move "DATA" button before "DUMP" button.
 Add one key at the end of piano keyboard, so there should always be highest "C" button available.
 
 ---
+
+After review I can see that adding one key at the end of piano keyboard is not looking good.
+Make it configurable by constant parameter and by default fall back to previous state, where the highest "C" button was not available.
+
+---
