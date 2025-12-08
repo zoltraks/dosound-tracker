@@ -225,6 +225,7 @@ const App: React.FC = () => {
     exportDumpWithContext,
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,
+    exportMaxWithContext,
   } = useFileOperations({ song: currentSong, isComplexDumpMode });
 
   const isNavigationSuspended =
@@ -3111,6 +3112,10 @@ const App: React.FC = () => {
     exportWavWithContext(buildExportContext());
   }, [buildExportContext, exportWavWithContext]);
 
+  const handleExportMaxFromModal = useCallback(() => {
+    exportMaxWithContext(buildExportContext());
+  }, [buildExportContext, exportMaxWithContext]);
+
   const handleOpenTranspose = useCallback(() => {
     // When opening, keep the last-used transpose settings and just ensure the
     // input text reflects the current numeric amount.
@@ -3659,6 +3664,7 @@ const App: React.FC = () => {
               onExportData={handleExportDataFromModal}
               onExportBin={handleExportBinFromModal}
               onExportVgm={handleExportVgmFromModal}
+              onExportMax={handleExportMaxFromModal}
               onExportWav={handleExportWavFromModal}
               onConfirm={handleConfirmExport}
               onCancel={handleCancelExport}

@@ -10,11 +10,14 @@ import {
   exportInstrumentToAssembly,
   exportInstrumentToVgm,
   exportInstrumentToWav,
+  exportSongToMax,
+  exportInstrumentToMax,
   parseAssemblyToBinary,
   downloadAssemblyFile,
   downloadBinaryFile,
   downloadVgmFile,
   downloadWavFile,
+  downloadMaxFile,
 } from '../utils/assemblyExport';
 
 interface ExportContext {
@@ -37,11 +40,13 @@ interface UseFileOperationsResult {
   handleExportBin: () => void;
   handleExportVgm: () => void;
   handleExportWav: () => void;
+  handleExportMax: () => void;
   handleExportDump: () => void;
   exportDataWithContext: (ctx: ExportContext) => void;
   exportBinWithContext: (ctx: ExportContext) => void;
   exportVgmWithContext: (ctx: ExportContext) => void;
   exportWavWithContext: (ctx: ExportContext) => void;
+  exportMaxWithContext: (ctx: ExportContext) => void;
   exportDumpWithContext: (ctx: ExportContext) => void;
   handleCloseSoundExportSummary: () => void;
   handleCloseDumpExportSummary: () => void;
@@ -122,6 +127,32 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       setSoundExportSummary(lines.join('\n'));
     }
   }, [song]);
+
+  const handleExportMax = useCallback(() => {
+    try {
+      const strategy: ExportStrategy = isComplexDumpMode ? 'complex' : 'simple';
+      const result = exportSongToMax(song, strategy);
+      const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+      const filename = `${safeTitle}.max`;
+      downloadMaxFile(result.buffer, filename);
+
+      const lines: string[] = [];
+      lines.push('MAX export completed.');
+      lines.push('');
+      lines.push(`File: ${filename}`);
+      lines.push(`Frames: ${result.frameCount}`);
+
+      setSoundExportSummary(lines.join('\n'));
+    } catch (error) {
+      console.error('MAX export failed:', error);
+      const lines: string[] = [];
+      lines.push('MAX export failed.');
+      if (error instanceof Error) {
+        lines.push(`Error: ${error.message}`);
+      }
+      setSoundExportSummary(lines.join('\n'));
+    }
+  }, [song, isComplexDumpMode]);
 
   const handleExportWav = useCallback(() => {
     try {
@@ -248,6 +279,78 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         console.error('Context-aware DATA export failed:', error);
         const lines: string[] = [];
         lines.push('DATA export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
+    },
+    [song]
+  );
+
+  const exportMaxWithContext = useCallback(
+    (ctx: ExportContext) => {
+      try {
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          const result = exportInstrumentToMax(ctx.instrument, song, ctx.strategy);
+          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+          const rawInstId = ctx.instrument.id || 'inst';
+          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
+          const filename = `${safeTitle}_inst_${safeInstId}.max`;
+          downloadMaxFile(result.buffer, filename);
+
+          const lines: string[] = [];
+          lines.push('MAX export completed.');
+          lines.push('');
+          lines.push(`File: ${filename}`);
+          lines.push(`Frames: ${result.frameCount}`);
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+
+          setSoundExportSummary(lines.join('\n'));
+          return;
+        }
+
+        let scopedSong: Song = song;
+        if (ctx.type === 'pattern' && song.playlist.length > 0) {
+          const playlistLength = song.playlist.length;
+          const rawIndex = ctx.playlistIndex;
+          const index = Math.max(
+            0,
+            Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+          );
+          const entry = song.playlist[index];
+          scopedSong = {
+            ...song,
+            playlist: [entry],
+            loop: null,
+          };
+        }
+
+        const result = exportSongToMax(scopedSong, ctx.strategy);
+        const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
+        const suffix = ctx.type === 'pattern' ? '_pattern' : '';
+        const filename = `${safeTitle}${suffix}.max`;
+        downloadMaxFile(result.buffer, filename);
+
+        const lines: string[] = [];
+        lines.push('MAX export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        lines.push(`Frames: ${result.frameCount}`);
+        if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else {
+          lines.push('Scope: Song');
+        }
+        lines.push(`Strategy: ${ctx.strategy}`);
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        console.error('Context-aware MAX export failed:', error);
+        const lines: string[] = [];
+        lines.push('MAX export failed.');
         if (error instanceof Error) {
           lines.push(`Error: ${error.message}`);
         }
@@ -510,11 +613,13 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
     handleExportBin,
     handleExportVgm,
     handleExportWav,
+    handleExportMax,
     handleExportDump,
     exportDataWithContext,
     exportBinWithContext,
     exportVgmWithContext,
     exportWavWithContext,
+    exportMaxWithContext,
     exportDumpWithContext,
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,

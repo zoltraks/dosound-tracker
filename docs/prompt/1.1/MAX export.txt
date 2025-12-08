@@ -1,0 +1,7 @@
+Implement MAX format for export song/pattern/instrumment.
+Add "MAX" button after "VGM" in export window.
+Read MAX file format specification in docs/MAX.md
+Use RAW8 (in SIMPLE DUMP mode) or REG7 (for COMPLEX DUMP and OPTIMIZED DUMP mode).
+Don't use stream compression.
+
+---

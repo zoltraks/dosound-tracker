@@ -11,6 +11,7 @@ interface ExportModalProps {
   onExportData: () => void;
   onExportBin: () => void;
   onExportVgm: () => void;
+  onExportMax: () => void;
   onExportWav: () => void;
   onConfirm: () => void;
   onCancel: () => void;
@@ -26,6 +27,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onExportData,
   onExportBin,
   onExportVgm,
+  onExportMax,
   onExportWav,
   onConfirm,
   onCancel,
@@ -50,6 +52,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   const handleVgmClick = () => {
     onExportVgm();
+  };
+
+  const handleMaxClick = () => {
+    onExportMax();
   };
 
   const handleWavClick = () => {
@@ -132,7 +138,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <div
               style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(5, minmax(0, 1fr))',
+                gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
                 gap: '4px',
                 marginTop: '4px',
               }}
@@ -148,6 +154,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               </button>
               <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleVgmClick}>
                 VGM
+              </button>
+              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleMaxClick}>
+                MAX
               </button>
               <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleWavClick}>
                 WAV
