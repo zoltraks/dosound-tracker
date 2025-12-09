@@ -78,3 +78,29 @@ Change CSS class names for better readibility and include these changes in the c
 "--reset-btn-bg-2" to "--reset-btn-bg-right"
 
 ---
+
+Based on how "RESET" button has CSS defined:
+
+
+```
+.command-btn.reset-btn {
+  background: linear-gradient(135deg, var(--reset-btn-bg-left) 0%, var(--reset-btn-bg-right) 100%);
+  border-color: var(--reset-btn-border);
+}
+
+.command-btn.reset-btn:hover {
+  background: linear-gradient(135deg, var(--reset-btn-bg-right) 0%, var(--reset-btn-left) 100%);
+  border-color: var(--reset-btn-border);
+}
+```
+
+Introduce new CSS classes for buttons "LOAD SONG", "SAVE SONG", "NEW SONG" in similar way making CSS classes and use them.
+
+Choosing colors for bg-left and bg-right mix default color from theme: 
+
+ - button background "LOAD SONG" mix with cyan
+ - button background "SAVE SONG" mix with green
+ - button background "NEW SONG" mix with purple
+
+---
+

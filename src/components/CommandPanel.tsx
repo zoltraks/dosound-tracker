@@ -258,9 +258,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         >
           STOP
         </button>
-        <button onClick={onNewSong} className="command-btn">NEW SONG</button>
-        <button onClick={onLoadSong} className="command-btn">LOAD SONG</button>
-        <button onClick={onSaveSong} className="command-btn">SAVE SONG</button>
+        <button onClick={onNewSong} className="command-btn new-song-btn">NEW SONG</button>
+        <button onClick={onLoadSong} className="command-btn load-song-btn">LOAD SONG</button>
+        <button onClick={onSaveSong} className="command-btn save-song-btn">SAVE SONG</button>
         <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
         <button onClick={onRenumber} className="command-btn">RENUMBER</button>
         <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
