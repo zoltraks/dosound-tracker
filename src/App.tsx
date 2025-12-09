@@ -113,8 +113,6 @@ const App: React.FC = () => {
     setIsExportModalOpen,
   } = useModalState();
 
-  const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
-
   const {
     isInstrumentTypeWarningOpen,
     ignoreInstrumentTypeWarning,
@@ -361,53 +359,6 @@ const App: React.FC = () => {
         api.removeAppCloseRequestedListener(handler);
       }
     };
-  }, []);
-
-  useEffect(() => {
-    fetch('download/LIST.txt')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to load download list.');
-        }
-
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('text/html')) {
-          // Likely SPA fallback (index.html) instead of a real LIST.txt file.
-          throw new Error('LIST.txt appears to be HTML, treating as missing.');
-        }
-
-        return response.text();
-      })
-      .then(text => {
-        const lines = text.split(/\r?\n/);
-        const trimmed = lines.map(line => line.trim());
-        const nonEmpty = trimmed.filter(line => line.length > 0);
-        const validFiles = nonEmpty.filter(line => {
-          const base = (line.split(/[\\/]/).pop() || '').toLowerCase();
-          return base !== '.gitkeep' && base !== 'list.txt';
-        });
-
-        if (validFiles.length === 0) {
-          setDownloadFiles([]);
-          return;
-        }
-
-        // Make the list unique and sort alphabetically in reverse order.
-        const uniqueFiles = Array.from(new Set(validFiles));
-        uniqueFiles.sort((a, b) => b.localeCompare(a, undefined, { sensitivity: 'base' }));
-
-        const first = uniqueFiles[0].toLowerCase();
-        if (first.startsWith('<!doctype') || first.startsWith('<html')) {
-          // Defensive check: HTML content instead of plain filename list.
-          setDownloadFiles([]);
-          return;
-        }
-
-        setDownloadFiles(uniqueFiles);
-      })
-      .catch(() => {
-        setDownloadFiles([]);
-      });
   }, []);
 
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
@@ -3323,7 +3274,7 @@ const App: React.FC = () => {
               ym2149={ym2149Ref.current}
               currentInstrument={currentInstrument}
               previewChannel={previewChannel}
-              hasDownloads={downloadFiles.length > 0}
+              hasDownloads={true}
               onShowDownloads={() => setIsDownloadOpen(true)}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
@@ -3577,7 +3528,6 @@ const App: React.FC = () => {
               setMidiCopySummary={setMidiCopySummary}
               setMidiLoadError={setMidiLoadError}
               isDownloadOpen={isDownloadOpen}
-              downloadFiles={downloadFiles}
               setIsDownloadOpen={setIsDownloadOpen}
               midiLoadError={midiLoadError}
               midiCopySummary={midiCopySummary}

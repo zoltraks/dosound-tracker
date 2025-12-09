@@ -5,6 +5,7 @@ export { AboutModal } from './AboutModal';
 export { ChangesModal } from './ChangesModal';
 export { ManualModal } from './ManualModal';
 export { DownloadModal } from './DownloadModal';
+export { FilePickerModal } from './FilePickerModal';
 export { InstrumentDeleteModal } from './InstrumentDeleteModal';
 export { InstrumentTypeWarningModal } from './InstrumentTypeWarningModal';
 export { MidiModal } from './MidiModal';

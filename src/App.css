@@ -968,6 +968,55 @@ body {
   text-decoration: underline;
 }
 
+.file-picker-table-container {
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+}
+
+.file-picker-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.file-picker-row {
+  cursor: default;
+}
+
+.file-picker-cell {
+  padding: 2px 0;
+}
+
+.file-picker-entry-button {
+  width: 100%;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  text-align: left;
+  padding: 0;
+  cursor: pointer;
+}
+
+.file-picker-entry-button:hover {
+  color: var(--text-primary);
+  background-color: var(--hover-bg);
+}
+
+.file-picker-empty {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.file-picker-actions {
+  justify-content: space-between;
+}
+
+.file-picker-actions-left,
+.file-picker-actions-right {
+  display: flex;
+  gap: 6px;
+}
+
 .modal-body.text-display-body h1,
 .modal-body.text-display-body h2 {
   margin-top: 0;

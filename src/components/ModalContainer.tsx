@@ -111,7 +111,6 @@ export interface ModalContainerProps {
   setMidiCopySummary: (value: string) => void;
   setMidiLoadError: (value: string) => void;
   isDownloadOpen: boolean;
-  downloadFiles: string[];
   setIsDownloadOpen: (value: boolean) => void;
   midiLoadError: string;
   midiCopySummary: string;
@@ -209,7 +208,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   setMidiCopySummary,
   setMidiLoadError,
   isDownloadOpen,
-  downloadFiles,
   setIsDownloadOpen,
   midiLoadError,
   midiCopySummary,
@@ -422,7 +420,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
 
       <DownloadModal
         isOpen={isDownloadOpen}
-        files={downloadFiles}
         onClose={() => setIsDownloadOpen(false)}
       />
 
