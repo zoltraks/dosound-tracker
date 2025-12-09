@@ -104,3 +104,10 @@ Choosing colors for bg-left and bg-right mix default color from theme:
 
 ---
 
+Rename button titles "DUPLICATE LINE" to "CLONE LINE" and "CLONE LINE" to "DUPLICATE LINE".
+
+From now on "duplicate" means just make the same entry duplicated and "clone" means deep copy, such as creating new playlist entries with new patterns copied from the original copy source.
+
+Apply this rename also in the variables and function names.
+
+---

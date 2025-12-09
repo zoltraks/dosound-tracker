@@ -285,8 +285,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       {/* Row 2: Playlist and track commands */}
       <div className="command-row">
         <button onClick={onAddLine} className="command-btn">ADD LINE</button>
-        <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
         <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
+        <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
         <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
         <button onClick={onNewTrack} className="command-btn">ADD TRACK</button>
         <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>

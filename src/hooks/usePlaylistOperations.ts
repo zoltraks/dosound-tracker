@@ -19,9 +19,11 @@ interface UsePlaylistOperationsResult {
   handleCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   handleCreateNewTrack: () => void;
   handleAddLine: () => void;
-  handleCloneLine: () => void;
-  handleDeleteLine: () => void;
+  // Shallow: duplicate the current playlist entry without cloning patterns
   handleDuplicateLine: () => void;
+  handleDeleteLine: () => void;
+  // Deep: clone the current playlist entry and its referenced patterns
+  handleCloneLine: () => void;
   handleDeleteTrack: () => void;
   clampedPlaybackPosition: number;
   handlePositionSelect: (position: number) => void;
@@ -130,7 +132,8 @@ export function usePlaylistOperations({
     setActiveSection('playlist');
   }, [song.playlist, updateSong, setPosition, setActiveSection]);
 
-  const handleCloneLine = useCallback(() => {
+  // Shallow duplicate: insert a copy of the current playlist entry, reusing pattern IDs
+  const handleDuplicateLine = useCallback(() => {
     const length = song.playlist.length;
     if (length === 0) {
       return;
@@ -168,7 +171,8 @@ export function usePlaylistOperations({
     setPosition(newIndex, 0, 0);
   }, [song.playlist, currentPatternIndex, updateSong, setPosition]);
 
-  const handleDuplicateLine = useCallback(() => {
+  // Deep clone: duplicate the current playlist entry and create new patterns for any referenced IDs
+  const handleCloneLine = useCallback(() => {
     const playlist = song.playlist;
     const patterns = song.patterns;
     const length = playlist.length;
@@ -282,9 +286,9 @@ export function usePlaylistOperations({
     handleCreatePatternAt,
     handleCreateNewTrack,
     handleAddLine,
-    handleCloneLine,
-    handleDeleteLine,
     handleDuplicateLine,
+    handleDeleteLine,
+    handleCloneLine,
     handleDeleteTrack,
     clampedPlaybackPosition,
     handlePositionSelect,
