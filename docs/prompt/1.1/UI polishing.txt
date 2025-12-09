@@ -62,3 +62,12 @@ After review I can see that adding one key at the end of piano keyboard is not l
 Make it configurable by constant parameter and by default fall back to previous state, where the highest "C" button was not available.
 
 ---
+
+Change CSS class names for better readibility and include these changes in the code that uses that class.
+
+"--debug-btn-bg" to "--debug-btn-bg-left"
+"--debug-btn-bg-2" to "--debug-btn-bg-right"
+"--debug-btn-active-bg" to "--debug-btn-active-bg-left"
+"--debug-btn-active-bg-2" to "--debug-btn-active-bg-right"
+
+---

@@ -35,11 +35,11 @@
   --button-hover: #343a52;
   --button-active: #3b425b;
   
-  --debug-btn-bg: #237d8d;
-  --debug-btn-bg-2: #094e7c;
+  --debug-btn-bg-left: #237d8d;
+  --debug-btn-bg-right: #094e7c;
   --debug-btn-border: #5a89df;
-  --debug-btn-active-bg: #5b2f7b;
-  --debug-btn-active-bg-2: #7c3aed;
+  --debug-btn-active-bg-left: #5b2f7b;
+  --debug-btn-active-bg-right: #7c3aed;
   --debug-btn-active-border: #a855f7;
   --debug-btn-active-glow: rgba(168, 85, 247, 0.6);
 
@@ -142,11 +142,11 @@
   --button-hover: #f7fafc;
   --button-active: #fef3c7;
   
-  --debug-btn-bg: #fef9c3;
-  --debug-btn-bg-2: #fef3c7;
+  --debug-btn-bg-left: #fef9c3;
+  --debug-btn-bg-right: #fef3c7;
   --debug-btn-border: #9c8607;
-  --debug-btn-active-bg: #e9d5ff;
-  --debug-btn-active-bg-2: #ddd6fe;
+  --debug-btn-active-bg-left: #e9d5ff;
+  --debug-btn-active-bg-right: #ddd6fe;
   --debug-btn-active-border: #7c3aed;
   --debug-btn-active-glow: rgba(124, 58, 237, 0.45);
 
@@ -490,18 +490,18 @@ body {
 }
 
 .command-btn.debug-btn {
-  background: linear-gradient(135deg, var(--debug-btn-bg) 0%, var(--debug-btn-bg-2) 100%);
+  background: linear-gradient(135deg, var(--debug-btn-bg-left) 0%, var(--debug-btn-bg-right) 100%);
   border-color: var(--debug-btn-border);
 }
 
 .command-btn.debug-btn:hover {
-  background: linear-gradient(135deg, var(--debug-btn-bg-2) 0%, var(--debug-btn-bg) 100%);
+  background: linear-gradient(135deg, var(--debug-btn-bg-right) 0%, var(--debug-btn-bg-left) 100%);
   border-color: var(--debug-btn-border);
   box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
 }
 
 .command-btn.debug-btn.active {
-  background: linear-gradient(135deg, var(--debug-btn-active-bg) 0%, var(--debug-btn-active-bg-2) 100%);
+  background: linear-gradient(135deg, var(--debug-btn-active-bg-left) 0%, var(--debug-btn-active-bg-right) 100%);
   border-color: var(--debug-btn-active-border);
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
