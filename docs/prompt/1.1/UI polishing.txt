@@ -163,3 +163,8 @@ Change that ".text-display" to ".text-display-body" and then change also ".chang
 When opening "CHANGES" or "MANUAL" window before content is loaded a static text is displayed but it should not until data is loaded or error occurs.
 
 ---
+
+When reloading application I can see for short time some of UI layout changes probably by initialization and after load changes.
+To hide it from the user maybe show blank area (black for dark theme or white for light theme) that will start fading out after 100 ms and disappear after short time 200 ms.
+
+---

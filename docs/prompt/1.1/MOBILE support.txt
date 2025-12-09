@@ -18,3 +18,13 @@ I should not see this effect every time when I touch piano key as piano keyboard
 In mobile view increase width of "CHANGES" and "MANUAL" text display modal view to occupy almost all possible width, leave 3px gap between left and right side of the viewport.
 
 ---
+
+In mobile view when page is reload and I touch piano keyboard for the first time, I can see a piano key pressed but there is no sound.
+After that everything works, the sound when touching a piano key is played even if piano keyboard was not focused.
+Until I reload page. After reload a first touch on piano keyboard doesn't give a sound.
+
+---
+
+In mobile view don't use different border color for piano keyboard when it's focused.
+
+---

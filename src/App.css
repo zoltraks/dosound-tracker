@@ -2516,6 +2516,11 @@ body {
     z-index: 40;
   }
 
+  .piano-keyboard.active {
+    border-color: var(--border-color);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  }
+
   .download-toggle {
     display: none;
   }

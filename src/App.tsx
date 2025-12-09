@@ -413,7 +413,7 @@ const App: React.FC = () => {
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
   // Audio setup
-  const { ym2149Ref } = useAudioSetup();
+  const { audioContext, ym2149Ref } = useAudioSetup();
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
@@ -474,6 +474,25 @@ const App: React.FC = () => {
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
   const [instrumentListFocusRevision, setInstrumentListFocusRevision] = useState(0);
+
+  const ensureAudioContextResumed = useCallback(() => {
+    if (!audioContext) {
+      return Promise.resolve();
+    }
+
+    if (audioContext.state === 'suspended') {
+      return audioContext
+        .resume()
+        .then(() => {
+          // AudioContext resumed; piano preview notes can now play immediately.
+        })
+        .catch(error => {
+          console.error('AudioContext resume failed in ensureAudioContextResumed:', error);
+        });
+    }
+
+    return Promise.resolve();
+  }, [audioContext]);
 
   useEffect(() => {
     if (activeSection === 'trackA') {
@@ -3420,6 +3439,7 @@ const App: React.FC = () => {
               onChangeBaseKey={handleChangeBaseKey}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+              ensureAudioContextResumed={ensureAudioContextResumed}
             />
           }
           fileInputs={

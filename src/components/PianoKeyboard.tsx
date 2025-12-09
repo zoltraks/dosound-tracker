@@ -18,6 +18,7 @@ interface PianoKeyboardProps {
   onChangeBaseKey: (note: string, octave: number) => void;
   onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
+  ensureAudioContextResumed?: () => Promise<void> | void;
 }
 
 interface PianoKey {
@@ -39,7 +40,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   previewChannel,
   onChangeBaseKey,
   onPreviewMidiNoteOn,
-  onPreviewMidiNoteOff
+  onPreviewMidiNoteOff,
+  ensureAudioContextResumed,
 }) => {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
@@ -405,6 +407,25 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     }, 20); // 20ms base tick, 40ms per envelope step
   }, [ym2149, currentInstrument, previewChannel, stopNote, onPreviewMidiNoteOn]);
 
+  const playNoteWithAudioUnlock = useCallback(
+    (note: string, octave: number) => {
+      const run = async () => {
+        if (ensureAudioContextResumed) {
+          try {
+            await ensureAudioContextResumed();
+          } catch {
+            // ignore resume errors here; they are logged where ensureAudioContextResumed is defined
+          }
+        }
+
+        playNote(note, octave);
+      };
+
+      void run();
+    },
+    [ensureAudioContextResumed, playNote]
+  );
+
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
 
@@ -417,7 +438,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
         if (!pressedKeys.has(keyId)) {
           setPressedKeys(prev => new Set(prev).add(keyId));
-          playNote(baseKeyData.note, baseKeyData.octave);
+          playNoteWithAudioUnlock(baseKeyData.note, baseKeyData.octave);
         }
       }
       return;
@@ -434,7 +455,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       
       if (!pressedKeys.has(keyId)) {
         setPressedKeys(prev => new Set(prev).add(keyId));
-        playNote(note, finalOctave);
+        playNoteWithAudioUnlock(note, finalOctave);
       }
     }
     
@@ -446,7 +467,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       event.preventDefault();
       onOctaveChange(Math.max(MIN_OCTAVE, currentOctave - 1));
     }
-  }, [isActive, currentOctave, onOctaveChange, playNote, pressedKeys, baseKeyData]);
+  }, [isActive, currentOctave, onOctaveChange, playNoteWithAudioUnlock, pressedKeys, baseKeyData]);
 
   const handleKeyUp = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -494,13 +515,13 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     
     if (!pressedKeys.has(keyId)) {
       setPressedKeys(prev => new Set(prev).add(keyId));
-      playNote(note, octave);
+      playNoteWithAudioUnlock(note, octave);
     }
 
     if (!isActive) {
       setActiveSection('piano');
     }
-  }, [isActive, pressedKeys, playNote, setActiveSection]);
+  }, [isActive, pressedKeys, playNoteWithAudioUnlock, setActiveSection]);
 
   const handlePianoKeyUp = useCallback((note: string, octave: number) => {
     const keyId = `${note}${octave}`;
