@@ -87,7 +87,7 @@ describe('FilePickerModal', () => {
       />
     );
 
-    const button = screen.getByRole('button', { name: 'file name.txt' });
+    const button = screen.getByRole('button', { name: 'file name' });
     fireEvent.click(button);
 
     expect(handlePick).toHaveBeenCalledTimes(1);

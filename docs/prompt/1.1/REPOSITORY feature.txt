@@ -46,3 +46,7 @@ When clicked open file picker window for "repository/song" directory and after u
 Before opening file picker window check if current song was modified and if so, show confirmation first like when clicking "NEW SONG".
 
 ---
+
+When showing list of files when picking song or instrument, don't show file extensions. But show file extensions as usual when downloading files.
+
+---

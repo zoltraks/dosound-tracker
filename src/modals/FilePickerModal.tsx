@@ -56,6 +56,12 @@ const getLabel = (file: string): string => {
   return parts[parts.length - 1] || file;
 };
 
+const stripExtension = (name: string): string => {
+  const lastDot = name.lastIndexOf('.');
+  if (lastDot <= 0) return name;
+  return name.slice(0, lastDot);
+};
+
 export const FilePickerModal: React.FC<FilePickerModalProps> = ({
   isOpen,
   title,
@@ -208,28 +214,34 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
             {hasFiles ? (
               <table className="file-picker-table">
                 <tbody>
-                  {sortedFiles.map(file => (
-                    <tr key={file} className="file-picker-row">
-                      <td className="file-picker-cell">
-                        {mode === 'download' ? (
-                          <a
-                            href={buildHref(directory, file)}
-                            className="download-link"
-                          >
-                            {getLabel(file)}
-                          </a>
-                        ) : (
-                          <button
-                            type="button"
-                            className="file-picker-entry-button"
-                            onClick={() => handlePick(file)}
-                          >
-                            {getLabel(file)}
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  {sortedFiles.map(file => {
+                    const baseLabel = getLabel(file);
+                    const displayLabel =
+                      mode === 'pick' ? stripExtension(baseLabel) : baseLabel;
+
+                    return (
+                      <tr key={file} className="file-picker-row">
+                        <td className="file-picker-cell">
+                          {mode === 'download' ? (
+                            <a
+                              href={buildHref(directory, file)}
+                              className="download-link"
+                            >
+                              {displayLabel}
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              className="file-picker-entry-button"
+                              onClick={() => handlePick(file)}
+                            >
+                              {displayLabel}
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             ) : (
