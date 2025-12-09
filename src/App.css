@@ -123,14 +123,17 @@
   --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', 'Source Code Pro', 'Consolas', monospace;
 
   --midi-input-enabled-bg-left: #126e3a;
-  --midi-input-enabled-bg-right: #085329;
+  --midi-input-enabled-bg-right: #103d23;
   --midi-input-enabled-border: #359773;
-  --midi-output-enabled-bg: #4b3415;
-  --midi-both-enabled-bg: #3730a3;
-  --midi-both-enabled-border: #735ab8;
-  --midi-disabled-bg-left: #726a1e;
-  --midi-disabled-bg-right: #443509;
-  --midi-disabled-border: #a79d1a;
+  --midi-output-enabled-bg-left: #726a1e;
+  --midi-output-enabled-bg-right: #443509;
+  --midi-output-enabled-border: #a79d1a;
+  --midi-both-enabled-bg-left: #7840b8;
+  --midi-both-enabled-bg-right: #3730a3;
+  --midi-both-enabled-border: #9d90be;
+  --midi-disabled-bg-left: #6a777c;
+  --midi-disabled-bg-right: #1e272b;
+  --midi-disabled-border: #80949e;
 }
 
 .light {
@@ -688,14 +691,14 @@ body {
 }
 
 .command-btn.midi-btn.midi-output-enabled {
-  background: linear-gradient(135deg, var(--midi-output-enabled-bg) 0%, var(--bg-active) 100%);
-  border-color: #f59e0b;
+  background: linear-gradient(135deg, var(--midi-output-enabled-bg-left) 0%, var(--midi-output-enabled-bg-right) 100%);
+  border-color: var(--midi-output-enabled-border);
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), 0 0 6px rgba(245, 158, 11, 0.55);
 }
 
 .command-btn.midi-btn.midi-both-enabled {
-  background: linear-gradient(135deg, var(--midi-both-enabled-bg) 0%, var(--bg-active) 100%);
+  background: linear-gradient(135deg, var(--midi-both-enabled-bg-left) 0%, var(--midi-both-enabled-bg-right) 100%);
   border-color: var(--midi-both-enabled-border);
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), 0 0 8px rgba(168, 85, 247, 0.7);
@@ -1847,9 +1850,14 @@ body {
 .playlist-line {
   display: flex;
   gap: 8px;
-  padding: 1px 2px;
+  padding-top: 2px;
+  padding-bottom: 1px;
+  padding-right: 2px;
+  padding-left: 1px;
   cursor: pointer;
   font-size: 10px;
+  border-top: 1px solid var(--bg-primary);
+  border-bottom: 1px solid var(--bg-secondary);
 }
 
 .playlist-line .line-number {
@@ -1873,6 +1881,7 @@ body {
 .playlist-line.playback-position.current {
   background-color: var(--playback-position-active-bg);
   border: 1px solid var(--playback-position-active-border);
+  padding-left: 0px;
 }
 
 .track-pattern {
