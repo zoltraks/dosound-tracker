@@ -16,10 +16,10 @@ export const ManualModal: React.FC<ManualModalProps> = ({
 
   return (
     <div className="modal-backdrop">
-      <div className="modal-dialog changelog-modal">
+      <div className="modal-dialog text-display">
         <div className="modal-title">Manual</div>
         <div
-          className="modal-body changelog-modal-body"
+          className="modal-body text-display-body"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
         />
         <div className="modal-actions">

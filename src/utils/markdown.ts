@@ -10,7 +10,8 @@ export const escapeHtml = (str: string): string => {
 const renderInlineMarkdown = (text: string): string => {
   const escaped = escapeHtml(text);
   // Bold **text**
-  return escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const withBold = escaped.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  return withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
 };
 
 export const renderMarkdown = (md: string): string => {
@@ -27,9 +28,16 @@ export const renderMarkdown = (md: string): string => {
 
   for (const rawLine of lines) {
     const line = rawLine.trimEnd();
+    const trimmed = line.trim();
 
-    if (!line.trim()) {
+    if (!trimmed) {
       closeList();
+      continue;
+    }
+
+    if (/^-{3,}$/.test(trimmed)) {
+      closeList();
+      html.push('<hr />');
       continue;
     }
 

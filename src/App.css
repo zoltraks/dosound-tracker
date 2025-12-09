@@ -626,7 +626,7 @@ body {
   max-width: 360px;
 }
 
-.modal-dialog.changelog-modal {
+.modal-dialog.text-display {
   width: 80vw;
   max-width: 720px;
   height: 80vh;
@@ -899,7 +899,7 @@ body {
   margin-bottom: 6px;
 }
 
-.modal-body.changelog-modal-body {
+.modal-body.text-display-body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
@@ -931,23 +931,29 @@ body {
   text-decoration: underline;
 }
 
-.modal-body.changelog-modal-body h1,
-.modal-body.changelog-modal-body h2 {
+.modal-body.text-display-body h1,
+.modal-body.text-display-body h2 {
   margin-top: 0;
   margin-bottom: 1.2rem;
 }
 
-.modal-body.changelog-modal-body p {
+.modal-body.text-display-body p {
   margin-bottom: 0.8rem;
 }
 
-.modal-body.changelog-modal-body ul,
-.modal-body.changelog-modal-body ol {
+.modal-body.text-display-body hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 15px 0;
+}
+
+.modal-body.text-display-body ul,
+.modal-body.text-display-body ol {
   margin-left: 1.4rem;
   margin-bottom: 0.8rem;
 }
 
-.modal-body.changelog-modal-body li {
+.modal-body.text-display-body li {
   margin-bottom: 0.4rem;
 }
 

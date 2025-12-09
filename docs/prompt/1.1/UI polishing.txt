@@ -144,3 +144,18 @@ Fix that!
 
 ---
 
+When displaying markdown as HTML in "CHANGES" or "MANUAL" window remember that you need to make text italic if it is between single asterisk characters and if there is a line with just at leat three minus characters ("---", "-----", etc.) then horizontal line (hr) should be displayed in HTML.
+
+---
+
+Make CSS entry for "hr" so for dark and light mode including vertical spacing after it like 6px
+
+---
+
+Change CSS class name from ".changelog-modal-body" to ".text-display" as it is used not only by "CHANGES" modal dialog but also "MODAL" and possibly somewhere else
+
+---
+
+Change that ".text-display" to ".text-display-body" and then change also ".changelog-modal" to ".text-display"
+
+---
