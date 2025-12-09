@@ -57,3 +57,11 @@ Increase a vertical gap between "command-row" so it fits the vertical gap betwee
 Hide download button in mobile view.
 
 ---
+
+In mobile view the song title is properly displayed below first header-panel bar with logo, program title, octave selection and theme toggle button.
+It looks like it is a part of the first bar but it needs to be visually separated by small vertical gap in mobile view only.
+In mobile view the first header-panel bar without song title must remain always on the top when scrolling application view.
+In mobile view when clicking on program title, the application view should be scrolled to the top.
+In mobile view piano keyboard should also be always visible on the bottom so it is always accessible.
+
+---
