@@ -65,3 +65,7 @@ In mobile view when clicking on program title, the application view should be sc
 In mobile view piano keyboard should also be always visible on the bottom so it is always accessible.
 
 ---
+
+In web browser in mobile device header panel with program title and piano keyboard are not sticky
+
+---
