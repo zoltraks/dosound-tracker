@@ -1,5 +1,17 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.8
+
+Mobile layout and piano support, in-app manual and file picker integration, and visual/timing refinements.
+
+- Added a **responsive layout** for small screens with a three-column command button grid, fixed header and piano positioning, constrained modal widths and hidden desktop-only controls so the tracker remains usable and readable on mobile devices.
+- Enabled touch-based **piano keyboard** control by adding mobile tap handlers, disabling tap highlights, making the extra highest C key configurable and resuming the AudioContext on first touch so phones and tablets can play notes reliably.
+- Introduced a reusable **File Picker** modal and wired new PICK INST and DEMO SONG buttons to curated instrument and song repositories backed by LIST index files, replacing the old download-only modal and stripping file extensions from display names in pick mode.
+- Integrated an in-app **Manual** by moving MANUAL.md into the app as a public asset, exposing it via a MANUAL button in the About dialog, enhancing markdown rendering (italics, horizontal rules) and updating copy for the Assembly Music Wizard book.
+- Refined the command panel and button styling by adding themed gradients to NEW/LOAD/SAVE and other controls, softening hover borders, tweaking MIDI/DEBUG/RESET colors, adjusting logo/header positioning and swapping CLONE/DUPLICATE line buttons to better match shallow vs deep copy semantics.
+- Improved playback and export behavior by fixing a song loop timing bug in the debug/loop logic so looped playback matches the tracker grid, and reordering DATA and DUMP buttons in the Export modal to match the documented specification.
+- Continued internal refactoring by extracting MIDI and instrument action handlers into dedicated hooks, simplifying `useDataManagement` dependencies, adding mobile-focused piano/command layout tweaks and introducing long-pattern song export fixtures and related tests.
+
 ## Version 1.1.7
 
 MAX format refinements for more accurate playback plus internal modal/message state refactors and tests.

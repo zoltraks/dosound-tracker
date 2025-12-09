@@ -14,3 +14,8 @@ The proposed changes must be relatively safe.
 When creating document, avoid using emoji in section titles.
 
 ----
+
+Make the assessment report of the refactorings done according to
+last REFACTORING.md and current source code.
+
+---
