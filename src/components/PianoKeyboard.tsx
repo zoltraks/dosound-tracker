@@ -567,6 +567,13 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
                   }
                 }}
                 onMouseLeave={() => handlePianoKeyUp(key.note, key.octave)}
+                onTouchStart={() => {
+                  handlePianoKeyDown(key.note, key.octave);
+                }}
+                onTouchEnd={() => {
+                  handlePianoKeyUp(key.note, key.octave);
+                }}
+                onTouchCancel={() => handlePianoKeyUp(key.note, key.octave)}
                 onContextMenu={(e) => {
                   e.preventDefault();
                   onChangeBaseKey(key.note, key.octave);

@@ -1,0 +1,11 @@
+Mobile view is intended to use by mobile devices like phones.
+
+Mobile view supports portrait orientation.
+
+Make piano keyboard work also on smartphone device which has no keyboard and no mouse, touchscreen only.
+Currently when I touch the piano panel, it gets focus. 
+While holding the screen still for a moment at the area piano key occupies, the base note is being change.
+But I can't just "click" for a regular note play on my phone.
+
+---
+
