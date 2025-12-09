@@ -14,3 +14,7 @@ When I touch piano, all the time I see CSS effect of changing background color f
 I should not see this effect every time when I touch piano key as piano keyboard is alredy focused.
 
 ---
+
+In mobile view increase width of "CHANGES" and "MANUAL" text display modal view to occupy almost all possible width, leave 3px gap between left and right side of the viewport.
+
+---
