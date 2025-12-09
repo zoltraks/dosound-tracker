@@ -340,6 +340,7 @@ body {
 .logo {
   font-size: 16px;
   cursor: pointer;
+  transform: translateX(-3px);
   /* Outline effect for logo emoji */
   text-shadow:
     -1px -1px 0 var(--logo-outline),
@@ -373,6 +374,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
+  transform: translateX(6px);
 }
 
 .theme-toggle {
