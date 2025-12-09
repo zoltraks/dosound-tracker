@@ -50,3 +50,17 @@ Before opening file picker window check if current song was modified and if so, 
 When showing list of files when picking song or instrument, don't show file extensions. But show file extensions as usual when downloading files.
 
 ---
+
+In file picker modal dialog move "SORT" to the left side of the window.
+
+When song is loaded succesfully after "DEMO SONG" was used, change the focus to "PLAY SONG" button.
+
+---
+
+Move "SORT" button in file picker to be on te left side of the modal window remaining "CLOSE" button to be on the right side.
+
+---
+
+It's stll not on the left. Make it like you did in about dialog window where "CHANGES" and "MANUAL" are on the left side and "OK" on the right.
+
+---

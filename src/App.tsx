@@ -1379,7 +1379,7 @@ const App: React.FC = () => {
           loadSongFromText(text);
           setPosition(0, 0, 0);
           setSharedCurrentLine(0);
-          setActiveSection('playlist');
+          setActiveSection('commands');
           setChannelMutes([false, false, false]);
         })
         .catch(error => {

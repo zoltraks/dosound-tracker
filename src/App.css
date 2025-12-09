@@ -1007,7 +1007,7 @@ body {
   color: var(--text-muted);
 }
 
-.file-picker-actions {
+.modal-actions.file-picker-actions {
   justify-content: space-between;
 }
 
