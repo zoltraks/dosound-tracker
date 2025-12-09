@@ -1,0 +1,3 @@
+In dev environment when runing application with "npm run dev" allow connections from local network, serve not limited to localhost.
+
+---

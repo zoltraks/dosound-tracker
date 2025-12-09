@@ -12,7 +12,8 @@ export default defineConfig({
     __APP_VERSION__: JSON.stringify(packageJson.version)
   },
   server: {
-    port: 8008
+    port: 8008,
+    host: true
   },
   preview: {
     port: 8008
