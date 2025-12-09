@@ -43,8 +43,8 @@
   --debug-btn-active-border: #a855f7;
   --debug-btn-active-glow: rgba(168, 85, 247, 0.6);
 
-  --reset-btn-bg: #5b1f24;
-  --reset-btn-bg-2: #75303b91;
+  --reset-btn-bg-left: #5b1f24;
+  --reset-btn-bg-right: #75303b91;
   --reset-btn-border: #ac3e3e;
   
   --play-song-idle-bg: #263a32;
@@ -150,8 +150,8 @@
   --debug-btn-active-border: #7c3aed;
   --debug-btn-active-glow: rgba(124, 58, 237, 0.45);
 
-  --reset-btn-bg: #fee2e2;
-  --reset-btn-bg-2: #fecaca;
+  --reset-btn-bg-left: #fee2e2;
+  --reset-btn-bg-right: #fecaca;
   --reset-btn-border: #b91c1c;
   
   --play-song-idle-bg: #e8f8ed;
@@ -508,12 +508,12 @@ body {
 }
 
 .command-btn.reset-btn {
-  background: linear-gradient(135deg, var(--reset-btn-bg) 0%, var(--reset-btn-bg-2) 100%);
+  background: linear-gradient(135deg, var(--reset-btn-bg-left) 0%, var(--reset-btn-bg-right) 100%);
   border-color: var(--reset-btn-border);
 }
 
 .command-btn.reset-btn:hover {
-  background: linear-gradient(135deg, var(--reset-btn-bg-2) 0%, var(--reset-btn-bg) 100%);
+  background: linear-gradient(135deg, var(--reset-btn-bg-right) 0%, var(--reset-btn-bg-left) 100%);
   border-color: var(--reset-btn-border);
 }
 

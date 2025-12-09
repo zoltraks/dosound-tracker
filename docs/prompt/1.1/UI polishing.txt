@@ -71,3 +71,10 @@ Change CSS class names for better readibility and include these changes in the c
 "--debug-btn-active-bg-2" to "--debug-btn-active-bg-right"
 
 ---
+
+Change CSS class names for better readibility and include these changes in the code that uses that class.
+
+"--reset-btn-bg" to "--reset-btn-bg-left"
+"--reset-btn-bg-2" to "--reset-btn-bg-right"
+
+---
