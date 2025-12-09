@@ -54,7 +54,7 @@
   
   --load-song-btn-bg-left: #176f85;
   --load-song-btn-bg-right: #2b3043;
-  --load-song-btn-border: #30acbe;
+  --load-song-btn-border: #288492;
 
   --export-btn-bg-left: #5d6b20;
   --export-btn-bg-right: #30380b;
@@ -62,10 +62,10 @@
 
   --save-song-btn-bg-left: #246942;
   --save-song-btn-bg-right: #2b3043;
-  --save-song-btn-border: #34bd8b;
+  --save-song-btn-border: #27916a;
 
-  --new-song-btn-bg-left: #5421a0;
-  --new-song-btn-bg-right: #2b3043;
+  --new-song-btn-bg-left: #9136a3;
+  --new-song-btn-bg-right: #4d3158;
   --new-song-btn-border: #9e58e0;
 
   --demo-song-btn-bg-left: #5421a0;
@@ -169,16 +169,16 @@
   --button-active: #fef3c7;
   --button-border-hover: #38393a;
   
-  --debug-btn-bg-left: #814818;
-  --debug-btn-bg-right: #573d1c;
-  --debug-btn-border: #9c8607;
+  --debug-btn-bg-left: #f6d2fd;
+  --debug-btn-bg-right: #eca4fa;
+  --debug-btn-border: #b143c7;
   --debug-btn-active-bg-left: #e9d5ff;
   --debug-btn-active-bg-right: #ddd6fe;
   --debug-btn-active-border: #7c3aed;
   --debug-btn-active-glow: rgba(124, 58, 237, 0.45);
 
-  --pick-inst-btn-bg-left: #814818;
-  --pick-inst-btn-bg-right: #573d1c;
+  --pick-inst-btn-bg-left: #f0e2d7;
+  --pick-inst-btn-bg-right: #fad19b;
   --pick-inst-btn-border: #9c8607;
 
   --reset-btn-bg-left: #fee2e2;
@@ -190,7 +190,7 @@
   --load-song-btn-border: #06b6d4;
 
   --export-btn-bg-left: #e0faff;
-  --export-btn-bg-right: #ffffff;
+  --export-btn-bg-right: #b2e1f7;
   --export-btn-border: #06b6d4;
 
   --save-song-btn-bg-left: #bbf7d0;
@@ -201,9 +201,9 @@
   --new-song-btn-bg-right: #ffffff;
   --new-song-btn-border: #7c3aed;
 
-  --demo-song-btn-bg-left: #e9d5ff;
-  --demo-song-btn-bg-right: #ffffff;
-  --demo-song-btn-border: #7c3aed;
+  --demo-song-btn-bg-left: #fceccb;
+  --demo-song-btn-bg-right: #ffe48b;
+  --demo-song-btn-border: #af9e3e;
   
   --play-song-idle-bg: #e8f8ed;
   --play-song-idle-border: #6cc896;
