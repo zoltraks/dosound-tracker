@@ -22,3 +22,7 @@ useDataManagement , but make them thin wrappers around the new utilities.
 And then proceed with step 2  (hooking useInstrumentActions into  App.tsx) and then step 3 (song I/O extraction)
 
 ---
+
+Tidy any remaining hook dependency warnings in useDataManagement / useMidiActions in a minimal, non-behavior-changing way
+
+---

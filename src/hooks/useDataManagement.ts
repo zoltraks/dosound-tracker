@@ -454,7 +454,7 @@ export const useDataManagement = () => {
       console.error('Error loading instrument:', error);
       setInstrumentError('Error loading instrument file. Please check the file format.');
     }
-  }, [currentInstrument.id, parseInstrumentFromText, setCurrentInstrument, setCurrentSong, setIsSongDirty, setInstrumentError]);
+  }, [currentInstrument.id, setCurrentInstrument, setCurrentSong, setIsSongDirty, setInstrumentError]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
     setIsSongDirty(true);
@@ -532,7 +532,7 @@ export const useDataManagement = () => {
         instruments
       };
     });
-  }, [currentInstrument.id, currentInstrument]);
+  }, [currentInstrument]);
 
   const createNewPattern = useCallback((patternId: string) => {
     const targetLength = currentSong.patternLength || PATTERN_LENGTH;
