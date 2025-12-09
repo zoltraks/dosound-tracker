@@ -1,9 +1,9 @@
 import { useCallback } from 'react';
-import type { RefObject } from 'react';
+import type { RefObject, MutableRefObject } from 'react';
 import type { Song, Instrument, PatternLine } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS } from '../constants/music';
 import type { NavigationSection } from '../constants/navigation';
-import { YM2149 } from '../synth/YM2149';
+import type { YM2149 } from '../synth/YM2149';
 import { isInstrumentEmpty } from '../utils/instrument';
 
 interface InstrumentDeleteUsage {
@@ -29,8 +29,8 @@ interface UseInstrumentActionsArgs {
   normalizeInstrumentId: (value?: string | number | null) => string;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
   ym2149Ref: RefObject<YM2149 | null>;
-  playInstTimerRef: React.MutableRefObject<number | null>;
-  playInstStepRef: React.MutableRefObject<number>;
+  playInstTimerRef: MutableRefObject<number | null>;
+  playInstStepRef: MutableRefObject<number>;
 }
 
 interface UseInstrumentActionsResult {

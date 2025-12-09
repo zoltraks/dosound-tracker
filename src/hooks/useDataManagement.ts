@@ -1,16 +1,14 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, PatternLine, Note } from '../synth/SoundDriver';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
-import yaml from 'js-yaml';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH } from '../constants/music';
 import defaultSongYaml from '../assets/song.yaml?raw';
 import {
   DEFAULT_BASE_KEY,
   DEFAULT_SONG_TITLE,
   DEFAULT_SONG_AUTHOR,
-  formatBaseKey,
-  parseBaseKey,
   parseSongFromYaml,
 } from '../utils/songParser';
+import { buildSongYamlForExport, buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/songIO';
 import { isInstrumentEmpty } from '../utils/instrument';
 
 type TrackKey = 'trackA' | 'trackB' | 'trackC';
@@ -334,358 +332,7 @@ export const useDataManagement = () => {
 
   const saveSong = useCallback(() => {
     try {
-      const trimEnvelope = (values: number[]): number[] => {
-        if (!values || values.length === 0) return [];
-        const last = values[values.length - 1];
-        let i = values.length - 2;
-        while (i >= 0 && values[i] === last) {
-          i--;
-        }
-        return values.slice(0, i + 1).concat(last);
-      };
-
-      const isZeroDefault = (values: number[]): boolean =>
-        values.length === 0 || (values.length === 1 && values[0] === 0);
-
-      const instruments = currentSong.instruments.map((inst, index) => {
-        const volumeEnv = trimEnvelope(inst.volume);
-        const arpeggioEnv = trimEnvelope(inst.arpeggio);
-        const pitchEnv = trimEnvelope(inst.pitch);
-        const noiseEnv = trimEnvelope(inst.noiseEnvelope);
-        const modeEnv = trimEnvelope(inst.mode);
-
-        const number =
-          typeof inst.id === 'string' && inst.id.trim()
-            ? inst.id
-            : index.toString(16).padStart(2, '0').toUpperCase();
-
-        const instrumentNode: Record<string, unknown> = {
-          number,
-        };
-
-        const trimmedName = (inst.name || '').trim();
-        if (trimmedName) {
-          instrumentNode.name = trimmedName;
-        }
-
-        const baseKey = inst.base || DEFAULT_BASE_KEY;
-        if (baseKey !== DEFAULT_BASE_KEY) {
-          instrumentNode.base = baseKey;
-        }
-
-        const rawOctave = inst.octave;
-        if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
-          const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(rawOctave)));
-          if (clampedOctave !== DEFAULT_OCTAVE) {
-            instrumentNode.octave = clampedOctave;
-          }
-        }
-
-        instrumentNode.volume = volumeEnv;
-        if (!isZeroDefault(arpeggioEnv)) {
-          instrumentNode.arpeggio = arpeggioEnv;
-        }
-
-        if (!isZeroDefault(pitchEnv)) {
-          instrumentNode.pitch = pitchEnv;
-        }
-        if (!isZeroDefault(noiseEnv)) {
-          instrumentNode.noise = noiseEnv;
-        }
-        if (!isZeroDefault(modeEnv)) {
-          instrumentNode.mode = modeEnv;
-        }
-
-        const sustain = inst.sustain;
-        if (typeof sustain === 'number' && Number.isFinite(sustain) && sustain >= 0) {
-          instrumentNode.sustain = Math.floor(sustain);
-        }
-
-        const midi = inst.midi;
-        if (midi) {
-          const midiNode: { channel?: number; program?: number } = {};
-          let hasChannel = false;
-          let hasProgram = false;
-
-          const rawChannel = midi.channel;
-          if (typeof rawChannel === 'number' && Number.isFinite(rawChannel)) {
-            const clamped = Math.max(1, Math.min(16, Math.floor(rawChannel)));
-            midiNode.channel = clamped;
-            hasChannel = true;
-          }
-
-          const rawProgram = midi.program;
-          if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
-            const clamped = Math.max(0, Math.min(127, Math.floor(rawProgram)));
-            midiNode.program = clamped;
-            hasProgram = true;
-          }
-
-          if (hasChannel || hasProgram) {
-            instrumentNode.midi = midiNode;
-          }
-        }
-
-        return instrumentNode;
-      });
-
-      // Playlist: A/B/C keys instead of trackA/trackB/trackC.
-      // Omit tracks that have no pattern assigned ("--").
-      const playlist = currentSong.playlist.map(entry => {
-        const row: { A?: string; B?: string; C?: string } = {};
-        if (entry.trackA && entry.trackA !== '--') row.A = entry.trackA;
-        if (entry.trackB && entry.trackB !== '--') row.B = entry.trackB;
-        if (entry.trackC && entry.trackC !== '--') row.C = entry.trackC;
-        return row;
-      });
-
-      // Patterns: single-track (track A) steps with note strings or space,
-      // plus optional per-line volume modifier.
-      const targetLength = currentSong.patternLength || PATTERN_LENGTH;
-      const patterns = currentSong.patterns.map((pattern, index) => {
-        const number =
-          typeof pattern.id === 'string' && pattern.id.trim()
-            ? pattern.id
-            : index.toString(16).padStart(2, '0').toUpperCase();
-
-        const rawLines = pattern.lines || [];
-        type PatternStep = {
-          space?: boolean | number;
-          off?: boolean;
-          note?: string;
-          instrument?: string;
-          volume?: number;
-        };
-
-        const lines: PatternStep[] = [];
-
-        for (let i = 0; i < targetLength; i++) {
-          const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
-          const cell = raw.trackA;
-
-          const volRaw = raw.volume;
-          const hasVolume = volRaw !== undefined && volRaw !== null;
-
-          let step: PatternStep;
-
-          if (!cell) {
-            // Space line. Use `space: 1` when there is an explicit volume nibble,
-            // otherwise keep the legacy boolean `space: true` which is used for
-            // trimming/compressing pure empty lines.
-            step = { space: hasVolume ? 1 : true };
-          } else if (cell.note === '===') {
-            // Explicit key-release step: encode as off: true in YAML.
-            step = { note: 'OFF' };
-          } else {
-            const noteText = formatBaseKey(cell.note, cell.octave);
-            step = {
-              note: noteText,
-              instrument: cell.instrument
-            };
-          }
-
-          if (hasVolume) {
-            const volNum = Number(volRaw);
-            if (Number.isFinite(volNum)) {
-              const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-              step.volume = clamped;
-            }
-          }
-
-          lines.push(step);
-        }
-
-        // Trim trailing pure-space lines
-        let lastNonSpace = lines.length - 1;
-        while (lastNonSpace >= 0) {
-          const ln = lines[lastNonSpace];
-          if (ln && ln.space === true && Object.keys(ln).length === 1) {
-            lastNonSpace--;
-          } else {
-            break;
-          }
-        }
-
-        const trimmedLines = lines.slice(0, lastNonSpace + 1);
-
-        // Compress consecutive pure-space lines and volume-only lines into
-        // aggregated runs, e.g. `space: 3` or `space: 3, volume: 14`.
-        const compressedLines: PatternStep[] = [];
-
-        type RunType = 'none' | 'space' | 'volume-space';
-        let runType: RunType = 'none';
-        let runCount = 0;
-        let runVolume = 0;
-
-        const flushRun = () => {
-          if (runCount <= 0) return;
-          if (runType === 'space') {
-            compressedLines.push({ space: runCount });
-          } else if (runType === 'volume-space') {
-            if (runCount === 1) {
-              // Single volume-only step: omit `space` and write only `volume`.
-              compressedLines.push({ volume: runVolume });
-            } else {
-              // Multiple consecutive volume-only steps with same volume.
-              compressedLines.push({ space: runCount, volume: runVolume });
-            }
-          }
-          runType = 'none';
-          runCount = 0;
-        };
-
-        const isPureSpace = (ln: PatternStep) =>
-          ln && ln.space === true && Object.keys(ln).length === 1;
-
-        const isVolumeSpace = (ln: PatternStep) =>
-          ln &&
-          ln.space === 1 &&
-          typeof ln.volume === 'number' &&
-          Object.keys(ln).length === 2;
-
-        for (const ln of trimmedLines) {
-          if (isPureSpace(ln)) {
-            if (runType === 'space') {
-              runCount++;
-            } else {
-              flushRun();
-              runType = 'space';
-              runCount = 1;
-            }
-          } else if (isVolumeSpace(ln)) {
-            const vol = ln.volume as number;
-            if (runType === 'volume-space' && vol === runVolume) {
-              runCount++;
-            } else {
-              flushRun();
-              runType = 'volume-space';
-              runVolume = vol;
-              runCount = 1;
-            }
-          } else {
-            flushRun();
-            compressedLines.push(ln);
-          }
-        }
-        flushRun();
-
-        const patternNode: { number: string; step?: PatternStep[] } = {
-          number,
-        };
-
-        if (compressedLines.length > 0) {
-          patternNode.step = compressedLines;
-        }
-
-        return patternNode;
-      });
-
-      const hasLoop =
-        typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop);
-
-      const songNode: Record<string, unknown> = {};
-
-      const trimmedTitle = (currentSong.title || '').trim();
-      if (trimmedTitle) {
-        songNode.title = currentSong.title;
-      }
-
-      const trimmedAuthor = (currentSong.author || '').trim();
-      if (trimmedAuthor) {
-        songNode.author = currentSong.author;
-      }
-
-      const yearValue = Number(currentSong.year);
-      if (Number.isFinite(yearValue) && yearValue > 0) {
-        songNode.year = yearValue;
-      }
-
-      songNode.speed = currentSong.speed;
-      songNode.length = currentSong.patternLength;
-      if (hasLoop) {
-        songNode.loop = Math.max(0, Math.floor(currentSong.loop as number));
-      }
-      songNode.playlist = playlist;
-      songNode.pattern = patterns;
-      songNode.instrument = instruments;
-
-      const exportData = {
-        song: songNode
-      };
-
-      let yamlContent = yaml.dump(exportData, {
-        indent: 2,
-        lineWidth: -1,
-        quotingType: '"'
-      });
-
-      const compressInstrumentArray = (key: string, text: string): string => {
-        const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const pattern = new RegExp(
-          `^(\\s*)(${escapedKey}:)\\s*\\n((?:\\1  -\\s*[^\\n]+\\n)+)`,
-          'gm'
-        );
-        return text.replace(pattern, (_match, indent, keyText, block) => {
-          const values: string[] = [];
-          block.split('\n').forEach((line: string) => {
-            const trimmed = line.trim();
-            if (!trimmed.startsWith('- ')) return;
-            values.push(trimmed.slice(2).trim());
-          });
-          return `${indent}${keyText} [${values.join(', ')}]\n`;
-        });
-      };
-
-      const quotePlaylistValues = (text: string): string => {
-        const playlistLineRegex = /^(\s*-\s+|\s+)([ABC]):\s*(.+)$/gm;
-        return text.replace(playlistLineRegex, (_match, indent, key, value) => {
-          let inner = String(value).trim();
-          if (
-            (inner.startsWith('"') && inner.endsWith('"')) ||
-            (inner.startsWith('\'') && inner.endsWith('\''))
-          ) {
-            inner = inner.slice(1, -1);
-          }
-          return `${indent}${key}: "${inner}"`;
-        });
-      };
-
-      const quoteNoteValues = (text: string): string => {
-        const noteLineRegex = /^(\s*-\s+|\s+)(note):\s*(.+)$/gm;
-        return text.replace(noteLineRegex, (_match, indent, key, value) => {
-          let inner = String(value).trim();
-          if (
-            (inner.startsWith('"') && inner.endsWith('"')) ||
-            (inner.startsWith('\'') && inner.endsWith('\''))
-          ) {
-            inner = inner.slice(1, -1);
-          }
-          return `${indent}${key}: "${inner}"`;
-        });
-      };
-
-      const quoteBaseValues = (text: string): string => {
-        const baseLineRegex = /^(\s*-\s+|\s+)(base):\s*(.+)$/gm;
-        return text.replace(baseLineRegex, (_match, indent, key, value) => {
-          let inner = String(value).trim();
-          if (
-            (inner.startsWith('"') && inner.endsWith('"')) ||
-            (inner.startsWith('\'') && inner.endsWith('\''))
-          ) {
-            inner = inner.slice(1, -1);
-          }
-          return `${indent}${key}: "${inner}"`;
-        });
-      };
-
-      const keys = ['volume', 'arpeggio', 'pitch', 'noise', 'mode'];
-      for (const key of keys) {
-        yamlContent = compressInstrumentArray(key, yamlContent);
-      }
-
-      yamlContent = quotePlaylistValues(yamlContent);
-      yamlContent = quoteNoteValues(yamlContent);
-      yamlContent = quoteBaseValues(yamlContent);
+      const yamlContent = buildSongYamlForExport(currentSong);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
@@ -701,7 +348,7 @@ export const useDataManagement = () => {
     } catch (error) {
       console.error('Failed to save song:', error);
     }
-  }, [currentSong]);
+  }, [currentSong, setIsSongDirty]);
 
   const loadSongFromText = useCallback(
     (content: string) => {
@@ -728,7 +375,7 @@ export const useDataManagement = () => {
   const loadSong = useCallback(
     (file: File) => {
       const reader = new FileReader();
-      reader.onload = (e) => {
+      reader.onload = e => {
         const content = (e.target?.result ?? '') as string;
         loadSongFromText(content);
       };
@@ -739,98 +386,15 @@ export const useDataManagement = () => {
 
   const saveInstrument = useCallback(() => {
     try {
-      const trimEnvelope = (values: number[]): number[] => {
-        if (!values || values.length === 0) return [];
-        const last = values[values.length - 1];
-        let i = values.length - 2;
-        while (i >= 0 && values[i] === last) {
-          i--;
-        }
-        return values.slice(0, i + 1).concat(last);
-      };
-
-      const volumeEnv = trimEnvelope(currentInstrument.volume);
-      const arpeggioEnv = trimEnvelope(currentInstrument.arpeggio);
-      const pitchEnv = trimEnvelope(currentInstrument.pitch);
-      const noiseEnv = trimEnvelope(currentInstrument.noiseEnvelope);
-      const modeEnv = trimEnvelope(currentInstrument.mode);
-
-      const isZeroDefault = (values: number[]): boolean =>
-        values.length === 0 || (values.length === 1 && values[0] === 0);
-
-      const instrumentNode: Record<string, unknown> = {};
-
-      const trimmedName = (currentInstrument.name || '').trim();
-      if (trimmedName) {
-        instrumentNode.name = trimmedName;
-      }
-
-      instrumentNode.type = 'dosound';
-      instrumentNode.version = 1;
-
-      const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
-      if (baseKey !== DEFAULT_BASE_KEY) {
-        instrumentNode.base = baseKey;
-      }
-
-      const rawOctave = currentInstrument.octave;
-      if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
-        const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(rawOctave)));
-        if (clampedOctave !== DEFAULT_OCTAVE) {
-          instrumentNode.octave = clampedOctave;
-        }
-      }
-
-      if (!isZeroDefault(modeEnv)) {
-        instrumentNode.mode = modeEnv;
-      }
-
-      instrumentNode.volume = volumeEnv;
-      if (!isZeroDefault(arpeggioEnv)) {
-        instrumentNode.arpeggio = arpeggioEnv;
-      }
-
-      if (!isZeroDefault(pitchEnv)) {
-        instrumentNode.pitch = pitchEnv;
-      }
-      if (!isZeroDefault(noiseEnv)) {
-        instrumentNode.noise = noiseEnv;
-      }
-
-      const sustain = currentInstrument.sustain;
-      if (typeof sustain === 'number' && Number.isFinite(sustain) && sustain >= 0) {
-        instrumentNode.sustain = Math.floor(sustain);
-      }
-
-      const exportData = { instrument: instrumentNode };
-
-      let yamlContent = yaml.dump(exportData, {
-        indent: 2,
-        lineWidth: -1,
-        flowLevel: 2
-      });
-
-      const quoteBaseValues = (text: string): string => {
-        const baseLineRegex = /^(\s*-\s+|\s+)(base):\s*(.+)$/gm;
-        return text.replace(baseLineRegex, (_match, indent, key, value) => {
-          let inner = String(value).trim();
-          if (
-            (inner.startsWith('"') && inner.endsWith('"')) ||
-            (inner.startsWith('\'') && inner.endsWith('\''))
-          ) {
-            inner = inner.slice(1, -1);
-          }
-          return `${indent}${key}: "${inner}"`;
-        });
-      };
-
-      yamlContent = quoteBaseValues(yamlContent);
+      const yamlContent = buildInstrumentYamlForExport(currentInstrument);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`).replace(/[^a-z0-9]/gi, '_').toLowerCase();
+      const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`)
+        .replace(/[^a-z0-9]/gi, '_')
+        .toLowerCase();
       a.download = `${safeName}.yaml`;
       document.body.appendChild(a);
       a.click();
@@ -843,154 +407,54 @@ export const useDataManagement = () => {
 
   const loadInstrument = useCallback((content: string) => {
     try {
-      const parsed = yaml.load(content) as unknown;
+      const newInstrument = parseInstrumentFromText(content, currentInstrument.id);
 
-        if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {
-          setInstrumentError('Error loading instrument file.\n\nRoot "instrument" key not found.');
-          return;
-        }
+      setCurrentInstrument(newInstrument);
 
-        type InstrumentFileRoot = {
-          instrument?: unknown;
-        };
+      setCurrentSong(prev => {
+        const instruments = [...prev.instruments];
 
-        interface InstrumentFileNode {
-          [key: string]: unknown;
-          name?: unknown;
-          base?: unknown;
-          octave?: unknown;
-          sustain?: unknown;
-        }
+        let targetIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
 
-        const root = parsed as InstrumentFileRoot;
-        const node = root.instrument;
+        if (targetIndex === -1) {
+          const slotFromId = parseInt(currentInstrument.id, 16);
+          if (Number.isFinite(slotFromId) && slotFromId >= 0 && slotFromId < MAX_INSTRUMENTS) {
+            const clamped = slotFromId;
 
-        if (!node || typeof node !== 'object') {
-          throw new Error('Invalid instrument file format');
-        }
-
-        const instNode = node as InstrumentFileNode;
-
-        const expandEnvelope = (field: string, length: number, defaultValue: number): number[] => {
-          const raw = Array.isArray(instNode[field]) ? (instNode[field] as unknown[]) : [];
-          const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
-
-          if (values.length === 0) {
-            return Array(length).fill(defaultValue);
-          }
-
-          const result: number[] = [];
-          for (let i = 0; i < length; i++) {
-            if (i < values.length) {
-              result[i] = values[i];
-            } else {
-              result[i] = values[values.length - 1];
-            }
-          }
-          return result;
-        };
-
-        const rawOctave = instNode.octave;
-        let octave = DEFAULT_OCTAVE;
-        if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
-          octave = rawOctave;
-        } else if (typeof rawOctave === 'string') {
-          const trimmed = rawOctave.trim();
-          if (trimmed) {
-            const parsed = Number(trimmed);
-            if (Number.isFinite(parsed)) {
-              octave = parsed;
-            }
-          }
-        }
-        octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
-
-        let sustain: number | null = null;
-        const rawSustain = instNode.sustain;
-        if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
-          const s = Math.floor(rawSustain);
-          if (s >= 0) {
-            sustain = s;
-          }
-        } else if (typeof rawSustain === 'string') {
-          const trimmed = rawSustain.trim();
-          if (trimmed) {
-            const parsed = Number(trimmed);
-            if (Number.isFinite(parsed)) {
-              const s = Math.floor(parsed);
-              if (s >= 0) {
-                sustain = s;
+            for (let i = instruments.length; i <= clamped; i += 1) {
+              if (!instruments[i]) {
+                const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+                instruments[i] = {
+                  id: slotId,
+                  name: '',
+                  volume: Array(ENVELOPE_LENGTH).fill(0),
+                  arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+                  pitch: Array(ENVELOPE_LENGTH).fill(0),
+                  noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+                  mode: Array(ENVELOPE_LENGTH).fill(0),
+                  sustain: null,
+                };
               }
             }
+
+            targetIndex = clamped;
           }
         }
 
-        const rawName = typeof instNode.name === 'string' ? instNode.name : '';
-        const parsedName = rawName.trim() ? rawName : '';
+        if (targetIndex >= 0) {
+          instruments[targetIndex] = newInstrument;
+        } else {
+          instruments.push(newInstrument);
+        }
 
-        const newInstrument: Instrument = {
-          id: currentInstrument.id,
-          name: parsedName,
-          mode: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
-          volume: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0F),
-          arpeggio: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
-          pitch: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
-          noiseEnvelope: expandEnvelope('noiseEnvelope', ENVELOPE_LENGTH, 0),
-          base: (() => {
-            const parsedBase = parseBaseKey(instNode.base);
-            if (!parsedBase) return DEFAULT_BASE_KEY;
-            return formatBaseKey(parsedBase.note, parsedBase.octave);
-          })(),
-          octave,
-          sustain,
-        };
-
-        setCurrentInstrument(newInstrument);
-
-        setCurrentSong(prev => {
-          const instruments = [...prev.instruments];
-
-          let targetIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
-
-          if (targetIndex === -1) {
-            const slotFromId = parseInt(currentInstrument.id, 16);
-            if (Number.isFinite(slotFromId) && slotFromId >= 0 && slotFromId < MAX_INSTRUMENTS) {
-              const clamped = slotFromId;
-
-              for (let i = instruments.length; i <= clamped; i++) {
-                if (!instruments[i]) {
-                  const slotId = i.toString(16).padStart(2, '0').toUpperCase();
-                  instruments[i] = {
-                    id: slotId,
-                    name: '',
-                    volume: Array(ENVELOPE_LENGTH).fill(0),
-                    arpeggio: Array(ENVELOPE_LENGTH).fill(0),
-                    pitch: Array(ENVELOPE_LENGTH).fill(0),
-                    noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
-                    mode: Array(ENVELOPE_LENGTH).fill(0),
-                    sustain: null,
-                  };
-                }
-              }
-
-              targetIndex = clamped;
-            }
-          }
-
-          if (targetIndex >= 0) {
-            instruments[targetIndex] = newInstrument;
-          } else {
-            instruments.push(newInstrument);
-          }
-
-          return { ...prev, instruments };
-        });
-        setIsSongDirty(true);
-      } catch (error) {
-        console.error('Error loading instrument:', error);
-        setInstrumentError('Error loading instrument file. Please check the file format.');
-      }
-  }, [currentInstrument.id, setInstrumentError]);
+        return { ...prev, instruments };
+      });
+      setIsSongDirty(true);
+    } catch (error) {
+      console.error('Error loading instrument:', error);
+      setInstrumentError('Error loading instrument file. Please check the file format.');
+    }
+  }, [currentInstrument.id, parseInstrumentFromText, setCurrentInstrument, setCurrentSong, setIsSongDirty, setInstrumentError]);
 
   const updateSong = useCallback((updates: Partial<Song>) => {
     setIsSongDirty(true);
