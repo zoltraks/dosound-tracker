@@ -5,6 +5,7 @@ interface AboutModalProps {
   version: string;
   onClose: () => void;
   onShowChangelog: () => void;
+  onShowManual: () => void;
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({
@@ -12,6 +13,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({
   version,
   onClose,
   onShowChangelog,
+  onShowManual,
 }) => {
   if (!isOpen) return null;
 
@@ -28,13 +30,20 @@ export const AboutModal: React.FC<AboutModalProps> = ({
           <br />
           Version: {version}
         </div>
-        <div className="modal-actions">
-          <button className="command-btn" onClick={onShowChangelog}>
-            CHANGES
-          </button>
-          <button className="command-btn" onClick={onClose}>
-            OK
-          </button>
+        <div className="modal-actions about-actions">
+          <div className="about-actions-left">
+            <button className="command-btn" onClick={onShowChangelog}>
+              CHANGES
+            </button>
+            <button className="command-btn" onClick={onShowManual}>
+              MANUAL
+            </button>
+          </div>
+          <div className="about-actions-right">
+            <button className="command-btn" onClick={onClose}>
+              OK
+            </button>
+          </div>
         </div>
       </div>
     </div>

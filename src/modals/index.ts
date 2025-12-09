@@ -3,6 +3,7 @@ export { ConfirmationModal } from './ConfirmationModal';
 export { TransposeModal } from './TransposeModal';
 export { AboutModal } from './AboutModal';
 export { ChangesModal } from './ChangesModal';
+export { ManualModal } from './ManualModal';
 export { DownloadModal } from './DownloadModal';
 export { InstrumentDeleteModal } from './InstrumentDeleteModal';
 export { InstrumentTypeWarningModal } from './InstrumentTypeWarningModal';

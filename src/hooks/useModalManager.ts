@@ -27,6 +27,8 @@ interface UseModalManagerOptions {
   setIsAboutOpen: (value: boolean) => void;
   isChangelogOpen: boolean;
   handleCloseChangelog: () => void;
+  isManualOpen: boolean;
+  handleCloseManual: () => void;
   isDownloadOpen: boolean;
   setIsDownloadOpen: (value: boolean) => void;
   isDebugInfoOpen: boolean;
@@ -89,6 +91,8 @@ export function useModalManager(options: UseModalManagerOptions): void {
     setIsAboutOpen,
     isChangelogOpen,
     handleCloseChangelog,
+    isManualOpen,
+    handleCloseManual,
     isDownloadOpen,
     setIsDownloadOpen,
     isDebugInfoOpen,
@@ -139,6 +143,7 @@ export function useModalManager(options: UseModalManagerOptions): void {
         !!midiCopySummary ||
         isAboutOpen ||
         isChangelogOpen ||
+        isManualOpen ||
         isDownloadOpen ||
         isDebugInfoOpen ||
         isMidiModalOpen;
@@ -257,6 +262,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
           handleCloseChangelog();
           return;
         }
+        if (isManualOpen) {
+          handleCloseManual();
+          return;
+        }
         if (isDownloadOpen) {
           setIsDownloadOpen(false);
           return;
@@ -320,6 +329,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
         }
         if (isChangelogOpen) {
           handleCloseChangelog();
+          return;
+        }
+        if (isManualOpen) {
+          handleCloseManual();
           return;
         }
 
@@ -389,6 +402,8 @@ export function useModalManager(options: UseModalManagerOptions): void {
     setIsAboutOpen,
     isChangelogOpen,
     handleCloseChangelog,
+    isManualOpen,
+    handleCloseManual,
     isDownloadOpen,
     setIsDownloadOpen,
     isDebugInfoOpen,

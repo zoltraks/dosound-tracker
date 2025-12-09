@@ -968,6 +968,17 @@ body {
   gap: 6px;
 }
 
+/* About modal actions: CHANGES/MANUAL on the left, OK on the right */
+.modal-actions.about-actions {
+  justify-content: space-between;
+}
+
+.about-actions-left,
+.about-actions-right {
+  display: flex;
+  gap: 6px;
+}
+
 /* Main Content */
 .main-content {
   flex: 1;

@@ -1,5 +1,5 @@
 import React from 'react';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from '../modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, ManualModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from '../modals';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 
@@ -89,6 +89,10 @@ export interface ModalContainerProps {
   changelogContent: string;
   onShowChangelog: () => void;
   onCloseChangelog: () => void;
+  isManualOpen: boolean;
+  manualContent: string;
+  onShowManual: () => void;
+  onCloseManual: () => void;
   isMidiModalOpen: boolean;
   isMidiSupported: boolean;
   midiAccessError: string | null;
@@ -186,6 +190,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   changelogContent,
   onShowChangelog,
   onCloseChangelog,
+  isManualOpen,
+  manualContent,
+  onShowManual,
+  onCloseManual,
   isMidiModalOpen,
   isMidiSupported,
   midiAccessError,
@@ -379,12 +387,19 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         version={aboutVersion}
         onClose={() => setIsAboutOpen(false)}
         onShowChangelog={onShowChangelog}
+        onShowManual={onShowManual}
       />
 
       <ChangesModal
         isOpen={isChangelogOpen}
         content={changelogContent}
         onClose={onCloseChangelog}
+      />
+
+      <ManualModal
+        isOpen={isManualOpen}
+        content={manualContent}
+        onClose={onCloseManual}
       />
 
       <MidiModal

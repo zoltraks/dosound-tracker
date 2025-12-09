@@ -71,6 +71,10 @@ const App: React.FC = () => {
     setIsChangelogOpen,
     changelogContent,
     setChangelogContent,
+    isManualOpen,
+    setIsManualOpen,
+    manualContent,
+    setManualContent,
     isOptimizeConfirmOpen,
     setIsOptimizeConfirmOpen,
     isRenumberConfirmOpen,
@@ -252,6 +256,7 @@ const App: React.FC = () => {
     !!midiCopySummary ||
     isAboutOpen ||
     isChangelogOpen ||
+    isManualOpen ||
     isDownloadOpen ||
     isDebugInfoOpen ||
     isMidiModalOpen ||
@@ -1183,6 +1188,47 @@ const App: React.FC = () => {
 
   const handleCloseChangelog = useCallback(() => {
     setIsChangelogOpen(false);
+  }, []);
+
+  const handleShowManual = useCallback(() => {
+    setIsAboutOpen(false);
+    setManualContent('Loading...');
+    setIsManualOpen(true);
+
+    fetch('MANUAL.md')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to load manual.');
+        }
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+          // Likely SPA fallback (index.html) instead of a real MANUAL.md file.
+          throw new Error('Manual appears to be HTML, treating as missing.');
+        }
+
+        return response.text();
+      })
+      .then((text) => {
+        const trimmed = text.trimStart().slice(0, 512).toLowerCase();
+
+        if (
+          trimmed.startsWith('<!doctype') ||
+          trimmed.startsWith('<html') ||
+          trimmed.includes('<script type="module" src="/@vite/client"')
+        ) {
+          // Defensive check: HTML content instead of markdown manual.
+          throw new Error('Manual appears to be HTML, treating as missing.');
+        }
+
+        setManualContent(text);
+      })
+      .catch(() => {
+        setManualContent('Unable to load manual.');
+      });
+  }, []);
+
+  const handleCloseManual = useCallback(() => {
+    setIsManualOpen(false);
   }, []);
 
   const handleToggleChannelMute = useCallback((channelIndex: number) => {
@@ -3204,6 +3250,8 @@ const App: React.FC = () => {
     setIsAboutOpen,
     isChangelogOpen,
     handleCloseChangelog,
+    isManualOpen,
+    handleCloseManual,
     isDownloadOpen,
     setIsDownloadOpen,
     isDebugInfoOpen,
@@ -3490,6 +3538,10 @@ const App: React.FC = () => {
               changelogContent={changelogContent}
               onShowChangelog={handleShowChangelog}
               onCloseChangelog={handleCloseChangelog}
+              isManualOpen={isManualOpen}
+              manualContent={manualContent}
+              onShowManual={handleShowManual}
+              onCloseManual={handleCloseManual}
               isMidiModalOpen={isMidiModalOpen}
               isMidiSupported={isMidiSupported}
               midiAccessError={midiAccessError}

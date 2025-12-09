@@ -16,6 +16,10 @@ export interface UseModalStateResult {
   setIsChangelogOpen: (open: boolean) => void;
   changelogContent: string;
   setChangelogContent: (value: string) => void;
+   isManualOpen: boolean;
+   setIsManualOpen: (open: boolean) => void;
+   manualContent: string;
+   setManualContent: (value: string) => void;
   isOptimizeConfirmOpen: boolean;
   setIsOptimizeConfirmOpen: (open: boolean) => void;
   isRenumberConfirmOpen: boolean;
@@ -59,6 +63,8 @@ export function useModalState(): UseModalStateResult {
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
   const [changelogContent, setChangelogContent] = useState('');
+  const [isManualOpen, setIsManualOpen] = useState(false);
+  const [manualContent, setManualContent] = useState('');
   const [isOptimizeConfirmOpen, setIsOptimizeConfirmOpen] = useState(false);
   const [isRenumberConfirmOpen, setIsRenumberConfirmOpen] = useState(false);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -92,6 +98,10 @@ export function useModalState(): UseModalStateResult {
     setIsChangelogOpen,
     changelogContent,
     setChangelogContent,
+    isManualOpen,
+    setIsManualOpen,
+    manualContent,
+    setManualContent,
     isOptimizeConfirmOpen,
     setIsOptimizeConfirmOpen,
     isRenumberConfirmOpen,

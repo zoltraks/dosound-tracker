@@ -111,3 +111,36 @@ From now on "duplicate" means just make the same entry duplicated and "clone" me
 Apply this rename also in the variables and function names.
 
 ---
+
+In "About" dialog move "CHANGES" button to the left and after that button add "MANUAL" button that should read MANUAL.md file and display the same way as "CHANGES" shows CHANGELOG.md file content.
+
+---
+
+Something is wrong with "MANUAL", instead of loading MANUAL.md the window displays something like this:
+
+<div class="modal-body changelog-modal-body"><p>&lt;!doctype html&gt;</p>
+<p>&lt;html lang="en"&gt;</p>
+<p>  &lt;head&gt;</p>
+<p>    &lt;script type="module"&gt;import { injectIntoGlobalHook } from "/@react-refresh";</p>
+<p>injectIntoGlobalHook(window);</p>
+<p>window.$RefreshReg$ = () =&gt; {};</p>
+<p>window.$RefreshSig$ = () =&gt; (type) =&gt; type;&lt;/script&gt;</p>
+<p>    &lt;script type="module" src="/@vite/client"&gt;&lt;/script&gt;</p>
+<p>    &lt;meta charset="UTF-8" /&gt;</p>
+<p>    &lt;link rel="icon" type="image/svg+xml" href="/icon.svg" /&gt;</p>
+<p>    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</p>
+<p>    &lt;meta name="description" content="DOSOUND Tracker" /&gt;</p>
+<p>    &lt;meta name="theme-color" content="#000000" /&gt;</p>
+<p>    &lt;link rel="manifest" href="/manifest.webmanifest" /&gt;</p>
+<p>    &lt;title&gt;dosound-tracker&lt;/title&gt;</p>
+<p>  &lt;/head&gt;</p>
+<p>  &lt;body&gt;</p>
+<p>    &lt;div id="root"&gt;&lt;/div&gt;</p>
+<p>    &lt;script type="module" src="/src/main.tsx"&gt;&lt;/script&gt;</p>
+<p>  &lt;/body&gt;</p>
+<p>&lt;/html&gt;</p></div>
+
+Fix that!
+
+---
+
