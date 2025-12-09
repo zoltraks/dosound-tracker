@@ -1,0 +1,24 @@
+Continue with:
+
+Wire useInstrumentActions into App.tsx:
+Add useInstrumentActions import.
+Replace the inline instrument action handlers with a single useInstrumentActions call that returns:
+ - handleRenameInstrument
+ - handlePlayInstrument
+ - handleCloneInstrument
+ - handleDeleteInstrument
+ - handleMoveInstrument
+ - handleCancelInstrumentDelete
+ - handleConfirmDeleteInstrumentAndNotes
+ - handleConfirmDeleteInstrumentOnly
+Keep non-action helpers in  App.tsx (e.g. handleInstrumentSelect, handleOpenInstrumentMidi, handleSaveInstrumentMidi, handleChangeBaseKey).
+
+And then extract song I/O into src/utils/songIO.ts:
+
+ - move the YAML-heavy logic from saveSong, loadSong, saveInstrument, loadInstrument into pure utility functions.
+ - keep the React-specific state wiring (setCurrentSong, setCurrentInstrument, setIsSongDirty, DOM download triggers) inside 
+useDataManagement , but make them thin wrappers around the new utilities.
+
+And then proceed with step 2  (hooking useInstrumentActions into  App.tsx) and then step 3 (song I/O extraction)
+
+---
