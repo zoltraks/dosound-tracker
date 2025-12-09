@@ -25,6 +25,6 @@ Until I reload page. After reload a first touch on piano keyboard doesn't give a
 
 ---
 
-In mobile view don't use different border color for piano keyboard when it's focused.
+In mobile view don't use different border color for piano keyboard when it's focused (active).
 
 ---
