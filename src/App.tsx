@@ -1168,7 +1168,7 @@ const App: React.FC = () => {
 
   const handleShowChangelog = useCallback(() => {
     setIsAboutOpen(false);
-    setChangelogContent('Loading...');
+    setChangelogContent('');
     setIsChangelogOpen(true);
 
     fetch('CHANGELOG.md')
@@ -1192,7 +1192,7 @@ const App: React.FC = () => {
 
   const handleShowManual = useCallback(() => {
     setIsAboutOpen(false);
-    setManualContent('Loading...');
+    setManualContent('');
     setIsManualOpen(true);
 
     fetch('MANUAL.md')

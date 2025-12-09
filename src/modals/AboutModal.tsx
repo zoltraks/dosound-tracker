@@ -28,7 +28,9 @@ export const AboutModal: React.FC<AboutModalProps> = ({
           Made by Zoltar X / New Generation
           <br />
           <br />
-          Version: {version}
+          Version: <b>{version}</b>
+          <br />
+          <br />
         </div>
         <div className="modal-actions about-actions">
           <div className="about-actions-left">

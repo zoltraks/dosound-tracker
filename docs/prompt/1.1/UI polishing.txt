@@ -159,3 +159,7 @@ Change CSS class name from ".changelog-modal-body" to ".text-display" as it is u
 Change that ".text-display" to ".text-display-body" and then change also ".changelog-modal" to ".text-display"
 
 ---
+
+When opening "CHANGES" or "MANUAL" window before content is loaded a static text is displayed but it should not until data is loaded or error occurs.
+
+---
