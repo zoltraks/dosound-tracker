@@ -1,0 +1,66 @@
+Application should contain repository of song files and instrument files so it will be available to pick one of these instead of "LOAD SONG" or "LOAD INSTRUMENT".
+
+This directory should be available for published web application by "npm run build:core".
+
+Repository directory will contain "song" and "instrument" directories.
+
+Where should I place this directory inside them in the project sources?
+
+---
+
+Create a file picker modal window component which should show vertical scrollable table of possible and allow to pick one from the list.
+
+This component should have parametrized window title and a url part of the directory from which LIST.txt has to be retrieved.
+
+Inspect how download window read list of files available for download using LIST.txt and make it similar.
+
+This component must be made in a way that "DOWNLOAD" window can be later replaced with it.
+
+Actually download window reads file from "download" directory but I want this file picker to be able to not only
+allow downloading files but also picking the file for other program features from different directories.
+
+The list will contain only "Name" (as a short file name) column so we don't show column names 
+but the order of entries should be parameterized as for downloading files we want the list sorted in reverse order by default.
+
+On the bottom place buttons.
+Place "CLOSE" button on the right side which closes window.
+
+If this window acts as a download window, the entries needs to be clickable link to download the file.
+It this window acts as a file picker, the entries needs to be clickable and clicking on an entry should close the window and return the file URL to download it.
+
+Place a button "SORT" on the left, so sort order can be reversed.
+
+Replace download list with this new component in "download" mode - so links will cause file download and the list should be sorted in reverse mode on opening.
+
+---
+
+Move the download/LIST.txt loading entirely into DownloadModal/FilePickerModal and drop the App.tsx useEffect as I prefer the logic to live only in the modal.
+
+---
+
+Add "PICK INST" button after "DELETE INST" before "EXPORT".
+When clicked open file picker window for "repository/instrument" directory and after user picks existing file, load it like "LOAD INST" into selected instrument slot.
+
+Add "DEMO SONG" button after "PICK INST" before "EXPORT".
+When clicked open file picker window for "repository/song" directory and after user picks existing file load song from it.
+Before opening file picker window check if current song was modified and if so, show confirmation first like when clicking "NEW SONG".
+
+---
+
+When showing list of files when picking song or instrument, don't show file extensions. But show file extensions as usual when downloading files.
+
+---
+
+In file picker modal dialog move "SORT" to the left side of the window.
+
+When song is loaded succesfully after "DEMO SONG" was used, change the focus to "PLAY SONG" button.
+
+---
+
+Move "SORT" button in file picker to be on te left side of the modal window remaining "CLOSE" button to be on the right side.
+
+---
+
+It's stll not on the left. Make it like you did in about dialog window where "CHANGES" and "MANUAL" are on the left side and "OK" on the right.
+
+---

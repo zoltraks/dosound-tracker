@@ -25,6 +25,11 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 }) => {
   return (
     <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
+      <div
+        className={`app-initial-overlay ${
+          isDarkMode ? 'app-initial-overlay-dark' : 'app-initial-overlay-light'
+        }`}
+      />
       {header}
       {commandPanel}
 

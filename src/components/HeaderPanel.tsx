@@ -43,6 +43,12 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
 
+  const handleTitleClick = () => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   // Simple instrument preview state for octave selection
   const previewTimerRef = useRef<number | null>(null);
   const previewSubTickRef = useRef<number>(0);
@@ -211,59 +217,69 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   }, [isOctaveActive]);
 
   return (
-    <header className="header-panel">
-      <div className="header-left">
-        <div className="logo" onClick={onShowAbout} title="About DOSOUND Tracker">🎶</div>
-        <h1 className="title">DOSOUND Tracker</h1>
-      </div>
-      
-      <div className="header-center">
+    <>
+      <header className="header-panel">
+        <div className="header-left">
+          <div className="logo" onClick={onShowAbout} title="About DOSOUND Tracker">
+            🎶
+          </div>
+          <h1 className="title" onClick={handleTitleClick}>
+            DOSOUND Tracker
+          </h1>
+        </div>
+
+        <div className="header-center">
+          <span className="song-title">{title}</span>
+        </div>
+
+        <div className="header-right">
+          {hasDownloads && (
+            <button
+              className="theme-toggle download-toggle"
+              onClick={onShowDownloads}
+              title="Show available downloads"
+            >
+              ⏬
+            </button>
+          )}
+          {/* Octave Selection */}
+          <div
+            ref={octaveRef}
+            className={`octave-selection ${isOctaveActive ? 'active' : ''}`}
+            tabIndex={0}
+            onKeyDown={handleOctaveKeyDown}
+            onKeyUp={handleOctaveKeyUp}
+            onClick={() => setActiveSection('octave')}
+          >
+            {Array.from({ length: 8 }, (_, i) => (
+              <button
+                key={i}
+                className={`octave-button ${currentOctave === i ? 'active' : ''}`}
+                onClick={() => {
+                  onOctaveChange(i);
+                  if (octaveRef.current) {
+                    octaveRef.current.focus();
+                  }
+                }}
+              >
+                {i}
+              </button>
+            ))}
+          </div>
+
+          <button
+            className="theme-toggle"
+            onClick={onToggleTheme}
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? '☀️' : '🌑'}
+          </button>
+        </div>
+      </header>
+
+      <div className="header-song-row-mobile">
         <span className="song-title">{title}</span>
       </div>
-      
-      <div className="header-right">
-        {hasDownloads && (
-          <button
-            className="theme-toggle download-toggle"
-            onClick={onShowDownloads}
-            title="Show available downloads"
-          >
-            ⏬
-          </button>
-        )}
-        {/* Octave Selection */}
-        <div
-          ref={octaveRef}
-          className={`octave-selection ${isOctaveActive ? 'active' : ''}`}
-          tabIndex={0}
-          onKeyDown={handleOctaveKeyDown}
-          onKeyUp={handleOctaveKeyUp}
-          onClick={() => setActiveSection('octave')}
-        >
-          {Array.from({ length: 8 }, (_, i) => (
-            <button
-              key={i}
-              className={`octave-button ${currentOctave === i ? 'active' : ''}`}
-              onClick={() => {
-                onOctaveChange(i);
-                if (octaveRef.current) {
-                  octaveRef.current.focus();
-                }
-              }}
-            >
-              {i}
-            </button>
-          ))}
-        </div>
-        
-        <button 
-          className="theme-toggle"
-          onClick={onToggleTheme}
-          title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDarkMode ? '☀️' : '🌑'}
-        </button>
-      </div>
-    </header>
+    </>
   );
 };

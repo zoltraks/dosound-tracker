@@ -1,0 +1,8 @@
+instrument:
+  name: Snare
+  type: dosound
+  version: 1
+  base: "G-3"
+  mode: [1, 0, 1, 1, 1, 1, 1, 1, 0]
+  volume: [11, 15, 13, 10, 9, 8, 6, 5, 0]
+  noise: [9, 0, 0, 10, 7, 5, 4, 3, 3, 3, 2, 2, 0]

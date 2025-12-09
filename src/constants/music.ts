@@ -62,6 +62,11 @@ export const DEFAULT_OCTAVE = 3;
 export const MIN_OCTAVE = 0;
 export const MAX_OCTAVE = 7;
 
+// Controls whether the piano keyboard should render an extra highest C key
+// at the right end of the keyboard. By default this is disabled so the
+// layout matches the original design without the extra key.
+export const PIANO_SHOW_EXTRA_TOP_C = false;
+
 export const PATTERN_LENGTH = 64;
 export const MAX_INSTRUMENTS = 256;
 

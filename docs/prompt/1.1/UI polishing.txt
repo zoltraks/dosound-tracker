@@ -42,3 +42,158 @@ Row 3: "ADD INST", "LOAD INST", "SAVE INST", "PLAY INST", "CLONE INST", "DELETE 
 Move "MIDI" button before "BUG".
 
 ---
+
+In instrument MIDI settings ("Instrument MIDI Output") there are two blocks with input fields and numeric up and down buttons using class "info-input".
+Extract CSS classes for elements of NumberSpinner. Currenlty a span containing input, input field and buttons contain lot of style definition that should be defined in CSS in separate class names.
+
+In Transpose modal window change input type number for "Semitones:" into NumberSpinner with proper settings for that window (number of semitones -99 to +99).
+
+---
+
+In "Export" modal window move "DATA" button before "DUMP" button.
+
+---
+
+Add one key at the end of piano keyboard, so there should always be highest "C" button available.
+
+---
+
+After review I can see that adding one key at the end of piano keyboard is not looking good.
+Make it configurable by constant parameter and by default fall back to previous state, where the highest "C" button was not available.
+
+---
+
+Change CSS class names for better readibility and include these changes in the code that uses that class.
+
+"--debug-btn-bg" to "--debug-btn-bg-left"
+"--debug-btn-bg-2" to "--debug-btn-bg-right"
+"--debug-btn-active-bg" to "--debug-btn-active-bg-left"
+"--debug-btn-active-bg-2" to "--debug-btn-active-bg-right"
+
+---
+
+Change CSS class names for better readibility and include these changes in the code that uses that class.
+
+"--reset-btn-bg" to "--reset-btn-bg-left"
+"--reset-btn-bg-2" to "--reset-btn-bg-right"
+
+---
+
+Based on how "RESET" button has CSS defined:
+
+
+```
+.command-btn.reset-btn {
+  background: linear-gradient(135deg, var(--reset-btn-bg-left) 0%, var(--reset-btn-bg-right) 100%);
+  border-color: var(--reset-btn-border);
+}
+
+.command-btn.reset-btn:hover {
+  background: linear-gradient(135deg, var(--reset-btn-bg-right) 0%, var(--reset-btn-left) 100%);
+  border-color: var(--reset-btn-border);
+}
+```
+
+Introduce new CSS classes for buttons "LOAD SONG", "SAVE SONG", "NEW SONG" in similar way making CSS classes and use them.
+
+Choosing colors for bg-left and bg-right mix default color from theme: 
+
+ - button background "LOAD SONG" mix with cyan
+ - button background "SAVE SONG" mix with green
+ - button background "NEW SONG" mix with purple
+
+---
+
+Rename button titles "DUPLICATE LINE" to "CLONE LINE" and "CLONE LINE" to "DUPLICATE LINE".
+
+From now on "duplicate" means just make the same entry duplicated and "clone" means deep copy, such as creating new playlist entries with new patterns copied from the original copy source.
+
+Apply this rename also in the variables and function names.
+
+---
+
+In "About" dialog move "CHANGES" button to the left and after that button add "MANUAL" button that should read MANUAL.md file and display the same way as "CHANGES" shows CHANGELOG.md file content.
+
+---
+
+Something is wrong with "MANUAL", instead of loading MANUAL.md the window displays something like this:
+
+<div class="modal-body changelog-modal-body"><p>&lt;!doctype html&gt;</p>
+<p>&lt;html lang="en"&gt;</p>
+<p>  &lt;head&gt;</p>
+<p>    &lt;script type="module"&gt;import { injectIntoGlobalHook } from "/@react-refresh";</p>
+<p>injectIntoGlobalHook(window);</p>
+<p>window.$RefreshReg$ = () =&gt; {};</p>
+<p>window.$RefreshSig$ = () =&gt; (type) =&gt; type;&lt;/script&gt;</p>
+<p>    &lt;script type="module" src="/@vite/client"&gt;&lt;/script&gt;</p>
+<p>    &lt;meta charset="UTF-8" /&gt;</p>
+<p>    &lt;link rel="icon" type="image/svg+xml" href="/icon.svg" /&gt;</p>
+<p>    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0" /&gt;</p>
+<p>    &lt;meta name="description" content="DOSOUND Tracker" /&gt;</p>
+<p>    &lt;meta name="theme-color" content="#000000" /&gt;</p>
+<p>    &lt;link rel="manifest" href="/manifest.webmanifest" /&gt;</p>
+<p>    &lt;title&gt;dosound-tracker&lt;/title&gt;</p>
+<p>  &lt;/head&gt;</p>
+<p>  &lt;body&gt;</p>
+<p>    &lt;div id="root"&gt;&lt;/div&gt;</p>
+<p>    &lt;script type="module" src="/src/main.tsx"&gt;&lt;/script&gt;</p>
+<p>  &lt;/body&gt;</p>
+<p>&lt;/html&gt;</p></div>
+
+Fix that!
+
+---
+
+When displaying markdown as HTML in "CHANGES" or "MANUAL" window remember that you need to make text italic if it is between single asterisk characters and if there is a line with just at leat three minus characters ("---", "-----", etc.) then horizontal line (hr) should be displayed in HTML.
+
+---
+
+Make CSS entry for "hr" so for dark and light mode including vertical spacing after it like 6px
+
+---
+
+Change CSS class name from ".changelog-modal-body" to ".text-display" as it is used not only by "CHANGES" modal dialog but also "MODAL" and possibly somewhere else
+
+---
+
+Change that ".text-display" to ".text-display-body" and then change also ".changelog-modal" to ".text-display"
+
+---
+
+When opening "CHANGES" or "MANUAL" window before content is loaded a static text is displayed but it should not until data is loaded or error occurs.
+
+---
+
+When reloading application I can see for short time some of UI layout changes probably by initialization and after load changes.
+To hide it from the user maybe show blank area (black for dark theme or white for light theme) that will start fading out after 100 ms and disappear after short time 200 ms.
+
+---
+
+
+Based on how "LOAD SONG" button has CSS defined:
+
+```
+  --load-song-btn-bg-left: #176f85;
+  --load-song-btn-bg-right: #2b3043;
+  --load-song-btn-border: #30acbe;
+```
+
+```
+.command-btn.load-song-btn {
+  background: linear-gradient(135deg, var(--load-song-btn-bg-left) 0%, var(--load-song-btn-bg-right) 100%);
+  border-color: var(--load-song-btn-border);
+}
+
+.command-btn.load-song-btn:hover {
+  background: linear-gradient(135deg, var(--load-song-btn-bg-right) 0%, var(--load-song-btn-bg-left) 100%);  
+  border-color: color-mix(in srgb, var(--load-song-btn-border) 30%, var(--button-border-hover) 70%);
+}
+```
+
+Make changes so button "PICK INST", "DEMO SONG" and "EXPORT" will also have their own CSS definitions.
+
+Copy colors from "LOAD SONG" button to "EXPORT" button style.
+Copy colors from "BUG" button to "PICK INST" button style.
+Copy colors from "NEW SONG button to "DEMO SONG" button style.
+
+---

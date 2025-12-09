@@ -1,13 +1,13 @@
 import React from 'react';
 import { renderMarkdown } from '../utils/markdown';
 
-interface ChangesModalProps {
+interface ManualModalProps {
   isOpen: boolean;
   content: string;
   onClose: () => void;
 }
 
-export const ChangesModal: React.FC<ChangesModalProps> = ({
+export const ManualModal: React.FC<ManualModalProps> = ({
   isOpen,
   content,
   onClose,
@@ -17,7 +17,7 @@ export const ChangesModal: React.FC<ChangesModalProps> = ({
   return (
     <div className="modal-backdrop">
       <div className="modal-dialog text-display">
-        <div className="modal-title">Changes</div>
+        <div className="modal-title">Manual</div>
         <div
           className="modal-body text-display-body"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
@@ -30,4 +30,4 @@ export const ChangesModal: React.FC<ChangesModalProps> = ({
       </div>
     </div>
   );
-};
+}

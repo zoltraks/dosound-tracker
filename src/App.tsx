@@ -6,6 +6,7 @@ import { usePlaybackControls } from './hooks/usePlaybackControls';
 import { useAudioSetup } from './hooks/useAudioSetup';
 import { useModalManager } from './hooks/useModalManager';
 import { useMidiHandling } from './hooks/useMidiHandling';
+import { useMidiActions } from './hooks/useMidiActions';
 import { useTrackOperations } from './hooks/useTrackOperations';
 import { usePlaylistOperations } from './hooks/usePlaylistOperations';
 import { useScrollSync } from './hooks/useScrollSync';
@@ -14,11 +15,12 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useMessageSystem } from './hooks/useMessageSystem';
 import { useModalState } from './hooks/useModalState';
 import { useInstrumentWarnings } from './hooks/useInstrumentWarnings';
+import { useInstrumentActions } from './hooks/useInstrumentActions';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
-import type { Instrument, Note, Pattern, PatternLine } from './synth/SoundDriver';
-import type { MidiConfig, MidiNoteEvent } from './hooks/useMidi';
-import { PATTERN_LENGTH, MAX_INSTRUMENTS, NOTES, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE, NOTE_BASE_OCTAVE } from './constants/music';
+import type { Instrument, Note, Pattern } from './synth/SoundDriver';
+import type { MidiConfig } from './hooks/useMidi';
+import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
 import { CommandPanel } from './components/CommandPanel';
@@ -26,11 +28,11 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { ModalContainer } from './components/ModalContainer';
 import { ExportModal } from './modals/ExportModal';
+import { FilePickerModal } from './modals/FilePickerModal';
 import { AppLayout } from './components/AppLayout';
 import { TracksSection } from './components/TracksSection';
 import { InstrumentSection } from './components/InstrumentSection';
 import { InfoSection } from './components/InfoSection';
-import { isInstrumentEmpty } from './utils/instrument';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
@@ -71,6 +73,10 @@ const App: React.FC = () => {
     setIsChangelogOpen,
     changelogContent,
     setChangelogContent,
+    isManualOpen,
+    setIsManualOpen,
+    manualContent,
+    setManualContent,
     isOptimizeConfirmOpen,
     setIsOptimizeConfirmOpen,
     isRenumberConfirmOpen,
@@ -109,8 +115,6 @@ const App: React.FC = () => {
     setIsExportModalOpen,
   } = useModalState();
 
-  const [downloadFiles, setDownloadFiles] = useState<string[]>([]);
-
   const {
     isInstrumentTypeWarningOpen,
     ignoreInstrumentTypeWarning,
@@ -121,49 +125,6 @@ const App: React.FC = () => {
     confirmInstrumentTypeWarning,
     cancelInstrumentTypeWarning,
   } = useInstrumentWarnings();
-
-  const handleRegisterTrackStopPreview = useCallback(
-    (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => {
-      trackStopPreviewRef.current[trackId] = stopPreview;
-    },
-    []
-  );
-
-  const handleHardStopLivePreview = useCallback(
-    (ymChannel: number) => {
-      const ym2149 = ym2149Ref.current;
-
-      if (midiLiveTimerRef.current !== null) {
-        window.clearInterval(midiLiveTimerRef.current);
-        midiLiveTimerRef.current = null;
-      }
-
-      midiLiveSubTickRef.current = 0;
-      midiLiveEnvelopeStepRef.current = 0;
-      midiLiveLastTickTimeRef.current = null;
-      midiLiveNextTickTimeRef.current = null;
-      midiLiveSustainIndexRef.current = null;
-      midiLiveReleasedRef.current = false;
-      midiLiveLastVolumeIndexRef.current = null;
-      midiLiveLastVolumeValueRef.current = null;
-
-      const lastPreview = lastMidiPreviewRef.current;
-      if (lastPreview && lastPreview.ymChannel === ymChannel) {
-        const helpers = midiHelpersRef.current;
-        if (helpers) {
-          helpers.sendInstrumentMidiNoteOffForChannel(ymChannel);
-        }
-        lastMidiPreviewRef.current = null;
-      }
-
-      if (ym2149) {
-        const safeChannel = Math.max(0, Math.min(2, ymChannel | 0));
-        const volumeRegister = 0x08 + safeChannel;
-        ym2149.writeRegister(volumeRegister, 0x00);
-      }
-    },
-    []
-  );
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
 
   const {
@@ -223,7 +184,9 @@ const App: React.FC = () => {
     songError,
     setSongError,
     optimizeSong,
-    renumberSong
+    renumberSong,
+    isSongDirty,
+    loadSongFromText,
   } = useDataManagement();
 
   const {
@@ -252,6 +215,7 @@ const App: React.FC = () => {
     !!midiCopySummary ||
     isAboutOpen ||
     isChangelogOpen ||
+    isManualOpen ||
     isDownloadOpen ||
     isDebugInfoOpen ||
     isMidiModalOpen ||
@@ -358,90 +322,13 @@ const App: React.FC = () => {
     };
   }, []);
 
-  useEffect(() => {
-    fetch('download/LIST.txt')
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Failed to load download list.');
-        }
-
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('text/html')) {
-          // Likely SPA fallback (index.html) instead of a real LIST.txt file.
-          throw new Error('LIST.txt appears to be HTML, treating as missing.');
-        }
-
-        return response.text();
-      })
-      .then(text => {
-        const lines = text.split(/\r?\n/);
-        const trimmed = lines.map(line => line.trim());
-        const nonEmpty = trimmed.filter(line => line.length > 0);
-        const validFiles = nonEmpty.filter(line => {
-          const base = (line.split(/[\\/]/).pop() || '').toLowerCase();
-          return base !== '.gitkeep' && base !== 'list.txt';
-        });
-
-        if (validFiles.length === 0) {
-          setDownloadFiles([]);
-          return;
-        }
-
-        // Make the list unique and sort alphabetically in reverse order.
-        const uniqueFiles = Array.from(new Set(validFiles));
-        uniqueFiles.sort((a, b) => b.localeCompare(a, undefined, { sensitivity: 'base' }));
-
-        const first = uniqueFiles[0].toLowerCase();
-        if (first.startsWith('<!doctype') || first.startsWith('<html')) {
-          // Defensive check: HTML content instead of plain filename list.
-          setDownloadFiles([]);
-          return;
-        }
-
-        setDownloadFiles(uniqueFiles);
-      })
-      .catch(() => {
-        setDownloadFiles([]);
-      });
-  }, []);
-
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
-  // Audio setup
-  const { ym2149Ref } = useAudioSetup();
+  const { audioContext, ym2149Ref } = useAudioSetup();
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
-  const lastMidiPreviewRef = useRef<{
-    noteNumber: number;
-    midiChannel: number;
-    ymChannel: number;
-  } | null>(null);
 
-  const midiLiveTimerRef = useRef<number | null>(null);
-  const midiLiveSubTickRef = useRef<number>(0);
-  const midiLiveEnvelopeStepRef = useRef<number>(0);
-  const midiLiveLastTickTimeRef = useRef<number | null>(null);
-  const midiLiveNextTickTimeRef = useRef<number | null>(null);
-  const midiLiveSustainIndexRef = useRef<number | null>(null);
-  const midiLiveReleasedRef = useRef<boolean>(false);
-  const midiLiveLastVolumeIndexRef = useRef<number | null>(null);
-  const midiLiveLastVolumeValueRef = useRef<number | null>(null);
-
-  const trackStopPreviewRef = useRef<{
-    A: (() => void) | null;
-    B: (() => void) | null;
-    C: (() => void) | null;
-  }>({
-    A: null,
-    B: null,
-    C: null,
-  });
-
-  // YM2149 is initialized and managed by useAudioSetup
-
-  // Track envelope timing for each channel
-  // subTick: 0/1 toggled every 20ms, envelopeStep: 0,1,2,... advanced every 40ms
   const channelSubTickRef = useRef([0, 0, 0]);
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
   const lastNotesRef = useRef<Array<Note | null>>([null, null, null]);
@@ -469,6 +356,25 @@ const App: React.FC = () => {
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
   const [instrumentListFocusRevision, setInstrumentListFocusRevision] = useState(0);
+
+  const ensureAudioContextResumed = useCallback(() => {
+    if (!audioContext) {
+      return Promise.resolve();
+    }
+
+    if (audioContext.state === 'suspended') {
+      return audioContext
+        .resume()
+        .then(() => {
+          // AudioContext resumed; piano preview notes can now play immediately.
+        })
+        .catch((error: unknown) => {
+          console.error('AudioContext resume failed in ensureAudioContextResumed:', error);
+        });
+    }
+
+    return Promise.resolve();
+  }, [audioContext]);
 
   useEffect(() => {
     if (activeSection === 'trackA') {
@@ -629,7 +535,6 @@ const App: React.FC = () => {
         const base = Math.floor(rawLoop as number);
         const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
 
-        lastSequencerPositionRef.current = null;
         setPosition(loopIndex, 0, 0);
         return;
       }
@@ -1075,15 +980,32 @@ const App: React.FC = () => {
     setPosition,
   });
 
+  const [pendingNewSongAction, setPendingNewSongAction] = useState<'new-song' | 'demo-song'>('new-song');
+
+  const [isRepositoryInstrumentOpen, setIsRepositoryInstrumentOpen] = useState(false);
+  const [isDemoSongPickerOpen, setIsDemoSongPickerOpen] = useState(false);
+
   const handleShowAbout = useCallback(() => {
     setIsAboutOpen(true);
   }, []);
 
   const handleRequestNewSong = useCallback(() => {
+    setPendingNewSongAction('new-song');
     setIsNewSongConfirmOpen(true);
   }, []);
 
+  const openDemoSongPicker = useCallback(() => {
+    setIsDemoSongPickerOpen(true);
+  }, []);
+
   const handleConfirmNewSong = useCallback(() => {
+    if (pendingNewSongAction === 'demo-song') {
+      setIsNewSongConfirmOpen(false);
+      setPendingNewSongAction('new-song');
+      openDemoSongPicker();
+      return;
+    }
+
     createNewSong();
     setCurrentOctave(3);
     setChannelMutes([false, false, false]);
@@ -1092,10 +1014,18 @@ const App: React.FC = () => {
     setActiveSection('volume');
 
     setIsNewSongConfirmOpen(false);
-  }, [createNewSong, setPosition, setActiveSection]);
+    setPendingNewSongAction('new-song');
+  }, [
+    pendingNewSongAction,
+    createNewSong,
+    setPosition,
+    setActiveSection,
+    openDemoSongPicker,
+  ]);
 
   const handleCancelNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(false);
+    setPendingNewSongAction('new-song');
   }, []);
 
   const handleRequestReset = useCallback(() => {
@@ -1163,7 +1093,7 @@ const App: React.FC = () => {
 
   const handleShowChangelog = useCallback(() => {
     setIsAboutOpen(false);
-    setChangelogContent('Loading...');
+    setChangelogContent('');
     setIsChangelogOpen(true);
 
     fetch('CHANGELOG.md')
@@ -1185,6 +1115,47 @@ const App: React.FC = () => {
     setIsChangelogOpen(false);
   }, []);
 
+  const handleShowManual = useCallback(() => {
+    setIsAboutOpen(false);
+    setManualContent('');
+    setIsManualOpen(true);
+
+    fetch('MANUAL.md')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to load manual.');
+        }
+        const contentType = response.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+          // Likely SPA fallback (index.html) instead of a real MANUAL.md file.
+          throw new Error('Manual appears to be HTML, treating as missing.');
+        }
+
+        return response.text();
+      })
+      .then((text) => {
+        const trimmed = text.trimStart().slice(0, 512).toLowerCase();
+
+        if (
+          trimmed.startsWith('<!doctype') ||
+          trimmed.startsWith('<html') ||
+          trimmed.includes('<script type="module" src="/@vite/client"')
+        ) {
+          // Defensive check: HTML content instead of markdown manual.
+          throw new Error('Manual appears to be HTML, treating as missing.');
+        }
+
+        setManualContent(text);
+      })
+      .catch(() => {
+        setManualContent('Unable to load manual.');
+      });
+  }, []);
+
+  const handleCloseManual = useCallback(() => {
+    setIsManualOpen(false);
+  }, []);
+
   const handleToggleChannelMute = useCallback((channelIndex: number) => {
     toggleChannelMute(channelIndex);
   }, [toggleChannelMute]);
@@ -1194,6 +1165,10 @@ const App: React.FC = () => {
       instrumentFileInputRef.current.value = '';
       instrumentFileInputRef.current.click();
     }
+  }, []);
+
+  const handleOpenRepositoryInstrumentPicker = useCallback(() => {
+    setIsRepositoryInstrumentOpen(true);
   }, []);
 
   const handleInstrumentFileContent = useCallback((content: string) => {
@@ -1273,6 +1248,84 @@ const App: React.FC = () => {
   const handleCancelInstrumentTypeWarning = useCallback(() => {
     cancelInstrumentTypeWarning();
   }, [cancelInstrumentTypeWarning]);
+
+  const handlePickRepositoryInstrument = useCallback(
+    (fileUrl: string) => {
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to load instrument file.');
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            throw new Error('Instrument file appears to be HTML, treating as missing.');
+          }
+
+          return response.text();
+        })
+        .then(text => {
+          handleInstrumentFileContent(text);
+        })
+        .catch(error => {
+          console.error('Error loading repository instrument:', error);
+          setInstrumentError('Error loading instrument file. Please check the file format.');
+        })
+        .finally(() => {
+          setIsRepositoryInstrumentOpen(false);
+        });
+    },
+    [handleInstrumentFileContent, setInstrumentError]
+  );
+
+  const handleDemoSongClick = useCallback(() => {
+    if (isSongDirty) {
+      setPendingNewSongAction('demo-song');
+      setIsNewSongConfirmOpen(true);
+      return;
+    }
+    openDemoSongPicker();
+  }, [isSongDirty, openDemoSongPicker]);
+
+  const handlePickDemoSong = useCallback(
+    (fileUrl: string) => {
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to load song file.');
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            throw new Error('Song file appears to be HTML, treating as missing.');
+          }
+
+          return response.text();
+        })
+        .then(text => {
+          loadSongFromText(text);
+          setPosition(0, 0, 0);
+          setSharedCurrentLine(0);
+          setActiveSection('commands');
+          setChannelMutes([false, false, false]);
+        })
+        .catch(error => {
+          console.error('Error loading demo song:', error);
+          setSongError('Error loading song file. Please check the file format.');
+        })
+        .finally(() => {
+          setIsDemoSongPickerOpen(false);
+        });
+    },
+    [
+      loadSongFromText,
+      setPosition,
+      setSharedCurrentLine,
+      setActiveSection,
+      setChannelMutes,
+      setSongError,
+    ]
+  );
 
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
@@ -1386,6 +1439,35 @@ const App: React.FC = () => {
     setTrackFocusRevision,
   });
 
+  const {
+    handleRenameInstrument,
+    handlePlayInstrument,
+    handleCloneInstrument,
+    handleDeleteInstrument,
+    handleMoveInstrument,
+    handleCancelInstrumentDelete,
+    handleConfirmDeleteInstrumentAndNotes,
+    handleConfirmDeleteInstrumentOnly,
+  } = useInstrumentActions({
+    currentSong,
+    currentInstrument,
+    updateSong,
+    updateInstrument,
+    setCurrentInstrument,
+    activeSection,
+    lastTrackId,
+    setActiveSection,
+    setInstrumentOperationSummary,
+    instrumentDeleteUsage,
+    setInstrumentDeleteUsage,
+    setIsInstrumentDeleteOpen,
+    normalizeInstrumentId,
+    parseBaseKeyString,
+    ym2149Ref,
+    playInstTimerRef,
+    playInstStepRef,
+  });
+
   // Handle instrument selection
   const handleInstrumentSelect = useCallback((instrument: Instrument) => {
     setCurrentInstrument(instrument);
@@ -1463,10 +1545,6 @@ const App: React.FC = () => {
     ]
   );
 
-  const handleRenameInstrument = useCallback((name: string) => {
-    updateInstrument({ name });
-  }, [updateInstrument]);
-
   const handleChangeBaseKey = useCallback((note: string, octave: number) => {
     const upper = note.toUpperCase();
     const formatted = upper.endsWith('#')
@@ -1475,522 +1553,6 @@ const App: React.FC = () => {
     updateInstrument({ base: formatted });
   }, [updateInstrument]);
 
-  const handlePlayInstrument = useCallback(() => {
-    if (!ym2149Ref.current) {
-      return;
-    }
-
-    const base = parseBaseKeyString(currentInstrument.base || 'C-4');
-    if (!base) {
-      return;
-    }
-
-    const ym2149 = ym2149Ref.current;
-
-    const channel =
-      activeSection === 'trackA'
-        ? 0
-        : activeSection === 'trackB'
-        ? 1
-        : activeSection === 'trackC'
-        ? 2
-        : lastTrackId === 'B'
-        ? 1
-        : lastTrackId === 'C'
-        ? 2
-        : 0;
-
-    if (playInstTimerRef.current !== null) {
-      window.clearInterval(playInstTimerRef.current);
-      playInstTimerRef.current = null;
-    }
-
-    playInstStepRef.current = 0;
-    let playInstSubTick = 0;
-
-    const noteData = { note: base.note, octave: base.octave };
-
-    ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, 0, 0x0f);
-
-    playInstTimerRef.current = window.setInterval(() => {
-      // Advance envelope step every 40ms (every 2 x 20ms ticks)
-      const step = playInstStepRef.current;
-      ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, step, 0x0f);
-
-      playInstSubTick = (playInstSubTick + 1) % 2;
-      if (playInstSubTick === 0) {
-        playInstStepRef.current = playInstStepRef.current + 1;
-      }
-
-      if (playInstStepRef.current >= 64) {
-        if (playInstTimerRef.current !== null) {
-          window.clearInterval(playInstTimerRef.current);
-          playInstTimerRef.current = null;
-        }
-        ym2149.writeRegister(0x08 + channel, 0x00);
-      }
-    }, 20);
-  }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString]);
-
-  const handleCloneInstrument = useCallback(() => {
-    const instruments = currentSong.instruments;
-    if (instruments.length >= MAX_INSTRUMENTS) {
-      setInstrumentOperationSummary('No free instrument slots available.');
-      return;
-    }
-
-    const currentIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
-
-    const isSlotFree = (inst: Instrument | undefined) => !inst || isInstrumentEmpty(inst);
-
-    let slotIndex = -1;
-
-    if (currentIndex >= 0) {
-      for (let i = currentIndex + 1; i < instruments.length; i++) {
-        if (isSlotFree(instruments[i])) {
-          slotIndex = i;
-          break;
-        }
-      }
-
-      if (slotIndex === -1) {
-        for (let i = 0; i <= currentIndex; i++) {
-          if (isSlotFree(instruments[i])) {
-            slotIndex = i;
-            break;
-          }
-        }
-      }
-    }
-
-    if (slotIndex === -1) {
-      slotIndex = instruments.length;
-    }
-
-    if (slotIndex >= MAX_INSTRUMENTS) {
-      setInstrumentOperationSummary('No free instrument slots available.');
-      return;
-    }
-
-    const slotId = slotIndex.toString(16).padStart(2, '0').toUpperCase();
-
-    const clonedInstrument: Instrument = {
-      ...currentInstrument,
-      id: slotId
-    };
-
-    const updatedInstruments = [...instruments];
-    if (slotIndex < updatedInstruments.length) {
-      updatedInstruments[slotIndex] = clonedInstrument;
-    } else {
-      updatedInstruments.push(clonedInstrument);
-    }
-
-    updateSong({ instruments: updatedInstruments });
-    setCurrentInstrument(clonedInstrument);
-    setActiveSection('instrumentList');
-  }, [currentSong.instruments, currentInstrument, updateSong, setCurrentInstrument, setActiveSection, setInstrumentOperationSummary]);
-
-  const handleDeleteInstrument = useCallback(() => {
-    const instruments = currentSong.instruments;
-    if (!currentInstrument || instruments.length === 0) {
-      return;
-    }
-
-    const targetIdNorm = normalizeInstrumentId(currentInstrument.id);
-    if (!targetIdNorm) {
-      return;
-    }
-
-    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
-    if (index === -1) {
-      setInstrumentOperationSummary('Current instrument not found in song instruments.');
-      return;
-    }
-
-    let usageCount = 0;
-    let patternCount = 0;
-
-    currentSong.patterns.forEach(pattern => {
-      if (!pattern) {
-        return;
-      }
-
-      let patternHasUsage = false;
-
-      (pattern.lines || []).forEach(line => {
-        if (!line) {
-          return;
-        }
-
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
-          const note = line[key];
-          if (!note) {
-            return;
-          }
-
-          const noteInstIdNorm = normalizeInstrumentId(note.instrument);
-          if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
-            usageCount++;
-            patternHasUsage = true;
-          }
-        });
-      });
-
-      if (patternHasUsage) {
-        patternCount++;
-      }
-    });
-
-    if (usageCount === 0) {
-      const slot = instruments[index];
-      const slotId = slot?.id || currentInstrument.id;
-
-      const clearedInstrument: Instrument = {
-        id: slotId,
-        name: '',
-        volume: Array(32).fill(0),
-        arpeggio: Array(32).fill(0),
-        pitch: Array(32).fill(0),
-        noiseEnvelope: Array(32).fill(0),
-        mode: Array(32).fill(0)
-      };
-
-      const newInstruments = [...instruments];
-      newInstruments[index] = clearedInstrument;
-
-      updateSong({ instruments: newInstruments });
-      setCurrentInstrument(clearedInstrument);
-      setActiveSection('instrumentList');
-      return;
-    }
-
-    const slot = instruments[index];
-    const slotId = slot?.id || currentInstrument.id;
-    const slotName = slot?.name || currentInstrument.name || '';
-
-    setInstrumentDeleteUsage({
-      instrumentId: slotId,
-      instrumentName: slotName,
-      usageCount,
-      patternCount
-    });
-    setIsInstrumentDeleteOpen(true);
-  }, [
-    currentSong.instruments,
-    currentSong.patterns,
-    currentInstrument,
-    normalizeInstrumentId,
-    updateSong,
-    setCurrentInstrument,
-    setActiveSection,
-    setInstrumentOperationSummary,
-    setInstrumentDeleteUsage,
-    setIsInstrumentDeleteOpen
-  ]);
-
-  const handleMoveInstrument = useCallback((index: number, direction: 'up' | 'down') => {
-    const instruments = currentSong.instruments;
-    const length = instruments.length;
-
-    if (length === 0) {
-      return;
-    }
-
-    const delta = direction === 'up' ? -1 : 1;
-    const targetIndex = index + delta;
-
-    if (targetIndex < 0 || targetIndex >= length) {
-      return;
-    }
-
-    const instrumentIdMap: Record<string, string> = {};
-    const newInstruments: Instrument[] = [];
-
-    for (let i = 0; i < length; i++) {
-      const inst = instruments[i];
-      if (!inst) {
-        continue;
-      }
-
-      let newIndex = i;
-      if (i === index) {
-        newIndex = targetIndex;
-      } else if (i === targetIndex) {
-        newIndex = index;
-      }
-
-      const newId = newIndex.toString(16).padStart(2, '0').toUpperCase();
-      const oldIdNorm = (inst.id || '').trim().toUpperCase();
-      if (oldIdNorm) {
-        instrumentIdMap[oldIdNorm] = newId;
-      }
-
-      newInstruments[newIndex] = {
-        ...inst,
-        id: newId
-      };
-    }
-
-    const remappedPatterns = currentSong.patterns.map(pattern => {
-      const lines = (pattern.lines || []).map(line => {
-        const newLine = { ...line };
-
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
-          const note = newLine[key];
-          if (note && typeof note.instrument === 'string') {
-            const raw = note.instrument.trim().toUpperCase();
-            const mapped = instrumentIdMap[raw];
-            if (mapped) {
-              newLine[key] = {
-                ...note,
-                instrument: mapped
-              };
-            }
-          }
-        });
-
-        return newLine;
-      });
-
-      return {
-        ...pattern,
-        lines
-      };
-    });
-
-    updateSong({
-      instruments: newInstruments,
-      patterns: remappedPatterns
-    });
-
-    let nextCurrentInstrument = currentInstrument;
-    if (currentInstrument) {
-      const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
-      const mappedId = instrumentIdMap[currentIdNorm];
-      if (mappedId) {
-        const updatedFromList = newInstruments.find(inst => inst && inst.id === mappedId);
-        if (updatedFromList) {
-          nextCurrentInstrument = updatedFromList;
-        } else {
-          nextCurrentInstrument = {
-            ...currentInstrument,
-            id: mappedId
-          };
-        }
-      }
-    }
-
-    if (nextCurrentInstrument) {
-      setCurrentInstrument(nextCurrentInstrument);
-    }
-
-    setActiveSection('instrumentList');
-  }, [currentSong.instruments, currentSong.patterns, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]);
-
-  const handleCancelInstrumentDelete = useCallback(() => {
-    setIsInstrumentDeleteOpen(false);
-  }, []);
-
-  const handleConfirmDeleteInstrumentAndNotes = useCallback(() => {
-    if (!instrumentDeleteUsage.instrumentId) {
-      setIsInstrumentDeleteOpen(false);
-      return;
-    }
-
-    const targetIdNorm = normalizeInstrumentId(instrumentDeleteUsage.instrumentId);
-    if (!targetIdNorm) {
-      setIsInstrumentDeleteOpen(false);
-      return;
-    }
-
-    const instruments = currentSong.instruments;
-    const patterns = currentSong.patterns;
-
-    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
-    if (index === -1) {
-      setIsInstrumentDeleteOpen(false);
-      setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
-      return;
-    }
-
-    const slot = instruments[index];
-    const slotId = slot?.id || instrumentDeleteUsage.instrumentId;
-    const slotName = slot?.name || instrumentDeleteUsage.instrumentName || '';
-
-    const clearedInstrument: Instrument = {
-      id: slotId,
-      name: '',
-      volume: Array(32).fill(0),
-      arpeggio: Array(32).fill(0),
-      pitch: Array(32).fill(0),
-      noiseEnvelope: Array(32).fill(0),
-      mode: Array(32).fill(0)
-    };
-
-    const newInstruments = [...instruments];
-    newInstruments[index] = clearedInstrument;
-
-    let notesCleared = 0;
-    let patternsTouched = 0;
-
-    const updatedPatterns = patterns.map(pattern => {
-      if (!pattern) {
-        return pattern;
-      }
-
-      let patternChanged = false;
-      const newLines = (pattern.lines || []).map(line => {
-        if (!line) {
-          return line;
-        }
-
-        const newLine: PatternLine = { ...line };
-        let lineChanged = false;
-
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
-          const note = newLine[key];
-          if (!note) {
-            return;
-          }
-
-          const noteInstIdNorm = normalizeInstrumentId(note.instrument);
-          if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
-            newLine[key] = null;
-            lineChanged = true;
-            notesCleared++;
-          }
-        });
-
-        if (lineChanged) {
-          patternChanged = true;
-        }
-
-        return newLine;
-      });
-
-      if (patternChanged) {
-        patternsTouched++;
-        return {
-          ...pattern,
-          lines: newLines
-        };
-      }
-
-      return pattern;
-    });
-
-    updateSong({
-      instruments: newInstruments,
-      patterns: updatedPatterns
-    });
-
-    setCurrentInstrument(clearedInstrument);
-    setActiveSection('instrumentList');
-    setIsInstrumentDeleteOpen(false);
-
-    const idLabel = slotId.trim() || '--';
-    const nameLabel = slotName || '';
-
-    const lines: string[] = [];
-    lines.push('Instrument removal complete.');
-    lines.push('');
-    lines.push(`Instrument: ${idLabel}${nameLabel ? ` (${nameLabel})` : ''}`);
-    lines.push('Mode: Delete notes using this instrument and clear slot.');
-    lines.push('');
-    lines.push(`Patterns with this instrument before delete: ${instrumentDeleteUsage.patternCount}`);
-    lines.push(`Notes using this instrument before delete: ${instrumentDeleteUsage.usageCount}`);
-    lines.push('');
-    lines.push(`Patterns changed in this operation: ${patternsTouched}`);
-    lines.push(`Notes cleared in this operation: ${notesCleared}`);
-
-    setInstrumentOperationSummary(lines.join('\n'));
-  }, [
-    currentSong.instruments,
-    currentSong.patterns,
-    instrumentDeleteUsage.instrumentId,
-    instrumentDeleteUsage.instrumentName,
-    instrumentDeleteUsage.patternCount,
-    instrumentDeleteUsage.usageCount,
-    normalizeInstrumentId,
-    updateSong,
-    setCurrentInstrument,
-    setActiveSection,
-    setIsInstrumentDeleteOpen,
-    setInstrumentOperationSummary
-  ]);
-
-  const handleConfirmDeleteInstrumentOnly = useCallback(() => {
-    if (!instrumentDeleteUsage.instrumentId) {
-      setIsInstrumentDeleteOpen(false);
-      return;
-    }
-
-    const targetIdNorm = normalizeInstrumentId(instrumentDeleteUsage.instrumentId);
-    if (!targetIdNorm) {
-      setIsInstrumentDeleteOpen(false);
-      return;
-    }
-
-    const instruments = currentSong.instruments;
-    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
-    if (index === -1) {
-      setIsInstrumentDeleteOpen(false);
-      setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
-      return;
-    }
-
-    const slot = instruments[index];
-    const slotId = slot?.id || instrumentDeleteUsage.instrumentId;
-    const slotName = slot?.name || instrumentDeleteUsage.instrumentName || '';
-
-    const clearedInstrument: Instrument = {
-      id: slotId,
-      name: '',
-      volume: Array(32).fill(0),
-      arpeggio: Array(32).fill(0),
-      pitch: Array(32).fill(0),
-      noiseEnvelope: Array(32).fill(0),
-      mode: Array(32).fill(0)
-    };
-
-    const newInstruments = [...instruments];
-    newInstruments[index] = clearedInstrument;
-
-    updateSong({ instruments: newInstruments });
-    setCurrentInstrument(clearedInstrument);
-    setActiveSection('instrumentList');
-    setIsInstrumentDeleteOpen(false);
-
-    const idLabel = slotId.trim() || '--';
-    const nameLabel = slotName || '';
-
-    const lines: string[] = [];
-    lines.push('Instrument removal complete.');
-    lines.push('');
-    lines.push(`Instrument: ${idLabel}${nameLabel ? ` (${nameLabel})` : ''}`);
-    lines.push('Mode: Clear instrument only (keep notes).');
-    lines.push('');
-    lines.push(`Patterns that reference this instrument: ${instrumentDeleteUsage.patternCount}`);
-    lines.push(`Notes that reference this instrument: ${instrumentDeleteUsage.usageCount}`);
-    lines.push('');
-    lines.push('Patterns changed in this operation: 0');
-    lines.push('Notes cleared in this operation: 0');
-
-    setInstrumentOperationSummary(lines.join('\n'));
-  }, [
-    currentSong.instruments,
-    instrumentDeleteUsage.instrumentId,
-    instrumentDeleteUsage.instrumentName,
-    instrumentDeleteUsage.patternCount,
-    instrumentDeleteUsage.usageCount,
-    normalizeInstrumentId,
-    updateSong,
-    setCurrentInstrument,
-    setActiveSection,
-    setIsInstrumentDeleteOpen,
-    setInstrumentOperationSummary
-  ]);
 
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
@@ -2356,500 +1918,23 @@ const App: React.FC = () => {
   const handleLineChange = useCallback((lineIndex: number) => {
     setSharedCurrentLine(lineIndex);
   }, []);
-
-  const handleMidiNoteEvent = useCallback(
-    (event: MidiNoteEvent) => {
-      if (!ym2149Ref.current) {
-        return;
-      }
-
-      const { type, noteNumber, noteName, octave, channel: midiChannel } = event;
-
-      const normalizedNote = noteName.toUpperCase();
-      const noteIndex = NOTES.indexOf(normalizedNote);
-      if (noteIndex === -1) {
-        return;
-      }
-
-      // Transpose incoming MIDI notes by the current instrument's base so that
-      // pressing C-4 on the controller corresponds to the instrument's base
-      // pitch (e.g. C-3), and all other keys shift by the same semitone offset.
-      const baseKey =
-        parseBaseKeyString(currentInstrument.base || 'C-4') ||
-        { note: 'C', octave: NOTE_BASE_OCTAVE };
-
-      const baseNoteName = baseKey.note.toUpperCase();
-      const baseIndexRaw = NOTES.indexOf(baseNoteName);
-      const baseNoteIndex = baseIndexRaw === -1 ? 0 : baseIndexRaw;
-
-      const inputSemis = noteIndex + octave * 12;
-      const refSemis = 0 + NOTE_BASE_OCTAVE * 12; // C-<NOTE_BASE_OCTAVE>
-      const baseSemis = baseNoteIndex + baseKey.octave * 12;
-      const offsetSemis = baseSemis - refSemis;
-
-      const transposedSemis = inputSemis + offsetSemis;
-      let transposedOctave = Math.floor(transposedSemis / 12);
-      let transposedNoteIndex = transposedSemis % 12;
-
-      if (transposedNoteIndex < 0) {
-        transposedNoteIndex += 12;
-        transposedOctave -= 1;
-      }
-
-      const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, transposedOctave));
-      const transposedNoteName = NOTES[transposedNoteIndex];
-
-      const isTrackFocused =
-        activeSection === 'trackA' ||
-        activeSection === 'trackB' ||
-        activeSection === 'trackC';
-
-      const ym2149 = ym2149Ref.current;
-
-      // When a track panel is focused, insert notes into the current pattern and advance the cursor,
-      // then start a sustain-aware live preview on that track's channel.
-      if (isTrackFocused && type === 'noteOn') {
-        const trackId: 'A' | 'B' | 'C' =
-          activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
-
-        const stopTrackPreview = trackStopPreviewRef.current[trackId];
-        if (stopTrackPreview) {
-          stopTrackPreview();
-        }
-
-        const pattern = getCurrentPatternForTrack(trackId);
-        if (!pattern) {
-          return;
-        }
-
-        const totalLines = currentSong.patternLength || PATTERN_LENGTH;
-        const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
-
-        const newPattern: Pattern = {
-          ...pattern,
-          lines: [...pattern.lines]
-        };
-
-        while (newPattern.lines.length < totalLines) {
-          newPattern.lines.push({
-            trackA: null,
-            trackB: null,
-            trackC: null
-          });
-        }
-
-        const baseLine = newPattern.lines[safeIndex] || {
-          trackA: null,
-          trackB: null,
-          trackC: null
-        };
-        const line: PatternLine = { ...baseLine };
-
-        const instrumentId = currentInstrument.id;
-        const note: Note = {
-          note: transposedNoteName,
-          octave: clampedOctave,
-          instrument: instrumentId
-        };
-
-        line.trackA = note;
-        newPattern.lines[safeIndex] = line;
-
-        handlePatternChange(newPattern);
-
-        const nextIndex = Math.min(totalLines - 1, safeIndex + 1);
-        setSharedCurrentLine(nextIndex);
-
-        // Sustain-aware live preview on the track's channel (same engine as non-track MIDI preview)
-        const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-        const instrument = currentInstrument;
-        const noteData = { note: transposedNoteName, octave: clampedOctave };
-
-        if (midiLiveTimerRef.current !== null) {
-          window.clearInterval(midiLiveTimerRef.current);
-          midiLiveTimerRef.current = null;
-        }
-
-        midiLiveReleasedRef.current = false;
-
-        const rawSustain = instrument && typeof instrument.sustain === 'number'
-          ? instrument.sustain
-          : null;
-        const sustainIndex =
-          typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
-            ? Math.floor(rawSustain)
-            : null;
-
-        midiLiveSustainIndexRef.current = sustainIndex;
-
-        const nowTick = performance.now();
-        midiLiveSubTickRef.current = 0;
-        midiLiveEnvelopeStepRef.current = 0;
-        midiLiveLastTickTimeRef.current = nowTick;
-        midiLiveNextTickTimeRef.current = nowTick + 20;
-
-        const volumeEnv: number[] =
-          Array.isArray(instrument.volume) && instrument.volume.length > 0
-            ? instrument.volume
-            : [0x0f];
-
-        const lastVolumeIndex = volumeEnv.length - 1;
-        const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
-
-        midiLiveLastVolumeIndexRef.current = lastVolumeIndex;
-        midiLiveLastVolumeValueRef.current = lastVolumeValue;
-
-        ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
-
-        const helpers = midiHelpersRef.current;
-        if (helpers) {
-          helpers.sendInstrumentMidiNoteOn(
-            ymChannel,
-            currentInstrument,
-            transposedNoteName,
-            clampedOctave,
-            null
-          );
-        }
-
-        lastMidiPreviewRef.current = {
-          noteNumber,
-          midiChannel,
-          ymChannel
-        };
-
-        const TICK_INTERVAL_MS = 20;
-
-        midiLiveTimerRef.current = window.setInterval(() => {
-          const sustain = midiLiveSustainIndexRef.current;
-          const released = midiLiveReleasedRef.current;
-
-          const now = performance.now();
-
-          let nextTickTime = midiLiveNextTickTimeRef.current;
-          if (!nextTickTime) {
-            nextTickTime = now + TICK_INTERVAL_MS;
-          }
-
-          let subTick = midiLiveSubTickRef.current ?? 0;
-          let rawStep = midiLiveEnvelopeStepRef.current ?? 0;
-
-          while (now >= nextTickTime) {
-            subTick = (subTick + 1) % 2;
-
-            if (subTick === 0) {
-              if (
-                sustain === null ||
-                sustain === undefined ||
-                sustain < 0 ||
-                released ||
-                rawStep < sustain
-              ) {
-                rawStep = rawStep + 1;
-              }
-            }
-
-            nextTickTime += TICK_INTERVAL_MS;
-          }
-
-          midiLiveSubTickRef.current = subTick;
-          midiLiveEnvelopeStepRef.current = rawStep;
-          midiLiveLastTickTimeRef.current = now;
-          midiLiveNextTickTimeRef.current = nextTickTime;
-
-          const effectiveRawStep = rawStep;
-          let stepForApply = effectiveRawStep;
-
-          if (
-            sustain !== null &&
-            sustain !== undefined &&
-            sustain >= 0 &&
-            !released &&
-            effectiveRawStep >= sustain
-          ) {
-            stepForApply = sustain;
-          }
-
-          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, 0x0f);
-
-          const tailIndex = midiLiveLastVolumeIndexRef.current;
-          const tailValue = midiLiveLastVolumeValueRef.current;
-
-          if (
-            released &&
-            tailIndex != null &&
-            tailIndex >= 0 &&
-            effectiveRawStep >= tailIndex &&
-            (tailValue ?? 0) <= 0
-          ) {
-            const timerId = midiLiveTimerRef.current;
-            if (timerId != null) {
-              window.clearInterval(timerId);
-              midiLiveTimerRef.current = null;
-            }
-
-            midiLiveSubTickRef.current = 0;
-            midiLiveEnvelopeStepRef.current = 0;
-            midiLiveLastTickTimeRef.current = null;
-            midiLiveNextTickTimeRef.current = null;
-            midiLiveSustainIndexRef.current = null;
-            midiLiveReleasedRef.current = false;
-            midiLiveLastVolumeIndexRef.current = null;
-            midiLiveLastVolumeValueRef.current = null;
-
-            ym2149.writeRegister(0x08 + ymChannel, 0x00);
-          }
-        }, 20);
-
-        return;
-      }
-
-      if (isTrackFocused && type === 'noteOff') {
-        const last = lastMidiPreviewRef.current;
-        if (
-          last &&
-          last.noteNumber === noteNumber &&
-          last.midiChannel === midiChannel &&
-          last.ymChannel >= 0 &&
-          last.ymChannel <= 2
-        ) {
-          const helpers = midiHelpersRef.current;
-          if (helpers) {
-            helpers.sendInstrumentMidiNoteOffForChannel(last.ymChannel);
-          }
-
-          const hasSustain =
-            typeof midiLiveSustainIndexRef.current === 'number' &&
-            midiLiveSustainIndexRef.current >= 0;
-
-          if (hasSustain && midiLiveTimerRef.current !== null) {
-            midiLiveReleasedRef.current = true;
-          } else {
-            if (midiLiveTimerRef.current !== null) {
-              window.clearInterval(midiLiveTimerRef.current);
-              midiLiveTimerRef.current = null;
-            }
-
-            midiLiveSubTickRef.current = 0;
-            midiLiveEnvelopeStepRef.current = 0;
-            midiLiveLastTickTimeRef.current = null;
-            midiLiveNextTickTimeRef.current = null;
-            midiLiveSustainIndexRef.current = null;
-            midiLiveReleasedRef.current = false;
-            midiLiveLastVolumeIndexRef.current = null;
-            midiLiveLastVolumeValueRef.current = null;
-
-            ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
-          }
-
-          lastMidiPreviewRef.current = null;
-        }
-        return;
-      }
-
-      // When no track panel is focused, use MIDI to preview the current instrument
-      if (!isTrackFocused) {
-        const ymChannel =
-          lastTrackId === 'B'
-            ? 1
-            : lastTrackId === 'C'
-            ? 2
-            : 0;
-
-        if (type === 'noteOn') {
-          const noteData = { note: transposedNoteName, octave: clampedOctave };
-          const instrument = currentInstrument;
-
-          if (midiLiveTimerRef.current !== null) {
-            window.clearInterval(midiLiveTimerRef.current);
-            midiLiveTimerRef.current = null;
-          }
-
-          midiLiveReleasedRef.current = false;
-
-          const rawSustain = instrument && typeof instrument.sustain === 'number'
-            ? instrument.sustain
-            : null;
-          const sustainIndex =
-            typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
-              ? Math.floor(rawSustain)
-              : null;
-
-          midiLiveSustainIndexRef.current = sustainIndex;
-
-          const nowTick = performance.now();
-          midiLiveSubTickRef.current = 0;
-          midiLiveEnvelopeStepRef.current = 0;
-          midiLiveLastTickTimeRef.current = nowTick;
-          midiLiveNextTickTimeRef.current = nowTick + 20;
-
-          const volumeEnv: number[] =
-            Array.isArray(instrument.volume) && instrument.volume.length > 0
-              ? instrument.volume
-              : [0x0f];
-
-          const lastVolumeIndex = volumeEnv.length - 1;
-          const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
-
-          midiLiveLastVolumeIndexRef.current = lastVolumeIndex;
-          midiLiveLastVolumeValueRef.current = lastVolumeValue;
-
-          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
-
-          // Also send MIDI OUT for live preview using the instrument's MIDI settings.
-          const helpers = midiHelpersRef.current;
-          if (helpers) {
-            helpers.sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
-          }
-
-          lastMidiPreviewRef.current = {
-            noteNumber,
-            midiChannel,
-            ymChannel
-          };
-
-          const TICK_INTERVAL_MS = 20;
-
-          midiLiveTimerRef.current = window.setInterval(() => {
-            const sustain = midiLiveSustainIndexRef.current;
-            const released = midiLiveReleasedRef.current;
-
-            const now = performance.now();
-
-            let nextTickTime = midiLiveNextTickTimeRef.current;
-            if (!nextTickTime) {
-              nextTickTime = now + TICK_INTERVAL_MS;
-            }
-
-            let subTick = midiLiveSubTickRef.current ?? 0;
-            let rawStep = midiLiveEnvelopeStepRef.current ?? 0;
-
-            while (now >= nextTickTime) {
-              subTick = (subTick + 1) % 2;
-
-              if (subTick === 0) {
-                if (
-                  sustain === null ||
-                  sustain === undefined ||
-                  sustain < 0 ||
-                  released ||
-                  rawStep < sustain
-                ) {
-                  rawStep = rawStep + 1;
-                }
-              }
-
-              nextTickTime += TICK_INTERVAL_MS;
-            }
-
-            midiLiveSubTickRef.current = subTick;
-            midiLiveEnvelopeStepRef.current = rawStep;
-            midiLiveLastTickTimeRef.current = now;
-            midiLiveNextTickTimeRef.current = nextTickTime;
-
-            const effectiveRawStep = rawStep;
-            let stepForApply = effectiveRawStep;
-
-            if (
-              sustain !== null &&
-              sustain !== undefined &&
-              sustain >= 0 &&
-              !released &&
-              effectiveRawStep >= sustain
-            ) {
-              stepForApply = sustain;
-            }
-
-            ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, 0x0f);
-
-            const tailIndex = midiLiveLastVolumeIndexRef.current;
-            const tailValue = midiLiveLastVolumeValueRef.current;
-
-            if (
-              released &&
-              tailIndex != null &&
-              tailIndex >= 0 &&
-              effectiveRawStep >= tailIndex &&
-              (tailValue ?? 0) <= 0
-            ) {
-              const timerId = midiLiveTimerRef.current;
-              if (timerId != null) {
-                window.clearInterval(timerId);
-                midiLiveTimerRef.current = null;
-              }
-
-              midiLiveSubTickRef.current = 0;
-              midiLiveEnvelopeStepRef.current = 0;
-              midiLiveLastTickTimeRef.current = null;
-              midiLiveNextTickTimeRef.current = null;
-              midiLiveSustainIndexRef.current = null;
-              midiLiveReleasedRef.current = false;
-              midiLiveLastVolumeIndexRef.current = null;
-              midiLiveLastVolumeValueRef.current = null;
-
-              ym2149.writeRegister(0x08 + ymChannel, 0x00);
-            }
-          }, 20);
-
-          return;
-        }
-
-        if (type === 'noteOff') {
-          const last = lastMidiPreviewRef.current;
-          if (
-            last &&
-            last.noteNumber === noteNumber &&
-            last.midiChannel === midiChannel &&
-            last.ymChannel >= 0 &&
-            last.ymChannel <= 2
-          ) {
-            // Send matching MIDI Note Off for the YM channel used by the live preview.
-            const helpers = midiHelpersRef.current;
-            if (helpers) {
-              helpers.sendInstrumentMidiNoteOffForChannel(last.ymChannel);
-            }
-
-            const hasSustain =
-              typeof midiLiveSustainIndexRef.current === 'number' &&
-              midiLiveSustainIndexRef.current >= 0;
-
-            if (hasSustain && midiLiveTimerRef.current !== null) {
-              midiLiveReleasedRef.current = true;
-            } else {
-              if (midiLiveTimerRef.current !== null) {
-                window.clearInterval(midiLiveTimerRef.current);
-                midiLiveTimerRef.current = null;
-              }
-
-              midiLiveSubTickRef.current = 0;
-              midiLiveEnvelopeStepRef.current = 0;
-              midiLiveLastTickTimeRef.current = null;
-              midiLiveNextTickTimeRef.current = null;
-              midiLiveSustainIndexRef.current = null;
-              midiLiveReleasedRef.current = false;
-              midiLiveLastVolumeIndexRef.current = null;
-              midiLiveLastVolumeValueRef.current = null;
-
-              ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
-            }
-
-            lastMidiPreviewRef.current = null;
-          }
-        }
-      }
-    },
-    [
-      activeSection,
-      currentInstrument,
-      currentSong.patternLength,
-      getCurrentPatternForTrack,
-      handlePatternChange,
-      lastTrackId,
-      setSharedCurrentLine,
-      sharedCurrentLine,
-      midiHelpersRef
-    ]
-  );
+  const {
+    handleMidiNoteEvent,
+    handleHardStopLivePreview,
+    handleRegisterTrackStopPreview,
+  } = useMidiActions({
+    activeSection,
+    lastTrackId,
+    currentInstrument,
+    currentSong,
+    sharedCurrentLine,
+    setSharedCurrentLine,
+    getCurrentPatternForTrack,
+    handlePatternChange,
+    ym2149Ref,
+    midiHelpersRef,
+    parseBaseKeyString,
+  });
 
   const handleToggleDebugMode = useCallback(() => {
     setIsDebugMode(prev => {
@@ -3087,7 +2172,8 @@ const App: React.FC = () => {
 
     const parsed = Number(trimmed);
     if (Number.isFinite(parsed)) {
-      setTransposeAmount(parsed);
+      const clamped = Math.max(-99, Math.min(99, parsed));
+      setTransposeAmount(clamped);
     }
   }, []);
 
@@ -3203,6 +2289,8 @@ const App: React.FC = () => {
     setIsAboutOpen,
     isChangelogOpen,
     handleCloseChangelog,
+    isManualOpen,
+    handleCloseManual,
     isDownloadOpen,
     setIsDownloadOpen,
     isDebugInfoOpen,
@@ -3255,7 +2343,7 @@ const App: React.FC = () => {
               ym2149={ym2149Ref.current}
               currentInstrument={currentInstrument}
               previewChannel={previewChannel}
-              hasDownloads={downloadFiles.length > 0}
+              hasDownloads={true}
               onShowDownloads={() => setIsDownloadOpen(true)}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
@@ -3299,6 +2387,8 @@ const App: React.FC = () => {
               midiInputEnabled={midiInputEnabled}
               midiOutputEnabled={midiOutputEnabled}
               onShowMidi={handleShowMidi}
+              onPickInstrument={handleOpenRepositoryInstrumentPicker}
+              onDemoSong={handleDemoSongClick}
             />
           }
           tracksSection={
@@ -3371,6 +2461,7 @@ const App: React.FC = () => {
               onChangeBaseKey={handleChangeBaseKey}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+              ensureAudioContextResumed={ensureAudioContextResumed}
             />
           }
           fileInputs={
@@ -3489,6 +2580,10 @@ const App: React.FC = () => {
               changelogContent={changelogContent}
               onShowChangelog={handleShowChangelog}
               onCloseChangelog={handleCloseChangelog}
+              isManualOpen={isManualOpen}
+              manualContent={manualContent}
+              onShowManual={handleShowManual}
+              onCloseManual={handleCloseManual}
               isMidiModalOpen={isMidiModalOpen}
               isMidiSupported={isMidiSupported}
               midiAccessError={midiAccessError}
@@ -3504,11 +2599,28 @@ const App: React.FC = () => {
               setMidiCopySummary={setMidiCopySummary}
               setMidiLoadError={setMidiLoadError}
               isDownloadOpen={isDownloadOpen}
-              downloadFiles={downloadFiles}
               setIsDownloadOpen={setIsDownloadOpen}
               midiLoadError={midiLoadError}
               midiCopySummary={midiCopySummary}
               onMidiSystemReset={handleMidiSystemReset}
+            />
+            <FilePickerModal
+              isOpen={isRepositoryInstrumentOpen}
+              title="Pick Instrument"
+              directory="repository/instrument"
+              mode="pick"
+              defaultSortDescending={false}
+              onClose={() => setIsRepositoryInstrumentOpen(false)}
+              onPick={handlePickRepositoryInstrument}
+            />
+            <FilePickerModal
+              isOpen={isDemoSongPickerOpen}
+              title="Demo Songs"
+              directory="repository/song"
+              mode="pick"
+              defaultSortDescending={false}
+              onClose={() => setIsDemoSongPickerOpen(false)}
+              onPick={handlePickDemoSong}
             />
             <ExportModal
               isOpen={isExportModalOpen}

@@ -1,0 +1,30 @@
+Mobile view is intended to use by mobile devices like phones.
+
+Mobile view supports portrait orientation.
+
+Make piano keyboard work also on smartphone device which has no keyboard and no mouse, touchscreen only.
+Currently when I touch the piano panel, it gets focus. 
+While holding the screen still for a moment at the area piano key occupies, the base note is being change.
+But I can't just "click" for a regular note play on my phone.
+
+---
+
+Now I can play piano.
+When I touch piano, all the time I see CSS effect of changing background color for a moment, the same as when a panel is changing focus.
+I should not see this effect every time when I touch piano key as piano keyboard is alredy focused.
+
+---
+
+In mobile view increase width of "CHANGES" and "MANUAL" text display modal view to occupy almost all possible width, leave 3px gap between left and right side of the viewport.
+
+---
+
+In mobile view when page is reload and I touch piano keyboard for the first time, I can see a piano key pressed but there is no sound.
+After that everything works, the sound when touching a piano key is played even if piano keyboard was not focused.
+Until I reload page. After reload a first touch on piano keyboard doesn't give a sound.
+
+---
+
+In mobile view don't use different border color for piano keyboard when it's focused (active).
+
+---

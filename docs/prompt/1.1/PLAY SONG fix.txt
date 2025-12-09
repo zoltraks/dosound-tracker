@@ -114,3 +114,9 @@ As you can see there is missing value for the millisecond time that passed since
 The song I used is in a file: test/fixtures/song-export-c4.yaml
 
 ---
+
+When playing pattern in a loop mode everything works correctly.
+But when playing a song and playlist is finished and song loop is starting, there is a delay.
+Fix that.
+
+---

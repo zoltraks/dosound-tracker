@@ -1,5 +1,5 @@
 import React from 'react';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from '../modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, ManualModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from '../modals';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 
@@ -89,6 +89,10 @@ export interface ModalContainerProps {
   changelogContent: string;
   onShowChangelog: () => void;
   onCloseChangelog: () => void;
+  isManualOpen: boolean;
+  manualContent: string;
+  onShowManual: () => void;
+  onCloseManual: () => void;
   isMidiModalOpen: boolean;
   isMidiSupported: boolean;
   midiAccessError: string | null;
@@ -107,7 +111,6 @@ export interface ModalContainerProps {
   setMidiCopySummary: (value: string) => void;
   setMidiLoadError: (value: string) => void;
   isDownloadOpen: boolean;
-  downloadFiles: string[];
   setIsDownloadOpen: (value: boolean) => void;
   midiLoadError: string;
   midiCopySummary: string;
@@ -186,6 +189,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   changelogContent,
   onShowChangelog,
   onCloseChangelog,
+  isManualOpen,
+  manualContent,
+  onShowManual,
+  onCloseManual,
   isMidiModalOpen,
   isMidiSupported,
   midiAccessError,
@@ -201,7 +208,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   setMidiCopySummary,
   setMidiLoadError,
   isDownloadOpen,
-  downloadFiles,
   setIsDownloadOpen,
   midiLoadError,
   midiCopySummary,
@@ -365,9 +371,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onInstrumentScopeChange={setTransposeInstrumentScope}
         onAmountChange={onTransposeAmountChange}
         onAmountAdjust={delta => {
-          const next = transposeAmount + delta;
-          setTransposeAmount(next);
-          setTransposeAmountInput(String(next));
+          const rawNext = transposeAmount + delta;
+          const clamped = Math.max(-99, Math.min(99, rawNext));
+          setTransposeAmount(clamped);
+          setTransposeAmountInput(String(clamped));
         }}
         onConfirm={onConfirmTranspose}
         onCancel={onCancelTranspose}
@@ -378,12 +385,19 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         version={aboutVersion}
         onClose={() => setIsAboutOpen(false)}
         onShowChangelog={onShowChangelog}
+        onShowManual={onShowManual}
       />
 
       <ChangesModal
         isOpen={isChangelogOpen}
         content={changelogContent}
         onClose={onCloseChangelog}
+      />
+
+      <ManualModal
+        isOpen={isManualOpen}
+        content={manualContent}
+        onClose={onCloseManual}
       />
 
       <MidiModal
@@ -406,7 +420,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
 
       <DownloadModal
         isOpen={isDownloadOpen}
-        files={downloadFiles}
         onClose={() => setIsDownloadOpen(false)}
       />
 
