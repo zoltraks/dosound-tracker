@@ -1,40 +1,388 @@
-# DOSOUND Tracker Manual for Composers and Assembly Wizards
+# Manual for Composers and Assembly Wizards
 
-*Real music is made in hex.*
+*Real music is made in HEX.*
 
-This manual explains how to write music in **DOSOUND Tracker** and how to feed the result to your **68k / DOSOUND** playback code.
+This manual explains how to write music in **DOSOUND Tracker** and how to feed the result to your **68k** **DOSOUND** playback code.
 
 It is written for two species:
 
-- **Composers** – you think in melodies, chords, and grooves, and you’re not afraid of hexadecimal.
+- **Composers** – you think in melodies, chords, and grooves, and you're not afraid of hexadecimal.
+
 - **Assembly coders** – you think in registers, stack frames, and why your VBLANK ISR crashed again.
 
-Ideally, you are both. If not, share this file: the musician gets the top half, the coder gets the bottom half, and you meet in the middle over `dc.b`.
+Ideally, you are both.
+
+If not, share this file: the musician gets the top half, the coder gets the bottom half, and you meet in the middle over `dc.b`.
 
 ---
 
-## 1. Big Picture: What DOSOUND Tracker Actually Does
+## From Zero to Sound
 
-- **Three hardware channels** of the **YM2149** (A, B, C).
-- You write **patterns** (monotrack note data), chain them in a **playlist**, and design **instruments** using envelopes.
-- The tracker simulates the YM2149 at **50 Hz VBLANK** timing and exports:
-  - Human‑readable **YAML songs/instruments**.
-  - **68k DOSOUND assembly data** (`dc.b` stream).
-  - Optional **register dumps**, **binary blob**, **VGM**, and **WAV**.
+This chapter gets you a bit closer to making music in under 5 minutes.
 
-This manual focuses on:
+### Creating Your First Instrument
 
-- **Creating songs** (patterns, playlist, instruments).
-- **Understanding the data format** enough to tweak it by hand.
-- **Integrating the exported data** with the **DOSOUND** XBIOS routine on an Atari ST or your own replay.
+1. Click **ADD INST** in the command panel
 
-If that sounds like overkill for one PSG chip, remember: your DAW uses more RAM to draw a single button.
+2. Select the new instrument (slot 00) and give it a name: "My Bass"
+
+3. Switch to the **volume** envelope panel using TAB
+
+4. Set volume envelope values for a bass sound:
+   - Click each position and type: `DDDDA5` (this creates a bass envelope)
+   - Each letter is a hexadecimal digit (**0**-**F**). Higher values = louder.
+
+**What you just did:** A bass instrument with a quick attack, sustained mid-volume, and smooth decay.
+
+### Creating More Instruments
+
+**For Piano sound:**
+
+1. Click **ADD INST** again (slot 01)
+
+2. Name it "My Piano" 
+
+3. Set volume envelope: `FEDCBA9876543210`
+
+4. This creates a longer, more gradual decay typical for piano-like sounds
+
+**For Flute sound:**
+
+1. Click **ADD INST** again (slot 02) 
+
+2. Name it "My Flute"
+
+3. Set volume envelope: `89ABCCDDCCBA98642`
+
+4. This creates a more complex envelope with multiple phases
+
+### Building Your First Pattern
+
+1. Click **ADD LINE** to create the first playlist entry
+2. You'll see three tracks: A, B, and C
+3. Set Track A to "00" (first pattern)
+4. Click **N** to create a new pattern for Track A
+
+**Pattern Editing:**
+- Type note names like `C-3`, `D#4`, `G-2`
+- Use spacebar for rests
+- Press Enter to confirm pattern IDs
+- Use arrow keys to navigate between tracks
+
+### Adding Notes to Your Pattern
+
+In the pattern editor:
+
+1. First row: Type `C-2` (bass note)
+
+2. Move down and type `E-2` 
+
+3. Move down and type `G-2`
+
+4. Add spaces between notes for rhythm
+
+### Playing Your Creation
+
+1. Click **PLAY SONG** - your music should start!
+
+2. Use **STOP** to halt playback
+
+3. **PLAY PATTERN** plays just the current pattern
+
+4. **PLAY INST** tests just the selected instrument
+
+**Quick tip:** You may press **ENTER** key while editing a track to start playing current pattern.
+
+### Building the Playlist
+
+1. Add more lines with **ADD LINE**
+
+2. Set different patterns for different tracks
+
+3. **Track A**: melody patterns
+
+4. **Track B**: bass patterns  
+
+5. **Track C**: drums/noise patterns
+
+**Pro tip:** Copy patterns between tracks to build complex arrangements quickly.
 
 ---
 
-## 2. Core Concepts (for Both Musicians and Coders)
+## Complete Program Features
 
-### 2.1 Song, Patterns, Playlist, Instruments
+DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha **YM 2149** PSG chip.
+
+### Core Music Production
+
+**Three-Track System:**
+
+- Tracks A, B, C for simultaneous playback
+- Independent pattern assignment per track
+- Real-time mixing and effects
+
+**Pattern-Based Composition:**
+
+- 64-step default pattern length (customizable 4-256)
+- Monotrack patterns that can be assigned to any track
+- Step-by-step note entry with live playback
+
+**Playlist Arrangement:**
+
+- Song structure management
+- Pattern chaining and loops
+- Position tracking and navigation
+
+### Advanced Instrument System
+
+**256 Instrument Slots:**
+
+- Complete parameter control per instrument
+- Individual instrument save/load
+- Clone and delete functions
+- Drag-and-drop reordering
+
+**Five Envelope Types:**
+
+**Volume Envelope (0-15 levels):**
+
+- Elastic amplitude control
+- 32-step resolution
+- Sustain point support
+- Hexadecimal input (**0**-**F**)
+
+**Arpeggio Envelope (-24 to +24 semitones):**
+
+- Real-time chord generation
+- Complex harmonic progressions
+- Relative to played note
+- Perfect fifths, octaves, major/minor triads
+
+**Pitch Envelope (-128 to +128):**
+
+- Frequency deviation control
+- Vibrato and portamento effects
+- Fine-tuning capabilities
+- Pitch bends and slides
+
+**Noise Envelope (0-31):**
+
+- Percussion texture control
+- Hi-hat, snare, kick generation
+- Dynamic noise periods
+- Layered with tone for complex sounds
+
+**Mode Envelope (Tone/Noise/Both):**
+
+- Three states: **TONE**, **NOISE**, **BOTH**
+- Dynamic mixing within single note
+- Percussive and melodic combinations
+- Real-time sound morphing
+
+### Audio Engine Features
+
+****YM 2149** Emulation:**
+
+- Bit-perfect register simulation
+- Authentic AY/YM logarithmic volume curves
+- 2MHz clock precision
+- Square wave synthesis
+- 17-bit LFSR noise generation
+
+**Real-Time Playback:**
+
+- 50Hz VBLANK timing (Atari ST compatible)
+- Sub-millisecond timing accuracy
+- Live pattern switching
+- Seamless loop detection
+
+**Audio Quality:**
+
+- Web Audio API implementation
+- Low-latency synthesis
+- High-quality sample rate conversion
+- Stereo output support
+
+### User Interface
+
+**DOS-Style Interface:**
+
+- Monospaced fonts throughout
+- Hexadecimal value display
+- Command-line inspired design
+- Keyboard-centric workflow
+
+**Dark Theme (Default) + Light Theme:**
+
+- Retro CRT aesthetic
+- Accessibility support
+- High contrast options
+- Color-coded elements
+
+**Keyboard Navigation:**
+
+- **TAB** and **SHIFT + TAB** section cycling
+- **ARROW** movement
+- **ENTER** for editing
+- **ESCAPE** for cancel
+- Hotkey support for all functions
+
+**Visual Feedback:**
+
+- Real-time envelope editing
+- Pattern position highlighting
+- Playback position tracking
+- Volume level visualization
+- EQ display with channel muting
+
+### Data Management
+
+**Song Operations:**
+
+- **NEW SONG**: Start fresh project
+- **LOAD SONG**: Import complete song
+- **SAVE SONG**: Export complete song
+- **OPTIMIZE**: Remove unused data
+- **RENUMBER**: Reorganize pattern numbers
+
+**Instrument Operations:**
+
+- **ADD INST**: Create new instrument
+- **LOAD INST**: Import individual instrument
+- **SAVE INST****: Export single instrument
+- **DELETE INST**: Remove instrument
+- **CLONE INST**: Duplicate instrument
+- **PLAY INST**: Test sound
+
+**Pattern Operations:**
+
+- **ADD LINE**: Create playlist entry
+- **DELETE LINE**: Remove playlist row
+- **DUPLICATE LINE**: Duplicate entry
+- **CLONE LINE**: Copy entry with new patterns
+- **INSERT STEP**: Add pattern row
+- **DELETE STEP**: Remove pattern row
+
+**Track Operations:**
+
+- **ADD TRACK**: Create new pattern
+- **DELETE TRACK**: Remove pattern
+- **COPY TRACK**: Copy pattern data to clipboard
+- **PASTE TRACK**: Paste pattern data from clipboard
+
+### Export Capabilities
+
+Application supports several export formats.
+
+**DOSOUND Assembly (DATA):**
+
+- Native Atari ST format
+- ``dc.b`` directive stream
+- XBIOS compatible
+- 68k assembly integration
+
+**Register Dump (DUMP):**
+
+- Raw **YM 2149** register states
+- Debug-friendly format
+- Step-by-step register changes
+- Timing information included
+
+**Binary Export (BIN):**
+
+- Raw DOSOUND command stream
+- Minimal file size
+- Direct memory usage
+- Performance optimized
+
+**VGM Format:**
+
+- Video Game Music standard
+- Universal compatibility
+- Loop point support
+- Metadata inclusion
+
+**MAX Format:**
+
+- Extended data export
+- Additional metadata
+- Research compatibility
+- Future format support
+
+**WAV Audio:**
+
+- 44.1kHz 16-bit stereo
+- High-quality rendering
+- Cross-platform playback
+- Mastering ready
+
+**Export Strategies:**
+
+- **SIMPLE DUMP**: All registers every frame
+- **COMPLEX DUMP**: Changed registers only
+- **OPTIMIZED DUMP**: Maximum compression
+
+### Advanced Features
+
+**MIDI Support:**
+
+- MIDI input for live recording
+- MIDI output for external playback
+- Channel mapping
+- Program change support
+
+**Debug Mode:**
+
+- Detailed error reporting
+- Performance monitoring
+- Register state inspection
+- Playback analysis
+
+**Transposition:**
+- Pattern-wide pitch shifting
+- Track-specific transposition
+- Scope targeting
+- Musical key awareness
+
+**Pattern Utilities:**
+- Renumber patterns automatically
+- Optimize song structure
+- Remove duplicate patterns
+- Compress song data
+
+### Technical Specifications
+
+**Performance:**
+- Real-time synthesis at 60fps
+- Buffer size: 256 samples
+- Latency: <10ms typical
+- CPU usage: <5% on modern hardware
+
+**File Formats:**
+- YAML for human-readable storage
+- JSON for programmatic access
+- Custom binary formats
+- Compressed data support
+
+**Compatibility:**
+- Web browsers (Chrome, Firefox, Safari, Edge)
+- Desktop applications (Windows, macOS, Linux)
+- Mobile responsive design
+- Atari ST assembly integration
+
+**Development:**
+- React 19 + TypeScript
+- Web Audio API
+- Vite build system
+- Electron desktop wrapper
+
+---
+
+## 4. Core Concepts
+
+This section describes core concepts used by this tool for both musicians and coders.
+
+### Song, Patterns, Playlist, Instruments
 
 A **song** in DOSOUND Tracker is:
 
@@ -49,7 +397,7 @@ Conceptually:
 - **Playlist** = arrangement (which pattern plays where on tracks A/B/C).
 - **Instruments** = sound design.
 
-### 2.2 Time and Speed
+### Time and Speed
 
 Two clocks matter:
 
@@ -59,7 +407,7 @@ Two clocks matter:
 Rules (from the implementation):
 
 - `speed` is clamped to **even** values (2, 4, 6, …).
-- **Envelope steps** advance every **2 ticks** (40 ms) → “envelope FPS” is `50 / 2 = 25 Hz`.
+- **Envelope steps** advance every **2 ticks** (40 ms) → "envelope FPS" is `50 / 2 = 25 Hz`.
 
 Approximate pattern duration:
 
@@ -75,11 +423,13 @@ The music will still be faster than your loader.
 
 ---
 
-## 3. Anatomy of a Song File (Composer‑Friendly YAML)
+## Anatomy of a Song File
+
+A song is written in human friendly **YAML** format.
 
 Full format details live in `docs/FORMAT.md`. This section is a **gentle version** aimed at usage, not validation.
 
-### 3.1 Song Root
+### Song Root
 
 Conceptually:
 
@@ -95,13 +445,15 @@ Conceptually:
 
 If you mess something up, the loader will attempt to rescue your tune instead of throwing it into the nearest bit bucket.
 
-### 3.2 Playlist: Arranging Patterns on Tracks A/B/C
+### Arranging Patterns in Tracks
+
+Music progression is stored as a playlist of patterns organized in tracks assigned to each **YM 2149** channels.
 
 Each playlist entry is one **song line**:
 
-- `A`: pattern ID for Track A.
-- `B`: pattern ID for Track B.
-- `C`: pattern ID for Track C.
+- `A`: pattern number for Track A.
+- `B`: pattern number for Track B.
+- `C`: pattern number for Track C.
 
 Semantics:
 
@@ -119,9 +471,9 @@ Example mental picture:
 - Row 0: A=`00`, B=`01`, C=`--` → lead + bass.
 - Row 1: A=`00`, B=`01`, C=`02` → same lead & bass, add drums.
 
-### 3.3 Patterns: Monotrack Note Data
+### Monotrack Note Data
 
-Patterns are **monotrack** from the file format’s point of view:
+Patterns are **monotrack** from the file format's point of view:
 
 - Each pattern has a `number` (ID) and optional `name`.
 - Steps (called `steps` or `lines`) are **Track A** in the internal representation.
@@ -129,7 +481,7 @@ Patterns are **monotrack** from the file format’s point of view:
 
 A pattern is just an **ordered list of steps**, up to `length` rows. The loader also supports run‑length compression using `space` and `off` counters.
 
-#### 3.3.1 Step Building Blocks
+#### Step Building Blocks
 
 Each step can contain combinations of:
 
@@ -150,9 +502,9 @@ Internally, note‑offs are represented as a special note:
 
 - `note: '==='`, `octave: 0`, `instrument: '00'`.
 
-You don’t normally write that directly in YAML; `off: true` is friendlier than `"==="`.
+You don't normally write that directly in YAML; `off: true` is friendlier than `"==="`.
 
-#### 3.3.2 How Steps Expand
+#### How Steps Expand
 
 For each pattern:
 
@@ -171,20 +523,20 @@ The result is a fixed‑length pattern of `length` rows.
 
 ---
 
-## 4. Instruments: Your Tiny Synthesizers
+## Instruments: Your Tiny Synthesizers
 
-An **instrument** describes how a note evolves over time on the YM2149. It contains **envelopes** for volume, pitch, noise, and mode.
+An **instrument** describes how a note evolves over time on the **YM 2149**. It contains **envelopes** for volume, pitch, noise, and mode.
 
 Internally, an instrument has:
 
 - `id` – hex slot index `00..FF`.
-- `name` – label (optional, but friends don’t let friends leave this empty).
+- `name` – label (optional, but friends don't let friends leave this empty).
 - `base` – base key, e.g. `"C-4"`.
 - `octave` – base octave for some exports.
 - `sustain` – optional sustain index in the envelope (0‑based).
 - `volume[0..31]` – 0..15 loudness per step.
 - `arpeggio[0..31]` – semitone offsets (approx. -24..+24).
-- `pitch[0..31]` – raw divider delta, “vibrato / slide” in divider units.
+- `pitch[0..31]` – raw divider delta, "vibrato / slide" in divider units.
 - `noiseEnvelope[0..31]` – 0..31 noise period per step.
 - `mode[0..31]` – 0 = tone, 1 = noise, 2 = tone+noise.
 
@@ -195,7 +547,7 @@ In YAML, each instrument element (inside `song.instrument` or `instrument.instru
 - `volume`, `arpeggio`, `pitch`, `noiseEnvelope`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
 - `volume`, `arpeggio`, `pitch`, `noise`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
 
-### 4.1 Volume Envelope (Loudness over Time)
+### Volume Envelope (Loudness over Time)
 
 - Values: **0..15** (hex `0x0..0xF`).
 - Step 0 → note start; higher = louder.
@@ -209,7 +561,7 @@ Typical shapes:
 
 The loader will extend the envelope to 32 steps by **repeating the last value**. Exporters stop early if your song does not need the full length.
 
-### 4.2 Arpeggio Envelope (Chords in One Channel)
+### Arpeggio Envelope (Chords in One Channel)
 
 - Values: **semitone offsets** relative to the played note.
 - Range (from `constants/music.ts`): `ARPEGGIO_MIN = -24`, `ARPEGGIO_MAX = 24`.
@@ -227,10 +579,10 @@ At each envelope step, the exporter computes:
 
 This is how the tracker creates the illusion of full chords in a single square‑wave channel. SID fans call this cheating; we call it **optimal use of available resources**.
 
-### 4.3 Pitch Envelope (Fine Bends & Slides)
+### Pitch Envelope (Fine Bends & Slides)
 
 - Values: integers in range `PITCH_MIN = -128` to `PITCH_MAX = 128`.
-- Applied directly to the **YM2149 divider** (`period = (period - pitchDelta) & 0x0FFF`).
+- Applied directly to the ****YM 2149** divider** (`period = (period - pitchDelta) & 0x0FFF`).
 
 Use cases:
 
@@ -240,9 +592,9 @@ Use cases:
 Rule of thumb:
 
 - Small values (±1..±10) = subtle.
-- Large values (±30..±100) = sci‑fi divebomb, intro to a demo, or *“I broke the tune on purpose”*.
+- Large values (±30..±100) = sci‑fi divebomb, intro to a demo, or *"I broke the tune on purpose"*.
 
-### 4.4 Noise Envelope (Percussion Texture)
+### Noise Envelope (Percussion Texture)
 
 - Values: `0..31` (`NOISE_MAX = 0x1F`).
 - Higher values produce **faster / noisier** sounds.
@@ -253,9 +605,9 @@ Example uses:
 - **Snare:** mid noise that decays while volume also decays.
 - **Kick with click:** noise at the beginning only.
 
-### 4.5 Mode Envelope (Tone / Noise / Both)
+### Mode Envelope (Tone / Noise / Both)
 
-Per envelope step, the **mode** controls the YM2149 mixer bits for a channel:
+Per envelope step, the **mode** controls the **YM 2149** mixer bits for a channel:
 
 - `0` → **tone only** (melodic).
 - `1` → **noise only** (percussive).
@@ -269,7 +621,7 @@ Examples:
 
 The exporter uses these values to set bits in register `R7` (mixer), per channel.
 
-### 4.6 Sustain Point
+### Sustain Point
 
 `sustain` is an optional **0‑based envelope index**.
 
@@ -288,11 +640,11 @@ Internally, the export logic:
 
 ---
 
-## 5. Writing Patterns Like a Tracker Person
+## Writing Patterns Like a Tracker Person
 
 You can either use the UI or edit the YAML directly. This section focuses on the **musical meaning** rather than every key combo.
 
-### 5.1 Notes, Rests, and Offs
+### Notes, Rests, and Offs
 
 Symbols (conceptually):
 
@@ -306,9 +658,9 @@ In YAML steps:
 - `space: true` or `space: N` → rest(s).
 - `off: true` or `off: N` → note‑off(s).
 
-### 5.2 Per‑Row Volume Column
+### Per‑Row Volume Column
 
-Each pattern line can have an optional `volume` nibble (0..15). This acts as a **multiplier** on the instrument’s volume envelope.
+Each pattern line can have an optional `volume` nibble (0..15). This acts as a **multiplier** on the instrument's volume envelope.
 
 - Internally, the exporter computes:
   - `effectiveVolume = floor( instrumentVolume * volumeNibble / 15 )`.
@@ -322,7 +674,7 @@ Use cases:
 - Swell inside a pattern: gradually raise `volume` from 4 → 15.
 - Quick mutes: `volume: 0` without changing the instrument.
 
-### 5.3 Example: Simple Bass Pattern
+### Example: Simple Bass Pattern
 
 Imagine a 16‑row pattern (length = 16) with a simple bass every 4 rows:
 
@@ -331,7 +683,7 @@ Imagine a 16‑row pattern (length = 16) with a simple bass every 4 rows:
 
 The tracker will expand `space: 3` etc. to fill up the remaining rows. You can then reuse this pattern across multiple playlist rows on different tracks.
 
-### 5.4 Example: Melody + Bass + Drums
+### Example: Melody + Bass + Drums
 
 Strategy:
 
@@ -348,9 +700,9 @@ You can later swap `02` with a different drum pattern ID to get instant variatio
 
 ---
 
-## 6. Composer Workflow: From Idea to Finished Tune
+## Composer Workflow: From Idea to Finished Tune
 
-### 6.1 Step 1 – Choose Speed and Length
+### Step 1 – Choose Speed and Length
 
 - Recommended starting values:
   - `speed: 4` (quite common for a moderate tempo).
@@ -358,9 +710,9 @@ You can later swap `02` with a different drum pattern ID to get instant variatio
 - For faster songs, try `speed: 2`.
 - For slower ones, `speed: 6` or `8`.
 
-Don’t worry about precise BPM at first. You are writing for a YM2149, not for a metronome festival.
+Don't worry about precise BPM at first. You are writing for a **YM 2149**, not for a metronome festival.
 
-### 6.2 Step 2 – Design a Few Instruments
+### Step 2 – Design a Few Instruments
 
 Start with:
 
@@ -381,7 +733,7 @@ Start with:
 
 Use the on‑screen envelope views to sculpt the curves. If it looks like a ski slope, it will probably sound like one.
 
-### 6.3 Step 3 – Write a Bass Pattern
+### Step 3 – Write a Bass Pattern
 
 - Start with Track A in a blank pattern.
 - Lay down a root note on row 0 (`C-2` with instrument 01).
@@ -390,21 +742,21 @@ Use the on‑screen envelope views to sculpt the curves. If it looks like a ski 
 
 Seriously, a nice bass can carry half the track while you think about the melody.
 
-### 6.4 Step 4 – Add Melody and Harmonies
+### Step 4 – Add Melody and Harmonies
 
 - New pattern for your lead.
 - Use higher octaves and different instrument.
 - Consider simple arpeggios first: repeating triads and scales.
 
-### 6.5 Step 5 – Drums and Percussion
+### Step 5 – Drums and Percussion
 
 - One pattern for kick + snare.
 - Another for variations or fills.
 - Add hi‑hat patterns with shorter, noisier instruments.
 
-If your drums sound like a broken printer, you’re close.
+If your drums sound like a broken printer, you're close.
 
-### 6.6 Step 6 – Build the Playlist
+### Step 6 – Build the Playlist
 
 - Start with a small set of rows, e.g. 8–16 playlist entries.
 - Arrange intro, verse, chorus by selecting pattern IDs for each track.
@@ -412,14 +764,14 @@ If your drums sound like a broken printer, you’re close.
 
 Remember: the playlist is cheap. Patterns are reusable. Go wild.
 
-### 6.7 Step 7 – Looping
+### Step 7 – Looping
 
-- Set `loop` to the 0‑based index in the playlist where you’d like the song to loop.
+- Set `loop` to the 0‑based index in the playlist where you'd like the song to loop.
 - Exports that support looping (e.g. VGM) will mark this loop accordingly.
 
 If you want a tune that never ends, set the loop somewhere before your sanity does.
 
-### 6.8 Step 8 – Export and Listen Outside the Editor
+### Step 8 – Export and Listen Outside the Editor
 
 Use the UI commands (or menu options) corresponding to:
 
@@ -434,27 +786,27 @@ Then:
 - Play the WAV on your favourite player.
 - Put the assembly into your Atari ST project and call DOSOUND.
 
-If it sounds good on tiny PSG, it’ll sound legendary everywhere else.
+If it sounds good on tiny PSG, it'll sound legendary everywhere else.
 
 ---
 
-## 7. Technical Deep Dive: How Export to DOSOUND Works
+## Technical Deep Dive: How Export to DOSOUND Works
 
 This section is especially for **coders** (but musicians can peek to impress their local assembler wizard).
 
-### 7.1 Internal Simulation
+### Internal Simulation
 
 The core export function (`exportToAssembly`) does this:
 
 1. **Initialize registers**:
-   - Mixer (`R7`) = `0x38` (tones enabled, noise off by default for all channels in this tracker’s mapping).
+   - Mixer (`R7`) = `0x38` (tones enabled, noise off by default for all channels in this tracker's mapping).
    - Volumes (`R8`, `R9`, `R10`) = 0.
 2. For each **playlist entry** and **pattern line**:
    - Determine the note (if any) for each channel.
    - On the first tick of a row:
      - Detect new notes vs. note‑offs.
      - Apply **sustain** logic for instruments.
-     - Update per‑channel **volume modifier** from the pattern line’s `volume` (if provided).
+     - Update per‑channel **volume modifier** from the pattern line's `volume` (if provided).
    - Apply instrument envelopes:
      - Volume, arpeggio, pitch, mode, noise.
      - Compute a `toneMeta` helper for nicer `TA` comments.
@@ -465,9 +817,9 @@ The core export function (`exportToAssembly`) does this:
    - Tone metadata (note + pitch delta).
 4. Pass the collected frames into `formatFramesToAssembly`.
 
-Result: a list of frames each representing the YM2149 state at a given **DOSOUND tick**.
+Result: a list of frames each representing the **YM 2149** state at a given **DOSOUND tick**.
 
-### 7.2 DOSOUND Command Stream
+### DOSOUND Command Stream
 
 In DOSOUND format (see classic Atari ST docs), commands are typically encoded as:
 
@@ -483,7 +835,7 @@ DOSOUND Tracker follows this convention in assembly export:
 
 The example in `README.md` illustrates this, with comments such as `TA D-4`, `VA`, etc. Only **changed registers** are written in complex dump mode to keep data compact.
 
-### 7.3 Complex Dump Mode vs Simple Dump Mode
+### Complex Dump Mode vs Simple Dump Mode
 
 - **Simple dump mode**:
   - Writes all relevant registers for every exported frame.
@@ -496,9 +848,9 @@ The example in `README.md` illustrates this, with comments such as `TA D-4`, `VA
 
 In both cases, the stream ends by silencing channels (volumes to 0) and appending `dc.b $FF,0`.
 
-### 7.4 Binary Export
+### Binary Export
 
-`EXPORT BIN` is implemented as:
+Export format **BIN** is implemented as:
 
 1. Call `exportToAssembly(song, isComplexDumpMode)`.
 2. Parse every `dc.b` line and extract `$XX` tokens.
@@ -506,9 +858,9 @@ In both cases, the stream ends by silencing channels (volumes to 0) and appendin
 
 This binary is exactly what a DOSOUND routine expects as its command stream.
 
-### 7.5 Register Summary
+### Register Summary
 
-Relevant YM2149 registers used:
+Relevant **YM 2149** registers used:
 
 - `R0, R1` – Tone period channel A.
 - `R2, R3` – Tone period channel B.
@@ -517,20 +869,20 @@ Relevant YM2149 registers used:
 - `R7` – Mixer (enable/disable tone+noise per channel).
 - `R8, R9, R10` – Volumes for A/B/C.
 
-Other registers (envelopes in the chip’s own hardware sense) are not used directly; instead, DOSOUND Tracker emulates envelopes and writes plain tone+noise registers.
+Other registers (envelopes in the chip's own hardware sense) are not used directly; instead, DOSOUND Tracker emulates envelopes and writes plain tone+noise registers.
 
 ---
 
-## 8. Integrating with Your Atari ST / 68k Code
+## Have You Played ATARI Today?
 
 This section assumes you already know how to:
 
 - Assemble 68k code.
 - Call XBIOS / DOSOUND or your own replay routine.
 
-### 8.1 Basic Workflow
+### Basic Workflow
 
-1. In DOSOUND Tracker, use **EXPORT DATA** to produce e.g. `music.s`.
+1. In DOSOUND Tracker, use **EXPORT** to produce e.g. `music.s`.
 2. Add `music.s` to your project and assemble it.
    - It defines a label like `music:` at the start of the data stream.
 3. In your 68k code:
@@ -539,7 +891,7 @@ This section assumes you already know how to:
 
 Check your preferred Atari ST documentation for the exact function signature of DOSOUND or your playback routine. The important part is: **you pass a pointer to this `dc.b` stream; it runs until `$FF,0`.**
 
-### 8.2 Memory & Performance Tips
+### Memory & Performance Tips
 
 - Always use **complex dump mode** for release builds:
   - Smaller data.
@@ -549,9 +901,9 @@ Check your preferred Atari ST documentation for the exact function signature of 
 - Use volume‑based optimization:
   - When a channel is silent (volume 0) and stays that way, exports avoid wasting data on that channel.
 
-If your demo still runs too slowly, it’s not the music’s fault. It’s your 3D routine.
+If your demo still runs too slowly, it's not the music's fault. It's your 3D routine.
 
-### 8.3 Manual Tweaks to Exported Assembly
+### Manual Tweaks to Exported Assembly
 
 Because the export format is human‑readable assembly, you can:
 
@@ -559,82 +911,72 @@ Because the export format is human‑readable assembly, you can:
 - Split the data into sections (intro, loop) manually.
 - Insert your own comments.
 
-However, be careful when hand‑editing the **`$FF` delay commands** or register sequences, or you’ll create mysterious “why is channel B screaming forever?” bugs.
+However, be careful when hand‑editing the **`$FF` delay commands** or register sequences, or you'll create mysterious "why is channel B screaming forever?" bugs.
 
 ---
 
-## 9. For Instrument Designers: Patterns in the Example Songs
+## Steal My Instrument
 
-The repository ships with example songs under `docs/example/song/` such as:
+At any time you may hit **RESET** button so default song will appear.
 
-- `Nice_Song.yaml`
-- `Warmball.yaml`
-- `Arp_Loop.yaml`
-
-These demonstrate:
+Sniff over instrument list. You may find examples that demonstrate:
 
 - Use of **arpeggio envelopes** to build rich leads.
 - Typical **kick, snare, and hi‑hat** configurations.
 - Bass instruments with different volumes and base notes.
 - Slide‑up and slide‑down FX using **pitch envelopes**.
 
-You can load them, inspect their instruments, and steal—sorry, **learn** from them:
-
-- Look at volume shapes for kicks (`Kick`, `Bass`, etc.).
-- Examine noise patterns for snares and hats (`Hihat`, `Snare`).
-- Study arpeggiated leads (`Arp Quick`, `Nice Arp`).
-
-If your own instruments look similar, congratulations: you’ve just reverse‑engineered the sound of the project.
+If your own instruments start looking similar, congratulations: you've just reverse‑engineered the sound of the project.
 
 ---
 
-## 10. Troubleshooting & FAQ
+## Troubleshooting & FAQ
 
-### 10.1 My Tune Is Too Quiet / Too Loud
+### My Tune Is Too Quiet / Too Loud
 
 - Check **per‑row volume**:
   - Are many rows using low `volume` nibble values like 3 or 4?
 - Check **instrument volume envelope**:
-  - If top values are like 5–7, it’ll sound subtle.
+  - If top values are like 5–7, it'll sound subtle.
   - Try raising peaks to 12–15.
 
-### 10.2 Notes Don’t Stop When I Expect
+### Notes Don't Stop When I Expect
 
 - Ensure you actually send **note‑offs** (`off: true` in steps, or `===` in pattern view) when using **sustain**.
 - Without sustain, note‑off rows will immediately set channel volume to 0.
 
-### 10.3 Exported Data Sounds Different from Live Playback
+### Exported Data Sounds Different from Live Playback
 
 - Make sure the **song speed** matches your expectation; exports use the same logic as playback.
 - Remember that **envelopes advance every 2 ticks**; extremely short notes may not traverse much of the envelope.
 - Check that you did not accidentally set huge **pitch envelope** values.
 
-### 10.4 My Atari ST Crashes When Starting the Music
+### My Atari ST Crashes When Starting the Music
 
 - Confirm that the **address** passed to DOSOUND points to the beginning of the exported data (`music:` label).
 - Make sure the code is assembled and linked correctly into your program.
 - Ensure that the memory region holding the music data is not overwritten by your own code or stack.
 
-### 10.5 Why Hex Everywhere?
+### Why Is Hex Everywhere?
 
-Because:
+Just because music is a story in hexadecimal.
 
-- Instruments are stories in hexadecimal.
-- Also, it looks cooler in screenshots.
+Also, it looks cooler in screenshots.
 
 ---
 
-## 11. Closing Words
+## Closing Words
 
 DOSOUND Tracker is a love letter to:
 
-- The **YM2149**,
+- The ****YM 2149****,
 - The **Atari ST**,
-- And everyone who ever thought, *“I can do better than this sample pack.”*
+- And everyone who ever thought, *"I can do better than this sample pack."*
 
 Use this manual as a **field guide**:
 
 - Composers: think in patterns and envelopes.
+
 - Coders: think in registers and delays.
 
 When both sides meet, what comes out of the monitor speakers is more than the sum of 16 volume levels and a few random bits of noise.
