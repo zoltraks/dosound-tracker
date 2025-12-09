@@ -1,0 +1,8 @@
+instrument:
+  name: Kick
+  type: dosound
+  version: 1
+  base: "D-3"
+  mode: [1, 0, 0, 1, 1, 1, 0]
+  volume: [11, 15, 11, 7, 4, 2, 0]
+  noise: [9, 0, 0, 6, 5, 4, 0]

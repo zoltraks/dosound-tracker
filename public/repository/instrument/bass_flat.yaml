@@ -1,0 +1,6 @@
+instrument:
+  name: Bass Flat
+  type: dosound
+  version: 1
+  base: "C-3"
+  volume: [13, 13, 13, 13, 0]

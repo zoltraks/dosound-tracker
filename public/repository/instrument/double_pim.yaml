@@ -1,0 +1,6 @@
+instrument:
+  name: Double Pim
+  type: dosound
+  version: 1
+  volume: [13, 12, 0, 0, 12, 11, 0]
+  arpeggio: [12, 0, 0, 0, 12, 0]
