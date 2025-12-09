@@ -168,3 +168,32 @@ When reloading application I can see for short time some of UI layout changes pr
 To hide it from the user maybe show blank area (black for dark theme or white for light theme) that will start fading out after 100 ms and disappear after short time 200 ms.
 
 ---
+
+
+Based on how "LOAD SONG" button has CSS defined:
+
+```
+  --load-song-btn-bg-left: #176f85;
+  --load-song-btn-bg-right: #2b3043;
+  --load-song-btn-border: #30acbe;
+```
+
+```
+.command-btn.load-song-btn {
+  background: linear-gradient(135deg, var(--load-song-btn-bg-left) 0%, var(--load-song-btn-bg-right) 100%);
+  border-color: var(--load-song-btn-border);
+}
+
+.command-btn.load-song-btn:hover {
+  background: linear-gradient(135deg, var(--load-song-btn-bg-right) 0%, var(--load-song-btn-bg-left) 100%);  
+  border-color: color-mix(in srgb, var(--load-song-btn-border) 30%, var(--button-border-hover) 70%);
+}
+```
+
+Make changes so button "PICK INST", "DEMO SONG" and "EXPORT" will also have their own CSS definitions.
+
+Copy colors from "LOAD SONG" button to "EXPORT" button style.
+Copy colors from "BUG" button to "PICK INST" button style.
+Copy colors from "NEW SONG button to "DEMO SONG" button style.
+
+---

@@ -44,6 +44,10 @@
   --debug-btn-active-border: #a855f7;
   --debug-btn-active-glow: rgba(168, 85, 247, 0.6);
 
+  --pick-inst-btn-bg-left: #2b745e;
+  --pick-inst-btn-bg-right: #0c3c4e;
+  --pick-inst-btn-border: #328f82;
+
   --reset-btn-bg-left: #702c31;
   --reset-btn-bg-right: #411919;
   --reset-btn-border: #ac3e3e;
@@ -52,6 +56,10 @@
   --load-song-btn-bg-right: #2b3043;
   --load-song-btn-border: #30acbe;
 
+  --export-btn-bg-left: #5d6b20;
+  --export-btn-bg-right: #30380b;
+  --export-btn-border: #83973b;
+
   --save-song-btn-bg-left: #246942;
   --save-song-btn-bg-right: #2b3043;
   --save-song-btn-border: #34bd8b;
@@ -59,6 +67,10 @@
   --new-song-btn-bg-left: #5421a0;
   --new-song-btn-bg-right: #2b3043;
   --new-song-btn-border: #9e58e0;
+
+  --demo-song-btn-bg-left: #5421a0;
+  --demo-song-btn-bg-right: #342446;
+  --demo-song-btn-border: #8a4ec2;
   
   --play-song-idle-bg: #263a32;
   --play-song-idle-border: #3a8265;
@@ -165,6 +177,10 @@
   --debug-btn-active-border: #7c3aed;
   --debug-btn-active-glow: rgba(124, 58, 237, 0.45);
 
+  --pick-inst-btn-bg-left: #814818;
+  --pick-inst-btn-bg-right: #573d1c;
+  --pick-inst-btn-border: #9c8607;
+
   --reset-btn-bg-left: #fee2e2;
   --reset-btn-bg-right: #fecaca;
   --reset-btn-border: #b91c1c;
@@ -173,6 +189,10 @@
   --load-song-btn-bg-right: #ffffff;
   --load-song-btn-border: #06b6d4;
 
+  --export-btn-bg-left: #e0faff;
+  --export-btn-bg-right: #ffffff;
+  --export-btn-border: #06b6d4;
+
   --save-song-btn-bg-left: #bbf7d0;
   --save-song-btn-bg-right: #ffffff;
   --save-song-btn-border: #16a34a;
@@ -180,6 +200,10 @@
   --new-song-btn-bg-left: #e9d5ff;
   --new-song-btn-bg-right: #ffffff;
   --new-song-btn-border: #7c3aed;
+
+  --demo-song-btn-bg-left: #e9d5ff;
+  --demo-song-btn-bg-right: #ffffff;
+  --demo-song-btn-border: #7c3aed;
   
   --play-song-idle-bg: #e8f8ed;
   --play-song-idle-border: #6cc896;
@@ -566,6 +590,16 @@ body {
   border-color: color-mix(in srgb, var(--new-song-btn-border) 30%, var(--button-border-hover) 70%);
 }
 
+.command-btn.demo-song-btn {
+  background: linear-gradient(135deg, var(--demo-song-btn-bg-left) 0%, var(--demo-song-btn-bg-right) 100%);
+  border-color: var(--demo-song-btn-border);
+}
+
+.command-btn.demo-song-btn:hover {
+  background: linear-gradient(135deg, var(--demo-song-btn-bg-right) 0%, var(--demo-song-btn-bg-left) 100%);
+  border-color: color-mix(in srgb, var(--demo-song-btn-border) 30%, var(--button-border-hover) 70%);
+}
+
 .command-btn.load-song-btn {
   background: linear-gradient(135deg, var(--load-song-btn-bg-left) 0%, var(--load-song-btn-bg-right) 100%);
   border-color: var(--load-song-btn-border);
@@ -574,6 +608,16 @@ body {
 .command-btn.load-song-btn:hover {
   background: linear-gradient(135deg, var(--load-song-btn-bg-right) 0%, var(--load-song-btn-bg-left) 100%);  
   border-color: color-mix(in srgb, var(--load-song-btn-border) 30%, var(--button-border-hover) 70%);
+}
+
+.command-btn.export-btn {
+  background: linear-gradient(135deg, var(--export-btn-bg-left) 0%, var(--export-btn-bg-right) 100%);
+  border-color: var(--export-btn-border);
+}
+
+.command-btn.export-btn:hover {
+  background: linear-gradient(135deg, var(--export-btn-bg-right) 0%, var(--export-btn-bg-left) 100%);
+  border-color: color-mix(in srgb, var(--export-btn-border) 30%, var(--button-border-hover) 70%);
 }
 
 .command-btn.save-song-btn {
@@ -601,6 +645,17 @@ body {
   background: linear-gradient(135deg, var(--debug-btn-active-bg-left) 0%, var(--debug-btn-active-bg-right) 100%);
   border-color: var(--debug-btn-active-border);
   color: var(--text-primary);
+  box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
+}
+
+.command-btn.pick-inst-btn {
+  background: linear-gradient(135deg, var(--pick-inst-btn-bg-left) 0%, var(--pick-inst-btn-bg-right) 100%);
+  border-color: var(--pick-inst-btn-border);
+}
+
+.command-btn.pick-inst-btn:hover {
+  background: linear-gradient(135deg, var(--pick-inst-btn-bg-right) 0%, var(--pick-inst-btn-bg-left) 100%);
+  border-color: var(--pick-inst-btn-border);
   box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
 }
 

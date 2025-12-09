@@ -324,14 +324,14 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
         <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
         <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
-        <button onClick={onPickInstrument} className="command-btn">PICK INST</button>
-        <button onClick={onDemoSong} className="command-btn">DEMO SONG</button>
+        <button onClick={onPickInstrument} className="command-btn pick-inst-btn">PICK INST</button>
+        <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO SONG</button>
         <button
           onClick={event => {
             event.stopPropagation();
             onOpenExport();
           }}
-          className="command-btn"
+          className="command-btn export-btn"
         >
           EXPORT
         </button>
