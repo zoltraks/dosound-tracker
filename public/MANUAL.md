@@ -1,4 +1,4 @@
-# Manual for Composers and Assembly Wizards
+# Assembly Music Wizard Book
 
 *Real music is made in HEX.*
 
