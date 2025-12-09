@@ -9,3 +9,8 @@ But I can't just "click" for a regular note play on my phone.
 
 ---
 
+Now I can play piano.
+When I touch piano, all the time I see CSS effect of changing background color for a moment, the same as when a panel is changing focus.
+I should not see this effect every time when I touch piano key as piano keyboard is alredy focused.
+
+---

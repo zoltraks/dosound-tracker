@@ -496,9 +496,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       setPressedKeys(prev => new Set(prev).add(keyId));
       playNote(note, octave);
     }
-    
-    setActiveSection('piano');
-  }, [pressedKeys, playNote, setActiveSection]);
+
+    if (!isActive) {
+      setActiveSection('piano');
+    }
+  }, [isActive, pressedKeys, playNote, setActiveSection]);
 
   const handlePianoKeyUp = useCallback((note: string, octave: number) => {
     const keyId = `${note}${octave}`;
@@ -539,7 +541,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}
-        onClick={() => setActiveSection('piano')}
+        onClick={() => {
+          if (!isActive) {
+            setActiveSection('piano');
+          }
+        }}
       >
         <div className="piano-keys">
           {pianoKeys.map((key) => {
