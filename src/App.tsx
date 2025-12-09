@@ -607,7 +607,6 @@ const App: React.FC = () => {
         const base = Math.floor(rawLoop as number);
         const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
 
-        lastSequencerPositionRef.current = null;
         setPosition(loopIndex, 0, 0);
         return;
       }
