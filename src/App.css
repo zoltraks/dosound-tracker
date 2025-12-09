@@ -36,8 +36,8 @@
   --button-active: #3b425b;
   --button-border-hover: #dee7f7;
   
-  --debug-btn-bg-left: #86552d;
-  --debug-btn-bg-right: #583812;
+  --debug-btn-bg-left: #774b26;
+  --debug-btn-bg-right: #36230a;
   --debug-btn-border: #af7239;
   --debug-btn-active-bg-left: #7d4ba0;
   --debug-btn-active-bg-right: #5b2f7b;
@@ -45,7 +45,7 @@
   --debug-btn-active-glow: rgba(168, 85, 247, 0.6);
 
   --reset-btn-bg-left: #702c31;
-  --reset-btn-bg-right: #75303b91;
+  --reset-btn-bg-right: #411919;
   --reset-btn-border: #ac3e3e;
   
   --load-song-btn-bg-left: #176f85;
