@@ -8,7 +8,7 @@ This document proposes refactoring changes to reduce the size of source code fil
 
 ### 1. Extract MIDI Actions from App.tsx
 
-**File:** `src/App.tsx` (currently 3597 lines)
+**File:** `src/App.tsx` (currently 3696 lines)
 
 **Proposal:** Extract MIDI note event handling logic into a new custom hook `useMidiActions`.
 
@@ -40,7 +40,7 @@ This document proposes refactoring changes to reduce the size of source code fil
 
 ### 3. Extract Song I/O Utilities from useDataManagement.ts
 
-**File:** `src/hooks/useDataManagement.ts` (currently 1494 lines)
+**File:** `src/hooks/useDataManagement.ts` (currently 1505 lines)
 
 **Proposal:** Extract song and instrument save/load logic into utility functions.
 
