@@ -2464,4 +2464,11 @@ body {
   .download-toggle {
     display: none;
   }
+
+  .modal-dialog.text-display {
+    width: calc(100vw - 6px);
+    max-width: calc(100vw - 6px);
+    margin-left: 3px;
+    margin-right: 3px;
+  }
 }
