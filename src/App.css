@@ -278,6 +278,37 @@ body {
   transition: background-color 0.3s ease, color 1s ease, border-color 1.5s ease, box-shadow 0.5s ease;
 }
 
+.app-initial-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 1;
+  animation-name: app-initial-overlay-fade-out;
+  animation-duration: 200ms;
+  animation-delay: 200ms;
+  animation-timing-function: ease-out;
+  animation-fill-mode: forwards;
+}
+
+.app-initial-overlay-dark {
+  background-color: #000000;
+}
+
+.app-initial-overlay-light {
+  background-color: #ffffff;
+}
+
+@keyframes app-initial-overlay-fade-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 /* Header Panel */
 .header-panel {
   display: grid;
