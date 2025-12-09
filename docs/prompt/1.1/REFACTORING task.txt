@@ -1,4 +1,5 @@
 Make refactoring proposal for the current version.
+This refactoring proposal will be used as a guide for AI assisted code generation.
 Analyse the project deeply from scratch.
 Focus on extracting functionality to reduce the size of the source code files.
 Omit sound generation procedures, it's working properly and we don't want to break it.
