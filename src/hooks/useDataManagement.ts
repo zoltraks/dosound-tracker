@@ -703,11 +703,9 @@ export const useDataManagement = () => {
     }
   }, [currentSong]);
 
-  const loadSong = useCallback((file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
+  const loadSongFromText = useCallback(
+    (content: string) => {
       try {
-        const content = e.target?.result as string;
         const newSong = parseSongFromYaml(content);
 
         setCurrentSong(newSong);
@@ -723,9 +721,21 @@ export const useDataManagement = () => {
         console.error('Error loading song:', error);
         setSongError('Error loading song file. Please check the file format.');
       }
-    };
-    reader.readAsText(file);
-  }, [setCurrentInstrument, setSongError]);
+    },
+    [setCurrentInstrument, setSongError]
+  );
+
+  const loadSong = useCallback(
+    (file: File) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = (e.target?.result ?? '') as string;
+        loadSongFromText(content);
+      };
+      reader.readAsText(file);
+    },
+    [loadSongFromText]
+  );
 
   const saveInstrument = useCallback(() => {
     try {
@@ -1489,6 +1499,7 @@ export const useDataManagement = () => {
     optimizeSong,
     renumberSong,
     triggerFileLoad,
-    isSongDirty
+    isSongDirty,
+    loadSongFromText,
   };
 };

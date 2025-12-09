@@ -38,6 +38,8 @@ interface CommandPanelProps {
   midiInputEnabled: boolean;
   midiOutputEnabled: boolean;
   onShowMidi: () => void;
+  onPickInstrument: () => void;
+  onDemoSong: () => void;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -76,7 +78,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onTranspose,
   midiInputEnabled,
   midiOutputEnabled,
-  onShowMidi
+  onShowMidi,
+  onPickInstrument,
+  onDemoSong,
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
@@ -320,6 +324,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
         <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
         <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
         <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
+        <button onClick={onPickInstrument} className="command-btn">PICK INST</button>
+        <button onClick={onDemoSong} className="command-btn">DEMO SONG</button>
         <button
           onClick={event => {
             event.stopPropagation();

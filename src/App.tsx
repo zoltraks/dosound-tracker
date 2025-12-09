@@ -26,6 +26,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { ModalContainer } from './components/ModalContainer';
 import { ExportModal } from './modals/ExportModal';
+import { FilePickerModal } from './modals/FilePickerModal';
 import { AppLayout } from './components/AppLayout';
 import { TracksSection } from './components/TracksSection';
 import { InstrumentSection } from './components/InstrumentSection';
@@ -225,7 +226,9 @@ const App: React.FC = () => {
     songError,
     setSongError,
     optimizeSong,
-    renumberSong
+    renumberSong,
+    isSongDirty,
+    loadSongFromText,
   } = useDataManagement();
 
   const {
@@ -1050,15 +1053,32 @@ const App: React.FC = () => {
     setPosition,
   });
 
+  const [pendingNewSongAction, setPendingNewSongAction] = useState<'new-song' | 'demo-song'>('new-song');
+
+  const [isRepositoryInstrumentOpen, setIsRepositoryInstrumentOpen] = useState(false);
+  const [isDemoSongPickerOpen, setIsDemoSongPickerOpen] = useState(false);
+
   const handleShowAbout = useCallback(() => {
     setIsAboutOpen(true);
   }, []);
 
   const handleRequestNewSong = useCallback(() => {
+    setPendingNewSongAction('new-song');
     setIsNewSongConfirmOpen(true);
   }, []);
 
+  const openDemoSongPicker = useCallback(() => {
+    setIsDemoSongPickerOpen(true);
+  }, []);
+
   const handleConfirmNewSong = useCallback(() => {
+    if (pendingNewSongAction === 'demo-song') {
+      setIsNewSongConfirmOpen(false);
+      setPendingNewSongAction('new-song');
+      openDemoSongPicker();
+      return;
+    }
+
     createNewSong();
     setCurrentOctave(3);
     setChannelMutes([false, false, false]);
@@ -1067,10 +1087,18 @@ const App: React.FC = () => {
     setActiveSection('volume');
 
     setIsNewSongConfirmOpen(false);
-  }, [createNewSong, setPosition, setActiveSection]);
+    setPendingNewSongAction('new-song');
+  }, [
+    pendingNewSongAction,
+    createNewSong,
+    setPosition,
+    setActiveSection,
+    openDemoSongPicker,
+  ]);
 
   const handleCancelNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(false);
+    setPendingNewSongAction('new-song');
   }, []);
 
   const handleRequestReset = useCallback(() => {
@@ -1212,6 +1240,10 @@ const App: React.FC = () => {
     }
   }, []);
 
+  const handleOpenRepositoryInstrumentPicker = useCallback(() => {
+    setIsRepositoryInstrumentOpen(true);
+  }, []);
+
   const handleInstrumentFileContent = useCallback((content: string) => {
     if (!content) {
       return;
@@ -1289,6 +1321,84 @@ const App: React.FC = () => {
   const handleCancelInstrumentTypeWarning = useCallback(() => {
     cancelInstrumentTypeWarning();
   }, [cancelInstrumentTypeWarning]);
+
+  const handlePickRepositoryInstrument = useCallback(
+    (fileUrl: string) => {
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to load instrument file.');
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            throw new Error('Instrument file appears to be HTML, treating as missing.');
+          }
+
+          return response.text();
+        })
+        .then(text => {
+          handleInstrumentFileContent(text);
+        })
+        .catch(error => {
+          console.error('Error loading repository instrument:', error);
+          setInstrumentError('Error loading instrument file. Please check the file format.');
+        })
+        .finally(() => {
+          setIsRepositoryInstrumentOpen(false);
+        });
+    },
+    [handleInstrumentFileContent, setInstrumentError]
+  );
+
+  const handleDemoSongClick = useCallback(() => {
+    if (isSongDirty) {
+      setPendingNewSongAction('demo-song');
+      setIsNewSongConfirmOpen(true);
+      return;
+    }
+    openDemoSongPicker();
+  }, [isSongDirty, openDemoSongPicker]);
+
+  const handlePickDemoSong = useCallback(
+    (fileUrl: string) => {
+      fetch(fileUrl)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Failed to load song file.');
+          }
+
+          const contentType = response.headers.get('content-type') || '';
+          if (contentType.includes('text/html')) {
+            throw new Error('Song file appears to be HTML, treating as missing.');
+          }
+
+          return response.text();
+        })
+        .then(text => {
+          loadSongFromText(text);
+          setPosition(0, 0, 0);
+          setSharedCurrentLine(0);
+          setActiveSection('playlist');
+          setChannelMutes([false, false, false]);
+        })
+        .catch(error => {
+          console.error('Error loading demo song:', error);
+          setSongError('Error loading song file. Please check the file format.');
+        })
+        .finally(() => {
+          setIsDemoSongPickerOpen(false);
+        });
+    },
+    [
+      loadSongFromText,
+      setPosition,
+      setSharedCurrentLine,
+      setActiveSection,
+      setChannelMutes,
+      setSongError,
+    ]
+  );
 
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
@@ -3318,6 +3428,8 @@ const App: React.FC = () => {
               midiInputEnabled={midiInputEnabled}
               midiOutputEnabled={midiOutputEnabled}
               onShowMidi={handleShowMidi}
+              onPickInstrument={handleOpenRepositoryInstrumentPicker}
+              onDemoSong={handleDemoSongClick}
             />
           }
           tracksSection={
@@ -3532,6 +3644,24 @@ const App: React.FC = () => {
               midiLoadError={midiLoadError}
               midiCopySummary={midiCopySummary}
               onMidiSystemReset={handleMidiSystemReset}
+            />
+            <FilePickerModal
+              isOpen={isRepositoryInstrumentOpen}
+              title="Pick Instrument"
+              directory="repository/instrument"
+              mode="pick"
+              defaultSortDescending={false}
+              onClose={() => setIsRepositoryInstrumentOpen(false)}
+              onPick={handlePickRepositoryInstrument}
+            />
+            <FilePickerModal
+              isOpen={isDemoSongPickerOpen}
+              title="Demo Songs"
+              directory="repository/song"
+              mode="pick"
+              defaultSortDescending={false}
+              onClose={() => setIsDemoSongPickerOpen(false)}
+              onPick={handlePickDemoSong}
             />
             <ExportModal
               isOpen={isExportModalOpen}

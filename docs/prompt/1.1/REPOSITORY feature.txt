@@ -37,3 +37,12 @@ Replace download list with this new component in "download" mode - so links will
 Move the download/LIST.txt loading entirely into DownloadModal/FilePickerModal and drop the App.tsx useEffect as I prefer the logic to live only in the modal.
 
 ---
+
+Add "PICK INST" button after "DELETE INST" before "EXPORT".
+When clicked open file picker window for "repository/instrument" directory and after user picks existing file, load it like "LOAD INST" into selected instrument slot.
+
+Add "DEMO SONG" button after "PICK INST" before "EXPORT".
+When clicked open file picker window for "repository/song" directory and after user picks existing file load song from it.
+Before opening file picker window check if current song was modified and if so, show confirmation first like when clicking "NEW SONG".
+
+---
