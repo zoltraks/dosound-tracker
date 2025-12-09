@@ -34,6 +34,7 @@
   --button-text: #e2e8ff;
   --button-hover: #343a52;
   --button-active: #3b425b;
+  --button-border-hover: #dee7f7;
   
   --debug-btn-bg-left: #86552d;
   --debug-btn-bg-right: #583812;
@@ -49,15 +50,15 @@
   
   --load-song-btn-bg-left: #176f85;
   --load-song-btn-bg-right: #2b3043;
-  --load-song-btn-border: #27c0d8;
+  --load-song-btn-border: #30acbe;
 
   --save-song-btn-bg-left: #246942;
   --save-song-btn-bg-right: #2b3043;
-  --save-song-btn-border: #34d399;
+  --save-song-btn-border: #34bd8b;
 
-  --new-song-btn-bg-left: #4c1d95;
+  --new-song-btn-bg-left: #5421a0;
   --new-song-btn-bg-right: #2b3043;
-  --new-song-btn-border: #a855f7;
+  --new-song-btn-border: #9e58e0;
   
   --play-song-idle-bg: #263a32;
   --play-song-idle-border: #3a8265;
@@ -154,6 +155,7 @@
   --button-text: #1a202c;
   --button-hover: #f7fafc;
   --button-active: #fef3c7;
+  --button-border-hover: #38393a;
   
   --debug-btn-bg-left: #814818;
   --debug-btn-bg-right: #573d1c;
@@ -522,7 +524,7 @@ body {
 
 .command-btn.new-song-btn:hover {
   background: linear-gradient(135deg, var(--new-song-btn-bg-right) 0%, var(--new-song-btn-bg-left) 100%);
-  border-color: var(--new-song-btn-border);
+  border-color: color-mix(in srgb, var(--new-song-btn-border) 30%, var(--button-border-hover) 70%);
 }
 
 .command-btn.load-song-btn {
@@ -531,8 +533,8 @@ body {
 }
 
 .command-btn.load-song-btn:hover {
-  background: linear-gradient(135deg, var(--load-song-btn-bg-right) 0%, var(--load-song-btn-bg-left) 100%);
-  border-color: var(--load-song-btn-border);
+  background: linear-gradient(135deg, var(--load-song-btn-bg-right) 0%, var(--load-song-btn-bg-left) 100%);  
+  border-color: color-mix(in srgb, var(--load-song-btn-border) 30%, var(--button-border-hover) 70%);
 }
 
 .command-btn.save-song-btn {
@@ -542,7 +544,7 @@ body {
 
 .command-btn.save-song-btn:hover {
   background: linear-gradient(135deg, var(--save-song-btn-bg-right) 0%, var(--save-song-btn-bg-left) 100%);
-  border-color: var(--save-song-btn-border);
+  border-color: color-mix(in srgb, var(--load-song-btn-border) 30%, var(--button-border-hover) 70%);
 }
 
 .command-btn.debug-btn {
