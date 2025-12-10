@@ -10,7 +10,8 @@ export function useDownloadAvailability(): boolean {
   useEffect(() => {
     const checkDownloadAvailability = async () => {
       try {
-        const response = await fetch('download/LIST.txt');
+        const url = `download/LIST.txt?ts=${Date.now()}`;
+        const response = await fetch(url, { cache: 'no-store' });
         
         // If LIST.txt doesn't exist or can't be fetched, no downloads available
         if (!response.ok) {

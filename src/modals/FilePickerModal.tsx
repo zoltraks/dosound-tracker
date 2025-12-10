@@ -98,8 +98,8 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
         const listPath = normalizedDir
           ? `${normalizedDir}/${LIST_FILE_NAME}`
           : LIST_FILE_NAME;
-
-        const response = await fetch(listPath);
+        const listUrl = `${listPath}?ts=${Date.now()}`;
+        const response = await fetch(listUrl, { cache: 'no-store' });
         if (!response.ok) {
           throw new Error('Failed to load file list.');
         }
