@@ -32,13 +32,13 @@ function createLocalStorageMock(): Storage {
 
 // Install before each test run so state is isolated per test file.
 beforeEach(() => {
-  const globalAny = globalThis as any;
+  const globalWindow = globalThis as Record<string, unknown>;
 
-  if (typeof globalAny.window === 'undefined') {
-    globalAny.window = {};
+  if (typeof globalWindow.window === 'undefined') {
+    globalWindow.window = {};
   }
 
-  const existing = globalAny.window.localStorage as Storage | undefined;
+  const existing = (globalWindow.window as any).localStorage as Storage | undefined;
 
   if (!existing ||
       typeof existing.getItem !== 'function' ||
@@ -46,11 +46,10 @@ beforeEach(() => {
       typeof existing.removeItem !== 'function' ||
       typeof existing.clear !== 'function') {
     const mock = createLocalStorageMock();
-    globalAny.window.localStorage = mock;
-    globalAny.localStorage = mock;
+    (globalThis as any).localStorage = mock;
   } else {
     // If jsdom provided a working localStorage, make sure tests start clean.
     existing.clear();
-    globalAny.localStorage = existing;
+    globalWindow.localStorage = existing;
   }
 });
