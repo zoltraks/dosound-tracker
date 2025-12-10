@@ -8,7 +8,8 @@ import {
   DEFAULT_SONG_AUTHOR,
   parseSongFromYaml,
 } from '../utils/songParser';
-import { buildSongYamlForExport, buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/songIO';
+import { buildSongYamlForExport } from '../utils/songIO';
+import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/instrumentIO';
 import { isInstrumentEmpty } from '../utils/instrument';
 
 type TrackKey = 'trackA' | 'trackB' | 'trackC';

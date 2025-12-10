@@ -2,6 +2,7 @@ import yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { validateSongData } from './validation';
+import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -54,39 +55,8 @@ interface PatternStepNodeYaml {
   [key: string]: unknown;
 }
 
-export const DEFAULT_BASE_KEY = 'C-4';
 export const DEFAULT_SONG_TITLE = 'New Song';
 export const DEFAULT_SONG_AUTHOR = 'Author Name';
-
-export const formatBaseKey = (note: string, octave: number): string => {
-  const upperNote = note.toUpperCase();
-  return upperNote.endsWith('#')
-    ? `${upperNote}${octave}`
-    : `${upperNote}-${octave}`;
-};
-
-export const parseBaseKey = (value: unknown): { note: string; octave: number } | null => {
-  if (typeof value !== 'string') return null;
-  const raw = value.trim().toUpperCase();
-  if (!raw) return null;
-
-  let notePart = raw.charAt(0);
-  let rest = raw.slice(1);
-
-  if (rest.startsWith('#')) {
-    notePart += '#';
-    rest = rest.slice(1);
-  }
-
-  if (rest.startsWith('-')) {
-    rest = rest.slice(1);
-  }
-
-  const octave = parseInt(rest, 10);
-  if (!Number.isFinite(octave)) return null;
-
-  return { note: notePart, octave };
-};
 
 const parseVolumeNibble = (value: unknown): number | null => {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -114,58 +84,9 @@ const parseVolumeNibble = (value: unknown): number | null => {
 };
 
 /**
- * Normalize an arbitrary YAML color value to a 3-digit hex string (e.g. "#abc")
- * or null when the value is missing/invalid.
- *
- * Accepts either 3-digit or 6-digit hex with optional leading '#'. For 6-digit
- * colors, each channel is quantized to the nearest 4-bit value so that the
- * resulting 3-digit color approximates the original.
+ * Re-export shared formatting helpers for compatibility with existing imports.
  */
-export const normalizeInstrumentColor = (value: unknown): string | null => {
-  if (typeof value !== 'string') {
-    return null;
-  }
-
-  const raw = value.trim();
-  if (!raw) {
-    return null;
-  }
-
-  let lower = raw.toLowerCase();
-
-  if (!lower.startsWith('#')) {
-    if (!/^[0-9a-f]{3}(?:[0-9a-f]{3})?$/u.test(lower)) {
-      return null;
-    }
-    lower = `#${lower}`;
-  }
-
-  if (!/^#([0-9a-f]{3}|[0-9a-f]{6})$/u.test(lower)) {
-    return null;
-  }
-
-  const hex = lower.slice(1);
-
-  if (hex.length === 3) {
-    return `#${hex}`;
-  }
-
-  const toNibble = (pair: string): string => {
-    const value8 = parseInt(pair, 16);
-    if (!Number.isFinite(value8)) {
-      return '0';
-    }
-    const nibble = Math.round(value8 / 17);
-    const clamped = Math.max(0, Math.min(15, nibble));
-    return clamped.toString(16);
-  };
-
-  const r = toNibble(hex.slice(0, 2));
-  const g = toNibble(hex.slice(2, 4));
-  const b = toNibble(hex.slice(4, 6));
-
-  return `#${r}${g}${b}`;
-};
+export { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
 
 export const parseSongFromYaml = (content: string): Song => {
   const parsed = yaml.load(content) as unknown;

@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import yaml from 'js-yaml';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
+import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
+import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
 
 interface MidiModalProps {
   isOpen: boolean;
@@ -42,8 +44,6 @@ export const MidiModal: React.FC<MidiModalProps> = ({
 }) => {
   const [localConfig, setLocalConfig] = useState<MidiConfig>(config);
 
-  const inScrollRef = useRef<HTMLDivElement | null>(null);
-  const outScrollRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -54,17 +54,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
-    const container = inScrollRef.current;
-    if (!container) return;
-    container.scrollTop = container.scrollHeight;
-  }, [isOpen, inMonitor.length]);
-
-  useEffect(() => {
-    if (!isOpen) return;
-    const container = outScrollRef.current;
-    if (!container) return;
-    container.scrollTop = container.scrollHeight;
-  }, [isOpen, outMonitor.length]);
+  }, [isOpen]);
 
   const hasInputs = devices.inputs.length > 0;
   const hasOutputs = devices.outputs.length > 0;
@@ -365,68 +355,25 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                 </label>
               </div>
 
-              <div className="midi-device-column">
-                <label className="midi-label" htmlFor="midi-input-select">
-                  MIDI Input Device
-                </label>
-                <select
-                  id="midi-input-select"
-                  className="midi-select"
-                  value={effectiveInputId || ''}
-                  onChange={event => {
-                    const nextId = event.target.value || null;
-                    setLocalConfig(prev => ({ ...prev, inputId: nextId }));
-                    onChangeConfig({ inputId: nextId });
-                  }}
-                  disabled={!isSupported || !hasInputs}
-                >
-                  {!hasInputs && <option value="">No input devices</option>}
-                  {hasInputs && (
-                    <option value="">(none)</option>
-                  )}
-                  {devices.inputs.map(device => (
-                    <option key={device.id} value={device.id}>
-                      {device.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <MidiDeviceSelect
+                id="midi-input-select"
+                label="MIDI Input Device"
+                devices={devices.inputs}
+                disabled={!isSupported || !hasInputs}
+                selectedId={effectiveInputId}
+                emptyLabel="No input devices"
+                noneLabel="(none)"
+                onChange={nextId => {
+                  setLocalConfig(prev => ({ ...prev, inputId: nextId }));
+                  onChangeConfig({ inputId: nextId });
+                }}
+              />
 
-              <div className="midi-monitor-panel">
-                <div className="midi-monitor-title">
-                  <span>MIDI IN</span>
-                  <button
-                    className="midi-monitor-copy-btn"
-                    type="button"
-                    onClick={() => handleCopyMonitor(inMonitor, 'MIDI IN')}
-                    disabled={inMonitor.length === 0}
-                  >
-                    COPY
-                  </button>
-                </div>
-                <div className="midi-monitor-header">
-                  <span className="midi-col time">Time</span>
-                  <span className="midi-col data">Data</span>
-                  <span className="midi-col device">Device</span>
-                  <span className="midi-col channel">Ch</span>
-                  <span className="midi-col type">Type</span>
-                  <span className="midi-col note">Note</span>
-                  <span className="midi-col value">Value</span>
-                </div>
-                <div className="midi-monitor-body" ref={inScrollRef}>
-                  {inMonitor.map(entry => (
-                    <div key={entry.id} className="midi-monitor-row">
-                      <span className="midi-col time">{entry.time}</span>
-                      <span className="midi-col data">{entry.data}</span>
-                      <span className="midi-col device">{entry.device}</span>
-                      <span className="midi-col channel">{entry.channel}</span>
-                      <span className="midi-col type">{entry.type}</span>
-                      <span className="midi-col note">{entry.note}</span>
-                      <span className="midi-col value">{entry.value ?? ''}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <MidiMonitorPanel
+                title="MIDI IN"
+                entries={inMonitor}
+                onCopy={handleCopyMonitor}
+              />
             </div>
 
             <div className="midi-io-column">
@@ -458,68 +405,25 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                 </label>
               </div>
 
-              <div className="midi-device-column">
-                <label className="midi-label" htmlFor="midi-output-select">
-                  MIDI Output Device
-                </label>
-                <select
-                  id="midi-output-select"
-                  className="midi-select"
-                  value={effectiveOutputId || ''}
-                  onChange={event => {
-                    const nextId = event.target.value || null;
-                    setLocalConfig(prev => ({ ...prev, outputId: nextId }));
-                    onChangeConfig({ outputId: nextId });
-                  }}
-                  disabled={!isSupported || !hasOutputs}
-                >
-                  {!hasOutputs && <option value="">No output devices</option>}
-                  {hasOutputs && (
-                    <option value="">(none)</option>
-                  )}
-                  {devices.outputs.map(device => (
-                    <option key={device.id} value={device.id}>
-                      {device.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <MidiDeviceSelect
+                id="midi-output-select"
+                label="MIDI Output Device"
+                devices={devices.outputs}
+                disabled={!isSupported || !hasOutputs}
+                selectedId={effectiveOutputId}
+                emptyLabel="No output devices"
+                noneLabel="(none)"
+                onChange={nextId => {
+                  setLocalConfig(prev => ({ ...prev, outputId: nextId }));
+                  onChangeConfig({ outputId: nextId });
+                }}
+              />
 
-              <div className="midi-monitor-panel">
-                <div className="midi-monitor-title">
-                  <span>MIDI OUT</span>
-                  <button
-                    className="midi-monitor-copy-btn"
-                    type="button"
-                    onClick={() => handleCopyMonitor(outMonitor, 'MIDI OUT')}
-                    disabled={outMonitor.length === 0}
-                  >
-                    COPY
-                  </button>
-                </div>
-                <div className="midi-monitor-header">
-                  <span className="midi-col time">Time</span>
-                  <span className="midi-col data">Data</span>
-                  <span className="midi-col device">Device</span>
-                  <span className="midi-col channel">Ch</span>
-                  <span className="midi-col type">Type</span>
-                  <span className="midi-col note">Note</span>
-                  <span className="midi-col value">Value</span>
-                </div>
-                <div className="midi-monitor-body" ref={outScrollRef}>
-                  {outMonitor.map(entry => (
-                    <div key={entry.id} className="midi-monitor-row">
-                      <span className="midi-col time">{entry.time}</span>
-                      <span className="midi-col data">{entry.data}</span>
-                      <span className="midi-col device">{entry.device}</span>
-                      <span className="midi-col channel">{entry.channel}</span>
-                      <span className="midi-col type">{entry.type}</span>
-                      <span className="midi-col note">{entry.note}</span>
-                      <span className="midi-col value">{entry.value ?? ''}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+              <MidiMonitorPanel
+                title="MIDI OUT"
+                entries={outMonitor}
+                onCopy={handleCopyMonitor}
+              />
             </div>
           </div>
         </div>

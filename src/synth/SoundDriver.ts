@@ -1,5 +1,6 @@
 import { YM2149 } from './YM2149';
 import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
+import { optimizeEvents } from './EventOptimizer';
 
 export const DOSOUND_REGISTER_WRITE = 0xFF;
 export const DOSOUND_END_MARKER = 0x00;
@@ -122,7 +123,7 @@ export class SoundDriver {
     events.push({ type: 'register', register: 0x0A, value: 0x00 }); // Channel C volume
     events.push({ type: 'delay', delay: DOSOUND_END_MARKER });
 
-    return this.optimizeEvents(events);
+    return optimizeEvents<SoundEvent>(events);
   }
 
   private processPattern(pattern: Pattern, channel: number, events: SoundEvent[]): void {
@@ -214,27 +215,6 @@ export class SoundDriver {
     }
 
     return mixer;
-  }
-
-  private optimizeEvents(events: SoundEvent[]): SoundEvent[] {
-    const optimized: SoundEvent[] = [];
-    let lastRegisterValues: { [key: number]: number } = {};
-    
-    for (const event of events) {
-      if (event.type === 'register' && event.register !== undefined && event.value !== undefined) {
-        // Only add register write if value changed
-        if (lastRegisterValues[event.register] !== event.value) {
-          optimized.push(event);
-          lastRegisterValues[event.register] = event.value;
-        }
-      } else if (event.type === 'delay') {
-        optimized.push(event);
-        // Clear register history on delay to allow re-sending same values
-        lastRegisterValues = {};
-      }
-    }
-    
-    return optimized;
   }
 
   playEvents(events: SoundEvent[]): void {

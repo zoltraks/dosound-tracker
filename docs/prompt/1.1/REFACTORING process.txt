@@ -26,3 +26,7 @@ And then proceed with step 2  (hooking useInstrumentActions into  App.tsx) and t
 Tidy any remaining hook dependency warnings in useDataManagement / useMidiActions in a minimal, non-behavior-changing way
 
 ---
+
+Make refactorings across the plan for all phases. Use existing file naming conventions regardless the guidelines from regactoring proposal.
+
+---
