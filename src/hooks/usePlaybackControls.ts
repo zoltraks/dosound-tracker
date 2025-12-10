@@ -26,6 +26,7 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
     startPatternLoop,
     startSong,
     updatePatternLength,
+    updateSongLoop,
   } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
 
   useEffect(() => {
@@ -35,6 +36,11 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
   useEffect(() => {
     updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
   }, [currentSong.patternLength, updatePatternLength]);
+
+  useEffect(() => {
+    const playlistLength = currentSong.playlist.length;
+    updateSongLoop(playlistLength, currentSong.loop as number | null | undefined);
+  }, [currentSong.playlist, currentSong.loop, updateSongLoop]);
 
   return {
     sequencerState,

@@ -1180,3 +1180,117 @@ App.tsx:773 23:28:41.591 | 081 | 008E | 08 | --- -- - | E-1 04 - | E-5 02 - |
 
 ---
 
+It seems we are back again with old "PLAY SONG" behavior and now the delay is too long (100 ms vs expected 80 ms).
+
+```
+App.tsx:757 23:30:37.619 | 081 | 0074 | 3A | --- -- - | --- -- - | --- -- - |
+App.tsx:757 23:30:37.699 | 080 | 0076 | 3B | --- -- - | --- -- - | E-5 03 - |
+App.tsx:757 23:30:37.778 | 079 | 0078 | 3C | --- -- - | D-2 01 - | G-5 02 - |
+App.tsx:757 23:30:37.859 | 081 | 007A | 3D | --- -- - | --- -- - | E-5 03 - |
+App.tsx:757 23:30:37.939 | 080 | 007C | 3E | --- -- - | D-2 04 - | B-5 02 - |
+App.tsx:757 23:30:38.019 | 080 | 007E | 3F | --- -- - | --- -- - | G-5 03 - |
+App.tsx:757 23:30:38.099 | 080 | 0080 | 00 | E-3 00 - | E-1 01 - | B-5 03 - |
+App.tsx:757 23:30:38.199 | 100 | 0082 | 01 | --- -- - | --- -- - | E-6 03 - |
+App.tsx:757 23:30:38.276 | 077 | 0084 | 02 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:757 23:30:38.360 | 084 | 0086 | 03 | --- -- - | --- -- - | --- -- - |
+App.tsx:757 23:30:38.437 | 077 | 0088 | 04 | --- -- - | --- -- - | --- -- - |
+App.tsx:757 23:30:38.519 | 082 | 008A | 05 | --- -- - | --- -- - | --- -- - |
+App.tsx:757 23:30:38.597 | 078 | 008C | 06 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:757 23:30:38.679 | 082 | 008E | 07 | --- -- - | --- -- - | --- -- - |
+App.tsx:757 23:30:38.759 | 080 | 0090 | 08 | --- -- - | E-1 04 - | E-5 02 - |
+```
+
+---
+
+"PLAY LINE" works stable, there is always a delay around 80 ms.
+
+"PLAY SONG" still shows a 20 ms too long delay at first step after loop.
+
+```
+App.tsx:752 23:34:41.383 | 080 | 0070 | 38 | D-3 00 - | C-2 04 - | E-5 02 - |
+App.tsx:752 23:34:41.463 | 080 | 0072 | 39 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:34:41.544 | 081 | 0074 | 3A | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:34:41.624 | 080 | 0076 | 3B | --- -- - | --- -- - | E-5 03 - |
+App.tsx:752 23:34:41.704 | 080 | 0078 | 3C | --- -- - | D-2 01 - | G-5 02 - |
+App.tsx:752 23:34:41.784 | 080 | 007A | 3D | --- -- - | --- -- - | E-5 03 - |
+App.tsx:752 23:34:41.863 | 079 | 007C | 3E | --- -- - | D-2 04 - | B-5 02 - |
+App.tsx:752 23:34:41.944 | 081 | 007E | 3F | --- -- - | --- -- - | G-5 03 - |
+App.tsx:752 23:34:42.045 | 101 | 0080 | 00 | E-3 00 - | E-1 01 - | B-5 03 - |
+App.tsx:752 23:34:42.124 | 079 | 0082 | 01 | --- -- - | --- -- - | E-6 03 - |
+App.tsx:752 23:34:42.202 | 078 | 0084 | 02 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:752 23:34:42.283 | 081 | 0086 | 03 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:34:42.362 | 079 | 0088 | 04 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:34:42.444 | 082 | 008A | 05 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:34:42.523 | 079 | 008C | 06 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:752 23:34:42.603 | 080 | 008E | 07 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:34:42.683 | 080 | 0090 | 08 | --- -- - | E-1 04 - | E-5 02 - |
+```
+
+---
+
+
+When I "PLAY LINE" playback works correctly, there are no delays between last row and the first after loop.
+Test song: public/repository/song/Nice_Song.yaml
+
+This is the part of log in the moment that line is played and loop occurs:
+
+```
+App.tsx:752 23:40:51.988 | 080 | 0070 | 38 | D-3 00 - | C-2 04 - | E-5 02 - |
+App.tsx:752 23:40:52.069 | 081 | 0072 | 39 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:40:52.149 | 080 | 0074 | 3A | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:40:52.228 | 079 | 0076 | 3B | --- -- - | --- -- - | E-5 03 - |
+App.tsx:752 23:40:52.309 | 081 | 0078 | 3C | --- -- - | D-2 01 - | G-5 02 - |
+App.tsx:752 23:40:52.389 | 080 | 007A | 3D | --- -- - | --- -- - | E-5 03 - |
+App.tsx:752 23:40:52.469 | 080 | 007C | 3E | --- -- - | D-2 04 - | B-5 02 - |
+App.tsx:752 23:40:52.549 | 080 | 007E | 3F | --- -- - | --- -- - | G-5 03 - |
+App.tsx:752 23:40:52.632 | 083 | 0080 | 00 | E-3 00 - | E-1 01 - | B-5 03 - |
+App.tsx:752 23:40:52.708 | 076 | 0082 | 01 | --- -- - | --- -- - | E-6 03 - |
+App.tsx:752 23:40:52.788 | 080 | 0084 | 02 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:752 23:40:52.868 | 080 | 0086 | 03 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:40:52.949 | 081 | 0088 | 04 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:40:53.028 | 079 | 008A | 05 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:40:53.108 | 080 | 008C | 06 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:752 23:40:53.189 | 081 | 008E | 07 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:40:53.269 | 080 | 0090 | 08 | --- -- - | E-1 04 - | E-5 02 - |
+```
+
+When I "PLAY SONG" there is audible delay in the first row after loop.
+
+```
+App.tsx:752 23:41:31.841 | 080 | 0070 | 38 | D-3 00 - | C-2 04 - | E-5 02 - |
+App.tsx:752 23:41:31.921 | 080 | 0072 | 39 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:41:32.001 | 080 | 0074 | 3A | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:41:32.082 | 081 | 0076 | 3B | --- -- - | --- -- - | E-5 03 - |
+App.tsx:752 23:41:32.161 | 079 | 0078 | 3C | --- -- - | D-2 01 - | G-5 02 - |
+App.tsx:752 23:41:32.238 | 077 | 007A | 3D | --- -- - | --- -- - | E-5 03 - |
+App.tsx:752 23:41:32.321 | 083 | 007C | 3E | --- -- - | D-2 04 - | B-5 02 - |
+App.tsx:752 23:41:32.401 | 080 | 007E | 3F | --- -- - | --- -- - | G-5 03 - |
+App.tsx:752 23:41:32.503 | 102 | 0080 | 00 | E-3 00 - | E-1 01 - | B-5 03 - |
+App.tsx:752 23:41:32.582 | 079 | 0082 | 01 | --- -- - | --- -- - | E-6 03 - |
+App.tsx:752 23:41:32.661 | 079 | 0084 | 02 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:752 23:41:32.741 | 080 | 0086 | 03 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:41:32.821 | 080 | 0088 | 04 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:41:32.901 | 080 | 008A | 05 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:41:32.981 | 080 | 008C | 06 | --- -- - | E-1 01 - | --- -- - |
+App.tsx:752 23:41:33.062 | 081 | 008E | 07 | --- -- - | --- -- - | --- -- - |
+App.tsx:752 23:41:33.141 | 079 | 0090 | 08 | --- -- - | E-1 04 - | E-5 02 - |
+```
+
+It seems to me that the issue may be caused by the way the music loops after all playlist lines have been played. 
+Looping a single line works very well, yet when playing the entire playlist,
+at the moment of transitioning from the last line to the line indicated by the loop parameter,
+there is a noticeably perceptible delay in the first step.
+And it's in the logs.
+Perhaps the error lies in the fact that during the loop when playing the entire playlist,
+something like a reset occurs or the music is played as if from the beginning,
+whereas in reality the playback should not be interrupted; after finishing the last line of the playlist,
+the next line should simply be the one indicated by the loop parameter, 
+or if it is not defined, playback should end.
+
+From previous tryings to solve that problem it looks that the only extra work in "PLAY SONG"
+at the loop boundary is a couple of integer comparisons and assignments inside scheduleTick
+(checking playlistLength, lastIndex, hasLoop, etc.).
+But this doesn't answer why we are facing such a longer interval in the first step after loop.
+
+---
+

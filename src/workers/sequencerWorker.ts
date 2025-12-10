@@ -9,6 +9,9 @@ let currentPattern = 0;
 let ticksPerRow = 3;
 let patternLength = 64;
 let nextTickTime = 0;
+let playlistLength = 0;
+let loopIndex = 0;
+let hasLoop = false;
 
 interface WorkerStartMessage {
   type: 'start';
@@ -80,7 +83,18 @@ function scheduleTick() {
       // In song mode, advance to the next playlist position when the pattern wraps.
       // In pattern-loop mode, stay on the same playlist position and just wrap rows.
       if (!isPatternLoop) {
-        nextPattern++;
+        if (playlistLength > 0) {
+          const lastIndex = playlistLength - 1;
+          if (nextPattern >= lastIndex && hasLoop) {
+            // Wrap to loop index when we step past the last playlist entry
+            // and a valid loop position is defined.
+            nextPattern = loopIndex;
+          } else {
+            nextPattern++;
+          }
+        } else {
+          nextPattern++;
+        }
       }
     }
   }

@@ -639,17 +639,12 @@ const App: React.FC = () => {
           return;
         }
 
-        const base = Math.floor(rawLoop as number);
-        const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
-
-        // Jump the sequencer back to the loop index and treat this tick as the
-        // first row of the looped playlist position. Because audio callbacks
-        // only run on 'tick' messages (and not on the immediate 'update'
-        // message from setPosition), this does not cause double-processing of
-        // the row, but it avoids leaving the worker at an out-of-range
-        // playlist index for an extra tick.
-        setPosition(loopIndex, 0, state.currentTick);
-        effectivePatternIndex = loopIndex;
+        // When a valid loop is defined, the worker will wrap the playlist
+        // index internally using playlistLength and loopIndex, so we should
+        // never observe an out-of-range pattern here in normal operation.
+        // Leave effectivePatternIndex unchanged so we do not introduce any
+        // additional timing jitter; this branch effectively acts as a safety
+        // net only.
       }
 
       const currentPlaylistEntry = currentSong.playlist[effectivePatternIndex];

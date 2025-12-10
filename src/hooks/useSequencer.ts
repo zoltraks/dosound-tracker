@@ -61,6 +61,35 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     return baseInterval;
   }, []);
 
+  const updateSongLoop = useCallback(
+    (playlistLength: number, loop: number | null | undefined) => {
+      const clampedLength = Math.max(0, playlistLength | 0);
+
+      // Determine whether a valid loop index is present and clamp it into range.
+      let nextLoopIndex = 0;
+      let nextHasLoop = false;
+
+      if (typeof loop === 'number' && Number.isFinite(loop) && clampedLength > 0) {
+        const base = Math.floor(loop);
+        nextLoopIndex = Math.max(0, Math.min(clampedLength - 1, base));
+        nextHasLoop = true;
+      }
+
+      if (workerRef.current) {
+        workerRef.current.postMessage({
+          type: 'setParams',
+          data: {
+            playlistLength: clampedLength,
+            // Only send a meaningful loopIndex when looping is enabled.
+            loopIndex: nextHasLoop ? nextLoopIndex : 0,
+            hasLoop: nextHasLoop,
+          } as any,
+        } as any);
+      }
+    },
+    [],
+  );
+
   // Initialize Web Worker
   useEffect(() => {
     if (typeof Worker !== 'undefined') {
@@ -378,6 +407,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     jumpToLine,
     nextLine,
     previousLine,
-    updatePatternLength
+    updatePatternLength,
+    updateSongLoop
   };
 };
