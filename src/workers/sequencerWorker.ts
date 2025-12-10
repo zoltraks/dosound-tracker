@@ -38,6 +38,9 @@ interface WorkerSetParamsMessage {
     ticksPerRow?: number;
     patternLength?: number;
     tickInterval?: number;
+    playlistLength?: number;
+    loopIndex?: number;
+    hasLoop?: boolean;
   };
 }
 
@@ -94,9 +97,6 @@ function scheduleTick() {
   currentLine = nextLine;
   currentPattern = nextPattern;
 
-  // Debug timing: Log before sending message
-  const beforePostMessage = performance.now();
-
   // Emit the updated position so pattern wraps are sent immediately
   self.postMessage({
     type: 'tick',
@@ -104,9 +104,7 @@ function scheduleTick() {
       isPlaying: true,
       currentPattern,
       currentLine,
-      currentTick,
-      // Add debug timestamp
-      debugTimestamp: beforePostMessage
+      currentTick
     }
   });
 }

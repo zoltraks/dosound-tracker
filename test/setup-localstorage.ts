@@ -32,7 +32,7 @@ function createLocalStorageMock(): Storage {
 
 // Install before each test run so state is isolated per test file.
 beforeEach(() => {
-  const globalAny: any = globalThis as any;
+  const globalAny = globalThis as any;
 
   if (typeof globalAny.window === 'undefined') {
     globalAny.window = {};

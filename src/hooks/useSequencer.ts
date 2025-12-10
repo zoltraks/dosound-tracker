@@ -84,8 +84,8 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
             // Only send a meaningful loopIndex when looping is enabled.
             loopIndex: nextHasLoop ? nextLoopIndex : 0,
             hasLoop: nextHasLoop,
-          } as any,
-        } as any);
+          },
+        });
       }
     },
     [],
