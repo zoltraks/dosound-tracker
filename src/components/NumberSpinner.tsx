@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 
 interface NumberSpinnerProps {
@@ -10,7 +10,7 @@ interface NumberSpinnerProps {
   label?: string;
   ariaLabel?: string;
   className?: string;
-  inputRef?: React.Ref<HTMLInputElement> | React.RefObject<HTMLInputElement>;
+  inputRef?: (el: HTMLInputElement | null) => void;
   onInputKeyDown?: (event: React.KeyboardEvent<HTMLInputElement>) => void;
   onInputFocus?: () => void;
 }
@@ -29,22 +29,10 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
   onInputFocus
 }) => {
   const [inputValue, setInputValue] = useState<string>('');
-  const localRef = useRef<HTMLInputElement | null>(null);
-
-  const setMergedRef = useCallback(
-    (el: HTMLInputElement | null) => {
-      localRef.current = el;
-      if (typeof inputRef === 'function') {
-        inputRef(el);
-      } else if (inputRef && 'current' in inputRef) {
-        (inputRef as React.MutableRefObject<HTMLInputElement | null>).current = el;
-      }
-    },
-    [inputRef]
-  );
 
   useEffect(() => {
     if (value === null || value === undefined || Number.isNaN(value)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInputValue('');
     } else {
       setInputValue(String((value as number) | 0));
@@ -90,29 +78,32 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
     }
   }, []);
 
-  const getBaseForDelta = (): number => {
+  const getBaseForDelta = useCallback((): number => {
     const fromInput = parseValue(inputValue);
     if (fromInput !== null) return fromInput;
     if (typeof value === 'number' && Number.isFinite(value)) return value;
     if (typeof min === 'number') return min;
     return 0;
-  };
+  }, [inputValue, min, parseValue, value]);
 
-  const adjustBy = (delta: number) => {
-    const parsed = parseValue(inputValue);
-    const hasCurrentValue =
-      parsed !== null || (typeof value === 'number' && Number.isFinite(value));
+  const adjustBy = useCallback(
+    (delta: number) => {
+      const parsed = parseValue(inputValue);
+      const hasCurrentValue =
+        parsed !== null || (typeof value === 'number' && Number.isFinite(value));
 
-    if (!hasCurrentValue && delta > 0) {
-      const initial = typeof min === 'number' ? min : 0;
-      commitValue(String(initial));
-      return;
-    }
+      if (!hasCurrentValue && delta > 0) {
+        const initial = typeof min === 'number' ? min : 0;
+        commitValue(String(initial));
+        return;
+      }
 
-    const base = getBaseForDelta();
-    const next = base + delta;
-    commitValue(String(next));
-  };
+      const base = getBaseForDelta();
+      const next = base + delta;
+      commitValue(String(next));
+    },
+    [commitValue, getBaseForDelta, inputValue, min, parseValue, value]
+  );
 
   const handleBlur = useCallback(() => {
     commitValue(inputValue);
@@ -138,7 +129,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         onInputKeyDown(event);
       }
     },
-    [commitValue, inputValue, onInputKeyDown, step]
+    [adjustBy, commitValue, inputValue, onInputKeyDown, step]
   );
 
   const currentParsed = parseValue(inputValue);
@@ -146,7 +137,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
   return (
     <span className={`number-spinner ${className}`.trim()}>
       <input
-        ref={setMergedRef}
+        ref={inputRef}
         type="text"
         inputMode="numeric"
         pattern="-?[0-9]*"

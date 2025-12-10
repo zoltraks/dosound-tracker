@@ -189,7 +189,9 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
                 min={1}
                 max={16}
                 ariaLabel="MIDI channel (1-16)"
-                inputRef={channelInputRef}
+                inputRef={el => {
+                  channelInputRef.current = el;
+                }}
                 onInputKeyDown={(event) => handleInputKeyDown('channel', event)}
               />
             </div>
@@ -202,7 +204,9 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
                 min={0}
                 max={127}
                 ariaLabel="MIDI program (0-127)"
-                inputRef={programInputRef}
+                inputRef={el => {
+                  programInputRef.current = el;
+                }}
                 onInputKeyDown={(event) => handleInputKeyDown('program', event)}
               />
             </div>

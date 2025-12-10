@@ -182,7 +182,9 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 max={2030}
                 step={1}
                 ariaLabel="Song year"
-                inputRef={yearRef}
+                inputRef={el => {
+                  yearRef.current = el;
+                }}
                 onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('year')}
               />
@@ -197,7 +199,9 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 max={255}
                 step={2}
                 ariaLabel="Song speed"
-                inputRef={speedRef}
+                inputRef={el => {
+                  speedRef.current = el;
+                }}
                 onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('speed')}
               />
@@ -214,7 +218,9 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 max={256}
                 step={1}
                 ariaLabel="Pattern length"
-                inputRef={lengthRef}
+                inputRef={el => {
+                  lengthRef.current = el;
+                }}
                 onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('length')}
               />
@@ -229,7 +235,9 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
                 max={Math.max(0, song.playlist.length - 1)}
                 step={1}
                 ariaLabel="Playlist loop position"
-                inputRef={loopRef}
+                inputRef={el => {
+                  loopRef.current = el;
+                }}
                 onInputKeyDown={handleLoopInputKeyDown}
                 onInputFocus={() => setLastFocusedField('loop')}
               />
