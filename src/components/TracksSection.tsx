@@ -90,6 +90,7 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
                 onPatternChange={onPatternChange}
                 ym2149={ym2149}
                 currentInstrumentData={currentInstrument}
+                instruments={song.instruments}
                 isTargetTrack={targetTrackId === trackId}
                 onToggleLineFromCursor={onToggleLineFromCursor}
                 currentColumn={currentTrackColumn}

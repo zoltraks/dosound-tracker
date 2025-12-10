@@ -41,3 +41,12 @@ instrument:
 Also include it when saving and loading song in YAML format similar way.
 
 ---
+
+Make the elements in instrument list that are using "current" or "focused" style also use color mix for instruments that have color set like it is used with non current and not focused with "instrument-item-colored" style
+
+---
+
+Use also instrument color for each step in track content that has an entry with instrument number that has specified color element.
+Remember that this color should be also included when step is current one. 
+
+---

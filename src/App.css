@@ -1378,11 +1378,29 @@ body {
 
 .track-line.current {
   background-color: var(--track-inactive-bg);
+  border: 1px solid var(--track-active-border);
 }
 
 .track-panel.active .track-line.current {
   background-color: var(--track-active-bg);
-  border: 1px solid var(--track-active-border);
+}
+
+/* Per-line instrument color tinting in tracks */
+.track-line.track-line-colored {
+  background-color: color-mix(in srgb, var(--track-inactive-bg) 75%, var(--track-line-color, var(--track-inactive-bg)) 25%);
+}
+
+.track-panel.active .track-line.track-line-colored {
+  background-color: color-mix(in srgb, var(--track-active-bg) 75%, var(--track-line-color, var(--track-active-bg)) 25%);
+}
+
+/* Stronger tint for the current step so it stands out even when colored */
+.track-line.current.track-line-colored {
+  background-color: color-mix(in srgb, var(--track-inactive-bg) 60%, var(--track-line-color, var(--track-inactive-bg)) 40%);
+}
+
+.track-panel.active .track-line.current.track-line-colored {
+  background-color: color-mix(in srgb, var(--track-active-bg) 60%, var(--track-line-color, var(--track-active-bg)) 40%);
 }
 
 .beat-line {

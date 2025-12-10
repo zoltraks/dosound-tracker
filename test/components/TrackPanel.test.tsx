@@ -40,7 +40,7 @@ describe('TrackPanel', () => {
 
     const handleLineChange = vi.fn();
     const handlePatternChange = vi.fn();
-    const handleTogglePatternFromCursor = vi.fn();
+    const handleToggleLineFromCursor = vi.fn();
     const setActiveSection = vi.fn();
     const setCurrentColumn = vi.fn();
 
@@ -57,8 +57,9 @@ describe('TrackPanel', () => {
         onPatternChange={handlePatternChange}
         ym2149={null}
         currentInstrumentData={instrument}
+        instruments={[instrument]}
         isTargetTrack={true}
-        onTogglePatternFromCursor={handleTogglePatternFromCursor}
+        onToggleLineFromCursor={handleToggleLineFromCursor}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -79,7 +80,7 @@ describe('TrackPanel', () => {
 
     const handleLineChange = vi.fn();
     const handlePatternChange = vi.fn();
-    const handleTogglePatternFromCursor = vi.fn();
+    const handleToggleLineFromCursor = vi.fn();
     const setActiveSection = vi.fn();
     const setCurrentColumn = vi.fn();
 
@@ -96,8 +97,9 @@ describe('TrackPanel', () => {
         onPatternChange={handlePatternChange}
         ym2149={null}
         currentInstrumentData={instrument}
+        instruments={[instrument]}
         isTargetTrack={true}
-        onTogglePatternFromCursor={handleTogglePatternFromCursor}
+        onToggleLineFromCursor={handleToggleLineFromCursor}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}

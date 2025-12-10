@@ -19,6 +19,7 @@ interface TrackPanelProps {
   onPatternChange: (pattern: Pattern) => void;
   ym2149: YM2149 | null;
   currentInstrumentData: Instrument;
+  instruments: Instrument[];
   isTargetTrack: boolean;
   onToggleLineFromCursor: (lineIndex: number) => void;
   currentColumn: 'note' | 'volume';
@@ -43,6 +44,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onPatternChange,
     ym2149,
     currentInstrumentData,
+    instruments,
     isTargetTrack,
     onToggleLineFromCursor,
     currentColumn,
@@ -76,6 +78,24 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
+
+  const instrumentColorMap = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const inst of instruments) {
+      if (!inst || typeof inst.id !== 'string') {
+        continue;
+      }
+      const id = inst.id.trim().toUpperCase();
+      if (!id) {
+        continue;
+      }
+      const color = typeof inst.color === 'string' && inst.color.trim() ? inst.color : null;
+      if (color) {
+        map.set(id, color);
+      }
+    }
+    return map;
+  }, [instruments]);
 
   const effectiveVolume = useMemo(() => {
     if (!pattern) return 0x0f;
@@ -653,10 +673,24 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           const volumeIsActive = isCurrentLine && currentColumn === 'volume';
           const noteIsActive = isCurrentLine && currentColumn === 'note';
 
+          let instrumentColor: string | null = null;
+          if (noteData && typeof noteData.instrument === 'string') {
+            const instId = noteData.instrument.trim().toUpperCase();
+            if (instId) {
+              instrumentColor = instrumentColorMap.get(instId) ?? null;
+            }
+          }
+
+          const lineClassName = `${getLineClass(lineIndex)}${instrumentColor ? ' track-line-colored' : ''}`.trim();
+          const lineStyle = instrumentColor
+            ? ({ ['--track-line-color' as string]: instrumentColor } as React.CSSProperties)
+            : undefined;
+
           return (
             <div
               key={lineIndex}
-              className={getLineClass(lineIndex)}
+              className={lineClassName}
+              style={lineStyle}
               onClick={() => handleLineClick(lineIndex, 'note')}
             >
               <span className="note-data">
