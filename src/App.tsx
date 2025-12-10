@@ -16,6 +16,7 @@ import { useMessageSystem } from './hooks/useMessageSystem';
 import { useModalState } from './hooks/useModalState';
 import { useInstrumentWarnings } from './hooks/useInstrumentWarnings';
 import { useInstrumentActions } from './hooks/useInstrumentActions';
+import { useDownloadAvailability } from './hooks/useDownloadAvailability';
 import { YM2149 } from './synth/YM2149';
 import type { SequencerState } from './hooks/useSequencer';
 import type { Instrument, Note, Pattern } from './synth/SoundDriver';
@@ -156,6 +157,9 @@ const App: React.FC = () => {
     transposeAmountInput,
     setTransposeAmountInput,
   } = useAppState();
+  
+  // Check if download files are available
+  const hasDownloads = useDownloadAvailability();
 
   const [pendingExportType, setPendingExportType] = useState<ExportType>(exportType);
   const [pendingExportStrategy, setPendingExportStrategy] = useState<ExportStrategy>(exportStrategy);
@@ -2604,7 +2608,7 @@ const App: React.FC = () => {
               ym2149={ym2149Ref.current}
               currentInstrument={currentInstrument}
               previewChannel={previewChannel}
-              hasDownloads={true}
+              hasDownloads={hasDownloads}
               onShowDownloads={() => setIsDownloadOpen(true)}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}

@@ -1168,7 +1168,7 @@ body {
   flex-direction: column;
   overflow: hidden;
   flex-shrink: 0;
-  width: 42px;
+  width: 35px;
   height: 100%;
   box-shadow: var(--shadow-medium);
   border-radius: 3px;
