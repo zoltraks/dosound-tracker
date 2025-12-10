@@ -1,0 +1,218 @@
+Create ColorPicker component for our application.
+It will be used when selecting a color inside a modal window so it will take small space comparing to the whole application viewport.
+
+Here's a description for recreating this Color Picker component:
+
+## Color Picker Component Specification
+
+**Purpose:** A compact color picker for selecting 3-digit hex colors from a predefined palette or custom input.
+
+**Layout:**
+
+- Title: "Color Picker"
+- Full-width color preview bar
+  - Displays selected color as background
+  - Shows hex code centered inside
+  - Text color is white for dark colors (#000-#444, dark tones), black for light colors
+- 8×8 color grid (grid-cols-8, gap-2)
+  - 64 square buttons (aspect-square, rounded, border-2)
+  - Hover effects
+  - Selected color has yellow border
+  - Shows checkmark icon on selected color
+- Custom input section with toggle button labeled "HEX"
+
+**Color Palette (8 tones × 8 shades, ordered by rows):**
+```javascript
+gray: ['#000', '#222', '#444', '#666', '#888', '#aaa', '#ccc', '#eee']
+red: ['#900', '#b33', '#d55', '#f77', '#f99', '#fbb', '#fdd', '#fee']
+green: ['#090', '#3b3', '#5d5', '#7f7', '#9f9', '#bfb', '#dfd', '#efe']
+blue: ['#009', '#33b', '#55d', '#77f', '#99f', '#bbf', '#ddf', '#eef']
+orange: ['#930', '#b53', '#d75', '#f97', '#fb9', '#fdb', '#fec', '#fee']
+cyan: ['#099', '#3bb', '#5dd', '#7ff', '#9ff', '#bff', '#dff', '#eff']
+yellow: ['#990', '#bb3', '#dd5', '#ff7', '#ff9', '#ffb', '#ffd', '#ffe']
+magenta: ['#909', '#b3b', '#d5d', '#f7f', '#f9f', '#fbf', '#fdf', '#fef']
+```
+
+**Custom Input Features:**
+- "HEX" button
+- Input field with "#" prefix (font-mono)
+- Validates only hex characters (0-9, a-f), max 3 characters
+- "Apply" button (enabled only when 3 characters entered)
+- "Cancel" button to close input
+- Live preview showing color when 3 valid digits entered
+
+**State Management:**
+- `selectedColor` - currently selected color (default: '#888')
+- `customValue` - custom input value (3 hex digits without #)
+- `showCustomInput` - toggle for custom input visibility
+
+**Behavior:**
+- Clicking any palette color updates selection and closes custom input
+- Custom input auto-validates and limits to 3 hex characters
+- Preview updates live as user types valid 3-digit codes
+
+
+And here is the example React code that shows a demo using color picker.
+Treat it as a demo.
+
+```
+import { useState } from 'react';
+import { Check } from 'lucide-react';
+
+export default function ColorPickerDemo() {
+  const [selectedColor, setSelectedColor] = useState('#888');
+  const [customValue, setCustomValue] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
+
+  // 8x8 grid: 8 tones × 8 shades each = 64 colors
+  const colorPalette = {
+    gray: ['#000', '#222', '#444', '#666', '#888', '#aaa', '#ccc', '#eee'],
+    red: ['#900', '#b33', '#d55', '#f77', '#f99', '#fbb', '#fdd', '#fee'],
+    green: ['#090', '#3b3', '#5d5', '#7f7', '#9f9', '#bfb', '#dfd', '#efe'],
+    blue: ['#009', '#33b', '#55d', '#77f', '#99f', '#bbf', '#ddf', '#eef'],
+    orange: ['#930', '#b53', '#d75', '#f97', '#fb9', '#fdb', '#fec', '#fee'],
+    cyan: ['#099', '#3bb', '#5dd', '#7ff', '#9ff', '#bff', '#dff', '#eff'],
+    yellow: ['#990', '#bb3', '#dd5', '#ff7', '#ff9', '#ffb', '#ffd', '#ffe'],
+    magenta: ['#909', '#b3b', '#d5d', '#f7f', '#f9f', '#fbf', '#fdf', '#fef'],
+  };
+
+  const handleColorSelect = (color) => {
+    setSelectedColor(color);
+    setShowCustomInput(false);
+    setCustomValue('');
+  };
+
+  const handleCustomInput = (e) => {
+    let value = e.target.value.toLowerCase();
+    value = value.replace(/[^0-9a-f]/g, '');
+    
+    if (value.length > 3) {
+      value = value.slice(0, 3);
+    }
+    
+    setCustomValue(value);
+    
+    if (value.length === 3) {
+      setSelectedColor(`#${value}`);
+    }
+  };
+
+  const handleCustomSubmit = () => {
+    if (customValue.length === 3) {
+      setSelectedColor(`#${customValue}`);
+      setShowCustomInput(false);
+      setCustomValue('');
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-2xl font-bold text-gray-800 mb-6">Color Picker</h1>
+          
+          {/* Selected Color Display */}
+          <div 
+            className="mb-6 h-20 rounded-lg border-2 border-gray-300 shadow-inner flex items-center justify-center"
+            style={{ backgroundColor: selectedColor }}
+          >
+            <p 
+              className="text-2xl font-mono font-bold"
+              style={{ 
+                color: selectedColor === '#000' || selectedColor === '#222' || selectedColor === '#444' || selectedColor === '#009' || selectedColor === '#090' || selectedColor === '#900' || selectedColor === '#990' || selectedColor === '#930' || selectedColor === '#909' ? 'white' : 'black' 
+              }}
+            >
+              {selectedColor}
+            </p>
+          </div>
+
+          {/* 8x8 Color Grid */}
+          <div className="mb-6">
+            <div className="grid grid-cols-8 gap-2">
+              {Object.values(colorPalette).flat().map((color) => (
+                <button
+                  key={color}
+                  onClick={() => handleColorSelect(color)}
+                  className="relative w-full aspect-square rounded border-2 transition-all hover:scale-110 hover:shadow-md hover:z-10"
+                  style={{ 
+                    backgroundColor: color,
+                    borderColor: selectedColor === color ? '#3b82f6' : '#d1d5db'
+                  }}
+                  title={color}
+                >
+                  {selectedColor === color && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <Check 
+                        size={20} 
+                        className="drop-shadow-lg"
+                        style={{ 
+                          color: color === '#000' || color === '#222' || color === '#444' || color === '#009' || color === '#090' || color === '#900' || color === '#990' || color === '#930' || color === '#909' ? 'white' : 'black' 
+                        }} 
+                      />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Custom Color Input */}
+          <div>
+            {!showCustomInput ? (
+              <button
+                onClick={() => setShowCustomInput(true)}
+                className="w-full py-3 px-4 bg-blue-50 text-blue-600 rounded-lg border-2 border-blue-200 hover:bg-blue-100 transition-colors font-medium"
+              >
+                HEX
+              </button>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono">#</span>
+                    <input
+                      type="text"
+                      value={customValue}
+                      onChange={handleCustomInput}
+                      placeholder="abc"
+                      maxLength={3}
+                      className="w-full py-2 pl-8 pr-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none font-mono text-lg"
+                    />
+                  </div>
+                  <button
+                    onClick={handleCustomSubmit}
+                    disabled={customValue.length !== 3}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-medium"
+                  >
+                    Apply
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowCustomInput(false);
+                      setCustomValue('');
+                    }}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {customValue.length === 3 && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <div 
+                      className="w-6 h-6 rounded border border-gray-300"
+                      style={{ backgroundColor: `#${customValue}` }}
+                    />
+                    <span>Preview: #{customValue}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+---

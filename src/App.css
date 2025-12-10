@@ -1773,6 +1773,135 @@ body {
   box-sizing: border-box;
 }
 
+/* Color Picker (compact, modal-friendly) */
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.color-picker-title {
+  font-size: 11px;
+  font-weight: bold;
+  text-align: center;
+  color: var(--text-primary);
+}
+
+.color-preview-bar {
+  height: 22px;
+  border: 1px solid var(--border-color);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-inset);
+}
+
+.color-preview-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+}
+
+.color-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.color-grid-cell {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  box-shadow: var(--shadow-small);
+  transition: transform 0.12s ease-out, box-shadow 0.12s ease-out, border-color 0.12s ease-out;
+}
+
+.color-grid-cell-inner {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.color-grid-cell:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--border-bright);
+}
+
+.color-grid-cell-selected {
+  box-shadow: var(--shadow-medium), 0 0 4px rgba(250, 204, 21, 0.7);
+}
+
+.color-picker-hex-toggle {
+  width: 100%;
+  margin-top: 2px;
+}
+
+.color-picker-custom {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.color-picker-custom-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.color-picker-custom-input {
+  position: relative;
+  flex: 1;
+}
+
+.color-picker-custom-prefix {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+}
+
+.color-picker-custom-input-field {
+  width: 100%;
+  padding-left: 12px;
+  font-family: var(--font-mono);
+}
+
+.color-picker-apply-btn,
+.color-picker-cancel-btn {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
+.color-picker-custom-preview {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: var(--text-secondary);
+}
+
+.color-picker-custom-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  border: 1px solid var(--border-color);
+}
+
+.color-picker-custom-preview-label {
+  white-space: nowrap;
+}
+
 /* Playlist Panel */
 .playlist-panel {
   flex: 1;
