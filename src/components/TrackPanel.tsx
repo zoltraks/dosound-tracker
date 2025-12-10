@@ -20,6 +20,7 @@ interface TrackPanelProps {
   ym2149: YM2149 | null;
   currentInstrumentData: Instrument;
   instruments: Instrument[];
+  trackBackgroundEnabled: boolean;
   isTargetTrack: boolean;
   onToggleLineFromCursor: (lineIndex: number) => void;
   currentColumn: 'note' | 'volume';
@@ -45,6 +46,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     ym2149,
     currentInstrumentData,
     instruments,
+    trackBackgroundEnabled,
     isTargetTrack,
     onToggleLineFromCursor,
     currentColumn,
@@ -653,7 +655,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   return (
     <div
       ref={trackRef}
-      className={`track-panel track-${trackId.toLowerCase()} ${isActive ? 'active' : ''} ${!pattern ? 'disabled' : ''}`}
+      className={`track-panel track-${trackId.toLowerCase()} ${trackBackgroundEnabled ? 'track-colored' : ''} ${isActive ? 'active' : ''} ${!pattern ? 'disabled' : ''}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}

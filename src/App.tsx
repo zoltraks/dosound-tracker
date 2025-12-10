@@ -187,6 +187,19 @@ const App: React.FC = () => {
   const [isPasteTrackModalOpen, setIsPasteTrackModalOpen] = useState(false);
   const pasteTrackModalResolveRef = useRef<((mode: TrackPasteMode | null) => void) | null>(null);
 
+  const [trackBackgroundEnabled, setTrackBackgroundEnabled] = useState<boolean>(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-track-background-enabled');
+      if (stored === '0' || stored === '1') {
+        return stored === '1';
+      }
+    } catch {
+      // ignore
+    }
+    // Default: enabled (use per-track backgrounds)
+    return true;
+  });
+
   useEffect(() => {
     try {
       localStorage.setItem('dosound-tracker-paste-track-mode', pasteTrackMode);
@@ -309,6 +322,14 @@ const App: React.FC = () => {
       // ignore
     }
   }, [instrumentOctaves]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-track-background-enabled', trackBackgroundEnabled ? '1' : '0');
+    } catch {
+      // ignore
+    }
+  }, [trackBackgroundEnabled]);
 
   useEffect(() => {
     const id = currentInstrument?.id;
@@ -2426,6 +2447,10 @@ const App: React.FC = () => {
   }, [sendSystemReset]);
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
+  const handleToggleTrackBackground = useCallback(() => {
+    setTrackBackgroundEnabled(prev => !prev);
+  }, []);
+
   const previewChannel =
     activeSection === 'trackA'
       ? 0
@@ -2592,6 +2617,9 @@ const App: React.FC = () => {
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
               onHardStopLivePreview={handleHardStopLivePreview}
               onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
+              trackBackgroundEnabled={trackBackgroundEnabled}
+              onToggleTrackBackground={handleToggleTrackBackground}
+              isDarkMode={isDarkMode}
             />
           }
           instrumentSection={

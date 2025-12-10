@@ -1193,6 +1193,23 @@ body {
   box-sizing: border-box;
 }
 
+.track-bg-toggle {
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.track-bg-toggle-icon {
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+
 .position-content {
   flex: 1;
   overflow-y: scroll;
@@ -1281,17 +1298,17 @@ body {
   opacity: 0.7;
 }
 
-.track-panel.track-a {
+.track-panel.track-colored.track-a {
   background-color: var(--track-a-bg);
   background: linear-gradient(180deg, var(--track-a-bg), var(--bg-tertiary));
 }
 
-.track-panel.track-b {
+.track-panel.track-colored.track-b {
   background-color: var(--track-b-bg);
   background: linear-gradient(180deg, var(--track-b-bg), var(--bg-tertiary));
 }
 
-.track-panel.track-c {
+.track-panel.track-colored.track-c {
   background-color: var(--track-c-bg);
   background: linear-gradient(180deg, var(--track-c-bg), var(--bg-tertiary));
 }

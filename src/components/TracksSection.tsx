@@ -4,6 +4,8 @@ import type { Pattern, Instrument, Song } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
 import { TrackPanel } from './TrackPanel';
 import { YM2149 } from '../synth/YM2149';
+import RainbowModeLight from '../assets/svg/rainbow-mode-light.svg';
+import RainbowModeDark from '../assets/svg/rainbow-mode-dark.svg';
 
 interface TracksSectionProps {
   song: Song;
@@ -26,6 +28,9 @@ interface TracksSectionProps {
   onPreviewMidiNoteOff: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
   onRegisterTrackStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  trackBackgroundEnabled: boolean;
+  onToggleTrackBackground: () => void;
+  isDarkMode: boolean;
 }
 
 export const TracksSection: React.FC<TracksSectionProps> = ({
@@ -49,6 +54,9 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
   onPreviewMidiNoteOff,
   onHardStopLivePreview,
   onRegisterTrackStopPreview,
+  trackBackgroundEnabled,
+  onToggleTrackBackground,
+  isDarkMode,
 }) => {
   const patternLength = song.patternLength || PATTERN_LENGTH;
 
@@ -60,7 +68,20 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
     <div className="left-column">
       <div className="left-column-content">
         <div className="position-block">
-          <div className="position-header"></div>
+          <div className="position-header">
+            <button
+              type="button"
+              className={`track-bg-toggle ${trackBackgroundEnabled ? 'enabled' : 'disabled'}`}
+              onClick={onToggleTrackBackground}
+              title={trackBackgroundEnabled ? 'Disable track background colors' : 'Enable track background colors'}
+            >
+              <img
+                src={isDarkMode ? RainbowModeDark : RainbowModeLight}
+                alt=""
+                className="track-bg-toggle-icon"
+              />
+            </button>
+          </div>
           <div className="position-content" onScroll={onPositionScroll}>
             {positionIndices.map(i => (
               <div
@@ -91,6 +112,7 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
                 ym2149={ym2149}
                 currentInstrumentData={currentInstrument}
                 instruments={song.instruments}
+                trackBackgroundEnabled={trackBackgroundEnabled}
                 isTargetTrack={targetTrackId === trackId}
                 onToggleLineFromCursor={onToggleLineFromCursor}
                 currentColumn={currentTrackColumn}
