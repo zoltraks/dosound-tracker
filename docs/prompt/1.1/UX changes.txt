@@ -14,3 +14,8 @@ When I am focused on Instrument panel and press Ctrl+M instrument MIDI settings 
 I would also like to navigate with arrows through buttons "CLEAR", "CANCEL" and "SAVE" in instrument MIDI settings dialog.
 
 ---
+
+In Instrument list when clicking on one of the button to move instrument up or down, after moving that clicked button remain focused but it should not. 
+After moving leave only current selected instrument focused.
+
+---

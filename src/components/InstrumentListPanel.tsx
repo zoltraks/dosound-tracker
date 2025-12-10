@@ -276,7 +276,13 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                   <div className="playlist-move-buttons">
                   <button
                     type="button"
-                    onClick={() => onMoveInstrument(slotIndex, 'down')}
+                    onClick={(event) => {
+                      onMoveInstrument(slotIndex, 'down');
+                      event.currentTarget.blur();
+                      if (listRef.current) {
+                        listRef.current.focus();
+                      }
+                    }}
                     aria-label="Move instrument down"
                     disabled={!instrument || slotIndex >= instruments.length - 1}
                   >
@@ -284,7 +290,13 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onMoveInstrument(slotIndex, 'up')}
+                    onClick={(event) => {
+                      onMoveInstrument(slotIndex, 'up');
+                      event.currentTarget.blur();
+                      if (listRef.current) {
+                        listRef.current.focus();
+                      }
+                    }}
                     aria-label="Move instrument up"
                     disabled={!instrument || slotIndex === 0}
                   >
