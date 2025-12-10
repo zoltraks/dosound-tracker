@@ -55,20 +55,7 @@ type WorkerIncomingMessage =
 function scheduleTick() {
   if (!isPlaying) return;
 
-  // Emit the current position first so that each row begins at
-  // tick 0 and then advances through 1..ticksPerRow-1, matching
-  // the offline playback and export simulations.
-  self.postMessage({
-    type: 'tick',
-    data: {
-      isPlaying: true,
-      currentPattern,
-      currentLine,
-      currentTick
-    }
-  });
-
-  // Advance to the next tick/row for the following callback.
+  // Advance to the next tick/row first, then send the updated position
   let nextTick = currentTick + 1;
   let nextLine = currentLine;
   let nextPattern = currentPattern;
@@ -80,28 +67,59 @@ function scheduleTick() {
 
     if (nextLine >= patternLength) {
       nextLine = 0;
+      // Debug: Log all pattern wrap attempts
+      console.log(`[WORKER] Pattern wrap: isPatternLoop=${isPatternLoop}, playlistLength=${playlistLength}, currentPattern=${currentPattern}, nextPattern=${nextPattern}`);
+      
       // In song mode, advance to the next playlist position when the pattern wraps.
       // In pattern-loop mode, stay on the same playlist position and just wrap rows.
       if (!isPatternLoop) {
         if (playlistLength > 0) {
           const lastIndex = playlistLength - 1;
-          if (nextPattern >= lastIndex && hasLoop) {
-            // Wrap to loop index when we step past the last playlist entry
-            // and a valid loop position is defined.
+          // Debug: Log pattern wrap decision
+          console.log(`[WORKER] Pattern wrap decision: currentPattern=${currentPattern}, lastIndex=${lastIndex}, hasLoop=${hasLoop}, loopIndex=${loopIndex}`);
+          if (currentPattern >= lastIndex && hasLoop) {
+            // At or past last index with loop - wrap directly to loop index
             nextPattern = loopIndex;
-          } else {
+            console.log(`[WORKER] Wrapped to loop index: ${nextPattern}`);
+          } else if (currentPattern < lastIndex) {
+            // Not at last index - advance to next pattern
             nextPattern++;
+            console.log(`[WORKER] Advanced to next pattern: ${nextPattern}`);
+          } else {
+            // At last index but no loop defined - increment anyway (will stop playback)
+            nextPattern++;
+            console.log(`[WORKER] Incremented past last index: ${nextPattern}`);
           }
         } else {
           nextPattern++;
+          console.log(`[WORKER] No playlist length, incremented: ${nextPattern}`);
         }
+      } else {
+        console.log(`[WORKER] Pattern loop mode, staying on pattern: ${nextPattern}`);
       }
     }
   }
 
+  // Update current position BEFORE sending the message
   currentTick = nextTick;
   currentLine = nextLine;
   currentPattern = nextPattern;
+
+  // Debug timing: Log before sending message
+  const beforePostMessage = performance.now();
+
+  // Emit the updated position so pattern wraps are sent immediately
+  self.postMessage({
+    type: 'tick',
+    data: {
+      isPlaying: true,
+      currentPattern,
+      currentLine,
+      currentTick,
+      // Add debug timestamp
+      debugTimestamp: beforePostMessage
+    }
+  });
 }
 
 function tickLoop() {
@@ -172,7 +190,7 @@ function updatePosition(pattern: number, line: number, tick: number) {
   });
 }
 
-function setParams(params: { ticksPerRow?: number; patternLength?: number; tickInterval?: number }) {
+function setParams(params: { ticksPerRow?: number; patternLength?: number; tickInterval?: number; playlistLength?: number; loopIndex?: number; hasLoop?: boolean }) {
   if (params.ticksPerRow !== undefined) {
     ticksPerRow = params.ticksPerRow;
   }
@@ -186,6 +204,19 @@ function setParams(params: { ticksPerRow?: number; patternLength?: number; tickI
       stopSequencer();
       startSequencer();
     }
+  }
+  // Handle playlist parameters for song looping
+  if (params.playlistLength !== undefined) {
+    console.log(`[WORKER] setParams: playlistLength updated from ${playlistLength} to ${params.playlistLength}`);
+    playlistLength = params.playlistLength;
+  }
+  if (params.loopIndex !== undefined) {
+    console.log(`[WORKER] setParams: loopIndex updated from ${loopIndex} to ${params.loopIndex}`);
+    loopIndex = params.loopIndex;
+  }
+  if (params.hasLoop !== undefined) {
+    console.log(`[WORKER] setParams: hasLoop updated from ${hasLoop} to ${params.hasLoop}`);
+    hasLoop = params.hasLoop;
   }
 }
 

@@ -16,6 +16,7 @@ interface SequencerWorkerTickData {
   currentPattern: number;
   currentLine: number;
   currentTick: number;
+  debugTimestamp?: number;
 }
 
 type SequencerWorkerMessage =
@@ -119,6 +120,15 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
             playbackStateRef.current = mergedState;
             
             if (type === 'tick') {
+              // Debug timing: Measure message delivery latency
+              if (data.debugTimestamp) {
+                const now = performance.now();
+                const latency = now - data.debugTimestamp;
+                if (latency > 25) { // Log only suspicious delays (> 1 tick cycle)
+                  console.log(`[DEBUG] Worker message latency: ${latency.toFixed(2)}ms at pattern ${data.currentPattern}, line ${data.currentLine}, tick ${data.currentTick}`);
+                }
+              }
+              
               // Fire audio callbacks only on regular timing ticks so that
               // instantaneous position updates (e.g. from setPosition during
               // song loop wrap-around) do not cause the same logical row to be

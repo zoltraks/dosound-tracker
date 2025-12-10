@@ -1294,3 +1294,90 @@ But this doesn't answer why we are facing such a longer interval in the first st
 
 ---
 
+App.tsx:758 23:47:12.470 | 080 | 0070 | 38 | D-3 00 - | C-2 04 - | E-5 02 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 56, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 56, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 56, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 57, tick 0
+App.tsx:758 23:47:12.551 | 081 | 0072 | 39 | --- -- - | --- -- - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 57, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 57, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.80ms at pattern 0, line 57, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 58, tick 0
+App.tsx:758 23:47:12.629 | 078 | 0074 | 3A | --- -- - | --- -- - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 58, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 58, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 58, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 194.40ms at pattern 0, line 59, tick 0
+App.tsx:758 23:47:12.711 | 082 | 0076 | 3B | --- -- - | --- -- - | E-5 03 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 198.50ms at pattern 0, line 59, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 194.30ms at pattern 0, line 59, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 59, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 60, tick 0
+App.tsx:758 23:47:12.790 | 079 | 0078 | 3C | --- -- - | D-2 01 - | G-5 02 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.90ms at pattern 0, line 60, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.80ms at pattern 0, line 60, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 60, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 61, tick 0
+App.tsx:758 23:47:12.870 | 080 | 007A | 3D | --- -- - | --- -- - | E-5 03 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 61, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.80ms at pattern 0, line 61, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 61, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.80ms at pattern 0, line 62, tick 0
+App.tsx:758 23:47:12.951 | 081 | 007C | 3E | --- -- - | D-2 04 - | B-5 02 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 62, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 62, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 62, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 194.20ms at pattern 0, line 63, tick 0
+App.tsx:758 23:47:13.031 | 080 | 007E | 3F | --- -- - | --- -- - | G-5 03 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 63, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 63, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 63, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 194.00ms at pattern 1, line 0, tick 0
+App.tsx:605 [DEBUG] Pattern wrap detected: 0 -> 1 at 23880.50ms, line 0, tick 0
+useSequencer.ts:128 [DEBUG] Worker message latency: 196.50ms at pattern 0, line 0, tick 0
+App.tsx:605 [DEBUG] Pattern wrap detected: 1 -> 0 at 23900.30ms, line 0, tick 0
+App.tsx:758 23:47:13.131 | 100 | 0080 | 00 | E-3 00 - | E-1 01 - | B-5 03 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 0, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 0, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 194.10ms at pattern 0, line 0, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 1, tick 0
+App.tsx:758 23:47:13.210 | 079 | 0082 | 01 | --- -- - | --- -- - | E-6 03 - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 1, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 1, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 1, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 2, tick 0
+App.tsx:758 23:47:13.290 | 080 | 0084 | 02 | --- -- - | E-1 01 - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 194.20ms at pattern 0, line 2, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 2, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 2, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 3, tick 0
+App.tsx:758 23:47:13.370 | 080 | 0086 | 03 | --- -- - | --- -- - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 3, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 3, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 3, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 4, tick 0
+App.tsx:758 23:47:13.450 | 080 | 0088 | 04 | --- -- - | --- -- - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.80ms at pattern 0, line 4, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 4, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 4, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 5, tick 0
+App.tsx:758 23:47:13.530 | 080 | 008A | 05 | --- -- - | --- -- - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 5, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 5, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 5, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 6, tick 0
+App.tsx:758 23:47:13.611 | 081 | 008C | 06 | --- -- - | E-1 01 - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 6, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 6, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 6, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 7, tick 0
+App.tsx:758 23:47:13.690 | 079 | 008E | 07 | --- -- - | --- -- - | --- -- - |
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.70ms at pattern 0, line 7, tick 1
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 7, tick 2
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 7, tick 3
+useSequencer.ts:128 [DEBUG] Worker message latency: 193.60ms at pattern 0, line 8, tick 0
+App.tsx:758 23:47:13.771 | 081 | 0090 | 08 | --- -- - | E-1 04 - | E-5 02 - |
+
+---
+
