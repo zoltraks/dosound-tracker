@@ -1449,6 +1449,10 @@ const App: React.FC = () => {
 
   const getPasteTrackMode = useCallback(
     (_options: { hasExistingData: boolean }): Promise<TrackPasteMode | null> => {
+      // Explicitly reference _options so it is considered used by lint, even
+      // though the current implementation does not depend on its value.
+      void _options;
+
       return new Promise(resolve => {
         pasteTrackModalResolveRef.current = resolve;
         setPasteTrackPendingMode(pasteTrackMode);
