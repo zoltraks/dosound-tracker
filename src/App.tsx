@@ -626,6 +626,25 @@ const App: React.FC = () => {
         return;
       }
 
+      const songPatternLength = currentSong.patternLength || PATTERN_LENGTH;
+      const lastPlaylistIndex = playlistLength - 1;
+
+      // Proactively redirect the worker to the loop target just before it
+      // would advance past the end of the playlist, but only for full-song
+      // playback. In pattern-loop mode (PLAY LINE), sequencing is local to a
+      // single pattern and should not be affected by song-level playlist
+      // looping.
+      if (!state.isPatternLoop && state.currentPattern === lastPlaylistIndex && state.currentLine === songPatternLength - 1) {
+        const rawLoop = currentSong.loop;
+        const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
+
+        if (hasLoop) {
+          const base = Math.floor(rawLoop as number);
+          const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
+          setPosition(loopIndex, 0, 0);
+        }
+      }
+
       let effectivePatternIndex = state.currentPattern;
 
       if (effectivePatternIndex < 0 || effectivePatternIndex >= playlistLength) {
@@ -642,12 +661,10 @@ const App: React.FC = () => {
         const base = Math.floor(rawLoop as number);
         const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
 
-        // Immediately jump the sequencer back to the loop index, but
-        // continue processing this tick as the first row of the looped
-        // playlist position so that there is no extra silent row between
-        // the last playlist entry and the loop target (matching PLAY LINE
-        // behaviour where no extra row is skipped on wrap).
-        setPosition(loopIndex, state.currentLine, state.currentTick);
+        // Safety net: if we still somehow see an out-of-range playlist
+        // position while a loop is defined, treat the effective index as the
+        // loop target but avoid issuing another immediate setPosition call so
+        // we do not disturb the worker's timing.
         effectivePatternIndex = loopIndex;
       }
 
