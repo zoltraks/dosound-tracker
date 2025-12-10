@@ -42,3 +42,7 @@ Add a small unit test file for midiConfig.ts to make the config format contr
 Run "npm run lint" and fix lint problems regarding "Cannot access variable before it is declared"
 
 ---
+
+Address some of the safer remaining hook dependency warnings in useMidiActions and useAppState in the same minimal, non-behavior-changing style
+
+---

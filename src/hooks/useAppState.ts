@@ -129,16 +129,21 @@ export function useAppState(): UseAppStateResult {
         };
 
         if (obj.scope === 'line' || obj.scope === 'song') {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setTransposeScope(obj.scope);
         }
         if (obj.trackScope === 'current' || obj.trackScope === 'all') {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setTransposeTrackScope(obj.trackScope);
         }
         if (obj.instrumentScope === 'all' || obj.instrumentScope === 'selected') {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setTransposeInstrumentScope(obj.instrumentScope);
         }
         if (typeof obj.amount === 'number' && Number.isFinite(obj.amount)) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setTransposeAmount(obj.amount);
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setTransposeAmountInput(String(obj.amount));
         }
       }
