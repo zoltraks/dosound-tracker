@@ -13,6 +13,8 @@ export type TrackClipboardStep = {
   [key: string]: unknown;
 };
 
+export type TrackPasteMode = 'replace' | 'overwriteAll' | 'overwriteEmpty';
+
 interface TransposeOptions {
   semitones: number;
   scope: 'line' | 'song';
@@ -43,6 +45,7 @@ interface UseTrackOperationsArgs {
   sequencerPatternIndex: number;
   setActiveSection: (section: NavigationSection) => void;
   setTrackFocusRevision: (updater: (prev: number) => number) => void;
+  getPasteTrackMode: (options: { hasExistingData: boolean }) => Promise<TrackPasteMode | null>;
 }
 
 interface UseTrackOperationsResult {
@@ -67,6 +70,7 @@ export function useTrackOperations({
   sequencerPatternIndex,
   setActiveSection,
   setTrackFocusRevision,
+  getPasteTrackMode,
 }: UseTrackOperationsArgs): UseTrackOperationsResult {
   const [trackClipboardError, setTrackClipboardError] = useState('');
 
@@ -319,66 +323,218 @@ export function useTrackOperations({
 
       const targetLength = song.patternLength || PATTERN_LENGTH;
       const existingLines = pattern.lines || [];
-      const newLines: PatternLine[] = [];
 
+      const isLineEmptyForTrack = (line: PatternLine | undefined): boolean => {
+        if (!line) {
+          return true;
+        }
+
+        if (line.trackA) {
+          return false;
+        }
+
+        const vol = (line as PatternLine).volume;
+        return vol === undefined || vol === null;
+      };
+
+      let hasExistingData = false;
       for (let i = 0; i < targetLength; i++) {
-        const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
+        if (!isLineEmptyForTrack(existingLines[i])) {
+          hasExistingData = true;
+          break;
+        }
+      }
+
+      let mode: TrackPasteMode = 'replace';
+
+      if (hasExistingData) {
+        const selectedMode = await getPasteTrackMode({ hasExistingData: true });
+        if (!selectedMode) {
+          return;
+        }
+        mode = selectedMode;
+      }
+
+      const isStepEmpty = (ln: TrackClipboardStep | null | undefined): boolean => {
+        if (!ln) {
+          return true;
+        }
+
+        const hasNote = typeof ln.note === 'string' && ln.note.trim() !== '';
+        const hasVolume = ln.volume !== undefined && ln.volume !== null;
+        const keys = Object.keys(ln);
+        const otherKeys = keys.filter(
+          key => key !== 'note' && key !== 'instrument' && key !== 'space' && key !== 'off' && key !== 'volume'
+        );
+        const hasOther = otherKeys.length > 0;
+
+        return !hasNote && !hasVolume && !hasOther;
+      };
+
+      const applyClipboardStepToLine = (
+        baseLine: PatternLine,
+        ln: TrackClipboardStep,
+        lineIndex: number
+      ): PatternLine | null => {
         const line: PatternLine = {
           trackA: baseLine.trackA,
           trackB: baseLine.trackB,
           trackC: baseLine.trackC,
         };
-        const rawStep = expandedSteps[i];
 
-        if (rawStep && typeof rawStep === 'object') {
-          const ln = rawStep as TrackClipboardStep;
+        const rawNote = ln.note;
+        const isOffNote =
+          typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
 
-          const rawNote = ln.note;
-          const isOffNote =
-            typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
-
-          if (isOffNote) {
-            line.trackA = { note: '===', octave: 0, instrument: '00' };
-          } else if (ln.space === true) {
-            line.trackA = null;
-          } else if (typeof rawNote === 'string') {
-            const parsedKey = parseBaseKeyString(rawNote);
-            if (!parsedKey) {
-              setTrackClipboardError(
-                `Invalid note value "${rawNote}" in track clipboard data at line ${i}.`
-              );
-              return;
-            }
-
-            const instId =
-              typeof ln.instrument === 'string' && ln.instrument.trim()
-                ? ln.instrument.trim().toUpperCase()
-                : '00';
-
-            const noteObj = {
-              note: parsedKey.note,
-              octave: parsedKey.octave,
-              instrument: instId,
-            };
-
-            line.trackA = noteObj;
-          } else {
-            line.trackA = null;
+        if (isOffNote) {
+          line.trackA = { note: '===', octave: 0, instrument: '00' };
+        } else if (ln.space === true) {
+          line.trackA = null;
+        } else if (typeof rawNote === 'string') {
+          const parsedKey = parseBaseKeyString(rawNote);
+          if (!parsedKey) {
+            setTrackClipboardError(
+              `Invalid note value "${rawNote}" in track clipboard data at line ${lineIndex}.`
+            );
+            return null;
           }
 
-          const volRaw = ln.volume;
-          if (volRaw !== undefined && volRaw !== null) {
-            const volNum = Number(volRaw);
-            if (Number.isFinite(volNum)) {
-              const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-              line.volume = clamped;
-            }
-          }
+          const instId =
+            typeof ln.instrument === 'string' && ln.instrument.trim()
+              ? ln.instrument.trim().toUpperCase()
+              : '00';
+
+          const noteObj = {
+            note: parsedKey.note,
+            octave: parsedKey.octave,
+            instrument: instId,
+          };
+
+          line.trackA = noteObj;
         } else {
           line.trackA = null;
         }
 
-        newLines.push(line);
+        const volRaw = ln.volume;
+        if (volRaw !== undefined && volRaw !== null) {
+          const volNum = Number(volRaw);
+          if (Number.isFinite(volNum)) {
+            const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
+            line.volume = clamped;
+          }
+        }
+
+        return line;
+      };
+
+      const newLines: PatternLine[] = [];
+
+      if (mode === 'replace') {
+        for (let i = 0; i < targetLength; i++) {
+          const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
+          const line: PatternLine = {
+            trackA: baseLine.trackA,
+            trackB: baseLine.trackB,
+            trackC: baseLine.trackC,
+          };
+          const rawStep = expandedSteps[i];
+
+          if (rawStep && typeof rawStep === 'object') {
+            const ln = rawStep as TrackClipboardStep;
+
+            const rawNote = ln.note;
+            const isOffNote =
+              typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
+
+            if (isOffNote) {
+              line.trackA = { note: '===', octave: 0, instrument: '00' };
+            } else if (ln.space === true) {
+              line.trackA = null;
+            } else if (typeof rawNote === 'string') {
+              const parsedKey = parseBaseKeyString(rawNote);
+              if (!parsedKey) {
+                setTrackClipboardError(
+                  `Invalid note value "${rawNote}" in track clipboard data at line ${i}.`
+                );
+                return;
+              }
+
+              const instId =
+                typeof ln.instrument === 'string' && ln.instrument.trim()
+                  ? ln.instrument.trim().toUpperCase()
+                  : '00';
+
+              const noteObj = {
+                note: parsedKey.note,
+                octave: parsedKey.octave,
+                instrument: instId,
+              };
+
+              line.trackA = noteObj;
+            } else {
+              line.trackA = null;
+            }
+
+            const volRaw = ln.volume;
+            if (volRaw !== undefined && volRaw !== null) {
+              const volNum = Number(volRaw);
+              if (Number.isFinite(volNum)) {
+                const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
+                line.volume = clamped;
+              }
+            }
+          } else {
+            line.trackA = null;
+          }
+
+          newLines.push(line);
+        }
+      } else if (mode === 'overwriteAll') {
+        for (let i = 0; i < targetLength; i++) {
+          const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
+          const rawStep = i < expandedSteps.length ? expandedSteps[i] : undefined;
+          const ln =
+            rawStep && typeof rawStep === 'object'
+              ? (rawStep as TrackClipboardStep)
+              : undefined;
+
+          if (!ln || isStepEmpty(ln)) {
+            newLines.push({ ...baseLine });
+            continue;
+          }
+
+          const nextLine = applyClipboardStepToLine(baseLine, ln, i);
+          if (!nextLine) {
+            return;
+          }
+          newLines.push(nextLine);
+        }
+      } else {
+        for (let i = 0; i < targetLength; i++) {
+          const baseLine = existingLines[i] || { trackA: null, trackB: null, trackC: null };
+
+          if (!isLineEmptyForTrack(baseLine)) {
+            newLines.push({ ...baseLine });
+            continue;
+          }
+
+          const rawStep = i < expandedSteps.length ? expandedSteps[i] : undefined;
+          const ln =
+            rawStep && typeof rawStep === 'object'
+              ? (rawStep as TrackClipboardStep)
+              : undefined;
+
+          if (!ln || isStepEmpty(ln)) {
+            newLines.push({ ...baseLine });
+            continue;
+          }
+
+          const nextLine = applyClipboardStepToLine(baseLine, ln, i);
+          if (!nextLine) {
+            return;
+          }
+          newLines.push(nextLine);
+        }
       }
 
       const updatedPattern = { ...pattern, lines: newLines };
@@ -399,6 +555,7 @@ export function useTrackOperations({
     song.patterns,
     parseBaseKeyString,
     updateSong,
+    getPasteTrackMode,
   ]);
 
   const handleInsertStep = useCallback(() => {

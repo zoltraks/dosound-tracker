@@ -1,0 +1,49 @@
+When "PASTE TRACK" is clicked and the current (last selected) track contains any data,
+show the modal window before and allow user to select one of the options:
+ - replace track data entirely
+ - overwrite all steps
+ - overwrite only empty steps
+Depending on user choice when pasting to non empty track use the selected option.
+Option to replace track data entirely is the default.
+The modal button should have "CANCEL" button on the left side and "OK" on the right side to confirm operation (buttons should be arranged like in MIDI configuration window).
+When operation is confirmed with "OK" rmember settings in this window until "RESET" is made.
+
+If the target track contains these data:
+
+```
+C-4 01
+---
+D-4 01
+---
+```
+
+And the content in clipboard is:
+
+```
+C-4 02
+C-5 02
+---
+D-5 02
+```
+
+Then when option with overwrite all steps is chosen then after pasting the track should look like this:
+
+```
+C-4 02
+C-5 02
+D-4 01
+D-5 02
+```
+
+And if option selected was overwrite empty steps then after pasting the track should look like this:
+
+```
+C-4 01
+C-5 02
+D-4 01
+D-5 02
+```
+
+Otherwise, if first option was selected to replace track data entirely, then the behavior remains unchanged and the pasted content should replace part of track.
+
+---

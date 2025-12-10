@@ -11,3 +11,4 @@ export { InstrumentTypeWarningModal } from './InstrumentTypeWarningModal';
 export { MidiModal } from './MidiModal';
 export { InstrumentMidiModal } from './InstrumentMidiModal';
 export { ExportModal } from './ExportModal';
+export { PasteTrackModal } from './PasteTrackModal';

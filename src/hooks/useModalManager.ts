@@ -61,6 +61,9 @@ interface UseModalManagerOptions {
   isExportOpen: boolean;
   handleCancelExport: () => void;
   handleConfirmExport: () => void;
+  isPasteTrackOptionsOpen: boolean;
+  handleCancelPasteTrackOptions: () => void;
+  handleConfirmPasteTrackOptions: () => void;
 }
 
 export function useModalManager(options: UseModalManagerOptions): void {
@@ -125,6 +128,9 @@ export function useModalManager(options: UseModalManagerOptions): void {
     isExportOpen,
     handleCancelExport,
     handleConfirmExport,
+    isPasteTrackOptionsOpen,
+    handleCancelPasteTrackOptions,
+    handleConfirmPasteTrackOptions,
   } = options;
 
   useEffect(() => {
@@ -156,7 +162,8 @@ export function useModalManager(options: UseModalManagerOptions): void {
         isResetConfirmOpen ||
         isInstrumentDeleteOpen ||
         isInstrumentTypeWarningOpen ||
-        isExportOpen;
+        isExportOpen ||
+        isPasteTrackOptionsOpen;
 
       if (!hasInfoModal && !hasConfirmModal) {
         return;
@@ -199,6 +206,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
         }
         if (isExportOpen) {
           handleCancelExport();
+          return;
+        }
+        if (isPasteTrackOptionsOpen) {
+          handleCancelPasteTrackOptions();
           return;
         }
         if (isInstrumentTypeWarningOpen) {
@@ -356,6 +367,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
           handleConfirmExport();
           return;
         }
+        if (isPasteTrackOptionsOpen) {
+          handleConfirmPasteTrackOptions();
+          return;
+        }
         if (isInstrumentTypeWarningOpen) {
           handleConfirmInstrumentTypeWarning();
           return;
@@ -436,5 +451,8 @@ export function useModalManager(options: UseModalManagerOptions): void {
     isExportOpen,
     handleCancelExport,
     handleConfirmExport,
+    isPasteTrackOptionsOpen,
+    handleCancelPasteTrackOptions,
+    handleConfirmPasteTrackOptions,
   ]);
 }

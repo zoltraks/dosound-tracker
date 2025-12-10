@@ -7,7 +7,7 @@ import { useAudioSetup } from './hooks/useAudioSetup';
 import { useModalManager } from './hooks/useModalManager';
 import { useMidiHandling } from './hooks/useMidiHandling';
 import { useMidiActions } from './hooks/useMidiActions';
-import { useTrackOperations } from './hooks/useTrackOperations';
+import { useTrackOperations, type TrackPasteMode } from './hooks/useTrackOperations';
 import { usePlaylistOperations } from './hooks/usePlaylistOperations';
 import { useScrollSync } from './hooks/useScrollSync';
 import { useAppState } from './hooks/useAppState';
@@ -28,6 +28,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { PianoKeyboard } from './components/PianoKeyboard';
 import { ModalContainer } from './components/ModalContainer';
 import { ExportModal } from './modals/ExportModal';
+import { PasteTrackModal } from './modals/PasteTrackModal';
 import { FilePickerModal } from './modals/FilePickerModal';
 import { AppLayout } from './components/AppLayout';
 import { TracksSection } from './components/TracksSection';
@@ -163,6 +164,34 @@ const App: React.FC = () => {
     }
     return {};
   });
+
+  const [pasteTrackMode, setPasteTrackMode] = useState<TrackPasteMode>(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-paste-track-mode');
+      if (
+        stored === 'replace' ||
+        stored === 'overwriteAll' ||
+        stored === 'overwriteEmpty'
+      ) {
+        return stored as TrackPasteMode;
+      }
+    } catch {
+      // ignore
+    }
+    return 'replace';
+  });
+  const [pasteTrackPendingMode, setPasteTrackPendingMode] = useState<TrackPasteMode>(pasteTrackMode);
+  const [isPasteTrackModalOpen, setIsPasteTrackModalOpen] = useState(false);
+  const pasteTrackModalResolveRef = useRef<((mode: TrackPasteMode | null) => void) | null>(null);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-paste-track-mode', pasteTrackMode);
+    } catch {
+      // ignore
+    }
+  }, [pasteTrackMode]);
+
   const { isDarkMode, toggleTheme } = useTheme();
   const { 
     currentSong, 
@@ -228,7 +257,8 @@ const App: React.FC = () => {
     isInstrumentDeleteOpen ||
     isInstrumentTypeWarningOpen ||
     isInstrumentMidiOpen ||
-    isExportModalOpen;
+    isExportModalOpen ||
+    isPasteTrackModalOpen;
 
   const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(isNavigationSuspended);
 
@@ -1417,6 +1447,36 @@ const App: React.FC = () => {
     return { note: notePart, octave };
   }, []);
 
+  const getPasteTrackMode = useCallback(
+    (_options: { hasExistingData: boolean }): Promise<TrackPasteMode | null> => {
+      return new Promise(resolve => {
+        pasteTrackModalResolveRef.current = resolve;
+        setPasteTrackPendingMode(pasteTrackMode);
+        setIsPasteTrackModalOpen(true);
+      });
+    },
+    [pasteTrackMode]
+  );
+
+  const handleConfirmPasteTrackModal = useCallback(() => {
+    const resolver = pasteTrackModalResolveRef.current;
+    pasteTrackModalResolveRef.current = null;
+    setIsPasteTrackModalOpen(false);
+    setPasteTrackMode(pasteTrackPendingMode);
+    if (resolver) {
+      resolver(pasteTrackPendingMode);
+    }
+  }, [pasteTrackPendingMode]);
+
+  const handleCancelPasteTrackModal = useCallback(() => {
+    const resolver = pasteTrackModalResolveRef.current;
+    pasteTrackModalResolveRef.current = null;
+    setIsPasteTrackModalOpen(false);
+    if (resolver) {
+      resolver(null);
+    }
+  }, []);
+
   const {
     trackClipboardError,
     setTrackClipboardError,
@@ -1437,6 +1497,7 @@ const App: React.FC = () => {
     sequencerPatternIndex: sequencerState.currentPattern,
     setActiveSection,
     setTrackFocusRevision,
+    getPasteTrackMode,
   });
 
   const {
@@ -2323,6 +2384,9 @@ const App: React.FC = () => {
     isExportOpen: isExportModalOpen,
     handleCancelExport,
     handleConfirmExport,
+    isPasteTrackOptionsOpen: isPasteTrackModalOpen,
+    handleCancelPasteTrackOptions: handleCancelPasteTrackModal,
+    handleConfirmPasteTrackOptions: handleConfirmPasteTrackModal,
   });
 
   try {
@@ -2636,6 +2700,13 @@ const App: React.FC = () => {
               onExportWav={handleExportWavFromModal}
               onConfirm={handleConfirmExport}
               onCancel={handleCancelExport}
+            />
+            <PasteTrackModal
+              isOpen={isPasteTrackModalOpen}
+              mode={pasteTrackPendingMode}
+              onModeChange={setPasteTrackPendingMode}
+              onConfirm={handleConfirmPasteTrackModal}
+              onCancel={handleCancelPasteTrackModal}
             />
             </>
           }
