@@ -6,6 +6,7 @@ export default mergeConfig(
   defineConfig({
     test: {
       environment: 'jsdom',
+      setupFiles: ['./test/setup-localstorage.ts'],
       onConsoleLog(log, type) {
         if (
           type === 'stderr' &&
