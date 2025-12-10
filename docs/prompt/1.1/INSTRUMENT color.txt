@@ -76,3 +76,11 @@ If coloring track is disabled (toggled) then use the original ones:
  - src/assets/svg/rainbow-mode-dark.svg for dark theme
 
 ---
+
+For step instrument coloring you should not add color for steps that have no instrument value like "note off" without instrument number.
+
+---
+
+I still see that steps with "===" (note off) has different background than empty steps with "---"
+
+---

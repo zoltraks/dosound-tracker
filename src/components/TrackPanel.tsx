@@ -676,10 +676,17 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           const noteIsActive = isCurrentLine && currentColumn === 'note';
 
           let instrumentColor: string | null = null;
-          if (noteData && typeof noteData.instrument === 'string') {
-            const instId = noteData.instrument.trim().toUpperCase();
-            if (instId) {
-              instrumentColor = instrumentColorMap.get(instId) ?? null;
+          // Never tint note-off rows; they should look like empty steps.
+          if (noteData && noteData.note !== '===' && typeof noteData.instrument === 'string') {
+            const rawInst = noteData.instrument.trim();
+            if (rawInst) {
+              const sanitized = rawInst.startsWith('$') ? rawInst.slice(1) : rawInst;
+              const upper = sanitized.toUpperCase();
+              // Only treat proper hex instrument IDs (1-2 hex digits) as colorable.
+              // This avoids coloring steps with no instrument value (e.g. note off without instrument).
+              if (/^[0-9A-F]{1,2}$/.test(upper)) {
+                instrumentColor = instrumentColorMap.get(upper) ?? null;
+              }
             }
           }
 
