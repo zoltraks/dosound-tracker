@@ -195,6 +195,9 @@ For guidelines on refactoring processes and architectural decisions, see:
 
 - [ARCHITECT.md](docs/ARCHITECT.md)
 
+> The initial project specification guidelines are described in [PROJECT.md](docs/PROJECT.md).
+> That document was used to bootstrap this project but is **not** used for the current development process anymore.
+
 ### Data Format Documentation
 
 For a detailed technical specification of all save and export formats (song/instrument YAML, clipboard formats, assembly, binary, VGM, and WAV), see:
