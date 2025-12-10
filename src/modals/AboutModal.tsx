@@ -6,6 +6,8 @@ interface AboutModalProps {
   onClose: () => void;
   onShowChangelog: () => void;
   onShowManual: () => void;
+  runtimeLabel?: string | null;
+  runtimeDetails?: string[];
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({
@@ -14,6 +16,8 @@ export const AboutModal: React.FC<AboutModalProps> = ({
   onClose,
   onShowChangelog,
   onShowManual,
+  runtimeLabel,
+  runtimeDetails,
 }) => {
   if (!isOpen) return null;
 
@@ -31,6 +35,17 @@ export const AboutModal: React.FC<AboutModalProps> = ({
           Version: <b>{version}</b>
           <br />
           <br />
+          {runtimeLabel && runtimeDetails && runtimeDetails.length > 0 && (
+            <>
+              {runtimeDetails.map((line, index) => (
+                <React.Fragment key={index}>
+                  {line}
+                  <br />
+                </React.Fragment>
+              ))}
+              <br />
+            </>
+          )}
         </div>
         <div className="modal-actions about-actions">
           <div className="about-actions-left">

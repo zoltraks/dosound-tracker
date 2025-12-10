@@ -89,6 +89,8 @@ export interface ModalContainerProps {
   setTransposeAmountInput: (value: string) => void;
   isAboutOpen: boolean;
   aboutVersion: string;
+  aboutRuntimeLabel?: string | null;
+  aboutRuntimeDetails?: string[];
   setIsAboutOpen: (value: boolean) => void;
   isChangelogOpen: boolean;
   changelogContent: string;
@@ -194,6 +196,8 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   setTransposeAmountInput,
   isAboutOpen,
   aboutVersion,
+  aboutRuntimeLabel,
+  aboutRuntimeDetails,
   setIsAboutOpen,
   isChangelogOpen,
   changelogContent,
@@ -401,6 +405,8 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
       <AboutModal
         isOpen={isAboutOpen}
         version={aboutVersion}
+        runtimeLabel={aboutRuntimeLabel ?? undefined}
+        runtimeDetails={aboutRuntimeDetails}
         onClose={() => setIsAboutOpen(false)}
         onShowChangelog={onShowChangelog}
         onShowManual={onShowManual}
