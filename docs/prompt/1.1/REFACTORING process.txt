@@ -38,3 +38,7 @@ Focus on further reducing MidiModal.tsx size (moving YAML load/save into 
 Add a small unit test file for midiConfig.ts to make the config format contract explicit, mirroring the style of your existing utils tests
 
 ---
+
+Run "npm run lint" and fix lint problems regarding "Cannot access variable before it is declared"
+
+---

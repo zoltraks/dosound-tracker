@@ -735,7 +735,10 @@ const App: React.FC = () => {
             // For MIDI output, treat this as an explicit key release and
             // send a matching Note Off for any active note on this
             // playback channel.
-            sendInstrumentMidiNoteOffForChannel(ch);
+            const helpers = midiHelpersRef.current;
+            if (helpers) {
+              helpers.sendInstrumentMidiNoteOffForChannel(ch);
+            }
 
             const sustainIndex = channelSustainRef.current[ch];
 
@@ -951,13 +954,13 @@ const App: React.FC = () => {
   }, [currentSong.instruments, normalizeInstrumentId]);
 
   // Helper function to update channel with instrument and all envelopes
-  const updateChannelWithInstrument = useCallback((
+  function updateChannelWithInstrument(
     ym2149: YM2149,
     channel: number,
     noteData: Note | null,
     envelopeStep: number = 0,
     volumeModifier?: number | null
-  ) => {
+  ): void {
     const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
 
     let resolvedInstrumentId = normalizedNoteInstrumentId;
@@ -969,7 +972,7 @@ const App: React.FC = () => {
     const instrument = resolvedInstrumentId
       ? instrumentLookupByNormalizedId.get(resolvedInstrumentId)
       : undefined;
-    
+
     if (!instrument || !noteData || noteData.note === '===') {
       // No instrument or no active note - silence channel
       const volumeRegister = 8 + channel;
@@ -985,12 +988,7 @@ const App: React.FC = () => {
       envelopeStep,
       volumeModifier
     );
-  }, [
-    currentSong.instruments,
-    currentInstrument?.id,
-    normalizeInstrumentId,
-    instrumentLookupByNormalizedId
-  ]);
+  }
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: Pattern) => {
