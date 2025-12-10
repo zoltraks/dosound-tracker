@@ -1,8 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import yaml from 'js-yaml';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
 import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
+import { buildMidiConfigYaml, parseMidiConfigFromYaml, MidiConfigFormatError } from '../utils/midiConfig';
 
 interface MidiModalProps {
   isOpen: boolean;
@@ -82,35 +82,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
 
   const handleExportConfig = () => {
     try {
-      const inputNode: Record<string, unknown> = {
-        enable: !!localConfig.inputEnabled,
-        agnostic: !!localConfig.ignoreInputVolume,
-      };
-      if (localConfig.inputId) {
-        inputNode.device = localConfig.inputId;
-      }
-
-      const outputNode: Record<string, unknown> = {
-        enable: !!localConfig.outputEnabled,
-        agnostic: !!localConfig.ignoreOutputVolume,
-      };
-      if (localConfig.outputId) {
-        outputNode.device = localConfig.outputId;
-      }
-
-      const exportData = {
-        midi: {
-          version: 1,
-          input: inputNode,
-          output: outputNode,
-        },
-      };
-
-      const yamlContent = yaml.dump(exportData, {
-        indent: 2,
-        lineWidth: -1,
-        quotingType: '"',
-      });
+      const yamlContent = buildMidiConfigYaml(localConfig);
 
       const blob = new Blob([yamlContent], { type: 'text/yaml' });
       const url = URL.createObjectURL(blob);
@@ -141,95 +113,22 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     reader.onload = e => {
       try {
         const text = (e.target?.result ?? '') as string;
-        const parsed = yaml.load(text) as unknown;
-
-        if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
-          console.error('Invalid MIDI config file: missing "midi" root key.');
-          if (onLoadError) {
-            onLoadError('Invalid MIDI config file: missing "midi" root key.');
-          }
-          return;
-        }
-
-        type MidiFileRoot = {
-          midi?: unknown;
-        };
-
-        const root = parsed as MidiFileRoot;
-        const node = root.midi;
-        if (!node || typeof node !== 'object') {
-          console.error('Invalid MIDI config file: "midi" section is not an object.');
-          if (onLoadError) {
-            onLoadError('Invalid MIDI config file: "midi" section is not an object.');
-          }
-          return;
-        }
-
-        const midiNode = node as {
-          version?: unknown;
-          input?: unknown;
-          output?: unknown;
-        };
-
-        const inputNode =
-          midiNode.input && typeof midiNode.input === 'object'
-            ? (midiNode.input as Record<string, unknown>)
-            : {};
-        const outputNode =
-          midiNode.output && typeof midiNode.output === 'object'
-            ? (midiNode.output as Record<string, unknown>)
-            : {};
-
-        const parseBool = (value: unknown, fallback: boolean): boolean => {
-          if (typeof value === 'boolean') return value;
-          if (typeof value === 'number') {
-            if (!Number.isFinite(value)) return fallback;
-            return value !== 0;
-          }
-          if (typeof value === 'string') {
-            const trimmed = value.trim().toLowerCase();
-            if (trimmed === 'true' || trimmed === 'yes' || trimmed === 'y' || trimmed === '1') {
-              return true;
-            }
-            if (trimmed === 'false' || trimmed === 'no' || trimmed === 'n' || trimmed === '0') {
-              return false;
-            }
-            return fallback;
-          }
-          return fallback;
-        };
-
-        const parseDeviceId = (value: unknown, fallback: string | null): string | null => {
-          if (value === null || value === undefined) return null;
-          if (typeof value === 'string') {
-            const trimmed = value.trim();
-            return trimmed || null;
-          }
-          return fallback;
-        };
-
-        const nextConfig: MidiConfig = {
-          inputEnabled: parseBool(inputNode.enable, localConfig.inputEnabled),
-          outputEnabled: parseBool(outputNode.enable, localConfig.outputEnabled),
-          inputId: parseDeviceId(inputNode.device, localConfig.inputId),
-          outputId: parseDeviceId(outputNode.device, localConfig.outputId),
-          ignoreInputVolume: parseBool(
-            inputNode.agnostic,
-            localConfig.ignoreInputVolume,
-          ),
-          ignoreOutputVolume: parseBool(
-            outputNode.agnostic,
-            localConfig.ignoreOutputVolume,
-          ),
-        };
+        const nextConfig = parseMidiConfigFromYaml(text, localConfig);
 
         setLocalConfig(nextConfig);
         onChangeConfig(nextConfig);
       } catch (error) {
-        console.error('Failed to load MIDI config file:', error);
-        if (onLoadError) {
-          const message = error instanceof Error ? error.message : String(error);
-          onLoadError(`Failed to load MIDI config file: ${message}`);
+        if (error instanceof MidiConfigFormatError) {
+          console.error(error.message);
+          if (onLoadError) {
+            onLoadError(error.message);
+          }
+        } else {
+          console.error('Failed to load MIDI config file:', error);
+          if (onLoadError) {
+            const message = error instanceof Error ? error.message : String(error);
+            onLoadError(`Failed to load MIDI config file: ${message}`);
+          }
         }
       } finally {
         input.value = '';

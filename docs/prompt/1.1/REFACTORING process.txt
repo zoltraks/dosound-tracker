@@ -30,3 +30,11 @@ Tidy any remaining hook dependency warnings in useDataManagement / useMidiAction
 Make refactorings across the plan for all phases. Use existing file naming conventions regardless the guidelines from regactoring proposal.
 
 ---
+
+Focus on further reducing MidiModal.tsx size (moving YAML load/save into a tiny helper) while keeping behavior frozen
+
+---
+
+Add a small unit test file for midiConfig.ts to make the config format contract explicit, mirroring the style of your existing utils tests
+
+---
