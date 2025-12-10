@@ -1,5 +1,16 @@
 # DOSOUND Tracker – Changelog
 
+## Version 1.1.9
+
+Instrument color picker and track tinting, safer track paste options, MIDI config utility, and visual/lint refinements.
+
+- Added an **instrument color picker** with an 8×8 palette and custom hex input, plus color tinting for instrument list rows and track lines so each instrument can have a distinct visual identity while leaving note-off steps uncolored for clarity.
+- Introduced a track background color toggle with rainbow icons and simplified gradient styling so active tracks and background modes are easier to distinguish at a glance, including padding/alignment tweaks and a single active-line border to reduce visual noise.
+- Implemented a **Paste Track** modal with three modes (Replace, Overwrite All, Overwrite Empty) so pasting track data can either fully replace, layer over existing notes, or only fill gaps without destroying existing content.
+- Extracted MIDI configuration YAML serialization into a dedicated utility with unit tests and refactored MIDI modal UI pieces into reusable components, keeping configuration logic and presentation separate.
+- Cleaned up terminology by renaming “pattern playback” to **“line playback”** throughout the UI and codebase for consistency with the tracker grid.
+- Resolved React hook and lint warnings by simplifying NumberSpinner refs, deferring certain state updates in effects, documenting lint expectations in the refactoring process, and adding targeted ESLint disables where state-in-effect patterns are intentional.
+
 ## Version 1.1.8
 
 Mobile layout and piano support, in-app manual and file picker integration, and visual/timing refinements.
