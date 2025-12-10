@@ -37,9 +37,18 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
     const rawProgram = midi && typeof midi.program === 'number' && Number.isFinite(midi.program)
       ? midi.program
       : null;
+    let cancelled = false;
 
-    setChannel(rawChannel);
-    setProgram(rawProgram);
+    Promise.resolve().then(() => {
+      if (!cancelled) {
+        setChannel(rawChannel);
+        setProgram(rawProgram);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, instrument]);
 
   useEffect(() => {

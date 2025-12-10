@@ -712,20 +712,33 @@ export function useMidi(
   ]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    const markUnsupported = (message: string) => {
+      Promise.resolve().then(() => {
+        if (cancelled) {
+          return;
+        }
+        setIsSupported(false);
+        setAccessError(message);
+        setDevices({ inputs: [], outputs: [] });
+      });
+    };
+
     if (typeof navigator === 'undefined') {
-      setIsSupported(false);
-      setAccessError('Navigator is not available in this environment.');
-      return;
+      markUnsupported('Navigator is not available in this environment.');
+      return () => {
+        cancelled = true;
+      };
     }
 
     const nav = navigator as NavigatorWithMidi;
     if (typeof nav.requestMIDIAccess !== 'function') {
-      setIsSupported(false);
-      setAccessError('Web MIDI API is not supported in this browser.');
-      return;
+      markUnsupported('Web MIDI API is not supported in this browser.');
+      return () => {
+        cancelled = true;
+      };
     }
-
-    let cancelled = false;
 
     nav.requestMIDIAccess({ sysex: false })
       .then(access => {

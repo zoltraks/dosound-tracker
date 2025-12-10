@@ -1691,10 +1691,8 @@ const App: React.FC = () => {
           return inst;
         }
 
-        const { color: _oldColor, ...rest } = inst;
-
         return {
-          ...rest,
+          ...inst,
           color: null,
         };
       });

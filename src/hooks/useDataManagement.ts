@@ -195,9 +195,21 @@ export const useDataManagement = () => {
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
     const songInstrument = currentSong.instruments.find(inst => inst.id === currentInstrument.id);
-    if (songInstrument && songInstrument !== currentInstrument) {
-      setCurrentInstrument(songInstrument);
+    if (!songInstrument || songInstrument === currentInstrument) {
+      return;
     }
+
+    let cancelled = false;
+
+    Promise.resolve().then(() => {
+      if (!cancelled) {
+        setCurrentInstrument(songInstrument);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [currentSong.instruments, currentInstrument]);
 
   // Save to localStorage whenever data changes

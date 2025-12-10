@@ -27,8 +27,17 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
     const raw = typeof instrument.color === 'string' && instrument.color.trim()
       ? instrument.color
       : '#888';
+    let cancelled = false;
 
-    setSelectedColor(raw);
+    Promise.resolve().then(() => {
+      if (!cancelled) {
+        setSelectedColor(raw);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [isOpen, instrument]);
 
   const handleKeyDown = useCallback(
