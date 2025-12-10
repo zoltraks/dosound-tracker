@@ -1,0 +1,7 @@
+Inspect electron/main.cjs and electron/preload.cjs and call out any places that might be affected by the 28 → 35/39 jump.
+
+Propose specific edits if needed before update the Electron version.
+
+Then make an update.
+
+---
