@@ -2174,7 +2174,10 @@ body {
 .instrument-item {
   display: flex;
   gap: 8px;
-  padding: 1px 2px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 2px;
+  padding-right: 2px;
   cursor: pointer;
   font-size: 10px;
 }
@@ -2193,7 +2196,7 @@ body {
 
 .instrument-item.current {
   background-color: var(--active-bg);
-  box-shadow: 0 0 8px var(--active-glow);
+  box-shadow: 0 0 0 1px var(--active-border) inset;
   gap: 5px;
 }
 
@@ -2210,6 +2213,23 @@ body {
 .instrument-item.focused {
   background-color: var(--bg-active);
   box-shadow: 0 0 0 1px var(--active-border) inset;
+}
+
+/* Preserve color tinting for colored instruments even when current/focused */
+.instrument-item.current.instrument-item-colored {
+  background-color: color-mix(in srgb, var(--bg-secondary) 75%, var(--instrument-color, var(--bg-secondary)) 25%);
+}
+
+.light .instrument-item.current.instrument-item-colored {
+  background-color: color-mix(in srgb, var(--bg-primary) 75%, var(--instrument-color, var(--bg-primary)) 25%);
+}
+
+.instrument-item.focused.instrument-item-colored {
+  background-color: color-mix(in srgb, var(--bg-secondary) 75%, var(--instrument-color, var(--bg-secondary)) 25%);
+}
+
+.light .instrument-item.focused.instrument-item-colored {
+  background-color: color-mix(in srgb, var(--bg-primary) 75%, var(--instrument-color, var(--bg-primary)) 25%);
 }
 
 .instrument-color-btn {
@@ -2287,12 +2307,14 @@ body {
 .instrument-id {
   width: 30px;
   text-align: center;
+  padding-top: 2px;
   color: var(--text-secondary);
 }
 
 .instrument-name {
   flex: 1;
   text-align: left;
+  padding-top: 2px;
 }
 
 .instrument-name-input {
@@ -2300,7 +2322,12 @@ body {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   color: var(--text-primary);
-  padding: 1px 2px;
+  margin-top: -1px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
+  margin-bottom: 1px;
   font-family: var(--font-mono);
   font-size: 10px;
 }
