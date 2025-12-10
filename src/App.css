@@ -1283,17 +1283,17 @@ body {
 
 .track-panel.track-a {
   background-color: var(--track-a-bg);
-  background: linear-gradient(180deg, var(--track-a-bg) 30%, var(--bg-tertiary) 80%);
+  background: linear-gradient(180deg, var(--track-a-bg), var(--bg-tertiary));
 }
 
 .track-panel.track-b {
   background-color: var(--track-b-bg);
-  background: linear-gradient(180deg, var(--track-b-bg) 30%, var(--bg-tertiary) 80%);
+  background: linear-gradient(180deg, var(--track-b-bg), var(--bg-tertiary));
 }
 
 .track-panel.track-c {
   background-color: var(--track-c-bg);
-  background: linear-gradient(180deg, var(--track-c-bg) 30%, var(--bg-tertiary) 80%);
+  background: linear-gradient(180deg, var(--track-c-bg), var(--bg-tertiary));
 }
 
 .track-panel.disabled .track-header,
