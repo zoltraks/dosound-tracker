@@ -18,7 +18,7 @@ interface TracksSectionProps {
   ym2149: YM2149 | null;
   currentInstrument: Instrument;
   targetTrackId: 'A' | 'B' | 'C';
-  onTogglePatternFromCursor: (lineIndex: number) => void;
+  onToggleLineFromCursor: (lineIndex: number) => void;
   currentTrackColumn: 'note' | 'volume';
   setCurrentTrackColumn: (column: 'note' | 'volume') => void;
   trackFocusRevision: number;
@@ -41,7 +41,7 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
   ym2149,
   currentInstrument,
   targetTrackId,
-  onTogglePatternFromCursor,
+  onToggleLineFromCursor,
   currentTrackColumn,
   setCurrentTrackColumn,
   trackFocusRevision,
@@ -91,7 +91,7 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
                 ym2149={ym2149}
                 currentInstrumentData={currentInstrument}
                 isTargetTrack={targetTrackId === trackId}
-                onTogglePatternFromCursor={onTogglePatternFromCursor}
+                onToggleLineFromCursor={onToggleLineFromCursor}
                 currentColumn={currentTrackColumn}
                 setCurrentColumn={setCurrentTrackColumn}
                 focusRevision={trackFocusRevision}

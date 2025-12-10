@@ -380,7 +380,7 @@ const App: React.FC = () => {
   const debugLastRowRef = useRef<{ pattern: number; line: number } | null>(null);
   const debugLastTimeRef = useRef<number | null>(null);
   const lastUiRowRef = useRef<{ pattern: number; line: number } | null>(null);
-  const patternPlayingRef = useRef(false);
+  const linePlayingRef = useRef(false);
 
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
@@ -423,8 +423,8 @@ const App: React.FC = () => {
     return lastTrackId;
   }, [activeSection, lastTrackId]);
 
-  // Track pattern playing state
-  const [isPatternPlaying, setIsPatternPlaying] = useState(false);
+  // Track line playback loop state (previously pattern playback state)
+  const [isLinePlaying, setIsLinePlaying] = useState(false);
 
   // MIDI helper ref so callbacks defined before useMidiHandling can safely
   // call instrument MIDI send/stop functions without referencing them before
@@ -483,10 +483,10 @@ const App: React.FC = () => {
       setSharedCurrentLine(state.currentLine);
     }
 
-    const nextIsPatternPlaying = state.isPatternLoop && state.isPlaying;
-    if (patternPlayingRef.current !== nextIsPatternPlaying) {
-      patternPlayingRef.current = nextIsPatternPlaying;
-      setIsPatternPlaying(nextIsPatternPlaying);
+    const nextIsLinePlaying = state.isPatternLoop && state.isPlaying;
+    if (linePlayingRef.current !== nextIsLinePlaying) {
+      linePlayingRef.current = nextIsLinePlaying;
+      setIsLinePlaying(nextIsLinePlaying);
     }
 
     if (ym2149Ref.current) {
@@ -874,7 +874,7 @@ const App: React.FC = () => {
     }
   }, [
     setSharedCurrentLine,
-    setIsPatternPlaying,
+    setIsLinePlaying,
     currentSong,
     stop,
     handleStopPlayback,
@@ -1624,8 +1624,8 @@ const App: React.FC = () => {
     // Stop the sequencer
     stop();
 
-    // Ensure pattern play state is cleared so buttons show PLAY again
-    setIsPatternPlaying(false);
+    // Ensure line play state is cleared so buttons show PLAY again
+    setIsLinePlaying(false);
     
     // Stop any instrument preview playback
     if (playInstTimerRef.current !== null) {
@@ -1637,13 +1637,13 @@ const App: React.FC = () => {
     handleStopPlayback();
   }, [stop, handleStopPlayback]);
 
-  // Handle stop pattern playback
-  const handleStopPattern = useCallback(() => {
+  // Handle stop line playback (pattern-loop mode for the current playlist line)
+  const handleStopLinePlayback = useCallback(() => {
     // Stop the sequencer
     stop();
     
-    // Update pattern playing state
-    setIsPatternPlaying(false);
+    // Update line playing state
+    setIsLinePlaying(false);
     
     // Stop any instrument preview playback
     if (playInstTimerRef.current !== null) {
@@ -1672,12 +1672,12 @@ const App: React.FC = () => {
       Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
     );
 
-    // If we are currently in pattern-loop mode, switch to song playback
+    // If we are currently in line-loop mode, switch to song playback
     // and continue from the current position instead of restarting.
-    if (isPatternPlaying) {
+    if (isLinePlaying) {
       const currentLine = sequencerState.currentLine;
 
-      setIsPatternPlaying(false);
+      setIsLinePlaying(false);
 
       // Clear position ref to ensure first tick detection works
       lastSequencerPositionRef.current = null;
@@ -1698,7 +1698,7 @@ const App: React.FC = () => {
 
     startSong(clampedIndex, 0);
   }, [
-    isPatternPlaying,
+    isLinePlaying,
     startSong,
     sequencerState.currentPattern,
     sequencerState.currentLine,
@@ -1706,8 +1706,8 @@ const App: React.FC = () => {
     sharedCurrentLine
   ]);
 
-  // Handle start pattern playback
-  const handleStartPattern = useCallback(() => {
+  // Handle start line playback (line-loop mode for the current playlist line)
+  const handleStartLinePlayback = useCallback(() => {
     if (currentSong.playlist.length === 0) {
       return;
     }
@@ -1748,9 +1748,8 @@ const App: React.FC = () => {
       return;
     }
 
-    // If a song is currently playing, switch into pattern-loop mode and
-    // continue from the current playback line instead of restarting.
-    if (sequencerState.isPlaying && !isPatternPlaying) {
+    // If a song is currently playing, switch into line-loop mode and
+    if (sequencerState.isPlaying && !isLinePlaying) {
       const effectiveLine = Math.max(
         0,
         Math.min(
@@ -1767,7 +1766,7 @@ const App: React.FC = () => {
       // Clear position ref to ensure first tick detection works
       lastSequencerPositionRef.current = null;
 
-      setIsPatternPlaying(true);
+      setIsLinePlaying(true);
 
       startPatternLoop(clampedIndex, effectiveLine);
       return;
@@ -1781,7 +1780,7 @@ const App: React.FC = () => {
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
 
-    setIsPatternPlaying(true);
+    setIsLinePlaying(true);
 
     startPatternLoop(clampedIndex, 0);
   }, [
@@ -1794,10 +1793,10 @@ const App: React.FC = () => {
     currentSong.patternLength,
     activeSection,
     lastTrackId,
-    isPatternPlaying
+    isLinePlaying
   ]);
 
-  const handleStartPatternFromBeginning = useCallback(() => {
+  const handleStartLineFromBeginning = useCallback(() => {
     if (currentSong.playlist.length === 0) {
       return;
     }
@@ -1839,17 +1838,17 @@ const App: React.FC = () => {
       stop();
     }
 
-    if (isPatternPlaying) {
-      setIsPatternPlaying(false);
+    if (isLinePlaying) {
+      setIsLinePlaying(false);
     }
 
     // Start from the beginning (line 0) of the current pattern
     setPosition(clampedIndex, 0, 0);
 
     startSong();
-  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isPatternPlaying, currentSong.playlist, activeSection, lastTrackId]);
+  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isLinePlaying, currentSong.playlist, activeSection, lastTrackId]);
 
-  const handleStartPatternFromCurrentLine = useCallback((overrideLine?: number) => {
+  const handleStartLineFromCurrentLine = useCallback((overrideLine?: number) => {
     if (currentSong.playlist.length === 0) {
       return;
     }
@@ -1903,27 +1902,27 @@ const App: React.FC = () => {
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
 
-    setIsPatternPlaying(true);
+    setIsLinePlaying(true);
 
     // Start pattern loop from the current cursor line
     const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.patternLength || PATTERN_LENGTH) - 1));
     startPatternLoop(clampedIndex, startLine);
   }, [currentSong.playlist, currentSong.patternLength, sharedCurrentLine, sequencerState.currentPattern, sequencerState.isPlaying, activeSection, lastTrackId, stop, startPatternLoop]);
 
-  const handleTogglePatternFromCursor = useCallback((lineIndex: number) => {
-    if (isPatternPlaying && sequencerState.isPlaying) {
-      handleStopPattern();
+  const handleToggleLineFromCursor = useCallback((lineIndex: number) => {
+    if (isLinePlaying && sequencerState.isPlaying) {
+      handleStopLinePlayback();
       return;
     }
 
-    handleStartPatternFromCurrentLine(lineIndex);
-  }, [isPatternPlaying, sequencerState.isPlaying, handleStopPattern, handleStartPatternFromCurrentLine]);
+    handleStartLineFromCurrentLine(lineIndex);
+  }, [isLinePlaying, sequencerState.isPlaying, handleStopLinePlayback, handleStartLineFromCurrentLine]);
 
   useKeyboardShortcuts({
     setGlobalShortcut,
     handleStartSong,
-    handleStartPatternFromBeginning,
-    handleStartPattern,
+    handleStartLineFromBeginning,
+    handleStartLine: handleStartLinePlayback,
     handleStop,
   });
 
@@ -2430,7 +2429,7 @@ const App: React.FC = () => {
               onDeleteInstrument={handleDeleteInstrument}
               onCloneInstrument={handleCloneInstrument}
               onPlaySong={handleStartSong}
-              onPlayPattern={handleStartPattern}
+              onPlayLine={handleStartLinePlayback}
               onStop={handleStop}
               onOpenExport={handleOpenExport}
               onAddLine={handleAddLine}
@@ -2443,7 +2442,7 @@ const App: React.FC = () => {
               isDebugMode={isDebugMode}
               onToggleDebug={handleToggleDebugMode}
               isPlaying={sequencerState.isPlaying}
-              isPatternPlaying={isPatternPlaying}
+              isLinePlaying={isLinePlaying}
               onPlayInstrument={handlePlayInstrument}
               onCopyTrack={handleCopyTrack}
               onPasteTrack={handlePasteTrack}
@@ -2473,7 +2472,7 @@ const App: React.FC = () => {
               ym2149={ym2149Ref.current}
               currentInstrument={currentInstrument}
               targetTrackId={targetTrackId}
-              onTogglePatternFromCursor={handleTogglePatternFromCursor}
+              onToggleLineFromCursor={handleToggleLineFromCursor}
               currentTrackColumn={currentTrackColumn}
               setCurrentTrackColumn={setCurrentTrackColumn}
               trackFocusRevision={trackFocusRevision}

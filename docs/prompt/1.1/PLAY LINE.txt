@@ -1,0 +1,5 @@
+Rename "PLAY PATTERN" button to "PLAY LINE" as playing a pattern means playing all possible patterns assigned to the tracks in current selected playlist line.
+
+Apply this name change also in the function, parameter or variable names in the code where neccessary.
+
+---

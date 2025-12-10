@@ -20,7 +20,7 @@ interface TrackPanelProps {
   ym2149: YM2149 | null;
   currentInstrumentData: Instrument;
   isTargetTrack: boolean;
-  onTogglePatternFromCursor: (lineIndex: number) => void;
+  onToggleLineFromCursor: (lineIndex: number) => void;
   currentColumn: 'note' | 'volume';
   setCurrentColumn: (column: 'note' | 'volume') => void;
   focusRevision: number;
@@ -44,7 +44,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     ym2149,
     currentInstrumentData,
     isTargetTrack,
-    onTogglePatternFromCursor,
+    onToggleLineFromCursor,
     currentColumn,
     setCurrentColumn,
     focusRevision,
@@ -408,7 +408,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       }
     } else if (key === 'ENTER') {
       event.preventDefault();
-      onTogglePatternFromCursor(currentLine);
+      onToggleLineFromCursor(currentLine);
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault();
       if (!pattern) return;
@@ -553,7 +553,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     pattern,
     trackId,
     onPatternChange,
-    onTogglePatternFromCursor,
+    onToggleLineFromCursor,
     currentColumn,
     setCurrentColumn,
     setActiveSection

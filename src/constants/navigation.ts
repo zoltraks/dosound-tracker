@@ -33,9 +33,9 @@ export const KEYBOARD_SHORTCUTS = {
   'CTRL+PLUS': 'nextInstrument',
   
   // Playback
-  'F2': 'playPattern',
-  'CTRL+5': 'playPatternFromStart',
-  'CTRL+6': 'playPattern',
+  'F2': 'playLine',
+  'CTRL+5': 'playLineFromStart',
+  'CTRL+6': 'playLine',
   'CTRL+8': 'stopPlayback',
   'ESC': 'stopPlayback',
   

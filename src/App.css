@@ -74,8 +74,8 @@
   
   --play-song-idle-bg: #263a32;
   --play-song-idle-border: #3a8265;
-  --play-pattern-idle-bg: #3a3024;
-  --play-pattern-idle-border: #91663c;
+  --play-line-idle-bg: #3a3024;
+  --play-line-idle-border: #91663c;
   --stop-idle-bg: #3a2327;
   --stop-idle-border: #a4535a;
   
@@ -83,9 +83,9 @@
   --play-song-bg: #1f4730;
   --play-song-border: #34d399;
   --play-song-glow: rgba(52, 211, 153, 0.6);
-  --play-pattern-bg: #4b3415;
-  --play-pattern-border: #f59e0b;
-  --play-pattern-glow: rgba(245, 158, 11, 0.6);
+  --play-line-bg: #4b3415;
+  --play-line-border: #f59e0b;
+  --play-line-glow: rgba(245, 158, 11, 0.6);
   --stop-bg: #4b1f24;
   --stop-border: #f97373;
   --stop-glow: rgba(248, 113, 113, 0.6);
@@ -207,26 +207,24 @@
   --demo-song-btn-bg-left: #fceccb;
   --demo-song-btn-bg-right: #ffe48b;
   --demo-song-btn-border: #af9e3e;
-  
+
   --play-song-idle-bg: #e8f8ed;
   --play-song-idle-border: #6cc896;
-  --play-pattern-idle-bg: #fff3e6;
-  --play-pattern-idle-border: #ea9a3a;
+  --play-line-idle-bg: #fff3e6;
+  --play-line-idle-border: #ea9a3a;
   --stop-idle-bg: #ffe6ea;
   --stop-idle-border: #f97373;
-  
+
   /* Playback button accent colors (light theme) */
   --play-song-bg: #bbf7d0;
   --play-song-border: #16a34a;
   --play-song-glow: rgba(22, 163, 74, 0.45);
-  --play-pattern-bg: #fed7aa;
-  --play-pattern-border: #c05621;
-  --play-pattern-glow: rgba(192, 86, 33, 0.45);
+  --play-line-bg: #fed7aa;
+  --play-line-border: #c05621;
+  --play-line-glow: rgba(192, 86, 33, 0.45);
   --stop-bg: #fecaca;
   --stop-border: #e11d48;
   --stop-glow: rgba(225, 29, 72, 0.45);
-  
-  --piano-white: #ffffff;
   --piano-black: #2d3748;
   --piano-pressed: #f59e0b;
   --piano-shadow: rgba(0, 0, 0, 0.2);
@@ -506,9 +504,9 @@ body {
   border-color: var(--play-song-idle-border);
 }
 
-.command-btn.play-pattern-btn {
-  background: linear-gradient(135deg, var(--play-pattern-idle-bg) 0%, var(--button-bg) 100%);
-  border-color: var(--play-pattern-idle-border);
+.command-btn.play-line-btn {
+  background: linear-gradient(135deg, var(--play-line-idle-bg) 0%, var(--button-bg) 100%);
+  border-color: var(--play-line-idle-border);
 }
 
 .command-btn.stop-btn {
@@ -567,12 +565,12 @@ body {
   box-shadow: var(--shadow-medium), 0 0 8px var(--play-song-glow);
 }
 
-.command-btn.play-pattern-btn.playing,
-.command-btn.play-pattern-btn.active {
-  background: linear-gradient(135deg, var(--play-pattern-bg) 0%, var(--bg-active) 100%);
-  border-color: var(--play-pattern-border);
+.command-btn.play-line-btn.playing,
+.command-btn.play-line-btn.active {
+  background: linear-gradient(135deg, var(--play-line-bg) 0%, var(--bg-active) 100%);
+  border-color: var(--play-line-border);
   color: var(--text-primary);
-  box-shadow: var(--shadow-medium), 0 0 8px var(--play-pattern-glow);
+  box-shadow: var(--shadow-medium), 0 0 8px var(--play-line-glow);
 }
 
 .command-btn.stop-btn.playing,
