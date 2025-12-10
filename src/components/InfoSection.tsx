@@ -23,6 +23,7 @@ interface InfoSectionProps {
   onRenameInstrument: (name: string) => void;
   onMoveInstrument: (index: number, direction: 'up' | 'down') => void;
   onOpenInstrumentMidi: (instrument: Instrument) => void;
+  onOpenInstrumentColor: (instrument: Instrument) => void;
   instrumentListFocusRevision: number;
   ym2149: YM2149 | null;
   channelMutes: boolean[];
@@ -44,6 +45,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
   onRenameInstrument,
   onMoveInstrument,
   onOpenInstrumentMidi,
+  onOpenInstrumentColor,
   instrumentListFocusRevision,
   ym2149,
   channelMutes,
@@ -78,6 +80,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
         onRenameInstrument={onRenameInstrument}
         onMoveInstrument={onMoveInstrument}
         onOpenInstrumentMidi={onOpenInstrumentMidi}
+        onOpenInstrumentColor={onOpenInstrumentColor}
         focusRevision={instrumentListFocusRevision}
       />
 

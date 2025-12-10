@@ -112,6 +112,8 @@ const App: React.FC = () => {
     setInstrumentDeleteUsage,
     isInstrumentMidiOpen,
     setIsInstrumentMidiOpen,
+    isInstrumentColorOpen,
+    setIsInstrumentColorOpen,
     isExportModalOpen,
     setIsExportModalOpen,
   } = useModalState();
@@ -127,6 +129,7 @@ const App: React.FC = () => {
     cancelInstrumentTypeWarning,
   } = useInstrumentWarnings();
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
+  const [instrumentColorTarget, setInstrumentColorTarget] = useState<Instrument | null>(null);
 
   const {
     isDebugMode,
@@ -257,6 +260,7 @@ const App: React.FC = () => {
     isInstrumentDeleteOpen ||
     isInstrumentTypeWarningOpen ||
     isInstrumentMidiOpen ||
+    isInstrumentColorOpen ||
     isExportModalOpen ||
     isPasteTrackModalOpen;
 
@@ -1610,6 +1614,116 @@ const App: React.FC = () => {
     ]
   );
 
+  const handleOpenInstrumentColor = useCallback((instrument: Instrument) => {
+    setInstrumentColorTarget(instrument);
+    setIsInstrumentColorOpen(true);
+  }, []);
+
+  const handleCloseInstrumentColor = useCallback(() => {
+    setIsInstrumentColorOpen(false);
+    setInstrumentColorTarget(null);
+    setActiveSection('instrumentList');
+    setInstrumentListFocusRevision(prev => prev + 1);
+  }, [setActiveSection, setInstrumentListFocusRevision]);
+
+  const handleSaveInstrumentColor = useCallback(
+    (color: string | null) => {
+      if (!instrumentColorTarget) {
+        setIsInstrumentColorOpen(false);
+        setActiveSection('instrumentList');
+        setInstrumentListFocusRevision(prev => prev + 1);
+        return;
+      }
+
+      const targetId = instrumentColorTarget.id;
+
+      const nextInstruments = currentSong.instruments.map(inst => {
+        if (!inst || inst.id !== targetId) {
+          return inst;
+        }
+
+        const nextColor = color && color.trim() ? color : null;
+
+        return {
+          ...inst,
+          color: nextColor,
+        };
+      });
+
+      updateSong({ instruments: nextInstruments });
+
+      if (currentInstrument && currentInstrument.id === targetId) {
+        const updated = nextInstruments.find(inst => inst && inst.id === targetId);
+        if (updated) {
+          setCurrentInstrument(updated);
+        }
+      }
+
+      setIsInstrumentColorOpen(false);
+      setInstrumentColorTarget(null);
+      setActiveSection('instrumentList');
+      setInstrumentListFocusRevision(prev => prev + 1);
+    },
+    [
+      instrumentColorTarget,
+      currentSong.instruments,
+      updateSong,
+      currentInstrument,
+      setCurrentInstrument,
+      setActiveSection,
+      setInstrumentListFocusRevision,
+    ]
+  );
+
+  const handleClearInstrumentColor = useCallback(
+    () => {
+      if (!instrumentColorTarget) {
+        setIsInstrumentColorOpen(false);
+        setActiveSection('instrumentList');
+        setInstrumentListFocusRevision(prev => prev + 1);
+        return;
+      }
+
+      const targetId = instrumentColorTarget.id;
+
+      const nextInstruments = currentSong.instruments.map(inst => {
+        if (!inst || inst.id !== targetId) {
+          return inst;
+        }
+
+        const { color: _oldColor, ...rest } = inst;
+
+        return {
+          ...rest,
+          color: null,
+        };
+      });
+
+      updateSong({ instruments: nextInstruments });
+
+      if (currentInstrument && currentInstrument.id === targetId) {
+        const updated = nextInstruments.find(inst => inst && inst.id === targetId);
+        if (updated) {
+          setCurrentInstrument(updated);
+        }
+      }
+
+      setIsInstrumentColorOpen(false);
+      setInstrumentColorTarget(null);
+      setActiveSection('instrumentList');
+      setInstrumentListFocusRevision(prev => prev + 1);
+    },
+    [
+      instrumentColorTarget,
+      currentSong.instruments,
+      updateSong,
+      currentInstrument,
+      setCurrentInstrument,
+      setActiveSection,
+      setInstrumentListFocusRevision,
+    ]
+  );
+
   const handleChangeBaseKey = useCallback((note: string, octave: number) => {
     const upper = note.toUpperCase();
     const formatted = upper.endsWith('#')
@@ -2510,6 +2624,7 @@ const App: React.FC = () => {
               onRenameInstrument={handleRenameInstrument}
               onMoveInstrument={handleMoveInstrument}
               onOpenInstrumentMidi={handleOpenInstrumentMidi}
+              onOpenInstrumentColor={handleOpenInstrumentColor}
               instrumentListFocusRevision={instrumentListFocusRevision}
               ym2149={ym2149Ref.current}
               channelMutes={channelMutes}
@@ -2575,142 +2690,147 @@ const App: React.FC = () => {
           }
           modals={
             <>
-            <ModalContainer
-              songError={songError}
-              setSongError={setSongError}
-              instrumentError={instrumentError}
-              setInstrumentError={setInstrumentError}
-              trackClipboardError={trackClipboardError}
-              setTrackClipboardError={setTrackClipboardError}
-              optimizeSummary={optimizeSummary}
-              onCloseOptimizeSummary={handleCloseOptimizeSummary}
-              soundExportSummary={soundExportSummary}
-              onCloseSoundExportSummary={handleCloseSoundExportSummary}
-              dumpExportSummary={dumpExportSummary}
-              onCloseDumpExportSummary={handleCloseDumpExportSummary}
-              transposeSummary={transposeSummary}
-              onCloseTransposeSummary={handleCloseTransposeSummary}
-              renumberSummary={renumberSummary}
-              onCloseRenumberSummary={handleCloseRenumberSummary}
-              instrumentOperationSummary={instrumentOperationSummary}
-              onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
-              isDebugInfoOpen={isDebugInfoOpen}
-              setIsDebugInfoOpen={setIsDebugInfoOpen}
-              isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
-              pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
-              instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
-              setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
-              onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
-              onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
-              isNewSongConfirmOpen={isNewSongConfirmOpen}
-              onConfirmNewSong={handleConfirmNewSong}
-              onCancelNewSong={handleCancelNewSong}
-              isOptimizeConfirmOpen={isOptimizeConfirmOpen}
-              onConfirmOptimize={handleConfirmOptimize}
-              onCancelOptimize={handleCancelOptimize}
-              isRenumberConfirmOpen={isRenumberConfirmOpen}
-              onConfirmRenumber={handleConfirmRenumber}
-              onCancelRenumber={handleCancelRenumber}
-              isResetConfirmOpen={isResetConfirmOpen}
-              onConfirmReset={handleConfirmReset}
-              onCancelReset={handleCancelReset}
-              isQuitConfirmOpen={isQuitConfirmOpen}
-              onConfirmQuit={handleConfirmQuit}
-              onCancelQuit={handleCancelQuit}
-              isInstrumentDeleteOpen={isInstrumentDeleteOpen}
-              instrumentDeleteUsage={instrumentDeleteUsage}
-              onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
-              onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
-              onCancelInstrumentDelete={handleCancelInstrumentDelete}
-              isInstrumentMidiOpen={isInstrumentMidiOpen}
-              instrumentMidiTarget={instrumentMidiTarget}
-              onSaveInstrumentMidi={handleSaveInstrumentMidi}
-              onCloseInstrumentMidi={handleCloseInstrumentMidi}
-              isTransposeOpen={isTransposeOpen}
-              transposeScope={transposeScope}
-              transposeTrackScope={transposeTrackScope}
-              transposeInstrumentScope={transposeInstrumentScope}
-              transposeAmount={transposeAmount}
-              transposeAmountInput={transposeAmountInput}
-              setTransposeScope={setTransposeScope}
-              setTransposeTrackScope={setTransposeTrackScope}
-              setTransposeInstrumentScope={setTransposeInstrumentScope}
-              onTransposeAmountChange={handleTransposeAmountChange}
-              onConfirmTranspose={handleConfirmTranspose}
-              onCancelTranspose={handleCancelTranspose}
-              setTransposeAmount={setTransposeAmount}
-              setTransposeAmountInput={setTransposeAmountInput}
-              isAboutOpen={isAboutOpen}
-              aboutVersion={APP_VERSION}
-              setIsAboutOpen={setIsAboutOpen}
-              isChangelogOpen={isChangelogOpen}
-              changelogContent={changelogContent}
-              onShowChangelog={handleShowChangelog}
-              onCloseChangelog={handleCloseChangelog}
-              isManualOpen={isManualOpen}
-              manualContent={manualContent}
-              onShowManual={handleShowManual}
-              onCloseManual={handleCloseManual}
-              isMidiModalOpen={isMidiModalOpen}
-              isMidiSupported={isMidiSupported}
-              midiAccessError={midiAccessError}
-              midiConfig={midiConfig}
-              midiDevices={midiDevices}
-              midiInMonitor={midiInMonitor}
-              midiOutMonitor={midiOutMonitor}
-              onSaveMidiConfig={handleSaveMidiConfig}
-              onCloseMidi={handleCloseMidi}
-              onClearMidiMonitors={handleClearMidiMonitors}
-              onRescanMidiDevices={handleRescanMidiDevices}
-              onLiveMidiConfigChange={handleLiveMidiConfigChange}
-              setMidiCopySummary={setMidiCopySummary}
-              setMidiLoadError={setMidiLoadError}
-              isDownloadOpen={isDownloadOpen}
-              setIsDownloadOpen={setIsDownloadOpen}
-              midiLoadError={midiLoadError}
-              midiCopySummary={midiCopySummary}
-              onMidiSystemReset={handleMidiSystemReset}
-            />
-            <FilePickerModal
-              isOpen={isRepositoryInstrumentOpen}
-              title="Pick Instrument"
-              directory="repository/instrument"
-              mode="pick"
-              defaultSortDescending={false}
-              onClose={() => setIsRepositoryInstrumentOpen(false)}
-              onPick={handlePickRepositoryInstrument}
-            />
-            <FilePickerModal
-              isOpen={isDemoSongPickerOpen}
-              title="Demo Songs"
-              directory="repository/song"
-              mode="pick"
-              defaultSortDescending={false}
-              onClose={() => setIsDemoSongPickerOpen(false)}
-              onPick={handlePickDemoSong}
-            />
-            <ExportModal
-              isOpen={isExportModalOpen}
-              exportType={pendingExportType}
-              exportStrategy={pendingExportStrategy}
-              onChangeType={handleExportTypeChange}
-              onChangeStrategy={handleExportStrategyChange}
-              onExportDump={handleExportDumpFromModal}
-              onExportData={handleExportDataFromModal}
-              onExportBin={handleExportBinFromModal}
-              onExportVgm={handleExportVgmFromModal}
-              onExportMax={handleExportMaxFromModal}
-              onExportWav={handleExportWavFromModal}
-              onConfirm={handleConfirmExport}
-              onCancel={handleCancelExport}
-            />
-            <PasteTrackModal
-              isOpen={isPasteTrackModalOpen}
-              mode={pasteTrackPendingMode}
-              onModeChange={setPasteTrackPendingMode}
-              onConfirm={handleConfirmPasteTrackModal}
-              onCancel={handleCancelPasteTrackModal}
-            />
+              <ModalContainer
+                songError={songError}
+                setSongError={setSongError}
+                instrumentError={instrumentError}
+                setInstrumentError={setInstrumentError}
+                trackClipboardError={trackClipboardError}
+                setTrackClipboardError={setTrackClipboardError}
+                optimizeSummary={optimizeSummary}
+                onCloseOptimizeSummary={handleCloseOptimizeSummary}
+                soundExportSummary={soundExportSummary}
+                onCloseSoundExportSummary={handleCloseSoundExportSummary}
+                dumpExportSummary={dumpExportSummary}
+                onCloseDumpExportSummary={handleCloseDumpExportSummary}
+                transposeSummary={transposeSummary}
+                onCloseTransposeSummary={handleCloseTransposeSummary}
+                renumberSummary={renumberSummary}
+                onCloseRenumberSummary={handleCloseRenumberSummary}
+                instrumentOperationSummary={instrumentOperationSummary}
+                onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
+                isDebugInfoOpen={isDebugInfoOpen}
+                setIsDebugInfoOpen={setIsDebugInfoOpen}
+                isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
+                pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
+                instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
+                setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
+                onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
+                onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
+                isNewSongConfirmOpen={isNewSongConfirmOpen}
+                onConfirmNewSong={handleConfirmNewSong}
+                onCancelNewSong={handleCancelNewSong}
+                isOptimizeConfirmOpen={isOptimizeConfirmOpen}
+                onConfirmOptimize={handleConfirmOptimize}
+                onCancelOptimize={handleCancelOptimize}
+                isRenumberConfirmOpen={isRenumberConfirmOpen}
+                onConfirmRenumber={handleConfirmRenumber}
+                onCancelRenumber={handleCancelRenumber}
+                isResetConfirmOpen={isResetConfirmOpen}
+                onConfirmReset={handleConfirmReset}
+                onCancelReset={handleCancelReset}
+                isQuitConfirmOpen={isQuitConfirmOpen}
+                onConfirmQuit={handleConfirmQuit}
+                onCancelQuit={handleCancelQuit}
+                isInstrumentDeleteOpen={isInstrumentDeleteOpen}
+                instrumentDeleteUsage={instrumentDeleteUsage}
+                onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
+                onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
+                onCancelInstrumentDelete={handleCancelInstrumentDelete}
+                isInstrumentMidiOpen={isInstrumentMidiOpen}
+                instrumentMidiTarget={instrumentMidiTarget}
+                onSaveInstrumentMidi={handleSaveInstrumentMidi}
+                onCloseInstrumentMidi={handleCloseInstrumentMidi}
+                isInstrumentColorOpen={isInstrumentColorOpen}
+                instrumentColorTarget={instrumentColorTarget}
+                onSaveInstrumentColor={handleSaveInstrumentColor}
+                onClearInstrumentColor={handleClearInstrumentColor}
+                onCloseInstrumentColor={handleCloseInstrumentColor}
+                isTransposeOpen={isTransposeOpen}
+                transposeScope={transposeScope}
+                transposeTrackScope={transposeTrackScope}
+                transposeInstrumentScope={transposeInstrumentScope}
+                transposeAmount={transposeAmount}
+                transposeAmountInput={transposeAmountInput}
+                setTransposeScope={setTransposeScope}
+                setTransposeTrackScope={setTransposeTrackScope}
+                setTransposeInstrumentScope={setTransposeInstrumentScope}
+                onTransposeAmountChange={handleTransposeAmountChange}
+                onConfirmTranspose={handleConfirmTranspose}
+                onCancelTranspose={handleCancelTranspose}
+                setTransposeAmount={setTransposeAmount}
+                setTransposeAmountInput={setTransposeAmountInput}
+                isAboutOpen={isAboutOpen}
+                aboutVersion={APP_VERSION}
+                setIsAboutOpen={setIsAboutOpen}
+                isChangelogOpen={isChangelogOpen}
+                changelogContent={changelogContent}
+                onShowChangelog={handleShowChangelog}
+                onCloseChangelog={handleCloseChangelog}
+                isManualOpen={isManualOpen}
+                manualContent={manualContent}
+                onShowManual={handleShowManual}
+                onCloseManual={handleCloseManual}
+                isMidiModalOpen={isMidiModalOpen}
+                isMidiSupported={isMidiSupported}
+                midiAccessError={midiAccessError}
+                midiConfig={midiConfig}
+                midiDevices={midiDevices}
+                midiInMonitor={midiInMonitor}
+                midiOutMonitor={midiOutMonitor}
+                onSaveMidiConfig={handleSaveMidiConfig}
+                onCloseMidi={handleCloseMidi}
+                onClearMidiMonitors={handleClearMidiMonitors}
+                onRescanMidiDevices={handleRescanMidiDevices}
+                onLiveMidiConfigChange={handleLiveMidiConfigChange}
+                setMidiCopySummary={setMidiCopySummary}
+                setMidiLoadError={setMidiLoadError}
+                isDownloadOpen={isDownloadOpen}
+                setIsDownloadOpen={setIsDownloadOpen}
+                midiLoadError={midiLoadError}
+                midiCopySummary={midiCopySummary}
+                onMidiSystemReset={handleMidiSystemReset}
+              />
+              <FilePickerModal
+                isOpen={isRepositoryInstrumentOpen}
+                title="Pick Instrument"
+                directory="repository/instrument"
+                mode="pick"
+                defaultSortDescending={false}
+                onClose={() => setIsRepositoryInstrumentOpen(false)}
+                onPick={handlePickRepositoryInstrument}
+              />
+              <FilePickerModal
+                isOpen={isDemoSongPickerOpen}
+                title="Demo Songs"
+                directory="repository/song"
+                mode="pick"
+                defaultSortDescending={false}
+                onClose={() => setIsDemoSongPickerOpen(false)}
+                onPick={handlePickDemoSong}
+              />
+              <ExportModal
+                isOpen={isExportModalOpen}
+                exportType={pendingExportType}
+                exportStrategy={pendingExportStrategy}
+                onChangeType={handleExportTypeChange}
+                onChangeStrategy={handleExportStrategyChange}
+                onExportDump={handleExportDumpFromModal}
+                onExportData={handleExportDataFromModal}
+                onExportBin={handleExportBinFromModal}
+                onExportVgm={handleExportVgmFromModal}
+                onExportMax={handleExportMaxFromModal}
+                onExportWav={handleExportWavFromModal}
+                onConfirm={handleConfirmExport}
+                onCancel={handleCancelExport}
+              />
+              <PasteTrackModal
+                isOpen={isPasteTrackModalOpen}
+                mode={pasteTrackPendingMode}
+                onModeChange={setPasteTrackPendingMode}
+                onConfirm={handleConfirmPasteTrackModal}
+                onCancel={handleCancelPasteTrackModal}
+              />
             </>
           }
         />

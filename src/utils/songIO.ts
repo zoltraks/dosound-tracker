@@ -1,7 +1,7 @@
 import yaml from 'js-yaml';
 import type { Song, Instrument } from '../synth/SoundDriver';
 import { PATTERN_LENGTH, ENVELOPE_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
-import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey } from './songParser';
+import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songParser';
 
 const trimEnvelope = (values: number[]): number[] => {
   if (!values || values.length === 0) return [];
@@ -36,6 +36,11 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     const trimmedName = (inst.name || '').trim();
     if (trimmedName) {
       instrumentNode.name = trimmedName;
+    }
+
+    const normalizedColor = normalizeInstrumentColor(inst.color ?? null);
+    if (normalizedColor) {
+      instrumentNode.color = normalizedColor;
     }
 
     const baseKey = inst.base || DEFAULT_BASE_KEY;
@@ -390,6 +395,11 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
   instrumentNode.type = 'dosound';
   instrumentNode.version = 1;
 
+  const normalizedColor = normalizeInstrumentColor(currentInstrument.color ?? null);
+  if (normalizedColor) {
+    instrumentNode.color = normalizedColor;
+  }
+
   const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
   if (baseKey !== DEFAULT_BASE_KEY) {
     instrumentNode.base = baseKey;
@@ -471,6 +481,7 @@ export const parseInstrumentFromText = (
     base?: unknown;
     octave?: unknown;
     sustain?: unknown;
+    color?: unknown;
   }
 
   const root = parsed as InstrumentFileRoot;
@@ -539,6 +550,8 @@ export const parseInstrumentFromText = (
   const rawName = typeof instNode.name === 'string' ? instNode.name : '';
   const parsedName = rawName.trim() ? rawName : '';
 
+  const color = normalizeInstrumentColor((instNode as { color?: unknown }).color);
+
   const instrument: Instrument = {
     id: currentInstrumentId,
     name: parsedName,
@@ -554,6 +567,7 @@ export const parseInstrumentFromText = (
     })(),
     octave,
     sustain,
+    ...(color ? { color } : {}),
   };
 
   return instrument;

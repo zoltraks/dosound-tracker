@@ -1,5 +1,5 @@
 import React from 'react';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, ManualModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal } from '../modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, ManualModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 
@@ -68,6 +68,11 @@ export interface ModalContainerProps {
   instrumentMidiTarget: Instrument | null;
   onSaveInstrumentMidi: (midi: { channel: number | null; program: number | null }) => void;
   onCloseInstrumentMidi: () => void;
+  isInstrumentColorOpen: boolean;
+  instrumentColorTarget: Instrument | null;
+  onSaveInstrumentColor: (color: string | null) => void;
+  onClearInstrumentColor: () => void;
+  onCloseInstrumentColor: () => void;
   isTransposeOpen: boolean;
   transposeScope: TransposeScope;
   transposeTrackScope: TransposeTrackScope;
@@ -168,6 +173,11 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   instrumentMidiTarget,
   onSaveInstrumentMidi,
   onCloseInstrumentMidi,
+  isInstrumentColorOpen,
+  instrumentColorTarget,
+  onSaveInstrumentColor,
+  onClearInstrumentColor,
+  onCloseInstrumentColor,
   isTransposeOpen,
   transposeScope,
   transposeTrackScope,
@@ -357,6 +367,14 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         instrument={instrumentMidiTarget}
         onSave={onSaveInstrumentMidi}
         onCancel={onCloseInstrumentMidi}
+      />
+
+      <InstrumentColorModal
+        isOpen={isInstrumentColorOpen}
+        instrument={instrumentColorTarget}
+        onSave={onSaveInstrumentColor}
+        onClear={onClearInstrumentColor}
+        onCancel={onCloseInstrumentColor}
       />
 
       <TransposeModal

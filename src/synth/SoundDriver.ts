@@ -21,12 +21,16 @@ export interface Instrument {
   pitch: number[];
   noiseEnvelope: number[];
   mode: number[];
+  /** Optional base key used for keyboard preview and pitch calculations. */
   base?: string;
+  /** Optional default octave for this instrument. */
   octave?: number;
   // Optional sustain position in the envelope (0-based index). When set,
   // envelope progression should halt at this step until a key release
   // (note-off) occurs, after which the envelopes continue.
   sustain?: number | null;
+  /** Optional per-instrument display color in 3-digit hex form (e.g. "#abc"). */
+  color?: string | null;
   midi?: {
     channel?: number | null;
     program?: number | null;

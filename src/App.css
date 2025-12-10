@@ -2179,6 +2179,14 @@ body {
   font-size: 10px;
 }
 
+.instrument-item.instrument-item-colored {
+  background-color: color-mix(in srgb, var(--bg-secondary) 75%, var(--instrument-color, var(--bg-secondary)) 25%);
+}
+
+.light .instrument-item.instrument-item-colored {
+  background-color: color-mix(in srgb, var(--bg-primary) 75%, var(--instrument-color, var(--bg-primary)) 25%);
+}
+
 .instrument-item:hover {
   background-color: var(--hover-bg);
 }
@@ -2202,6 +2210,41 @@ body {
 .instrument-item.focused {
   background-color: var(--bg-active);
   box-shadow: 0 0 0 1px var(--active-border) inset;
+}
+
+.instrument-color-btn {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 1px solid var(--button-border);
+  background-color: var(--button-bg);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.instrument-color-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.instrument-color-icon {
+  width: 12px;
+  height: 12px;
+  display: block;
+}
+
+.instrument-color-icon-light {
+  display: none;
+}
+
+.light .instrument-color-icon-light {
+  display: block;
+}
+
+.light .instrument-color-icon-dark {
+  display: none;
 }
 
 .instrument-actions {

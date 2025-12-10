@@ -4,6 +4,8 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import type { Instrument } from '../synth/SoundDriver';
 import { isInstrumentEmpty } from '../utils/instrument';
+import colorModeDark from '../assets/svg/color-mode-dark.svg';
+import colorModeLight from '../assets/svg/color-mode-light.svg';
 
 interface InstrumentListPanelProps {
   instruments: Instrument[];
@@ -14,6 +16,7 @@ interface InstrumentListPanelProps {
   onRenameInstrument: (name: string) => void;
   onMoveInstrument: (index: number, direction: 'up' | 'down') => void;
   onOpenInstrumentMidi: (instrument: Instrument) => void;
+  onOpenInstrumentColor: (instrument: Instrument) => void;
   focusRevision: number;
 }
 
@@ -26,6 +29,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   onRenameInstrument,
   onMoveInstrument,
   onOpenInstrumentMidi,
+  onOpenInstrumentColor,
   focusRevision
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -227,7 +231,8 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
             return (
               <div
                 key={slotIndex}
-                className={getItemClass(slotIndex)}
+                className={`${getItemClass(slotIndex)}${instrument && instrument.color ? ' instrument-item-colored' : ''}`.trim()}
+                style={instrument && instrument.color ? ({ ['--instrument-color' as string]: instrument.color } as React.CSSProperties) : undefined}
                 onClick={() => handleInstrumentClick(slotIndex)}
               >
                 <span className="instrument-id">
@@ -260,6 +265,28 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
                   className="instrument-actions"
                   onClick={(e) => e.stopPropagation()}
                 >
+                  <button
+                    type="button"
+                    className="instrument-color-btn"
+                    onClick={() => {
+                      const instForSlot = getInstrumentForSlot(slotIndex);
+                      handleInstrumentClick(slotIndex);
+                      onOpenInstrumentColor(instForSlot);
+                    }}
+                    aria-label="Set instrument color"
+                    disabled={!instrument}
+                  >
+                    <img
+                      src={colorModeDark}
+                      className="instrument-color-icon instrument-color-icon-dark"
+                      alt=""
+                    />
+                    <img
+                      src={colorModeLight}
+                      className="instrument-color-icon instrument-color-icon-light"
+                      alt=""
+                    />
+                  </button>
                   <button
                     type="button"
                     className={midiButtonClassNames.join(' ')}

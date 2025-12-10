@@ -54,6 +54,8 @@ export interface UseModalStateResult {
   setInstrumentDeleteUsage: (value: InstrumentDeleteUsage) => void;
   isInstrumentMidiOpen: boolean;
   setIsInstrumentMidiOpen: (open: boolean) => void;
+  isInstrumentColorOpen: boolean;
+  setIsInstrumentColorOpen: (open: boolean) => void;
   isExportModalOpen: boolean;
   setIsExportModalOpen: (open: boolean) => void;
 }
@@ -87,6 +89,7 @@ export function useModalState(): UseModalStateResult {
     patternCount: 0,
   });
   const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
+  const [isInstrumentColorOpen, setIsInstrumentColorOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   return {
@@ -136,6 +139,8 @@ export function useModalState(): UseModalStateResult {
     setInstrumentDeleteUsage,
     isInstrumentMidiOpen,
     setIsInstrumentMidiOpen,
+    isInstrumentColorOpen,
+    setIsInstrumentColorOpen,
     isExportModalOpen,
     setIsExportModalOpen,
   };

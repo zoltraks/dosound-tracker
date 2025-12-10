@@ -1,0 +1,43 @@
+In instrument list for each instrument add a small button just before "MIDI" to allow set the color for the instrument.
+Instead using a text label for that button, use the icons from src/assets/svg/ where are color-mode icon files for dark and light theme.
+
+When user clicks a color, show Instrument Color settings modal window with color picker to allow user to select the color.
+
+Add "CANCEL" and "CLEAR" buttons on the left side of modal window and "OK" on the right side.
+
+When a user clicks "CANCEL" no change should be made.
+
+When a user clicks "CLEAR" then the empty color (no color setting) should be set.
+
+When instrument has a color assigned then on instrument list the "instrument-item" block of that instrument should have the tone of the assigned color.
+Mix that color according to current background color which varies in the different theme selections.
+
+As a standard we are using three hex digits code for color but you should allow importing data where color is set in 6-hex digit format like "#e4f5d3" and translate it to the nearest 3-hex digit format.
+
+Include this color setting when saving or loading instrument data in YAML format.
+
+```
+instrument:
+  name: Double Pim
+  type: dosound
+  version: 1
+  volume: [13, 12, 0, 0, 12, 11, 0]
+  arpeggio: [12, 0, 0, 0, 12, 0]
+```
+
+If instrument has assigned color then write additional "color" field before "mode" and "volume" fields.
+If color is not set, don't write field "color" in YAML.
+
+```
+instrument:
+  name: Double Pim
+  type: dosound
+  version: 1
+  color: "#ddd"
+  volume: [13, 12, 0, 0, 12, 11, 0]
+  arpeggio: [12, 0, 0, 0, 12, 0]
+```
+
+Also include it when saving and loading song in YAML format similar way.
+
+---
