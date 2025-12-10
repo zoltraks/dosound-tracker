@@ -1,4 +1,14 @@
 # DOSOUND Tracker – Changelog
+ 
+## Version 1.2.0
+
+Song loop timing fixes, runtime diagnostics in the About dialog, dynamic download availability, Electron/runtime upgrades, and testing/documentation refinements.
+
+- Fixed an audible timing delay on the first row after a playlist **loop** by moving loop handling into the sequencer worker, tracking playlist length and loop index explicitly, and letting the worker wrap directly to the loop position so song playback transitions smoothly without an extra silent tick between patterns.
+- Added **runtime information** to the About dialog so Electron builds show Electron/Chromium/Node.js version strings via a new `getRuntimeInfo` preload API, while browser builds fall back to displaying the user agent for easier environment diagnostics when reporting bugs.
+- Made the header **DOWNLOAD** button conditional by introducing a `useDownloadAvailability` hook that fetches and parses `download/LIST.txt`, filters out `.gitkeep` and index entries and ignores HTML/404 responses so the button only appears when real downloadable files are present; also narrowed the header toolbar from 42px to 35px to free more horizontal space.
+- Upgraded the **Electron** runtime from 28.x to 39.x, including updated Node typings and supporting docs describing the upgrade and compatibility checks for `main.cjs` / `preload.cjs`, while keeping the existing audio and UI behavior unchanged.
+- Hardened tests and development guidance by installing a robust **localStorage test setup** for jsdom-based tests, refining type assertions around global objects, and adding documentation such as audio‑critical `GUIDELINES.md` and a detailed 1.1.9 refactoring assessment to capture current architecture and safe refactoring boundaries.
 
 ## Version 1.1.9
 
