@@ -189,11 +189,12 @@ music:
 
 ## Development Guidelines
 
-### Architecture Guidelines
+### Architecture & Code Guidelines
 
-For guidelines on refactoring processes and architectural decisions, see:
+For guidelines on refactoring processes, architectural decisions, and code generation principles, see:
 
 - [ARCHITECT.md](docs/ARCHITECT.md)
+- [GUIDELINES.md](docs/GUIDELINES.md) - **Audio-critical development principles and linting trade-offs**
 
 > The initial project specification guidelines are described in [PROJECT.md](docs/PROJECT.md).
 > That document was used to bootstrap this project but is **not** used for the current development process anymore.
