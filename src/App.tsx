@@ -625,10 +625,10 @@ const App: React.FC = () => {
         handleStopPlayback();
         return;
       }
-      
-      const currentPatternIndex = state.currentPattern;
-      
-      if (currentPatternIndex < 0 || currentPatternIndex >= playlistLength) {
+
+      let effectivePatternIndex = state.currentPattern;
+
+      if (effectivePatternIndex < 0 || effectivePatternIndex >= playlistLength) {
         const rawLoop = currentSong.loop;
         const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
 
@@ -642,11 +642,16 @@ const App: React.FC = () => {
         const base = Math.floor(rawLoop as number);
         const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
 
-        setPosition(loopIndex, 0, 0);
-        return;
+        // Immediately jump the sequencer back to the loop index, but
+        // continue processing this tick as the first row of the looped
+        // playlist position so that there is no extra silent row between
+        // the last playlist entry and the loop target (matching PLAY LINE
+        // behaviour where no extra row is skipped on wrap).
+        setPosition(loopIndex, state.currentLine, state.currentTick);
+        effectivePatternIndex = loopIndex;
       }
-      
-      const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
+
+      const currentPlaylistEntry = currentSong.playlist[effectivePatternIndex];
       
       if (currentPlaylistEntry) {
         // Get pattern data for each track
@@ -678,7 +683,7 @@ const App: React.FC = () => {
           isDebugMode &&
           state.isPlaying &&
           (!lastLogged ||
-            lastLogged.pattern !== state.currentPattern ||
+            lastLogged.pattern !== effectivePatternIndex ||
             lastLogged.line !== state.currentLine);
 
         if (shouldLogRow) {
@@ -750,7 +755,7 @@ const App: React.FC = () => {
             const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
             setTimeout(() => console.log(debugLine), 0);
             debugLastRowRef.current = {
-              pattern: state.currentPattern,
+              pattern: effectivePatternIndex,
               line: state.currentLine
             };
             debugLastTimeRef.current = nowMs;

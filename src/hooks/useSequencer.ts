@@ -89,15 +89,22 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
 
             playbackStateRef.current = mergedState;
             
-            // Fire audio callbacks
-            if (callbackRef.current) {
-              callbackRef.current(mergedState);
-            }
-            if (tickCallbackRef.current) {
-              tickCallbackRef.current(mergedState.currentTick);
+            if (type === 'tick') {
+              // Fire audio callbacks only on regular timing ticks so that
+              // instantaneous position updates (e.g. from setPosition during
+              // song loop wrap-around) do not cause the same logical row to be
+              // processed twice, which can introduce audible stutters.
+              if (callbackRef.current) {
+                callbackRef.current(mergedState);
+              }
+              if (tickCallbackRef.current) {
+                tickCallbackRef.current(mergedState.currentTick);
+              }
             }
             
-            // Update React state only for row changes
+            // Update React state only for row changes for tick messages, but
+            // always apply explicit position updates for 'update' messages so
+            // the UI stays in sync with seek/jump operations.
             if (type === 'tick') {
               setSequencerState(prev => {
                 const rowChanged =
@@ -113,7 +120,6 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
                 return prev;
               });
             } else {
-              // Always update for explicit position updates
               setSequencerState(prev => ({
                 ...prev,
                 ...data,
