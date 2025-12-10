@@ -6,6 +6,8 @@ import { TrackPanel } from './TrackPanel';
 import { YM2149 } from '../synth/YM2149';
 import RainbowModeLight from '../assets/svg/rainbow-mode-light.svg';
 import RainbowModeDark from '../assets/svg/rainbow-mode-dark.svg';
+import RainbowModeLightColorless from '../assets/svg/rainbow-mode-light-colorless.svg';
+import RainbowModeDarkColorless from '../assets/svg/rainbow-mode-dark-colorless.svg';
 
 interface TracksSectionProps {
   song: Song;
@@ -73,10 +75,14 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
               type="button"
               className={`track-bg-toggle ${trackBackgroundEnabled ? 'enabled' : 'disabled'}`}
               onClick={onToggleTrackBackground}
+              onMouseDown={(event) => event.preventDefault()}
               title={trackBackgroundEnabled ? 'Disable track background colors' : 'Enable track background colors'}
             >
               <img
-                src={isDarkMode ? RainbowModeDark : RainbowModeLight}
+                src={trackBackgroundEnabled
+                  ? (isDarkMode ? RainbowModeDarkColorless : RainbowModeLightColorless)
+                  : (isDarkMode ? RainbowModeDark : RainbowModeLight)
+                }
                 alt=""
                 className="track-bg-toggle-icon"
               />

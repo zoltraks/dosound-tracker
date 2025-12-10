@@ -50,3 +50,29 @@ Use also instrument color for each step in track content that has an entry with 
 Remember that this color should be also included when step is current one. 
 
 ---
+
+Tracks are using background-color and background linear-gradient defined in CSS styles: "track-a", "track-b", "track-c".
+
+Add a small button to toggle background color for tracks.
+Place it in position-block in position-header.
+By default do nothing. 
+When toggled, then disable background coloring in tracks.
+Remember state of this button until "RESET" is made.
+Instead using a text label, use icon from svg.
+There are two versions for light and dark theme style: src/assets/svg/rainbow-mode-light.svg and src/assets/svg/rainbow-mode-dark.svg.
+
+---
+
+Don't focus rainbow mode button in position-header after click.
+
+---
+
+Use additional icons:
+ - src/assets/svg/rainbow-mode-light-colorless.svg for light theme
+ - src/assets/svg/rainbow-mode-dark-colorless.svg for dark theme
+when the state of rainbow mode button was changes so coloring track is enabled.
+If coloring track is disabled (toggled) then use the original ones:
+ - src/assets/svg/rainbow-mode-light.svg for light theme
+ - src/assets/svg/rainbow-mode-dark.svg for dark theme
+
+---
