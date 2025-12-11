@@ -277,7 +277,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
         </div>
       </header>
 
-      <div className="header-song-row-mobile">
+      <div className="header-panel-song-mobile">
         <span className="song-title">{title}</span>
       </div>
     </>

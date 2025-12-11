@@ -32,9 +32,9 @@ import { ExportModal } from './modals/ExportModal';
 import { PasteTrackModal } from './modals/PasteTrackModal';
 import { FilePickerModal } from './modals/FilePickerModal';
 import { AppLayout } from './components/AppLayout';
-import { TracksSection } from './components/TracksSection';
+import { TrackerSection } from './components/TrackerSection';
 import { InstrumentSection } from './components/InstrumentSection';
-import { InfoSection } from './components/InfoSection';
+import { SongSection } from './components/SongSection';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
@@ -2658,8 +2658,8 @@ const App: React.FC = () => {
               onDemoSong={handleDemoSongClick}
             />
           }
-          tracksSection={
-            <TracksSection
+          trackerSection={
+            <TrackerSection
               song={currentSong}
               sharedCurrentLine={sharedCurrentLine}
               onLineChange={handleLineChange}
@@ -2697,8 +2697,8 @@ const App: React.FC = () => {
               onNotesClick={handleNotesClick}
             />
           }
-          infoSection={
-            <InfoSection
+          songSection={
+            <SongSection
               song={currentSong}
               activeSection={activeSection}
               setActiveSection={setActiveSection}

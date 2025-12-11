@@ -4,9 +4,9 @@ interface AppLayoutProps {
   isDarkMode: boolean;
   header: React.ReactNode;
   commandPanel: React.ReactNode;
-  tracksSection: React.ReactNode;
+  trackerSection: React.ReactNode;
   instrumentSection: React.ReactNode;
-  infoSection: React.ReactNode;
+  songSection: React.ReactNode;
   pianoKeyboard: React.ReactNode;
   fileInputs: React.ReactNode;
   modals: React.ReactNode;
@@ -16,9 +16,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   isDarkMode,
   header,
   commandPanel,
-  tracksSection,
+  trackerSection,
   instrumentSection,
-  infoSection,
+  songSection,
   pianoKeyboard,
   fileInputs,
   modals,
@@ -34,9 +34,9 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
       {commandPanel}
 
       <div className="main-content">
-        {tracksSection}
+        {trackerSection}
         {instrumentSection}
-        {infoSection}
+        {songSection}
       </div>
 
       {pianoKeyboard}

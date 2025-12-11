@@ -407,7 +407,7 @@ body {
   color: var(--text-secondary);
 }
 
-.header-song-row-mobile {
+.header-panel-song-mobile {
   display: none;
 }
 
@@ -2973,7 +2973,7 @@ body {
     display: none;
   }
 
-  .header-song-row-mobile {
+  .header-panel-song-mobile {
     display: block;
     padding: 2px 14px 4px 14px;
     margin-top: 4px;
