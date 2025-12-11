@@ -2437,9 +2437,9 @@ body {
   box-shadow: 0 0 0 1px var(--active-border) inset;
 }
 
-.instrument-panel.active .instrument-item.current,
-.instrument-panel.active .instrument-item.focused {
-  box-shadow: none;
+.instrument-item.current,
+.instrument-item.focused {
+  box-shadow: 0 0 0 1px var(--active-border) inset;
 }
 
 /* Preserve color tinting for colored instruments even when current/focused */
