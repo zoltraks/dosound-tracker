@@ -1310,7 +1310,8 @@ body {
 /* Track Panel */
 .track-panel {
   flex: 1;
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  background-color: var(--bg-secondary);
+  background-image: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border: 1px solid var(--border-color);
   padding: 4px;
   overflow: hidden;
@@ -1319,14 +1320,43 @@ body {
   flex-direction: column;
   box-shadow: var(--shadow-medium);
   position: relative;
+  z-index: 0;
   min-height: 0;
-  transition: background 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
+  transition: background-color 0.6s ease, border-color 0.6s ease;
+}
+
+.track-panel::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: transparent;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+.track-panel.track-a::before {
+  background: linear-gradient(180deg, var(--track-a-bg), var(--bg-tertiary));
+}
+
+.track-panel.track-b::before {
+  background: linear-gradient(180deg, var(--track-b-bg), var(--bg-tertiary));
+}
+
+.track-panel.track-c::before {
+  background: linear-gradient(180deg, var(--track-c-bg), var(--bg-tertiary));
+}
+
+.track-panel.track-colored::before {
+  opacity: 1;
 }
 
 .track-panel.active {
   border-color: var(--active-border);
   box-shadow: var(--shadow-medium), var(--glow-primary);
-  background: linear-gradient(180deg, var(--bg-active) 0%, var(--bg-secondary) 100%);
+  background-color: var(--active-bg);
+  background-image: linear-gradient(180deg, var(--active-bg) 0%, var(--bg-secondary) 100%);
 }
 
 .track-panel:hover {
@@ -1335,25 +1365,13 @@ body {
 }
 
 .track-panel.disabled {
-  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
+  background-color: var(--bg-tertiary);
+  background-image: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-secondary) 100%);
   border-color: var(--border-dim);
   opacity: 0.7;
 }
 
-.track-panel.track-colored.track-a {
-  background-color: var(--track-a-bg);
-  background: linear-gradient(180deg, var(--track-a-bg), var(--bg-tertiary));
-}
 
-.track-panel.track-colored.track-b {
-  background-color: var(--track-b-bg);
-  background: linear-gradient(180deg, var(--track-b-bg), var(--bg-tertiary));
-}
-
-.track-panel.track-colored.track-c {
-  background-color: var(--track-c-bg);
-  background: linear-gradient(180deg, var(--track-c-bg), var(--bg-tertiary));
-}
 
 .track-panel.disabled .track-header,
 .track-panel.disabled .note-data,
@@ -1455,6 +1473,10 @@ body {
 }
 
 /* Per-line instrument color tinting in tracks */
+.track-panel .track-line.track-line-colored {
+  transition: background-color 0.6s ease;
+}
+
 .track-panel.track-colored .track-line.track-line-colored {
   background-color: color-mix(in srgb, var(--track-inactive-bg) 75%, var(--track-line-color, var(--track-inactive-bg)) 25%);
 }
@@ -1463,7 +1485,12 @@ body {
   background-color: color-mix(in srgb, var(--track-active-bg) 75%, var(--track-line-color, var(--track-active-bg)) 25%);
 }
 
-/* Stronger tint for the current step so it stands out even when colored */
+/* Stronger tint for the current step so it stands out even when colored,
+   but without animating on step changes */
+.track-panel .track-line.current.track-line-colored {
+  transition: none;
+}
+
 .track-panel.track-colored .track-line.current.track-line-colored {
   background-color: color-mix(in srgb, var(--track-inactive-bg) 60%, var(--track-line-color, var(--track-inactive-bg)) 40%);
 }

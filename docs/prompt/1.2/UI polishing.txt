@@ -27,3 +27,15 @@ It seems that in track panel current highlighted step that is track-line current
 But now the current and active step has wrong padding, it should be moved 1px right and 1px top
 
 ---
+
+When enabling or disabling track colors and step background mode by clicking on "rainbow" button I would like to have transition effect so it smoothly changes colors but only while changing track coloring mode option
+
+---
+
+Make this transition 2x slower and make it work also for "track-a", "track-b", "track-c" background color as it now changes immediately after toggling track coloring mode
+
+---
+
+Still track background is changed immediately without transition
+
+---
