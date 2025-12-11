@@ -1589,6 +1589,15 @@ body {
   transition: color 0.5s ease, background-color 0.5s ease;
 }
 
+/* Stabilize track line text rendering during background/color transitions,
+   especially in Safari where font hinting can otherwise cause a subtle
+   horizontal "shift" as colors change. */
+.track-panel .track-line .note-text,
+.track-panel .track-line .volume-data {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 .volume-data.active {
   color: var(--text-primary);
   background-color: var(--track-cell-active-bg);
