@@ -4,6 +4,8 @@ import { KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument as YmInstrument } from '../synth/YM2149';
+import { TrackLine } from './TrackLine';
+import { computeEffectiveVolume } from '../utils/trackUtils';
 
 type PreviewInstrument = YmInstrument & { sustain?: number | null };
 
@@ -99,26 +101,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     return map;
   }, [instruments]);
 
-  const effectiveVolume = useMemo(() => {
-    if (!pattern) return 0x0f;
-
-    const lines = pattern.lines;
-    if (lines.length === 0) return 0x0f;
-
-    const maxIndex = Math.min(currentLine, lines.length - 1);
-    let current = 0x0f;
-
-    for (let i = 0; i <= maxIndex; i++) {
-      const line = lines[i];
-      const vol = line?.volume;
-      if (vol !== undefined && vol !== null) {
-        const clamped = Math.max(0, Math.min(0x0f, vol | 0));
-        current = clamped;
-      }
-    }
-
-    return current;
-  }, [pattern, currentLine]);
+  const effectiveVolume = useMemo(
+    () => computeEffectiveVolume(pattern, currentLine),
+    [pattern, currentLine]
+  );
 
   // Hard stop of any current preview on this track/channel
   const stopPreview = useCallback(() => {
@@ -670,7 +656,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       <div className="track-content" style={{ userSelect: 'none' }}>
         {trackNotes.map((noteData, lineIndex) => {
-          const volume = pattern?.lines[lineIndex]?.volume;
+          const volume = pattern?.lines[lineIndex]?.volume ?? null;
           const isCurrentLine = lineIndex === currentLine && isActive;
           const volumeIsActive = isCurrentLine && currentColumn === 'volume';
           const noteIsActive = isCurrentLine && currentColumn === 'note';
@@ -696,32 +682,18 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             : undefined;
 
           return (
-            <div
+            <TrackLine
               key={lineIndex}
-              className={lineClassName}
-              style={lineStyle}
-              onClick={() => handleLineClick(lineIndex, 'note')}
-            >
-              <span className="note-data">
-                <span
-                  className={`note-text ${noteIsActive ? 'active' : ''}`}
-                  onClick={() => handleLineClick(lineIndex, 'note')}
-                >
-                  {formatNoteDisplay(noteData)}
-                </span>
-                <span
-                  className={`volume-data ${volumeIsActive ? 'active' : ''}`}
-                  onClick={(event: React.MouseEvent<HTMLSpanElement>) => {
-                    event.stopPropagation();
-                    handleLineClick(lineIndex, 'volume');
-                  }}
-                >
-                  {volume === undefined || volume === null
-                    ? '.'
-                    : (Math.max(0, Math.min(0x0f, volume | 0))).toString(16).toUpperCase()}
-                </span>
-              </span>
-            </div>
+              lineIndex={lineIndex}
+              noteData={noteData}
+              volume={volume}
+              lineClassName={lineClassName}
+              lineStyle={lineStyle}
+              noteIsActive={noteIsActive}
+              volumeIsActive={volumeIsActive}
+              onLineClick={handleLineClick}
+              formatNoteDisplay={formatNoteDisplay}
+            />
           );
         })}
       </div>
