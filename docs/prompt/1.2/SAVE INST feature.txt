@@ -1,0 +1,19 @@
+When saving instrument or song in YAML format use double quotes for "color" field of instrument.
+
+Include base note value as "base" field for an instrument when saving instrument, saving song, loading song or loading instrument.
+
+Put "base" field before "color" and "envelope" just after "version".
+
+This is an example of instrument YAML data I expect:
+
+```yaml
+instrument:
+  name: Nice Lead
+  type: dosound
+  version: 1
+  base: "C#4"
+  color: "#9f9"
+  volume: [15, 15, 10, 10, 6, 6, 0]
+```
+
+---

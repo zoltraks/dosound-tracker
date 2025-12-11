@@ -33,14 +33,12 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
   instrumentNode.type = 'dosound';
   instrumentNode.version = 1;
 
+  const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
+  instrumentNode.base = baseKey;
+
   const normalizedColor = normalizeInstrumentColor(currentInstrument.color ?? null);
   if (normalizedColor) {
     instrumentNode.color = normalizedColor;
-  }
-
-  const baseKey = currentInstrument.base || DEFAULT_BASE_KEY;
-  if (baseKey !== DEFAULT_BASE_KEY) {
-    instrumentNode.base = baseKey;
   }
 
   const rawOctave = currentInstrument.octave;
@@ -94,7 +92,22 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
     });
   };
 
+  const quoteColorValues = (text: string): string => {
+    const colorLineRegex = /^(\s*-\s+|\s+)(color):\s*(.+)$/gm;
+    return text.replace(colorLineRegex, (_match, indent: string, key: string, value: string) => {
+      let inner = String(value).trim();
+      if (
+        (inner.startsWith('"') && inner.endsWith('"')) ||
+        (inner.startsWith('\'') && inner.endsWith('\''))
+      ) {
+        inner = inner.slice(1, -1);
+      }
+      return `${indent}${key}: "${inner}"`;
+    });
+  };
+
   yamlContent = quoteBaseValues(yamlContent);
+  yamlContent = quoteColorValues(yamlContent);
 
   return yamlContent;
 };

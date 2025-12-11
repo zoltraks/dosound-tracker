@@ -38,14 +38,12 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       instrumentNode.name = trimmedName;
     }
 
+    const baseKey = inst.base || DEFAULT_BASE_KEY;
+    instrumentNode.base = baseKey;
+
     const normalizedColor = normalizeInstrumentColor(inst.color ?? null);
     if (normalizedColor) {
       instrumentNode.color = normalizedColor;
-    }
-
-    const baseKey = inst.base || DEFAULT_BASE_KEY;
-    if (baseKey !== DEFAULT_BASE_KEY) {
-      instrumentNode.base = baseKey;
     }
 
     const rawOctave = inst.octave;
@@ -361,6 +359,21 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   yamlContent = quotePlaylistValues(yamlContent);
   yamlContent = quoteNoteValues(yamlContent);
   yamlContent = quoteBaseValues(yamlContent);
+  const quoteColorValues = (text: string): string => {
+    const colorLineRegex = /^(\s*-\s+|\s+)(color):\s*(.+)$/gm;
+    return text.replace(colorLineRegex, (_match, indent: string, key: string, value: string) => {
+      let inner = String(value).trim();
+      if (
+        (inner.startsWith('"') && inner.endsWith('"')) ||
+        (inner.startsWith('\'') && inner.endsWith('\''))
+      ) {
+        inner = inner.slice(1, -1);
+      }
+      return `${indent}${key}: "${inner}"`;
+    });
+  };
+
+  yamlContent = quoteColorValues(yamlContent);
 
   return yamlContent;
 };
