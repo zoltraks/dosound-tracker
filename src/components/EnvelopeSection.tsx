@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Instrument } from '../synth/SoundDriver';
 import { ToneNoisePanel } from './ToneNoisePanel';
@@ -26,6 +26,17 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
   isNotesVisible,
   onNotesClick,
 }) => {
+  const currentMessageHtml = useMemo(() => {
+    if (
+      messages.length > 0 &&
+      currentMessageIndex >= 0 &&
+      currentMessageIndex < messages.length
+    ) {
+      return renderMarkdown(messages[currentMessageIndex]);
+    }
+    return '';
+  }, [messages, currentMessageIndex]);
+
   return (
     <div className="middle-column">
       <ToneNoisePanel
@@ -89,10 +100,7 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
         <div
           className={`notes-content${isNotesVisible ? '' : ' notes-hidden'}`}
           dangerouslySetInnerHTML={{
-            __html:
-              messages.length > 0 && currentMessageIndex >= 0 && currentMessageIndex < messages.length
-                ? renderMarkdown(messages[currentMessageIndex])
-                : '',
+            __html: currentMessageHtml,
           }}
         />
       </div>
