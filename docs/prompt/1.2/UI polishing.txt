@@ -10,3 +10,7 @@ On instrument list current selected instrument has input field instead of span b
 Make input field to have the same background color like span of "instrument-id" or span of "instrument-name".
 
 ---
+
+Make "position-block" and "track-panel" to have the same border style like "envelope-panel", "playlist-panel" or "instrument-panel".
+
+---
