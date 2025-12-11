@@ -1,0 +1,22 @@
+During playback when any track is focused and active then there are audible delays in sequencer while there are none when none of the track is focused.
+
+---
+
+It doesn't seem to be MIDI related. It happens when I change selected instrument while playback both on desktop and on mobile:
+
+App.tsx:800 23:49:34.203 | 082 | 03D5 | 2B | --- -- - | --- -- - | E-5 03 - |
+App.tsx:800 23:49:34.372 | 169 | 03D7 | 2C | --- -- - | C-2 01 - | --- -- - |
+App.tsx:800 23:49:34.384 | 012 | 03D9 | 2D | --- -- - | --- -- - | --- -- - |
+App.tsx:800 23:49:34.439 | 055 | 03DB | 2E | --- -- - | C-2 01 - | --- -- - |
+App.tsx:800 23:49:34.515 | 076 | 03DD | 2F | --- -- - | --- -- - | --- -- - |
+App.tsx:800 23:49:34.595 | 080 | 03DF | 30 | C-3 00 - | C-2 01 - | --- -- - |
+App.tsx:800 23:49:34.676 | 081 | 03E1 | 31 | --- -- - | --- -- - | --- -- - |
+
+---
+
+When playing song or line changing selected instrument causes a small delay in sequencer so it seems that it interferes with it.
+It might interfere when parameters are changed while song is playing but it should not when only selection is changed.
+When changing the instrument, all envelope panels has to be updated.
+Try to fix this so UI update while changing selected instrument doesn't cause sequencer delays.
+
+---
