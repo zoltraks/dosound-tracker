@@ -235,7 +235,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                 style={instrument && instrument.color ? ({ ['--instrument-color' as string]: instrument.color } as React.CSSProperties) : undefined}
                 onClick={() => handleInstrumentClick(slotIndex)}
               >
-                <span className="instrument-id">
+                <span className="instrument-number">
                   {slotIndex.toString(16).padStart(2, '0').toUpperCase()}
                 </span>
                 <span className="instrument-name">

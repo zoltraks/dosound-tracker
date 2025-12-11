@@ -21,3 +21,7 @@ Change CSS name from "playlist-lines" to "playlist-line-container"
 Change CSS name from "instrument-items" to "instrument-item-container"
 
 ---
+
+Change CSS name from "instrument-id-header" to "instrument-number-header" and from "instrument-id" to "instrument-number".
+
+---

@@ -2157,7 +2157,6 @@ body {
 
 .line-number-header {
   width: 20px;
-  flex: 0 0 23px;
   text-align: right;
 }
 
@@ -2168,8 +2167,15 @@ body {
 
 .playlist-move-header {
   width: 32px;
-  flex: 0 0 45px;
   text-align: center;
+}
+
+.line-number-header {
+  flex: 0 0 23px;
+}
+
+.playlist-move-header {
+  flex: 0 0 45px;
 }
 
 .playlist-line .line-number {
@@ -2369,6 +2375,7 @@ body {
 
 .instrument-header-row {
   display: flex;
+  align-items: center;
   gap: 8px;
   font-size: 10px;
   color: var(--text-secondary);
@@ -2377,7 +2384,7 @@ body {
   margin-bottom: 2px;
 }
 
-.instrument-id-header {
+.instrument-number-header {
   width: 30px;
   text-align: center;
 }
@@ -2438,13 +2445,13 @@ body {
   gap: 5px;
 }
 
-.instrument-item.current .instrument-id,
+.instrument-item.current .instrument-number,
 .instrument-item.current .instrument-name {
   color: var(--text-primary);
   font-weight: bold;
 }
 
-.instrument-item.current .instrument-id {
+.instrument-item.current .instrument-number {
   padding-top: 2px;
 }
 
@@ -2552,7 +2559,7 @@ body {
   cursor: default;
 }
 
-.instrument-id {
+.instrument-number {
   width: 30px;
   text-align: center;
   padding-top: 2px;
@@ -3021,11 +3028,14 @@ body {
 
   .instrument-panel,
   .instrument-list-content,
-  .instrument-item-container {
+  .instrument-item-container,
+  .playlist-content,
+  .playlist-line-container {
     flex: 0 0 auto;
   }
 
-  .instrument-item-container {
+  .instrument-item-container,
+  .playlist-line-container {
     overflow-y: visible;
   }
 
@@ -3130,6 +3140,14 @@ body {
 
   .download-toggle {
     display: none;
+  }
+
+  .line-number-header {
+    flex: 0 0 22px;
+  }
+
+  .playlist-move-header {
+    flex: 0 0 37px;
   }
 
   .modal-dialog.text-display {

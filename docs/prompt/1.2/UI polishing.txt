@@ -115,3 +115,8 @@ I can see that the background color of the "note-text" or "volume-data" that is 
 When moving mouse cursor over rows of instrument-item-container list the background color is changing but it should be mixed with the background color of the instrument that has color set.
 
 ---
+
+The content of "playlist-line-container" element seems like having 3px too much height and in mobile view where the whole block has dynamic height I still can scroll 3px top or bottom.
+You may remove vertical scrollbar in mobile view in "playlist-line-container", it will not be used.
+
+---
