@@ -32,9 +32,9 @@ import { ExportModal } from './modals/ExportModal';
 import { PasteTrackModal } from './modals/PasteTrackModal';
 import { FilePickerModal } from './modals/FilePickerModal';
 import { AppLayout } from './components/AppLayout';
-import { TracksSection } from './components/TracksSection';
-import { InstrumentSection } from './components/InstrumentSection';
-import { InfoSection } from './components/InfoSection';
+import { TrackerSection } from './components/TrackerSection';
+import { EnvelopeSection } from './components/EnvelopeSection';
+import { SongSection } from './components/SongSection';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
@@ -469,7 +469,42 @@ const App: React.FC = () => {
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
-  const [instrumentListFocusRevision, setInstrumentListFocusRevision] = useState(0);
+  const [instrumentPanelFocusRevision, setInstrumentPanelFocusRevision] = useState(0);
+  const [isCommandPanelMobileCollapsed, setIsCommandPanelMobileCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-command-panel-mobile');
+      if (stored === 'collapsed') {
+        setIsCommandPanelMobileCollapsed(true);
+        return;
+      }
+      if (stored === 'expanded') {
+        setIsCommandPanelMobileCollapsed(false);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth <= 1100 || window.innerHeight <= 700;
+      if (isMobile) {
+        setIsCommandPanelMobileCollapsed(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'dosound-tracker-command-panel-mobile',
+        isCommandPanelMobileCollapsed ? 'collapsed' : 'expanded'
+      );
+    } catch {
+      // ignore
+    }
+  }, [isCommandPanelMobileCollapsed]);
 
   const ensureAudioContextResumed = useCallback(() => {
     if (!audioContext) {
@@ -1636,15 +1671,15 @@ const App: React.FC = () => {
     setIsInstrumentMidiOpen(false);
     setInstrumentMidiTarget(null);
     setActiveSection('instrumentList');
-    setInstrumentListFocusRevision(prev => prev + 1);
-  }, [setActiveSection, setInstrumentListFocusRevision]);
+    setInstrumentPanelFocusRevision(prev => prev + 1);
+  }, [setActiveSection, setInstrumentPanelFocusRevision]);
 
   const handleSaveInstrumentMidi = useCallback(
     (midi: { channel: number | null; program: number | null }) => {
       if (!instrumentMidiTarget) {
         setIsInstrumentMidiOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentListFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -1686,7 +1721,7 @@ const App: React.FC = () => {
       setIsInstrumentMidiOpen(false);
       setInstrumentMidiTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentListFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision(prev => prev + 1);
     },
     [
       instrumentMidiTarget,
@@ -1695,7 +1730,7 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentListFocusRevision
+      setInstrumentPanelFocusRevision
     ]
   );
 
@@ -1708,15 +1743,15 @@ const App: React.FC = () => {
     setIsInstrumentColorOpen(false);
     setInstrumentColorTarget(null);
     setActiveSection('instrumentList');
-    setInstrumentListFocusRevision(prev => prev + 1);
-  }, [setActiveSection, setInstrumentListFocusRevision]);
+    setInstrumentPanelFocusRevision(prev => prev + 1);
+  }, [setActiveSection, setInstrumentPanelFocusRevision]);
 
   const handleSaveInstrumentColor = useCallback(
     (color: string | null) => {
       if (!instrumentColorTarget) {
         setIsInstrumentColorOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentListFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -1747,7 +1782,7 @@ const App: React.FC = () => {
       setIsInstrumentColorOpen(false);
       setInstrumentColorTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentListFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision(prev => prev + 1);
     },
     [
       instrumentColorTarget,
@@ -1756,7 +1791,7 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentListFocusRevision,
+      setInstrumentPanelFocusRevision,
     ]
   );
 
@@ -1765,7 +1800,7 @@ const App: React.FC = () => {
       if (!instrumentColorTarget) {
         setIsInstrumentColorOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentListFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -1794,7 +1829,7 @@ const App: React.FC = () => {
       setIsInstrumentColorOpen(false);
       setInstrumentColorTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentListFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision(prev => prev + 1);
     },
     [
       instrumentColorTarget,
@@ -1803,7 +1838,7 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentListFocusRevision,
+      setInstrumentPanelFocusRevision,
     ]
   );
 
@@ -2614,6 +2649,9 @@ const App: React.FC = () => {
               onShowDownloads={() => setIsDownloadOpen(true)}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+              onToggleCommandPanelMobile={() =>
+                setIsCommandPanelMobileCollapsed(prev => !prev)
+              }
             />
           }
           commandPanel={
@@ -2656,10 +2694,11 @@ const App: React.FC = () => {
               onShowMidi={handleShowMidi}
               onPickInstrument={handleOpenRepositoryInstrumentPicker}
               onDemoSong={handleDemoSongClick}
+              isMobileCollapsed={isCommandPanelMobileCollapsed}
             />
           }
-          tracksSection={
-            <TracksSection
+          trackerSection={
+            <TrackerSection
               song={currentSong}
               sharedCurrentLine={sharedCurrentLine}
               onLineChange={handleLineChange}
@@ -2685,8 +2724,8 @@ const App: React.FC = () => {
               isDarkMode={isDarkMode}
             />
           }
-          instrumentSection={
-            <InstrumentSection
+          envelopeSection={
+            <EnvelopeSection
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               currentInstrument={currentInstrument}
@@ -2697,8 +2736,8 @@ const App: React.FC = () => {
               onNotesClick={handleNotesClick}
             />
           }
-          infoSection={
-            <InfoSection
+          songSection={
+            <SongSection
               song={currentSong}
               activeSection={activeSection}
               setActiveSection={setActiveSection}
@@ -2714,7 +2753,7 @@ const App: React.FC = () => {
               onMoveInstrument={handleMoveInstrument}
               onOpenInstrumentMidi={handleOpenInstrumentMidi}
               onOpenInstrumentColor={handleOpenInstrumentColor}
-              instrumentListFocusRevision={instrumentListFocusRevision}
+              instrumentPanelFocusRevision={instrumentPanelFocusRevision}
               ym2149={ym2149Ref.current}
               channelMutes={channelMutes}
               onToggleChannelMute={handleToggleChannelMute}

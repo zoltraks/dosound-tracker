@@ -7,7 +7,7 @@ export const escapeHtml = (str: string): string => {
     .replace(/'/g, '&#39;');
 };
 
-const renderInlineMarkdown = (text: string): string => {
+const applyInlineFormatting = (text: string): string => {
   const escaped = escapeHtml(text);
 
   const withLinks = escaped.replace(/\bhttps?:\/\/[^\s<]+/g, (url) => {
@@ -15,8 +15,44 @@ const renderInlineMarkdown = (text: string): string => {
   });
 
   // Bold **text**
-  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1</strong>');
   return withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
+};
+
+const renderInlineMarkdown = (text: string): string => {
+  // Handle inline code spans first so that we don't apply link/bold/italic
+  // formatting inside code. Supports single or multiple backticks, requiring
+  // the same number of backticks on both sides.
+  const codePattern = /(`+)([^`]+?)\1/g;
+  let result = '';
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  // Walk through all code spans in the original text.
+  while ((match = codePattern.exec(text)) !== null) {
+    const [fullMatch, , codeContent] = match;
+
+    // Text before this code span: apply normal inline formatting.
+    if (match.index > lastIndex) {
+      const nonCode = text.slice(lastIndex, match.index);
+      result += applyInlineFormatting(nonCode);
+    }
+
+    // Code span itself: only escape HTML and wrap in <code> with a
+    // dedicated class so CSS can style it differently in light/dark themes.
+    const escapedCode = escapeHtml(codeContent);
+    result += `<code class="inline-code">${escapedCode}</code>`;
+
+    lastIndex = match.index + fullMatch.length;
+  }
+
+  // Remaining text after the last code span.
+  if (lastIndex < text.length) {
+    const remaining = text.slice(lastIndex);
+    result += applyInlineFormatting(remaining);
+  }
+
+  return result;
 };
 
 export const renderMarkdown = (md: string): string => {

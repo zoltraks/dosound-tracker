@@ -9,7 +9,7 @@ import RainbowModeDark from '../assets/svg/rainbow-mode-dark.svg';
 import RainbowModeLightColorless from '../assets/svg/rainbow-mode-light-colorless.svg';
 import RainbowModeDarkColorless from '../assets/svg/rainbow-mode-dark-colorless.svg';
 
-interface TracksSectionProps {
+interface TrackerSectionProps {
   song: Song;
   sharedCurrentLine: number;
   onLineChange: (lineIndex: number) => void;
@@ -35,7 +35,7 @@ interface TracksSectionProps {
   isDarkMode: boolean;
 }
 
-export const TracksSection: React.FC<TracksSectionProps> = ({
+export const TrackerSection: React.FC<TrackerSectionProps> = ({
   song,
   sharedCurrentLine,
   onLineChange,
@@ -101,7 +101,7 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
           </div>
         </div>
 
-        <div className="tracks-container">
+        <div className="track-container">
           <div className="tracks-row">
             {(['A', 'B', 'C'] as const).map(trackId => (
               <TrackPanel

@@ -1,5 +1,5 @@
 import React from 'react';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, ChangesModal, ManualModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
+import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, MarkdownModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 
@@ -412,15 +412,21 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onShowManual={onShowManual}
       />
 
-      <ChangesModal
+      <MarkdownModal
         isOpen={isChangelogOpen}
+        title="Changes"
         content={changelogContent}
+        downloadHref="CHANGELOG.md"
+        showTitle={false}
         onClose={onCloseChangelog}
       />
 
-      <ManualModal
+      <MarkdownModal
         isOpen={isManualOpen}
+        title="Manual"
         content={manualContent}
+        downloadHref="MANUAL.md"
+        showTitle={false}
         onClose={onCloseManual}
       />
 

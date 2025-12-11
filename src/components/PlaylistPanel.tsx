@@ -353,7 +353,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           onTrackHeaderClick={handleTrackHeaderClick}
         />
 
-        <div className="playlist-lines" ref={linesContainerRef}>
+        <div className="playlist-line-container" ref={linesContainerRef}>
           {playlist.map((entry, actualIndex) => {
             const isCurrentLine = actualIndex === currentLine;
             const isEditing = isCurrentLine && editingPattern !== '';

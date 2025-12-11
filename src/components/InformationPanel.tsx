@@ -3,14 +3,14 @@ import type { NavigationSection } from '../constants/navigation';
 import type { Song } from '../synth/SoundDriver';
 import NumberSpinner from './NumberSpinner';
 
-interface SongInfoPanelProps {
+interface InformationPanelProps {
   song: Song;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   onChange: (updates: Partial<Song>) => void;
 }
 
-export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
+export const InformationPanel: React.FC<InformationPanelProps> = ({
   song,
   activeSection,
   setActiveSection,
@@ -139,13 +139,13 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
 
   return (
     <div 
-      className={`song-info-panel ${isActive ? 'active' : ''}`}
+      className={`information-panel ${isActive ? 'active' : ''}`}
       onClick={() => setActiveSection('songInfo')}
     >
-      <div className="song-info-header">Song</div>
+      <div className="information-header">Song</div>
       
-      <div className="song-info-content">
-        <div className="info-field">
+      <div className="information-content">
+        <div className="information-field">
           <label>Title:</label>
           <input
             ref={titleRef}
@@ -154,11 +154,11 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
             onChange={(e) => handleFieldChange('title', e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => setLastFocusedField('title')}
-            className="info-input"
+            className="information-input"
           />
         </div>
         
-        <div className="info-field">
+        <div className="information-field">
           <label>Author:</label>
           <input
             ref={authorRef}
@@ -167,13 +167,13 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
             onChange={(e) => handleFieldChange('author', e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => setLastFocusedField('author')}
-            className="info-input"
+            className="information-input"
           />
         </div>
 
         <div className="song-info-grid">
           <div className="song-info-column">
-            <div className="info-field">
+            <div className="information-field">
               <label>Year:</label>
               <NumberSpinner
                 value={song.year}
@@ -190,7 +190,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
               />
             </div>
             
-            <div className="info-field">
+            <div className="information-field">
               <label>Speed:</label>
               <NumberSpinner
                 value={song.speed}
@@ -209,7 +209,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
           </div>
 
           <div className="song-info-column song-info-column-right">
-            <div className="info-field">
+            <div className="information-field">
               <label>Length:</label>
               <NumberSpinner
                 value={song.patternLength ?? 64}
@@ -226,7 +226,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
               />
             </div>
 
-            <div className="info-field">
+            <div className="information-field">
               <label>Loop:</label>
               <NumberSpinner
                 value={typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null}

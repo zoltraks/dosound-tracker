@@ -1,23 +1,29 @@
 import React from 'react';
 import { renderMarkdown } from '../utils/markdown';
 
-interface ManualModalProps {
+interface MarkdownModalProps {
   isOpen: boolean;
+  title: string;
   content: string;
+  downloadHref: string;
   onClose: () => void;
+  showTitle?: boolean;
 }
 
-export const ManualModal: React.FC<ManualModalProps> = ({
+export const MarkdownModal: React.FC<MarkdownModalProps> = ({
   isOpen,
+  title,
   content,
+  downloadHref,
   onClose,
+  showTitle = true,
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop">
       <div className="modal-dialog text-display">
-        <div className="modal-title">Manual</div>
+        {showTitle && <div className="modal-title">{title}</div>}
         <div
           className="modal-body text-display-body"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
@@ -26,7 +32,7 @@ export const ManualModal: React.FC<ManualModalProps> = ({
           <div className="text-display-actions-left">
             <a
               className="command-btn"
-              href="MANUAL.md"
+              href={downloadHref}
               download
             >
               DOWNLOAD
@@ -41,4 +47,4 @@ export const ManualModal: React.FC<ManualModalProps> = ({
       </div>
     </div>
   );
-}
+};

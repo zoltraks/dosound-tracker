@@ -1,0 +1,8 @@
+In mobile view make "header-panel-song-mobile" clickable.
+When the song title panel is clicked, then it should collapse or expand command button panel.
+In expanded state command button panel should display all buttons like it actually does.
+In collapsed state, show only one row with only three buttons exactly in this order "PLAY SONG", "DEMO SONG", "STOP".
+By default is should be in collapsed state.
+Remember the state until "RESET" is made.
+
+---

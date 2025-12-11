@@ -181,7 +181,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div className="info-field">
+            <div className="information-field">
               <label>Channel:</label>
               <NumberSpinner
                 value={channel}
@@ -196,7 +196,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
               />
             </div>
 
-            <div className="info-field">
+            <div className="information-field">
               <label>Program:</label>
               <NumberSpinner
                 value={program}

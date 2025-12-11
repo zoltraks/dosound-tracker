@@ -40,6 +40,7 @@ interface CommandPanelProps {
   onShowMidi: () => void;
   onPickInstrument: () => void;
   onDemoSong: () => void;
+  isMobileCollapsed: boolean;
 }
 
 export const CommandPanel: React.FC<CommandPanelProps> = ({
@@ -81,6 +82,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onShowMidi,
   onPickInstrument,
   onDemoSong,
+  isMobileCollapsed,
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
   const isActive = activeSection === 'commands';
@@ -242,100 +244,120 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       onClick={() => setActiveSection('commands')}
       onKeyDown={handleKeyDown}
     >
-      {/* Row 1: Playback and utilities */}
-      <div className="command-row">
-        <button
-          onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
-          className={`command-btn play-song-btn ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
-        >
-          PLAY SONG
-        </button>
-        <button
-          onClick={isLinePlaying ? onStop : onPlayLine}
-          className={`command-btn play-line-btn ${isLinePlaying ? 'playing' : ''}`}
-        >
-          PLAY LINE
-        </button>
-        <button
-          onClick={onStop}
-          className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
-        >
-          STOP
-        </button>
-        <button onClick={onNewSong} className="command-btn new-song-btn">NEW SONG</button>
-        <button onClick={onLoadSong} className="command-btn load-song-btn">LOAD SONG</button>
-        <button onClick={onSaveSong} className="command-btn save-song-btn">SAVE SONG</button>
-        <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
-        <button onClick={onRenumber} className="command-btn">RENUMBER</button>
-        <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
-        <button
-          onClick={event => {
-            event.stopPropagation();
-            onShowMidi();
-          }}
-          className={getMidiButtonClassName()}
-        >
-          MIDI
-        </button>
-        <button
-          onClick={onToggleDebug}
-          className={`command-btn debug-btn ${isDebugMode ? 'active' : ''}`}
-        >
-          BUG
-        </button>
-        <button onClick={onReset} className="command-btn reset-btn">RESET</button>
-      </div>
+      {isMobileCollapsed ? (
+        <div className="command-row">
+          <button
+            onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
+            className={`command-btn play-song-btn ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
+          >
+            PLAY SONG
+          </button>
+          <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO SONG</button>
+          <button
+            onClick={onStop}
+            className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
+          >
+            STOP
+          </button>
+        </div>
+      ) : (
+        <>
+          {/* Row 1: Playback and utilities */}
+          <div className="command-row">
+            <button
+              onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
+              className={`command-btn play-song-btn ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
+            >
+              PLAY SONG
+            </button>
+            <button
+              onClick={isLinePlaying ? onStop : onPlayLine}
+              className={`command-btn play-line-btn ${isLinePlaying ? 'playing' : ''}`}
+            >
+              PLAY LINE
+            </button>
+            <button
+              onClick={onStop}
+              className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
+            >
+              STOP
+            </button>
+            <button onClick={onNewSong} className="command-btn new-song-btn">NEW SONG</button>
+            <button onClick={onLoadSong} className="command-btn load-song-btn">LOAD SONG</button>
+            <button onClick={onSaveSong} className="command-btn save-song-btn">SAVE SONG</button>
+            <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
+            <button onClick={onRenumber} className="command-btn">RENUMBER</button>
+            <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
+            <button
+              onClick={event => {
+                event.stopPropagation();
+                onShowMidi();
+              }}
+              className={getMidiButtonClassName()}
+            >
+              MIDI
+            </button>
+            <button
+              onClick={onToggleDebug}
+              className={`command-btn debug-btn ${isDebugMode ? 'active' : ''}`}
+            >
+              BUG
+            </button>
+            <button onClick={onReset} className="command-btn reset-btn">RESET</button>
+          </div>
 
-      {/* Row 2: Playlist and track commands */}
-      <div className="command-row">
-        <button onClick={onAddLine} className="command-btn">ADD LINE</button>
-        <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
-        <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
-        <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
-        <button onClick={onNewTrack} className="command-btn">ADD TRACK</button>
-        <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>
-        <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
-        <button onClick={onDeleteTrack} className="command-btn">DELETE TRACK</button>
-        <button
-          onClick={event => {
-            event.stopPropagation();
-            onInsertStep();
-          }}
-          className="command-btn"
-        >
-          INSERT STEP
-        </button>
-        <button
-          onClick={event => {
-            event.stopPropagation();
-            onDeleteStep();
-          }}
-          className="command-btn"
-        >
-          DELETE STEP
-        </button>
-      </div>
+          {/* Row 2: Playlist and track commands */}
+          <div className="command-row">
+            <button onClick={onAddLine} className="command-btn">ADD LINE</button>
+            <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
+            <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
+            <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
+            <button onClick={onNewTrack} className="command-btn">ADD TRACK</button>
+            <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>
+            <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
+            <button onClick={onDeleteTrack} className="command-btn">DELETE TRACK</button>
+            <button
+              onClick={event => {
+                event.stopPropagation();
+                onInsertStep();
+              }}
+              className="command-btn"
+            >
+              INSERT STEP
+            </button>
+            <button
+              onClick={event => {
+                event.stopPropagation();
+                onDeleteStep();
+              }}
+              className="command-btn"
+            >
+              DELETE STEP
+            </button>
+          </div>
 
-      {/* Row 3: Instrument and delete commands */}
-      <div className="command-row">
-        <button onClick={onNewInstrument} className="command-btn">ADD INST</button>
-        <button onClick={onLoadInstrument} className="command-btn">LOAD INST</button>
-        <button onClick={onSaveInstrument} className="command-btn">SAVE INST</button>
-        <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
-        <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
-        <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
-        <button onClick={onPickInstrument} className="command-btn pick-inst-btn">PICK INST</button>
-        <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO SONG</button>
-        <button
-          onClick={event => {
-            event.stopPropagation();
-            onOpenExport();
-          }}
-          className="command-btn export-btn"
-        >
-          EXPORT
-        </button>
-      </div>
+          {/* Row 3: Instrument and delete commands */}
+          <div className="command-row">
+            <button onClick={onNewInstrument} className="command-btn">ADD INST</button>
+            <button onClick={onLoadInstrument} className="command-btn">LOAD INST</button>
+            <button onClick={onSaveInstrument} className="command-btn">SAVE INST</button>
+            <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
+            <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
+            <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
+            <button onClick={onPickInstrument} className="command-btn pick-inst-btn">PICK INST</button>
+            <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO SONG</button>
+            <button
+              onClick={event => {
+                event.stopPropagation();
+                onOpenExport();
+              }}
+              className="command-btn export-btn"
+            >
+              EXPORT
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
