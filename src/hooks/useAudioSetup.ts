@@ -27,7 +27,7 @@ export function useAudioSetup(): UseAudioSetupResult {
 
       const ym2149 = new YM2149(audioContext);
       ym2149Ref.current = ym2149;
-      // Force a re-render so any components depending on ym2149Ref can update
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       forceRender(v => v + 1);
 
       // Expose on window for debugging

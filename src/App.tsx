@@ -418,7 +418,8 @@ const App: React.FC = () => {
           setAboutRuntimeDetails(details);
           return;
         }
-      } catch {
+      } catch (error) {
+        console.error('Error getting runtime info:', error);
       }
     }
 
@@ -429,7 +430,8 @@ const App: React.FC = () => {
         setAboutRuntimeLabel('Runtime');
         setAboutRuntimeDetails([trimmed]);
       }
-    } catch {
+    } catch (error) {
+      console.error('Error getting user agent:', error);
     }
   }, []);
 
@@ -636,7 +638,7 @@ const App: React.FC = () => {
         return;
       }
 
-      let effectivePatternIndex = state.currentPattern;
+      const effectivePatternIndex = state.currentPattern;
 
       if (effectivePatternIndex < 0 || effectivePatternIndex >= playlistLength) {
         const rawLoop = currentSong.loop;
