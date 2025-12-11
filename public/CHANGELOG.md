@@ -1,10 +1,18 @@
 # Changes
 
+## Version 1.2.2
+
+Playback smoothing, richer documentation viewers, track coloring and mobile UI polish, and ongoing refactors since 1.2.1.
+
+- Smoothed out switching between **PLAY LINE** and **PLAY SONG** so changing modes no longer introduces audible gaps or delays, keeping playback continuous when you jump between focused line playback and full-song playback.
+- Enhanced in-app **documentation viewers** by consolidating CHANGES and MANUAL into a reusable markdown modal, adding download buttons, and extending the renderer with fenced code blocks, inline code spans, clickable hyperlinks and theme-aware heading/bold colors, plus fixing escaped HTML closing tags and YM2149 formatting issues.
+- Polished tracker visuals with theme-specific SVG logo icons, eased transitions on track and pattern elements, refined borders and padding for current lines and instrument items, color-mixed hover states for colored instruments, and Safari-safe font smoothing and background transition tweaks that avoid visual artifacts during playback.
+- Refined the **mobile layout** with a collapsible command panel that remembers its open/closed state, adjusted header spacing, fixed instrument panel height and scroll behavior in mobile view, and documented playlist scroll and scrollbar behavior so the UI remains usable on small screens.
+
 ## Version 1.2.1
 
 Seamless playback mode switching, richer markdown and download integration, YAML export polish, and refactor and lint follow-ups.
 
-- Smoothed out switching between **PLAY LINE** and **PLAY SONG** so changing modes no longer introduces audible gaps or delays, keeping playback continuous when you jump between focused line playback and full-song playback.
 - Enhanced in-app **documentation viewers** by adding download buttons to the MANUAL and CHANGES modals, extending the markdown renderer with fenced code blocks and clickable hyperlinks, and fixing escaped HTML closing tags so technical docs and examples render and export cleanly.
 - Improved **YAML export formatting** for instrument metadata by normalizing base note and color fields, keeping human-readable values aligned with the newer instrument color system while retaining compatibility with existing data.
 - Refined the visual theme with eased 0.5s transitions for track and pattern elements, better font color styling for instrument-colored steps in rainbow mode, and a subtle fix to the instrument name input background so focused and hovered states feel more consistent.
