@@ -1302,6 +1302,7 @@ body {
   border-radius: 3px;
   position: relative;
   min-height: 0;
+  transition: background 0.5s ease, background-color 0.5s ease, border-color 0.5s ease;
 }
 
 .track-panel.active {
@@ -1482,6 +1483,7 @@ body {
   box-sizing: border-box;
   margin: 0;
   line-height: 10px;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .line-number {
@@ -1509,6 +1511,7 @@ body {
   align-items: center;
   height: 100%;
   box-sizing: border-box;
+  transition: color 0.5s ease, background-color 0.5s ease;
 }
 
 .note-text.active {
@@ -1528,6 +1531,7 @@ body {
   justify-content: center;
   height: 100%;
   box-sizing: border-box;
+  transition: color 0.5s ease, background-color 0.5s ease;
 }
 
 .volume-data.active {
