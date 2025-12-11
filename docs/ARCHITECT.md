@@ -6,7 +6,8 @@ For each version release, maintain a structured refactoring process to ensure sy
 
 ## Process
 
-1. **After each release**: Create a refactoring proposal file `REFACTORING.md` inside `docs/refactoring/[version]/` subdirectory (e.g., `docs/refactoring/1.1.1/REFACTORING.md`)
+1. **After each release**: Create a refactoring proposal file `REFACTORING.md` inside `docs/refactoring/[version]/` subdirectory (e.g., `docs/refactoring/1.1.1/REFACTORING.md`).
+Use version number from current `package.json` file.
 
 2. **After refactorings are implemented**: Create an assessment file `ASSESSMENT.md` in the same directory, comparing the original proposals against what was actually accomplished
 
