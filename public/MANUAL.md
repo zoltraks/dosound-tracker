@@ -1,4 +1,4 @@
-# Assembly Music Wizard Book
+# Music Wizard Book
 
 *Real music is made in HEX.*
 
@@ -8,7 +8,7 @@ It is written for two species:
 
 - **Composers** – you think in melodies, chords, and grooves, and you're not afraid of hexadecimal.
 
-- **Assembly coders** – you think in registers, stack frames, and why your VBLANK ISR crashed again.
+- **Coders** – you think in registers, stack frames, and why your VBLANK ISR crashed again.
 
 Ideally, you are both.
 
@@ -984,7 +984,7 @@ Also, it looks cooler in screenshots.
 
 DOSOUND Tracker is a love letter to:
 
-- The ****YM 2149****,
+- The **YM 2149**,
 - The **Atari ST**,
 - And everyone who ever thought, *"I can do better than this sample pack."*
 
