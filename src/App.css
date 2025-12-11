@@ -134,6 +134,10 @@
   --midi-disabled-bg-left: #6a777c;
   --midi-disabled-bg-right: #1e272b;
   --midi-disabled-border: #80949e;
+
+  --link-color: #ff79c6;
+  --link-hover-color: #ff92d0;
+  --code-text-color: #e4b4b4;
 }
 
 .light {
@@ -261,6 +265,10 @@
   --midi-disabled-bg-left: #cbd5e0;
   --midi-disabled-bg-right: #e2e8f0;
   --midi-disabled-border: #1a202c;
+
+  --link-color: #84269c;
+  --link-hover-color: #be185d;
+  --code-text-color: #420202;
 }
 
 * {
@@ -1083,6 +1091,21 @@ body {
 
 .modal-body.text-display-body p {
   margin-bottom: 0.8rem;
+}
+
+.modal-body.text-display-body a {
+  color: var(--link-color);
+  text-decoration: none;
+}
+
+.modal-body.text-display-body a:hover {
+  color: var(--link-hover-color);
+  text-decoration: underline;
+}
+
+.modal-body.text-display-body pre {
+  margin: 1rem 0;
+  color: var(--code-text-color);
 }
 
 .modal-body.text-display-body hr {
