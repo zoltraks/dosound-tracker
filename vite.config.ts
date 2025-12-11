@@ -19,6 +19,7 @@ export default defineConfig({
     port: 8008
   },
   build: {
+    chunkSizeWarningLimit: 600,
     rollupOptions: {
       output: {
         // Deterministic filenames without content hashes
