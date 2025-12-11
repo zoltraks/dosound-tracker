@@ -4,6 +4,8 @@ import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
 import type { Instrument as YmInstrument } from '../synth/YM2149';
+import LogoDark from '../assets/svg/logo-dark.svg';
+import LogoLight from '../assets/svg/logo-light.svg';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;
@@ -223,9 +225,13 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       <header className="header-panel">
         <div className="header-left">
           <div className="logo" onClick={onShowAbout} title="About DOSOUND Tracker">
-            🎶
+            <img
+              src={isDarkMode ? LogoDark : LogoLight}
+              alt="DOSOUND Tracker logo"
+              className="logo-image"
+            />
           </div>
-          <h1 className="title" onClick={handleTitleClick}>
+          <h1 className="application-name" onClick={handleTitleClick}>
             DOSOUND Tracker
           </h1>
         </div>

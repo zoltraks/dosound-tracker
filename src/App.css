@@ -270,13 +270,13 @@
   --midi-disabled-bg-right: #e2e8f0;
   --midi-disabled-border: #1a202c;
 
-  --link-color: #84269c;
+  --link-color: #8e43a1;
   --link-hover-color: #be185d;
   --code-text-color: #420202;
-  --inline-code-color: #16a34a;
-  --markdown-h1-color: #718096;
-  --markdown-h2-color: #34d399;
-  --markdown-strong-color: #9b2c9f;
+  --inline-code-color: #0658c4;
+  --markdown-h1-color: #4b5e7a;
+  --markdown-h2-color: #598a78;
+  --markdown-strong-color: #c46bc7;
 }
 
 * {
@@ -381,7 +381,6 @@ body {
 .logo {
   font-size: 16px;
   cursor: pointer;
-  transform: translateX(-3px);
   /* Outline effect for logo emoji */
   text-shadow:
     -1px -1px 0 var(--logo-outline),
@@ -391,7 +390,21 @@ body {
   -webkit-text-stroke: 0.5px var(--logo-outline);
 }
 
-.title {
+.logo-image {
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.logo-image {
+  transform: translateX(-3px);
+}
+
+.application-name {
+  transform: translateX(-2px);
+}
+
+.application-name {
   font-size: 14px;
   font-weight: bold;
   white-space: nowrap;
@@ -2952,6 +2965,14 @@ body {
     padding-top: 36px;
   }
 
+  .logo-image {
+    transform: translateX(-8px);
+  }
+
+  .application-name {
+    transform: translateX(-7px);
+  }
+
   .main-content {
     flex: 0 0 auto;
     display: flex;
@@ -3019,7 +3040,7 @@ body {
     cursor: pointer;
   }
 
-  .title {
+  .application-name {
     font-size: 12px;
   }
 
