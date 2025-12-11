@@ -3009,8 +3009,11 @@ body {
 
   .header-panel-song-mobile {
     display: block;
-    padding: 2px 14px 4px 14px;
-    margin-top: 4px;
+    padding-top: 2px;
+    padding-right: 14px;
+    padding-bottom: 4px;
+    padding-left: 14px;
+    margin-top: 0px;
     text-align: center;
   }
 
