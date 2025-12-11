@@ -2429,7 +2429,7 @@ body {
 }
 
 .instrument-item.current .instrument-id {
-  padding-top: 3px;
+  padding-top: 2px;
 }
 
 .instrument-item.focused {
