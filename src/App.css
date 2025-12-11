@@ -1437,12 +1437,12 @@ body {
 
 .track-line.current {
   background-color: var(--track-inactive-bg);
-  border: 0px transparent;
+  border: 1px solid transparent;
 }
 
 .track-panel.active .track-line.current {
   background-color: var(--track-active-bg);
-  border: 1px solid var(--track-active-border);
+  border-color: var(--track-active-border);
 }
 
 /* Per-line instrument color tinting in tracks */
