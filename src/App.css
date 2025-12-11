@@ -2432,6 +2432,11 @@ body {
   padding-top: 2px;
 }
 
+.instrument-item.current .instrument-name {
+  padding-top: 1px;
+}
+
+
 .instrument-item.focused {
   background-color: var(--bg-active);
   box-shadow: 0 0 0 1px var(--active-border) inset;
@@ -2998,6 +3003,10 @@ body {
 
   .instrument-item-container {
     overflow-y: visible;
+  }
+
+  .instrument-item.current .instrument-name {
+    padding-top: 2px;
   }
 
   .right-column {
