@@ -1,5 +1,16 @@
 # DOSOUND Tracker – Changelog
- 
+
+## Version 1.2.1
+
+Seamless playback mode switching, richer markdown and download integration, YAML export polish, and refactor/lint follow-ups.
+
+- Smoothed out switching between **PLAY LINE** and **PLAY SONG** so changing modes no longer introduces audible gaps or delays, keeping playback continuous when you jump between focused line playback and full-song playback.
+- Enhanced in-app **documentation viewers** by adding download buttons to the MANUAL and CHANGES modals, extending the markdown renderer with fenced code blocks and clickable hyperlinks, and fixing escaped HTML closing tags so technical docs and examples render and export cleanly.
+- Improved **YAML export formatting** for instrument metadata by normalizing base note and color fields, keeping human-readable values aligned with the newer instrument color system while retaining compatibility with existing data.
+- Refined the visual theme with eased 0.5s transitions for track/pattern elements, better font color styling for instrument-colored steps in rainbow mode, and a subtle fix to the instrument name input background so focused/hovered states feel more consistent.
+- Hardened download list handling by adding cache-busting query parameters and `no-store` headers when fetching `download/LIST.txt`, reducing the chance of stale file lists in the DOWNLOAD button and related pickers.
+- Continued internal **refactoring and lint cleanup** by extracting TrackLine and playlist/piano utilities into modular components/hooks, restructuring export and data-management code into format-specific modules, and resolving remaining ESLint/state-in-effect warnings with updated guidelines and targeted rule suppressions.
+
 ## Version 1.2.0
 
 Song loop timing fixes, runtime diagnostics in the About dialog, dynamic download availability, Electron/runtime upgrades, and testing/documentation refinements.

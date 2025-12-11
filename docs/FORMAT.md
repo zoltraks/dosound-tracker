@@ -2,14 +2,16 @@
 
 This document describes the data formats produced by the following commands:
 
-1. `SAVE SONG`
-2. `SAVE INST`
-3. `COPY TRACK`
-4. `EXPORT DATA`
-5. `EXPORT DUMP`
-6. `EXPORT BIN`
-7. `EXPORT VGM` (simplified)
-8. `EXPORT WAV` (simplified)
+- `SAVE SONG`
+- `SAVE INST`
+- `COPY TRACK`
+- `EXPORT DATA`
+- `EXPORT DUMP`
+- `EXPORT BIN`
+- `EXPORT MAX`
+- `EXPORT VGM`
+- `EXPORT WAV`
+- `SAVE MIDI CONFIG`
 
 Examples of the YAML formats can be found under:
 
@@ -18,16 +20,16 @@ Examples of the YAML formats can be found under:
 
 ---
 
-## 1. SAVE SONG
+## SAVE SONG
 
-### 1.1 Output file
+### Output file
 
 - Text format: **YAML**.
 - Typical extension: `.yaml`.
 - Root key: `song`.
 - This is the format consumed by `LOAD SONG` via `parseSongFromYaml`.
 
-### 1.2 Root structure
+### Root structure
 
 ```yaml
 song:
@@ -49,7 +51,7 @@ Loader rules (from `parseSongFromYaml`):
 - `length`: invalid → defaults to `PATTERN_LENGTH` (64), then clamped to `[4, 256]`.
 - `loop`: numeric or numeric string; clamped to `[0, playlist.length-1]`; otherwise `null`.
 
-### 1.3 Playlist
+### Playlist
 
 Shape of each playlist row:
 
@@ -69,7 +71,7 @@ song:
     - Same for `B`/`C`.
   - An empty row (`- {}`) is valid and means all three tracks are `"--"`.
 
-### 1.4 Patterns list (`pattern` / `patterns`)
+### Patterns list
 
 Each pattern node has:
 
@@ -87,7 +89,7 @@ Each pattern node has:
 - `steps` / `lines`:
   - List of step objects (see below). Loader accepts both keys; saver always writes `steps`.
 
-### 1.5 Pattern steps
+### Pattern steps
 
 Each logical row in `trackA` is encoded as a **step** with these fields:
 
@@ -107,7 +109,7 @@ Saver (`saveSong`) behaviour for each row:
 
 - No note and no volume → `{ space: true }`.
 - No note but volume present → `{ space: 1, volume: V }`.
-- Note-off row → `{ off: true, [volume] }`.
+- Note-off row → `{ note: 'OFF' }`.
 - Note row → `{ note: "C-4", instrument: "01", [volume] }`.
 
 Then it:
@@ -129,20 +131,25 @@ Loader behaviour:
   - `instrument` missing/blank → defaults to `"00"`.
   - `volume` → parsed and clamped to nibble 0..15 if valid.
 
-### 1.6 Instruments list (`instrument` / `instruments`)
+### Instruments list
 
 Each instrument node has:
 
 ```yaml
-- name: "Bass"           # optional
+- number: "00"           # instrument ID (string recommended)
+  name: "Bass"           # optional
   base: "C-3"            # optional base key
   octave: 1              # optional, clamped
   sustain: 8             # optional, >=0 integer index
+  color: "#abc"          # optional 3-digit hex color
   volume: [ ... ]        # required envelope (trimmed)
   arpeggio: [ ... ]      # optional envelope
   pitch: [ ... ]         # optional envelope
   noise: [ ... ]         # optional envelope
   mode: [ ... ]          # optional envelope
+  midi:                  # optional MIDI configuration
+    channel: 1           # MIDI channel (1-16)
+    program: 0           # MIDI program (0-127)
 ```
 
 Saver (`saveSong`) rules:
@@ -153,6 +160,8 @@ Saver (`saveSong`) rules:
 - Writes `octave` if present and not default (clamped to `[MIN_OCTAVE, MAX_OCTAVE]`).
 - Writes `arpeggio`, `pitch`, `noise`, `mode` only when their trimmed envelope is not `[]` or `[0]`.
 - Writes `sustain` if numeric and `>= 0`.
+- Writes `color` if valid 3-digit hex color.
+- Writes `midi` if channel or program is set.
 - Envelopes are trimmed to remove trailing repetitions of the final value.
 
 Loader (`parseSongFromYaml`) rules:
@@ -162,50 +171,59 @@ Loader (`parseSongFromYaml`) rules:
 - `octave` read from number or numeric string, then clamped.
 - `volume` / `arpeggio` / `pitch` / `noise` / `mode` expanded to `ENVELOPE_LENGTH` values, padding with the last value.
 - `sustain` numeric or numeric string, floored and kept only if `>= 0`.
+- `color` normalized to 3-digit hex format.
+- `midi` channel/program parsed and clamped to valid MIDI ranges.
 
 ---
 
-## 2. SAVE INST
+## SAVE INST
 
-### 2.1 Output file
+### Output file
 
 - Text format: **YAML**.
 - Typical extension: `.yaml`.
 - Root key: `instrument`.
 - Contains a single instrument definition, structurally similar to one element of `song.instrument`.
 
-### 2.2 Root structure
+### Root structure
 
 ```yaml
 instrument:
-  name: "Lead"
-  base: "C-4"        # optional
-  octave: 2          # optional
-  sustain: 5         # optional
-  volume: [ ... ]    # required envelope
-  arpeggio: [ ... ]  # optional envelope
-  pitch: [ ... ]     # optional envelope
-  noise: [ ... ]     # optional envelope
-  mode: [ ... ]      # optional envelope
+  type: "dosound"        # required format identifier
+  version: 1             # required format version
+  name: "Lead"           # optional
+  base: "C-4"            # optional
+  octave: 2              # optional
+  sustain: 5             # optional
+  color: "#abc"          # optional 3-digit hex color
+  volume: [ ... ]        # required envelope
+  arpeggio: [ ... ]      # optional envelope
+  pitch: [ ... ]         # optional envelope
+  noise: [ ... ]         # optional envelope
+  mode: [ ... ]          # optional envelope
+  midi:                  # optional MIDI configuration
+    channel: 1           # MIDI channel (1-16)
+    program: 0           # MIDI program (0-127)
 ```
 
 Behaviour:
 
 - Saver (`saveInstrument`) trims and writes fields with the same rules as `SAVE SONG` instruments, but without `number`.
 - Loader (`loadInstrument`) expects root `instrument` and applies the imported parameters to the **currently selected instrument slot**, using the same parsing rules as above.
+- Includes `type: "dosound"` and `version: 1` fields for format identification.
 
 ---
 
-## 3. COPY TRACK
+## COPY TRACK
 
-### 3.1 Output data
+### Output data
 
 - Text format: **YAML**.
 - Destination: **system clipboard** (not a file).
 - Root key: `steps`.
 - Semantics of each step match the pattern step format used in `SAVE SONG`.
 
-### 3.2 Clipboard structure
+### Clipboard structure
 
 ```yaml
 steps:
@@ -239,16 +257,16 @@ Details:
 
 ---
 
-## 4. EXPORT DATA
+## EXPORT DATA
 
-### 4.1 Output file
+### Output file
 
 - Text format: **68k assembly source**.
 - Typical extension: `.s`.
 - Produced by `exportToAssembly(song, isComplexDumpMode)`.
 - Used as DOSOUND-compatible music data (XBIOS DOSOUND format in assembly form).
 
-### 4.2 Structure (high level)
+### Structure
 
 - Starts with label:
 
@@ -284,15 +302,15 @@ Details:
 
 ---
 
-## 5. EXPORT DUMP
+## EXPORT DUMP
 
-### 5.1 Output file
+### Output file
 
 - Text format: **68k assembly source**.
 - Typical extension: `_dump.s`.
 - Produced by `exportSongRegisterDump(song)`.
 
-### 5.2 Structure (high level)
+### Structure
 
 - Label and header:
 
@@ -313,15 +331,15 @@ Details:
 
 ---
 
-## 6. EXPORT BIN
+## EXPORT BIN
 
-### 6.1 Output file
+### Output file
 
 - Binary format: **raw DOSOUND data bytes**.
 - Typical extension: `.bin`.
 - Produced by `exportToBinary(song, isComplexDumpMode)`.
 
-### 6.2 Structure
+### Structure
 
 - Implementation: `exportToBinary` calls `exportToAssembly` (same content as `EXPORT DATA`), then `parseAssemblyToBinary`.
 - `parseAssemblyToBinary`:
@@ -331,15 +349,46 @@ Details:
 
 ---
 
-## 7. EXPORT VGM (simplified)
+## EXPORT MAX
 
-### 7.1 Output file
+### Output file
+
+- Binary format: **MAX** (Music Assembly eXchange).
+- Typical extension: `.max`.
+- Produced by `exportSongToMax(song, strategy)` or `exportInstrumentToMax(instrument, song, strategy)`.
+- Contains compressed YM2149 register streams with metadata.
+
+### Structure
+
+- File header: magic `"MAX "` (4 bytes).
+- Version chunk: `'V'` + size + version number (currently 1).
+- Optional info chunk: `'I'` + metadata (title, author, year).
+- Chip definition chunk: `'C'` + YM2149 clock and VBlank rate.
+- Stream definition chunk: `'S'` + format and compression flags.
+- Data chunk: `'d'` + compressed register stream.
+
+### Export strategies
+
+- **Simple**: Raw register dumps (11 bytes per frame).
+- **Complex**: Optimized format that only writes changed registers.
+- **Optimized**: Complex format with additional delay optimization.
+
+### Instrument export
+
+- Creates a preview song with a single pattern containing the instrument's base note.
+- Exports using the same MAX format as song export.
+
+---
+
+## EXPORT VGM
+
+### Output file
 
 - Binary format: **VGM** (Video Game Music) file.
 - Typical extension: `.vgm`.
 - Produced by `exportSongToVgm(song)`.
 
-### 7.2 High-level structure
+### Structure
 
 - Fixed-size VGM header (0x100 bytes):
   - Signature `"Vgm "` at bytes 0–3.
@@ -354,8 +403,9 @@ Details:
   - `0xA0, reg, value` → AY/YM register write.
   - `0x63` → wait for 1/50 s (882 samples at 44100 Hz).
   - `0x66` → end of data.
+- Optional GD3 tag at end of file with metadata (title, author, year).
 
-### 7.3 Song mapping
+### Song mapping
 
 - The exporter simulates playback over playlist, patterns, and envelopes similarly to the DOSOUND export.
 - For each relevant frame, it:
@@ -372,15 +422,15 @@ This document does not attempt to fully describe the VGM specification; it docum
 
 ---
 
-## 8. EXPORT WAV (simplified)
+## EXPORT WAV
 
-### 8.1 Output file
+### Output file
 
 - Binary format: **RIFF/WAVE**.
 - Typical extension: `.wav`.
 - Produced by `exportSongToWav(song)`.
 
-### 8.2 Header
+### Header
 
 The exporter builds a standard PCM 16‑bit, mono WAV header using:
 
@@ -390,7 +440,7 @@ The exporter builds a standard PCM 16‑bit, mono WAV header using:
 - Byte rate: `sampleRate * 2`.
 - Standard `RIFF` and `fmt`/`data` chunks.
 
-### 8.3 Sample data
+### Sample data
 
 - Playback is simulated over playlist and patterns using the same YM2149 envelopes used for export and live playback.
 - For each DOSOUND tick:
@@ -402,3 +452,37 @@ The exporter builds a standard PCM 16‑bit, mono WAV header using:
 - Samples are clamped to [-1, 1] and written as signed 16-bit values.
 
 The resulting WAV file is suitable for direct playback in standard audio players and provides a rendered version of the tracker song.
+
+---
+
+## MIDI CONFIGURATION
+
+### Output file
+
+- Text format: **YAML**.
+- Typical extension: `.yaml`.
+- Root key: `midi`.
+- Contains MIDI input/output configuration settings.
+
+### Root structure
+
+```yaml
+midi:
+  version: 1             # format version
+  input:                  # MIDI input configuration
+    enable: true          # enable MIDI input
+    agnostic: false       # ignore input volume
+    device: "device-id"   # optional device identifier
+  output:                 # MIDI output configuration
+    enable: true          # enable MIDI output
+    agnostic: false       # ignore output volume
+    device: "device-id"   # optional device identifier
+```
+
+### Behaviour
+
+- Saver (`buildMidiConfigYaml`) writes the current MIDI configuration with boolean flags and optional device identifiers.
+- Loader (`parseMidiConfigFromYaml`) parses the YAML and applies settings to the current configuration.
+- Boolean values can be specified as `true`/`false`, `yes`/`no`, `y`/`n`, `1`/`0`, or numeric values.
+- Device identifiers are optional strings that identify specific MIDI devices.
+- The `agnostic` flag determines whether volume information should be ignored when processing MIDI events.
