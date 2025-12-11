@@ -507,6 +507,15 @@ body {
   outline: none;
 }
 
+.command-btn,
+.command-btn:link,
+.command-btn:visited,
+.command-btn:hover,
+.command-btn:active,
+.command-btn:focus {
+  text-decoration: none;
+}
+
 .command-btn.play-song-btn {
   background: linear-gradient(135deg, var(--play-song-idle-bg) 0%, var(--button-bg) 100%);
   border-color: var(--play-song-idle-border);
@@ -1148,6 +1157,17 @@ body {
 
 .about-actions-left,
 .about-actions-right {
+  display: flex;
+  gap: 6px;
+}
+
+/* Text display modals (Manual/Changes): DOWNLOAD on the left, OK on the right */
+.modal-actions.text-display-actions {
+  justify-content: space-between;
+}
+
+.text-display-actions-left,
+.text-display-actions-right {
   display: flex;
   gap: 6px;
 }
@@ -2392,7 +2412,7 @@ body {
 
 .instrument-name-input {
   width: 100%;
-  background-color: var(--bg-secondary);
+  background-color: transparent;
   border: 1px solid var(--border-color);
   color: var(--text-primary);
   margin-top: -1px;
@@ -2408,7 +2428,7 @@ body {
 .instrument-name-input:focus {
   outline: none;
   border-color: var(--active-border);
-  background-color: var(--bg-hover);
+  background-color: transparent;
 }
 
 /* Bottom Panels */

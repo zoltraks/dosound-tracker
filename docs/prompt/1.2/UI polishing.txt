@@ -5,3 +5,8 @@ and in the light theme, slightly darker. And in this case don't modify backgroun
 Keep background coloring without font-color adjustments in the default, initial coloring mode.
 
 ---
+
+On instrument list current selected instrument has input field instead of span but its background differs when instrument has color assigned.
+Make input field to have the same background color like span of "instrument-id" or span of "instrument-name".
+
+---

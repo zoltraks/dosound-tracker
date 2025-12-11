@@ -1,0 +1,3 @@
+In both manual and changelog windows add "DOWNLOAD" button on the bottom left side of the window allowing user to download the source document.
+
+---
