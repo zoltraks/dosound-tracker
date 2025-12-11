@@ -15,7 +15,7 @@ const applyInlineFormatting = (text: string): string => {
   });
 
   // Bold **text**
-  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<b>$1<\/b>');
+  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1<\/strong>');
   return withBold.replace(/\*(.+?)\*/g, '<em>$1<\/em>');
 };
 

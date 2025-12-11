@@ -141,6 +141,7 @@
   --inline-code-color: #ffff99;
   --markdown-h1-color: #abcbd8;
   --markdown-h2-color: #d1e0ec;
+  --markdown-strong-color: #ff9ce6;
 }
 
 .light {
@@ -275,6 +276,7 @@
   --inline-code-color: #16a34a;
   --markdown-h1-color: #718096;
   --markdown-h2-color: #34d399;
+  --markdown-strong-color: #9b2c9f;
 }
 
 * {
@@ -1111,6 +1113,10 @@ body {
 .modal-body.text-display-body h2 {
   color: var(--markdown-h2-color);
   padding-top: 5px;
+}
+
+.modal-body.text-display-body strong.markdown-strong {
+  color: var(--markdown-strong-color);
 }
 
 .modal-body.text-display-body p {
