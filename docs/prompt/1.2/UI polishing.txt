@@ -120,3 +120,7 @@ The content of "playlist-line-container" element seems like having 3px too much 
 You may remove vertical scrollbar in mobile view in "playlist-line-container", it will not be used.
 
 ---
+
+In mobile view place "left-column" after "information-panel" but before "playlist-panel".
+
+---
