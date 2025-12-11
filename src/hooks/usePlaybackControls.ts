@@ -14,6 +14,7 @@ interface UsePlaybackControlsResult {
   setPosition: (pattern: number, line: number, tick?: number) => void;
   startPatternLoop: (initialPattern?: number, initialLine?: number) => void;
   startSong: (initialPattern?: number, initialLine?: number) => void;
+  setPatternLoopMode: (patternLoop: boolean) => void;
 }
 
 export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): UsePlaybackControlsResult {
@@ -27,6 +28,7 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
     startSong,
     updatePatternLength,
     updateSongLoop,
+    setPatternLoopMode,
   } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
 
   useEffect(() => {
@@ -49,5 +51,6 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
     setPosition,
     startPatternLoop,
     startSong,
+    setPatternLoopMode,
   };
 }

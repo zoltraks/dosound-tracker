@@ -1,0 +1,5 @@
+When playback is running and I switch from "PLAY LINE" to "PLAY SONG" mode or vice versa there is audible short delay in sequencer.
+I think it would be better then after changing mode from "PLAY LINE" to "PLAY SONG" or "PLAY SONG" to "PLAY LINE" the sequencer should continue with current work 
+and apply this change after the current line is finished to avoid delays.
+
+---

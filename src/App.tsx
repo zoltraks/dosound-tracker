@@ -318,6 +318,7 @@ const App: React.FC = () => {
     setPosition,
     startPatternLoop,
     startSong,
+    setPatternLoopMode,
   } = usePlaybackControls({ currentSong });
 
   useEffect(() => {
@@ -1868,18 +1869,15 @@ const App: React.FC = () => {
       Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
     );
 
-    // If we are currently in line-loop mode, switch to song playback
-    // and continue from the current position instead of restarting.
-    if (isLinePlaying) {
-      const currentLine = sequencerState.currentLine;
-
+    // If we are currently in line-loop mode and playback is running, switch
+    // to song playback without restarting the sequencer. The worker will
+    // apply the mode change at the next pattern boundary, avoiding any
+    // audible gap.
+    if (isLinePlaying && sequencerState.isPlaying) {
       setIsLinePlaying(false);
+      patternReturnPositionRef.current = null;
 
-      // Clear position ref to ensure first tick detection works
-      lastSequencerPositionRef.current = null;
-
-      // Start song playback from the current pattern/line
-      startSong(clampedIndex, currentLine);
+      setPatternLoopMode(false);
       return;
     }
 
@@ -1898,8 +1896,10 @@ const App: React.FC = () => {
     startSong,
     sequencerState.currentPattern,
     sequencerState.currentLine,
+    sequencerState.isPlaying,
     currentSong.playlist,
-    sharedCurrentLine
+    sharedCurrentLine,
+    setPatternLoopMode
   ]);
 
   // Handle start line playback (line-loop mode for the current playlist line)
@@ -1945,6 +1945,8 @@ const App: React.FC = () => {
     }
 
     // If a song is currently playing, switch into line-loop mode and
+    // let the sequencer continue without restarting. The worker will
+    // honor the new pattern-loop flag at the next pattern boundary.
     if (sequencerState.isPlaying && !isLinePlaying) {
       const effectiveLine = Math.max(
         0,
@@ -1959,12 +1961,9 @@ const App: React.FC = () => {
         line: effectiveLine
       };
 
-      // Clear position ref to ensure first tick detection works
-      lastSequencerPositionRef.current = null;
-
       setIsLinePlaying(true);
 
-      startPatternLoop(clampedIndex, effectiveLine);
+      setPatternLoopMode(true);
       return;
     }
 
@@ -1989,7 +1988,8 @@ const App: React.FC = () => {
     currentSong.patternLength,
     activeSection,
     lastTrackId,
-    isLinePlaying
+    isLinePlaying,
+    setPatternLoopMode
   ]);
 
   const handleStartLineFromBeginning = useCallback(() => {

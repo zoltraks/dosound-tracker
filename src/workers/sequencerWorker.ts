@@ -41,6 +41,7 @@ interface WorkerSetParamsMessage {
     playlistLength?: number;
     loopIndex?: number;
     hasLoop?: boolean;
+    patternLoop?: boolean;
   };
 }
 
@@ -177,7 +178,7 @@ function updatePosition(pattern: number, line: number, tick: number) {
   });
 }
 
-function setParams(params: { ticksPerRow?: number; patternLength?: number; tickInterval?: number; playlistLength?: number; loopIndex?: number; hasLoop?: boolean }) {
+function setParams(params: { ticksPerRow?: number; patternLength?: number; tickInterval?: number; playlistLength?: number; loopIndex?: number; hasLoop?: boolean; patternLoop?: boolean }) {
   if (params.ticksPerRow !== undefined) {
     ticksPerRow = params.ticksPerRow;
   }
@@ -201,6 +202,9 @@ function setParams(params: { ticksPerRow?: number; patternLength?: number; tickI
   }
   if (params.hasLoop !== undefined) {
     hasLoop = params.hasLoop;
+  }
+  if (params.patternLoop !== undefined) {
+    isPatternLoop = params.patternLoop;
   }
 }
 

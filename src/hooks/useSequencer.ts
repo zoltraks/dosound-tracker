@@ -91,6 +91,25 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     [],
   );
 
+  const setPatternLoopMode = useCallback((patternLoop: boolean) => {
+    setSequencerState(prev => ({
+      ...prev,
+      isPatternLoop: patternLoop,
+    }));
+
+    playbackStateRef.current = {
+      ...playbackStateRef.current,
+      isPatternLoop: patternLoop,
+    };
+
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'setParams',
+        data: { patternLoop },
+      });
+    }
+  }, []);
+
   // Initialize Web Worker
   useEffect(() => {
     if (typeof Worker !== 'undefined') {
@@ -409,6 +428,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     nextLine,
     previousLine,
     updatePatternLength,
-    updateSongLoop
+    updateSongLoop,
+    setPatternLoopMode,
   };
 };
