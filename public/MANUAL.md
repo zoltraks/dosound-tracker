@@ -16,6 +16,21 @@ If not, share this file: the musician gets the top half, the coder gets the bott
 
 ---
 
+## Installation & Downloads
+
+- **Electron desktop builds** are available from the project home page: https://dosound.alyx.pl
+- On **macOS**, these binaries are **not code-signed**, so the downloaded `.dmg` is typically marked as coming from an unidentified developer.
+
+If macOS refuses to open the DMG, open **Terminal** in the folder where you downloaded it and run:
+
+```bash
+xattr -dr com.apple.quarantine dosound-tracker-1.2.0-mac-arm64.dmg
+```
+
+Adjust the file name if you downloaded a different version, then open the `.dmg` and install as usual.
+
+---
+
 ## From Zero to Sound
 
 This chapter gets you a bit closer to making music in under 5 minutes.

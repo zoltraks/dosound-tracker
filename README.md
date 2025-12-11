@@ -18,6 +18,21 @@ For more information take a look at manual for composers and assembly wizards:
 
 - [MANUAL.md](public/MANUAL.md)
 
+## Downloads
+
+- **Electron desktop builds** can be downloaded from the project home page: https://dosound.alyx.pl
+- **macOS note**: binaries are not code-signed. After downloading the `.dmg`, macOS may mark it as coming from an unidentified developer.
+
+If that happens, open **Terminal** in the folder where you downloaded the file and run:
+
+```bash
+xattr -dr com.apple.quarantine dosound-tracker-1.2.0-mac-arm64.dmg
+```
+
+Adjust the file name if you downloaded a different version.
+
+After this, open the `.dmg` and install as usual.
+
 ## Makers & Takers 
 
 Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
