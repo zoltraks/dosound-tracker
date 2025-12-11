@@ -15,8 +15,8 @@ const applyInlineFormatting = (text: string): string => {
   });
 
   // Bold **text**
-  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1<\/strong>');
-  return withBold.replace(/\*(.+?)\*/g, '<em>$1<\/em>');
+  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1</strong>');
+  return withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
 };
 
 const renderInlineMarkdown = (text: string): string => {
@@ -30,7 +30,7 @@ const renderInlineMarkdown = (text: string): string => {
 
   // Walk through all code spans in the original text.
   while ((match = codePattern.exec(text)) !== null) {
-    const [fullMatch, _ticks, codeContent] = match;
+    const [fullMatch, , codeContent] = match;
 
     // Text before this code span: apply normal inline formatting.
     if (match.index > lastIndex) {
