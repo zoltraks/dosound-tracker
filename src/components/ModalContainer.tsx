@@ -417,6 +417,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         title="Changes"
         content={changelogContent}
         downloadHref="CHANGELOG.md"
+        showTitle={false}
         onClose={onCloseChangelog}
       />
 
@@ -425,6 +426,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         title="Manual"
         content={manualContent}
         downloadHref="MANUAL.md"
+        showTitle={false}
         onClose={onCloseManual}
       />
 

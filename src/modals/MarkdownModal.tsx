@@ -7,6 +7,7 @@ interface MarkdownModalProps {
   content: string;
   downloadHref: string;
   onClose: () => void;
+  showTitle?: boolean;
 }
 
 export const MarkdownModal: React.FC<MarkdownModalProps> = ({
@@ -15,13 +16,14 @@ export const MarkdownModal: React.FC<MarkdownModalProps> = ({
   content,
   downloadHref,
   onClose,
+  showTitle = true,
 }) => {
   if (!isOpen) return null;
 
   return (
     <div className="modal-backdrop">
       <div className="modal-dialog text-display">
-        <div className="modal-title">{title}</div>
+        {showTitle && <div className="modal-title">{title}</div>}
         <div
           className="modal-body text-display-body"
           dangerouslySetInnerHTML={{ __html: renderMarkdown(content) }}
