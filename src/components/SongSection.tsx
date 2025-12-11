@@ -1,9 +1,9 @@
 import React from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Instrument, Song } from '../synth/SoundDriver';
-import { SongInfoPanel } from './SongInfoPanel';
+import { InformationPanel } from './InformationPanel';
 import { PlaylistPanel } from './PlaylistPanel';
-import { InstrumentListPanel } from './InstrumentListPanel';
+import { InstrumentPanel } from './InstrumentSection';
 import { DumpPanel } from './DumpPanel';
 import { EQPanel } from './EQPanel';
 import { YM2149 } from '../synth/YM2149';
@@ -24,7 +24,7 @@ interface SongSectionProps {
   onMoveInstrument: (index: number, direction: 'up' | 'down') => void;
   onOpenInstrumentMidi: (instrument: Instrument) => void;
   onOpenInstrumentColor: (instrument: Instrument) => void;
-  instrumentListFocusRevision: number;
+  instrumentPanelFocusRevision: number;
   ym2149: YM2149 | null;
   channelMutes: boolean[];
   onToggleChannelMute: (index: number) => void;
@@ -46,14 +46,14 @@ export const SongSection: React.FC<SongSectionProps> = ({
   onMoveInstrument,
   onOpenInstrumentMidi,
   onOpenInstrumentColor,
-  instrumentListFocusRevision,
+  instrumentPanelFocusRevision,
   ym2149,
   channelMutes,
   onToggleChannelMute,
 }) => {
   return (
     <div className="right-column">
-      <SongInfoPanel
+      <InformationPanel
         song={song}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
@@ -71,7 +71,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
         targetTrack={targetTrackId}
       />
 
-      <InstrumentListPanel
+      <InstrumentPanel
         instruments={song.instruments}
         currentInstrument={currentInstrument}
         activeSection={activeSection}
@@ -81,7 +81,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
         onMoveInstrument={onMoveInstrument}
         onOpenInstrumentMidi={onOpenInstrumentMidi}
         onOpenInstrumentColor={onOpenInstrumentColor}
-        focusRevision={instrumentListFocusRevision}
+        focusRevision={instrumentPanelFocusRevision}
       />
 
       <div className="monitor-panel">

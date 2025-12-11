@@ -5,7 +5,7 @@ interface AppLayoutProps {
   header: React.ReactNode;
   commandPanel: React.ReactNode;
   trackerSection: React.ReactNode;
-  instrumentSection: React.ReactNode;
+  envelopeSection: React.ReactNode;
   songSection: React.ReactNode;
   pianoKeyboard: React.ReactNode;
   fileInputs: React.ReactNode;
@@ -17,7 +17,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   header,
   commandPanel,
   trackerSection,
-  instrumentSection,
+  envelopeSection,
   songSection,
   pianoKeyboard,
   fileInputs,
@@ -35,7 +35,7 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
 
       <div className="main-content">
         {trackerSection}
-        {instrumentSection}
+        {envelopeSection}
         {songSection}
       </div>
 

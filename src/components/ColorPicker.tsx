@@ -246,7 +246,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                 value={customValue}
                 onChange={handleCustomInputChange}
                 maxLength={3}
-                className="info-input color-picker-custom-input-field"
+                className="information-input color-picker-custom-input-field"
                 aria-label="Custom hex color"
                 autoComplete="off"
               />

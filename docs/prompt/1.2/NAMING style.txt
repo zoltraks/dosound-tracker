@@ -1,3 +1,23 @@
 Change CSS class name from "instrument-list-panel" to just "instrument-panel".
 
 ---
+
+Change CSS names from "song-info-header" to "information-header" and "song-info-content" to "information-content" and "info-input" to "information-input" and "info-field" to "information-field"
+
+---
+
+Change InstrumentSection.tsx to EnvelopeSection.tsx as well as name in code InstrumentSection to EnvelopeSection and all related prop or variable names.
+
+---
+
+Change InstrumentListPanel.tsx to InstrumentSection.tsx as well as name in code InstrumentListPanel to InstrumentPanel and all related prop or variable names.
+
+---
+
+Change CSS name from "playlist-lines" to "playlist-line-container"
+
+---
+
+Change CSS name from "instrument-items" to "instrument-item-container"
+
+---

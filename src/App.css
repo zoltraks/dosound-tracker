@@ -1861,14 +1861,14 @@ body {
   border-color: var(--active-border);
 }
 
-.song-info-header {
+.information-header {
   font-weight: bold;
   margin-bottom: 4px;
   text-align: center;
   padding-bottom: 2px;
 }
 
-.song-info-content {
+.information-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1892,19 +1892,19 @@ body {
   align-items: flex-end;
 }
 
-.info-field {
+.information-field {
   display: flex;
   gap: 4px;
   align-items: center;
 }
 
-.info-field label {
+.information-field label {
   width: 60px;
   font-size: 10px;
   color: var(--text-secondary);
 }
 
-.info-input {
+.information-input {
   flex: 1;
   background-color: var(--bg-tertiary);
   border: 1px solid var(--border-color);
@@ -1914,13 +1914,13 @@ body {
   font-size: 10px;
 }
 
-.info-input:focus {
+.information-input:focus {
   outline: none;
   border-color: var(--active-border);
   background-color: var(--active-bg);
 }
 
-.light .info-input:focus {
+.light .information-input:focus {
   background-color: #f4f4f4;
 }
 
@@ -2087,7 +2087,10 @@ body {
   flex: 1;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  padding: 4px;
+  padding-top: 4px;
+  padding-bottom: 1px;
+  padding-left: 4px;
+  padding-right: 4px;
   cursor: pointer;
   outline: none;
   display: flex;
@@ -2148,7 +2151,7 @@ body {
   flex: 0 0 32px;
 }
 
-.playlist-lines {
+.playlist-line-container {
   flex: 1;
   overflow-y: scroll;
   min-height: 0;
@@ -2195,7 +2198,10 @@ body {
   flex: 1;
   text-align: center;
   cursor: pointer;
-  padding: 1px 2px;
+  padding-top: 1px;
+  padding-bottom: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 .track-pattern:hover {
@@ -2206,6 +2212,7 @@ body {
   background-color: var(--button-bg);
   border: 1px solid var(--button-border);
   color: var(--button-text);
+  margin-top: -1px;
 }
 
 .playlist-move-buttons {
@@ -2345,7 +2352,7 @@ body {
   text-align: left;
 }
 
-.instrument-items {
+.instrument-item-container {
   flex: 1;
   overflow-y: scroll;
   min-height: 0;

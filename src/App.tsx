@@ -33,7 +33,7 @@ import { PasteTrackModal } from './modals/PasteTrackModal';
 import { FilePickerModal } from './modals/FilePickerModal';
 import { AppLayout } from './components/AppLayout';
 import { TrackerSection } from './components/TrackerSection';
-import { InstrumentSection } from './components/InstrumentSection';
+import { EnvelopeSection } from './components/EnvelopeSection';
 import { SongSection } from './components/SongSection';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
@@ -469,7 +469,7 @@ const App: React.FC = () => {
   const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
-  const [instrumentListFocusRevision, setInstrumentListFocusRevision] = useState(0);
+  const [instrumentPanelFocusRevision, setInstrumentPanelFocusRevision] = useState(0);
 
   const ensureAudioContextResumed = useCallback(() => {
     if (!audioContext) {
@@ -1636,15 +1636,15 @@ const App: React.FC = () => {
     setIsInstrumentMidiOpen(false);
     setInstrumentMidiTarget(null);
     setActiveSection('instrumentList');
-    setInstrumentListFocusRevision(prev => prev + 1);
-  }, [setActiveSection, setInstrumentListFocusRevision]);
+    setInstrumentPanelFocusRevision(prev => prev + 1);
+  }, [setActiveSection, setInstrumentPanelFocusRevision]);
 
   const handleSaveInstrumentMidi = useCallback(
     (midi: { channel: number | null; program: number | null }) => {
       if (!instrumentMidiTarget) {
         setIsInstrumentMidiOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentListFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -1686,7 +1686,7 @@ const App: React.FC = () => {
       setIsInstrumentMidiOpen(false);
       setInstrumentMidiTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentListFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision(prev => prev + 1);
     },
     [
       instrumentMidiTarget,
@@ -1695,7 +1695,7 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentListFocusRevision
+      setInstrumentPanelFocusRevision
     ]
   );
 
@@ -1708,15 +1708,15 @@ const App: React.FC = () => {
     setIsInstrumentColorOpen(false);
     setInstrumentColorTarget(null);
     setActiveSection('instrumentList');
-    setInstrumentListFocusRevision(prev => prev + 1);
-  }, [setActiveSection, setInstrumentListFocusRevision]);
+    setInstrumentPanelFocusRevision(prev => prev + 1);
+  }, [setActiveSection, setInstrumentPanelFocusRevision]);
 
   const handleSaveInstrumentColor = useCallback(
     (color: string | null) => {
       if (!instrumentColorTarget) {
         setIsInstrumentColorOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentListFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -1747,7 +1747,7 @@ const App: React.FC = () => {
       setIsInstrumentColorOpen(false);
       setInstrumentColorTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentListFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision(prev => prev + 1);
     },
     [
       instrumentColorTarget,
@@ -1756,7 +1756,7 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentListFocusRevision,
+      setInstrumentPanelFocusRevision,
     ]
   );
 
@@ -1765,7 +1765,7 @@ const App: React.FC = () => {
       if (!instrumentColorTarget) {
         setIsInstrumentColorOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentListFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision(prev => prev + 1);
         return;
       }
 
@@ -1794,7 +1794,7 @@ const App: React.FC = () => {
       setIsInstrumentColorOpen(false);
       setInstrumentColorTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentListFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision(prev => prev + 1);
     },
     [
       instrumentColorTarget,
@@ -1803,7 +1803,7 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentListFocusRevision,
+      setInstrumentPanelFocusRevision,
     ]
   );
 
@@ -2685,8 +2685,8 @@ const App: React.FC = () => {
               isDarkMode={isDarkMode}
             />
           }
-          instrumentSection={
-            <InstrumentSection
+          envelopeSection={
+            <EnvelopeSection
               activeSection={activeSection}
               setActiveSection={setActiveSection}
               currentInstrument={currentInstrument}
@@ -2714,7 +2714,7 @@ const App: React.FC = () => {
               onMoveInstrument={handleMoveInstrument}
               onOpenInstrumentMidi={handleOpenInstrumentMidi}
               onOpenInstrumentColor={handleOpenInstrumentColor}
-              instrumentListFocusRevision={instrumentListFocusRevision}
+              instrumentPanelFocusRevision={instrumentPanelFocusRevision}
               ym2149={ym2149Ref.current}
               channelMutes={channelMutes}
               onToggleChannelMute={handleToggleChannelMute}
