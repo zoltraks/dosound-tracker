@@ -19,3 +19,11 @@ When changing track coloring with "rainbow" button I want transition effect for 
 But disable background transition when current step is changed.
 
 ---
+
+It seems that in track panel current highlighted step that is track-line current but not active seems to have additional padding 1px. Remove it.
+
+---
+
+But now the current and active step has wrong padding, it should be moved 1px right and 1px top
+
+---
