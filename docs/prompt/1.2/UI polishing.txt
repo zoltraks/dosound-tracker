@@ -111,3 +111,7 @@ During playback the selected step in track is changed to reflect current positio
 I can see that the background color of the "note-text" or "volume-data" that is gaining or loosing "active" style is transitioning but it should not.
 
 ---
+
+When moving mouse cursor over rows of instrument-item-container list the background color is changing but it should be mixed with the background color of the instrument that has color set.
+
+---

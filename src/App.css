@@ -2583,7 +2583,15 @@ body {
 .instrument-name-input:focus {
   outline: none;
   border-color: var(--active-border);
+  background-color: color-mix(in srgb, var(--bg-secondary) 80%, #000000 20%);
+}
+
+.light .instrument-name-input {
   background-color: transparent;
+}
+
+.light .instrument-name-input:focus {
+  background-color: color-mix(in srgb, var(--bg-secondary) 80%, #ffffff 20%);
 }
 
 /* Bottom Panels */
