@@ -39,3 +39,9 @@ Make this transition 2x slower and make it work also for "track-a", "track-b", "
 Still track background is changed immediately without transition
 
 ---
+
+Instead of using "🎶" in div with CSS class "logo" use SVG icons:
+ - src/assets/svg/logo-dark.svg for dark theme
+ - src/assets/svg/logo-light.svg for light theme
+
+---
