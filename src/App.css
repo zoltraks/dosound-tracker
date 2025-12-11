@@ -1672,6 +1672,10 @@ body {
   flex-shrink: 0;
 }
 
+.envelope-panel:focus {
+  outline: none;
+}
+
 .envelope-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
@@ -2098,6 +2102,10 @@ body {
   min-height: 0;
 }
 
+.playlist-panel:focus {
+  outline: none;
+}
+
 .playlist-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
@@ -2313,6 +2321,10 @@ body {
   min-height: 0;
 }
 
+.instrument-panel:focus {
+  outline: none;
+}
+
 .instrument-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
@@ -2400,6 +2412,11 @@ body {
 .instrument-item.focused {
   background-color: var(--bg-active);
   box-shadow: 0 0 0 1px var(--active-border) inset;
+}
+
+.instrument-panel.active .instrument-item.current,
+.instrument-panel.active .instrument-item.focused {
+  box-shadow: none;
 }
 
 /* Preserve color tinting for colored instruments even when current/focused */
