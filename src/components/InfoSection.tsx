@@ -84,7 +84,7 @@ export const InfoSection: React.FC<InfoSectionProps> = ({
         focusRevision={instrumentListFocusRevision}
       />
 
-      <div className="bottom-panels">
+      <div className="monitor-panel">
         <DumpPanel ym2149={ym2149} />
         <EQPanel ym2149={ym2149} channelMutes={channelMutes} onToggleChannelMute={onToggleChannelMute} />
       </div>

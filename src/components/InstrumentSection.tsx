@@ -85,7 +85,7 @@ export const InstrumentSection: React.FC<InstrumentSectionProps> = ({
         }}
       />
 
-      <div className="notes-panel" aria-hidden="true" onClick={onNotesClick}>
+      <div className="message-panel" aria-hidden="true" onClick={onNotesClick}>
         <div
           className={`notes-content${isNotesVisible ? '' : ' notes-hidden'}`}
           dangerouslySetInnerHTML={{

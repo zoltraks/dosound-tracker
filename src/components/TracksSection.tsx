@@ -101,7 +101,7 @@ export const TracksSection: React.FC<TracksSectionProps> = ({
           </div>
         </div>
 
-        <div className="tracks-container">
+        <div className="track-container">
           <div className="tracks-row">
             {(['A', 'B', 'C'] as const).map(trackId => (
               <TrackPanel

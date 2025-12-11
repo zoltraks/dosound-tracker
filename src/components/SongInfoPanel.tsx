@@ -139,7 +139,7 @@ export const SongInfoPanel: React.FC<SongInfoPanelProps> = ({
 
   return (
     <div 
-      className={`song-info-panel ${isActive ? 'active' : ''}`}
+      className={`information-panel ${isActive ? 'active' : ''}`}
       onClick={() => setActiveSection('songInfo')}
     >
       <div className="song-info-header">Song</div>
