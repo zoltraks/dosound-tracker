@@ -2,7 +2,7 @@
 
 ## Version 1.2.1
 
-Seamless playback mode switching, richer markdown and download integration, YAML export polish, and refactor/lint follow-ups.
+Seamless playback mode switching, richer markdown and download integration, YAML export polish, and refactor and lint follow-ups.
 
 - Smoothed out switching between **PLAY LINE** and **PLAY SONG** so changing modes no longer introduces audible gaps or delays, keeping playback continuous when you jump between focused line playback and full-song playback.
 - Enhanced in-app **documentation viewers** by adding download buttons to the MANUAL and CHANGES modals, extending the markdown renderer with fenced code blocks and clickable hyperlinks, and fixing escaped HTML closing tags so technical docs and examples render and export cleanly.
@@ -13,7 +13,7 @@ Seamless playback mode switching, richer markdown and download integration, YAML
 
 ## Version 1.2.0
 
-Song loop timing fixes, runtime diagnostics in the About dialog, dynamic download availability, Electron/runtime upgrades, and testing/documentation refinements.
+Song loop timing fixes, runtime diagnostics in the About dialog, dynamic download availability, Electron/runtime upgrades, and testing and documentation refinements.
 
 - Fixed an audible timing delay on the first row after a playlist **loop** by moving loop handling into the sequencer worker, tracking playlist length and loop index explicitly, and letting the worker wrap directly to the loop position so song playback transitions smoothly without an extra silent tick between patterns.
 - Added **runtime information** to the About dialog so Electron builds show Electron/Chromium/Node.js version strings via a new `getRuntimeInfo` preload API, while browser builds fall back to displaying the user agent for easier environment diagnostics when reporting bugs.
@@ -23,7 +23,7 @@ Song loop timing fixes, runtime diagnostics in the About dialog, dynamic downloa
 
 ## Version 1.1.9
 
-Instrument color picker and track tinting, safer track paste options, MIDI config utility, and visual/lint refinements.
+Instrument color picker and track tinting, safer track paste options, MIDI config utility, and visual and lint refinements.
 
 - Added an **instrument color picker** with an 8×8 palette and custom hex input, plus color tinting for instrument list rows and track lines so each instrument can have a distinct visual identity while leaving note-off steps uncolored for clarity.
 - Introduced a track background color toggle with rainbow icons and simplified gradient styling so active tracks and background modes are easier to distinguish at a glance, including padding/alignment tweaks and a single active-line border to reduce visual noise.
@@ -34,7 +34,7 @@ Instrument color picker and track tinting, safer track paste options, MIDI confi
 
 ## Version 1.1.8
 
-Mobile layout and piano support, in-app manual and file picker integration, and visual/timing refinements.
+Mobile layout and piano support, in-app manual and file picker integration, and visual and timing refinements.
 
 - Added a **responsive layout** for small screens with a three-column command button grid, fixed header and piano positioning, constrained modal widths and hidden desktop-only controls so the tracker remains usable and readable on mobile devices.
 - Enabled touch-based **piano keyboard** control by adding mobile tap handlers, disabling tap highlights, making the extra highest C key configurable and resuming the AudioContext on first touch so phones and tablets can play notes reliably.
@@ -46,7 +46,7 @@ Mobile layout and piano support, in-app manual and file picker integration, and 
 
 ## Version 1.1.7
 
-MAX format refinements for more accurate playback plus internal modal/message state refactors and tests.
+MAX format refinements for more accurate playback plus internal modal and message state refactors and tests.
 
 - Updated **MAX export** to track additional stream metadata (including YM2149 clock speed and frame size) and align the stream definition chunk size and register maps with the written specification, improving compatibility with MAX players.
 - Implemented a MAX **REG7 timing optimization** following the updated spec so delay behavior in exported MAX streams better matches the tracker’s internal sequencing.
@@ -62,7 +62,7 @@ MAX file export support aligned with the documented format, integrated into the 
 
 ## Version 1.1.5
 
-Export options window with context-aware song/pattern/instrument exports, optimized assembly/VGM timing, reorganized command panel controls, and richer export feedback dialogs.
+Export options window with context-aware song, pattern and instrument exports, optimized assembly and VGM timing, reorganized command panel controls, and richer export feedback dialogs.
 
 - Introduced an **Export options modal** that moves DUMP/DATA/BIN/VGM/WAV buttons out of the main window into a dedicated dialog, groups settings into What/Strategy/Format sections, and remembers the chosen export type and strategy when closed with OK.
 - Made DATA, BIN and VGM exports **context-aware**, so each format respects the selected scope (Song, Pattern at the current playlist position, or Instrument) and generates appropriately named files for each case instead of always exporting the full song.
@@ -108,7 +108,7 @@ Playback performance and Electron stability improvements, faster instrument reso
 
 ## Version 1.1.1
 
-Experimental MIDI support, improved track navigation, and safer exports and unsaved‑changes handling.
+Experimental MIDI support, improved track navigation, and safer exports and unsaved-changes handling.
 
 - Introduced experimental **MIDI support** with configurable input/output devices, device selection and real-time monitoring so external keyboards and synths can drive DOSOUND Tracker.
 - Added live MIDI playback features including enable/disable toggle, debug console logging of MIDI input/output events, note transposition based on instrument base pitch, and improved disabled‑state styling on MIDI controls.
