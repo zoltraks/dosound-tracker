@@ -1441,7 +1441,7 @@ body {
 .track-line.current {
   background-color: var(--track-inactive-bg);
   border: 1px solid transparent;
-  margin-left: -1px;
+  margin-left: 0px;
 }
 
 .track-panel.active .track-line.current {
@@ -1505,7 +1505,7 @@ body {
   box-sizing: border-box;
   margin: 0;
   line-height: 10px;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition: color 0.5s ease;
 }
 
 .line-number {
