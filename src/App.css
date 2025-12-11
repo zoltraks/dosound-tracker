@@ -26,7 +26,7 @@
   --playback-position-active-bg: #4b2b52;
   --playback-position-active-border: #ff92d0;
   
-  --hover-bg: #414352;
+  --hover-bg: #516172;
   --hover-glow: rgba(122, 162, 247, 0.25);
   
   --button-bg: #2b3043;
@@ -2421,6 +2421,14 @@ body {
 }
 
 .light .instrument-item.instrument-item-colored:not(.current):not(.focused):hover {
+  background-color: color-mix(in srgb, var(--hover-bg) 75%, var(--instrument-color, var(--hover-bg)) 25%);
+}
+
+.instrument-item.current.instrument-item-colored:hover {
+  background-color: color-mix(in srgb, var(--hover-bg) 75%, var(--instrument-color, var(--hover-bg)) 25%);
+}
+
+.light .instrument-item.current.instrument-item-colored:hover {
   background-color: color-mix(in srgb, var(--hover-bg) 75%, var(--instrument-color, var(--hover-bg)) 25%);
 }
 
