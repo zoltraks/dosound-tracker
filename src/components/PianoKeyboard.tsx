@@ -1,9 +1,12 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE, PIANO_SHOW_EXTRA_TOP_C } from '../constants/music';
+import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
 import type { Instrument as YmInstrument } from '../synth/YM2149';
+import { PianoKey } from './PianoKey';
+import { generatePianoKeys, parseBaseKey } from '../utils/pianoUtils';
+import type { PianoKeyConfig } from '../utils/pianoUtils';
 
 type PreviewInstrument = YmInstrument & { sustain?: number | null };
 
@@ -19,15 +22,6 @@ interface PianoKeyboardProps {
   onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   ensureAudioContextResumed?: () => Promise<void> | void;
-}
-
-interface PianoKey {
-  note: string;
-  octave: number;
-  isBlackKey: boolean;
-  keyId: string;
-  position: number;
-  stableKey: string;
 }
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
@@ -57,79 +51,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const previewLastTickTimeRef = useRef<{ [key: string]: number }>({});
   const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
 
-  // Generate piano keys for 5 octaves on desktop and fewer octaves on compact layouts.
-  // Optionally append a highest C key at the right end when enabled by
-  // PIANO_SHOW_EXTRA_TOP_C.
-  const generatePianoKeys = (): PianoKey[] => {
-    const keys: PianoKey[] = [];
-    const octaveSpan = isCompactLayout ? 2 : 5;
-    const maxStartOctave = MAX_OCTAVE - (octaveSpan - 1);
-    const startOctave = Math.max(
-      MIN_OCTAVE,
-      Math.min(maxStartOctave, currentOctave - 1)
-    );
-
-    for (let octave = startOctave; octave <= startOctave + octaveSpan - 1 && octave <= MAX_OCTAVE; octave++) {
-      const octaveOffset = (octave - startOctave) * 7; // 7 white keys per octave
-      
-      // White keys first
-      const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
-      for (let i = 0; i < whiteNotes.length; i++) {
-        const note = whiteNotes[i];
-        const keyId = `${note}${octave}`;
-        keys.push({
-          note,
-          octave,
-          isBlackKey: false,
-          keyId,
-          position: octaveOffset + i,
-          stableKey: `${octave}-${i}-white` // Stable key for React
-        });
-      }
-      
-      // Black keys positioned between white keys
-      const blackKeyPositions = [
-        { note: 'C#', whiteKeyIndex: 0 },  // Between C (0) and D (1)
-        { note: 'D#', whiteKeyIndex: 1 },  // Between D (1) and E (2)
-        { note: 'F#', whiteKeyIndex: 3 },  // Between F (3) and G (4)
-        { note: 'G#', whiteKeyIndex: 4 },  // Between G (4) and A (5)
-        { note: 'A#', whiteKeyIndex: 5 }   // Between A (5) and B (6)
-      ];
-      
-      for (const blackKey of blackKeyPositions) {
-        const keyId = `${blackKey.note}${octave}`;
-        keys.push({
-          note: blackKey.note,
-          octave,
-          isBlackKey: true,
-          keyId,
-          position: octaveOffset + blackKey.whiteKeyIndex + 0.5, // Position between white keys
-          stableKey: `${octave}-${blackKey.whiteKeyIndex}-black` // Stable key for React
-        });
-      }
-    }
-
-    if (PIANO_SHOW_EXTRA_TOP_C) {
-      // Append an extra highest C white key at the right end so there can be
-      // a dedicated top C button on the keyboard when desired.
-      const highestDisplayedOctave = startOctave + octaveSpan - 1;
-      const extraCOctave = Math.min(MAX_OCTAVE, highestDisplayedOctave + 1);
-      const extraKeyId = `C${extraCOctave}`;
-
-      keys.push({
-        note: 'C',
-        octave: extraCOctave,
-        isBlackKey: false,
-        keyId: extraKeyId,
-        position: octaveSpan * 7,
-        stableKey: `extra-top-c-${extraCOctave}`
-      });
-    }
-
-    return keys;
-  };
-
-  const pianoKeys = generatePianoKeys();
+  const pianoKeys = generatePianoKeys(isCompactLayout, currentOctave);
 
   useEffect(() => {
     const updateLayout = () => {
@@ -154,29 +76,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       }
     };
   }, []);
-
-  const parseBaseKey = (value?: string): { note: string; octave: number } | null => {
-    if (!value) return null;
-    const raw = value.trim().toUpperCase();
-    if (!raw) return null;
-
-    let notePart = raw.charAt(0);
-    let rest = raw.slice(1);
-
-    if (rest.startsWith('#')) {
-      notePart += '#';
-      rest = rest.slice(1);
-    }
-
-    if (rest.startsWith('-')) {
-      rest = rest.slice(1);
-    }
-
-    const octave = parseInt(rest, 10);
-    if (!Number.isFinite(octave)) return null;
-
-    return { note: notePart, octave };
-  };
 
   const baseKeyData = parseBaseKey(currentInstrument.base || 'C-4');
 
@@ -537,7 +436,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     }
   }, [pressedKeys, stopNote]);
 
-  const getKeyClass = useCallback((key: PianoKey) => {
+  const getKeyClass = useCallback((key: PianoKeyConfig) => {
     const classes = ['piano-key'];
     
     if (key.isBlackKey) {
@@ -576,44 +475,15 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
               key.octave === baseKeyData.octave;
 
             return (
-              <div
+              <PianoKey
                 key={key.stableKey}
+                keyData={key}
                 className={getKeyClass(key)}
-                style={{
-                  left: key.isBlackKey ? `${Math.floor(key.position) * 25 + 28}px` : 'auto',
-                  position: key.isBlackKey ? 'absolute' : 'relative'
-                }}
-                onMouseDown={(e) => {
-                  if (e.button === 0) {
-                    handlePianoKeyDown(key.note, key.octave);
-                  }
-                }}
-                onMouseUp={(e) => {
-                  if (e.button === 0) {
-                    handlePianoKeyUp(key.note, key.octave);
-                  }
-                }}
-                onMouseLeave={() => handlePianoKeyUp(key.note, key.octave)}
-                onTouchStart={() => {
-                  handlePianoKeyDown(key.note, key.octave);
-                }}
-                onTouchEnd={() => {
-                  handlePianoKeyUp(key.note, key.octave);
-                }}
-                onTouchCancel={() => handlePianoKeyUp(key.note, key.octave)}
-                onContextMenu={(e) => {
-                  e.preventDefault();
-                  onChangeBaseKey(key.note, key.octave);
-                }}
-                title={`${key.note}${key.octave}`}
-              >
-                {!key.isBlackKey && (
-                  <span className="key-label">
-                    {key.note}{key.octave}
-                  </span>
-                )}
-                {isBaseKey && <span className="base-key-dot" />}
-              </div>
+                isBaseKey={isBaseKey}
+                onKeyDown={handlePianoKeyDown}
+                onKeyUp={handlePianoKeyUp}
+                onContextMenu={onChangeBaseKey}
+              />
             );
           })}
         </div>

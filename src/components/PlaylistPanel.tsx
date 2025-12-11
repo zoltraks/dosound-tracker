@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { ChevronUp, ChevronDown } from 'lucide-react';
 import type { NavigationSection } from '../constants/navigation';
+import { PlaylistHeader } from './PlaylistHeader';
+import { PlaylistLine } from './PlaylistLine';
 
 interface PlaylistEntry {
   trackA: string;
@@ -309,19 +310,13 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   const handlePatternRightClick = useCallback((
     lineIndex: number,
     track: 'A' | 'B' | 'C',
-    event: React.MouseEvent
+    event: React.MouseEvent,
   ) => {
     event.preventDefault();
     event.stopPropagation();
     handlePatternClick(lineIndex, track);
     handleTrackHeaderClick(track);
   }, [handlePatternClick, handleTrackHeaderClick]);
-
-  const formatPatternDisplay = useCallback((patternId: string) => {
-    if (patternId === '--') return '--';
-    if (patternId.startsWith('^^')) return patternId;
-    return patternId;
-  }, []);
 
   const getLineClass = useCallback((lineIndex: number) => {
     const classes = ['playlist-line'];
@@ -343,7 +338,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   }, [currentLine, currentTrack, isActive]);
 
   return (
-    <div 
+    <div
       ref={playlistRef}
       className={`playlist-panel ${isActive ? 'active' : ''}`}
       tabIndex={0}
@@ -351,226 +346,46 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       onClick={() => setActiveSection('playlist')}
     >
       <div className="playlist-header">Playlist</div>
-      
+
       <div className="playlist-content">
-        <div className="playlist-header-row">
-          <span className="line-number-header"></span>
-          <span
-            className={`track-header ${targetTrack === 'A' ? 'target-track' : ''}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleTrackHeaderClick('A');
-            }}
-            onContextMenu={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              handleTrackHeaderClick('A');
-            }}
-          >
-            A
-          </span>
-          <span
-            className={`track-header ${targetTrack === 'B' ? 'target-track' : ''}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleTrackHeaderClick('B');
-            }}
-            onContextMenu={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              handleTrackHeaderClick('B');
-            }}
-          >
-            B
-          </span>
-          <span
-            className={`track-header ${targetTrack === 'C' ? 'target-track' : ''}`}
-            onClick={(event) => {
-              event.stopPropagation();
-              handleTrackHeaderClick('C');
-            }}
-            onContextMenu={(event) => {
-              event.preventDefault();
-              event.stopPropagation();
-              handleTrackHeaderClick('C');
-            }}
-          >
-            C
-          </span>
-          <span className="playlist-move-header"></span>
-        </div>
-        
+        <PlaylistHeader
+          targetTrack={targetTrack}
+          onTrackHeaderClick={handleTrackHeaderClick}
+        />
+
         <div className="playlist-lines" ref={linesContainerRef}>
           {playlist.map((entry, actualIndex) => {
             const isCurrentLine = actualIndex === currentLine;
             const isEditing = isCurrentLine && editingPattern !== '';
-            
+
             return (
-              <div
+              <PlaylistLine
                 key={actualIndex}
-                className={getLineClass(actualIndex)}
-                onClick={() => handleLineClick(actualIndex)}
-                onContextMenu={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  handlePatternClick(actualIndex, currentTrack);
-                  handleTrackHeaderClick(currentTrack);
-                }}
-              >
-                <span className="line-number">
-                  {actualIndex.toString(16).padStart(2, '0').toUpperCase()}
-                </span>
-                
-                {/* Track A */}
-                {isCurrentLine && currentTrack === 'A' && isEditing ? (
-                  <input
-                    type="text"
-                    className="pattern-input"
-                    value={editingPattern}
-                    onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
-                    onBlur={() => finishEditingPattern()}
-                    onKeyDown={(e) => {
-                      const key = e.key.toUpperCase();
-                      if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        finishEditingPattern({ refocusPlaylist: false });
-                        handleTrackHeaderClick('A');
-                      } else if (e.key === 'Enter') {
-                        finishEditingPattern();
-                      } else if (e.key === 'Escape') {
-                        setEditingPattern('');
-                      } else if (key === 'N') {
-                        e.preventDefault();
-                        setEditingPattern('');
-                        onCreatePatternAt(actualIndex, 'A');
-                      }
-                    }}
-                    autoFocus
-                    maxLength={2}
-                  />
-                ) : (
-                  <span 
-                    className={getPatternClass(actualIndex, 'A')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePatternClick(actualIndex, 'A');
-                    }}
-                    onContextMenu={(e) => handlePatternRightClick(actualIndex, 'A', e)}
-                  >
-                    {formatPatternDisplay(entry.trackA)}
-                  </span>
-                )}
-                
-                {/* Track B */}
-                {isCurrentLine && currentTrack === 'B' && isEditing ? (
-                  <input
-                    type="text"
-                    className="pattern-input"
-                    value={editingPattern}
-                    onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
-                    onBlur={() => finishEditingPattern()}
-                    onKeyDown={(e) => {
-                      const key = e.key.toUpperCase();
-                      if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        finishEditingPattern({ refocusPlaylist: false });
-                        handleTrackHeaderClick('B');
-                      } else if (e.key === 'Enter') {
-                        finishEditingPattern();
-                      } else if (e.key === 'Escape') {
-                        setEditingPattern('');
-                      } else if (key === 'N') {
-                        e.preventDefault();
-                        setEditingPattern('');
-                        onCreatePatternAt(actualIndex, 'B');
-                      }
-                    }}
-                    autoFocus
-                    maxLength={2}
-                  />
-                ) : (
-                  <span 
-                    className={getPatternClass(actualIndex, 'B')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePatternClick(actualIndex, 'B');
-                    }}
-                    onContextMenu={(e) => handlePatternRightClick(actualIndex, 'B', e)}
-                  >
-                    {formatPatternDisplay(entry.trackB)}
-                  </span>
-                )}
-                
-                {/* Track C */}
-                {isCurrentLine && currentTrack === 'C' && isEditing ? (
-                  <input
-                    type="text"
-                    className="pattern-input"
-                    value={editingPattern}
-                    onChange={(e) => setEditingPattern(e.target.value.toUpperCase().slice(0, 2))}
-                    onBlur={() => finishEditingPattern()}
-                    onKeyDown={(e) => {
-                      const key = e.key.toUpperCase();
-                      if (e.key === 'Enter' && e.ctrlKey) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        finishEditingPattern({ refocusPlaylist: false });
-                        handleTrackHeaderClick('C');
-                      } else if (e.key === 'Enter') {
-                        finishEditingPattern();
-                      } else if (e.key === 'Escape') {
-                        setEditingPattern('');
-                      } else if (key === 'N') {
-                        e.preventDefault();
-                        setEditingPattern('');
-                        onCreatePatternAt(actualIndex, 'C');
-                      }
-                    }}
-                    autoFocus
-                    maxLength={2}
-                  />
-                ) : (
-                  <span 
-                    className={getPatternClass(actualIndex, 'C')}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handlePatternClick(actualIndex, 'C');
-                    }}
-                    onContextMenu={(e) => handlePatternRightClick(actualIndex, 'C', e)}
-                  >
-                    {formatPatternDisplay(entry.trackC)}
-                  </span>
-                )}
-                
-                <div
-                  className="playlist-move-buttons"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  <button
-                    type="button"
-                    onClick={() => moveLine(actualIndex, 'down')}
-                    aria-label="Move position down"
-                    disabled={actualIndex === playlist.length - 1}
-                  >
-                    <ChevronDown className="h-3 w-3 rotate-90" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => moveLine(actualIndex, 'up')}
-                    aria-label="Move position up"
-                    disabled={actualIndex === 0}
-                  >
-                    <ChevronUp className="h-3 w-3 rotate-90" />
-                  </button>
-                </div>
-              </div>
+                index={actualIndex}
+                entry={entry}
+                lineClassName={getLineClass(actualIndex)}
+                patternClassA={getPatternClass(actualIndex, 'A')}
+                patternClassB={getPatternClass(actualIndex, 'B')}
+                patternClassC={getPatternClass(actualIndex, 'C')}
+                isCurrentLine={isCurrentLine}
+                currentTrack={currentTrack}
+                isEditing={isEditing}
+                editingPattern={editingPattern}
+                onEditingPatternChange={(value) => setEditingPattern(value)}
+                onFinishEditingPattern={finishEditingPattern}
+                onLineClick={handleLineClick}
+                onPatternClick={handlePatternClick}
+                onPatternRightClick={handlePatternRightClick}
+                onCreatePatternAt={onCreatePatternAt}
+                onMoveLine={moveLine}
+                playlistLength={playlist.length}
+                onTrackHeaderClick={handleTrackHeaderClick}
+              />
             );
           })}
         </div>
       </div>
-      
+
       {/* Playlist footer intentionally left empty (no controls) */}
     </div>
   );
