@@ -3,22 +3,14 @@ import type { Song, Instrument } from '../synth/SoundDriver';
 import type { ExportType, ExportStrategy } from '../constants/export';
 import {
   exportToAssembly,
-  exportSongToWav,
   exportSongRegisterDump,
-  exportSongToVgm,
-  exportToBinary,
   exportInstrumentToAssembly,
-  exportInstrumentToVgm,
-  exportInstrumentToWav,
-  exportSongToMax,
-  exportInstrumentToMax,
-  parseAssemblyToBinary,
   downloadAssemblyFile,
-  downloadBinaryFile,
-  downloadVgmFile,
-  downloadWavFile,
-  downloadMaxFile,
-} from '../utils/assemblyExport';
+} from '../exports/asm';
+import { exportToBinary, parseAssemblyToBinary, downloadBinaryFile } from '../exports/bin';
+import { exportSongToVgm, exportInstrumentToVgm, downloadVgmFile } from '../exports/vgm';
+import { exportSongToWav, exportInstrumentToWav, downloadWavFile } from '../exports/wav';
+import { exportSongToMax, exportInstrumentToMax, downloadMaxFile } from '../exports/max';
 
 interface ExportContext {
   type: ExportType;

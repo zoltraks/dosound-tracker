@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseAssemblyToBinary } from '../../src/utils/assemblyExport';
+import { parseAssemblyToBinary } from '../../src/exports/bin';
 
 describe('parseAssemblyToBinary', () => {
   it('parses DOSOUND assembly dc.b lines into correct byte sequence', () => {

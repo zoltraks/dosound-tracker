@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { parseSongFromYaml } from '../../src/utils/songParser';
-import { exportSongToVgm, exportInstrumentToVgm } from '../../src/utils/assemblyExport';
+import { exportSongToVgm, exportInstrumentToVgm } from '../../src/exports/vgm';
 import { YM_CLOCK } from '../../src/synth/YM2149';
 import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver';
 

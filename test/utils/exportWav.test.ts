@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { parseSongFromYaml } from '../../src/utils/songParser';
-import { exportSongToWav, exportInstrumentToWav } from '../../src/utils/assemblyExport';
+import { exportSongToWav, exportInstrumentToWav } from '../../src/exports/wav';
 import { VBLANK_RATE, type Instrument, type Song } from '../../src/synth/SoundDriver';
 
 describe('WAV export context', () => {

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseSongFromYaml } from '../../src/utils/songParser';
-import { exportSongRegisterDump } from '../../src/utils/assemblyExport';
+import { exportSongRegisterDump } from '../../src/exports/asm';
 
 describe('exportSongRegisterDump', () => {
   it('exports correct register dump for Noise Test song', () => {

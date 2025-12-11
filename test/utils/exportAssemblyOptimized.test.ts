@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { parseSongFromYaml } from '../../src/utils/songParser';
-import { exportToAssembly } from '../../src/utils/assemblyExport';
+import { exportToAssembly } from '../../src/exports/asm';
 
 const OPTIMIZED_SONG_YAML = `
 song:
