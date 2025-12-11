@@ -1426,7 +1426,10 @@ body {
 .track-line {
   display: flex;
   gap: 8px;
-  padding: 1px 2px;
+  padding-top: 1px;
+  padding-bottom: 1px;
+  padding-left: 2px;
+  padding-right: 2px;
   cursor: pointer;
   border: 0px transparent;
 }
@@ -1438,6 +1441,7 @@ body {
 .track-line.current {
   background-color: var(--track-inactive-bg);
   border: 1px solid transparent;
+  margin-left: -1px;
 }
 
 .track-panel.active .track-line.current {
@@ -1522,14 +1526,15 @@ body {
 
 .note-text {
   min-width: 10ch;
-  padding: 0 2px;
+  padding-bottom: 0px;
+  padding-right: 2px;
   padding-left: 4px;
   padding-top: 1px;
   display: flex;
   align-items: center;
   height: 100%;
   box-sizing: border-box;
-  transition: color 0.5s ease, background-color 0.5s ease;
+  transition: color 0.5s ease, background-color 0.1s ease;
 }
 
 .note-text.active {
