@@ -196,7 +196,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 
 ### Audio Engine Features
 
-****YM 2149** Emulation:**
+**YM 2149 Emulation:**
 
 - Bit-perfect register simulation
 - Authentic AY/YM logarithmic volume curves
