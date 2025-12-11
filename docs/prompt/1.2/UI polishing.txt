@@ -98,3 +98,7 @@ The content of "instrument-item-container" element seems like having 3px too muc
 When instrument-panel has no active style, then row with current selected instrument has nice border but it disapears when instrument-panel gains active. Fix that so border around selected row remains.
 
 ---
+
+You may remove vertical scrollbar in mobile view in "instrument-item-container", it will not be used
+
+---

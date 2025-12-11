@@ -147,6 +147,13 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       return;
     }
 
+    if (typeof window !== 'undefined') {
+      const mql = window.matchMedia('(max-width: 1100px), (max-height: 700px)');
+      if (mql.matches) {
+        return;
+      }
+    }
+
     const lineElements = container.querySelectorAll('.playlist-line') as NodeListOf<HTMLDivElement>;
     const target = lineElements[currentLine];
     if (target) {
