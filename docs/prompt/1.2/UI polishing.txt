@@ -102,3 +102,7 @@ When instrument-panel has no active style, then row with current selected instru
 You may remove vertical scrollbar in mobile view in "instrument-item-container", it will not be used
 
 ---
+
+While playing a song at the moment playlist line is changed it causes scrolling on mobile view but it should not change the viewport position.
+
+---
