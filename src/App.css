@@ -1581,6 +1581,8 @@ body {
 .note-text.active {
   background-color: var(--track-cell-active-bg);
   color: var(--text-primary);
+  /* Snap background highlight on active column changes (no background transition). */
+  transition: color 0.5s ease;
 }
 
 .volume-data {
@@ -1610,6 +1612,8 @@ body {
 .volume-data.active {
   color: var(--text-primary);
   background-color: var(--track-cell-active-bg);
+  /* Snap background highlight on active column changes (no background transition). */
+  transition: color 0.5s ease;
 }
 
 .track-panel.active .track-line.current .note-text {
