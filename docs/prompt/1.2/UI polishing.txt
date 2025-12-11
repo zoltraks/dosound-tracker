@@ -39,3 +39,41 @@ Make this transition 2x slower and make it work also for "track-a", "track-b", "
 Still track background is changed immediately without transition
 
 ---
+
+When "information-panel" block has active CSS class, only visible border changes color and there is no additional border.
+But when "instrument-panel" has active class enabled it has double border frame.
+Make it to have only single border frame like "information-panel"
+
+---
+
+But when "instrument-panel" is currently focused it has additional frame.
+Make it to have only single border frame like "information-panel" which when focused has only visible border.
+
+---
+
+Now make the same change for "playlist-panel" and "envelope-panel".
+
+---
+
+In mobile view command buttons are aranged in rows and three columns.
+Make button in first column to be moved 1px left and button in third column to be moved 1px right.
+Probably you need to change padding or margin.
+
+---
+
+Move third column another 1px right.
+
+---
+
+Remove this double border also from focused buttons in command panel
+
+---
+
+When button is focused it is visually 1px top from its original position. 
+Make it to remain at its original position.
+
+---
+
+Make hover not to use translateY(-1px)
+
+---

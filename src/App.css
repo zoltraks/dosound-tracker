@@ -524,6 +524,10 @@ body {
   text-decoration: none;
 }
 
+.command-btn:focus {
+  outline: none;
+}
+
 .command-btn.play-song-btn {
   background: linear-gradient(135deg, var(--play-song-idle-bg) 0%, var(--button-bg) 100%);
   border-color: var(--play-song-idle-border);
@@ -554,7 +558,6 @@ body {
   background: linear-gradient(135deg, var(--button-hover) 0%, var(--button-active) 100%);
   border-color: var(--border-bright);
   box-shadow: var(--shadow-medium), var(--glow-secondary);
-  transform: translateY(-1px);
 }
 
 .command-btn:hover::before {
@@ -571,6 +574,7 @@ body {
   border-color: var(--active-border);
   color: var(--text-primary);
   box-shadow: var(--shadow-medium), var(--glow-primary);
+  transform: none;
 }
 
 .command-btn.playing,
@@ -2123,6 +2127,7 @@ body {
   flex-direction: column;
   flex: 1;
   min-height: 0;
+  padding-bottom: 3px;
 }
 
 .playlist-header-row {
@@ -2163,6 +2168,8 @@ body {
   flex: 1;
   overflow-y: scroll;
   min-height: 0;
+  padding-bottom: 0;
+  margin: 0;
 }
 
 .playlist-line {
@@ -3021,14 +3028,18 @@ body {
 
   .command-btn {
     max-width: 100%;
+    margin-top: 1px;
+    margin-bottom: 1px;
   }
 
   .command-row .command-btn:nth-child(3n+1) {
     margin-left: -1px;
+    left: -1px;
   }
 
   .command-row .command-btn:nth-child(3n+3) {
-    margin-right: -1px;
+    margin-right: -2px;
+    left: 2px;
   }
 
   .piano-keyboard-container {
