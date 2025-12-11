@@ -138,6 +138,9 @@
   --link-color: #ff79c6;
   --link-hover-color: #ff92d0;
   --code-text-color: #e4b4b4;
+  --inline-code-color: #ffff99;
+  --markdown-h1-color: #abcbd8;
+  --markdown-h2-color: #d1e0ec;
 }
 
 .light {
@@ -269,6 +272,9 @@
   --link-color: #84269c;
   --link-hover-color: #be185d;
   --code-text-color: #420202;
+  --inline-code-color: #16a34a;
+  --markdown-h1-color: #718096;
+  --markdown-h2-color: #34d399;
 }
 
 * {
@@ -1098,6 +1104,15 @@ body {
   margin-bottom: 1.2rem;
 }
 
+.modal-body.text-display-body h1 {
+  color: var(--markdown-h1-color);
+}
+
+.modal-body.text-display-body h2 {
+  color: var(--markdown-h2-color);
+  padding-top: 5px;
+}
+
 .modal-body.text-display-body p {
   margin-bottom: 0.8rem;
 }
@@ -1115,6 +1130,12 @@ body {
 .modal-body.text-display-body pre {
   margin: 1rem 0;
   color: var(--code-text-color);
+}
+
+.modal-body.text-display-body code.inline-code {
+  color: var(--inline-code-color);
+  font-family: var(--font-mono);
+  font-size: 0.95em;
 }
 
 .modal-body.text-display-body hr {
