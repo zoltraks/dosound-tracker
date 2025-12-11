@@ -1359,6 +1359,10 @@ body {
   transition: background-color 0.6s ease, border-color 0.6s ease;
 }
 
+.track-panel:focus {
+  outline: none;
+}
+
 .track-panel::before {
   content: '';
   position: absolute;
@@ -1388,7 +1392,6 @@ body {
 
 .track-panel.active {
   border-color: var(--active-border);
-  box-shadow: var(--shadow-medium), var(--glow-primary);
   background-color: var(--active-bg);
   background-image: linear-gradient(180deg, var(--active-bg) 0%, var(--bg-secondary) 100%);
 }
@@ -3028,7 +3031,7 @@ body {
 
   .command-btn {
     max-width: 100%;
-    margin-top: 1px;
+    margin-top: 0px;
     margin-bottom: 1px;
   }
 
@@ -3038,7 +3041,7 @@ body {
   }
 
   .command-row .command-btn:nth-child(3n+3) {
-    margin-right: -2px;
+    margin-right: -1px;
     left: 2px;
   }
 

@@ -77,3 +77,13 @@ Make it to remain at its original position.
 Make hover not to use translateY(-1px)
 
 ---
+
+Remove this double border also from "track-panel"
+
+---
+
+When "information-panel" block has active CSS class, only visible border changes color and there is no additional border.
+But when "track-panel" gains active class enabled it has double border frame.
+Make it to have only single border frame like "information-panel"
+
+---
