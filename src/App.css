@@ -2207,7 +2207,7 @@ body {
 }
 
 /* Instrument List Panel */
-.instrument-list-panel {
+.instrument-panel {
   flex: 1;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -2219,7 +2219,7 @@ body {
   min-height: 0;
 }
 
-.instrument-list-panel.active {
+.instrument-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
 }

@@ -1,0 +1,3 @@
+Change CSS class name from "instrument-list-panel" to just "instrument-panel".
+
+---

@@ -200,7 +200,7 @@ export const InstrumentListPanel: React.FC<InstrumentListPanelProps> = ({
   return (
     <div
       ref={listRef}
-      className={`instrument-list-panel ${isActive ? 'active' : ''}`}
+      className={`instrument-panel ${isActive ? 'active' : ''}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection('instrumentList')}
