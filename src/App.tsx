@@ -470,6 +470,41 @@ const App: React.FC = () => {
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
   const [instrumentPanelFocusRevision, setInstrumentPanelFocusRevision] = useState(0);
+  const [isCommandPanelMobileCollapsed, setIsCommandPanelMobileCollapsed] = useState(false);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('dosound-tracker-command-panel-mobile');
+      if (stored === 'collapsed') {
+        setIsCommandPanelMobileCollapsed(true);
+        return;
+      }
+      if (stored === 'expanded') {
+        setIsCommandPanelMobileCollapsed(false);
+        return;
+      }
+    } catch {
+      // ignore
+    }
+
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth <= 1100 || window.innerHeight <= 700;
+      if (isMobile) {
+        setIsCommandPanelMobileCollapsed(true);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'dosound-tracker-command-panel-mobile',
+        isCommandPanelMobileCollapsed ? 'collapsed' : 'expanded'
+      );
+    } catch {
+      // ignore
+    }
+  }, [isCommandPanelMobileCollapsed]);
 
   const ensureAudioContextResumed = useCallback(() => {
     if (!audioContext) {
@@ -2614,6 +2649,9 @@ const App: React.FC = () => {
               onShowDownloads={() => setIsDownloadOpen(true)}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+              onToggleCommandPanelMobile={() =>
+                setIsCommandPanelMobileCollapsed(prev => !prev)
+              }
             />
           }
           commandPanel={
@@ -2656,6 +2694,7 @@ const App: React.FC = () => {
               onShowMidi={handleShowMidi}
               onPickInstrument={handleOpenRepositoryInstrumentPicker}
               onDemoSong={handleDemoSongClick}
+              isMobileCollapsed={isCommandPanelMobileCollapsed}
             />
           }
           trackerSection={

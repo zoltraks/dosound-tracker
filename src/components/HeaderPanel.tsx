@@ -21,6 +21,7 @@ interface HeaderPanelProps {
   onShowDownloads: () => void;
   onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
+  onToggleCommandPanelMobile: () => void;
 }
 
 export const HeaderPanel: React.FC<HeaderPanelProps> = ({
@@ -38,7 +39,8 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   hasDownloads,
   onShowDownloads,
   onPreviewMidiNoteOn,
-  onPreviewMidiNoteOff
+  onPreviewMidiNoteOff,
+  onToggleCommandPanelMobile
 }) => {
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
@@ -277,7 +279,10 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
         </div>
       </header>
 
-      <div className="header-panel-song-mobile">
+      <div
+        className="header-panel-song-mobile"
+        onClick={onToggleCommandPanelMobile}
+      >
         <span className="song-title">{title}</span>
       </div>
     </>
