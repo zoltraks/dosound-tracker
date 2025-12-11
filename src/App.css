@@ -2990,6 +2990,16 @@ body {
     min-height: 0;
   }
 
+  .instrument-panel,
+  .instrument-list-content,
+  .instrument-item-container {
+    flex: 0 0 auto;
+  }
+
+  .instrument-item-container {
+    overflow-y: visible;
+  }
+
   .right-column {
     order: 1;
   }
