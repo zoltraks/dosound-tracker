@@ -3023,6 +3023,14 @@ body {
     max-width: 100%;
   }
 
+  .command-row .command-btn:nth-child(3n+1) {
+    margin-left: -1px;
+  }
+
+  .command-row .command-btn:nth-child(3n+3) {
+    margin-right: -1px;
+  }
+
   .piano-keyboard-container {
     padding-bottom: 8px;
     position: fixed;
