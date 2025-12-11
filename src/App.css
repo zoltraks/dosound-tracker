@@ -1625,7 +1625,7 @@ body {
   align-items: center;
   height: 100%;
   box-sizing: border-box;
-  transition: color 0.5s ease, background-color 0.1s ease;
+  transition: color 0.5s ease;
 }
 
 .note-text.active {
@@ -1647,7 +1647,7 @@ body {
   justify-content: center;
   height: 100%;
   box-sizing: border-box;
-  transition: color 0.5s ease, background-color 0.5s ease;
+  transition: color 0.5s ease;
 }
 
 /* Stabilize track line text rendering during background/color transitions,

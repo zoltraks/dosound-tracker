@@ -106,3 +106,8 @@ You may remove vertical scrollbar in mobile view in "instrument-item-container",
 While playing a song at the moment playlist line is changed it causes scrolling on mobile view but it should not change the viewport position.
 
 ---
+
+During playback the selected step in track is changed to reflect current position being played.
+I can see that the background color of the "note-text" or "volume-data" that is gaining or loosing "active" style is transitioning but it should not.
+
+---
