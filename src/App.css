@@ -135,12 +135,12 @@
   --midi-disabled-bg-right: #1e272b;
   --midi-disabled-border: #80949e;
 
-  --link-color: #ff79c6;
+  --link-color: #a087f7;
   --link-hover-color: #ff92d0;
   --code-text-color: #e4b4b4;
   --inline-code-color: #ffff99;
-  --markdown-h1-color: #abcbd8;
-  --markdown-h2-color: #d1e0ec;
+  --markdown-h1-color: #d9d6bb;
+  --markdown-h2-color: #c9e3d2;
   --markdown-strong-color: #ff9ce6;
 }
 
