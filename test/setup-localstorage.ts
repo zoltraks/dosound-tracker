@@ -38,7 +38,8 @@ beforeEach(() => {
     globalWindow.window = {};
   }
 
-  const existing = (globalWindow.window as any).localStorage as Storage | undefined;
+  const windowWithLocalStorage = globalWindow.window as { localStorage?: Storage };
+  const existing = windowWithLocalStorage.localStorage;
 
   if (!existing ||
       typeof existing.getItem !== 'function' ||
@@ -46,7 +47,8 @@ beforeEach(() => {
       typeof existing.removeItem !== 'function' ||
       typeof existing.clear !== 'function') {
     const mock = createLocalStorageMock();
-    (globalThis as any).localStorage = mock;
+    const globalWithLocalStorage = globalThis as typeof globalThis & { localStorage?: Storage };
+    globalWithLocalStorage.localStorage = mock;
   } else {
     // If jsdom provided a working localStorage, make sure tests start clean.
     existing.clear();

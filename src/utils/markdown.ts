@@ -11,12 +11,12 @@ const renderInlineMarkdown = (text: string): string => {
   const escaped = escapeHtml(text);
 
   const withLinks = escaped.replace(/\bhttps?:\/\/[^\s<]+/g, (url) => {
-    return `<a href="${url}" target="_blank" rel="noreferrer">${url}<\/a>`;
+    return `<a href="${url}" target="_blank" rel="noreferrer">${url}</a>`;
   });
 
   // Bold **text**
-  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<b>$1<\/b>');
-  return withBold.replace(/\*(.+?)\*/g, '<em>$1<\/em>');
+  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+  return withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
 };
 
 export const renderMarkdown = (md: string): string => {
@@ -50,7 +50,7 @@ export const renderMarkdown = (md: string): string => {
         const codeHtml = codeLines
           .map((codeLine) => escapeHtml(codeLine))
           .join('\n');
-        html.push(`<pre><code${langClass}>${codeHtml}<\/code><\/pre>`);
+        html.push(`<pre><code${langClass}>${codeHtml}</code></pre>`);
         inCodeBlock = false;
         codeBlockLang = '';
         codeLines = [];
@@ -109,7 +109,7 @@ export const renderMarkdown = (md: string): string => {
     const codeHtml = codeLines
       .map((codeLine) => escapeHtml(codeLine))
       .join('\n');
-    html.push(`<pre><code${langClass}>${codeHtml}<\/code><\/pre>`);
+    html.push(`<pre><code${langClass}>${codeHtml}</code></pre>`);
   }
 
   closeList();

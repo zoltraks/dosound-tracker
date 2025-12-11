@@ -1427,21 +1427,31 @@ body {
 }
 
 /* Per-line instrument color tinting in tracks */
-.track-line.track-line-colored {
+.track-panel.track-colored .track-line.track-line-colored {
   background-color: color-mix(in srgb, var(--track-inactive-bg) 75%, var(--track-line-color, var(--track-inactive-bg)) 25%);
 }
 
-.track-panel.active .track-line.track-line-colored {
+.track-panel.track-colored.active .track-line.track-line-colored {
   background-color: color-mix(in srgb, var(--track-active-bg) 75%, var(--track-line-color, var(--track-active-bg)) 25%);
 }
 
 /* Stronger tint for the current step so it stands out even when colored */
-.track-line.current.track-line-colored {
+.track-panel.track-colored .track-line.current.track-line-colored {
   background-color: color-mix(in srgb, var(--track-inactive-bg) 60%, var(--track-line-color, var(--track-inactive-bg)) 40%);
 }
 
-.track-panel.active .track-line.current.track-line-colored {
+.track-panel.track-colored.active .track-line.current.track-line-colored {
   background-color: color-mix(in srgb, var(--track-active-bg) 60%, var(--track-line-color, var(--track-active-bg)) 40%);
+}
+
+.track-panel:not(.track-colored) .track-line.track-line-colored .note-text:not(.active),
+.track-panel:not(.track-colored) .track-line.track-line-colored .volume-data:not(.active) {
+  color: color-mix(in srgb, var(--track-line-color, var(--text-secondary)) 70%, #ffffff 30%);
+}
+
+.light .track-panel:not(.track-colored) .track-line.track-line-colored .note-text:not(.active),
+.light .track-panel:not(.track-colored) .track-line.track-line-colored .volume-data:not(.active) {
+  color: color-mix(in srgb, var(--track-line-color, var(--text-secondary)) 70%, #000000 30%);
 }
 
 .beat-line {

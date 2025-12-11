@@ -1,0 +1,7 @@
+Modify the way steps are colored in tracks depending on whether the track-coloring mode is enabled (default) or disabled (rainbow toggled).
+If the track-coloring mode is disabled, then instead of setting the background color for a step that contains an instrument with a defined color,
+change the font color in that step so that, in the dark theme, the color is slightly lighter than the instrument’s defined color,
+and in the light theme, slightly darker. And in this case don't modify background.
+Keep background coloring without font-color adjustments in the default, initial coloring mode.
+
+---
