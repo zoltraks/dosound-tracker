@@ -11,7 +11,7 @@ export const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
 }) => {
   return (
     <div className="playlist-header-row">
-      <span className="line-number-header" />
+      <span className="track-header-left" />
       {(['A', 'B', 'C'] as const).map((track) => (
         <span
           key={track}
@@ -29,7 +29,7 @@ export const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
           {track}
         </span>
       ))}
-      <span className="playlist-move-header" />
+      <span className="track-header-right" />
     </div>
   );
 };

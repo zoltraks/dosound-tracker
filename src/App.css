@@ -2155,7 +2155,7 @@ body {
   margin-bottom: 2px;
 }
 
-.line-number-header {
+.track-header-left {
   width: 20px;
   text-align: right;
 }
@@ -2165,16 +2165,16 @@ body {
   text-align: center;
 }
 
-.playlist-move-header {
+.track-header-right {
   width: 32px;
   text-align: center;
 }
 
-.line-number-header {
+.track-header-left {
   flex: 0 0 23px;
 }
 
-.playlist-move-header {
+.track-header-right {
   flex: 0 0 45px;
 }
 
@@ -3006,7 +3006,7 @@ body {
   }
 
   .application-name {
-    transform: translateX(-7px);
+    transform: translate(-7px, 1px);
   }
 
   .main-content {
@@ -3157,11 +3157,11 @@ body {
     display: none;
   }
 
-  .line-number-header {
+  .track-header-left {
     flex: 0 0 22px;
   }
 
-  .playlist-move-header {
+  .track-header-right {
     flex: 0 0 37px;
   }
 

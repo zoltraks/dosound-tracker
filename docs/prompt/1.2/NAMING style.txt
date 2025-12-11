@@ -25,3 +25,7 @@ Change CSS name from "instrument-items" to "instrument-item-container"
 Change CSS name from "instrument-id-header" to "instrument-number-header" and from "instrument-id" to "instrument-number".
 
 ---
+
+Change CSS name from "line-number-header" to "track-header-left" and from "playlist-move-header" to "track-header-right"
+
+---
