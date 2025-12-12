@@ -1,11 +1,15 @@
 Make refactoring proposal for the current version.
+Forget about previous refactorings.
 This refactoring proposal will be used as a guide for AI assisted code generation.
 Create an implementation plan, but do not break it into time frames.
+Read project documentation and guidelines for refactoring proposals.
 Aim to fit the changes within a single sprint.
 Analyse the project deeply from scratch.
 Focus on extracting functionality to reduce the size of the source code files.
 Omit sound generation procedures, it's working properly and we don't want to break it.
-Read project documentation and guidelines for refactoring proposals.
+Don't extend file structure too much, keep as flat as possible.
+Current file structure is acceptable and maintable.
+Search for unused or duplicated code.
 Don't read files in docs/refactoring or docs/prompt directories.
 Use guidelines from docs/ARCHITECT.md and docs/GUIDELINES.md files.
 Use naming convention already used in the project.
@@ -15,7 +19,6 @@ Remember about proper report file name REFACTORING.md in correct directory insid
 Include only a few of the most important fixes to fit into one sprint.
 The proposed changes must be safe and not break anything.
 When creating document, avoid using emoji in section titles.
-Forget about previous refactorings.
 
 ----
 
