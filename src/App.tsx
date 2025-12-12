@@ -470,32 +470,57 @@ const App: React.FC = () => {
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
   const [instrumentPanelFocusRevision, setInstrumentPanelFocusRevision] = useState(0);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isCommandPanelMobileCollapsed, setIsCommandPanelMobileCollapsed] = useState(false);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const computeIsMobile = () => window.innerWidth <= 1100 || window.innerHeight <= 700;
+    const initialIsMobile = computeIsMobile();
+    setIsMobileViewport(initialIsMobile);
+
+    const handleResize = () => {
+      const nextIsMobile = computeIsMobile();
+      setIsMobileViewport(nextIsMobile);
+      if (!nextIsMobile) {
+        setIsCommandPanelMobileCollapsed(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    if (!initialIsMobile) {
+      setIsCommandPanelMobileCollapsed(false);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+
     try {
       const stored = localStorage.getItem('dosound-tracker-command-panel-mobile');
       if (stored === 'collapsed') {
         setIsCommandPanelMobileCollapsed(true);
-        return;
+        return () => window.removeEventListener('resize', handleResize);
       }
       if (stored === 'expanded') {
         setIsCommandPanelMobileCollapsed(false);
-        return;
+        return () => window.removeEventListener('resize', handleResize);
       }
     } catch {
       // ignore
     }
 
-    if (typeof window !== 'undefined') {
-      const isMobile = window.innerWidth <= 1100 || window.innerHeight <= 700;
-      if (isMobile) {
-        setIsCommandPanelMobileCollapsed(true);
-      }
-    }
+    setIsCommandPanelMobileCollapsed(true);
+
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   useEffect(() => {
+    if (!isMobileViewport) {
+      return;
+    }
+
     try {
       localStorage.setItem(
         'dosound-tracker-command-panel-mobile',
@@ -504,7 +529,7 @@ const App: React.FC = () => {
     } catch {
       // ignore
     }
-  }, [isCommandPanelMobileCollapsed]);
+  }, [isCommandPanelMobileCollapsed, isMobileViewport]);
 
   const ensureAudioContextResumed = useCallback(() => {
     if (!audioContext) {
@@ -2649,9 +2674,12 @@ const App: React.FC = () => {
               onShowDownloads={() => setIsDownloadOpen(true)}
               onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
               onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-              onToggleCommandPanelMobile={() =>
-                setIsCommandPanelMobileCollapsed(prev => !prev)
-              }
+              onToggleCommandPanelMobile={() => {
+                if (!isMobileViewport) {
+                  return;
+                }
+                setIsCommandPanelMobileCollapsed(prev => !prev);
+              }}
             />
           }
           commandPanel={
@@ -2694,7 +2722,7 @@ const App: React.FC = () => {
               onShowMidi={handleShowMidi}
               onPickInstrument={handleOpenRepositoryInstrumentPicker}
               onDemoSong={handleDemoSongClick}
-              isMobileCollapsed={isCommandPanelMobileCollapsed}
+              isMobileCollapsed={isMobileViewport && isCommandPanelMobileCollapsed}
             />
           }
           trackerSection={

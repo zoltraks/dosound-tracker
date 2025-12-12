@@ -250,9 +250,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
             onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
             className={`command-btn play-song-btn ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
           >
-            PLAY SONG
+            PLAY
           </button>
-          <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO SONG</button>
+          <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO</button>
           <button
             onClick={onStop}
             className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
