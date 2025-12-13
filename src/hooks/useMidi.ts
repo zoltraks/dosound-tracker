@@ -1,4 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { useMidiDeviceManagement } from './useMidiDeviceManagement';
+import { useMidiMessageProcessing } from './useMidiMessageProcessing';
+import {
+  bytesToHex,
+  formatMidiChannelHex,
+  formatMidiTime,
+  midiNoteNumberToLabel,
+  resolveMidiDeviceName,
+} from '../utils/midiUtils';
 
 export interface MidiConfig {
   inputEnabled: boolean;
@@ -67,10 +76,6 @@ interface RawMidiConfig {
   ignoreOutputVolume?: boolean;
 }
 
-type NavigatorWithMidi = Navigator & {
-  requestMIDIAccess?: (options?: { sysex: boolean }) => Promise<MIDIAccess>;
-};
-
 const isElectronEnv =
   typeof window !== 'undefined' &&
   !!(window as unknown as { electronAPI?: unknown }).electronAPI;
@@ -130,18 +135,9 @@ export function useMidi(
   const currentInputHandlerRef = useRef<((event: MIDIMessageEvent) => void) | null>(null);
   const nextEntryIdRef = useRef<number>(1);
 
-  const formatTime = () => {
-    const now = new Date();
-    const hh = now.getHours().toString().padStart(2, '0');
-    const mm = now.getMinutes().toString().padStart(2, '0');
-    const ss = now.getSeconds().toString().padStart(2, '0');
-    const ms = now.getMilliseconds().toString().padStart(3, '0');
-    return `${hh}:${mm}:${ss}.${ms}`;
-  };
-
   const addInMonitorEntry = useCallback((entry: Omit<MidiMonitorEntry, 'id' | 'time'>) => {
     const id = nextEntryIdRef.current++;
-    const time = formatTime();
+    const time = formatMidiTime();
     setInMonitor(prev => {
       const next = [...prev, { ...entry, id, time }];
       if (next.length > MAX_MONITOR_ENTRIES) {
@@ -153,7 +149,7 @@ export function useMidi(
 
   const addOutMonitorEntry = useCallback((entry: Omit<MidiMonitorEntry, 'id' | 'time'>) => {
     const id = nextEntryIdRef.current++;
-    const time = formatTime();
+    const time = formatMidiTime();
     setOutMonitor(prev => {
       const next = [...prev, { ...entry, id, time }];
       if (next.length > MAX_MONITOR_ENTRIES) {
@@ -167,102 +163,6 @@ export function useMidi(
     setInMonitor([]);
     setOutMonitor([]);
   }, []);
-
-  const scanDevices = useCallback(() => {
-    const access = midiAccessRef.current;
-    if (!access) {
-      setDevices({ inputs: [], outputs: [] });
-      return;
-    }
-
-    const inputs: MidiDeviceInfo[] = [];
-    const outputs: MidiDeviceInfo[] = [];
-
-    try {
-      const inputIterator: IterableIterator<MIDIInput> | null =
-        access.inputs && typeof access.inputs.values === 'function'
-          ? access.inputs.values()
-          : null;
-      if (inputIterator) {
-        while (true) {
-          const result = inputIterator.next();
-          if (result.done) break;
-          const input = result.value;
-          if (input && typeof input.id === 'string') {
-            inputs.push({
-              id: input.id,
-              name: typeof input.name === 'string' && input.name.trim().length > 0
-                ? input.name
-                : `Input ${inputs.length + 1}`,
-            });
-          }
-        }
-      }
-
-      const outputIterator: IterableIterator<MIDIOutput> | null =
-        access.outputs && typeof access.outputs.values === 'function'
-          ? access.outputs.values()
-          : null;
-      if (outputIterator) {
-        while (true) {
-          const result = outputIterator.next();
-          if (result.done) break;
-          const output = result.value;
-          if (output && typeof output.id === 'string') {
-            outputs.push({
-              id: output.id,
-              name: typeof output.name === 'string' && output.name.trim().length > 0
-                ? output.name
-                : `Output ${outputs.length + 1}`,
-            });
-          }
-        }
-      }
-    } catch {
-      // Ignore device enumeration errors
-    }
-
-    setDevices({ inputs, outputs });
-  }, []);
-
-  const refreshDevices = useCallback(() => {
-    const access = midiAccessRef.current;
-    if (access) {
-      scanDevices();
-      return;
-    }
-
-    if (typeof navigator === 'undefined') {
-      return;
-    }
-
-    const nav = navigator as NavigatorWithMidi;
-    if (typeof nav.requestMIDIAccess !== 'function') {
-      return;
-    }
-
-    nav.requestMIDIAccess({ sysex: false })
-      .then(newAccess => {
-        midiAccessRef.current = newAccess;
-        setIsSupported(true);
-        setAccessError(null);
-        scanDevices();
-
-        try {
-          newAccess.onstatechange = () => {
-            scanDevices();
-          };
-        } catch {
-          // ignore onstatechange errors
-        }
-      })
-      .catch((error: unknown) => {
-        setIsSupported(false);
-        const message = error instanceof Error ? error.message : String(error);
-        setAccessError(message);
-        setDevices({ inputs: [], outputs: [] });
-      });
-  }, [scanDevices]);
 
   const setConfig = useCallback((next: MidiConfig) => {
     setConfigState(next);
@@ -281,201 +181,14 @@ export function useMidi(
     }
   }, []);
 
-  const resolveDeviceName = useCallback(
-    (id: string | null, fallback: string): string => {
-      if (!id) return fallback;
-      const all = [...devices.inputs, ...devices.outputs];
-      const found = all.find(d => d.id === id);
-      return found?.name || fallback;
-    },
-    [devices.inputs, devices.outputs]
-  );
 
-  const handleMidiMessage = useCallback((event: MIDIMessageEvent) => {
-    if (!event || !event.data || !(event.data instanceof Uint8Array)) {
-      return;
-    }
-
-    const data: number[] = Array.from(event.data);
-    if (data.length === 0) return;
-
-    const status = data[0] | 0;
-    const data1 = data.length >= 2 ? data[1] | 0 : 0;
-    const data2 = data.length >= 3 ? data[2] | 0 : 0;
-
-    const command = status & 0xf0;
-    const channel = (status & 0x0f) + 1; // 1-16
-
-    const dataHex = data
-      .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-      .join(' ');
-
-    const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
-
-    const time = formatTime();
-
-    let debugOn = false;
-    try {
-      debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
-    } catch {
-      debugOn = false;
-    }
-
-    let type = 'Unknown';
-    let noteLabel = '';
-    let value: number | null = null;
-
-    let deviceId: string = config.inputId || '';
-    const target = event.target as MIDIInput | null;
-    if (target && typeof target.id === 'string') {
-      deviceId = target.id;
-    }
-    const deviceName = resolveDeviceName(deviceId || null, 'MIDI In');
-
-    if (command === 0x80 || (command === 0x90 && data2 === 0)) {
-      type = 'Note Off';
-      const noteNumber = data1;
-      const midiOctave = Math.floor(noteNumber / 12) - 1;
-      const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-      const noteName = noteNames[noteNumber % 12] || 'C';
-      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-      noteLabel = `${noteBase}${midiOctave}`;
-      value = data2;
-
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          velocity: data2,
-          type,
-          status,
-          data: dataHex,
-          device: deviceName,
-        });
-      }
-
-      onNoteEvent({
-        type: 'noteOff',
-        noteNumber,
-        noteName,
-        octave: midiOctave,
-        velocity: data2,
-        channel,
-        deviceId,
-        deviceName,
-      });
-    } else if (command === 0x90) {
-      type = 'Note On';
-      const noteNumber = data1;
-      const midiOctave = Math.floor(noteNumber / 12) - 1;
-      const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-      const noteName = noteNames[noteNumber % 12] || 'C';
-      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-      noteLabel = `${noteBase}${midiOctave}`;
-      value = data2;
-
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          velocity: data2,
-          type,
-          status,
-          data: dataHex,
-          device: deviceName,
-        });
-      }
-
-      onNoteEvent({
-        type: 'noteOn',
-        noteNumber,
-        noteName,
-        octave: midiOctave,
-        velocity: data2,
-        channel,
-        deviceId,
-        deviceName,
-      });
-    } else if (command === 0xb0) {
-      type = 'Control Change';
-      noteLabel = `CC ${data1}`;
-      value = data2;
-
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          value,
-          type,
-          status,
-          data: dataHex,
-          device: deviceName,
-        });
-      }
-    } else {
-      type = 'Other';
-      noteLabel = '';
-      value = null;
-
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
-          time,
-          type,
-          data: dataHex,
-          channel,
-          device: deviceName,
-          note: noteLabel,
-          value,
-          status,
-        });
-      }
-    }
-  }, [
-    addInMonitorEntry,
-    config.inputId,
+  const { handleMidiMessage } = useMidiMessageProcessing({
+    config,
+    devices,
     enableMonitors,
+    addInMonitorEntry,
     onNoteEvent,
-    resolveDeviceName,
-  ]);
+  });
 
   const sendNoteMessage = useCallback(
     (
@@ -501,18 +214,13 @@ export function useMidi(
 
       const bytes = [status, clampedNote, vel];
 
-      const dataHex = bytes
-        .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-        .join(' ');
+      const dataHex = bytesToHex(bytes);
 
-      const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
-      const outputDeviceName = resolveDeviceName(config.outputId ?? null, 'MIDI Out');
+      const channelHex = formatMidiChannelHex(safeChannel);
+      const outputDeviceName = resolveMidiDeviceName(devices, config.outputId ?? null, 'MIDI Out');
 
-      const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-      const midiOctave = Math.floor(clampedNote / 12) - 1;
-      const noteName = noteNames[clampedNote % 12] || 'C';
-      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-      const noteLabel = `${noteBase}${midiOctave}`;
+      const noteInfo = midiNoteNumberToLabel(clampedNote);
+      const noteLabel = noteInfo.label;
 
       const type = kind === 'noteOn' ? 'Note On' : 'Note Off';
 
@@ -533,7 +241,7 @@ export function useMidi(
       }
 
       if (debugOn && enableMonitors) {
-        const time = formatTime();
+        const time = formatMidiTime();
         console.log('MIDI OUT', {
           time,
           note: noteLabel,
@@ -562,8 +270,8 @@ export function useMidi(
       config.ignoreOutputVolume,
       config.outputEnabled,
       config.outputId,
+      devices,
       enableMonitors,
-      resolveDeviceName,
     ]);
 
   const sendNoteOn = useCallback(
@@ -592,12 +300,10 @@ export function useMidi(
       const status = 0xC0 | ((safeChannel - 1) & 0x0f);
       const bytes = [status, clampedProgram];
 
-      const dataHex = bytes
-        .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-        .join(' ');
+      const dataHex = bytesToHex(bytes);
 
-      const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
-      const outputDeviceName = resolveDeviceName(config.outputId ?? null, 'MIDI Out');
+      const channelHex = formatMidiChannelHex(safeChannel);
+      const outputDeviceName = resolveMidiDeviceName(devices, config.outputId ?? null, 'MIDI Out');
 
       const type = 'Program Change';
       const noteLabel = `PC ${clampedProgram}`;
@@ -619,7 +325,7 @@ export function useMidi(
       }
 
       if (debugOn && enableMonitors) {
-        const time = formatTime();
+        const time = formatMidiTime();
         console.log('MIDI OUT', {
           time,
           note: noteLabel,
@@ -647,8 +353,8 @@ export function useMidi(
       addOutMonitorEntry,
       config.outputEnabled,
       config.outputId,
+      devices,
       enableMonitors,
-      resolveDeviceName,
     ]);
 
   const sendSystemReset = useCallback(() => {
@@ -664,11 +370,9 @@ export function useMidi(
     const status = 0xff;
     const bytes = [status];
 
-    const dataHex = bytes
-      .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-      .join(' ');
+    const dataHex = bytesToHex(bytes);
 
-    const outputDeviceName = resolveDeviceName(config.outputId ?? null, 'MIDI Out');
+    const outputDeviceName = resolveMidiDeviceName(devices, config.outputId ?? null, 'MIDI Out');
 
     addOutMonitorEntry({
       data: dataHex,
@@ -687,7 +391,7 @@ export function useMidi(
     }
 
     if (debugOn && enableMonitors) {
-      const time = formatTime();
+      const time = formatMidiTime();
       console.log('MIDI OUT', {
         time,
         type: 'System Reset',
@@ -707,261 +411,23 @@ export function useMidi(
     addOutMonitorEntry,
     config.outputEnabled,
     config.outputId,
+    devices,
     enableMonitors,
-    resolveDeviceName,
   ]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const markUnsupported = (message: string) => {
-      Promise.resolve().then(() => {
-        if (cancelled) {
-          return;
-        }
-        setIsSupported(false);
-        setAccessError(message);
-        setDevices({ inputs: [], outputs: [] });
-      });
-    };
-
-    if (typeof navigator === 'undefined') {
-      markUnsupported('Navigator is not available in this environment.');
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    const nav = navigator as NavigatorWithMidi;
-    if (typeof nav.requestMIDIAccess !== 'function') {
-      markUnsupported('Web MIDI API is not supported in this browser.');
-      return () => {
-        cancelled = true;
-      };
-    }
-
-    nav.requestMIDIAccess({ sysex: false })
-      .then(access => {
-        if (cancelled) return;
-        midiAccessRef.current = access;
-        setIsSupported(true);
-        setAccessError(null);
-        scanDevices();
-
-        try {
-          access.onstatechange = () => {
-            scanDevices();
-          };
-        } catch {
-          // ignore onstatechange errors
-        }
-      })
-      .catch((error: unknown) => {
-        if (cancelled) return;
-        setIsSupported(false);
-        const message = error instanceof Error ? error.message : String(error);
-        setAccessError(message);
-      });
-
-    return () => {
-      cancelled = true;
-      const input = currentInputRef.current;
-      const handler = currentInputHandlerRef.current;
-      if (input && handler) {
-        if (typeof input.removeEventListener === 'function') {
-          try {
-            input.removeEventListener('midimessage', handler);
-          } catch {
-            // ignore
-          }
-        } else if ('onmidimessage' in input) {
-          try {
-            (input as MIDIInput).onmidimessage = null;
-          } catch {
-            // ignore
-          }
-        }
-      }
-
-      // Explicitly close the currently active input and output ports so the
-      // underlying MIDI devices can be reused by other applications once the
-      // tracker is no longer using them.
-      try {
-        if (input && typeof input.close === 'function') {
-          input.close();
-        }
-      } catch {
-        // ignore
-      }
-
-      const output = currentOutputRef.current;
-      try {
-        if (output && typeof output.close === 'function') {
-          output.close();
-        }
-      } catch {
-        // ignore
-      }
-      currentInputRef.current = null;
-      currentOutputRef.current = null;
-    };
-  }, [scanDevices]);
-
-  useEffect(() => {
-    const access = midiAccessRef.current;
-    if (!access) {
-      return;
-    }
-
-    let nextInput: MIDIInput | null = null;
-    if (config.inputEnabled && config.inputId) {
-      try {
-        const rawInput = access.inputs && typeof access.inputs.get === 'function'
-          ? access.inputs.get(config.inputId)
-          : null;
-        nextInput = rawInput ?? null;
-      } catch {
-        nextInput = null;
-      }
-    }
-
-    const previousInput = currentInputRef.current;
-    const previousHandler = currentInputHandlerRef.current;
-
-    // Always detach the previous handler if present to avoid duplicates.
-    if (previousInput && previousHandler) {
-      if (typeof previousInput.removeEventListener === 'function') {
-        try {
-          previousInput.removeEventListener('midimessage', previousHandler);
-        } catch {
-          // ignore
-        }
-      } else if ('onmidimessage' in previousInput) {
-        try {
-          (previousInput as MIDIInput).onmidimessage = null;
-        } catch {
-          // ignore
-        }
-      }
-    }
-
-    // When switching away from a previously selected input (or disabling
-    // input altogether), close the old port so the OS can release the
-    // underlying device for other software.
-    if (previousInput && previousInput !== nextInput) {
-      try {
-        if (typeof previousInput.close === 'function') {
-          previousInput.close();
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    currentInputRef.current = nextInput;
-    currentInputHandlerRef.current = null;
-
-    if (nextInput && config.inputEnabled) {
-      try {
-        // Ensure the selected input port is opened before attaching the
-        // message listener so we only actively acquire the device when it is
-        // enabled in the configuration.
-        try {
-          if (typeof nextInput.open === 'function') {
-            const result = nextInput.open();
-            if (result && typeof result.then === 'function') {
-              result.catch(() => {
-                // ignore open errors
-              });
-            }
-          }
-        } catch {
-          // ignore open errors
-        }
-
-        if (typeof nextInput.addEventListener === 'function') {
-          nextInput.addEventListener('midimessage', handleMidiMessage);
-        } else {
-          (nextInput as MIDIInput).onmidimessage = handleMidiMessage;
-        }
-        currentInputHandlerRef.current = handleMidiMessage;
-      } catch {
-        // ignore listener errors
-      }
-    }
-  }, [config.inputEnabled, config.inputId, handleMidiMessage]);
-
-  useEffect(() => {
-    const access = midiAccessRef.current;
-    if (!access) {
-      const previousOutput = currentOutputRef.current;
-      if (previousOutput) {
-        // If MIDI access disappears (e.g. permissions revoked), make sure any
-        // previously selected output port is closed so the device is released.
-        try {
-          if (typeof previousOutput.close === 'function') {
-            previousOutput.close();
-          }
-        } catch {
-          // ignore
-        }
-      }
-      currentOutputRef.current = null;
-      return;
-    }
-
-    let nextOutput: MIDIOutput | null = null;
-    if (config.outputEnabled && config.outputId) {
-      try {
-        const rawOutput = access.outputs && typeof access.outputs.get === 'function'
-          ? access.outputs.get(config.outputId)
-          : null;
-        nextOutput = rawOutput ?? null;
-      } catch {
-        nextOutput = null;
-      }
-    }
-
-    const previousOutput = currentOutputRef.current;
-    if (previousOutput && previousOutput !== nextOutput) {
-      // Close the previously selected output port when changing devices or
-      // disabling output so that the underlying MIDI device is no longer held
-      // exclusively by this application.
-      try {
-        if (typeof previousOutput.close === 'function') {
-          previousOutput.close();
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    if (nextOutput && config.outputEnabled) {
-      // Explicitly open the selected output port only when output is enabled
-      // so we avoid acquiring devices that are not in active use.
-      try {
-        if (typeof nextOutput.open === 'function') {
-          const result = nextOutput.open();
-          if (result && typeof result.then === 'function') {
-            result.catch(() => {
-              // ignore open errors
-            });
-          }
-        }
-      } catch {
-        // ignore open errors
-      }
-    }
-
-    currentOutputRef.current = nextOutput;
-
-    // Automatically send a System Reset whenever output becomes active on a
-    // specific device in browser builds. In Electron on macOS this can cause
-    // freezes on some systems, so we skip the auto-reset there.
-    if (!isElectronEnv && nextOutput && config.outputEnabled && nextOutput !== previousOutput) {
-      sendSystemReset();
-    }
-  }, [config.outputEnabled, config.outputId, sendSystemReset]);
+  const deviceManagement = useMidiDeviceManagement({
+    config,
+    midiAccessRef,
+    currentInputRef,
+    currentOutputRef,
+    currentInputHandlerRef,
+    setIsSupported,
+    setAccessError,
+    setDevices,
+    handleMidiMessage,
+    isElectronEnv,
+    sendSystemReset,
+  });
 
   return {
     isSupported,
@@ -972,7 +438,7 @@ export function useMidi(
     inMonitor,
     outMonitor,
     clearMonitors,
-    refreshDevices,
+    refreshDevices: deviceManagement.refreshDevices,
     sendNoteOn,
     sendNoteOff,
     sendProgramChange,

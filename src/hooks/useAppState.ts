@@ -24,6 +24,32 @@ export interface UseAppStateResult {
 }
 
 export function useAppState(): UseAppStateResult {
+  const initialTransposeSettings = useCallback(() => {
+    try {
+      const raw = localStorage.getItem('dosound-tracker-transpose-settings');
+      if (!raw) return null;
+
+      const parsed: unknown = JSON.parse(raw);
+      if (!parsed || typeof parsed !== 'object') return null;
+
+      const obj = parsed as {
+        scope?: 'line' | 'song';
+        trackScope?: 'current' | 'all';
+        instrumentScope?: 'all' | 'selected';
+        amount?: number;
+      };
+
+      return {
+        scope: obj.scope,
+        trackScope: obj.trackScope,
+        instrumentScope: obj.instrumentScope,
+        amount: obj.amount,
+      };
+    } catch {
+      return null;
+    }
+  }, []);
+
   const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem('dosound-tracker-debug-mode');
@@ -82,11 +108,32 @@ export function useAppState(): UseAppStateResult {
     []
   );
 
-  const [transposeScope, setTransposeScope] = useState<'line' | 'song'>('line');
-  const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
-  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>('all');
-  const [transposeAmount, setTransposeAmount] = useState<number>(0);
-  const [transposeAmountInput, setTransposeAmountInput] = useState<string>('0');
+  const [transposeScope, setTransposeScope] = useState<'line' | 'song'>(() => {
+    const settings = initialTransposeSettings();
+    return settings?.scope === 'line' || settings?.scope === 'song' ? settings.scope : 'line';
+  });
+  const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>(() => {
+    const settings = initialTransposeSettings();
+    return settings?.trackScope === 'current' || settings?.trackScope === 'all'
+      ? settings.trackScope
+      : 'current';
+  });
+  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>(() => {
+    const settings = initialTransposeSettings();
+    return settings?.instrumentScope === 'all' || settings?.instrumentScope === 'selected'
+      ? settings.instrumentScope
+      : 'all';
+  });
+  const [transposeAmount, setTransposeAmount] = useState<number>(() => {
+    const settings = initialTransposeSettings();
+    return typeof settings?.amount === 'number' && Number.isFinite(settings.amount) ? settings.amount : 0;
+  });
+  const [transposeAmountInput, setTransposeAmountInput] = useState<string>(() => {
+    const settings = initialTransposeSettings();
+    return typeof settings?.amount === 'number' && Number.isFinite(settings.amount)
+      ? String(settings.amount)
+      : '0';
+  });
 
   useEffect(() => {
     try {
@@ -111,41 +158,6 @@ export function useAppState(): UseAppStateResult {
       // ignore
     }
   }, [exportStrategy]);
-
-  // Load transpose settings from localStorage on startup so they persist
-  // until the application is fully reset (RESET clears localStorage and reloads).
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('dosound-tracker-transpose-settings');
-      if (!raw) return;
-
-      const parsed: unknown = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        const obj = parsed as {
-          scope?: 'line' | 'song';
-          trackScope?: 'current' | 'all';
-          instrumentScope?: 'all' | 'selected';
-          amount?: number;
-        };
-
-        if (obj.scope === 'line' || obj.scope === 'song') {
-          setTransposeScope(obj.scope);
-        }
-        if (obj.trackScope === 'current' || obj.trackScope === 'all') {
-          setTransposeTrackScope(obj.trackScope);
-        }
-        if (obj.instrumentScope === 'all' || obj.instrumentScope === 'selected') {
-          setTransposeInstrumentScope(obj.instrumentScope);
-        }
-        if (typeof obj.amount === 'number' && Number.isFinite(obj.amount)) {
-          setTransposeAmount(obj.amount);
-          setTransposeAmountInput(String(obj.amount));
-        }
-      }
-    } catch {
-      // ignore
-    }
-  }, []);
 
   // Persist transpose settings whenever they change so they survive reloads
   // until the RESET action clears localStorage.

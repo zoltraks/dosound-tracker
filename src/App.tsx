@@ -17,8 +17,8 @@ import { useModalState } from './hooks/useModalState';
 import { useInstrumentWarnings } from './hooks/useInstrumentWarnings';
 import { useInstrumentActions } from './hooks/useInstrumentActions';
 import { useDownloadAvailability } from './hooks/useDownloadAvailability';
-import { YM2149 } from './synth/YM2149';
-import type { SequencerState } from './hooks/useSequencer';
+import { useSequencerIntegration } from './hooks/useSequencerIntegration';
+import type { YM2149 } from './synth/YM2149';
 import type { Instrument, Note, Pattern } from './synth/SoundDriver';
 import type { MidiConfig } from './hooks/useMidi';
 import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
@@ -439,6 +439,7 @@ const App: React.FC = () => {
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
   const { audioContext, ym2149Ref } = useAudioSetup();
+  const [ym2149Instance, setYm2149Instance] = useState<YM2149 | null>(null);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
@@ -584,465 +585,6 @@ const App: React.FC = () => {
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   } | null>(null);
 
-  // Handle stop playback with silence
-  const handleStopPlayback = useCallback(() => {
-    // Reset cycle counters when stopping
-    channelSubTickRef.current = [0, 0, 0];
-    channelEnvelopeStepRef.current = [0, 0, 0];
-    lastNotesRef.current = [null, null, null];
-    lastSequencerPositionRef.current = null;
-    channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
-    channelSustainRef.current = [null, null, null];
-    channelReleasedRef.current = [false, false, false];
-    debugTickCounterRef.current = 0;
-    debugLastRowRef.current = null;
-    debugLastTimeRef.current = null;
-    // Send MIDI Note Off for any active playback notes so external
-    // devices do not get stuck notes when playback stops.
-    const helpers = midiHelpersRef.current;
-    if (helpers) {
-      for (let ch = 0; ch < 3; ch += 1) {
-        helpers.sendInstrumentMidiNoteOffForChannel(ch);
-      }
-    }
-    
-    // Silence all channels
-    if (ym2149Ref.current) {
-      ym2149Ref.current.silenceAll();
-    }
-  }, []);
-
-  // Basic sequencer callback for playback
-  const sequencerCallback = useCallback((state: SequencerState) => {
-    const lastUiRow = lastUiRowRef.current;
-    if (
-      !lastUiRow ||
-      lastUiRow.pattern !== state.currentPattern ||
-      lastUiRow.line !== state.currentLine
-    ) {
-      lastUiRowRef.current = {
-        pattern: state.currentPattern,
-        line: state.currentLine
-      };
-      setSharedCurrentLine(state.currentLine);
-    }
-
-    const nextIsLinePlaying = state.isPatternLoop && state.isPlaying;
-    if (linePlayingRef.current !== nextIsLinePlaying) {
-      linePlayingRef.current = nextIsLinePlaying;
-      setIsLinePlaying(nextIsLinePlaying);
-    }
-
-    if (ym2149Ref.current) {
-      const ym2149 = ym2149Ref.current;
-
-      const wasPlaying = wasPlayingRef.current;
-
-      if (!state.isPlaying) {
-        if (wasPlaying) {
-          handleStopPlayback();
-        }
-        wasPlayingRef.current = false;
-        lastSequencerPositionRef.current = null;
-        return;
-      }
-
-      wasPlayingRef.current = true;
-
-      // Count each timing tick (20ms VBLANK) while playing so we can derive
-      // 40ms debug cycles independent of pattern/row boundaries.
-      debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
-
-      const lastPos = lastSequencerPositionRef.current;
-      const wrappedOrJumped =
-        lastPos && state.currentPattern !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
-
-      // Detect if this is the first tick after starting playback
-      const isFirstTick = !lastPos;
-
-      lastSequencerPositionRef.current = {
-        pattern: state.currentPattern,
-        line: state.currentLine
-      };
-
-      if (wrappedOrJumped || isFirstTick) {
-        // Debug: Log pattern wraps with timing
-        if (wrappedOrJumped && lastPos) {
-          const now = performance.now();
-          console.log(`[DEBUG] Pattern wrap detected: ${lastPos.pattern} -> ${state.currentPattern} at ${now.toFixed(2)}ms, line ${state.currentLine}, tick ${state.currentTick}`);
-        }
-        
-        // Always reset sub-tick timing on wrap/jump or first tick so 40ms
-        // envelope steps realign, but avoid forcibly clearing notes just
-        // because the playlist advanced to the next pattern.
-        channelSubTickRef.current = [0, 0, 0];
-
-        // On the very first tick after starting playback, reset envelopes,
-        // notes, sustain state and per-channel volume modifiers so that any
-        // stale state from a previous run does not leak into the new one.
-        if (isFirstTick) {
-          channelEnvelopeStepRef.current = [0, 0, 0];
-          lastNotesRef.current = [null, null, null];
-          channelSustainRef.current = [null, null, null];
-          channelReleasedRef.current = [false, false, false];
-          channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
-          debugTickCounterRef.current = 0;
-          debugLastRowRef.current = null;
-        }
-      }
-
-      const playlistLength = currentSong.playlist.length;
-
-      if (playlistLength === 0) {
-        stop();
-        handleStopPlayback();
-        return;
-      }
-
-      const effectivePatternIndex = state.currentPattern;
-
-      if (effectivePatternIndex < 0 || effectivePatternIndex >= playlistLength) {
-        const rawLoop = currentSong.loop;
-        const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
-
-        if (!hasLoop) {
-          handleStopPlayback();
-          setPosition(0, 0, 0);
-          stop();
-          return;
-        }
-
-        // When a valid loop is defined, the worker will wrap the playlist
-        // index internally using playlistLength and loopIndex, so we should
-        // never observe an out-of-range pattern here in normal operation.
-        // Leave effectivePatternIndex unchanged so we do not introduce any
-        // additional timing jitter; this branch effectively acts as a safety
-        // net only.
-      }
-
-      const currentPlaylistEntry = currentSong.playlist[effectivePatternIndex];
-      
-      if (currentPlaylistEntry) {
-        // Get pattern data for each track
-        const patternA = currentPlaylistEntry.trackA ? patternsById.get(currentPlaylistEntry.trackA) : undefined;
-        const patternB = currentPlaylistEntry.trackB ? patternsById.get(currentPlaylistEntry.trackB) : undefined;
-        const patternC = currentPlaylistEntry.trackC ? patternsById.get(currentPlaylistEntry.trackC) : undefined;
-        
-        // Allow playback even if some tracks are empty (using --)
-        // Get current line data (patterns are track-agnostic - read trackA data for any track)
-        const lineA = patternA?.lines[state.currentLine];
-        const lineB = patternB?.lines[state.currentLine];
-        const lineC = patternC?.lines[state.currentLine];
-
-        const noteA = lineA?.trackA || null;
-        const noteB = patternB ? (lineB?.trackA || null) : null; // Read trackA for track B
-        const noteC = patternC ? (lineC?.trackA || null) : null; // Read trackA for track C
-
-        const notes = [noteA, noteB, noteC];
-        const patterns = [patternA, patternB, patternC];
-        const volumes = [
-          lineA?.volume,
-          patternB ? lineB?.volume : undefined,
-          patternC ? lineC?.volume : undefined
-        ];
-        const lastNotes = lastNotesRef.current;
-
-        const lastLogged = debugLastRowRef.current;
-        const shouldLogRow =
-          isDebugMode &&
-          state.isPlaying &&
-          (!lastLogged ||
-            lastLogged.pattern !== effectivePatternIndex ||
-            lastLogged.line !== state.currentLine);
-
-        if (shouldLogRow) {
-          try {
-            const now = new Date();
-            const hh = String(now.getHours()).padStart(2, '0');
-            const mm = String(now.getMinutes()).padStart(2, '0');
-            const ss = String(now.getSeconds()).padStart(2, '0');
-            const ms = String(now.getMilliseconds()).padStart(3, '0');
-            const timeStr = `${hh}:${mm}:${ss}.${ms}`;
-
-            const nowMs = now.getTime();
-            const lastMs = debugLastTimeRef.current;
-            const rawDelta = lastMs != null ? nowMs - lastMs : 0;
-            const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
-            const deltaStr = String(clampedDelta).padStart(3, '0');
-
-            // Each worker tick is ~20ms; treat two ticks (40ms) as one cycle.
-            const tickCount = debugTickCounterRef.current;
-            const cycle = Math.floor(tickCount / 2) & 0xffff;
-            const cycleHex = cycle.toString(16).toUpperCase().padStart(4, '0');
-            const stepHex = state.currentLine.toString(16).toUpperCase().padStart(2, '0');
-
-            const channelStrings = [0, 1, 2].map(ch => {
-              const noteOnRow = notes[ch];
-              const volumeOnRow = volumes[ch];
-
-              let volText: string;
-              if (volumeOnRow === undefined || volumeOnRow === null) {
-                volText = '-';
-              } else {
-                const clampedVol = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-                volText = clampedVol.toString(16).toUpperCase();
-              }
-
-              if (!noteOnRow) {
-                return `--- -- ${volText}`;
-              }
-
-              if (noteOnRow.note === '===') {
-                return `=== -- ${volText}`;
-              }
-
-              const baseNote = noteOnRow.note || '';
-              const formattedNote = baseNote.includes('#') ? baseNote : `${baseNote}-`;
-              const noteText = `${formattedNote}${noteOnRow.octave}`;
-              const rawInst = noteOnRow.instrument as unknown;
-              let instText = '';
-
-              if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
-                instText = rawInst.toString(16).padStart(2, '0').toUpperCase();
-              } else if (typeof rawInst === 'string') {
-                const trimmed = rawInst.trim();
-                if (trimmed) {
-                  const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-                  const upper = sanitized.toUpperCase();
-                  if (/^[0-9A-F]{1,2}$/.test(upper)) {
-                    instText = upper.padStart(2, '0');
-                  } else {
-                    instText = upper;
-                  }
-                }
-              }
-
-              const safeInst = instText && instText.trim().length > 0 ? instText : '--';
-              return `${noteText} ${safeInst} ${volText}`;
-            });
-
-            const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
-            setTimeout(() => console.log(debugLine), 0);
-            debugLastRowRef.current = {
-              pattern: effectivePatternIndex,
-              line: state.currentLine
-            };
-            debugLastTimeRef.current = nowMs;
-          } catch (error) {
-            console.error('Debug logging failed:', error);
-          }
-        }
-
-        for (let ch = 0; ch < 3; ch++) {
-          if (channelMutes[ch]) {
-            const volumeRegister = 8 + ch;
-            ym2149.writeRegister(volumeRegister, 0x00);
-            continue;
-          }
-
-          const pattern = patterns[ch];
-          const noteOnRow = notes[ch];
-          const volumeOnRow = volumes[ch];
-          const last = lastNotes[ch];
-
-          // If no pattern is assigned on this channel for the current
-          // playlist position, treat it as sustain/no-op: keep any
-          // previously playing note sounding instead of forcing an
-          // immediate rest here. Initial startup silence is still
-          // handled separately by the isFirstTick logic below.
-          if (!pattern) {
-            // Nothing to do on this row for this channel; fall through so
-            // envelope timing and note-hold behaviour continue unchanged.
-          }
-
-          // Explicit note-off event on this row. Only act on the first
-          // tick of the row so we match the offline export logic.
-          if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
-            // For MIDI output, treat this as an explicit key release and
-            // send a matching Note Off for any active note on this
-            // playback channel.
-            const helpers = midiHelpersRef.current;
-            if (helpers) {
-              helpers.sendInstrumentMidiNoteOffForChannel(ch);
-            }
-
-            const sustainIndex = channelSustainRef.current[ch];
-
-            if (
-              sustainIndex === null ||
-              sustainIndex === undefined ||
-              sustainIndex < 0 ||
-              !last
-            ) {
-              // No sustain defined (or no active note) - treat as hard mute
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
-              updateChannelWithInstrument(ym2149, ch, null, 0);
-              lastNotes[ch] = null;
-              channelSustainRef.current[ch] = null;
-              channelReleasedRef.current[ch] = false;
-              continue;
-            }
-
-            // Instrument has a sustain point and a note is active: this
-            // note-off acts as a release trigger instead of an immediate
-            // mute. Keep holding the last note and allow the envelope to
-            // continue past the sustain position.
-            channelReleasedRef.current[ch] = true;
-            // Do not reset envelope step or clear lastNotes; fall through
-          }
-
-          // On the very first tick after starting playback, if there is no
-          // explicit note on this row, ensure the channel starts from a
-          // silent state so we do not accidentally reuse a stale note from a
-          // previous run. Afterwards, notes are allowed to sustain naturally
-          // across pattern boundaries unless an explicit note-off or rest is
-          // present in the data.
-          if (isFirstTick && !noteOnRow) {
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(ym2149, ch, null, 0);
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
-            continue;
-          }
-
-          // Determine active note: explicit note on this row if present, otherwise
-          // continue holding the last active note.
-          let activeNote: Note | null = last;
-          const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
-
-          // Update per-channel volume modifier when a volume nibble is present on this row.
-          if (volumeOnRow !== undefined && volumeOnRow !== null) {
-            const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-            channelVolumeModifierRef.current[ch] = clamped;
-          }
-
-          if (hasExplicitNote) {
-            // New explicit note on this row
-            activeNote = noteOnRow;
-
-            // Retrigger envelopes and send MIDI output only on the first tick of the
-            // row so that the same note is not re-sent multiple times when
-            // ticksPerRow > 1.
-            if (state.currentTick === 0) {
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
-
-              // Resolve sustain position for the instrument used by this note.
-              const instId = activeNote && typeof activeNote.instrument === 'string'
-                ? activeNote.instrument
-                : '';
-              const instrument = instrumentsById.get(instId);
-              const rawSustain = instrument?.sustain ?? null;
-              if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
-                channelSustainRef.current[ch] = Math.floor(rawSustain);
-              } else {
-                channelSustainRef.current[ch] = null;
-              }
-              channelReleasedRef.current[ch] = false;
-
-              let volumeForMidi: number | null = null;
-              if (volumeOnRow !== undefined && volumeOnRow !== null) {
-                volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-              }
-
-              if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
-                const helpers = midiHelpersRef.current;
-                if (helpers) {
-                  helpers.sendInstrumentMidiNoteOn(
-                    ch,
-                    instrument,
-                    activeNote.note,
-                    activeNote.octave,
-                    volumeForMidi
-                  );
-                }
-              }
-            }
-          }
-
-          if (activeNote && activeNote.note && activeNote.note !== '===') {
-            // Use current step as envelope tick (so a freshly triggered note
-            // starts at step 0, matching the piano keyboard behaviour), then
-            // advance the step every 40ms (every 2 x 20ms ticks).
-            const rawStep = channelEnvelopeStepRef.current[ch];
-            const sustainIndex = channelSustainRef.current[ch];
-            const isReleased = channelReleasedRef.current[ch];
-
-            // While the key is held and a sustain index is defined, clamp
-            // the effective envelope position at the sustain step. Once a
-            // key-release has occurred while at or before sustain, jump to
-            // the first post-sustain step immediately for this tick.
-            let step = rawStep;
-            const hasSustain =
-              sustainIndex !== null &&
-              sustainIndex !== undefined &&
-              sustainIndex >= 0;
-
-            if (hasSustain) {
-              if (!isReleased && rawStep >= sustainIndex) {
-                step = sustainIndex;
-              } else if (isReleased && rawStep <= sustainIndex) {
-                step = sustainIndex + 1;
-              }
-            }
-            const volumeModifier = channelVolumeModifierRef.current[ch];
-
-            updateChannelWithInstrument(ym2149, ch, activeNote, step, volumeModifier);
-
-            // Envelope progression at 25 Hz: only advance on every second tick
-            const sub = (channelSubTickRef.current[ch] + 1) % 2;
-            channelSubTickRef.current[ch] = sub;
-            if (sub === 0) {
-              // Advance the underlying envelope step only if either there is
-              // no sustain point, the note has been released, or we have
-              // not yet reached the sustain index. This implements a
-              // classic hold-at-sustain-until-release behaviour.
-              if (
-                sustainIndex === null ||
-                sustainIndex === undefined ||
-                sustainIndex < 0 ||
-                isReleased ||
-                rawStep < sustainIndex
-              ) {
-                channelEnvelopeStepRef.current[ch] = rawStep + 1;
-              }
-            }
-            lastNotes[ch] = activeNote;
-          } else {
-            // No active note at all. Explicit rests and hard mutes are
-            // already handled above (no pattern, note-off without
-            // sustain, or initial startup row). Leaving the YM2149
-            // registers as-is here avoids brief drop-outs if state
-            // transiently reports no note for a single tick.
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
-          }
-        }
-      }
-    }
-  }, [
-    setSharedCurrentLine,
-    setIsLinePlaying,
-    currentSong,
-    stop,
-    handleStopPlayback,
-    setPosition,
-    channelMutes,
-    isDebugMode,
-    instrumentsById
-  ]);
-
-  // Register sequencer callback
-  useEffect(() => {
-    setCallback(sequencerCallback);
-  }, [setCallback, sequencerCallback]);
-
   const normalizeInstrumentId = useCallback((value?: string | number | null) => {
     if (typeof value === 'number' && Number.isFinite(value)) {
       return value.toString(16).padStart(2, '0').toUpperCase();
@@ -1079,42 +621,52 @@ const App: React.FC = () => {
     return map;
   }, [currentSong.instruments, normalizeInstrumentId]);
 
-  // Helper function to update channel with instrument and all envelopes
-  function updateChannelWithInstrument(
-    ym2149: YM2149,
-    channel: number,
-    noteData: Note | null,
-    envelopeStep: number = 0,
-    volumeModifier?: number | null
-  ): void {
-    const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
-
-    let resolvedInstrumentId = normalizedNoteInstrumentId;
-    if (!resolvedInstrumentId) {
-      const fallbackSourceId = currentInstrument?.id ?? currentSong.instruments[0]?.id;
-      resolvedInstrumentId = normalizeInstrumentId(fallbackSourceId);
-    }
-
-    const instrument = resolvedInstrumentId
-      ? instrumentLookupByNormalizedId.get(resolvedInstrumentId)
-      : undefined;
-
-    if (!instrument || !noteData || noteData.note === '===') {
-      // No instrument or no active note - silence channel
-      const volumeRegister = 8 + channel;
-      ym2149.writeRegister(volumeRegister, 0x00);
-      return;
-    }
-
-    // Use YM2149's built-in method to update channel with instrument
-    ym2149.updateChannelWithInstrument(
-      channel,
-      instrument,
-      { note: noteData.note, octave: noteData.octave },
-      envelopeStep,
-      volumeModifier
-    );
-  }
+  const {
+    handleStop,
+    handleStartSong,
+    handleStartLinePlayback,
+    handleStartLineFromBeginning,
+    handleToggleLineFromCursor,
+  } = useSequencerIntegration({
+    currentSong,
+    sequencerState,
+    patternsById,
+    instrumentsById,
+    channelMutes,
+    isDebugMode,
+    sharedCurrentLine,
+    setSharedCurrentLine,
+    isLinePlaying,
+    setIsLinePlaying,
+    activeSection,
+    lastTrackId,
+    stop,
+    setCallback,
+    setPosition,
+    startPatternLoop,
+    startSong,
+    setPatternLoopMode,
+    ym2149Ref,
+    midiHelpersRef,
+    linePlayingRef,
+    lastUiRowRef,
+    wasPlayingRef,
+    lastSequencerPositionRef,
+    channelSubTickRef,
+    channelEnvelopeStepRef,
+    lastNotesRef,
+    channelVolumeModifierRef,
+    channelSustainRef,
+    channelReleasedRef,
+    debugTickCounterRef,
+    debugLastRowRef,
+    debugLastTimeRef,
+    patternReturnPositionRef,
+    playInstTimerRef,
+    currentInstrument,
+    normalizeInstrumentId,
+    instrumentLookupByNormalizedId,
+  });
 
   // Handle stop playback with silence
   const handlePatternChange = useCallback((newPattern: Pattern) => {
@@ -1876,303 +1428,6 @@ const App: React.FC = () => {
   }, [updateInstrument]);
 
 
-  // Handle stop playback with silence
-  const handleStop = useCallback(() => {
-    // Stop the sequencer
-    stop();
-
-    // Ensure line play state is cleared so buttons show PLAY again
-    setIsLinePlaying(false);
-    
-    // Stop any instrument preview playback
-    if (playInstTimerRef.current !== null) {
-      window.clearInterval(playInstTimerRef.current);
-      playInstTimerRef.current = null;
-    }
-
-    // Reset cycle counters and silence all channels
-    handleStopPlayback();
-  }, [stop, handleStopPlayback]);
-
-  // Handle stop line playback (pattern-loop mode for the current playlist line)
-  const handleStopLinePlayback = useCallback(() => {
-    // Stop the sequencer
-    stop();
-    
-    // Update line playing state
-    setIsLinePlaying(false);
-    
-    // Stop any instrument preview playback
-    if (playInstTimerRef.current !== null) {
-      window.clearInterval(playInstTimerRef.current);
-      playInstTimerRef.current = null;
-    }
-    
-    // Reset cycle counters and silence all channels
-    handleStopPlayback();
-    const returnPos = patternReturnPositionRef.current;
-    if (returnPos) {
-      setPosition(returnPos.pattern, returnPos.line, 0);
-      setSharedCurrentLine(returnPos.line);
-      patternReturnPositionRef.current = null;
-    }
-  }, [stop, handleStopPlayback, setPosition]);
-
-  // Handle start song playback
-  const handleStartSong = useCallback(() => {
-    if (currentSong.playlist.length === 0) {
-      return;
-    }
-
-    const clampedIndex = Math.max(
-      0,
-      Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
-    );
-
-    // If we are currently in line-loop mode and playback is running, switch
-    // to song playback without restarting the sequencer. The worker will
-    // apply the mode change at the next pattern boundary, avoiding any
-    // audible gap.
-    if (isLinePlaying && sequencerState.isPlaying) {
-      setIsLinePlaying(false);
-      patternReturnPositionRef.current = null;
-
-      setPatternLoopMode(false);
-      return;
-    }
-
-    // Otherwise start song from the beginning (line 0) of the current pattern.
-    patternReturnPositionRef.current = {
-      pattern: clampedIndex,
-      line: sharedCurrentLine
-    };
-
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
-
-    startSong(clampedIndex, 0);
-  }, [
-    isLinePlaying,
-    startSong,
-    sequencerState.currentPattern,
-    sequencerState.currentLine,
-    sequencerState.isPlaying,
-    currentSong.playlist,
-    sharedCurrentLine,
-    setPatternLoopMode
-  ]);
-
-  // Handle start line playback (line-loop mode for the current playlist line)
-  const handleStartLinePlayback = useCallback(() => {
-    if (currentSong.playlist.length === 0) {
-      return;
-    }
-
-    const clampedIndex = Math.max(
-      0,
-      Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
-    );
-    const currentEntry = currentSong.playlist[clampedIndex];
-
-    if (!currentEntry) {
-      return;
-    }
-
-    let trackId: 'A' | 'B' | 'C' = lastTrackId;
-    if (activeSection === 'trackA') {
-      trackId = 'A';
-    } else if (activeSection === 'trackB') {
-      trackId = 'B';
-    } else if (activeSection === 'trackC') {
-      trackId = 'C';
-    }
-
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentEntry.trackA;
-        break;
-      case 'B':
-        patternId = currentEntry.trackB;
-        break;
-      case 'C':
-        patternId = currentEntry.trackC;
-        break;
-    }
-
-    if (patternId === '--') {
-      return;
-    }
-
-    // If a song is currently playing, switch into line-loop mode and
-    // let the sequencer continue without restarting. The worker will
-    // honor the new pattern-loop flag at the next pattern boundary.
-    if (sequencerState.isPlaying && !isLinePlaying) {
-      const effectiveLine = Math.max(
-        0,
-        Math.min(
-          sequencerState.currentLine,
-          (currentSong.patternLength || PATTERN_LENGTH) - 1
-        )
-      );
-
-      patternReturnPositionRef.current = {
-        pattern: clampedIndex,
-        line: effectiveLine
-      };
-
-      setIsLinePlaying(true);
-
-      setPatternLoopMode(true);
-      return;
-    }
-
-    // Otherwise (not playing, or already in pattern mode), start from the beginning.
-    if (sequencerState.isPlaying) {
-      stop();
-    }
-
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
-
-    setIsLinePlaying(true);
-
-    startPatternLoop(clampedIndex, 0);
-  }, [
-    stop,
-    startPatternLoop,
-    sequencerState.isPlaying,
-    sequencerState.currentPattern,
-    sequencerState.currentLine,
-    currentSong.playlist,
-    currentSong.patternLength,
-    activeSection,
-    lastTrackId,
-    isLinePlaying,
-    setPatternLoopMode
-  ]);
-
-  const handleStartLineFromBeginning = useCallback(() => {
-    if (currentSong.playlist.length === 0) {
-      return;
-    }
-
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
-    const currentEntry = currentSong.playlist[clampedIndex];
-
-    if (!currentEntry) {
-      return;
-    }
-
-    let trackId: 'A' | 'B' | 'C' = lastTrackId;
-    if (activeSection === 'trackA') {
-      trackId = 'A';
-    } else if (activeSection === 'trackB') {
-      trackId = 'B';
-    } else if (activeSection === 'trackC') {
-      trackId = 'C';
-    }
-
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentEntry.trackA;
-        break;
-      case 'B':
-        patternId = currentEntry.trackB;
-        break;
-      case 'C':
-        patternId = currentEntry.trackC;
-        break;
-    }
-
-    if (patternId === '--') {
-      return;
-    }
-
-    if (sequencerState.isPlaying) {
-      stop();
-    }
-
-    if (isLinePlaying) {
-      setIsLinePlaying(false);
-    }
-
-    // Start from the beginning (line 0) of the current pattern
-    setPosition(clampedIndex, 0, 0);
-
-    startSong();
-  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isLinePlaying, currentSong.playlist, activeSection, lastTrackId]);
-
-  const handleStartLineFromCurrentLine = useCallback((overrideLine?: number) => {
-    if (currentSong.playlist.length === 0) {
-      return;
-    }
-
-    const playlistLength = currentSong.playlist.length;
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-    const currentEntry = currentSong.playlist[clampedIndex];
-
-    if (!currentEntry) {
-      return;
-    }
-
-    let trackId: 'A' | 'B' | 'C' = lastTrackId;
-    if (activeSection === 'trackA') {
-      trackId = 'A';
-    } else if (activeSection === 'trackB') {
-      trackId = 'B';
-    } else if (activeSection === 'trackC') {
-      trackId = 'C';
-    }
-
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentEntry.trackA;
-        break;
-      case 'B':
-        patternId = currentEntry.trackB;
-        break;
-      case 'C':
-        patternId = currentEntry.trackC;
-        break;
-    }
-
-    if (patternId === '--') {
-      return;
-    }
-
-    const effectiveLine = overrideLine != null ? overrideLine : sharedCurrentLine;
-
-    // Save return position (playlist row and line where cursor currently is)
-    patternReturnPositionRef.current = {
-      pattern: clampedIndex,
-      line: effectiveLine
-    };
-
-    if (sequencerState.isPlaying) {
-      stop();
-    }
-
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
-
-    setIsLinePlaying(true);
-
-    // Start pattern loop from the current cursor line
-    const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.patternLength || PATTERN_LENGTH) - 1));
-    startPatternLoop(clampedIndex, startLine);
-  }, [currentSong.playlist, currentSong.patternLength, sharedCurrentLine, sequencerState.currentPattern, sequencerState.isPlaying, activeSection, lastTrackId, stop, startPatternLoop]);
-
-  const handleToggleLineFromCursor = useCallback((lineIndex: number) => {
-    if (isLinePlaying && sequencerState.isPlaying) {
-      handleStopLinePlayback();
-      return;
-    }
-
-    handleStartLineFromCurrentLine(lineIndex);
-  }, [isLinePlaying, sequencerState.isPlaying, handleStopLinePlayback, handleStartLineFromCurrentLine]);
 
   useKeyboardShortcuts({
     setGlobalShortcut,
@@ -2181,52 +1436,6 @@ const App: React.FC = () => {
     handleStartLine: handleStartLinePlayback,
     handleStop,
   });
-
-  // Safety guard: ensure sequencer position always stays within playlist bounds
-  // and force a clean stop if playback runs past the end for any reason.
-  useEffect(() => {
-    const playlistLength = currentSong.playlist.length;
-
-    // Nothing to do if not playing
-    if (!sequencerState.isPlaying) {
-      return;
-    }
-
-    // If playlist was cleared while playing, stop gracefully
-    if (playlistLength === 0) {
-      handleStopPlayback();
-      stop();
-      return;
-    }
-
-    if (
-      sequencerState.currentPattern < 0 ||
-      sequencerState.currentPattern >= playlistLength
-    ) {
-      const rawLoop = currentSong.loop;
-      const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
-
-      if (!hasLoop) {
-        handleStopPlayback();
-        setPosition(0, 0, 0);
-        stop();
-        return;
-      }
-
-      const base = Math.floor(rawLoop as number);
-      const loopIndex = Math.max(0, Math.min(playlistLength - 1, base));
-
-      setPosition(loopIndex, 0, 0);
-    }
-  }, [
-    sequencerState.isPlaying,
-    sequencerState.currentPattern,
-    currentSong.playlist.length,
-    currentSong.loop,
-    stop,
-    handleStopPlayback,
-    setPosition
-  ]);
 
   const handleOctaveChange = useCallback((octave: number) => {
     setCurrentOctave(octave);
@@ -2527,10 +1736,18 @@ const App: React.FC = () => {
 
   // Keep MIDI helper ref in sync with the latest MIDI send functions from the
   // useMidiHandling hook so callbacks defined earlier can use them safely.
-  midiHelpersRef.current = {
-    sendInstrumentMidiNoteOn,
-    sendInstrumentMidiNoteOffForChannel,
-  };
+  useEffect(() => {
+    midiHelpersRef.current = {
+      sendInstrumentMidiNoteOn,
+      sendInstrumentMidiNoteOffForChannel,
+    };
+  }, [sendInstrumentMidiNoteOn, sendInstrumentMidiNoteOffForChannel]);
+
+  useEffect(() => {
+    if (ym2149Ref.current) {
+      setYm2149Instance(ym2149Ref.current);
+    }
+  }, [audioContext, ym2149Ref]);
 
   const handleLiveMidiConfigChange = useCallback(
     (patch: Partial<MidiConfig>) => {
@@ -2569,6 +1786,48 @@ const App: React.FC = () => {
     sendSystemReset();
   }, [sendSystemReset]);
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
+
+  const handleSongFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        return;
+      }
+      loadSong(file);
+      try {
+        event.target.value = '';
+      } catch {
+        // ignore
+      }
+    },
+    [loadSong]
+  );
+
+  const handleInstrumentFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files && event.target.files[0];
+      if (!file) {
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const content = typeof reader.result === 'string' ? reader.result : '';
+        handleInstrumentFileContent(content);
+      };
+      reader.onerror = () => {
+        setInstrumentError('Error loading instrument file. Please check the file format.');
+      };
+      reader.readAsText(file);
+
+      try {
+        event.target.value = '';
+      } catch {
+        // ignore
+      }
+    },
+    [handleInstrumentFileContent, setInstrumentError]
+  );
 
   const handleToggleTrackBackground = useCallback(() => {
     setTrackBackgroundEnabled(prev => !prev);
@@ -2652,357 +1911,324 @@ const App: React.FC = () => {
     handleConfirmPasteTrackOptions: handleConfirmPasteTrackModal,
   });
 
-  try {
-    return (
-      <ErrorBoundary>
-        <AppLayout
-          isDarkMode={isDarkMode}
-          header={
-            <HeaderPanel
-              title={currentSong.title}
-              isDarkMode={isDarkMode}
-              onToggleTheme={toggleTheme}
-              currentOctave={currentOctave}
-              onOctaveChange={handleOctaveChange}
-              onShowAbout={handleShowAbout}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              ym2149={ym2149Ref.current}
-              currentInstrument={currentInstrument}
-              previewChannel={previewChannel}
-              hasDownloads={hasDownloads}
-              onShowDownloads={() => setIsDownloadOpen(true)}
-              onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-              onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-              onToggleCommandPanelMobile={() => {
-                if (!isMobileViewport) {
-                  return;
-                }
-                setIsCommandPanelMobileCollapsed(prev => !prev);
-              }}
+  return (
+    <ErrorBoundary>
+      <AppLayout
+        isDarkMode={isDarkMode}
+        header={
+          <HeaderPanel
+            title={currentSong.title}
+            isDarkMode={isDarkMode}
+            onToggleTheme={toggleTheme}
+            currentOctave={currentOctave}
+            onOctaveChange={handleOctaveChange}
+            onShowAbout={handleShowAbout}
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            ym2149={ym2149Instance}
+            currentInstrument={currentInstrument}
+            previewChannel={previewChannel}
+            hasDownloads={hasDownloads}
+            onShowDownloads={() => setIsDownloadOpen(true)}
+            onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+            onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+            onToggleCommandPanelMobile={() => {
+              if (!isMobileViewport) {
+                return;
+              }
+              setIsCommandPanelMobileCollapsed(prev => !prev);
+            }}
+          />
+        }
+        commandPanel={
+          <CommandPanel
+            onNewSong={handleRequestNewSong}
+            onLoadSong={triggerFileLoad}
+            onSaveSong={saveSong}
+            onOptimize={handleOptimizeSong}
+            onRenumber={handleRenumberSong}
+            onNewInstrument={createNewInstrument}
+            onSaveInstrument={saveInstrument}
+            onLoadInstrument={handleLoadInstrumentClick}
+            onDeleteInstrument={handleDeleteInstrument}
+            onCloneInstrument={handleCloneInstrument}
+            onPlaySong={handleStartSong}
+            onPlayLine={handleStartLinePlayback}
+            onStop={handleStop}
+            onOpenExport={handleOpenExport}
+            onAddLine={handleAddLine}
+            onDeleteLine={handleDeleteLine}
+            onCloneLine={handleCloneLine}
+            onDuplicateLine={handleDuplicateLine}
+            onInsertStep={handleInsertStep}
+            onDeleteStep={handleDeleteStep}
+            onReset={handleRequestReset}
+            isDebugMode={isDebugMode}
+            onToggleDebug={handleToggleDebugMode}
+            isPlaying={sequencerState.isPlaying}
+            isLinePlaying={isLinePlaying}
+            onPlayInstrument={handlePlayInstrument}
+            onCopyTrack={handleCopyTrack}
+            onPasteTrack={handlePasteTrack}
+            onNewTrack={handleCreateNewTrack}
+            onDeleteTrack={handleDeleteTrack}
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            onTranspose={handleOpenTranspose}
+            midiInputEnabled={midiInputEnabled}
+            midiOutputEnabled={midiOutputEnabled}
+            onShowMidi={handleShowMidi}
+            onPickInstrument={handleOpenRepositoryInstrumentPicker}
+            onDemoSong={handleDemoSongClick}
+            isMobileCollapsed={isMobileViewport ? isCommandPanelMobileCollapsed : false}
+          />
+        }
+        trackerSection={
+          <TrackerSection
+            song={currentSong}
+            sharedCurrentLine={sharedCurrentLine}
+            onLineChange={handleLineChange}
+            onPositionScroll={handlePositionScroll}
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            currentOctave={currentOctave}
+            getCurrentPatternForTrack={getCurrentPatternForTrack}
+            onPatternChange={handlePatternChange}
+            ym2149={ym2149Instance}
+            currentInstrument={currentInstrument}
+            targetTrackId={targetTrackId}
+            onToggleLineFromCursor={handleToggleLineFromCursor}
+            currentTrackColumn={currentTrackColumn}
+            setCurrentTrackColumn={setCurrentTrackColumn}
+            trackFocusRevision={trackFocusRevision}
+            onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+            onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+            onHardStopLivePreview={handleHardStopLivePreview}
+            onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
+            trackBackgroundEnabled={trackBackgroundEnabled}
+            onToggleTrackBackground={handleToggleTrackBackground}
+            isDarkMode={isDarkMode}
+          />
+        }
+        envelopeSection={
+          <EnvelopeSection
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            currentInstrument={currentInstrument}
+            updateInstrument={updateInstrument}
+            messages={messages}
+            currentMessageIndex={currentMessageIndex}
+            isNotesVisible={isNotesVisible}
+            onNotesClick={handleNotesClick}
+          />
+        }
+        songSection={
+          <SongSection
+            song={currentSong}
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            updateSong={updateSong}
+            clampedPlaybackPosition={clampedPlaybackPosition}
+            onPositionSelect={handlePositionSelect}
+            onPlaylistChange={handlePlaylistChange}
+            onCreatePatternAt={handleCreatePatternAt}
+            targetTrackId={targetTrackId}
+            currentInstrument={currentInstrument}
+            onSelectInstrument={handleInstrumentSelect}
+            onRenameInstrument={handleRenameInstrument}
+            onMoveInstrument={handleMoveInstrument}
+            onOpenInstrumentMidi={handleOpenInstrumentMidi}
+            onOpenInstrumentColor={handleOpenInstrumentColor}
+            instrumentPanelFocusRevision={instrumentPanelFocusRevision}
+            ym2149={ym2149Instance}
+            channelMutes={channelMutes}
+            onToggleChannelMute={handleToggleChannelMute}
+          />
+        }
+        pianoKeyboard={
+          <PianoKeyboard
+            activeSection={activeSection}
+            setActiveSection={setActiveSection}
+            currentOctave={currentOctave}
+            onOctaveChange={handleOctaveChange}
+            ym2149={ym2149Instance}
+            currentInstrument={currentInstrument}
+            previewChannel={previewChannel}
+            onChangeBaseKey={handleChangeBaseKey}
+            onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
+            onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
+            ensureAudioContextResumed={ensureAudioContextResumed}
+          />
+        }
+        fileInputs={
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json,.yml,.yaml,.dosound"
+              style={{ display: 'none' }}
+              onChange={handleSongFileChange}
             />
-          }
-          commandPanel={
-            <CommandPanel
-              onNewSong={handleRequestNewSong}
-              onLoadSong={triggerFileLoad}
-              onSaveSong={saveSong}
-              onOptimize={handleOptimizeSong}
-              onRenumber={handleRenumberSong}
-              onNewInstrument={createNewInstrument}
-              onSaveInstrument={saveInstrument}
-              onLoadInstrument={handleLoadInstrumentClick}
-              onDeleteInstrument={handleDeleteInstrument}
-              onCloneInstrument={handleCloneInstrument}
-              onPlaySong={handleStartSong}
-              onPlayLine={handleStartLinePlayback}
-              onStop={handleStop}
-              onOpenExport={handleOpenExport}
-              onAddLine={handleAddLine}
-              onDeleteLine={handleDeleteLine}
-              onCloneLine={handleCloneLine}
-              onDuplicateLine={handleDuplicateLine}
-              onInsertStep={handleInsertStep}
-              onDeleteStep={handleDeleteStep}
-              onReset={handleRequestReset}
-              isDebugMode={isDebugMode}
-              onToggleDebug={handleToggleDebugMode}
-              isPlaying={sequencerState.isPlaying}
-              isLinePlaying={isLinePlaying}
-              onPlayInstrument={handlePlayInstrument}
-              onCopyTrack={handleCopyTrack}
-              onPasteTrack={handlePasteTrack}
-              onNewTrack={handleCreateNewTrack}
-              onDeleteTrack={handleDeleteTrack}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              onTranspose={handleOpenTranspose}
-              midiInputEnabled={midiInputEnabled}
-              midiOutputEnabled={midiOutputEnabled}
-              onShowMidi={handleShowMidi}
-              onPickInstrument={handleOpenRepositoryInstrumentPicker}
-              onDemoSong={handleDemoSongClick}
-              isMobileCollapsed={isMobileViewport && isCommandPanelMobileCollapsed}
+            <input
+              ref={instrumentFileInputRef}
+              type="file"
+              accept=".json,.yml,.yaml"
+              style={{ display: 'none' }}
+              onChange={handleInstrumentFileChange}
             />
-          }
-          trackerSection={
-            <TrackerSection
-              song={currentSong}
-              sharedCurrentLine={sharedCurrentLine}
-              onLineChange={handleLineChange}
-              onPositionScroll={handlePositionScroll}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              currentOctave={currentOctave}
-              getCurrentPatternForTrack={getCurrentPatternForTrack}
-              onPatternChange={handlePatternChange}
-              ym2149={ym2149Ref.current}
-              currentInstrument={currentInstrument}
-              targetTrackId={targetTrackId}
-              onToggleLineFromCursor={handleToggleLineFromCursor}
-              currentTrackColumn={currentTrackColumn}
-              setCurrentTrackColumn={setCurrentTrackColumn}
-              trackFocusRevision={trackFocusRevision}
-              onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-              onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-              onHardStopLivePreview={handleHardStopLivePreview}
-              onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
-              trackBackgroundEnabled={trackBackgroundEnabled}
-              onToggleTrackBackground={handleToggleTrackBackground}
-              isDarkMode={isDarkMode}
+          </>
+        }
+        modals={
+          <>
+            <ModalContainer
+              songError={songError}
+              setSongError={setSongError}
+              instrumentError={instrumentError}
+              setInstrumentError={setInstrumentError}
+              trackClipboardError={trackClipboardError}
+              setTrackClipboardError={setTrackClipboardError}
+              optimizeSummary={optimizeSummary}
+              onCloseOptimizeSummary={handleCloseOptimizeSummary}
+              soundExportSummary={soundExportSummary}
+              onCloseSoundExportSummary={handleCloseSoundExportSummary}
+              dumpExportSummary={dumpExportSummary}
+              onCloseDumpExportSummary={handleCloseDumpExportSummary}
+              transposeSummary={transposeSummary}
+              onCloseTransposeSummary={handleCloseTransposeSummary}
+              renumberSummary={renumberSummary}
+              onCloseRenumberSummary={handleCloseRenumberSummary}
+              instrumentOperationSummary={instrumentOperationSummary}
+              onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
+              isDebugInfoOpen={isDebugInfoOpen}
+              setIsDebugInfoOpen={setIsDebugInfoOpen}
+              isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
+              pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
+              instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
+              setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
+              onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
+              onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
+              isNewSongConfirmOpen={isNewSongConfirmOpen}
+              onConfirmNewSong={handleConfirmNewSong}
+              onCancelNewSong={handleCancelNewSong}
+              isOptimizeConfirmOpen={isOptimizeConfirmOpen}
+              onConfirmOptimize={handleConfirmOptimize}
+              onCancelOptimize={handleCancelOptimize}
+              isRenumberConfirmOpen={isRenumberConfirmOpen}
+              onConfirmRenumber={handleConfirmRenumber}
+              onCancelRenumber={handleCancelRenumber}
+              isResetConfirmOpen={isResetConfirmOpen}
+              onConfirmReset={handleConfirmReset}
+              onCancelReset={handleCancelReset}
+              isQuitConfirmOpen={isQuitConfirmOpen}
+              onConfirmQuit={handleConfirmQuit}
+              onCancelQuit={handleCancelQuit}
+              isInstrumentDeleteOpen={isInstrumentDeleteOpen}
+              instrumentDeleteUsage={instrumentDeleteUsage}
+              onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
+              onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
+              onCancelInstrumentDelete={handleCancelInstrumentDelete}
+              isInstrumentMidiOpen={isInstrumentMidiOpen}
+              instrumentMidiTarget={instrumentMidiTarget}
+              onSaveInstrumentMidi={handleSaveInstrumentMidi}
+              onCloseInstrumentMidi={handleCloseInstrumentMidi}
+              isInstrumentColorOpen={isInstrumentColorOpen}
+              instrumentColorTarget={instrumentColorTarget}
+              onSaveInstrumentColor={handleSaveInstrumentColor}
+              onClearInstrumentColor={handleClearInstrumentColor}
+              onCloseInstrumentColor={handleCloseInstrumentColor}
+              isTransposeOpen={isTransposeOpen}
+              transposeScope={transposeScope}
+              transposeTrackScope={transposeTrackScope}
+              transposeInstrumentScope={transposeInstrumentScope}
+              transposeAmount={transposeAmount}
+              transposeAmountInput={transposeAmountInput}
+              setTransposeScope={setTransposeScope}
+              setTransposeTrackScope={setTransposeTrackScope}
+              setTransposeInstrumentScope={setTransposeInstrumentScope}
+              onTransposeAmountChange={handleTransposeAmountChange}
+              onConfirmTranspose={handleConfirmTranspose}
+              onCancelTranspose={handleCancelTranspose}
+              setTransposeAmount={setTransposeAmount}
+              setTransposeAmountInput={setTransposeAmountInput}
+              isAboutOpen={isAboutOpen}
+              aboutVersion={APP_VERSION}
+              aboutRuntimeLabel={aboutRuntimeLabel}
+              aboutRuntimeDetails={aboutRuntimeDetails}
+              setIsAboutOpen={setIsAboutOpen}
+              isChangelogOpen={isChangelogOpen}
+              changelogContent={changelogContent}
+              onShowChangelog={handleShowChangelog}
+              onCloseChangelog={handleCloseChangelog}
+              isManualOpen={isManualOpen}
+              manualContent={manualContent}
+              onShowManual={handleShowManual}
+              onCloseManual={handleCloseManual}
+              isMidiModalOpen={isMidiModalOpen}
+              isMidiSupported={isMidiSupported}
+              midiAccessError={midiAccessError}
+              midiConfig={midiConfig}
+              midiDevices={midiDevices}
+              midiInMonitor={midiInMonitor}
+              midiOutMonitor={midiOutMonitor}
+              onSaveMidiConfig={handleSaveMidiConfig}
+              onCloseMidi={handleCloseMidi}
+              onClearMidiMonitors={handleClearMidiMonitors}
+              onRescanMidiDevices={handleRescanMidiDevices}
+              onLiveMidiConfigChange={handleLiveMidiConfigChange}
+              setMidiCopySummary={setMidiCopySummary}
+              setMidiLoadError={setMidiLoadError}
+              isDownloadOpen={isDownloadOpen}
+              setIsDownloadOpen={setIsDownloadOpen}
+              midiLoadError={midiLoadError}
+              midiCopySummary={midiCopySummary}
+              onMidiSystemReset={handleMidiSystemReset}
             />
-          }
-          envelopeSection={
-            <EnvelopeSection
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              currentInstrument={currentInstrument}
-              updateInstrument={updateInstrument}
-              messages={messages}
-              currentMessageIndex={currentMessageIndex}
-              isNotesVisible={isNotesVisible}
-              onNotesClick={handleNotesClick}
+            <FilePickerModal
+              isOpen={isRepositoryInstrumentOpen}
+              title="Pick Instrument"
+              directory="repository/instrument"
+              mode="pick"
+              defaultSortDescending={false}
+              onClose={() => setIsRepositoryInstrumentOpen(false)}
+              onPick={handlePickRepositoryInstrument}
             />
-          }
-          songSection={
-            <SongSection
-              song={currentSong}
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              updateSong={updateSong}
-              clampedPlaybackPosition={clampedPlaybackPosition}
-              onPositionSelect={handlePositionSelect}
-              onPlaylistChange={handlePlaylistChange}
-              onCreatePatternAt={handleCreatePatternAt}
-              targetTrackId={targetTrackId}
-              currentInstrument={currentInstrument}
-              onSelectInstrument={handleInstrumentSelect}
-              onRenameInstrument={handleRenameInstrument}
-              onMoveInstrument={handleMoveInstrument}
-              onOpenInstrumentMidi={handleOpenInstrumentMidi}
-              onOpenInstrumentColor={handleOpenInstrumentColor}
-              instrumentPanelFocusRevision={instrumentPanelFocusRevision}
-              ym2149={ym2149Ref.current}
-              channelMutes={channelMutes}
-              onToggleChannelMute={handleToggleChannelMute}
+            <FilePickerModal
+              isOpen={isDemoSongPickerOpen}
+              title="Demo Songs"
+              directory="repository/song"
+              mode="pick"
+              defaultSortDescending={false}
+              onClose={() => setIsDemoSongPickerOpen(false)}
+              onPick={handlePickDemoSong}
             />
-          }
-          pianoKeyboard={
-            <PianoKeyboard
-              activeSection={activeSection}
-              setActiveSection={setActiveSection}
-              currentOctave={currentOctave}
-              onOctaveChange={handleOctaveChange}
-              ym2149={ym2149Ref.current}
-              currentInstrument={currentInstrument}
-              previewChannel={previewChannel}
-              onChangeBaseKey={handleChangeBaseKey}
-              onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
-              onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
-              ensureAudioContextResumed={ensureAudioContextResumed}
+            <ExportModal
+              isOpen={isExportModalOpen}
+              exportType={pendingExportType}
+              exportStrategy={pendingExportStrategy}
+              onChangeType={handleExportTypeChange}
+              onChangeStrategy={handleExportStrategyChange}
+              onExportDump={handleExportDumpFromModal}
+              onExportData={handleExportDataFromModal}
+              onExportBin={handleExportBinFromModal}
+              onExportVgm={handleExportVgmFromModal}
+              onExportMax={handleExportMaxFromModal}
+              onExportWav={handleExportWavFromModal}
+              onConfirm={handleConfirmExport}
+              onCancel={handleCancelExport}
             />
-          }
-          fileInputs={
-            <>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".yaml,.yml"
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (file) {
-                    loadSong(file);
-                    setPosition(0, 0, 0);
-                    setSharedCurrentLine(0);
-                    setActiveSection('playlist');
-                    setChannelMutes([false, false, false]);
-                    // This will be handled by the useDataManagement hook
-                  }
-                }}
-              />
-              <input
-                ref={instrumentFileInputRef}
-                type="file"
-                accept=".yaml,.yml"
-                style={{ display: 'none' }}
-                onChange={(e) => {
-                  const file = e.target.files?.[0];
-                  if (!file) {
-                    return;
-                  }
+            <PasteTrackModal
+              isOpen={isPasteTrackModalOpen}
+              mode={pasteTrackPendingMode}
+              onModeChange={setPasteTrackPendingMode}
+              onConfirm={handleConfirmPasteTrackModal}
+              onCancel={handleCancelPasteTrackModal}
+            />
+          </>
+        }
+      />
+    </ErrorBoundary>
+  );
 
-                  const reader = new FileReader();
-                  reader.onload = ev => {
-                    const text = typeof ev.target?.result === 'string'
-                      ? ev.target.result
-                      : String(ev.target?.result ?? '');
-                    handleInstrumentFileContent(text);
-                  };
-                  reader.readAsText(file);
-                }}
-              />
-            </>
-          }
-          modals={
-            <>
-              <ModalContainer
-                songError={songError}
-                setSongError={setSongError}
-                instrumentError={instrumentError}
-                setInstrumentError={setInstrumentError}
-                trackClipboardError={trackClipboardError}
-                setTrackClipboardError={setTrackClipboardError}
-                optimizeSummary={optimizeSummary}
-                onCloseOptimizeSummary={handleCloseOptimizeSummary}
-                soundExportSummary={soundExportSummary}
-                onCloseSoundExportSummary={handleCloseSoundExportSummary}
-                dumpExportSummary={dumpExportSummary}
-                onCloseDumpExportSummary={handleCloseDumpExportSummary}
-                transposeSummary={transposeSummary}
-                onCloseTransposeSummary={handleCloseTransposeSummary}
-                renumberSummary={renumberSummary}
-                onCloseRenumberSummary={handleCloseRenumberSummary}
-                instrumentOperationSummary={instrumentOperationSummary}
-                onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
-                isDebugInfoOpen={isDebugInfoOpen}
-                setIsDebugInfoOpen={setIsDebugInfoOpen}
-                isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
-                pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
-                instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
-                setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
-                onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
-                onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
-                isNewSongConfirmOpen={isNewSongConfirmOpen}
-                onConfirmNewSong={handleConfirmNewSong}
-                onCancelNewSong={handleCancelNewSong}
-                isOptimizeConfirmOpen={isOptimizeConfirmOpen}
-                onConfirmOptimize={handleConfirmOptimize}
-                onCancelOptimize={handleCancelOptimize}
-                isRenumberConfirmOpen={isRenumberConfirmOpen}
-                onConfirmRenumber={handleConfirmRenumber}
-                onCancelRenumber={handleCancelRenumber}
-                isResetConfirmOpen={isResetConfirmOpen}
-                onConfirmReset={handleConfirmReset}
-                onCancelReset={handleCancelReset}
-                isQuitConfirmOpen={isQuitConfirmOpen}
-                onConfirmQuit={handleConfirmQuit}
-                onCancelQuit={handleCancelQuit}
-                isInstrumentDeleteOpen={isInstrumentDeleteOpen}
-                instrumentDeleteUsage={instrumentDeleteUsage}
-                onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
-                onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
-                onCancelInstrumentDelete={handleCancelInstrumentDelete}
-                isInstrumentMidiOpen={isInstrumentMidiOpen}
-                instrumentMidiTarget={instrumentMidiTarget}
-                onSaveInstrumentMidi={handleSaveInstrumentMidi}
-                onCloseInstrumentMidi={handleCloseInstrumentMidi}
-                isInstrumentColorOpen={isInstrumentColorOpen}
-                instrumentColorTarget={instrumentColorTarget}
-                onSaveInstrumentColor={handleSaveInstrumentColor}
-                onClearInstrumentColor={handleClearInstrumentColor}
-                onCloseInstrumentColor={handleCloseInstrumentColor}
-                isTransposeOpen={isTransposeOpen}
-                transposeScope={transposeScope}
-                transposeTrackScope={transposeTrackScope}
-                transposeInstrumentScope={transposeInstrumentScope}
-                transposeAmount={transposeAmount}
-                transposeAmountInput={transposeAmountInput}
-                setTransposeScope={setTransposeScope}
-                setTransposeTrackScope={setTransposeTrackScope}
-                setTransposeInstrumentScope={setTransposeInstrumentScope}
-                onTransposeAmountChange={handleTransposeAmountChange}
-                onConfirmTranspose={handleConfirmTranspose}
-                onCancelTranspose={handleCancelTranspose}
-                setTransposeAmount={setTransposeAmount}
-                setTransposeAmountInput={setTransposeAmountInput}
-                isAboutOpen={isAboutOpen}
-                aboutVersion={APP_VERSION}
-                aboutRuntimeLabel={aboutRuntimeLabel}
-                aboutRuntimeDetails={aboutRuntimeDetails}
-                setIsAboutOpen={setIsAboutOpen}
-                isChangelogOpen={isChangelogOpen}
-                changelogContent={changelogContent}
-                onShowChangelog={handleShowChangelog}
-                onCloseChangelog={handleCloseChangelog}
-                isManualOpen={isManualOpen}
-                manualContent={manualContent}
-                onShowManual={handleShowManual}
-                onCloseManual={handleCloseManual}
-                isMidiModalOpen={isMidiModalOpen}
-                isMidiSupported={isMidiSupported}
-                midiAccessError={midiAccessError}
-                midiConfig={midiConfig}
-                midiDevices={midiDevices}
-                midiInMonitor={midiInMonitor}
-                midiOutMonitor={midiOutMonitor}
-                onSaveMidiConfig={handleSaveMidiConfig}
-                onCloseMidi={handleCloseMidi}
-                onClearMidiMonitors={handleClearMidiMonitors}
-                onRescanMidiDevices={handleRescanMidiDevices}
-                onLiveMidiConfigChange={handleLiveMidiConfigChange}
-                setMidiCopySummary={setMidiCopySummary}
-                setMidiLoadError={setMidiLoadError}
-                isDownloadOpen={isDownloadOpen}
-                setIsDownloadOpen={setIsDownloadOpen}
-                midiLoadError={midiLoadError}
-                midiCopySummary={midiCopySummary}
-                onMidiSystemReset={handleMidiSystemReset}
-              />
-              <FilePickerModal
-                isOpen={isRepositoryInstrumentOpen}
-                title="Pick Instrument"
-                directory="repository/instrument"
-                mode="pick"
-                defaultSortDescending={false}
-                onClose={() => setIsRepositoryInstrumentOpen(false)}
-                onPick={handlePickRepositoryInstrument}
-              />
-              <FilePickerModal
-                isOpen={isDemoSongPickerOpen}
-                title="Demo Songs"
-                directory="repository/song"
-                mode="pick"
-                defaultSortDescending={false}
-                onClose={() => setIsDemoSongPickerOpen(false)}
-                onPick={handlePickDemoSong}
-              />
-              <ExportModal
-                isOpen={isExportModalOpen}
-                exportType={pendingExportType}
-                exportStrategy={pendingExportStrategy}
-                onChangeType={handleExportTypeChange}
-                onChangeStrategy={handleExportStrategyChange}
-                onExportDump={handleExportDumpFromModal}
-                onExportData={handleExportDataFromModal}
-                onExportBin={handleExportBinFromModal}
-                onExportVgm={handleExportVgmFromModal}
-                onExportMax={handleExportMaxFromModal}
-                onExportWav={handleExportWavFromModal}
-                onConfirm={handleConfirmExport}
-                onCancel={handleCancelExport}
-              />
-              <PasteTrackModal
-                isOpen={isPasteTrackModalOpen}
-                mode={pasteTrackPendingMode}
-                onModeChange={setPasteTrackPendingMode}
-                onConfirm={handleConfirmPasteTrackModal}
-                onCancel={handleCancelPasteTrackModal}
-              />
-            </>
-          }
-        />
-      </ErrorBoundary>
-    );
-  } catch (error) {
-    console.error('Error rendering App:', error);
-    return (
-      <div style={{ padding: '20px', fontFamily: 'monospace' }}>
-        <h1>Error Loading DOSOUND Tracker</h1>
-        <pre>{error instanceof Error ? error.message : String(error)}</pre>
-      </div>
-    );
-  }
 };
 
 export default App;
