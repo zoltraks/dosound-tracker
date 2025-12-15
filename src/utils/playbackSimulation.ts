@@ -108,9 +108,9 @@ export function simulateSong(
     for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
       // Get notes for this line
       const notes = [
-        patterns[0]?.step[lineIdx]?.A || null,
-        patterns[1]?.step[lineIdx]?.A || null,
-        patterns[2]?.step[lineIdx]?.A || null,
+        patterns[0]?.step[lineIdx]?.note || null,
+        patterns[1]?.step[lineIdx]?.note || null,
+        patterns[2]?.step[lineIdx]?.note || null,
       ];
       // Per-line volume modifiers (shared pattern trackA volume)
       const volumes = [

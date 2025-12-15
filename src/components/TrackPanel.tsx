@@ -301,8 +301,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     const notes = [] as (Note | null)[];
 
     for (let i = 0; i < safeLength; i++) {
-      const line = lines[i] || { A: null, B: null, C: null };
-      notes.push(line.A);
+      const line = lines[i] || { note: null };
+      notes.push(line.note);
     }
 
     return notes;
@@ -422,14 +422,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       if (!pattern) return;
       const newPattern = { ...pattern };
       newPattern.step = [...newPattern.step];
-      newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { A: null, B: null, C: null }) };
+      newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
       if (currentColumn === 'volume') {
         // Clear only the per-line volume modifier
         newPattern.step[currentLine].volume = undefined;
       } else {
         // Clear the note (and implicitly any volume) for shared pattern (trackA)
-        newPattern.step[currentLine].A = null;
+        newPattern.step[currentLine].note = null;
         newPattern.step[currentLine].volume = undefined;
       }
 
@@ -440,11 +440,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { A: null, B: null, C: null }) };
+        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
         // Set note off for shared pattern (always use trackA)
         const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
-        newPattern.step[currentLine].A = noteOff;
+        newPattern.step[currentLine].note = noteOff;
 
         onPatternChange(newPattern);
       }
@@ -454,12 +454,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { A: null, B: null, C: null }) };
+        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
         if (currentColumn === 'volume') {
           newPattern.step[currentLine].volume = undefined;
         } else {
-          newPattern.step[currentLine].A = null;
+          newPattern.step[currentLine].note = null;
           newPattern.step[currentLine].volume = undefined;
         }
 
@@ -475,10 +475,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { A: null, B: null, C: null }) };
+        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
         const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
-        newPattern.step[currentLine].A = noteOff;
+        newPattern.step[currentLine].note = noteOff;
 
         onPatternChange(newPattern);
         const length = Math.max(1, patternLength || 1);
@@ -507,7 +507,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { A: null, B: null, C: null }) };
+        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
         const value = parseInt(key, 16);
         const clamped = Math.max(0, Math.min(0x0f, value));
@@ -536,12 +536,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       if (pattern) {
         const newPattern = { ...pattern };
         newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { A: null, B: null, C: null }) };
+        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
         const newNote: Note = { note, octave: finalOctave, instrument: currentInstrumentData.id };
 
         // Set the note for shared pattern (always use trackA)
-        newPattern.step[currentLine].A = newNote;
+        newPattern.step[currentLine].note = newNote;
 
         onPatternChange(newPattern);
         // Move to next line (wrap around pattern length)

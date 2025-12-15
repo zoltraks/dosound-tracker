@@ -218,18 +218,16 @@ export function useInstrumentActions({
           return;
         }
 
-        (['A', 'B', 'C'] as Array<'A' | 'B' | 'C'>).forEach(key => {
-          const note = line[key];
-          if (!note) {
-            return;
-          }
+        const note = line.note;
+        if (!note) {
+          return;
+        }
 
-          const noteInstIdNorm = normalizeInstrumentId(note.instrument);
-          if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
-            usageCount++;
-            patternHasUsage = true;
-          }
-        });
+        const noteInstIdNorm = normalizeInstrumentId(note.instrument);
+        if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
+          usageCount++;
+          patternHasUsage = true;
+        }
       });
 
       if (patternHasUsage) {
@@ -332,19 +330,17 @@ export function useInstrumentActions({
         const step = (pattern.step || []).map(line => {
           const newLine: Step = { ...line };
 
-          (['A', 'B', 'C'] as Array<'A' | 'B' | 'C'>).forEach(key => {
-            const note = newLine[key];
-            if (note && typeof note.instrument === 'string') {
-              const raw = note.instrument.trim().toUpperCase();
-              const mapped = instrumentIdMap[raw];
-              if (mapped) {
-                newLine[key] = {
-                  ...note,
-                  instrument: mapped,
-                };
-              }
+          const note = newLine.note;
+          if (note && typeof note.instrument === 'string') {
+            const raw = note.instrument.trim().toUpperCase();
+            const mapped = instrumentIdMap[raw];
+            if (mapped) {
+              newLine.note = {
+                ...note,
+                instrument: mapped,
+              };
             }
-          });
+          }
 
           return newLine;
         });
@@ -442,19 +438,15 @@ export function useInstrumentActions({
         const newLine: Step = { ...line };
         let lineChanged = false;
 
-        (['A', 'B', 'C'] as Array<'A' | 'B' | 'C'>).forEach(key => {
-          const note = newLine[key];
-          if (!note) {
-            return;
-          }
-
+        const note = newLine.note;
+        if (note) {
           const noteInstIdNorm = normalizeInstrumentId(note.instrument);
           if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
-            newLine[key] = null;
+            newLine.note = null;
             lineChanged = true;
             notesCleared++;
           }
-        });
+        }
 
         if (lineChanged) {
           patternChanged = true;

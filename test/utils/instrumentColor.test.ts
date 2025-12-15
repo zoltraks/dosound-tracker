@@ -22,7 +22,7 @@ describe('normalizeInstrumentColor', () => {
 
 describe('instrument color in song YAML IO', () => {
   it('round-trips instrument color through song export and import', () => {
-    const step: Step[] = Array.from({ length: 4 }, () => ({ A: null, B: null, C: null }));
+    const step: Step[] = Array.from({ length: 4 }, () => ({ note: null }));
 
     const song: Song = {
       title: 'Color Test',

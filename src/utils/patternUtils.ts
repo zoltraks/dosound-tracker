@@ -13,29 +13,27 @@ export function insertPatternStep(
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
-      A: null,
-      B: null,
-      C: null,
+      note: null,
     });
   }
 
   // Shift lines down, starting from the end
   // We only shift trackA property to match existing behavior
   for (let i = totalLines - 1; i > safeIndex; i--) {
-    const from = newLines[i - 1] || { A: null, B: null, C: null };
-    const base = newLines[i] || { A: null, B: null, C: null };
+    const from = newLines[i - 1] || { note: null };
+    const base = newLines[i] || { note: null };
     
     newLines[i] = {
       ...base,
-      A: from.A,
+      note: from.note,
     };
   }
 
   // Clear the inserted line
-  const base = newLines[safeIndex] || { A: null, B: null, C: null };
+  const base = newLines[safeIndex] || { note: null };
   newLines[safeIndex] = {
     ...base,
-    A: null,
+    note: null,
   };
 
   return newLines;
@@ -53,30 +51,28 @@ export function deletePatternStep(
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
-      A: null,
-      B: null,
-      C: null,
+      note: null,
     });
   }
 
   // Shift lines up
   // We only shift trackA property to match existing behavior
   for (let i = safeIndex; i < totalLines - 1; i++) {
-    const from = newLines[i + 1] || { A: null, B: null, C: null };
-    const base = newLines[i] || { A: null, B: null, C: null };
+    const from = newLines[i + 1] || { note: null };
+    const base = newLines[i] || { note: null };
     
     newLines[i] = {
       ...base,
-      A: from.A,
+      note: from.note,
     };
   }
 
   // Clear the last line
   const lastIndex = totalLines - 1;
-  const lastBase = newLines[lastIndex] || { A: null, B: null, C: null };
+  const lastBase = newLines[lastIndex] || { note: null };
   newLines[lastIndex] = {
     ...lastBase,
-    A: null,
+    note: null,
   };
 
   return newLines;

@@ -191,9 +191,9 @@ export function useSequencerIntegration({
         const lineB = patternB?.step[state.currentLine];
         const lineC = patternC?.step[state.currentLine];
 
-        const noteA = lineA?.A || null;
-        const noteB = patternB ? (lineB?.A || null) : null; // Read A for track B
-        const noteC = patternC ? (lineC?.A || null) : null; // Read A for track C
+        const noteA = lineA?.note || null;
+        const noteB = patternB ? (lineB?.note || null) : null; // Read A for track B
+        const noteC = patternC ? (lineC?.note || null) : null; // Read A for track C
 
         const notes = [noteA, noteB, noteC];
         const patterns = [patternA, patternB, patternC];

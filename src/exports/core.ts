@@ -1382,9 +1382,7 @@ function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): S
   const step: Step[] = [];
   for (let i = 0; i < patternLength; i++) {
     step.push({
-      A: i === 0 ? { note: base.note, octave: base.octave, instrument: instrument.id } : null,
-      B: null,
-      C: null,
+      note: i === 0 ? { note: base.note, octave: base.octave, instrument: instrument.id } : null,
       volume: undefined,
     });
   }

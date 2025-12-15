@@ -1,0 +1,7 @@
+Inspect pattern channel logic as it seems there is a code that uses .A for all channels, which seems like a bug. Patterns for each channel might only use step.A because they’re single-column tracks. The step has A/B/C, but it looks like only A is being used for notes, which is unusual.
+
+Check also playbackSimulation, as it seems also defaults to step.A for all channels too.
+
+Check overlapping/duplicated domain types (e.g. Instrument) in both YM2149.ts and SoundDriver.ts as that can silently diverge and cause bugs. Consolidating types would reduce risk.
+
+---

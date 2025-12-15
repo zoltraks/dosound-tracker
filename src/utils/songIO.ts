@@ -148,8 +148,8 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     const lines: PatternStep[] = [];
 
     for (let i = 0; i < targetLength; i += 1) {
-      const raw: Step = rawLines[i] || { A: null, B: null, C: null };
-      const cell = raw.A ?? null;
+      const raw: Step = rawLines[i] || { note: null };
+      const cell = raw.note ?? null;
 
       const volRaw = raw.volume;
       const hasVolume = volRaw !== undefined && volRaw !== null;

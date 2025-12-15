@@ -90,7 +90,7 @@ export const useDataManagement = () => {
   const createNewSong = useCallback(() => {
     const targetLength = PATTERN_LENGTH;
 
-    const emptyLine: Step = { A: null, B: null, C: null };
+    const emptyLine: Step = { note: null };
 
     const createBlankPattern = (id: string): Pattern => ({
       id,
@@ -257,7 +257,7 @@ export const useDataManagement = () => {
             return pattern;
           }
 
-          const emptyLine: Step = { A: null, B: null, C: null };
+          const emptyLine: Step = { note: null };
           const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({ ...emptyLine }));
           const newLines: Step[] = [...existingLines, ...extra];
 

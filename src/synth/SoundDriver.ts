@@ -45,9 +45,7 @@ export interface Note {
 }
 
 export interface Step {
-  A: Note | null;
-  B: Note | null;
-  C: Note | null;
+  note: Note | null;
   // Optional per-line volume modifier (0-15) used by the tracker "volume column".
   // When undefined, the track keeps the previous modifier (default is 0xF = no attenuation).
   volume?: number | null;
@@ -136,7 +134,7 @@ export class SoundDriver {
     for (let lineIndex = 0; lineIndex < pattern.step.length; lineIndex++) {
       const step = pattern.step[lineIndex];
       void channel;
-      const note: Note | null = step.A;
+      const note: Note | null = step.note;
 
       if (note) {
         this.processNote(note, channel, events);

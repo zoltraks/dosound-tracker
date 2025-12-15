@@ -1036,9 +1036,7 @@ const App: React.FC = () => {
         step: Array(targetLength)
           .fill(null)
           .map(() => ({
-            A: null,
-            B: null,
-            C: null,
+            note: null,
           })),
       };
 

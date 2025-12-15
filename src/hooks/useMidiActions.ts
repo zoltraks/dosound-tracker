@@ -196,13 +196,11 @@ export function useMidiActions({
 
         while (newPattern.step.length < totalLines) {
           newPattern.step.push({
-            A: null,
-            B: null,
-            C: null,
+            note: null,
           });
         }
 
-        const baseLine = newPattern.step[safeIndex] || { A: null, B: null, C: null };
+        const baseLine = newPattern.step[safeIndex] || { note: null };
         const line: Step = { ...baseLine };
 
         const instrumentId = currentInstrument.id;
@@ -212,7 +210,7 @@ export function useMidiActions({
           instrument: instrumentId
         };
 
-        line.A = note;
+        line.note = note;
         newPattern.step[safeIndex] = line;
 
         handlePatternChange(newPattern);

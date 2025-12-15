@@ -43,10 +43,18 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
     const stepSource = Array.isArray(rawSteps) ? rawSteps : [];
     const step = stepSource.map((rawStep) => {
       const s = (rawStep || {}) as Record<string, unknown>;
+      const legacyNote = (
+        (s.note ??
+          s.A ??
+          s.trackA ??
+          s.B ??
+          s.trackB ??
+          s.C ??
+          s.trackC ??
+          null) as Note | null
+      );
       return {
-        A: (s.A ?? s.trackA ?? null) as Note | null,
-        B: (s.B ?? s.trackB ?? null) as Note | null,
-        C: (s.C ?? s.trackC ?? null) as Note | null,
+        note: legacyNote,
         volume: (s.volume as number | null | undefined) ?? undefined,
       } as Step;
     });
@@ -95,12 +103,12 @@ export const createDefaultSong = (): Song => {
     id: '01',
     name: 'Pattern 01',
     step: Array.from({ length: defaultPatternLength }, (_, i) => {
-      const line: Step = { A: null, B: null, C: null };
+      const line: Step = { note: null };
 
-      if (i % 8 === 0) line.A = { note: 'C', octave: 4, instrument: '00' };
-      if (i % 8 === 2) line.A = { note: 'E', octave: 4, instrument: '00' };
-      if (i % 8 === 4) line.A = { note: 'G', octave: 4, instrument: '00' };
-      if (i % 8 === 6) line.A = { note: 'E', octave: 4, instrument: '00' };
+      if (i % 8 === 0) line.note = { note: 'C', octave: 4, instrument: '00' };
+      if (i % 8 === 2) line.note = { note: 'E', octave: 4, instrument: '00' };
+      if (i % 8 === 4) line.note = { note: 'G', octave: 4, instrument: '00' };
+      if (i % 8 === 6) line.note = { note: 'E', octave: 4, instrument: '00' };
 
       return line;
     }),
@@ -110,9 +118,9 @@ export const createDefaultSong = (): Song => {
     id: '02',
     name: 'Pattern 02',
     step: Array.from({ length: defaultPatternLength }, (_, i) => {
-      const line: Step = { A: null, B: null, C: null };
+      const line: Step = { note: null };
 
-      if (i % 4 === 0) line.A = { note: 'C', octave: 3, instrument: '00' };
+      if (i % 4 === 0) line.note = { note: 'C', octave: 3, instrument: '00' };
 
       return line;
     }),
@@ -122,12 +130,12 @@ export const createDefaultSong = (): Song => {
     id: '03',
     name: 'Pattern 03',
     step: Array.from({ length: defaultPatternLength }, (_, i) => {
-      const line: Step = { A: null, B: null, C: null };
+      const line: Step = { note: null };
 
-      if (i % 8 === 1) line.A = { note: 'G', octave: 5, instrument: '00' };
-      if (i % 8 === 3) line.A = { note: 'E', octave: 5, instrument: '00' };
-      if (i % 8 === 5) line.A = { note: 'C', octave: 5, instrument: '00' };
-      if (i % 8 === 7) line.A = { note: 'E', octave: 5, instrument: '00' };
+      if (i % 8 === 1) line.note = { note: 'G', octave: 5, instrument: '00' };
+      if (i % 8 === 3) line.note = { note: 'E', octave: 5, instrument: '00' };
+      if (i % 8 === 5) line.note = { note: 'C', octave: 5, instrument: '00' };
+      if (i % 8 === 7) line.note = { note: 'E', octave: 5, instrument: '00' };
 
       return line;
     }),
@@ -265,7 +273,7 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
       newLines = existingLines.slice(0, patternLength);
       trimmedLinesInfo.push({ id: pattern.id, name: pattern.name, removed: removedCount });
     } else if (existingLines.length < patternLength) {
-      const emptyLine: Step = { A: null, B: null, C: null };
+      const emptyLine: Step = { note: null };
       const extra = Array.from({ length: patternLength - existingLines.length }, () => ({
         ...emptyLine,
       }));
@@ -278,25 +286,22 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
   const usedInstrumentIds = new Set<string>();
   newPatterns.forEach((pattern) => {
     (pattern.step || []).forEach((line) => {
-      const tracks: TrackKey[] = ['A', 'B', 'C'];
-      tracks.forEach((trackKey: TrackKey) => {
-        type NoteWithLegacyInstrument = Note & { instrument: string | number };
-        const note = line[trackKey] as NoteWithLegacyInstrument | null;
-        if (note && note.instrument !== undefined && note.instrument !== null) {
-          let id = '';
-          if (typeof note.instrument === 'string') {
-            id = note.instrument.trim().toUpperCase();
-          } else if (typeof note.instrument === 'number') {
-            id = Math.floor(note.instrument)
-              .toString(16)
-              .padStart(2, '0')
-              .toUpperCase();
-          }
-          if (id) {
-            usedInstrumentIds.add(id);
-          }
+      type NoteWithLegacyInstrument = Note & { instrument: string | number };
+      const note = line.note as NoteWithLegacyInstrument | null;
+      if (note && note.instrument !== undefined && note.instrument !== null) {
+        let id = '';
+        if (typeof note.instrument === 'string') {
+          id = note.instrument.trim().toUpperCase();
+        } else if (typeof note.instrument === 'number') {
+          id = Math.floor(note.instrument)
+            .toString(16)
+            .padStart(2, '0')
+            .toUpperCase();
         }
-      });
+        if (id) {
+          usedInstrumentIds.add(id);
+        }
+      }
     });
   });
 
@@ -443,9 +448,7 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
 
       const newId = patternIdMap[oldId];
       const newSteps: Step[] = (original.step || []).map((line) => ({
-        A: line.A ? { ...line.A } : null,
-        B: line.B ? { ...line.B } : null,
-        C: line.C ? { ...line.C } : null,
+        note: line.note ? { ...line.note } : null,
         ...(line.volume !== undefined ? { volume: line.volume } : {}),
       }));
 
@@ -486,19 +489,17 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
     const steps = (pattern.step || []).map((line) => {
       const newLine: Step = { ...line };
 
-      (['A', 'B', 'C'] as TrackKey[]).forEach((key) => {
-        const note = newLine[key] as Note | null;
-        if (note && typeof note.instrument === 'string') {
-          const raw = note.instrument.trim().toUpperCase();
-          const mapped = instrumentIdMap[raw];
-          if (mapped) {
-            newLine[key] = {
-              ...note,
-              instrument: mapped,
-            };
-          }
+      const note = newLine.note;
+      if (note && typeof note.instrument === 'string') {
+        const raw = note.instrument.trim().toUpperCase();
+        const mapped = instrumentIdMap[raw];
+        if (mapped) {
+          newLine.note = {
+            ...note,
+            instrument: mapped,
+          };
         }
-      });
+      }
 
       return newLine;
     });

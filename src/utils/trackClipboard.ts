@@ -24,7 +24,7 @@ export function generateClipboardData(
   const steps: TrackClipboardStep[] = [];
 
   for (let i = 0; i < targetLength; i++) {
-    const line: Step = rawLines[i] || { A: null, B: null, C: null };
+    const line: Step = rawLines[i] || { note: null };
     // We assume the trackId passed allows us to select the correct cell, 
     // BUT PatternLine only has trackA, trackB, trackC properties if we map them.
     // However, the caller usually passes the relevant pattern for the *active* track 
@@ -36,7 +36,7 @@ export function generateClipboardData(
     // It does `const cell = line.trackA;` unconditionally.
     // So yes, we just look at trackA of the lines provided.
     
-    const cell = line.A;
+    const cell = line.note;
     const volRaw = line.volume;
     const hasVolume = volRaw !== undefined && volRaw !== null;
 
@@ -231,7 +231,7 @@ export function applyClipboardToLines(
   
   const isLineEmptyForTrack = (line: Step | undefined): boolean => {
     if (!line) return true;
-    if (line.A) return false;
+    if (line.note) return false;
     const vol = line.volume;
     return vol === undefined || vol === null;
   };
@@ -260,9 +260,7 @@ export function applyClipboardToLines(
     lineIndex: number
   ): Step => {
     const line: Step = {
-      A: baseLine.A,
-      B: baseLine.B,
-      C: baseLine.C,
+      note: baseLine.note,
     };
 
     const rawNote = ln.note;
@@ -270,9 +268,9 @@ export function applyClipboardToLines(
       typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
 
     if (isOffNote) {
-      line.A = { note: '===', octave: 0, instrument: '00' };
+      line.note = { note: '===', octave: 0, instrument: '00' };
     } else if (ln.wait === true || ln.space === true) {
-      line.A = null;
+      line.note = null;
     } else if (typeof rawNote === 'string') {
       const parsedKey = parseBaseKeyString(rawNote);
       if (!parsedKey) {
@@ -290,9 +288,9 @@ export function applyClipboardToLines(
         instrument: instId,
       };
 
-      line.A = noteObj;
+      line.note = noteObj;
     } else {
-      line.A = null;
+      line.note = null;
     }
 
     const volRaw = ln.volume;
@@ -310,7 +308,7 @@ export function applyClipboardToLines(
   const newLines: Step[] = [];
 
   for (let i = 0; i < targetLength; i++) {
-    const baseLine = existingLines[i] || { A: null, B: null, C: null };
+    const baseLine = existingLines[i] || { note: null };
     
     // In replace mode, we take the step if available (or default empty), otherwise we fallback to what?
     // Original logic: "if (mode === 'replace') { ... const rawStep = expandedSteps[i]; ... }"
@@ -330,7 +328,7 @@ export function applyClipboardToLines(
         newLines.push(applyClipboardStepToLine(baseLine, rawStep, i));
       } else {
         // Clear line
-        newLines.push({ ...baseLine, A: null, volume: undefined }); 
+        newLines.push({ ...baseLine, note: null, volume: undefined }); 
         // Note: Original code set volume to clamped if exists, else it didn't touch it?
         // Wait, original 'replace' else block: `line.trackA = null;` and `newLines.push(line)`.
         // `line` was initialized with `trackA: baseLine.trackA`. 

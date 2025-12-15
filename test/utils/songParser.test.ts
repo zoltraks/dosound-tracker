@@ -34,22 +34,22 @@ describe('parseSongFromYaml', () => {
     expect(pattern1.step.length).toBe(4);
 
     // Pattern 0: C-4 then 3 spaces
-    expect(pattern0.step[0].A).not.toBeNull();
-    expect(pattern0.step[0].A?.note).toBe('C');
-    expect(pattern0.step[0].A?.octave).toBe(4);
-    expect(pattern0.step[0].A?.instrument).toBe('00');
-    expect(pattern0.step[1].A).toBeNull();
-    expect(pattern0.step[2].A).toBeNull();
-    expect(pattern0.step[3].A).toBeNull();
+    expect(pattern0.step[0].note).not.toBeNull();
+    expect(pattern0.step[0].note?.note).toBe('C');
+    expect(pattern0.step[0].note?.octave).toBe(4);
+    expect(pattern0.step[0].note?.instrument).toBe('00');
+    expect(pattern0.step[1].note).toBeNull();
+    expect(pattern0.step[2].note).toBeNull();
+    expect(pattern0.step[3].note).toBeNull();
 
     // Pattern 1: space, E-4, then 2 spaces
-    expect(pattern1.step[0].A).toBeNull();
-    expect(pattern1.step[1].A).not.toBeNull();
-    expect(pattern1.step[1].A?.note).toBe('E');
-    expect(pattern1.step[1].A?.octave).toBe(4);
-    expect(pattern1.step[1].A?.instrument).toBe('00');
-    expect(pattern1.step[2].A).toBeNull();
-    expect(pattern1.step[3].A).toBeNull();
+    expect(pattern1.step[0].note).toBeNull();
+    expect(pattern1.step[1].note).not.toBeNull();
+    expect(pattern1.step[1].note?.note).toBe('E');
+    expect(pattern1.step[1].note?.octave).toBe(4);
+    expect(pattern1.step[1].note?.instrument).toBe('00');
+    expect(pattern1.step[2].note).toBeNull();
+    expect(pattern1.step[3].note).toBeNull();
 
     // Instruments
     expect(song.instrument.length).toBeGreaterThan(0);

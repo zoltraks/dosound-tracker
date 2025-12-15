@@ -130,7 +130,7 @@ export function useTrackOperations({
       for (let i = 0; i < targetLength; i++) {
         const line = existingLines[i];
         if (line) {
-          const hasNote = !!line.A;
+          const hasNote = !!line.note;
           const hasVol = line.volume !== undefined && line.volume !== null;
           if (hasNote || hasVol) {
             hasExistingData = true;

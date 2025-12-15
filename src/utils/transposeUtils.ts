@@ -105,7 +105,7 @@ export function performTranspose(
 
     const newSteps = (pattern.step || []).map(step => {
       const newStep = { ...step } as Step;
-      const cell = newStep.A;
+      const cell = newStep.note;
 
       if (!cell || cell.note === '===') {
         return newStep;
@@ -141,7 +141,7 @@ export function performTranspose(
       const newOctave = Math.floor(newSemitone / 12);
       const newNoteIndex = newSemitone % 12;
 
-      newStep.A = {
+      newStep.note = {
         ...cell,
         note: NOTES[newNoteIndex],
         octave: newOctave,

@@ -12,7 +12,7 @@ export function createPatternForSong(song: Song, patternId: string): CreatePatte
   const newPattern: Pattern = {
     id: patternId,
     name: `Pattern ${patternId}`,
-    step: Array.from({ length: targetLength }, () => ({ A: null, B: null, C: null } as Step)),
+    step: Array.from({ length: targetLength }, () => ({ note: null } as Step)),
   };
 
   const updatedSong: Song = {

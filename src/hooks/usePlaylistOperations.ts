@@ -218,9 +218,7 @@ export function usePlaylistOperations({
 
       const newId = allocatePatternId();
       const newSteps = original.step.map(step => ({
-        A: step.A ? { ...step.A } : null,
-        B: step.B ? { ...step.B } : null,
-        C: step.C ? { ...step.C } : null,
+        note: step.note ? { ...step.note } : null,
         ...(step.volume !== undefined ? { volume: step.volume } : {}),
       }));
 

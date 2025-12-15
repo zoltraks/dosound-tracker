@@ -245,7 +245,7 @@ export const parseSongFromYaml = (content: string): Song => {
 
     for (let i = 0; i < clampedLength; i++) {
       const rawLineNode = expandedLineNodes[i];
-      const line: Step = { A: null, B: null, C: null };
+      const line: Step = { note: null };
 
       if (rawLineNode && typeof rawLineNode === 'object') {
         const ln = rawLineNode as PatternStepNodeYaml;
@@ -256,7 +256,7 @@ export const parseSongFromYaml = (content: string): Song => {
 
         if (ln.off === true || isOffNote) {
           // Empty or note-off line: currently treated as space
-          line.A = {
+          line.note = {
             note: '===',
             octave: 0,
             instrument: '00',
@@ -276,7 +276,7 @@ export const parseSongFromYaml = (content: string): Song => {
               ? ln.instrument.trim().toUpperCase()
               : '00';
 
-          line.A = {
+          line.note = {
             note: parsedKey.note,
             octave: parsedKey.octave,
             instrument: instId,

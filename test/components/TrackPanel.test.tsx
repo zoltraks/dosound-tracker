@@ -9,15 +9,11 @@ const createTestPattern = (): Pattern => ({
   name: 'Test Pattern',
   step: [
     {
-      A: { note: 'C', octave: 4, instrument: '00' },
-      B: null,
-      C: null,
+      note: { note: 'C', octave: 4, instrument: '00' },
       volume: null,
     },
     {
-      A: null,
-      B: null,
-      C: null,
+      note: null,
       volume: null,
     },
   ],
