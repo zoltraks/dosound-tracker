@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, SHIFT_MIN, SHIFT_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
@@ -40,6 +39,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
 
   useEffect(() => {
     if (data) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setEnvelopeData(data);
     }
   }, [data]);

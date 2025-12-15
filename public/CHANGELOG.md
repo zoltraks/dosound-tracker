@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.2.3
+
+MIDI velocity support, faster envelope editing, richer manual markdown rendering, and continued schema cleanup since 1.2.2.
+
+- Added **MIDI velocity** support so note velocity can optionally scale live input volume and be passed through to MIDI OUT, improving expressiveness when playing from external controllers.
+- Added new **envelope editing shortcuts** for copying, resetting, rotating, and incrementing values (including arpeggio/shift helpers) to speed up instrument programming from the keyboard.
+- Upgraded the in-app **MANUAL** renderer with markdown tables and `###` headings plus themed styling so documentation pages can include richer structured content.
+- Updated **YAML schema naming** so songs export `line` (instead of `playlist`), pattern steps export `wait` (instead of `space`), and instruments export `shift` (UI label: Arpeggio); older YAML keys are still accepted on import.
+- Continued internal **refactoring** by simplifying pattern steps to a single `note` field and further modularizing playback/MIDI utilities without changing core workflows.
+
 ## Version 1.2.2
 
 Playback smoothing, richer documentation viewers, track coloring and mobile UI polish, and ongoing refactors since 1.2.1.
