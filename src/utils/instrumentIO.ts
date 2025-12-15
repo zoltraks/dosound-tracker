@@ -17,7 +17,7 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
   const volumeEnv = trimEnvelopeLocal(currentInstrument.volume);
   const arpeggioEnv = trimEnvelopeLocal(currentInstrument.arpeggio);
   const pitchEnv = trimEnvelopeLocal(currentInstrument.pitch);
-  const noiseEnv = trimEnvelopeLocal(currentInstrument.noiseEnvelope);
+  const noiseEnv = trimEnvelopeLocal(currentInstrument.noise);
   const modeEnv = trimEnvelopeLocal(currentInstrument.mode);
 
   const isZeroDefaultLocal = (values: number[]): boolean =>
@@ -211,7 +211,7 @@ export const parseInstrumentFromText = (
     volume: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0f),
     arpeggio: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
     pitch: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
-    noiseEnvelope: expandEnvelope('noiseEnvelope', ENVELOPE_LENGTH, 0),
+    noise: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
     base: (() => {
       const parsedBase = parseBaseKey(instNode.base);
       if (!parsedBase) return DEFAULT_BASE_KEY;

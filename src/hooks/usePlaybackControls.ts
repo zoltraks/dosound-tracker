@@ -29,20 +29,20 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
     updatePatternLength,
     updateSongLoop,
     setPatternLoopMode,
-  } = useSequencer(currentSong.speed, currentSong.patternLength || PATTERN_LENGTH);
+  } = useSequencer(currentSong.speed, currentSong.length || PATTERN_LENGTH);
 
   useEffect(() => {
     updateSpeed(currentSong.speed);
   }, [currentSong.speed, updateSpeed]);
 
   useEffect(() => {
-    updatePatternLength(currentSong.patternLength || PATTERN_LENGTH);
-  }, [currentSong.patternLength, updatePatternLength]);
+    updatePatternLength(currentSong.length || PATTERN_LENGTH);
+  }, [currentSong.length, updatePatternLength]);
 
   useEffect(() => {
-    const playlistLength = currentSong.playlist.length;
+    const playlistLength = currentSong.line.length;
     updateSongLoop(playlistLength, currentSong.loop as number | null | undefined);
-  }, [currentSong.playlist, currentSong.loop, updateSongLoop]);
+  }, [currentSong.line, currentSong.loop, updateSongLoop]);
 
   return {
     sequencerState,

@@ -22,6 +22,7 @@ export const YM_LOG_VOLUME_TABLE: number[] = [
   1.0000  // 15: max
 ];
 import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
+import type { Instrument } from './SoundDriver';
 
 export interface YMChannel {
   tonePeriod: number;
@@ -40,18 +41,6 @@ export interface YMState {
   noisePeriod: number;
   envelopeShape: number;
   envelopeEnabled: boolean;
-}
-
-// Forward declaration for Instrument interface
-export interface Instrument {
-  id: string;
-  name: string;
-  volume: number[];
-  arpeggio: number[];
-  pitch: number[];
-  noiseEnvelope: number[];
-  mode: number[];
-  base?: string;
 }
 
 export class YM2149 {
@@ -356,12 +345,12 @@ export class YM2149 {
   public applyNoiseEnvelopeValue = (instrument: Instrument, tick: number) => {
     let noisePeriod: number;
     
-    if (!instrument.noiseEnvelope || instrument.noiseEnvelope.length === 0) {
+    if (!instrument.noise || instrument.noise.length === 0) {
       // Default noise period when no envelope is defined
       noisePeriod = 15; // Mid-range noise period
     } else {
-      const noiseIndex = Math.min(Math.max(tick, 0), instrument.noiseEnvelope.length - 1);
-      const noiseValue = instrument.noiseEnvelope[noiseIndex];
+      const noiseIndex = Math.min(Math.max(tick, 0), instrument.noise.length - 1);
+      const noiseValue = instrument.noise[noiseIndex];
       noisePeriod = Math.max(0, Math.min(31, typeof noiseValue === 'number' ? noiseValue : 0));
     }
     

@@ -4,7 +4,6 @@ import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
-import type { Instrument as YmInstrument } from '../synth/YM2149';
 import LogoDark from '../assets/svg/logo-dark.svg';
 import LogoLight from '../assets/svg/logo-light.svg';
 
@@ -84,7 +83,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     }
 
     const channel = previewChannel;
-    const instrument: YmInstrument = currentInstrument as unknown as YmInstrument;
+    const instrument: Instrument = currentInstrument;
     const noteData = { note, octave };
 
     // Initialize envelope timing

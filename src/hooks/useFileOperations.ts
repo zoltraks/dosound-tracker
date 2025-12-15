@@ -226,17 +226,17 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
           filenameBase = `${safeTitle}_inst_${safeInstId}`;
         } else {
           let scopedSong: Song = song;
-          if (ctx.type === 'pattern' && song.playlist.length > 0) {
-            const playlistLength = song.playlist.length;
+          if (ctx.type === 'pattern' && song.line.length > 0) {
+            const playlistLength = song.line.length;
             const rawIndex = ctx.playlistIndex;
             const index = Math.max(
               0,
               Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
             );
-            const entry = song.playlist[index];
+            const entry = song.line[index];
             scopedSong = {
               ...song,
-              playlist: [entry],
+              line: [entry],
               loop: null,
             };
           }
@@ -304,17 +304,17 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         }
 
         let scopedSong: Song = song;
-        if (ctx.type === 'pattern' && song.playlist.length > 0) {
-          const playlistLength = song.playlist.length;
+        if (ctx.type === 'pattern' && song.line.length > 0) {
+          const playlistLength = song.line.length;
           const rawIndex = ctx.playlistIndex;
           const index = Math.max(
             0,
             Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
           );
-          const entry = song.playlist[index];
+          const entry = song.line[index];
           scopedSong = {
             ...song,
-            playlist: [entry],
+            line: [entry],
             loop: null,
           };
         }
@@ -367,17 +367,17 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
           filenameBase = `${safeTitle}_inst_${safeInstId}`;
         } else {
           let scopedSong: Song = song;
-          if (ctx.type === 'pattern' && song.playlist.length > 0) {
-            const playlistLength = song.playlist.length;
+          if (ctx.type === 'pattern' && song.line.length > 0) {
+            const playlistLength = song.line.length;
             const rawIndex = ctx.playlistIndex;
             const index = Math.max(
               0,
               Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
             );
-            const entry = song.playlist[index];
+            const entry = song.line[index];
             scopedSong = {
               ...song,
-              playlist: [entry],
+              line: [entry],
               loop: null,
             };
           }
@@ -446,17 +446,17 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         }
 
         let scopedSong: Song = song;
-        if (ctx.type === 'pattern' && song.playlist.length > 0) {
-          const playlistLength = song.playlist.length;
+        if (ctx.type === 'pattern' && song.line.length > 0) {
+          const playlistLength = song.line.length;
           const rawIndex = ctx.playlistIndex;
           const index = Math.max(
             0,
             Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
           );
-          const entry = song.playlist[index];
+          const entry = song.line[index];
           scopedSong = {
             ...song,
-            playlist: [entry],
+            line: [entry],
             loop: null,
           };
         }
@@ -526,17 +526,17 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         }
 
         let scopedSong: Song = song;
-        if (ctx.type === 'pattern' && song.playlist.length > 0) {
-          const playlistLength = song.playlist.length;
+        if (ctx.type === 'pattern' && song.line.length > 0) {
+          const playlistLength = song.line.length;
           const rawIndex = ctx.playlistIndex;
           const index = Math.max(
             0,
             Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
           );
-          const entry = song.playlist[index];
+          const entry = song.line[index];
           scopedSong = {
             ...song,
-            playlist: [entry],
+            line: [entry],
             loop: null,
           };
         }

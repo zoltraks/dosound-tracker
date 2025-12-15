@@ -296,11 +296,7 @@ const App: React.FC = () => {
 
   const patternsById = useMemo(() => {
     const map = new Map<string, Pattern>();
-    const patterns = Array.isArray(currentSong.pattern)
-      ? currentSong.pattern
-      : Array.isArray(currentSong.patterns)
-        ? currentSong.patterns
-        : [];
+    const patterns = currentSong.pattern;
 
     for (const pattern of patterns) {
       if (pattern && pattern.id) {
@@ -308,15 +304,11 @@ const App: React.FC = () => {
       }
     }
     return map;
-  }, [currentSong.pattern, currentSong.patterns]);
+  }, [currentSong.pattern]);
 
   const instrumentsById = useMemo(() => {
     const map = new Map<string, Instrument>();
-    const instruments = Array.isArray(currentSong.instrument)
-      ? currentSong.instrument
-      : Array.isArray(currentSong.instruments)
-        ? currentSong.instruments
-        : [];
+    const instruments = currentSong.instrument;
 
     for (const instrument of instruments) {
       if (instrument && instrument.id) {
@@ -324,7 +316,7 @@ const App: React.FC = () => {
       }
     }
     return map;
-  }, [currentSong.instrument, currentSong.instruments]);
+  }, [currentSong.instrument]);
   const {
     sequencerState,
     stop,

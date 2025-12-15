@@ -3,12 +3,11 @@ import type { NavigationSection } from '../constants/navigation';
 import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
-import type { Instrument as YmInstrument } from '../synth/YM2149';
 import { PianoKey } from './PianoKey';
 import { generatePianoKeys, parseBaseKey } from '../utils/pianoUtils';
 import type { PianoKeyConfig } from '../utils/pianoUtils';
 
-type PreviewInstrument = YmInstrument & { sustain?: number | null };
+type PreviewInstrument = Instrument;
 
 interface PianoKeyboardProps {
   activeSection: NavigationSection;

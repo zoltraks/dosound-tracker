@@ -4,11 +4,10 @@ import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument, Step } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
-import type { Instrument as YmInstrument } from '../synth/YM2149';
 import { TrackLine } from './TrackLine';
 import { computeEffectiveVolume } from '../utils/trackUtils';
 
-type PreviewInstrument = YmInstrument & { sustain?: number | null };
+type PreviewInstrument = Instrument;
 
 interface TrackPanelProps {
   trackId: 'A' | 'B' | 'C';
@@ -657,7 +656,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       <div className="track-content" style={{ userSelect: 'none' }}>
         {(() => {
-          const patternSteps: Step[] = pattern?.step ?? pattern?.lines ?? [];
+          const patternSteps: Step[] = pattern?.step ?? [];
           return trackNotes.map((noteData, lineIndex) => {
             const volume = patternSteps[lineIndex]?.volume ?? null;
             const isCurrentLine = lineIndex === currentLine && isActive;

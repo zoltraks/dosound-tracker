@@ -17,12 +17,12 @@ const isZeroDefault = (values: number[]): boolean =>
   values.length === 0 || (values.length === 1 && values[0] === 0);
 
 export const buildSongYamlForExport = (currentSong: Song): string => {
-  const instrumentSource = currentSong.instrument ?? currentSong.instruments ?? [];
+  const instrumentSource = currentSong.instrument;
   const instruments = instrumentSource.map((inst, index) => {
     const volumeEnv = trimEnvelope(inst.volume);
     const arpeggioEnv = trimEnvelope(inst.arpeggio);
     const pitchEnv = trimEnvelope(inst.pitch);
-    const noiseEnv = trimEnvelope(inst.noise ?? inst.noiseEnvelope ?? []);
+    const noiseEnv = trimEnvelope(inst.noise);
     const modeEnv = trimEnvelope(inst.mode);
 
     const number =
@@ -105,7 +105,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   // Playlist: A/B/C keys instead of trackA/trackB/trackC.
   // Omit tracks that have no pattern assigned ("--").
-  const lineSource = currentSong.line ?? currentSong.playlist ?? [];
+  const lineSource = currentSong.line;
   type LegacyLineEntry = {
     A?: string;
     B?: string;
@@ -128,15 +128,15 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   // Patterns: single-track (track A) steps with note strings or space,
   // plus optional per-line volume modifier.
-  const targetLength = currentSong.length ?? currentSong.patternLength ?? PATTERN_LENGTH;
-  const patternSource = currentSong.pattern ?? currentSong.patterns ?? [];
+  const targetLength = currentSong.length ?? PATTERN_LENGTH;
+  const patternSource = currentSong.pattern;
   const patterns = patternSource.map((pattern, index) => {
     const number =
       typeof pattern.id === 'string' && pattern.id.trim()
         ? pattern.id
         : index.toString(16).padStart(2, '0').toUpperCase();
 
-    const rawLines = pattern.step ?? pattern.lines ?? [];
+    const rawLines = pattern.step;
     type PatternStep = {
       wait?: boolean | number;
       off?: boolean;
@@ -149,7 +149,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
     for (let i = 0; i < targetLength; i += 1) {
       const raw: Step = rawLines[i] || { A: null, B: null, C: null };
-      const cell = raw.A ?? raw.trackA ?? null;
+      const cell = raw.A ?? null;
 
       const volRaw = raw.volume;
       const hasVolume = volRaw !== undefined && volRaw !== null;

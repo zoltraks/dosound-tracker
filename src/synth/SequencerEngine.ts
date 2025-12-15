@@ -22,14 +22,14 @@ export class SequencerEngine {
   private options: SequencerOptions;
 
   constructor(song: Song, options: Partial<SequencerOptions> = {}) {
-    this.instrumentsById = new Map(song.instruments.map((inst) => [inst.id, inst]));
-    this.patterns = song.patterns;
+    this.instrumentsById = new Map(song.instrument.map((inst) => [inst.id, inst]));
+    this.patterns = song.pattern;
 
     const baseSpeed = Number.isFinite(song.speed) && song.speed > 0 ? Math.floor(song.speed) : 6;
     const clampedSpeed = Math.max(2, baseSpeed);
     const evenSpeed = clampedSpeed & ~1;
 
-    const fallbackPatternLength = song.patternLength || 64;
+    const fallbackPatternLength = song.length || 64;
 
     this.options = {
       ticksPerRow: Math.max(1, evenSpeed | 0),

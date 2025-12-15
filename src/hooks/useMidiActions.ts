@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
-import type { Song, Pattern, PatternLine, Note, Instrument } from '../synth/SoundDriver';
+import type { Song, Pattern, Step, Note, Instrument } from '../synth/SoundDriver';
 import type { YM2149 } from '../synth/YM2149';
 import type { MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
@@ -186,28 +186,24 @@ export function useMidiActions({
           return;
         }
 
-        const totalLines = currentSong.patternLength || PATTERN_LENGTH;
+        const totalLines = currentSong.length || PATTERN_LENGTH;
         const safeIndex = Math.max(0, Math.min(sharedCurrentLine, totalLines - 1));
 
         const newPattern: Pattern = {
           ...pattern,
-          lines: [...pattern.lines]
+          step: [...pattern.step]
         };
 
-        while (newPattern.lines.length < totalLines) {
-          newPattern.lines.push({
-            trackA: null,
-            trackB: null,
-            trackC: null
+        while (newPattern.step.length < totalLines) {
+          newPattern.step.push({
+            A: null,
+            B: null,
+            C: null,
           });
         }
 
-        const baseLine = newPattern.lines[safeIndex] || {
-          trackA: null,
-          trackB: null,
-          trackC: null
-        };
-        const line: PatternLine = { ...baseLine };
+        const baseLine = newPattern.step[safeIndex] || { A: null, B: null, C: null };
+        const line: Step = { ...baseLine };
 
         const instrumentId = currentInstrument.id;
         const note: Note = {
@@ -216,8 +212,8 @@ export function useMidiActions({
           instrument: instrumentId
         };
 
-        line.trackA = note;
-        newPattern.lines[safeIndex] = line;
+        line.A = note;
+        newPattern.step[safeIndex] = line;
 
         handlePatternChange(newPattern);
 
@@ -605,7 +601,7 @@ export function useMidiActions({
     [
       activeSection,
       currentInstrument,
-      currentSong.patternLength,
+      currentSong.length,
       getCurrentPatternForTrack,
       handlePatternChange,
       lastTrackId,

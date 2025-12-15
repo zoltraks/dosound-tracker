@@ -27,7 +27,7 @@ export const isInstrumentEmpty = (inst: Instrument | undefined | null): boolean 
   const volumeEmpty = isAllZero(inst.volume);
   const arpeggioEmpty = isAllZero(inst.arpeggio);
   const pitchEmpty = isAllZero(inst.pitch);
-  const noiseEmpty = isAllZero(inst.noiseEnvelope);
+  const noiseEmpty = isAllZero(inst.noise);
   const modeEmpty = isAllZero(inst.mode);
 
   return nameEmpty && volumeEmpty && arpeggioEmpty && pitchEmpty && noiseEmpty && modeEmpty;

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import type { RefObject, MutableRefObject } from 'react';
-import type { Song, Instrument, PatternLine } from '../synth/SoundDriver';
+import type { Song, Instrument, Step } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS } from '../constants/music';
 import type { NavigationSection } from '../constants/navigation';
 import type { YM2149 } from '../synth/YM2149';
@@ -128,7 +128,7 @@ export function useInstrumentActions({
   }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString, ym2149Ref, playInstTimerRef, playInstStepRef]);
 
   const handleCloneInstrument = useCallback(() => {
-    const instruments = currentSong.instruments;
+    const instruments = currentSong.instrument;
     if (instruments.length >= MAX_INSTRUMENTS) {
       setInstrumentOperationSummary('No free instrument slots available.');
       return;
@@ -181,13 +181,13 @@ export function useInstrumentActions({
       updatedInstruments.push(clonedInstrument);
     }
 
-    updateSong({ instruments: updatedInstruments });
+    updateSong({ instrument: updatedInstruments });
     setCurrentInstrument(clonedInstrument);
     setActiveSection('instrumentList');
-  }, [currentSong.instruments, currentInstrument, updateSong, setCurrentInstrument, setActiveSection, setInstrumentOperationSummary]);
+  }, [currentSong.instrument, currentInstrument, updateSong, setCurrentInstrument, setActiveSection, setInstrumentOperationSummary]);
 
   const handleDeleteInstrument = useCallback(() => {
-    const instruments = currentSong.instruments;
+    const instruments = currentSong.instrument;
     if (!currentInstrument || instruments.length === 0) {
       return;
     }
@@ -206,19 +206,19 @@ export function useInstrumentActions({
     let usageCount = 0;
     let patternCount = 0;
 
-    currentSong.patterns.forEach(pattern => {
+    currentSong.pattern.forEach(pattern => {
       if (!pattern) {
         return;
       }
 
       let patternHasUsage = false;
 
-      (pattern.lines || []).forEach(line => {
+      (pattern.step || []).forEach(line => {
         if (!line) {
           return;
         }
 
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
+        (['A', 'B', 'C'] as Array<'A' | 'B' | 'C'>).forEach(key => {
           const note = line[key];
           if (!note) {
             return;
@@ -247,14 +247,14 @@ export function useInstrumentActions({
         volume: Array(32).fill(0),
         arpeggio: Array(32).fill(0),
         pitch: Array(32).fill(0),
-        noiseEnvelope: Array(32).fill(0),
+        noise: Array(32).fill(0),
         mode: Array(32).fill(0),
       };
 
       const newInstruments = [...instruments];
       newInstruments[index] = clearedInstrument;
 
-      updateSong({ instruments: newInstruments });
+      updateSong({ instrument: newInstruments });
       setCurrentInstrument(clearedInstrument);
       setActiveSection('instrumentList');
       return;
@@ -272,8 +272,8 @@ export function useInstrumentActions({
     });
     setIsInstrumentDeleteOpen(true);
   }, [
-    currentSong.instruments,
-    currentSong.patterns,
+    currentSong.instrument,
+    currentSong.pattern,
     currentInstrument,
     normalizeInstrumentId,
     updateSong,
@@ -286,7 +286,7 @@ export function useInstrumentActions({
 
   const handleMoveInstrument = useCallback(
     (index: number, direction: 'up' | 'down') => {
-      const instruments = currentSong.instruments;
+      const instruments = currentSong.instrument;
       const length = instruments.length;
 
       if (length === 0) {
@@ -328,11 +328,11 @@ export function useInstrumentActions({
         };
       }
 
-      const remappedPatterns = currentSong.patterns.map(pattern => {
-        const lines = (pattern.lines || []).map(line => {
-          const newLine = { ...line };
+      const remappedPatterns = currentSong.pattern.map(pattern => {
+        const step = (pattern.step || []).map(line => {
+          const newLine: Step = { ...line };
 
-          (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
+          (['A', 'B', 'C'] as Array<'A' | 'B' | 'C'>).forEach(key => {
             const note = newLine[key];
             if (note && typeof note.instrument === 'string') {
               const raw = note.instrument.trim().toUpperCase();
@@ -351,13 +351,13 @@ export function useInstrumentActions({
 
         return {
           ...pattern,
-          lines,
+          step,
         };
       });
 
       updateSong({
-        instruments: newInstruments,
-        patterns: remappedPatterns,
+        instrument: newInstruments,
+        pattern: remappedPatterns,
       });
 
       let nextCurrentInstrument = currentInstrument;
@@ -383,7 +383,7 @@ export function useInstrumentActions({
 
       setActiveSection('instrumentList');
     },
-    [currentSong.instruments, currentSong.patterns, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]
+    [currentSong.instrument, currentSong.pattern, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]
   );
 
   const handleCancelInstrumentDelete = useCallback(() => {
@@ -402,8 +402,8 @@ export function useInstrumentActions({
       return;
     }
 
-    const instruments = currentSong.instruments;
-    const patterns = currentSong.patterns;
+    const instruments = currentSong.instrument;
+    const patterns = currentSong.pattern;
 
     const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
     if (index === -1) {
@@ -422,7 +422,7 @@ export function useInstrumentActions({
       volume: Array(32).fill(0),
       arpeggio: Array(32).fill(0),
       pitch: Array(32).fill(0),
-      noiseEnvelope: Array(32).fill(0),
+      noise: Array(32).fill(0),
       mode: Array(32).fill(0),
     };
 
@@ -438,15 +438,11 @@ export function useInstrumentActions({
       }
 
       let patternChanged = false;
-      const newLines = (pattern.lines || []).map(line => {
-        if (!line) {
-          return line;
-        }
-
-        const newLine: PatternLine = { ...line };
+      const newStep = (pattern.step || []).map(line => {
+        const newLine: Step = { ...line };
         let lineChanged = false;
 
-        (['trackA', 'trackB', 'trackC'] as Array<'trackA' | 'trackB' | 'trackC'>).forEach(key => {
+        (['A', 'B', 'C'] as Array<'A' | 'B' | 'C'>).forEach(key => {
           const note = newLine[key];
           if (!note) {
             return;
@@ -471,7 +467,7 @@ export function useInstrumentActions({
         patternsTouched++;
         return {
           ...pattern,
-          lines: newLines,
+          step: newStep,
         };
       }
 
@@ -479,8 +475,8 @@ export function useInstrumentActions({
     });
 
     updateSong({
-      instruments: newInstruments,
-      patterns: updatedPatterns,
+      instrument: newInstruments,
+      pattern: updatedPatterns,
     });
 
     setCurrentInstrument(clearedInstrument);
@@ -504,8 +500,8 @@ export function useInstrumentActions({
 
     setInstrumentOperationSummary(lines.join('\n'));
   }, [
-    currentSong.instruments,
-    currentSong.patterns,
+    currentSong.instrument,
+    currentSong.pattern,
     instrumentDeleteUsage.instrumentId,
     instrumentDeleteUsage.instrumentName,
     instrumentDeleteUsage.patternCount,
@@ -530,8 +526,8 @@ export function useInstrumentActions({
       return;
     }
 
-    const instruments = currentSong.instruments;
-    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
+    const instruments = currentSong.instrument;
+    const index = instruments.findIndex((inst: Instrument | undefined) => normalizeInstrumentId(inst?.id) === targetIdNorm);
     if (index === -1) {
       setIsInstrumentDeleteOpen(false);
       setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
@@ -548,14 +544,14 @@ export function useInstrumentActions({
       volume: Array(32).fill(0),
       arpeggio: Array(32).fill(0),
       pitch: Array(32).fill(0),
-      noiseEnvelope: Array(32).fill(0),
+      noise: Array(32).fill(0),
       mode: Array(32).fill(0),
     };
 
     const newInstruments = [...instruments];
     newInstruments[index] = clearedInstrument;
 
-    updateSong({ instruments: newInstruments });
+    updateSong({ instrument: newInstruments });
     setCurrentInstrument(clearedInstrument);
     setActiveSection('instrumentList');
     setIsInstrumentDeleteOpen(false);
@@ -577,7 +573,7 @@ export function useInstrumentActions({
 
     setInstrumentOperationSummary(lines.join('\n'));
   }, [
-    currentSong.instruments,
+    currentSong.instrument,
     instrumentDeleteUsage.instrumentId,
     instrumentDeleteUsage.instrumentName,
     instrumentDeleteUsage.patternCount,

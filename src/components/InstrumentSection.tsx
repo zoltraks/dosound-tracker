@@ -108,7 +108,6 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
       arpeggio: Array(ENVELOPE_LENGTH).fill(0),
       pitch: Array(ENVELOPE_LENGTH).fill(0),
       noise: Array(ENVELOPE_LENGTH).fill(0),
-      noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
       mode: Array(ENVELOPE_LENGTH).fill(0)
     };
   }, [instruments]);

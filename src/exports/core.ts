@@ -1,4 +1,4 @@
-import type { Song, Instrument, Pattern, PatternLine } from '../synth/SoundDriver';
+import type { Song, Instrument, Pattern, Step } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
@@ -11,10 +11,10 @@ import {
 function normalizeSongForExport(song: Song): Song {
   return {
     ...song,
-    length: song.length ?? song.patternLength ?? PATTERN_LENGTH,
-    line: song.line ?? song.playlist ?? [],
-    pattern: song.pattern ?? song.patterns ?? [],
-    instrument: song.instrument ?? song.instruments ?? [],
+    length: song.length ?? PATTERN_LENGTH,
+    line: song.line ?? [],
+    pattern: song.pattern ?? [],
+    instrument: song.instrument ?? [],
   };
 }
 
@@ -80,7 +80,7 @@ function formatFramesToAssembly(frames: SimulationFrame[], song: Song, strategy:
       // Also force tone registers to be re-emitted after the marker so that each
       // playlist position starts with explicit TA/TB/TC writes, even if the
       // underlying period value did not change.
-      const patternLength = song.length ?? song.patternLength ?? 64;
+      const patternLength = song.length ?? 64;
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
 
@@ -173,7 +173,7 @@ function formatFramesToAssembly(frames: SimulationFrame[], song: Song, strategy:
       const toneMeta = frame.toneMeta || {};
       
       // Add beat marker after each completed playlist position (every patternLength lines)
-      const patternLength = song.length ?? song.patternLength ?? 64;
+      const patternLength = song.length ?? 64;
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
       }
@@ -406,7 +406,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   const arpeggioEnv = instrument.arpeggio || [];
   const pitchEnv = instrument.pitch || [];
   const modeEnv = instrument.mode || [];
-  const noiseEnv = instrument.noise ?? instrument.noiseEnvelope ?? [];
+  const noiseEnv = instrument.noise || [];
 
   const clampVol = (v: number) => Math.max(0, Math.min(0x0f, v | 0));
   const vols = volumeEnv.map(clampVol);
@@ -1379,7 +1379,7 @@ function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): S
 
   const base = parseBaseKeyForExport(instrument.base || 'C-4');
 
-  const step: PatternLine[] = [];
+  const step: Step[] = [];
   for (let i = 0; i < patternLength; i++) {
     step.push({
       A: i === 0 ? { note: base.note, octave: base.octave, instrument: instrument.id } : null,

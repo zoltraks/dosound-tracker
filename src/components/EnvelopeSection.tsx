@@ -90,9 +90,9 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
         type="noise"
         activeSection={activeSection}
         setActiveSection={setActiveSection}
-        data={currentInstrument.noiseEnvelope}
+        data={currentInstrument.noise}
         onChange={(data: number[]) => {
-          updateInstrument({ noiseEnvelope: data });
+          updateInstrument({ noise: data });
         }}
       />
 

@@ -7,31 +7,31 @@ const createTestSong = (): Song => ({
   author: 'Test',
   year: 2025,
   speed: 6,
-  patternLength: 4,
+  length: 4,
   loop: 0,
-  patterns: [
+  pattern: [
     {
       id: '00',
       name: 'Pattern 00',
-      lines: [
-        { trackA: null, trackB: null, trackC: null, volume: null },
-        { trackA: null, trackB: null, trackC: null, volume: null },
-        { trackA: null, trackB: null, trackC: null, volume: null },
-        { trackA: null, trackB: null, trackC: null, volume: null },
+      step: [
+        { A: null, B: null, C: null, volume: null },
+        { A: null, B: null, C: null, volume: null },
+        { A: null, B: null, C: null, volume: null },
+        { A: null, B: null, C: null, volume: null },
       ],
     },
   ],
-  playlist: [
-    { trackA: '00', trackB: '--', trackC: '--' },
+  line: [
+    { A: '00', B: '--', C: '--' },
   ],
-  instruments: [
+  instrument: [
     {
       id: '00',
       name: 'Inst',
       volume: [0x0f],
       arpeggio: [0],
       pitch: [0],
-      noiseEnvelope: [0],
+      noise: [0],
       mode: [0],
       base: 'C-4',
       octave: 4,

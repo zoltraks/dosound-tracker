@@ -21,7 +21,6 @@ export interface Instrument {
   arpeggio: number[];
   pitch: number[];
   noise: number[];
-  noiseEnvelope?: number[];
   mode: number[];
   /** Optional base key used for keyboard preview and pitch calculations. */
   base?: string;
@@ -49,21 +48,15 @@ export interface Step {
   A: Note | null;
   B: Note | null;
   C: Note | null;
-  trackA?: Note | null;
-  trackB?: Note | null;
-  trackC?: Note | null;
   // Optional per-line volume modifier (0-15) used by the tracker "volume column".
   // When undefined, the track keeps the previous modifier (default is 0xF = no attenuation).
   volume?: number | null;
 }
 
-export type PatternLine = Step;
-
 export interface Pattern {
   id: string;
   name: string;
   step: Step[];
-  lines?: PatternLine[];
 }
 
 export interface Line {
@@ -72,26 +65,16 @@ export interface Line {
   C: string;
 }
 
-export interface PlaylistEntry {
-  trackA: string;
-  trackB: string;
-  trackC: string;
-}
-
 export interface Song {
   title: string;
   author: string;
   year: number;
   speed: number;
   length: number;
-  patternLength?: number;
   loop?: number | null;
   pattern: Pattern[];
-  patterns?: Pattern[];
   line: Line[];
-  playlist?: PlaylistEntry[];
   instrument: Instrument[];
-  instruments?: Instrument[];
 }
 
 export class SoundDriver {
@@ -152,13 +135,8 @@ export class SoundDriver {
   private processPattern(pattern: Pattern, channel: number, events: SoundEvent[]): void {
     for (let lineIndex = 0; lineIndex < pattern.step.length; lineIndex++) {
       const step = pattern.step[lineIndex];
-      let note: Note | null = null;
-
-      switch (channel) {
-        case 0: note = step.A; break;
-        case 1: note = step.B; break;
-        case 2: note = step.C; break;
-      }
+      void channel;
+      const note: Note | null = step.A;
 
       if (note) {
         this.processNote(note, channel, events);
