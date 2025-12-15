@@ -133,6 +133,7 @@ export const parseInstrumentFromText = (
     octave?: unknown;
     sustain?: unknown;
     color?: unknown;
+    arpeggio?: unknown;
   }
 
   const root = parsed as InstrumentFileRoot;
