@@ -75,12 +75,85 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     onChange(newData);
   }, [envelopeData, currentPosition, type, onChange]);
 
+  const getFullEnvelope = useCallback((input: number[]) => {
+    const trimmed = input.slice(0, ENVELOPE_LENGTH);
+    if (trimmed.length === 0) {
+      return Array(ENVELOPE_LENGTH).fill(0);
+    }
+    const last = trimmed[trimmed.length - 1];
+    while (trimmed.length < ENVELOPE_LENGTH) {
+      trimmed.push(last);
+    }
+    return trimmed;
+  }, []);
+
+  const clampEnvelopeValue = useCallback((value: number) => {
+    switch (type) {
+      case 'volume':
+        return Math.max(0, Math.min(VOLUME_MAX, value));
+      case 'noise':
+        return Math.max(0, Math.min(NOISE_MAX, value));
+      case 'shift':
+        return Math.max(SHIFT_MIN, Math.min(SHIFT_MAX, value));
+      case 'pitch':
+        return Math.max(PITCH_MIN, Math.min(PITCH_MAX, value));
+      case 'mode':
+        return Math.max(0, Math.min(2, value));
+      default:
+        return value;
+    }
+  }, [type]);
+
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
 
     const key = event.key.toUpperCase();
     const digitMatch = event.code.match(/^Digit([0-9])$/);
     const hexKey = digitMatch ? digitMatch[1] : key;
+
+    if (event.ctrlKey && event.shiftKey) {
+      if (key === 'BACKSPACE') {
+        event.preventDefault();
+        const newData = Array(ENVELOPE_LENGTH).fill(0);
+        setEnvelopeData(newData);
+        onChange?.(newData);
+        return;
+      }
+
+      if (key === 'ARROWLEFT' || key === 'ARROWRIGHT') {
+        event.preventDefault();
+        const source = getFullEnvelope(envelopeData);
+        const newData =
+          key === 'ARROWLEFT'
+            ? [...source.slice(1), source[0]]
+            : [source[ENVELOPE_LENGTH - 1], ...source.slice(0, ENVELOPE_LENGTH - 1)];
+        setEnvelopeData(newData);
+        onChange?.(newData);
+        return;
+      }
+
+      if (key === 'ARROWUP' || key === 'ARROWDOWN') {
+        event.preventDefault();
+        const delta = key === 'ARROWUP' ? 1 : -1;
+        const source = getFullEnvelope(envelopeData);
+        const newData = source.map(value => clampEnvelopeValue(value + delta));
+        setEnvelopeData(newData);
+        onChange?.(newData);
+        return;
+      }
+
+      if (type === 'shift' && key === 'ENTER') {
+        event.preventDefault();
+        const source = getFullEnvelope(envelopeData);
+        const pattern = source.slice(0, Math.min(ENVELOPE_LENGTH, currentPosition + 1));
+        const newData = Array.from({ length: ENVELOPE_LENGTH }, (_, index) => {
+          return pattern.length > 0 ? pattern[index % pattern.length] : 0;
+        });
+        setEnvelopeData(newData);
+        onChange?.(newData);
+        return;
+      }
+    }
     
     if (key === 'ARROWLEFT') {
       event.preventDefault();
@@ -106,6 +179,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         onChange(newData);
       }
       if (type === 'volume' || type === 'shift' || type === 'noise') {
+        lastPositionRef.current = currentPosition;
         const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
         setCurrentPosition(nextPosition);
       }
@@ -118,6 +192,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+      lastPositionRef.current = currentPosition;
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
     } else if (type === 'shift' && /^[0-9A-F]$/.test(hexKey)) {
@@ -132,6 +207,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+      lastPositionRef.current = currentPosition;
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
     } else if (type === 'noise' && /^[0-9A-F]$/.test(hexKey)) {
@@ -146,6 +222,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+      lastPositionRef.current = currentPosition;
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
     } else if (type === 'mode' && (key === 'T' || key === 'N' || key === 'B')) {
@@ -157,13 +234,14 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
+      lastPositionRef.current = currentPosition;
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
-    } else if (type === 'pitch' && event.key === ' ') {
+    } else if ((type === 'pitch' || type === 'noise' || type === 'shift' || type === 'volume') && event.key === ' ') {
       event.preventDefault();
       if (onChange && lastPositionRef.current !== null) {
         const sourceIndex = lastPositionRef.current;
-        const newData = [...envelopeData];
+        const newData = getFullEnvelope(envelopeData);
         newData[currentPosition] = newData[sourceIndex];
         setEnvelopeData(newData);
         onChange(newData);
@@ -184,7 +262,10 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     envelopeData,
     onChange,
     sustainIndex,
-    onSustainChange
+    onSustainChange,
+    type,
+    getFullEnvelope,
+    clampEnvelopeValue
   ]);
 
   const handlePositionClick = useCallback((position: number) => {

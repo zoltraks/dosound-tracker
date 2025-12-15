@@ -29,6 +29,22 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
 
   const toneNoiseData = (data && data.length > 0) ? data : defaultToneNoiseData;
 
+  const getFullModeEnvelope = useCallback((input: number[]) => {
+    const trimmed = input.slice(0, 32);
+    if (trimmed.length === 0) {
+      return Array(32).fill(0);
+    }
+    const last = trimmed[trimmed.length - 1];
+    while (trimmed.length < 32) {
+      trimmed.push(last);
+    }
+    return trimmed;
+  }, []);
+
+  const clampModeValue = useCallback((value: number) => {
+    return Math.max(0, Math.min(2, value));
+  }, []);
+
   useEffect(() => {
     if (isActive && panelRef.current) {
       panelRef.current.focus();
@@ -39,6 +55,35 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
     if (!isActive) return;
 
     const key = event.key.toUpperCase();
+
+    if (event.ctrlKey && event.shiftKey) {
+      if (key === 'BACKSPACE') {
+        event.preventDefault();
+        const newData = Array(32).fill(0);
+        onChange?.(newData);
+        return;
+      }
+
+      if (key === 'ARROWLEFT' || key === 'ARROWRIGHT') {
+        event.preventDefault();
+        const source = getFullModeEnvelope(toneNoiseData);
+        const newData =
+          key === 'ARROWLEFT'
+            ? [...source.slice(1), source[0]]
+            : [source[31], ...source.slice(0, 31)];
+        onChange?.(newData);
+        return;
+      }
+
+      if (key === 'ARROWUP' || key === 'ARROWDOWN') {
+        event.preventDefault();
+        const delta = key === 'ARROWUP' ? 1 : -1;
+        const source = getFullModeEnvelope(toneNoiseData);
+        const newData = source.map(value => clampModeValue(value + delta));
+        onChange?.(newData);
+        return;
+      }
+    }
     
     if (key === 'ARROWLEFT') {
       event.preventDefault();
@@ -86,7 +131,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         onChange(newData);
       }
     }
-  }, [isActive, currentPosition, onChange, toneNoiseData]);
+  }, [isActive, currentPosition, onChange, toneNoiseData, getFullModeEnvelope, clampModeValue]);
 
   const handlePositionClick = useCallback((index: number) => {
     setCurrentPosition(index);

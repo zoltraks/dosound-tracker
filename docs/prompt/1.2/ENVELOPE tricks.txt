@@ -1,0 +1,14 @@
+When editing Pitch envelope point value and Space key is pressed then the previously selected point value is set at current position. Make the same logic for Noise, Arpeggio and Volume envelope.
+
+In addition, when Ctrl + Shift + Backspace key is pressed in any envelope: Mode, Volume, Arpeggio, Pitch, Noise, then the whole envelope should be reset (zeroed). Don't change current envelope position after that.
+
+When editing an envelope and Ctrl + Shift + Arrow Left or Ctrl + Shift + Arrow Right is pressed, then the envelope should be shifted the way that if Ctrl + Arrow Left is pressed then the first envelope value becomes last and all others are shifted left, and if Ctrl + Arrow Right is pressed then the last envelope value becomes first and all others are shifted right. When shifting treat like envelope is fully defined at all 32 steps.
+
+When editing an envelope and Ctrl + Shift + Arrow Up or Ctrl + Shift + Arrow Down is pressed, increase or decrease all envelope values by 1 up to maximum or minimum possible value.
+
+For Arpeggio envelope add additional key binding Ctrl + Shift + Enter. When pressed, then the envelope position values from first position until the current one should be repeated to fill all the envelope. So if I set "3", "5", "7" and being on third position (with "7") I press Ctrl + Enter, envelope should be filled with "3", "5", "7", "3", "5", "7" up to the last position.
+
+Add description about editing envelopes and this behavior in @MANUAL.md  in "Envelope Editor" section.
+Add a table of key bindings and operations.
+
+---
