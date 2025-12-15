@@ -12,7 +12,7 @@ const makeInstrument = (): Instrument => ({
   id: '00',
   name: 'Test',
   volume: [0x0f],
-  arpeggio: [0],
+  shift: [0],
   pitch: [0],
   noise: [0],
   mode: [0],

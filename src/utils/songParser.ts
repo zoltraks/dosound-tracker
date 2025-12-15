@@ -30,6 +30,7 @@ interface InstrumentNodeYaml {
   octave?: unknown;
   sustain?: unknown;
   volume?: unknown;
+  shift?: unknown;
   arpeggio?: unknown;
   pitch?: unknown;
   noise?: unknown;
@@ -328,6 +329,23 @@ export const parseSongFromYaml = (content: string): Song => {
     return result;
   };
 
+  const expandLoopingEnvelope = (values: unknown, length: number, defaultValue: number): number[] => {
+    const rawArray = Array.isArray(values) ? (values as unknown[]) : [];
+    const numericValues = rawArray
+      .map((v) => Number(v))
+      .filter((v) => Number.isFinite(v));
+
+    if (numericValues.length === 0) {
+      return Array(length).fill(defaultValue);
+    }
+
+    const result: number[] = [];
+    for (let i = 0; i < length; i++) {
+      result[i] = numericValues[i % numericValues.length];
+    }
+    return result;
+  };
+
   instrumentNodes.forEach((instNode, index: number) => {
     if (!instNode || typeof instNode !== 'object') {
       throw new Error(`Invalid instrument at index ${index}`);
@@ -370,7 +388,12 @@ export const parseSongFromYaml = (content: string): Song => {
     octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
     const volume = expandEnvelope(nodeObj.volume, ENVELOPE_LENGTH, 0x0f);
-    const arpeggio = expandEnvelope(nodeObj.arpeggio, ENVELOPE_LENGTH, 0);
+    const shift =
+      nodeObj.shift !== undefined
+        ? expandEnvelope(nodeObj.shift, ENVELOPE_LENGTH, 0)
+        : nodeObj.arpeggio !== undefined
+          ? expandLoopingEnvelope(nodeObj.arpeggio, ENVELOPE_LENGTH, 0)
+          : Array(ENVELOPE_LENGTH).fill(0);
     const pitch = expandEnvelope(nodeObj.pitch, ENVELOPE_LENGTH, 0);
     const noise = expandEnvelope(nodeObj.noise, ENVELOPE_LENGTH, 0);
     const mode = expandEnvelope(nodeObj.mode, ENVELOPE_LENGTH, 0);
@@ -452,7 +475,7 @@ export const parseSongFromYaml = (content: string): Song => {
           id: slotId,
           name: '',
           volume: Array(ENVELOPE_LENGTH).fill(0),
-          arpeggio: Array(ENVELOPE_LENGTH).fill(0),
+          shift: Array(ENVELOPE_LENGTH).fill(0),
           pitch: Array(ENVELOPE_LENGTH).fill(0),
           noise: Array(ENVELOPE_LENGTH).fill(0),
           mode: Array(ENVELOPE_LENGTH).fill(0),
@@ -467,7 +490,7 @@ export const parseSongFromYaml = (content: string): Song => {
       id: number,
       name,
       volume,
-      arpeggio,
+      shift,
       pitch,
       noise,
       mode,

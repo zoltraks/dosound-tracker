@@ -6,7 +6,7 @@ const makeEmptyInstrument = (overrides: Partial<Instrument> = {}): Instrument =>
   id: '00',
   name: '',
   volume: Array(32).fill(0),
-  arpeggio: Array(32).fill(0),
+  shift: Array(32).fill(0),
   pitch: Array(32).fill(0),
   noise: Array(32).fill(0),
   mode: Array(32).fill(0),
@@ -34,8 +34,8 @@ describe('isInstrumentEmpty', () => {
     expect(isInstrumentEmpty(inst)).toBe(false);
   });
 
-  it('returns false when arpeggio envelope has any non-zero value', () => {
-    const inst = makeEmptyInstrument({ arpeggio: [0, 2, ...Array(30).fill(0)] });
+  it('returns false when shift envelope has any non-zero value', () => {
+    const inst = makeEmptyInstrument({ shift: [0, 2, ...Array(30).fill(0)] });
     expect(isInstrumentEmpty(inst)).toBe(false);
   });
 

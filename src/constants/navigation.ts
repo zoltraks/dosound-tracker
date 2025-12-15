@@ -7,7 +7,7 @@ export const NAVIGATION_ORDER = [
   'trackC',
   'mode',
   'volume',
-  'arpeggio',
+  'shift',
   'pitch',
   'noise',
   'songInfo',

@@ -95,8 +95,10 @@
   --piano-pressed: #7aa2f7;
   --piano-shadow: rgba(0, 0, 0, 0.6);
   
-  --envelope-bar: #7aa2f7;
+  --envelope-bar: #6075b9;
   --envelope-glow: rgba(122, 162, 247, 0.6);
+  --envelope-bar-hover: #7f61eb;
+  --envelope-bar-current: #a54c4c;
   --volume-bar: #7aa2f7;
   --track-cell-active-bg: #51376f;
   --track-a-bg: #582537;
@@ -239,6 +241,8 @@
   
   --envelope-bar: #f59e0b;
   --envelope-glow: rgba(245, 158, 11, 0.5);
+  --envelope-bar-hover: #6694da;
+  --envelope-bar-current: #ab97f5;
   --volume-bar: #f59e0b;
   --track-cell-active-bg: #f5fffc;
   --track-a-bg: #ffe8f0;
@@ -1734,11 +1738,13 @@ body {
 }
 
 .envelope-bar:hover {
-  opacity: 1;
+  background-color: var(--envelope-bar-hover);
+  opacity: 0.9;
 }
 
 .envelope-bar.current {
-  opacity: 1;
+  background-color: var(--envelope-bar-current);
+  opacity: 0.9;
 }
 
 .envelope-bar.sustain {
@@ -2938,13 +2944,14 @@ body {
   z-index: 2;
 }
 
-.envelope-bar.centered:hover {
-  background-color: var(--envelope-bar-hover);
+.envelope-bar.centered.current {
+  background-color: var(--envelope-bar-current);
+  box-shadow: 0 0 4px var(--accent-color);
 }
 
-.envelope-bar.centered.current {
-  background-color: var(--accent-color);
-  box-shadow: 0 0 4px var(--accent-color);
+.envelope-bar.centered:hover,
+.envelope-bar.current:hover {
+  background-color: var(--envelope-bar-hover);
 }
 
 .mode-emoji {

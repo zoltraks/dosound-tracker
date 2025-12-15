@@ -67,12 +67,12 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
       />
 
       <EnvelopePanel
-        type="arpeggio"
+        type="shift"
         activeSection={activeSection}
         setActiveSection={setActiveSection}
-        data={currentInstrument.arpeggio}
+        data={currentInstrument.shift}
         onChange={(data: number[]) => {
-          updateInstrument({ arpeggio: data });
+          updateInstrument({ shift: data });
         }}
       />
 

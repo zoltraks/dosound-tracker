@@ -72,8 +72,10 @@ export const MAX_INSTRUMENTS = 256;
 
 export const VOLUME_MAX = 0x0F;
 export const NOISE_MAX = 0x1F;
-export const ARPEGGIO_MIN = -24;
-export const ARPEGGIO_MAX = 24;
+export const SHIFT_MIN = -24;
+export const SHIFT_MAX = 24;
+export const ARPEGGIO_MIN = SHIFT_MIN;
+export const ARPEGGIO_MAX = SHIFT_MAX;
 export const PITCH_MIN = -128;
 export const PITCH_MAX = 128;
 

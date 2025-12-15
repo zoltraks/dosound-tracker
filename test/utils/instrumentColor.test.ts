@@ -44,7 +44,7 @@ describe('instrument color in song YAML IO', () => {
           id: '00',
           name: 'Colored',
           volume: [15],
-          arpeggio: [0],
+          shift: [0],
           pitch: [0],
           noise: [0],
           mode: [0],

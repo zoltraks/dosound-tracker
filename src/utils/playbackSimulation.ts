@@ -311,19 +311,19 @@ export function applyInstrumentToRegisters(
   
   // Get envelope values
   const volumeEnv = instrument.volume || [0x0F];
-  const arpeggioEnv = instrument.arpeggio || [0];
+  const shiftEnv = instrument.shift || [0];
   const pitchEnv = instrument.pitch || [0];
   const modeEnv = instrument.mode || [0];
   const noiseEnv = instrument.noise || [0];
   
   const volIdx = Math.min(step, volumeEnv.length - 1);
-  const arpIdx = Math.min(step, arpeggioEnv.length - 1);
+  const shiftIdx = Math.min(step, shiftEnv.length - 1);
   const pitchIdx = Math.min(step, pitchEnv.length - 1);
   const modeIdx = Math.min(step, modeEnv.length - 1);
   const noiseIdx = Math.min(step, noiseEnv.length - 1);
   
   let volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
-  const arpeggio = arpeggioEnv[arpIdx] || 0;
+  const shift = shiftEnv[shiftIdx] || 0;
   const pitch = (pitchEnv[pitchIdx] || 0) | 0;
   const mode = modeEnv[modeIdx] || 0;
   const noisePeriod = Math.max(0, Math.min(0x1F, noiseEnv[noiseIdx] || 0));
@@ -337,11 +337,11 @@ export function applyInstrumentToRegisters(
   // Set volume
   regs[0x08 + channel] = volume;
   
-  // Calculate frequency with arpeggio (NOTE_FREQUENCIES are defined for NOTE_BASE_OCTAVE)
+  // Calculate frequency with shift (NOTE_FREQUENCIES are defined for NOTE_BASE_OCTAVE)
   const baseFreq = NOTE_FREQUENCIES[note.note] || 440.0;
   let frequency = baseFreq * Math.pow(2, note.octave - NOTE_BASE_OCTAVE);
-  if (arpeggio !== 0) {
-    frequency = frequency * Math.pow(2, arpeggio / 12);
+  if (shift !== 0) {
+    frequency = frequency * Math.pow(2, shift / 12);
   }
   let period = Math.floor(YM_CLOCK / (16 * frequency)) & 0x0FFF;
   if (pitch !== 0) {

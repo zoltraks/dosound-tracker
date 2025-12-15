@@ -379,7 +379,7 @@ export class YM2149 {
       return;
     }
 
-    // Update tone frequency using arpeggio (in semitones) and pitch envelope as
+    // Update tone frequency using shift (in semitones) and pitch envelope as
     // a direct delta on the frequency divider (period).
     if (toneActive) {
       const baseFreq = NOTE_FREQUENCIES[noteData.note];
@@ -387,18 +387,18 @@ export class YM2149 {
         // Start from plain note frequency
         let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
 
-        // Apply arpeggio as semitone offsets on top of the note
-        let arpeggioSemitones = 0;
-        if (instrument.arpeggio && instrument.arpeggio.length > 0) {
-          const arpeggioIndex = Math.min(safeTick, instrument.arpeggio.length - 1);
-          const arpeggioValue = instrument.arpeggio[arpeggioIndex];
-          if (typeof arpeggioValue === 'number') {
-            arpeggioSemitones = arpeggioValue | 0;
+        // Apply shift as semitone offsets on top of the note
+        let shiftSemitones = 0;
+        if (instrument.shift && instrument.shift.length > 0) {
+          const shiftIndex = Math.min(safeTick, instrument.shift.length - 1);
+          const shiftValue = instrument.shift[shiftIndex];
+          if (typeof shiftValue === 'number') {
+            shiftSemitones = shiftValue | 0;
           }
         }
 
-        if (arpeggioSemitones !== 0) {
-          frequency = frequency * Math.pow(2, arpeggioSemitones / 12);
+        if (shiftSemitones !== 0) {
+          frequency = frequency * Math.pow(2, shiftSemitones / 12);
         }
 
         // Convert to a base divider period using the YM clock

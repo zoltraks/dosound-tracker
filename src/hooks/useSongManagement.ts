@@ -1,5 +1,5 @@
 import type { Instrument, Song, Pattern, Step, Note } from '../synth/SoundDriver';
-import { PATTERN_LENGTH } from '../constants/music';
+import { PATTERN_LENGTH, ENVELOPE_LENGTH } from '../constants/music';
 import defaultSongYaml from '../assets/song.yaml?raw';
 import {
   DEFAULT_BASE_KEY,
@@ -81,9 +81,28 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
   const instrument = instrumentSource.map((rawInst) => {
     const inst = (rawInst || {}) as Record<string, unknown>;
     const noise = (inst.noise ?? inst.noiseEnvelope ?? []) as number[];
+
+    const rawShift = inst.shift;
+    const rawArpeggio = inst.arpeggio;
+
+    const shiftValues = Array.isArray(rawShift)
+      ? (rawShift as unknown[]).map((v) => Number(v)).filter((v) => Number.isFinite(v))
+      : Array.isArray(rawArpeggio)
+        ? (rawArpeggio as unknown[]).map((v) => Number(v)).filter((v) => Number.isFinite(v))
+        : [];
+
+    const shift =
+      shiftValues.length > 0
+        ? Array.from({ length: ENVELOPE_LENGTH }, (_v, i) => shiftValues[i % shiftValues.length])
+        : Array(ENVELOPE_LENGTH).fill(0);
+
+    const rest = { ...inst } as Record<string, unknown>;
+    delete rest.arpeggio;
+
     return {
-      ...(inst as unknown as Instrument),
+      ...(rest as unknown as Instrument),
       noise,
+      shift,
     };
   });
 
@@ -155,7 +174,7 @@ export const createDefaultSong = (): Song => {
         id: '00',
         name: 'Default Instrument',
         volume: Array(32).fill(0x0f),
-        arpeggio: [
+        shift: [
           0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20,
           -16, -12, -8, -4, ...Array(8).fill(0),
         ],
@@ -169,7 +188,7 @@ export const createDefaultSong = (): Song => {
         id: '01',
         name: 'Bass Instrument',
         volume: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
-        arpeggio: [
+        shift: [
           12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0),
         ],
         pitch: Array(32).fill(0),
@@ -182,7 +201,7 @@ export const createDefaultSong = (): Song => {
         id: '02',
         name: 'Lead Instrument',
         volume: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
-        arpeggio: [
+        shift: [
           24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0),
         ],
         pitch: Array(32).fill(0),

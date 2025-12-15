@@ -13,3 +13,7 @@ In User interface, the shift envelope will still be called "Arpeggio".
 
 Maintain backward compatibility.
 Additionally, update the corresponding variable names, fields, types, or function names in the source code to ensure naming consistency and coherence.
+
+You may change comments if needed to reflect these changes.
+
+---

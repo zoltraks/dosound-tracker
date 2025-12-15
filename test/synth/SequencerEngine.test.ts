@@ -29,7 +29,7 @@ const createTestSong = (): Song => ({
       id: '00',
       name: 'Inst',
       volume: [0x0f],
-      arpeggio: [0],
+      shift: [0],
       pitch: [0],
       noise: [0],
       mode: [0],

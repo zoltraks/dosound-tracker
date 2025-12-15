@@ -388,7 +388,7 @@ function frequencyToPeriod(frequency: number): number {
 
 /**
  * Export a single instrument to DOSOUND-format assembly using its base note,
- * volume envelope and arpeggio envelope. Tone (TA) follows arpeggio over time.
+ * volume envelope and shift envelope. Tone (TA) follows shift over time.
  * Output follows strict formatting rules.
  */
 export function exportInstrumentToAssembly(instrument: Instrument, song?: Song): string {
@@ -403,7 +403,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       ? instrument.volume
       : [0x0f, 0x0e, 0x0c, 0x08, 0x04, 0x00];
 
-  const arpeggioEnv = instrument.arpeggio || [];
+  const shiftEnv = instrument.shift || [];
   const pitchEnv = instrument.pitch || [];
   const modeEnv = instrument.mode || [];
   const noiseEnv = instrument.noise || [];
@@ -414,7 +414,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   // Number of envelope steps to consider (40ms per step)
   const stepsCount = Math.max(
     vols.length,
-    arpeggioEnv.length || 1,
+    shiftEnv.length || 1,
     pitchEnv.length || 1,
     modeEnv.length || 1,
     noiseEnv.length || 1
@@ -446,7 +446,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   type StepState = { 
     volume: number; 
     period: number; 
-    semitone: number;   // arpeggio semitone offset from base
+    semitone: number;   // shift semitone offset from base
     pitchDelta: number; // pitch envelope delta applied to divider
     mode: number;       // 0=tone, 1=noise, 2=tone+noise
     noisePeriod: number;
@@ -474,13 +474,13 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       }
     }
 
-    // Apply arpeggio in semitones on top of baseFrequency
+    // Apply shift in semitones on top of baseFrequency
     let frequency = baseFrequency;
     let semitone = 0;
-    if (arpeggioEnv && arpeggioEnv.length > 0) {
-      const idx = Math.min(i, arpeggioEnv.length - 1);
-      const arpVal = typeof arpeggioEnv[idx] === 'number' ? (arpeggioEnv[idx] as number) : 0;
-      semitone = arpVal | 0;
+    if (shiftEnv && shiftEnv.length > 0) {
+      const idx = Math.min(i, shiftEnv.length - 1);
+      const shiftVal = typeof shiftEnv[idx] === 'number' ? (shiftEnv[idx] as number) : 0;
+      semitone = shiftVal | 0;
       if (semitone !== 0) {
         frequency = frequency * Math.pow(2, semitone / 12);
       }

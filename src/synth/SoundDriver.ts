@@ -18,7 +18,7 @@ export interface Instrument {
   id: string;
   name: string;
   volume: number[];
-  arpeggio: number[];
+  shift: number[];
   pitch: number[];
   noise: number[];
   mode: number[];
@@ -176,7 +176,7 @@ export class SoundDriver {
       id: instrumentId,
       name: 'Default',
       volume: [0x0F, 0x0E, 0x0D, 0x0C],
-      arpeggio: [0, 0, 0, 0],
+      shift: [0, 0, 0, 0],
       pitch: [0, 0, 0, 0],
       noise: [0, 0, 0, 0],
       mode: Array(32).fill(0),

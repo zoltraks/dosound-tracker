@@ -15,7 +15,7 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
   };
 
   const volumeEnv = trimEnvelopeLocal(currentInstrument.volume);
-  const arpeggioEnv = trimEnvelopeLocal(currentInstrument.arpeggio);
+  const shiftEnv = trimEnvelopeLocal(currentInstrument.shift);
   const pitchEnv = trimEnvelopeLocal(currentInstrument.pitch);
   const noiseEnv = trimEnvelopeLocal(currentInstrument.noise);
   const modeEnv = trimEnvelopeLocal(currentInstrument.mode);
@@ -54,8 +54,8 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
   }
 
   instrumentNode.volume = volumeEnv;
-  if (!isZeroDefaultLocal(arpeggioEnv)) {
-    instrumentNode.arpeggio = arpeggioEnv;
+  if (!isZeroDefaultLocal(shiftEnv)) {
+    instrumentNode.shift = shiftEnv;
   }
 
   if (!isZeroDefaultLocal(pitchEnv)) {
@@ -133,6 +133,7 @@ export const parseInstrumentFromText = (
     octave?: unknown;
     sustain?: unknown;
     color?: unknown;
+    shift?: unknown;
     arpeggio?: unknown;
   }
 
@@ -160,6 +161,21 @@ export const parseInstrumentFromText = (
       } else {
         result[i] = values[values.length - 1];
       }
+    }
+    return result;
+  };
+
+  const expandLoopingEnvelope = (field: string, length: number, defaultValue: number): number[] => {
+    const raw = Array.isArray(instNode[field]) ? (instNode[field] as unknown[]) : [];
+    const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
+
+    if (values.length === 0) {
+      return Array(length).fill(defaultValue);
+    }
+
+    const result: number[] = [];
+    for (let i = 0; i < length; i += 1) {
+      result[i] = values[i % values.length];
     }
     return result;
   };
@@ -209,7 +225,12 @@ export const parseInstrumentFromText = (
     name: parsedName,
     mode: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
     volume: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0f),
-    arpeggio: expandEnvelope('arpeggio', ENVELOPE_LENGTH, 0),
+    shift:
+      Array.isArray(instNode.shift)
+        ? expandEnvelope('shift', ENVELOPE_LENGTH, 0)
+        : Array.isArray(instNode.arpeggio)
+          ? expandLoopingEnvelope('arpeggio', ENVELOPE_LENGTH, 0)
+          : Array(ENVELOPE_LENGTH).fill(0),
     pitch: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
     noise: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
     base: (() => {

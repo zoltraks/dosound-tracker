@@ -1,10 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, ARPEGGIO_MIN, ARPEGGIO_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
+import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, SHIFT_MIN, SHIFT_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
 
 interface EnvelopePanelProps {
-  type: 'volume' | 'arpeggio' | 'pitch' | 'noise' | 'mode';
+  type: 'volume' | 'shift' | 'pitch' | 'noise' | 'mode';
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   data?: number[];
@@ -58,8 +58,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       case 'noise':
         newValue = Math.max(0, Math.min(NOISE_MAX, currentValue + delta));
         break;
-      case 'arpeggio':
-        newValue = Math.max(ARPEGGIO_MIN, Math.min(ARPEGGIO_MAX, currentValue + delta));
+      case 'shift':
+        newValue = Math.max(SHIFT_MIN, Math.min(SHIFT_MAX, currentValue + delta));
         break;
       case 'pitch':
         newValue = Math.max(PITCH_MIN, Math.min(PITCH_MAX, currentValue + delta));
@@ -105,7 +105,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
-      if (type === 'volume' || type === 'arpeggio' || type === 'noise') {
+      if (type === 'volume' || type === 'shift' || type === 'noise') {
         const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
         setCurrentPosition(nextPosition);
       }
@@ -120,7 +120,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       }
       const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
       setCurrentPosition(nextPosition);
-    } else if (type === 'arpeggio' && /^[0-9A-F]$/.test(hexKey)) {
+    } else if (type === 'shift' && /^[0-9A-F]$/.test(hexKey)) {
       event.preventDefault();
       if (onChange) {
         const newData = [...envelopeData];
@@ -199,7 +199,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         return value.toString(16).toUpperCase();
       case 'noise':
         return value.toString(16).toUpperCase();
-      case 'arpeggio':
+      case 'shift':
         return value >= 0 ? `+${value}` : value.toString();
       case 'pitch':
         return value >= 0 ? `+${value}` : value.toString();
@@ -218,8 +218,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         return (value / VOLUME_MAX) * 100;
       case 'noise':
         return (value / NOISE_MAX) * 100;
-      case 'arpeggio':
-        return Math.abs(value) / Math.max(Math.abs(ARPEGGIO_MIN), ARPEGGIO_MAX) * 100;
+      case 'shift':
+        return Math.abs(value) / Math.max(Math.abs(SHIFT_MIN), SHIFT_MAX) * 100;
       case 'pitch':
         return Math.abs(value) / Math.max(Math.abs(PITCH_MIN), PITCH_MAX) * 100;
       case 'mode':
@@ -231,9 +231,9 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
 
   const getCenteredBarPosition = useCallback((value: number) => {
     switch (type) {
-      case 'arpeggio':
+      case 'shift':
         // Position: 50% for 0, less for positive (go up), more for negative (go down)
-        return 50 - (value / ARPEGGIO_MAX) * 50;
+        return 50 - (value / SHIFT_MAX) * 50;
       case 'pitch':
         // Position: 50% for 0, less for positive (go up), more for negative (go down)
         return 50 - (value / PITCH_MAX) * 50;
@@ -245,7 +245,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   const getTitle = useCallback(() => {
     switch (type) {
       case 'volume': return 'Volume';
-      case 'arpeggio': return 'Arpeggio';
+      case 'shift': return 'Arpeggio';
       case 'pitch': return 'Pitch';
       case 'noise': return 'Noise';
       case 'mode': return 'Mode';
@@ -288,8 +288,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     >
       <div className="envelope-header">{getTitle()}</div>
       
-      {(type === 'arpeggio' || type === 'pitch') ? (
-        // Thin horizontal line rendering for arpeggio and pitch
+      {(type === 'shift' || type === 'pitch') ? (
+        // Thin horizontal line rendering for shift and pitch
         <div className="envelope-content">
           <div className="envelope-graph centered">
             <div className="neutral-line"></div>

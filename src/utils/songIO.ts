@@ -20,7 +20,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   const instrumentSource = currentSong.instrument;
   const instruments = instrumentSource.map((inst, index) => {
     const volumeEnv = trimEnvelope(inst.volume);
-    const arpeggioEnv = trimEnvelope(inst.arpeggio);
+    const shiftEnv = trimEnvelope(inst.shift);
     const pitchEnv = trimEnvelope(inst.pitch);
     const noiseEnv = trimEnvelope(inst.noise);
     const modeEnv = trimEnvelope(inst.mode);
@@ -56,8 +56,8 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     }
 
     instrumentNode.volume = volumeEnv;
-    if (!isZeroDefault(arpeggioEnv)) {
-      instrumentNode.arpeggio = arpeggioEnv;
+    if (!isZeroDefault(shiftEnv)) {
+      instrumentNode.shift = shiftEnv;
     }
 
     if (!isZeroDefault(pitchEnv)) {
@@ -363,7 +363,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     });
   };
 
-  const keys = ['volume', 'arpeggio', 'pitch', 'noise', 'mode'];
+  const keys = ['volume', 'shift', 'pitch', 'noise', 'mode'];
   for (const key of keys) {
     yamlContent = compressInstrumentArray(key, yamlContent);
   }
