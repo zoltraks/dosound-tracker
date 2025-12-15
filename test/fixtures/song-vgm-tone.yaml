@@ -5,7 +5,7 @@ song:
   speed: 4
   length: 4
   loop: 1
-  playlist:
+  line:
     - A: "00"
     - A: "01"
     - {}
@@ -15,14 +15,14 @@ song:
       steps:
         - note: "C-4"
           instrument: "00"
-        - space: 3
+        - wait: 3
     - number: "01"
       name: Pattern 01
       steps:
-        - space: 1
+        - wait: 1
         - note: "E-4"
           instrument: "00"
-        - space: 2
+        - wait: 2
   instrument:
     - number: "00"
       name: Simple Lead

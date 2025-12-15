@@ -4,7 +4,7 @@ song:
   speed: 2
   length: 16
   loop: 0
-  playlist:
+  line:
     - A: "01"
       B: "02"
       C: "03"
@@ -13,21 +13,21 @@ song:
       step:
         - note: "C-4"
           instrument: "00"
-        - space: 3
+        - wait: 3
         - note: "OFF"
     - number: "02"
       step:
-        - space: 4
+        - wait: 4
         - note: "C-4"
           instrument: "00"
-        - space: 3
+        - wait: 3
         - note: "OFF"
     - number: "03"
       step:
-        - space: 8
+        - wait: 8
         - note: "C-4"
           instrument: "00"
-        - space: 3
+        - wait: 3
         - note: "OFF"
   instrument:
     - number: "00"

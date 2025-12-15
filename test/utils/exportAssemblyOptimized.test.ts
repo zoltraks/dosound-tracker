@@ -9,7 +9,7 @@ song:
   year: 2025
   speed: 8
   length: 1
-  playlist:
+  line:
     - A: "00"
       B: "--"
       C: "--"

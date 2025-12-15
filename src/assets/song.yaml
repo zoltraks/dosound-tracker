@@ -5,7 +5,7 @@ song:
   speed: 4
   length: 16
   loop: 4
-  playlist:
+  line:
     - A: "00"
       B: "01"
       C: "02"
@@ -47,196 +47,196 @@ song:
       step:
         - note: "D-4"
           instrument: "07"
-        - space: 5
+        - wait: 5
         - note: "E-3"
           instrument: "00"
     - number: "01"
       step:
-        - space: 2
+        - wait: 2
         - note: "E-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "E-1"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "E-1"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "E-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "E-1"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "E-1"
           instrument: "02"
     - number: "02"
       step:
         - note: "D-3"
           instrument: "05"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "04"
-        - space: 1
+        - wait: 1
         - note: "G-3"
           instrument: "08"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "04"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "05"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "04"
-        - space: 1
+        - wait: 1
         - note: "G-3"
           instrument: "08"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "04"
     - number: "03"
       step:
         - note: "G-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "G-3"
           instrument: "00"
     - number: "04"
       step:
-        - space: 2
+        - wait: 2
         - note: "G-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "G-1"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "G-1"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "G-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "G-1"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "G-1"
           instrument: "02"
     - number: "05"
       step:
         - note: "C-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "C-3"
           instrument: "00"
     - number: "06"
       step:
-        - space: 2
+        - wait: 2
         - note: "C-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "C-2"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "C-2"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "C-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "C-2"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "C-2"
           instrument: "02"
     - number: "07"
       step:
         - note: "D-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "D-4"
           instrument: "06"
     - number: "08"
       step:
-        - space: 2
+        - wait: 2
         - note: "D-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "02"
     - number: "09"
       step:
         - note: "E-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "E-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "E-4"
           instrument: "03"
     - number: 0A
       step:
         - note: "G-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "G-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "E-4"
           instrument: "03"
     - number: 0B
       step:
         - note: "C-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "C-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "C-4"
           instrument: "03"
     - number: 0C
       step:
         - note: "D-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "D-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "D-4"
           instrument: "03"
     - number: 0D
       step:
         - note: "D-3"
           instrument: "00"
-        - space: 7
+        - wait: 7
         - note: "D-4"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-4"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-4"
           instrument: "03"
     - number: 0E
       step:
         - note: "D-3"
           instrument: "05"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "04"
-        - space: 3
+        - wait: 3
         - note: "D-4"
           instrument: "06"
   instrument:

@@ -65,7 +65,7 @@ describe('parseSongFromYaml', () => {
     expect(() => parseSongFromYaml(yamlContent)).toThrowError(/Root "song" key not found\./);
   });
 
-  it('throws when playlist is missing or empty', () => {
+  it('throws when line is missing or empty', () => {
     const yamlContent = `
 song:
   title: Test
@@ -76,7 +76,7 @@ song:
   instrument: []
 `;
 
-    expect(() => parseSongFromYaml(yamlContent)).toThrowError(/Song playlist is missing or empty/);
+    expect(() => parseSongFromYaml(yamlContent)).toThrowError(/Song line is missing or empty/);
   });
 
   it('throws when patterns are missing or empty', () => {
@@ -86,7 +86,7 @@ song:
   author: X
   length: 4
   speed: 4
-  playlist:
+  line:
     - A: "00"
   instrument:
     - number: "00"

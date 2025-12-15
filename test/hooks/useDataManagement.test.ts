@@ -75,7 +75,7 @@ song:
   length: 16
   speed: 6
   year: 2025
-  playlist:
+  line:
     - A: "00"
       B: "00"
       C: "00"

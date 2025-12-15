@@ -104,7 +104,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   // Playlist: A/B/C keys instead of trackA/trackB/trackC.
   // Omit tracks that have no pattern assigned ("--").
-  const playlist = currentSong.playlist.map(entry => {
+  const line = currentSong.playlist.map(entry => {
     const row: { A?: string; B?: string; C?: string } = {};
     if (entry.trackA && entry.trackA !== '--') row.A = entry.trackA;
     if (entry.trackB && entry.trackB !== '--') row.B = entry.trackB;
@@ -123,7 +123,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
     const rawLines = pattern.lines || [];
     type PatternStep = {
-      space?: boolean | number;
+      wait?: boolean | number;
       off?: boolean;
       note?: string;
       instrument?: string;
@@ -142,10 +142,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       let step: PatternStep;
 
       if (!cell) {
-        // Space line. Use `space: 1` when there is an explicit volume nibble,
-        // otherwise keep the legacy boolean `space: true` which is used for
-        // trimming/compressing pure empty lines.
-        step = { space: hasVolume ? 1 : true };
+        step = { wait: hasVolume ? 1 : true };
       } else if (cell.note === '===') {
         // Explicit key-release step: encode as off: true in YAML.
         step = { note: 'OFF' };
@@ -172,7 +169,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     let lastNonSpace = lines.length - 1;
     while (lastNonSpace >= 0) {
       const ln = lines[lastNonSpace];
-      if (ln && ln.space === true && Object.keys(ln).length === 1) {
+      if (ln && ln.wait === true && Object.keys(ln).length === 1) {
         lastNonSpace -= 1;
       } else {
         break;
@@ -185,53 +182,53 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     // aggregated runs, e.g. `space: 3` or `space: 3, volume: 14`.
     const compressedLines: PatternStep[] = [];
 
-    type RunType = 'none' | 'space' | 'volume-space';
+    type RunType = 'none' | 'wait' | 'volume-wait';
     let runType: RunType = 'none';
     let runCount = 0;
     let runVolume = 0;
 
     const flushRun = () => {
       if (runCount <= 0) return;
-      if (runType === 'space') {
-        compressedLines.push({ space: runCount });
-      } else if (runType === 'volume-space') {
+      if (runType === 'wait') {
+        compressedLines.push({ wait: runCount });
+      } else if (runType === 'volume-wait') {
         if (runCount === 1) {
           // Single volume-only step: omit `space` and write only `volume`.
           compressedLines.push({ volume: runVolume });
         } else {
           // Multiple consecutive volume-only steps with same volume.
-          compressedLines.push({ space: runCount, volume: runVolume });
+          compressedLines.push({ wait: runCount, volume: runVolume });
         }
       }
       runType = 'none';
       runCount = 0;
     };
 
-    const isPureSpace = (ln: PatternStep) =>
-      ln && ln.space === true && Object.keys(ln).length === 1;
+    const isPureWait = (ln: PatternStep) =>
+      ln && ln.wait === true && Object.keys(ln).length === 1;
 
-    const isVolumeSpace = (ln: PatternStep) =>
+    const isVolumeWait = (ln: PatternStep) =>
       ln &&
-      ln.space === 1 &&
+      ln.wait === 1 &&
       typeof ln.volume === 'number' &&
       Object.keys(ln).length === 2;
 
     for (const ln of trimmedLines) {
-      if (isPureSpace(ln)) {
-        if (runType === 'space') {
+      if (isPureWait(ln)) {
+        if (runType === 'wait') {
           runCount += 1;
         } else {
           flushRun();
-          runType = 'space';
+          runType = 'wait';
           runCount = 1;
         }
-      } else if (isVolumeSpace(ln)) {
+      } else if (isVolumeWait(ln)) {
         const vol = ln.volume as number;
-        if (runType === 'volume-space' && vol === runVolume) {
+        if (runType === 'volume-wait' && vol === runVolume) {
           runCount += 1;
         } else {
           flushRun();
-          runType = 'volume-space';
+          runType = 'volume-wait';
           runVolume = vol;
           runCount = 1;
         }
@@ -278,7 +275,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   if (hasLoop) {
     songNode.loop = Math.max(0, Math.floor(currentSong.loop as number));
   }
-  songNode.playlist = playlist;
+  songNode.line = line;
   songNode.pattern = patterns;
   songNode.instrument = instruments;
 
@@ -309,9 +306,9 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     });
   };
 
-  const quotePlaylistValues = (text: string): string => {
-    const playlistLineRegex = /^(\s*-\s+|\s+)([ABC]):\s*(.+)$/gm;
-    return text.replace(playlistLineRegex, (_match, indent: string, key: string, value: string) => {
+  const quoteLineValues = (text: string): string => {
+    const lineRegex = /^(\s*-\s+|\s+)([ABC]):\s*(.+)$/gm;
+    return text.replace(lineRegex, (_match, indent: string, key: string, value: string) => {
       let inner = String(value).trim();
       if (
         (inner.startsWith('"') && inner.endsWith('"')) ||
@@ -356,7 +353,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     yamlContent = compressInstrumentArray(key, yamlContent);
   }
 
-  yamlContent = quotePlaylistValues(yamlContent);
+  yamlContent = quoteLineValues(yamlContent);
   yamlContent = quoteNoteValues(yamlContent);
   yamlContent = quoteBaseValues(yamlContent);
   const quoteColorValues = (text: string): string => {

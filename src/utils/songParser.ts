@@ -15,6 +15,7 @@ interface SongYamlNode {
   speed?: unknown;
   year?: unknown;
   loop?: unknown;
+  line?: unknown;
   playlist?: unknown;
   pattern?: unknown;
   patterns?: unknown;
@@ -47,6 +48,7 @@ interface PatternNodeYaml {
 }
 
 interface PatternStepNodeYaml {
+  wait?: unknown;
   space?: unknown;
   off?: unknown;
   volume?: unknown;
@@ -135,14 +137,18 @@ export const parseSongFromYaml = (content: string): Song => {
     }
   }
 
-  const playlistNodes = Array.isArray(songNode.playlist) ? songNode.playlist : [];
-  if (playlistNodes.length === 0) {
-    throw new Error('Song playlist is missing or empty');
+  const lineNodes = Array.isArray(songNode.line)
+    ? songNode.line
+    : Array.isArray(songNode.playlist)
+      ? songNode.playlist
+      : [];
+  if (lineNodes.length === 0) {
+    throw new Error('Song line is missing or empty');
   }
 
-  const playlist = playlistNodes.map((entry, index: number) => {
+  const playlist = lineNodes.map((entry, index: number) => {
     if (!entry || typeof entry !== 'object') {
-      throw new Error(`Invalid playlist entry at index ${index}`);
+      throw new Error(`Invalid line entry at index ${index}`);
     }
 
     const e = entry as { A?: unknown; B?: unknown; C?: unknown };
@@ -195,10 +201,12 @@ export const parseSongFromYaml = (content: string): Song => {
 
         const keys = Object.keys(ln);
         const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
-        const onlySpaceOrOff = keys.every(k => k === 'space' || k === 'off');
-        const onlySpaceOffVolume = keys.every(k => k === 'space' || k === 'off' || k === 'volume');
+        const onlySpaceOrOff = keys.every(k => k === 'wait' || k === 'space' || k === 'off');
+        const onlySpaceOffVolume = keys.every(
+          k => k === 'wait' || k === 'space' || k === 'off' || k === 'volume'
+        );
 
-        const spaceVal = ln.space;
+        const spaceVal = ln.wait ?? ln.space;
         const offVal = ln.off;
 
         const isNumericSpace = typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
@@ -209,7 +217,7 @@ export const parseSongFromYaml = (content: string): Song => {
           const count = (isNumericSpace ? spaceVal : offVal) as number;
           const isOff = isNumericOff && !isNumericSpace;
           for (let i = 0; i < count; i++) {
-            expandedLineNodes.push(isOff ? { off: true } : { space: true });
+            expandedLineNodes.push(isOff ? { off: true } : { wait: true });
           }
           continue;
         }
@@ -221,7 +229,7 @@ export const parseSongFromYaml = (content: string): Song => {
           const vol = ln.volume;
           for (let i = 0; i < count; i++) {
             expandedLineNodes.push(
-              isOff ? { off: true, volume: vol } : { space: true, volume: vol }
+              isOff ? { off: true, volume: vol } : { wait: true, volume: vol }
             );
           }
           continue;
@@ -253,7 +261,7 @@ export const parseSongFromYaml = (content: string): Song => {
             octave: 0,
             instrument: '00',
           };
-        } else if (ln.space === true) {
+        } else if (ln.wait === true || ln.space === true) {
           // Empty or note-off line: currently treated as space
         } else if (typeof rawNote === 'string') {
           const parsedKey = parseBaseKey(rawNote);

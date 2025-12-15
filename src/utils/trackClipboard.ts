@@ -3,6 +3,7 @@ import type { Pattern, PatternLine } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
 
 export type TrackClipboardStep = {
+  wait?: boolean | number;
   space?: boolean | number;
   off?: boolean | number;
   note?: string;
@@ -42,7 +43,7 @@ export function generateClipboardData(
     let step: TrackClipboardStep;
 
     if (!cell) {
-      step = { space: hasVolume ? 1 : true };
+      step = { wait: hasVolume ? 1 : true };
     } else if (cell.note === '===') {
       step = { note: 'OFF' };
     } else {
@@ -67,7 +68,7 @@ export function generateClipboardData(
   let lastNonSpace = steps.length - 1;
   while (lastNonSpace >= 0) {
     const ln = steps[lastNonSpace];
-    if (ln && ln.space === true && Object.keys(ln).length === 1) {
+    if (ln && ln.wait === true && Object.keys(ln).length === 1) {
       lastNonSpace--;
     } else {
       break;
@@ -85,12 +86,12 @@ export function generateClipboardData(
   const flushRun = () => {
     if (runCount <= 0) return;
     if (runType === 'space') {
-      compressedSteps.push({ space: runCount });
+      compressedSteps.push({ wait: runCount });
     } else if (runType === 'volume-space') {
       if (runCount === 1) {
         compressedSteps.push({ volume: runVolume });
       } else {
-        compressedSteps.push({ space: runCount, volume: runVolume });
+        compressedSteps.push({ wait: runCount, volume: runVolume });
       }
     }
     runType = 'none';
@@ -98,11 +99,11 @@ export function generateClipboardData(
   };
 
   const isPureSpace = (ln: TrackClipboardStep) =>
-    ln && ln.space === true && Object.keys(ln).length === 1;
+    ln && ln.wait === true && Object.keys(ln).length === 1;
 
   const isVolumeSpace = (ln: TrackClipboardStep) =>
     ln &&
-    ln.space === 1 &&
+    ln.wait === 1 &&
     typeof ln.volume === 'number' &&
     Object.keys(ln).length === 2;
 
@@ -179,12 +180,12 @@ export function parseClipboardData(text: string): TrackClipboardStep[] {
       const ln = node as TrackClipboardStep;
       const keys = Object.keys(ln);
       const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
-      const onlySpaceOrOff = keys.every(k => k === 'space' || k === 'off');
+      const onlySpaceOrOff = keys.every(k => k === 'wait' || k === 'space' || k === 'off');
       const onlySpaceOffVolume = keys.every(
-        k => k === 'space' || k === 'off' || k === 'volume'
+        k => k === 'wait' || k === 'space' || k === 'off' || k === 'volume'
       );
 
-      const spaceVal = ln.space;
+      const spaceVal = ln.wait ?? ln.space;
       const offVal = ln.off;
       const isNumericSpace =
         typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
@@ -195,7 +196,7 @@ export function parseClipboardData(text: string): TrackClipboardStep[] {
         const count = (isNumericSpace ? spaceVal : offVal) as number;
         const isOff = isNumericOff && !isNumericSpace;
         for (let i = 0; i < count; i++) {
-          expandedSteps.push(isOff ? { note: 'OFF' } : { space: true });
+          expandedSteps.push(isOff ? { note: 'OFF' } : { wait: true });
         }
         continue;
       }
@@ -206,7 +207,7 @@ export function parseClipboardData(text: string): TrackClipboardStep[] {
         const vol = ln.volume;
         for (let i = 0; i < count; i++) {
           expandedSteps.push(
-            isOff ? { note: 'OFF', volume: vol } : { space: true, volume: vol }
+            isOff ? { note: 'OFF', volume: vol } : { wait: true, volume: vol }
           );
         }
         continue;
@@ -241,7 +242,13 @@ export function applyClipboardToLines(
     const hasVolume = ln.volume !== undefined && ln.volume !== null;
     const keys = Object.keys(ln);
     const otherKeys = keys.filter(
-      key => key !== 'note' && key !== 'instrument' && key !== 'space' && key !== 'off' && key !== 'volume'
+      key =>
+        key !== 'note' &&
+        key !== 'instrument' &&
+        key !== 'wait' &&
+        key !== 'space' &&
+        key !== 'off' &&
+        key !== 'volume'
     );
     const hasOther = otherKeys.length > 0;
     return !hasNote && !hasVolume && !hasOther;
@@ -264,7 +271,7 @@ export function applyClipboardToLines(
 
     if (isOffNote) {
       line.trackA = { note: '===', octave: 0, instrument: '00' };
-    } else if (ln.space === true) {
+    } else if (ln.wait === true || ln.space === true) {
       line.trackA = null;
     } else if (typeof rawNote === 'string') {
       const parsedKey = parseBaseKeyString(rawNote);

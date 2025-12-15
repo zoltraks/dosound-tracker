@@ -11,14 +11,14 @@ song:
   speed: 6
   length: 4
   loop: 0
-  playlist:
+  line:
     - A: "01"
   pattern:
     - number: "01"
       steps:
         - note: "C-4"
           instrument: "00"
-        - space: true
+        - wait: true
         - off: true
         - space: true
   instrument:
