@@ -1,0 +1,15 @@
+The program uses an envelope called "arpeggio," which specifies a semitone pitch shift in subsequent steps of the instrument's sound generation over time.
+
+The arpeggio envelope is conventionally a sequence of shifts similar to the shift envelope, but it is repeated from the beginning in a loop. An example of a "C major" sequence could be a list of three elements: 0, 4, 7. If expanded into a shift envelope, it should be written as the sequence: 0, 4, 7, 0, 4, 7, etc.
+
+Therefore, this is not actually an "arpeggio" envelope (or sequence), but rather a "shift" envelope. This name should also be used as the key name representing the envelope's value array.
+
+In the instrument definition, the key name "arpeggio" should be replaced with "shift". If, when reading an instrument definition, a "shift" field is not found but an "arpeggio" field exists, the value array should be read, and the "shift" envelope should be populated by repeating the sequence from the "arpeggio" array.
+
+These changes should be implemented in the YAML format for both instrument and song definitions.
+
+Do not change the displayed name.
+In User interface, the shift envelope will still be called "Arpeggio".
+
+Maintain backward compatibility.
+Additionally, update the corresponding variable names, fields, types, or function names in the source code to ensure naming consistency and coherence.

@@ -1,0 +1,7 @@
+In the YAML format for a song, change the key name "playlist" to "line".
+In the step array definition within the "step" field, use the key name "wait" instead of "space".
+
+Maintain backward compatibility.
+Also, update the corresponding variable names, fields, types, or function names in the source code to ensure naming consistency and coherence.
+
+---
