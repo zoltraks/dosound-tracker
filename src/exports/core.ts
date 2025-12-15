@@ -6,7 +6,7 @@ import type { ExportStrategy } from '../constants/export';
 import { 
   simulateSong, 
   type SimulationFrame, 
-} from './playbackSimulation';
+} from '../utils/playbackSimulation';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
