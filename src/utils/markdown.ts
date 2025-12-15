@@ -55,6 +55,29 @@ const renderInlineMarkdown = (text: string): string => {
   return result;
 };
 
+const parseTableRow = (line: string): string[] => {
+  const trimmed = line.trim();
+  const withoutOuterPipes = trimmed.replace(/^\|/, '').replace(/\|$/, '');
+  return withoutOuterPipes.split('|').map(cell => cell.trim());
+};
+
+const parseTableAlignment = (cell: string): 'left' | 'right' | 'center' | null => {
+  const trimmed = cell.trim();
+  const starts = trimmed.startsWith(':');
+  const ends = trimmed.endsWith(':');
+  if (starts && ends) return 'center';
+  if (ends) return 'right';
+  if (starts) return 'left';
+  return null;
+};
+
+const isTableSeparatorLine = (line: string): boolean => {
+  if (!line.includes('-')) return false;
+  const cells = parseTableRow(line);
+  if (cells.length === 0) return false;
+  return cells.every(cell => /^:?-{3,}:?$/.test(cell.trim()));
+};
+
 export const renderMarkdown = (md: string): string => {
   const lines = md.split('\n');
   const html: string[] = [];
@@ -70,7 +93,8 @@ export const renderMarkdown = (md: string): string => {
     }
   };
 
-  for (const rawLine of lines) {
+  for (let lineIndex = 0; lineIndex < lines.length; lineIndex++) {
+    const rawLine = lines[lineIndex] ?? '';
     const line = rawLine.trimEnd();
     const trimmed = line.trim();
     if (trimmed.startsWith('```')) {
@@ -99,6 +123,57 @@ export const renderMarkdown = (md: string): string => {
       continue;
     }
 
+    const nextLine = (lineIndex + 1 < lines.length) ? (lines[lineIndex + 1] ?? '').trimEnd() : '';
+    const nextTrimmed = nextLine.trim();
+    if (trimmed && trimmed.includes('|') && isTableSeparatorLine(nextTrimmed)) {
+      closeList();
+
+      const headerCells = parseTableRow(trimmed);
+      const separatorCells = parseTableRow(nextTrimmed);
+      const alignments = separatorCells.map(parseTableAlignment);
+
+      html.push('<table>');
+      html.push('<thead>');
+      html.push('<tr>');
+
+      for (let cellIndex = 0; cellIndex < headerCells.length; cellIndex++) {
+        const content = renderInlineMarkdown(headerCells[cellIndex] ?? '');
+        const align = alignments[cellIndex] ? ` style="text-align: ${alignments[cellIndex]}"` : '';
+        html.push(`<th${align}>${content}</th>`);
+      }
+
+      html.push('</tr>');
+      html.push('</thead>');
+      html.push('<tbody>');
+
+      lineIndex += 2;
+      while (lineIndex < lines.length) {
+        const bodyRaw = (lines[lineIndex] ?? '').trimEnd();
+        const bodyTrimmed = bodyRaw.trim();
+        if (!bodyTrimmed) {
+          break;
+        }
+        if (!bodyTrimmed.includes('|')) {
+          break;
+        }
+
+        const rowCells = parseTableRow(bodyTrimmed);
+        html.push('<tr>');
+        for (let cellIndex = 0; cellIndex < headerCells.length; cellIndex++) {
+          const content = renderInlineMarkdown(rowCells[cellIndex] ?? '');
+          const align = alignments[cellIndex] ? ` style="text-align: ${alignments[cellIndex]}"` : '';
+          html.push(`<td${align}>${content}</td>`);
+        }
+        html.push('</tr>');
+        lineIndex++;
+      }
+
+      html.push('</tbody>');
+      html.push('</table>');
+      lineIndex -= 1;
+      continue;
+    }
+
     if (!trimmed) {
       closeList();
       continue;
@@ -107,6 +182,14 @@ export const renderMarkdown = (md: string): string => {
     if (/^-{3,}$/.test(trimmed)) {
       closeList();
       html.push('<hr />');
+      continue;
+    }
+
+    if (line.startsWith('### ')) {
+      closeList();
+      const text = line.slice(4).trim();
+      const cleaned = text.replace(/\s*#+\s*$/, '').trim();
+      html.push(`<h3>${escapeHtml(cleaned)}</h3>`);
       continue;
     }
 
