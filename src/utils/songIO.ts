@@ -377,4 +377,3 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   return yamlContent;
 };
-

@@ -82,70 +82,55 @@ export function useAppState(): UseAppStateResult {
     []
   );
 
-  const [transposeScope, setTransposeScope] = useState<'line' | 'song'>('line');
-  const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>('current');
-  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>('all');
-  const [transposeAmount, setTransposeAmount] = useState<number>(0);
-  const [transposeAmountInput, setTransposeAmountInput] = useState<string>('0');
-
-  useEffect(() => {
+  const [transposeScope, setTransposeScope] = useState<'line' | 'song'>(() => {
     try {
-      localStorage.setItem('dosound-tracker-debug-mode', isDebugMode ? 'on' : 'off');
-    } catch {
-      // ignore
-    }
-  }, [isDebugMode]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('dosound-tracker-export-type', exportType);
-    } catch {
-      // ignore
-    }
-  }, [exportType]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('dosound-tracker-dump-mode', exportStrategy);
-    } catch {
-      // ignore
-    }
-  }, [exportStrategy]);
-
-  // Load transpose settings from localStorage on startup so they persist
-  // until the application is fully reset (RESET clears localStorage and reloads).
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem('dosound-tracker-transpose-settings');
-      if (!raw) return;
-
-      const parsed: unknown = JSON.parse(raw);
-      if (parsed && typeof parsed === 'object') {
-        const obj = parsed as {
-          scope?: 'line' | 'song';
-          trackScope?: 'current' | 'all';
-          instrumentScope?: 'all' | 'selected';
-          amount?: number;
-        };
-
-        if (obj.scope === 'line' || obj.scope === 'song') {
-          setTransposeScope(obj.scope);
-        }
-        if (obj.trackScope === 'current' || obj.trackScope === 'all') {
-          setTransposeTrackScope(obj.trackScope);
-        }
-        if (obj.instrumentScope === 'all' || obj.instrumentScope === 'selected') {
-          setTransposeInstrumentScope(obj.instrumentScope);
-        }
-        if (typeof obj.amount === 'number' && Number.isFinite(obj.amount)) {
-          setTransposeAmount(obj.amount);
-          setTransposeAmountInput(String(obj.amount));
-        }
+      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      if (settings?.scope === 'line' || settings?.scope === 'song') {
+        return settings.scope;
       }
-    } catch {
-      // ignore
-    }
-  }, []);
+    } catch { /* ignore */ }
+    return 'line';
+  });
+
+  const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>(() => {
+    try {
+      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      if (settings?.trackScope === 'current' || settings?.trackScope === 'all') {
+        return settings.trackScope;
+      }
+    } catch { /* ignore */ }
+    return 'current';
+  });
+
+  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>(() => {
+    try {
+      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      if (settings?.instrumentScope === 'all' || settings?.instrumentScope === 'selected') {
+        return settings.instrumentScope;
+      }
+    } catch { /* ignore */ }
+    return 'all';
+  });
+
+  const [transposeAmount, setTransposeAmount] = useState<number>(() => {
+    try {
+      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      if (typeof settings?.amount === 'number' && Number.isFinite(settings.amount)) {
+        return settings.amount;
+      }
+    } catch { /* ignore */ }
+    return 0;
+  });
+
+  const [transposeAmountInput, setTransposeAmountInput] = useState<string>(() => {
+    try {
+      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      if (typeof settings?.amount === 'number' && Number.isFinite(settings.amount)) {
+        return String(settings.amount);
+      }
+    } catch { /* ignore */ }
+    return '0';
+  });
 
   // Persist transpose settings whenever they change so they survive reloads
   // until the RESET action clears localStorage.
