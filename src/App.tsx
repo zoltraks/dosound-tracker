@@ -564,10 +564,13 @@ const App: React.FC = () => {
       instrument: Instrument | undefined,
       note: string,
       octave: number,
-      volumeFromStep?: number | null
+      volumeFromStep?: number | null,
+      velocityOverride?: number | null
     ) => void;
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   } | null>(null);
+
+  const midiConfigRef = useRef<MidiConfig | null>(null);
 
   const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
   const {
@@ -1735,6 +1738,7 @@ const App: React.FC = () => {
     handlePatternChange,
     ym2149Ref,
     midiHelpersRef,
+    midiConfigRef,
     parseBaseKeyString,
   });
 
@@ -2015,6 +2019,10 @@ const App: React.FC = () => {
       sendInstrumentMidiNoteOffForChannel,
     };
   }, [sendInstrumentMidiNoteOn, sendInstrumentMidiNoteOffForChannel]);
+
+  useEffect(() => {
+    midiConfigRef.current = midiConfig;
+  }, [midiConfig]);
 
   const handleLiveMidiConfigChange = useCallback(
     (patch: Partial<MidiConfig>) => {

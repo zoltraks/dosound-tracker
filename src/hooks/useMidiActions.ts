@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Song, Pattern, Step, Note, Instrument } from '../synth/SoundDriver';
 import type { YM2149 } from '../synth/YM2149';
-import type { MidiNoteEvent } from './useMidi';
+import type { MidiConfig, MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
 import { NOTES, MIN_OCTAVE, MAX_OCTAVE, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 
@@ -12,7 +12,8 @@ interface MidiHelpersRef {
     instrument: Instrument | undefined,
     note: string,
     octave: number,
-    volumeFromStep?: number | null
+    volumeFromStep?: number | null,
+    velocityOverride?: number | null
   ) => void;
   sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
 }
@@ -28,6 +29,7 @@ interface UseMidiActionsArgs {
   handlePatternChange: (pattern: Pattern) => void;
   ym2149Ref: RefObject<YM2149 | null>;
   midiHelpersRef: RefObject<MidiHelpersRef | null>;
+  midiConfigRef: RefObject<MidiConfig | null>;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
 }
 
@@ -48,6 +50,7 @@ export function useMidiActions({
   handlePatternChange,
   ym2149Ref,
   midiHelpersRef,
+  midiConfigRef,
   parseBaseKeyString,
 }: UseMidiActionsArgs): UseMidiActionsResult {
   const lastMidiPreviewRef = useRef<{
@@ -127,7 +130,12 @@ export function useMidiActions({
         return;
       }
 
-      const { type, noteNumber, noteName, octave, channel: midiChannel } = event;
+      const { type, noteNumber, noteName, octave, channel: midiChannel, velocity: midiVelocity } = event;
+
+      const velocityToVolumeNibble = (velocity: number): number => {
+        const clamped = Math.max(0, Math.min(127, velocity | 0));
+        return Math.max(1, Math.min(15, Math.round((clamped / 127) * 15)));
+      };
 
       const normalizedNote = noteName.toUpperCase();
       const noteIndex = NOTES.indexOf(normalizedNote);
@@ -173,6 +181,11 @@ export function useMidiActions({
       // When a track panel is focused, insert notes into the current pattern and advance the cursor,
       // then start a sustain-aware live preview on that track's channel.
       if (isTrackFocused && type === 'noteOn') {
+        const ignoreInputVolume = midiConfigRef.current?.ignoreInputVolume ?? true;
+        const ignoreOutputVolume = midiConfigRef.current?.ignoreOutputVolume ?? true;
+        const liveVolumeModifier = ignoreInputVolume ? 0x0f : velocityToVolumeNibble(midiVelocity);
+        const midiOutVelocity = ignoreOutputVolume ? null : midiVelocity;
+
         const trackId: 'A' | 'B' | 'C' =
           activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
 
@@ -257,7 +270,7 @@ export function useMidiActions({
         midiLiveLastVolumeIndexRef.current = lastVolumeIndex;
         midiLiveLastVolumeValueRef.current = lastVolumeValue;
 
-        ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
+        ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, liveVolumeModifier);
 
         const helpers = midiHelpersRef.current;
         if (helpers) {
@@ -266,7 +279,8 @@ export function useMidiActions({
             currentInstrument,
             transposedNoteName,
             clampedOctave,
-            null
+            null,
+            midiOutVelocity
           );
         }
 
@@ -328,7 +342,7 @@ export function useMidiActions({
             stepForApply = sustain;
           }
 
-          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, 0x0f);
+          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
 
           const tailIndex = midiLiveLastVolumeIndexRef.current;
           const tailValue = midiLiveLastVolumeValueRef.current;
@@ -415,6 +429,11 @@ export function useMidiActions({
             : 0;
 
         if (type === 'noteOn') {
+          const ignoreInputVolume = midiConfigRef.current?.ignoreInputVolume ?? true;
+          const ignoreOutputVolume = midiConfigRef.current?.ignoreOutputVolume ?? true;
+          const liveVolumeModifier = ignoreInputVolume ? 0x0f : velocityToVolumeNibble(midiVelocity);
+          const midiOutVelocity = ignoreOutputVolume ? null : midiVelocity;
+
           const noteData = { note: transposedNoteName, octave: clampedOctave };
           const instrument = currentInstrument;
 
@@ -452,12 +471,19 @@ export function useMidiActions({
           midiLiveLastVolumeIndexRef.current = lastVolumeIndex;
           midiLiveLastVolumeValueRef.current = lastVolumeValue;
 
-          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, 0x0f);
+          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, liveVolumeModifier);
 
           // Also send MIDI OUT for live preview using the instrument's MIDI settings.
           const helpers = midiHelpersRef.current;
           if (helpers) {
-            helpers.sendInstrumentMidiNoteOn(ymChannel, currentInstrument, transposedNoteName, clampedOctave, null);
+            helpers.sendInstrumentMidiNoteOn(
+              ymChannel,
+              currentInstrument,
+              transposedNoteName,
+              clampedOctave,
+              null,
+              midiOutVelocity
+            );
           }
 
           lastMidiPreviewRef.current = {
@@ -518,7 +544,7 @@ export function useMidiActions({
               stepForApply = sustain;
             }
 
-            ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, 0x0f);
+            ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
 
             const tailIndex = midiLiveLastVolumeIndexRef.current;
             const tailValue = midiLiveLastVolumeValueRef.current;
@@ -606,6 +632,7 @@ export function useMidiActions({
       setSharedCurrentLine,
       sharedCurrentLine,
       midiHelpersRef,
+      midiConfigRef,
       ym2149Ref,
       parseBaseKeyString
     ]

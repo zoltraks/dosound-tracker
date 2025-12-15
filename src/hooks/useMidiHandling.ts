@@ -27,7 +27,8 @@ interface UseMidiHandlingResult {
     instrument: Instrument | undefined,
     note: string,
     octave: number,
-    volumeFromStep?: number | null
+    volumeFromStep?: number | null,
+    velocityOverride?: number | null
   ) => void;
   sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   previewInstrumentMidiNoteOn: (
@@ -91,7 +92,8 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     instrument: Instrument | undefined,
     note: string,
     octave: number,
-    volumeFromStep?: number | null
+    volumeFromStep?: number | null,
+    velocityOverride?: number | null
   ) => {
     if (!instrument || !instrument.midi) {
       return;
@@ -122,12 +124,21 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
       }
     }
 
-    let volumeNibble = 0x0f;
-    if (volumeFromStep !== undefined && volumeFromStep !== null) {
-      volumeNibble = Math.max(0, Math.min(0x0f, (volumeFromStep as number) | 0));
-    }
+    let velocity = 0x7f;
 
-    const velocity = Math.max(1, Math.min(127, Math.round((volumeNibble / 15) * 127)));
+    if (velocityOverride !== undefined && velocityOverride !== null) {
+      const raw = velocityOverride | 0;
+      velocity = Math.max(1, Math.min(127, raw));
+    } else {
+      const rawVolume = volumeFromStep !== undefined && volumeFromStep !== null
+        ? ((volumeFromStep as number) | 0)
+        : null;
+
+      if (rawVolume !== null) {
+        const volumeNibble = Math.max(0, Math.min(0x0f, rawVolume));
+        velocity = Math.max(1, Math.min(127, Math.round((volumeNibble / 15) * 127)));
+      }
+    }
 
     const lastEntry = ymChannel >= 0 && ymChannel <= 2 ? playbackMidiNotesRef.current[ymChannel] : null;
     if (lastEntry) {

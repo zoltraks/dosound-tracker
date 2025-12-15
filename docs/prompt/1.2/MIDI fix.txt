@@ -1,0 +1,29 @@
+I can select my device from MIDI input device list and I see in incoming data value. I have disable "agnostic" option but I when I play notes I hear that currently selected instrument is always played at maximum volume but it should be recalculated. 
+
+MIDI IN log:
+
+```
+Time          Data               Device                Ch  Type        Note  Value
+15:04:01.277  90 48 0B           2- ReMOTE25 V1.0      01  Note On     C-5      11
+15:04:01.413  80 48 11           2- ReMOTE25 V1.0      01  Note Off    C-5      17
+15:04:01.686  90 45 04           2- ReMOTE25 V1.0      01  Note On     A-4       4
+15:04:01.880  80 45 14           2- ReMOTE25 V1.0      01  Note Off    A-4      20
+15:04:02.036  90 48 0B           2- ReMOTE25 V1.0      01  Note On     C-5      11
+15:04:02.149  80 48 06           2- ReMOTE25 V1.0      01  Note Off    C-5       6
+15:04:02.491  90 43 02           2- ReMOTE25 V1.0      01  Note On     G-4       2
+15:04:02.677  80 43 0A           2- ReMOTE25 V1.0      01  Note Off    G-4      10
+15:04:03.034  90 45 05           2- ReMOTE25 V1.0      01  Note On     A-4       5
+15:04:03.176  80 45 09           2- ReMOTE25 V1.0      01  Note Off    A-4       9
+```
+
+Also when instrument is routing values to MIDI output, it always sends maximum value 127 but it should route the same if option "Ignore output volume" is unchecked.
+
+```
+Time          Data               Device                Ch  Type        Note  Value
+15:04:36.717  90 39 7F           JT-4000 MICRO         01  Note On     A-3     127
+15:04:36.912  80 39 40           JT-4000 MICRO         01  Note Off    A-3      64
+15:04:38.568  90 3E 7F           JT-4000 MICRO         01  Note On     D-4     127
+15:04:38.636  80 3E 40           JT-4000 MICRO         01  Note Off    D-4      64
+```
+
+---
