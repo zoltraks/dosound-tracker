@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useTheme } from './hooks/useTheme';

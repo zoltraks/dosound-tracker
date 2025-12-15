@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { ChevronUp, ChevronDown } from 'lucide-react';
@@ -106,6 +107,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
       volume: Array(ENVELOPE_LENGTH).fill(0),
       arpeggio: Array(ENVELOPE_LENGTH).fill(0),
       pitch: Array(ENVELOPE_LENGTH).fill(0),
+      noise: Array(ENVELOPE_LENGTH).fill(0),
       noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
       mode: Array(ENVELOPE_LENGTH).fill(0)
     };

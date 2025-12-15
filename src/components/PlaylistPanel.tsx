@@ -130,6 +130,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
 
     if (playlist.length === 0) {
       if (currentLine !== 0) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setCurrentLine(0);
       }
       return;

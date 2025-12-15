@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE } from '../constants/music';

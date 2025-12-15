@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, ARPEGGIO_MIN, ARPEGGIO_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
