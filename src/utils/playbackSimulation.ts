@@ -72,13 +72,13 @@ export function simulateSong(
   let hasEmittedFrame = false;
 
   // Process each playlist entry
-  for (let playlistIdx = 0; playlistIdx < song.playlist.length; playlistIdx++) {
-    const playlistEntry = song.playlist[playlistIdx];
+  for (let playlistIdx = 0; playlistIdx < song.line.length; playlistIdx++) {
+    const playlistEntry = song.line[playlistIdx];
     // Get patterns for each track
     const patterns = [
-      song.patterns.find(p => p.id === playlistEntry.trackA),
-      song.patterns.find(p => p.id === playlistEntry.trackB),
-      song.patterns.find(p => p.id === playlistEntry.trackC),
+      song.pattern.find(p => p.id === playlistEntry.A),
+      song.pattern.find(p => p.id === playlistEntry.B),
+      song.pattern.find(p => p.id === playlistEntry.C),
     ];
 
     // Reset channel state if needed
@@ -86,7 +86,7 @@ export function simulateSong(
     // state for channels that actually reference a pattern. Tracks with
     // "--" should allow any previously playing note to continue
     // sustaining across this playlist position.
-    const trackIds = [playlistEntry.trackA, playlistEntry.trackB, playlistEntry.trackC];
+    const trackIds = [playlistEntry.A, playlistEntry.B, playlistEntry.C];
     for (let ch = 0; ch < channels.length; ch++) {
       const id = trackIds[ch];
       const hasPattern = typeof id === 'string' && id.trim() !== '' && id !== '--';
@@ -103,20 +103,20 @@ export function simulateSong(
     }
     
     // Process each line in the pattern
-    const lineCount = song.patternLength || 64;
+    const lineCount = song.length || 64;
     
     for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
       // Get notes for this line
       const notes = [
-        patterns[0]?.lines[lineIdx]?.trackA || null,
-        patterns[1]?.lines[lineIdx]?.trackA || null,
-        patterns[2]?.lines[lineIdx]?.trackA || null,
+        patterns[0]?.step[lineIdx]?.A || null,
+        patterns[1]?.step[lineIdx]?.A || null,
+        patterns[2]?.step[lineIdx]?.A || null,
       ];
       // Per-line volume modifiers (shared pattern trackA volume)
       const volumes = [
-        patterns[0]?.lines[lineIdx]?.volume,
-        patterns[1]?.lines[lineIdx]?.volume,
-        patterns[2]?.lines[lineIdx]?.volume,
+        patterns[0]?.step[lineIdx]?.volume,
+        patterns[1]?.step[lineIdx]?.volume,
+        patterns[2]?.step[lineIdx]?.volume,
       ];
       
       // Process each tick in this row
@@ -178,7 +178,7 @@ export function simulateSong(
                 channelState.subTick = 0;
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
 
-                const instrument = song.instruments.find(i => i.id === noteOnRow.instrument);
+                const instrument = song.instrument.find(i => i.id === noteOnRow.instrument);
                 const rawSustain = instrument?.sustain ?? null;
                 if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
                   channelState.sustainIndex = Math.floor(rawSustain);
@@ -202,7 +202,7 @@ export function simulateSong(
           
           // Update channel with current envelope step
           if (channelState.note) {
-            const instrument = song.instruments.find(i => i.id === channelState.note!.instrument);
+            const instrument = song.instrument.find(i => i.id === channelState.note!.instrument);
             if (instrument) {
               const rawStep = channelState.envelopeStep;
               const sustainIndex = channelState.sustainIndex;
@@ -314,7 +314,7 @@ export function applyInstrumentToRegisters(
   const arpeggioEnv = instrument.arpeggio || [0];
   const pitchEnv = instrument.pitch || [0];
   const modeEnv = instrument.mode || [0];
-  const noiseEnv = instrument.noiseEnvelope || [0];
+  const noiseEnv = instrument.noise || [0];
   
   const volIdx = Math.min(step, volumeEnv.length - 1);
   const arpIdx = Math.min(step, arpeggioEnv.length - 1);

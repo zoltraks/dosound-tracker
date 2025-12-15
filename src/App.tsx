@@ -295,23 +295,35 @@ const App: React.FC = () => {
 
   const patternsById = useMemo(() => {
     const map = new Map<string, Pattern>();
-    for (const pattern of currentSong.patterns) {
+    const patterns = Array.isArray(currentSong.pattern)
+      ? currentSong.pattern
+      : Array.isArray(currentSong.patterns)
+        ? currentSong.patterns
+        : [];
+
+    for (const pattern of patterns) {
       if (pattern && pattern.id) {
         map.set(pattern.id, pattern);
       }
     }
     return map;
-  }, [currentSong.patterns]);
+  }, [currentSong.pattern, currentSong.patterns]);
 
   const instrumentsById = useMemo(() => {
     const map = new Map<string, Instrument>();
-    for (const instrument of currentSong.instruments) {
+    const instruments = Array.isArray(currentSong.instrument)
+      ? currentSong.instrument
+      : Array.isArray(currentSong.instruments)
+        ? currentSong.instruments
+        : [];
+
+    for (const instrument of instruments) {
       if (instrument && instrument.id) {
         map.set(instrument.id, instrument);
       }
     }
     return map;
-  }, [currentSong.instruments]);
+  }, [currentSong.instrument, currentSong.instruments]);
   const {
     sequencerState,
     stop,
@@ -603,7 +615,7 @@ const App: React.FC = () => {
     }
     
     // Find and update the pattern by ID
-    const updatedPatterns = [...currentSong.patterns];
+    const updatedPatterns = [...currentSong.pattern];
     const patternIndex = updatedPatterns.findIndex(p => p.id === newPattern.id);
     
     if (patternIndex === -1) {
@@ -612,8 +624,8 @@ const App: React.FC = () => {
     }
     
     updatedPatterns[patternIndex] = newPattern;
-    updateSong({ patterns: updatedPatterns });
-  }, [currentSong.patterns, updateSong]);
+    updateSong({ pattern: updatedPatterns });
+  }, [currentSong.pattern, updateSong]);
 
 
   const {
@@ -987,7 +999,7 @@ const App: React.FC = () => {
 
   const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
     // Get current playlist row based on sequencer state
-    const playlistLength = currentSong.playlist.length;
+    const playlistLength = currentSong.line.length;
     if (playlistLength === 0) {
       return null;
     }
@@ -996,7 +1008,7 @@ const App: React.FC = () => {
       0,
       Math.min(playlistLength - 1, sequencerState.currentPattern),
     );
-    const currentPlaylistEntry = currentSong.playlist[currentPatternIndex];
+    const currentPlaylistEntry = currentSong.line[currentPatternIndex];
 
     if (!currentPlaylistEntry) {
       return null;
@@ -1006,13 +1018,13 @@ const App: React.FC = () => {
     let patternId = '--';
     switch (trackId) {
       case 'A':
-        patternId = currentPlaylistEntry.trackA;
+        patternId = currentPlaylistEntry.A;
         break;
       case 'B':
-        patternId = currentPlaylistEntry.trackB;
+        patternId = currentPlaylistEntry.B;
         break;
       case 'C':
-        patternId = currentPlaylistEntry.trackC;
+        patternId = currentPlaylistEntry.C;
         break;
     }
 
@@ -1020,26 +1032,26 @@ const App: React.FC = () => {
       return null; // No pattern set for this track
     }
 
-    let foundPattern = currentSong.patterns.find(p => p.id === patternId);
+    let foundPattern = currentSong.pattern.find(p => p.id === patternId);
 
     // If pattern doesn't exist, create it with current pattern length
     if (!foundPattern) {
-      const targetLength = currentSong.patternLength || PATTERN_LENGTH;
+      const targetLength = currentSong.length || PATTERN_LENGTH;
       const newPattern = {
         id: patternId,
         name: `Pattern ${patternId}`,
-        lines: Array(targetLength)
+        step: Array(targetLength)
           .fill(null)
           .map(() => ({
-            trackA: null,
-            trackB: null,
-            trackC: null,
+            A: null,
+            B: null,
+            C: null,
           })),
       };
 
       // Add the new pattern to the song
-      const updatedPatterns = [...currentSong.patterns, newPattern];
-      updateSong({ patterns: updatedPatterns });
+      const updatedPatterns = [...currentSong.pattern, newPattern];
+      updateSong({ pattern: updatedPatterns });
 
       foundPattern = newPattern;
     }
@@ -1189,7 +1201,7 @@ const App: React.FC = () => {
 
       const targetId = instrumentMidiTarget.id;
 
-      const nextInstruments = currentSong.instruments.map(inst => {
+      const nextInstruments = currentSong.instrument.map((inst) => {
         if (!inst || inst.id !== targetId) {
           return inst;
         }
@@ -1213,10 +1225,10 @@ const App: React.FC = () => {
         };
       });
 
-      updateSong({ instruments: nextInstruments });
+      updateSong({ instrument: nextInstruments });
 
       if (currentInstrument && currentInstrument.id === targetId) {
-        const updated = nextInstruments.find(inst => inst && inst.id === targetId);
+        const updated = nextInstruments.find((inst) => inst && inst.id === targetId);
         if (updated) {
           setCurrentInstrument(updated);
         }
@@ -1229,7 +1241,7 @@ const App: React.FC = () => {
     },
     [
       instrumentMidiTarget,
-      currentSong.instruments,
+      currentSong.instrument,
       updateSong,
       currentInstrument,
       setCurrentInstrument,
@@ -1261,7 +1273,7 @@ const App: React.FC = () => {
 
       const targetId = instrumentColorTarget.id;
 
-      const nextInstruments = currentSong.instruments.map(inst => {
+      const nextInstruments = currentSong.instrument.map((inst) => {
         if (!inst || inst.id !== targetId) {
           return inst;
         }
@@ -1274,10 +1286,10 @@ const App: React.FC = () => {
         };
       });
 
-      updateSong({ instruments: nextInstruments });
+      updateSong({ instrument: nextInstruments });
 
       if (currentInstrument && currentInstrument.id === targetId) {
-        const updated = nextInstruments.find(inst => inst && inst.id === targetId);
+        const updated = nextInstruments.find((inst) => inst && inst.id === targetId);
         if (updated) {
           setCurrentInstrument(updated);
         }
@@ -1290,7 +1302,7 @@ const App: React.FC = () => {
     },
     [
       instrumentColorTarget,
-      currentSong.instruments,
+      currentSong.instrument,
       updateSong,
       currentInstrument,
       setCurrentInstrument,
@@ -1310,7 +1322,7 @@ const App: React.FC = () => {
 
       const targetId = instrumentColorTarget.id;
 
-      const nextInstruments = currentSong.instruments.map(inst => {
+      const nextInstruments = currentSong.instrument.map((inst) => {
         if (!inst || inst.id !== targetId) {
           return inst;
         }
@@ -1321,10 +1333,10 @@ const App: React.FC = () => {
         };
       });
 
-      updateSong({ instruments: nextInstruments });
+      updateSong({ instrument: nextInstruments });
 
       if (currentInstrument && currentInstrument.id === targetId) {
-        const updated = nextInstruments.find(inst => inst && inst.id === targetId);
+        const updated = nextInstruments.find((inst) => inst && inst.id === targetId);
         if (updated) {
           setCurrentInstrument(updated);
         }
@@ -1337,7 +1349,7 @@ const App: React.FC = () => {
     },
     [
       instrumentColorTarget,
-      currentSong.instruments,
+      currentSong.instrument,
       updateSong,
       currentInstrument,
       setCurrentInstrument,
@@ -1399,13 +1411,13 @@ const App: React.FC = () => {
 
   // Handle start song playback
   const handleStartSong = useCallback(() => {
-    if (currentSong.playlist.length === 0) {
+    if (currentSong.line.length === 0) {
       return;
     }
 
     const clampedIndex = Math.max(
       0,
-      Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
+      Math.min(sequencerState.currentPattern, currentSong.line.length - 1)
     );
 
     // If we are currently in line-loop mode and playback is running, switch
@@ -1436,22 +1448,22 @@ const App: React.FC = () => {
     sequencerState.currentPattern,
     sequencerState.currentLine,
     sequencerState.isPlaying,
-    currentSong.playlist,
+    currentSong.line,
     sharedCurrentLine,
     setPatternLoopMode
   ]);
 
   // Handle start line playback (line-loop mode for the current playlist line)
   const handleStartLinePlayback = useCallback(() => {
-    if (currentSong.playlist.length === 0) {
+    if (currentSong.line.length === 0) {
       return;
     }
 
     const clampedIndex = Math.max(
       0,
-      Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1)
+      Math.min(sequencerState.currentPattern, currentSong.line.length - 1)
     );
-    const currentEntry = currentSong.playlist[clampedIndex];
+    const currentEntry = currentSong.line[clampedIndex];
 
     if (!currentEntry) {
       return;
@@ -1469,13 +1481,13 @@ const App: React.FC = () => {
     let patternId = '--';
     switch (trackId) {
       case 'A':
-        patternId = currentEntry.trackA;
+        patternId = currentEntry.A;
         break;
       case 'B':
-        patternId = currentEntry.trackB;
+        patternId = currentEntry.B;
         break;
       case 'C':
-        patternId = currentEntry.trackC;
+        patternId = currentEntry.C;
         break;
     }
 
@@ -1491,7 +1503,7 @@ const App: React.FC = () => {
         0,
         Math.min(
           sequencerState.currentLine,
-          (currentSong.patternLength || PATTERN_LENGTH) - 1
+          (currentSong.length || PATTERN_LENGTH) - 1
         )
       );
 
@@ -1523,8 +1535,8 @@ const App: React.FC = () => {
     sequencerState.isPlaying,
     sequencerState.currentPattern,
     sequencerState.currentLine,
-    currentSong.playlist,
-    currentSong.patternLength,
+    currentSong.line,
+    currentSong.length,
     activeSection,
     lastTrackId,
     isLinePlaying,
@@ -1532,12 +1544,12 @@ const App: React.FC = () => {
   ]);
 
   const handleStartLineFromBeginning = useCallback(() => {
-    if (currentSong.playlist.length === 0) {
+    if (currentSong.line.length === 0) {
       return;
     }
 
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.playlist.length - 1));
-    const currentEntry = currentSong.playlist[clampedIndex];
+    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.line.length - 1));
+    const currentEntry = currentSong.line[clampedIndex];
 
     if (!currentEntry) {
       return;
@@ -1555,13 +1567,13 @@ const App: React.FC = () => {
     let patternId = '--';
     switch (trackId) {
       case 'A':
-        patternId = currentEntry.trackA;
+        patternId = currentEntry.A;
         break;
       case 'B':
-        patternId = currentEntry.trackB;
+        patternId = currentEntry.B;
         break;
       case 'C':
-        patternId = currentEntry.trackC;
+        patternId = currentEntry.C;
         break;
     }
 
@@ -1581,16 +1593,16 @@ const App: React.FC = () => {
     setPosition(clampedIndex, 0, 0);
 
     startSong();
-  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isLinePlaying, currentSong.playlist, activeSection, lastTrackId]);
+  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isLinePlaying, currentSong.line, activeSection, lastTrackId]);
 
   const handleStartLineFromCurrentLine = useCallback((overrideLine?: number) => {
-    if (currentSong.playlist.length === 0) {
+    if (currentSong.line.length === 0) {
       return;
     }
 
-    const playlistLength = currentSong.playlist.length;
+    const playlistLength = currentSong.line.length;
     const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-    const currentEntry = currentSong.playlist[clampedIndex];
+    const currentEntry = currentSong.line[clampedIndex];
 
     if (!currentEntry) {
       return;
@@ -1608,13 +1620,13 @@ const App: React.FC = () => {
     let patternId = '--';
     switch (trackId) {
       case 'A':
-        patternId = currentEntry.trackA;
+        patternId = currentEntry.A;
         break;
       case 'B':
-        patternId = currentEntry.trackB;
+        patternId = currentEntry.B;
         break;
       case 'C':
-        patternId = currentEntry.trackC;
+        patternId = currentEntry.C;
         break;
     }
 
@@ -1640,9 +1652,9 @@ const App: React.FC = () => {
     setIsLinePlaying(true);
 
     // Start pattern loop from the current cursor line
-    const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.patternLength || PATTERN_LENGTH) - 1));
+    const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.length || PATTERN_LENGTH) - 1));
     startPatternLoop(clampedIndex, startLine);
-  }, [currentSong.playlist, currentSong.patternLength, sharedCurrentLine, sequencerState.currentPattern, sequencerState.isPlaying, activeSection, lastTrackId, stop, startPatternLoop]);
+  }, [currentSong.line, currentSong.length, sharedCurrentLine, sequencerState.currentPattern, sequencerState.isPlaying, activeSection, lastTrackId, stop, startPatternLoop]);
 
   const handleToggleLineFromCursor = useCallback((lineIndex: number) => {
     if (isLinePlaying && sequencerState.isPlaying) {
@@ -1664,7 +1676,7 @@ const App: React.FC = () => {
   // Safety guard: ensure sequencer position always stays within playlist bounds
   // and force a clean stop if playback runs past the end for any reason.
   useEffect(() => {
-    const playlistLength = currentSong.playlist.length;
+    const playlistLength = currentSong.line.length;
 
     // Nothing to do if not playing
     if (!sequencerState.isPlaying) {
@@ -1700,7 +1712,7 @@ const App: React.FC = () => {
   }, [
     sequencerState.isPlaying,
     sequencerState.currentPattern,
-    currentSong.playlist.length,
+    currentSong.line.length,
     currentSong.loop,
     stop,
     handleStopPlayback,
@@ -1880,7 +1892,7 @@ const App: React.FC = () => {
       }
     }
 
-    const playlistLength = currentSong.playlist.length;
+    const playlistLength = currentSong.line.length;
     if (playlistLength === 0) {
       setTransposeSummary('No playlist entries to transpose.');
       setIsTransposeOpen(false);
@@ -1948,7 +1960,7 @@ const App: React.FC = () => {
     setTransposeSummary(lines.join('\n'));
   }, [
     transposeAmountInput,
-    currentSong.playlist.length,
+    currentSong.line.length,
     transposeScope,
     transposeTrackScope,
     transposeInstrumentScope,

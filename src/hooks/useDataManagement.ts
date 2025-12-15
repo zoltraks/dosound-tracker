@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
+import type { Instrument, Song, Pattern, Step } from '../synth/SoundDriver';
 import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../constants/music';
 import {
   DEFAULT_BASE_KEY,
@@ -35,7 +35,7 @@ export const useDataManagement = () => {
       volume: Array(32).fill(0x0F),
       arpeggio: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
       pitch: Array(32).fill(0),
-      noiseEnvelope: Array(32).fill(0),
+      noise: Array(32).fill(0),
       mode: Array(32).fill(0),
       base: DEFAULT_BASE_KEY,
       sustain: null
@@ -51,7 +51,7 @@ export const useDataManagement = () => {
 
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
-    const songInstrument = currentSong.instruments.find(inst => inst.id === currentInstrument.id);
+    const songInstrument = currentSong.instrument.find(inst => inst.id === currentInstrument.id);
     if (!songInstrument || songInstrument === currentInstrument) {
       return;
     }
@@ -67,7 +67,7 @@ export const useDataManagement = () => {
     return () => {
       cancelled = true;
     };
-  }, [currentSong.instruments, currentInstrument]);
+  }, [currentSong.instrument, currentInstrument]);
 
   // Save to localStorage whenever data changes
   useEffect(() => {
@@ -90,12 +90,12 @@ export const useDataManagement = () => {
   const createNewSong = useCallback(() => {
     const targetLength = PATTERN_LENGTH;
 
-    const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+    const emptyLine: Step = { A: null, B: null, C: null };
 
     const createBlankPattern = (id: string): Pattern => ({
       id,
       name: `Pattern ${id}`,
-      lines: Array.from({ length: targetLength }, () => ({ ...emptyLine }))
+      step: Array.from({ length: targetLength }, () => ({ ...emptyLine }))
     });
 
     const patterns: Pattern[] = [
@@ -110,7 +110,7 @@ export const useDataManagement = () => {
       volume: Array(ENVELOPE_LENGTH).fill(0),
       arpeggio: Array(ENVELOPE_LENGTH).fill(0),
       pitch: Array(ENVELOPE_LENGTH).fill(0),
-      noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+      noise: Array(ENVELOPE_LENGTH).fill(0),
       mode: Array(ENVELOPE_LENGTH).fill(0),
       base: DEFAULT_BASE_KEY,
       sustain: null
@@ -121,11 +121,11 @@ export const useDataManagement = () => {
       author: DEFAULT_SONG_AUTHOR,
       year: new Date().getFullYear(),
       speed: 6,
-      patternLength: targetLength,
+      length: targetLength,
       loop: null,
-      patterns,
-      playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
-      instruments: [newCurrentInstrument]
+      pattern: patterns,
+      line: [{ A: '01', B: '02', C: '03' }],
+      instrument: [newCurrentInstrument]
     };
 
     setCurrentSong(newSong);
@@ -170,7 +170,7 @@ export const useDataManagement = () => {
 
         setCurrentSong(newSong);
 
-        const firstInstrument = newSong.instruments.find(
+        const firstInstrument = newSong.instrument.find(
           inst => inst && inst.name && inst.name.trim()
         );
         if (firstInstrument) {
@@ -243,23 +243,25 @@ export const useDataManagement = () => {
       // Handle pattern length updates with clamping and pattern resizing
       const next: Song = { ...prev, ...updates } as Song;
 
-      if (typeof updates.patternLength === 'number') {
-        const rawLength = updates.patternLength;
+      const legacyLength = (updates as unknown as { patternLength?: number }).patternLength;
+      const rawLength = typeof updates.length === 'number' ? updates.length : legacyLength;
+      if (typeof rawLength === 'number') {
         const clampedLength = Math.max(4, Math.min(256, Math.floor(rawLength)));
-        next.patternLength = clampedLength;
 
-        next.patterns = prev.patterns.map(pattern => {
-          const existingLines = pattern.lines || [];
+        next.length = clampedLength;
+
+        next.pattern = prev.pattern.map(pattern => {
+          const existingLines = pattern.step || [];
 
           if (existingLines.length >= clampedLength) {
             return pattern;
           }
 
-          const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+          const emptyLine: Step = { A: null, B: null, C: null };
           const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({ ...emptyLine }));
-          const newLines: PatternLine[] = [...existingLines, ...extra];
+          const newLines: Step[] = [...existingLines, ...extra];
 
-          return { ...pattern, lines: newLines };
+          return { ...pattern, step: newLines };
         });
       }
 
@@ -291,7 +293,7 @@ export const useDataManagement = () => {
   );
 
   const addPlaylistEntry = useCallback(
-    (entry: { trackA: string; trackB: string; trackC: string }) => {
+    (entry: { A: string; B: string; C: string }) => {
       const updatedSong = addPlaylistEntryToSong(currentSong, entry);
       setCurrentSong(updatedSong);
       setIsSongDirty(true);

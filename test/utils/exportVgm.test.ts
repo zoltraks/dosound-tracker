@@ -227,14 +227,14 @@ describe('exportSongToVgm', () => {
     const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
-    const playlistLength = song.playlist.length;
+    const playlistLength = song.line.length;
     expect(playlistLength).toBeGreaterThan(1);
 
     const full = exportSongToVgm(song);
 
     const scopedSong: Song = {
       ...song,
-      playlist: [song.playlist[1]],
+      line: [song.line[1]],
       loop: null,
     };
 
@@ -249,9 +249,9 @@ describe('exportSongToVgm', () => {
 
     const song = parseSongFromYaml(yamlContent);
     expect(song.loop).not.toBeNull();
-    expect(song.instruments.length).toBeGreaterThan(0);
+    expect(song.instrument.length).toBeGreaterThan(0);
 
-    const instrument = song.instruments[0];
+    const instrument = song.instrument[0];
     const { buffer, totalSamples } = exportInstrumentToVgm(instrument, song);
 
     const bytes = new Uint8Array(buffer);

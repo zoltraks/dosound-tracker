@@ -1,4 +1,4 @@
-import type { Song, PatternLine } from '../synth/SoundDriver';
+import type { Song, Step } from '../synth/SoundDriver';
 import { NOTES, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 
 export interface TransposeOptions {
@@ -35,7 +35,7 @@ export function performTranspose(
     normalizeInstrumentId,
   } = options;
 
-  const playlistLength = song.playlist.length;
+  const playlistLength = song.line.length;
   if (playlistLength === 0) {
     return null;
   }
@@ -56,20 +56,20 @@ export function performTranspose(
   const patternIds = new Set<string>();
 
   for (const idx of indices) {
-    const entry = song.playlist[idx];
+    const entry = song.line[idx];
     if (!entry) continue;
 
     for (const track of tracksToProcess) {
       let patternId = '--';
       switch (track) {
         case 'A':
-          patternId = entry.trackA;
+          patternId = entry.A;
           break;
         case 'B':
-          patternId = entry.trackB;
+          patternId = entry.B;
           break;
         case 'C':
-          patternId = entry.trackC;
+          patternId = entry.C;
           break;
       }
 
@@ -98,29 +98,29 @@ export function performTranspose(
   let clippedLow = 0;
   let clippedHigh = 0;
 
-  const updatedPatterns = song.patterns.map(pattern => {
+  const updatedPatterns = song.pattern.map(pattern => {
     if (!patternIds.has(pattern.id)) {
       return pattern;
     }
 
-    const newLines = (pattern.lines || []).map(line => {
-      const newLine = { ...line } as PatternLine;
-      const cell = newLine.trackA;
+    const newSteps = (pattern.step || []).map(step => {
+      const newStep = { ...step } as Step;
+      const cell = newStep.A;
 
       if (!cell || cell.note === '===') {
-        return newLine;
+        return newStep;
       }
 
       if (
         instrumentScope === 'selected' &&
         normalizeInstrumentId(cell.instrument) !== selectedInstrumentIdNorm
       ) {
-        return newLine;
+        return newStep;
       }
 
       const noteIndex = NOTES.indexOf(String(cell.note).toUpperCase());
       if (noteIndex < 0) {
-        return newLine;
+        return newStep;
       }
 
       const originalSemitone = cell.octave * 12 + noteIndex;
@@ -135,26 +135,26 @@ export function performTranspose(
       }
 
       if (newSemitone === originalSemitone) {
-        return newLine;
+        return newStep;
       }
 
       const newOctave = Math.floor(newSemitone / 12);
       const newNoteIndex = newSemitone % 12;
 
-      newLine.trackA = {
+      newStep.A = {
         ...cell,
         note: NOTES[newNoteIndex],
         octave: newOctave,
       };
 
       notesChanged += 1;
-      return newLine;
+      return newStep;
     });
 
-    return { ...pattern, lines: newLines };
+    return { ...pattern, step: newSteps };
   });
 
-  updateSong({ patterns: updatedPatterns });
+  updateSong({ pattern: updatedPatterns });
 
   return {
     patternCount: patternIds.size,

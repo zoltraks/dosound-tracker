@@ -4,9 +4,9 @@ import { PlaylistHeader } from './PlaylistHeader';
 import { PlaylistLine } from './PlaylistLine';
 
 interface PlaylistEntry {
-  trackA: string;
-  trackB: string;
-  trackC: string;
+  A: string;
+  B: string;
+  C: string;
 }
 
 interface PlaylistPanelProps {
@@ -71,9 +71,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     // Validate pattern ID (should be 2-digit hex or '--')
     if (patternId === '--' || (patternId.length === 2 && /^[0-9A-Fa-f]{2}$/.test(patternId))) {
       switch (track) {
-        case 'A': entry.trackA = patternId; break;
-        case 'B': entry.trackB = patternId; break;
-        case 'C': entry.trackC = patternId; break;
+        case 'A': entry.A = patternId; break;
+        case 'B': entry.B = patternId; break;
+        case 'C': entry.C = patternId; break;
       }
       
       newPlaylist[lineIndex] = entry;
@@ -86,9 +86,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     let currentPattern = '--';
     
     switch (track) {
-      case 'A': currentPattern = entry.trackA; break;
-      case 'B': currentPattern = entry.trackB; break;
-      case 'C': currentPattern = entry.trackC; break;
+      case 'A': currentPattern = entry.A; break;
+      case 'B': currentPattern = entry.B; break;
+      case 'C': currentPattern = entry.C; break;
     }
     
     setCurrentLine(lineIndex);

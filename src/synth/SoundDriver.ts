@@ -20,7 +20,8 @@ export interface Instrument {
   volume: number[];
   arpeggio: number[];
   pitch: number[];
-  noiseEnvelope: number[];
+  noise: number[];
+  noiseEnvelope?: number[];
   mode: number[];
   /** Optional base key used for keyboard preview and pitch calculations. */
   base?: string;
@@ -44,19 +45,37 @@ export interface Note {
   instrument: string;
 }
 
-export interface PatternLine {
-  trackA: Note | null;
-  trackB: Note | null;
-  trackC: Note | null;
+export interface Step {
+  A: Note | null;
+  B: Note | null;
+  C: Note | null;
+  trackA?: Note | null;
+  trackB?: Note | null;
+  trackC?: Note | null;
   // Optional per-line volume modifier (0-15) used by the tracker "volume column".
   // When undefined, the track keeps the previous modifier (default is 0xF = no attenuation).
   volume?: number | null;
 }
 
+export type PatternLine = Step;
+
 export interface Pattern {
   id: string;
   name: string;
-  lines: PatternLine[];
+  step: Step[];
+  lines?: PatternLine[];
+}
+
+export interface Line {
+  A: string;
+  B: string;
+  C: string;
+}
+
+export interface PlaylistEntry {
+  trackA: string;
+  trackB: string;
+  trackC: string;
 }
 
 export interface Song {
@@ -64,11 +83,15 @@ export interface Song {
   author: string;
   year: number;
   speed: number;
-  patternLength: number;
+  length: number;
+  patternLength?: number;
   loop?: number | null;
-  patterns: Pattern[];
-  playlist: { trackA: string; trackB: string; trackC: string }[];
-  instruments: Instrument[];
+  pattern: Pattern[];
+  patterns?: Pattern[];
+  line: Line[];
+  playlist?: PlaylistEntry[];
+  instrument: Instrument[];
+  instruments?: Instrument[];
 }
 
 export class SoundDriver {
@@ -92,18 +115,18 @@ export class SoundDriver {
   convertSongToSoundEvents(song: Song): SoundEvent[] {
     const events: SoundEvent[] = [];
     
-    for (let lineIndex = 0; lineIndex < song.playlist.length; lineIndex++) {
-      const playlistEntry = song.playlist[lineIndex];
+    for (let lineIndex = 0; lineIndex < song.line.length; lineIndex++) {
+      const playlistEntry = song.line[lineIndex];
       // Process each track
       const tracks = [
-        { patternId: playlistEntry.trackA, channel: 0 },
-        { patternId: playlistEntry.trackB, channel: 1 },
-        { patternId: playlistEntry.trackC, channel: 2 }
+        { patternId: playlistEntry.A, channel: 0 },
+        { patternId: playlistEntry.B, channel: 1 },
+        { patternId: playlistEntry.C, channel: 2 }
       ];
 
       for (const track of tracks) {
         if (track.patternId !== '--') {
-          const pattern = song.patterns.find(p => p.id === track.patternId);
+          const pattern = song.pattern.find(p => p.id === track.patternId);
           if (pattern) {
             this.processPattern(pattern, track.channel, events);
           }
@@ -127,14 +150,14 @@ export class SoundDriver {
   }
 
   private processPattern(pattern: Pattern, channel: number, events: SoundEvent[]): void {
-    for (let lineIndex = 0; lineIndex < pattern.lines.length; lineIndex++) {
-      const line = pattern.lines[lineIndex];
+    for (let lineIndex = 0; lineIndex < pattern.step.length; lineIndex++) {
+      const step = pattern.step[lineIndex];
       let note: Note | null = null;
 
       switch (channel) {
-        case 0: note = line.trackA; break;
-        case 1: note = line.trackB; break;
-        case 2: note = line.trackC; break;
+        case 0: note = step.A; break;
+        case 1: note = step.B; break;
+        case 2: note = step.C; break;
       }
 
       if (note) {
@@ -179,7 +202,7 @@ export class SoundDriver {
       volume: [0x0F, 0x0E, 0x0D, 0x0C],
       arpeggio: [0, 0, 0, 0],
       pitch: [0, 0, 0, 0],
-      noiseEnvelope: [0, 0, 0, 0],
+      noise: [0, 0, 0, 0],
       mode: Array(32).fill(0),
       sustain: null
     };

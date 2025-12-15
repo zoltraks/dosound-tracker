@@ -15,7 +15,7 @@ interface SongSectionProps {
   updateSong: (patch: Partial<Song>) => void;
   clampedPlaybackPosition: number;
   onPositionSelect: (position: number) => void;
-  onPlaylistChange: (playlist: Song['playlist']) => void;
+  onPlaylistChange: (playlist: Song['line']) => void;
   onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   targetTrackId: 'A' | 'B' | 'C';
   currentInstrument: Instrument;
@@ -61,7 +61,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
       />
 
       <PlaylistPanel
-        playlist={song.playlist}
+        playlist={song.line}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         onPlaylistChange={onPlaylistChange}
@@ -72,7 +72,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
       />
 
       <InstrumentPanel
-        instruments={song.instruments}
+        instruments={song.instrument}
         currentInstrument={currentInstrument}
         activeSection={activeSection}
         setActiveSection={setActiveSection}

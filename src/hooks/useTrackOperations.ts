@@ -81,7 +81,7 @@ export function useTrackOperations({
 
       const yamlContent = generateClipboardData(
         pattern,
-        song.patternLength || PATTERN_LENGTH,
+        song.length || PATTERN_LENGTH,
         formatNoteKey
       );
 
@@ -91,7 +91,7 @@ export function useTrackOperations({
       const message = error instanceof Error ? error.message : String(error);
       setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
     }
-  }, [getActiveTrackId, getCurrentPatternForTrack, song.patternLength, formatNoteKey]);
+  }, [getActiveTrackId, getCurrentPatternForTrack, song.length, formatNoteKey]);
 
   const handlePasteTrack = useCallback(async () => {
     try {
@@ -122,15 +122,15 @@ export function useTrackOperations({
         return;
       }
 
-      const targetLength = song.patternLength || PATTERN_LENGTH;
-      const existingLines = pattern.lines || [];
+      const targetLength = song.length || PATTERN_LENGTH;
+      const existingLines = pattern.step || [];
 
       // Check for existing data to determine if we need to ask for paste mode
       let hasExistingData = false;
       for (let i = 0; i < targetLength; i++) {
         const line = existingLines[i];
         if (line) {
-          const hasNote = !!line.trackA;
+          const hasNote = !!line.A;
           const hasVol = line.volume !== undefined && line.volume !== null;
           if (hasNote || hasVol) {
             hasExistingData = true;
@@ -157,11 +157,11 @@ export function useTrackOperations({
         parseBaseKeyString
       );
 
-      const updatedPattern = { ...pattern, lines: newLines };
-      const updatedPatterns = song.patterns.map(p =>
+      const updatedPattern = { ...pattern, step: newLines };
+      const updatedPatterns = song.pattern.map(p =>
         p.id === pattern.id ? updatedPattern : p
       );
-      updateSong({ patterns: updatedPatterns });
+      updateSong({ pattern: updatedPatterns });
     } catch (error) {
       console.error('Failed to paste track:', error);
       const message = error instanceof Error ? error.message : String(error);
@@ -170,33 +170,33 @@ export function useTrackOperations({
   }, [
     getActiveTrackId,
     getCurrentPatternForTrack,
-    song.patternLength,
-    song.patterns,
+    song.length,
+    song.pattern,
     parseBaseKeyString,
     updateSong,
     getPasteTrackMode,
   ]);
 
   const handleInsertStep = useCallback(() => {
-    const playlistLength = song.playlist.length;
+    const playlistLength = song.line.length;
     if (playlistLength === 0) {
       return;
     }
 
     const currentIndex = Math.max(0, Math.min(sequencerPatternIndex, playlistLength - 1));
-    const entry = song.playlist[currentIndex];
+    const entry = song.line[currentIndex];
     const trackId = getActiveTrackId();
 
     let patternId = '--';
     switch (trackId) {
       case 'A':
-        patternId = entry.trackA;
+        patternId = entry.A;
         break;
       case 'B':
-        patternId = entry.trackB;
+        patternId = entry.B;
         break;
       case 'C':
-        patternId = entry.trackC;
+        patternId = entry.C;
         break;
     }
 
@@ -204,7 +204,7 @@ export function useTrackOperations({
       return;
     }
 
-    const patterns = [...song.patterns];
+    const patterns = [...song.pattern];
     const patternIndex = patterns.findIndex(p => p.id === patternId);
     if (patternIndex === -1) {
       return;
@@ -212,23 +212,23 @@ export function useTrackOperations({
 
     const pattern = { ...patterns[patternIndex] };
     const newLines = insertPatternStep(
-      pattern.lines || [],
+      pattern.step || [],
       sharedCurrentLine,
-      song.patternLength || PATTERN_LENGTH
+      song.length || PATTERN_LENGTH
     );
 
-    pattern.lines = newLines;
+    pattern.step = newLines;
     patterns[patternIndex] = pattern;
 
-    updateSong({ patterns });
+    updateSong({ pattern: patterns });
 
     const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
     setActiveSection(section);
     setTrackFocusRevision(prev => prev + 1);
   }, [
-    song.playlist,
-    song.patterns,
-    song.patternLength,
+    song.line,
+    song.pattern,
+    song.length,
     getActiveTrackId,
     sequencerPatternIndex,
     sharedCurrentLine,
@@ -238,25 +238,25 @@ export function useTrackOperations({
   ]);
 
   const handleDeleteStep = useCallback(() => {
-    const playlistLength = song.playlist.length;
+    const playlistLength = song.line.length;
     if (playlistLength === 0) {
       return;
     }
 
     const currentIndex = Math.max(0, Math.min(sequencerPatternIndex, playlistLength - 1));
-    const entry = song.playlist[currentIndex];
+    const entry = song.line[currentIndex];
     const trackId = getActiveTrackId();
 
     let patternId = '--';
     switch (trackId) {
       case 'A':
-        patternId = entry.trackA;
+        patternId = entry.A;
         break;
       case 'B':
-        patternId = entry.trackB;
+        patternId = entry.B;
         break;
       case 'C':
-        patternId = entry.trackC;
+        patternId = entry.C;
         break;
     }
 
@@ -264,7 +264,7 @@ export function useTrackOperations({
       return;
     }
 
-    const patterns = [...song.patterns];
+    const patterns = [...song.pattern];
     const patternIndex = patterns.findIndex(p => p.id === patternId);
     if (patternIndex === -1) {
       return;
@@ -272,22 +272,22 @@ export function useTrackOperations({
 
     const pattern = { ...patterns[patternIndex] };
     const newLines = deletePatternStep(
-      pattern.lines || [],
+      pattern.step || [],
       sharedCurrentLine,
-      song.patternLength || PATTERN_LENGTH
+      song.length || PATTERN_LENGTH
     );
 
-    pattern.lines = newLines;
+    pattern.step = newLines;
     patterns[patternIndex] = pattern;
 
-    updateSong({ patterns });
+    updateSong({ pattern: patterns });
 
     const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
     setActiveSection(section);
   }, [
-    song.playlist,
-    song.patterns,
-    song.patternLength,
+    song.line,
+    song.pattern,
+    song.length,
     getActiveTrackId,
     sequencerPatternIndex,
     sharedCurrentLine,

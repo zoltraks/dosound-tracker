@@ -60,7 +60,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   onToggleTrackBackground,
   isDarkMode,
 }) => {
-  const patternLength = song.patternLength || PATTERN_LENGTH;
+  const patternLength = song.length || PATTERN_LENGTH;
 
   const positionIndices = React.useMemo(() => {
     return Array.from({ length: patternLength }, (_, i) => i);
@@ -117,7 +117,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 onPatternChange={onPatternChange}
                 ym2149={ym2149}
                 currentInstrumentData={currentInstrument}
-                instruments={song.instruments}
+                instruments={song.instrument}
                 trackBackgroundEnabled={trackBackgroundEnabled}
                 isTargetTrack={targetTrackId === trackId}
                 onToggleLineFromCursor={onToggleLineFromCursor}

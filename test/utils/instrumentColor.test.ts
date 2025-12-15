@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import type { Song, PatternLine } from '../../src/synth/SoundDriver';
+import type { Song, Step } from '../../src/synth/SoundDriver';
 import { normalizeInstrumentColor, parseSongFromYaml } from '../../src/utils/songParser';
 import { buildSongYamlForExport } from '../../src/utils/songIO';
 
@@ -22,38 +22,31 @@ describe('normalizeInstrumentColor', () => {
 
 describe('instrument color in song YAML IO', () => {
   it('round-trips instrument color through song export and import', () => {
-    const lines: PatternLine[] = [
-      { trackA: null, trackB: null, trackC: null },
-      { trackA: null, trackB: null, trackC: null },
-      { trackA: null, trackB: null, trackC: null },
-      { trackA: null, trackB: null, trackC: null },
-    ];
+    const step: Step[] = Array.from({ length: 4 }, () => ({ A: null, B: null, C: null }));
 
     const song: Song = {
       title: 'Color Test',
       author: 'Test',
       year: 2025,
       speed: 6,
-      patternLength: 4,
+      length: 4,
       loop: null,
-      patterns: [
+      pattern: [
         {
           id: '00',
           name: 'Pattern 00',
-          lines,
+          step,
         },
       ],
-      playlist: [
-        { trackA: '00', trackB: '--', trackC: '--' },
-      ],
-      instruments: [
+      line: [{ A: '00', B: '--', C: '--' }],
+      instrument: [
         {
           id: '00',
           name: 'Colored',
           volume: [15],
           arpeggio: [0],
           pitch: [0],
-          noiseEnvelope: [0],
+          noise: [0],
           mode: [0],
           base: 'C-4',
           octave: 4,
@@ -66,6 +59,6 @@ describe('instrument color in song YAML IO', () => {
     const yaml = buildSongYamlForExport(song);
     const parsed = parseSongFromYaml(yaml);
 
-    expect(parsed.instruments[0].color).toBe('#abc');
+    expect(parsed.instrument[0].color).toBe('#abc');
   });
 });

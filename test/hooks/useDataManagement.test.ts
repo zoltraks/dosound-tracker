@@ -14,22 +14,22 @@ describe('parseSongFromYaml', () => {
     const song = parseSongFromYaml(yamlText);
 
     expect(song.title).toBeTruthy();
-    expect(song.patterns.length).toBeGreaterThan(0);
-    expect(song.instruments.length).toBeGreaterThan(0);
-    expect(song.playlist.length).toBeGreaterThan(0);
+    expect(song.pattern.length).toBeGreaterThan(0);
+    expect(song.instrument.length).toBeGreaterThan(0);
+    expect(song.line.length).toBeGreaterThan(0);
 
-    const patternWithNote = song.patterns.find(p =>
-      p.lines.some(line => line.trackA !== null)
+    const patternWithNote = song.pattern.find(p =>
+      p.step.some(step => step.A !== null)
     );
     expect(patternWithNote).toBeDefined();
 
     if (!patternWithNote) return;
 
-    const lineWithNote = patternWithNote.lines.find(line => line.trackA !== null);
-    expect(lineWithNote?.trackA).toBeDefined();
-    expect(lineWithNote?.trackA?.note).toBeTypeOf('string');
-    expect(lineWithNote?.trackA?.octave).toBeTypeOf('number');
-    expect(lineWithNote?.trackA?.instrument).toMatch(/^[0-9A-F]{2}$/);
+    const stepWithNote = patternWithNote.step.find(step => step.A !== null);
+    expect(stepWithNote?.A).toBeDefined();
+    expect(stepWithNote?.A?.note).toBeTypeOf('string');
+    expect(stepWithNote?.A?.octave).toBeTypeOf('number');
+    expect(stepWithNote?.A?.instrument).toMatch(/^[0-9A-F]{2}$/);
   });
 
   it('accepts legacy plural keys (patterns/instruments)', () => {
@@ -59,12 +59,12 @@ song:
 
     const song = parseSongFromYaml(legacyYaml);
 
-    expect(song.patterns.length).toBe(1);
-    expect(song.instruments.length).toBe(1);
-    expect(song.playlist.length).toBe(1);
-    expect(song.patterns[0].lines[0].trackA).not.toBeNull();
-    expect(song.patterns[0].lines[0].trackA?.note.toUpperCase()).toBe('C');
-    expect(song.patterns[0].lines[0].trackA?.octave).toBe(4);
+    expect(song.pattern.length).toBe(1);
+    expect(song.instrument.length).toBe(1);
+    expect(song.line.length).toBe(1);
+    expect(song.pattern[0].step[0].A).not.toBeNull();
+    expect(song.pattern[0].step[0].A?.note.toUpperCase()).toBe('C');
+    expect(song.pattern[0].step[0].A?.octave).toBe(4);
   });
 
   it('treats missing instrument name as empty string', () => {
@@ -92,7 +92,7 @@ song:
 
     const song = parseSongFromYaml(yamlText);
 
-    expect(song.instruments.length).toBeGreaterThan(0);
-    expect(song.instruments[0].name).toBe('');
+    expect(song.instrument.length).toBeGreaterThan(0);
+    expect(song.instrument[0].name).toBe('');
   });
 });

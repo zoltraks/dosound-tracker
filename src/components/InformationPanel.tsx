@@ -103,7 +103,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
   const handleLengthChange = useCallback((next: number | null) => {
     const base = typeof next === 'number' && Number.isFinite(next) ? next : 64;
     const clamped = Math.max(4, Math.min(256, base));
-    handleFieldChange('patternLength', clamped);
+    handleFieldChange('length', clamped);
   }, [handleFieldChange]);
 
   const handleLoopChange = useCallback((next: number | null) => {
@@ -112,10 +112,10 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
       return;
     }
     const base = Math.floor(next as number);
-    const maxPos = Math.max(0, song.playlist.length - 1);
+    const maxPos = Math.max(0, song.line.length - 1);
     const clamped = Math.max(0, Math.min(maxPos, base));
     handleFieldChange('loop', clamped);
-  }, [handleFieldChange, song.playlist.length]);
+  }, [handleFieldChange, song.line.length]);
 
   const handleLoopInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Backspace') {
@@ -212,7 +212,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
             <div className="information-field">
               <label>Length:</label>
               <NumberSpinner
-                value={song.patternLength ?? 64}
+                value={song.length ?? 64}
                 onChange={handleLengthChange}
                 min={4}
                 max={256}
@@ -232,7 +232,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
                 value={typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null}
                 onChange={handleLoopChange}
                 min={0}
-                max={Math.max(0, song.playlist.length - 1)}
+                max={Math.max(0, song.line.length - 1)}
                 step={1}
                 ariaLabel="Playlist loop position"
                 inputRef={el => {

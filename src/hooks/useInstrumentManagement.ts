@@ -9,7 +9,7 @@ export interface InstrumentCreationResult {
 }
 
 export function createNewInstrumentForSong(song: Song): InstrumentCreationResult {
-  const instruments = song.instruments;
+  const instruments = song.instrument;
 
   let slotIndex = instruments.findIndex((inst) => isInstrumentEmpty(inst));
   if (slotIndex === -1) {
@@ -24,7 +24,7 @@ export function createNewInstrumentForSong(song: Song): InstrumentCreationResult
     volume: Array(32).fill(0x0f),
     arpeggio: Array(32).fill(0),
     pitch: Array(32).fill(0),
-    noiseEnvelope: Array(32).fill(0),
+    noise: Array(32).fill(0),
     mode: Array(32).fill(0),
     base: DEFAULT_BASE_KEY,
     sustain: null,
@@ -39,7 +39,7 @@ export function createNewInstrumentForSong(song: Song): InstrumentCreationResult
 
   const updatedSong: Song = {
     ...song,
-    instruments: updatedInstruments,
+    instrument: updatedInstruments,
   };
 
   return { updatedSong, newInstrument };
@@ -55,7 +55,7 @@ export function updateInstrumentInSong(
   currentInstrument: Instrument,
   updates: Partial<Instrument>,
 ): InstrumentUpdateResult {
-  const instruments = [...song.instruments];
+  const instruments = [...song.instrument];
 
   let targetIndex = instruments.findIndex((inst) => inst.id === currentInstrument.id);
   const updatedInstrument: Instrument = { ...currentInstrument, ...updates } as Instrument;
@@ -74,7 +74,7 @@ export function updateInstrumentInSong(
             volume: Array(ENVELOPE_LENGTH).fill(0),
             arpeggio: Array(ENVELOPE_LENGTH).fill(0),
             pitch: Array(ENVELOPE_LENGTH).fill(0),
-            noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+            noise: Array(ENVELOPE_LENGTH).fill(0),
             mode: Array(ENVELOPE_LENGTH).fill(0),
             sustain: null,
           };
@@ -93,7 +93,7 @@ export function updateInstrumentInSong(
 
   const updatedSong: Song = {
     ...song,
-    instruments,
+    instrument: instruments,
   };
 
   return { updatedSong, updatedInstrument };
@@ -104,7 +104,7 @@ export function applyLoadedInstrumentToSong(
   currentInstrumentId: string,
   newInstrument: Instrument,
 ): Song {
-  const instruments = [...song.instruments];
+  const instruments = [...song.instrument];
 
   let targetIndex = instruments.findIndex((inst) => inst.id === currentInstrumentId);
 
@@ -122,7 +122,7 @@ export function applyLoadedInstrumentToSong(
             volume: Array(ENVELOPE_LENGTH).fill(0),
             arpeggio: Array(ENVELOPE_LENGTH).fill(0),
             pitch: Array(ENVELOPE_LENGTH).fill(0),
-            noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+            noise: Array(ENVELOPE_LENGTH).fill(0),
             mode: Array(ENVELOPE_LENGTH).fill(0),
             sustain: null,
           };
@@ -141,6 +141,6 @@ export function applyLoadedInstrumentToSong(
 
   return {
     ...song,
-    instruments,
+    instrument: instruments,
   };
 }

@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import type { Instrument, Song, Pattern, PatternLine } from '../synth/SoundDriver';
+import type { Instrument, Song, Pattern, Step } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { validateSongData } from './validation';
 import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
@@ -146,17 +146,17 @@ export const parseSongFromYaml = (content: string): Song => {
     throw new Error('Song line is missing or empty');
   }
 
-  const playlist = lineNodes.map((entry, index: number) => {
+  const line = lineNodes.map((entry, index: number) => {
     if (!entry || typeof entry !== 'object') {
       throw new Error(`Invalid line entry at index ${index}`);
     }
 
     const e = entry as { A?: unknown; B?: unknown; C?: unknown };
-    const trackA = typeof e.A === 'string' ? e.A : '--';
-    const trackB = typeof e.B === 'string' ? e.B : '--';
-    const trackC = typeof e.C === 'string' ? e.C : '--';
+    const A = typeof e.A === 'string' ? e.A : '--';
+    const B = typeof e.B === 'string' ? e.B : '--';
+    const C = typeof e.C === 'string' ? e.C : '--';
 
-    return { trackA, trackB, trackC };
+    return { A, B, C };
   });
 
   const rawPatternNodes = Array.isArray(songNode.pattern) ? songNode.pattern : songNode.patterns;
@@ -241,11 +241,11 @@ export const parseSongFromYaml = (content: string): Song => {
       }
     }
 
-    const lines: PatternLine[] = [];
+    const step: Step[] = [];
 
     for (let i = 0; i < clampedLength; i++) {
       const rawLineNode = expandedLineNodes[i];
-      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+      const line: Step = { A: null, B: null, C: null };
 
       if (rawLineNode && typeof rawLineNode === 'object') {
         const ln = rawLineNode as PatternStepNodeYaml;
@@ -256,7 +256,7 @@ export const parseSongFromYaml = (content: string): Song => {
 
         if (ln.off === true || isOffNote) {
           // Empty or note-off line: currently treated as space
-          line.trackA = {
+          line.A = {
             note: '===',
             octave: 0,
             instrument: '00',
@@ -276,7 +276,7 @@ export const parseSongFromYaml = (content: string): Song => {
               ? ln.instrument.trim().toUpperCase()
               : '00';
 
-          line.trackA = {
+          line.A = {
             note: parsedKey.note,
             octave: parsedKey.octave,
             instrument: instId,
@@ -289,13 +289,13 @@ export const parseSongFromYaml = (content: string): Song => {
         }
       }
 
-      lines.push(line);
+      step.push(line);
     }
 
     return {
       id: number,
       name,
-      lines,
+      step,
     };
   });
 
@@ -372,7 +372,7 @@ export const parseSongFromYaml = (content: string): Song => {
     const volume = expandEnvelope(nodeObj.volume, ENVELOPE_LENGTH, 0x0f);
     const arpeggio = expandEnvelope(nodeObj.arpeggio, ENVELOPE_LENGTH, 0);
     const pitch = expandEnvelope(nodeObj.pitch, ENVELOPE_LENGTH, 0);
-    const noiseEnvelope = expandEnvelope(nodeObj.noise, ENVELOPE_LENGTH, 0);
+    const noise = expandEnvelope(nodeObj.noise, ENVELOPE_LENGTH, 0);
     const mode = expandEnvelope(nodeObj.mode, ENVELOPE_LENGTH, 0);
 
     // Optional sustain position for this instrument (0-based envelope index).
@@ -454,7 +454,7 @@ export const parseSongFromYaml = (content: string): Song => {
           volume: Array(ENVELOPE_LENGTH).fill(0),
           arpeggio: Array(ENVELOPE_LENGTH).fill(0),
           pitch: Array(ENVELOPE_LENGTH).fill(0),
-          noiseEnvelope: Array(ENVELOPE_LENGTH).fill(0),
+          noise: Array(ENVELOPE_LENGTH).fill(0),
           mode: Array(ENVELOPE_LENGTH).fill(0),
           base: DEFAULT_BASE_KEY,
           octave: DEFAULT_OCTAVE,
@@ -469,7 +469,7 @@ export const parseSongFromYaml = (content: string): Song => {
       volume,
       arpeggio,
       pitch,
-      noiseEnvelope,
+      noise,
       mode,
       base,
       octave,
@@ -481,10 +481,10 @@ export const parseSongFromYaml = (content: string): Song => {
 
   // Ensure loop index stays within playlist bounds
   if (loop != null) {
-    if (playlist.length === 0) {
+    if (line.length === 0) {
       loop = null;
     } else {
-      loop = Math.max(0, Math.min(playlist.length - 1, loop | 0));
+      loop = Math.max(0, Math.min(line.length - 1, loop | 0));
     }
   }
 
@@ -493,11 +493,11 @@ export const parseSongFromYaml = (content: string): Song => {
     author,
     year,
     speed,
-    patternLength: clampedLength,
+    length: clampedLength,
     loop,
-    patterns,
-    playlist,
-    instruments,
+    pattern: patterns,
+    line,
+    instrument: instruments,
   };
 
   return validateSongData(song);

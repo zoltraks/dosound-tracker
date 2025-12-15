@@ -9,14 +9,14 @@ describe('WAV export context', () => {
     const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
-    const playlistLength = song.playlist.length;
+    const playlistLength = song.line.length;
     expect(playlistLength).toBeGreaterThan(1);
 
     const full = exportSongToWav(song);
 
     const scopedSong: Song = {
       ...song,
-      playlist: [song.playlist[1]],
+      line: [song.line[1]],
       loop: null,
     };
 
@@ -38,7 +38,7 @@ describe('WAV export context', () => {
       ],
       arpeggio: [],
       pitch: [],
-      noiseEnvelope: [
+      noise: [
         4, 5, 6, 7, 8, 9, 10, 11, 12, 13,
         14, 15, 16, 15, 14, 13, 12, 11, 10, 9,
         8, 7, 6, 5, 4, 3, 2, 1, 0,
@@ -58,11 +58,11 @@ describe('WAV export context', () => {
       author: 'Test',
       year: 2025,
       speed: 2,
-      patternLength: 4,
+      length: 4,
       loop: null,
-      patterns: [],
-      playlist: [],
-      instruments: [],
+      pattern: [],
+      line: [],
+      instrument: [],
     };
 
     const result = exportInstrumentToWav(instrument, song);
@@ -70,7 +70,7 @@ describe('WAV export context', () => {
     expect(result.sampleRate).toBe(44100);
     expect(result.totalSamples).toBeGreaterThan(0);
 
-    const expectedTicks = song.patternLength * song.speed;
+    const expectedTicks = song.length * song.speed;
     const expectedDuration = expectedTicks / VBLANK_RATE;
     const diff = Math.abs(result.durationSeconds - expectedDuration);
     expect(diff).toBeLessThan(1 / VBLANK_RATE);

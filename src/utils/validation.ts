@@ -16,9 +16,9 @@ export const isSongData = (data: unknown): data is Song => {
 
   return (
     typeof song.title === 'string' &&
-    Array.isArray(song.patterns) &&
-    Array.isArray(song.instruments) &&
-    Array.isArray(song.playlist)
+    Array.isArray(song.pattern) &&
+    Array.isArray(song.instrument) &&
+    Array.isArray(song.line)
   );
 };
 
@@ -37,13 +37,13 @@ export const validateSongData = (data: unknown): Song => {
     throw new ValidationError('Song must have a title', 'title');
   }
 
-  if (!Array.isArray(song.patterns) || song.patterns.length === 0) {
-    throw new ValidationError('Song must have at least one pattern', 'patterns');
+  if (!Array.isArray(song.pattern) || song.pattern.length === 0) {
+    throw new ValidationError('Song must have at least one pattern', 'pattern');
   }
 
-  song.patterns.forEach((pattern, index) => {
+  song.pattern.forEach((pattern, index) => {
     if (!pattern.id || !pattern.name) {
-      throw new ValidationError(`Pattern ${index} must have id and name`, `patterns[${index}]`);
+      throw new ValidationError(`Pattern ${index} must have id and name`, `pattern[${index}]`);
     }
   });
 

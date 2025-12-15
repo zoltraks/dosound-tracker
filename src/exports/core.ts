@@ -3,10 +3,20 @@ import { NOTE_FREQUENCIES, NOTES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../co
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
 import type { ExportStrategy } from '../constants/export';
-import { 
-  simulateSong, 
-  type SimulationFrame, 
+import {
+  simulateSong,
+  type SimulationFrame,
 } from '../utils/playbackSimulation';
+
+function normalizeSongForExport(song: Song): Song {
+  return {
+    ...song,
+    length: song.length ?? song.patternLength ?? PATTERN_LENGTH,
+    line: song.line ?? song.playlist ?? [],
+    pattern: song.pattern ?? song.patterns ?? [],
+    instrument: song.instrument ?? song.instruments ?? [],
+  };
+}
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -18,6 +28,7 @@ export function exportToAssembly(
   song: Song,
   isComplexDumpMode: boolean | ExportStrategy = false
 ): string {
+  const normalizedSong = normalizeSongForExport(song);
   const strategy: ExportStrategy =
     typeof isComplexDumpMode === 'boolean'
       ? (isComplexDumpMode ? 'complex' : 'simple')
@@ -26,7 +37,7 @@ export function exportToAssembly(
   // Simulate playback and collect register states per frame
   const frames: SimulationFrame[] = [];
   
-  simulateSong(song, (frame) => {
+  simulateSong(normalizedSong, (frame) => {
     // Store this frame only when envelope steps advance (every 40ms like instrument export)
     // The simulation emits ticks based on song speed.
     // Original logic: if (tick === 0 || (tick % 2 === 0))
@@ -36,7 +47,7 @@ export function exportToAssembly(
   });
   
   // Now convert frames to optimized assembly output
-  return formatFramesToAssembly(frames, song, strategy);
+  return formatFramesToAssembly(frames, normalizedSong, strategy);
 }
 
 
@@ -69,7 +80,8 @@ function formatFramesToAssembly(frames: SimulationFrame[], song: Song, strategy:
       // Also force tone registers to be re-emitted after the marker so that each
       // playlist position starts with explicit TA/TB/TC writes, even if the
       // underlying period value did not change.
-      if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % (song.patternLength || 64) === 0) {
+      const patternLength = song.length ?? song.patternLength ?? 64;
+      if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
 
         // Clear cached tone registers (R0-R5) so next frame writes them again.
@@ -161,7 +173,8 @@ function formatFramesToAssembly(frames: SimulationFrame[], song: Song, strategy:
       const toneMeta = frame.toneMeta || {};
       
       // Add beat marker after each completed playlist position (every patternLength lines)
-      if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % (song.patternLength || 64) === 0) {
+      const patternLength = song.length ?? song.patternLength ?? 64;
+      if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
       }
       lastLineIndex = lineIndex;
@@ -393,7 +406,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   const arpeggioEnv = instrument.arpeggio || [];
   const pitchEnv = instrument.pitch || [];
   const modeEnv = instrument.mode || [];
-  const noiseEnv = instrument.noiseEnvelope || [];
+  const noiseEnv = instrument.noise ?? instrument.noiseEnvelope ?? [];
 
   const clampVol = (v: number) => Math.max(0, Math.min(0x0f, v | 0));
   const vols = volumeEnv.map(clampVol);
@@ -412,15 +425,14 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   // duration of one pattern in the sequencer.
   let maxSteps = stepsCount;
   if (song) {
-    const rawSpeed = Number(song.speed);
+    const normalizedSong = normalizeSongForExport(song);
+    const rawSpeed = Number(normalizedSong.speed);
     const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
     const clampedSpeed = Math.max(2, baseSpeed);
     const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
 
-    const rawLength = Number(song.patternLength);
-    const patternLength = Number.isFinite(rawLength) && rawLength > 0
-      ? Math.floor(rawLength)
-      : PATTERN_LENGTH;
+    const rawLength = Number(normalizedSong.length);
+    const patternLength = Number.isFinite(rawLength) && rawLength > 0 ? Math.floor(rawLength) : PATTERN_LENGTH;
 
     // Envelopes advance every 40ms, i.e. every 2 ticks. With a speed
     // of S ticks per row this yields S/2 envelope steps per row.
@@ -1361,17 +1373,18 @@ function buildGd3Tag(song: Song): Uint8Array | null {
 }
 
 function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): Song {
-  const patternLength = sourceSong.patternLength || PATTERN_LENGTH;
-  const speed = sourceSong.speed || 6;
+  const normalizedSong = normalizeSongForExport(sourceSong);
+  const patternLength = normalizedSong.length || PATTERN_LENGTH;
+  const speed = normalizedSong.speed || 6;
 
   const base = parseBaseKeyForExport(instrument.base || 'C-4');
 
-  const lines: PatternLine[] = [];
+  const step: PatternLine[] = [];
   for (let i = 0; i < patternLength; i++) {
-    lines.push({
-      trackA: i === 0 ? { note: base.note, octave: base.octave, instrument: instrument.id } : null,
-      trackB: null,
-      trackC: null,
+    step.push({
+      A: i === 0 ? { note: base.note, octave: base.octave, instrument: instrument.id } : null,
+      B: null,
+      C: null,
       volume: undefined,
     });
   }
@@ -1380,7 +1393,7 @@ function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): S
   const pattern: Pattern = {
     id: patternId,
     name: instrument.name || `Instrument ${instrument.id || ''}`,
-    lines,
+    step,
   };
 
   const titleBase = sourceSong.title || '';
@@ -1392,14 +1405,14 @@ function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): S
   const title = titleBase ? `${titleBase}${suffix}` : `Instrument Preview${suffix}`;
 
   return {
-    ...sourceSong,
+    ...normalizedSong,
     title,
     speed,
-    patternLength,
-    patterns: [pattern],
-    playlist: [{ trackA: patternId, trackB: '--', trackC: '--' }],
+    length: patternLength,
+    pattern: [pattern],
+    line: [{ A: patternId, B: '--', C: '--' }],
     loop: null,
-    instruments: [instrument],
+    instrument: [instrument],
   };
 }
 
@@ -1407,6 +1420,7 @@ export function exportSongToVgm(
   song: Song,
   strategy: ExportStrategy = 'simple'
 ): VgmExportResult {
+  const normalizedSong = normalizeSongForExport(song);
   let commands: number[] = [];
   const SAMPLES_PER_TICK = 882; // 1/50 second at 44100 Hz
   let totalSamples = 0;
@@ -1414,10 +1428,10 @@ export function exportSongToVgm(
   const relevantRegs = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a];
   const lastRegs: { [register: number]: number } = {};
   
-  const playlistLength = song.playlist.length;
+  const playlistLength = normalizedSong.line.length;
   let loopPlaylistIndex: number | null = null;
-  if (song.loop != null && playlistLength > 0) {
-    const rawLoop = song.loop as number;
+  if (normalizedSong.loop != null && playlistLength > 0) {
+    const rawLoop = normalizedSong.loop as number;
     if (typeof rawLoop === 'number' && Number.isFinite(rawLoop)) {
       loopPlaylistIndex = Math.max(0, Math.min(playlistLength - 1, rawLoop | 0));
     }
@@ -1470,7 +1484,7 @@ export function exportSongToVgm(
   const dataOffset = 0x100;
   const headerSize = 0x100;
 
-  const gd3Tag = buildGd3Tag(song);
+  const gd3Tag = buildGd3Tag(normalizedSong);
   const gd3Length = gd3Tag ? gd3Tag.length : 0;
 
   const fileSize = headerSize + commands.length + gd3Length;
@@ -1551,6 +1565,7 @@ export function downloadVgmFile(buffer: ArrayBuffer, filename: string = 'music.v
 }
 
 export function exportSongToWav(song: Song): WavExportResult {
+  const normalizedSong = normalizeSongForExport(song);
   const samples: number[] = [];
   const phases = [0, 0, 0];
   const noiseState: YmNoiseState = {
@@ -1559,7 +1574,7 @@ export function exportSongToWav(song: Song): WavExportResult {
   };
   const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / VBLANK_RATE));
 
-  simulateSong(song, (frame) => {
+  simulateSong(normalizedSong, (frame) => {
     synthTickSamples(samples, frame.registers, phases, samplesPerTick, noiseState);
   });
 

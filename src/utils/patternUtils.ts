@@ -1,11 +1,11 @@
-import type { PatternLine } from '../synth/SoundDriver';
+import type { Step } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
 
 export function insertPatternStep(
-  lines: PatternLine[],
+  lines: Step[],
   insertIndex: number,
   patternLength: number
-): PatternLine[] {
+): Step[] {
   const totalLines = patternLength || PATTERN_LENGTH;
   const safeIndex = Math.max(0, Math.min(insertIndex, totalLines - 1));
   
@@ -13,39 +13,39 @@ export function insertPatternStep(
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
-      trackA: null,
-      trackB: null,
-      trackC: null,
+      A: null,
+      B: null,
+      C: null,
     });
   }
 
   // Shift lines down, starting from the end
   // We only shift trackA property to match existing behavior
   for (let i = totalLines - 1; i > safeIndex; i--) {
-    const from = newLines[i - 1] || { trackA: null, trackB: null, trackC: null };
-    const base = newLines[i] || { trackA: null, trackB: null, trackC: null };
+    const from = newLines[i - 1] || { A: null, B: null, C: null };
+    const base = newLines[i] || { A: null, B: null, C: null };
     
     newLines[i] = {
       ...base,
-      trackA: from.trackA,
+      A: from.A,
     };
   }
 
   // Clear the inserted line
-  const base = newLines[safeIndex] || { trackA: null, trackB: null, trackC: null };
+  const base = newLines[safeIndex] || { A: null, B: null, C: null };
   newLines[safeIndex] = {
     ...base,
-    trackA: null,
+    A: null,
   };
 
   return newLines;
 }
 
 export function deletePatternStep(
-  lines: PatternLine[],
+  lines: Step[],
   deleteIndex: number,
   patternLength: number
-): PatternLine[] {
+): Step[] {
   const totalLines = patternLength || PATTERN_LENGTH;
   const safeIndex = Math.max(0, Math.min(deleteIndex, totalLines - 1));
   
@@ -53,30 +53,30 @@ export function deletePatternStep(
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
-      trackA: null,
-      trackB: null,
-      trackC: null,
+      A: null,
+      B: null,
+      C: null,
     });
   }
 
   // Shift lines up
   // We only shift trackA property to match existing behavior
   for (let i = safeIndex; i < totalLines - 1; i++) {
-    const from = newLines[i + 1] || { trackA: null, trackB: null, trackC: null };
-    const base = newLines[i] || { trackA: null, trackB: null, trackC: null };
+    const from = newLines[i + 1] || { A: null, B: null, C: null };
+    const base = newLines[i] || { A: null, B: null, C: null };
     
     newLines[i] = {
       ...base,
-      trackA: from.trackA,
+      A: from.A,
     };
   }
 
   // Clear the last line
   const lastIndex = totalLines - 1;
-  const lastBase = newLines[lastIndex] || { trackA: null, trackB: null, trackC: null };
+  const lastBase = newLines[lastIndex] || { A: null, B: null, C: null };
   newLines[lastIndex] = {
     ...lastBase,
-    trackA: null,
+    A: null,
   };
 
   return newLines;

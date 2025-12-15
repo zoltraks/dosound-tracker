@@ -5,7 +5,7 @@ const DEFAULT_VOLUME = 0x0f;
 export function computeEffectiveVolume(pattern: Pattern | null, currentLine: number): number {
   if (!pattern) return DEFAULT_VOLUME;
 
-  const lines = pattern.lines;
+  const lines = (pattern.step ?? (pattern as unknown as { lines?: Pattern['step'] }).lines ?? []) as Pattern['step'];
   if (lines.length === 0) return DEFAULT_VOLUME;
 
   const maxIndex = Math.min(currentLine, lines.length - 1);

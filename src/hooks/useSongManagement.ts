@@ -1,4 +1,4 @@
-import type { Instrument, Song, Pattern, PatternLine, Note } from '../synth/SoundDriver';
+import type { Instrument, Song, Pattern, Step, Note } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
 import defaultSongYaml from '../assets/song.yaml?raw';
 import {
@@ -8,7 +8,7 @@ import {
   parseSongFromYaml,
 } from '../utils/songParser';
 
-export type TrackKey = 'trackA' | 'trackB' | 'trackC';
+export type TrackKey = 'A' | 'B' | 'C';
 
 export type StoredInstrumentForMigration = {
   volume?: unknown;
@@ -23,19 +23,84 @@ export type StoredSongForMigration = {
 
 export const SONG_STORAGE_KEY = 'dosound-tracker-song';
 
+function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
+  const song = (rawSong || {}) as Record<string, unknown>;
+
+  const lengthRaw = song.length;
+  const legacyLengthRaw = song.patternLength;
+  const length =
+    typeof lengthRaw === 'number' && Number.isFinite(lengthRaw)
+      ? Math.floor(lengthRaw)
+      : typeof legacyLengthRaw === 'number' && Number.isFinite(legacyLengthRaw)
+        ? Math.floor(legacyLengthRaw)
+        : PATTERN_LENGTH;
+
+  const rawPatterns = (song.pattern ?? song.patterns) as unknown;
+  const patternSource = Array.isArray(rawPatterns) ? rawPatterns : [];
+  const pattern = patternSource.map((raw) => {
+    const p = (raw || {}) as Record<string, unknown>;
+    const rawSteps = (p.step ?? p.lines) as unknown;
+    const stepSource = Array.isArray(rawSteps) ? rawSteps : [];
+    const step = stepSource.map((rawStep) => {
+      const s = (rawStep || {}) as Record<string, unknown>;
+      return {
+        A: (s.A ?? s.trackA ?? null) as Note | null,
+        B: (s.B ?? s.trackB ?? null) as Note | null,
+        C: (s.C ?? s.trackC ?? null) as Note | null,
+        volume: (s.volume as number | null | undefined) ?? undefined,
+      } as Step;
+    });
+
+    return {
+      ...(p as unknown as Pattern),
+      step,
+    };
+  });
+
+  const rawLine = (song.line ?? song.playlist) as unknown;
+  const lineSource = Array.isArray(rawLine) ? rawLine : [];
+  const line = lineSource.map((rawEntry) => {
+    const entry = (rawEntry || {}) as Record<string, unknown>;
+    return {
+      A: String((entry.A ?? entry.trackA ?? '--') as string),
+      B: String((entry.B ?? entry.trackB ?? '--') as string),
+      C: String((entry.C ?? entry.trackC ?? '--') as string),
+    };
+  });
+
+  const rawInstruments = (song.instrument ?? song.instruments) as unknown;
+  const instrumentSource = Array.isArray(rawInstruments) ? rawInstruments : [];
+  const instrument = instrumentSource.map((rawInst) => {
+    const inst = (rawInst || {}) as Record<string, unknown>;
+    const noise = (inst.noise ?? inst.noiseEnvelope ?? []) as number[];
+    return {
+      ...(inst as unknown as Instrument),
+      noise,
+    };
+  });
+
+  return {
+    ...(song as unknown as Song),
+    length,
+    pattern,
+    line,
+    instrument,
+  };
+}
+
 export const createDefaultSong = (): Song => {
   const defaultPatternLength = PATTERN_LENGTH;
 
   const defaultPatternA: Pattern = {
     id: '01',
     name: 'Pattern 01',
-    lines: Array.from({ length: defaultPatternLength }, (_, i) => {
-      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+    step: Array.from({ length: defaultPatternLength }, (_, i) => {
+      const line: Step = { A: null, B: null, C: null };
 
-      if (i % 8 === 0) line.trackA = { note: 'C', octave: 4, instrument: '00' };
-      if (i % 8 === 2) line.trackA = { note: 'E', octave: 4, instrument: '00' };
-      if (i % 8 === 4) line.trackA = { note: 'G', octave: 4, instrument: '00' };
-      if (i % 8 === 6) line.trackA = { note: 'E', octave: 4, instrument: '00' };
+      if (i % 8 === 0) line.A = { note: 'C', octave: 4, instrument: '00' };
+      if (i % 8 === 2) line.A = { note: 'E', octave: 4, instrument: '00' };
+      if (i % 8 === 4) line.A = { note: 'G', octave: 4, instrument: '00' };
+      if (i % 8 === 6) line.A = { note: 'E', octave: 4, instrument: '00' };
 
       return line;
     }),
@@ -44,10 +109,10 @@ export const createDefaultSong = (): Song => {
   const defaultPatternB: Pattern = {
     id: '02',
     name: 'Pattern 02',
-    lines: Array.from({ length: defaultPatternLength }, (_, i) => {
-      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+    step: Array.from({ length: defaultPatternLength }, (_, i) => {
+      const line: Step = { A: null, B: null, C: null };
 
-      if (i % 4 === 0) line.trackB = { note: 'C', octave: 3, instrument: '00' };
+      if (i % 4 === 0) line.A = { note: 'C', octave: 3, instrument: '00' };
 
       return line;
     }),
@@ -56,13 +121,13 @@ export const createDefaultSong = (): Song => {
   const defaultPatternC: Pattern = {
     id: '03',
     name: 'Pattern 03',
-    lines: Array.from({ length: defaultPatternLength }, (_, i) => {
-      const line: PatternLine = { trackA: null, trackB: null, trackC: null };
+    step: Array.from({ length: defaultPatternLength }, (_, i) => {
+      const line: Step = { A: null, B: null, C: null };
 
-      if (i % 8 === 1) line.trackC = { note: 'G', octave: 5, instrument: '00' };
-      if (i % 8 === 3) line.trackC = { note: 'E', octave: 5, instrument: '00' };
-      if (i % 8 === 5) line.trackC = { note: 'C', octave: 5, instrument: '00' };
-      if (i % 8 === 7) line.trackC = { note: 'E', octave: 5, instrument: '00' };
+      if (i % 8 === 1) line.A = { note: 'G', octave: 5, instrument: '00' };
+      if (i % 8 === 3) line.A = { note: 'E', octave: 5, instrument: '00' };
+      if (i % 8 === 5) line.A = { note: 'C', octave: 5, instrument: '00' };
+      if (i % 8 === 7) line.A = { note: 'E', octave: 5, instrument: '00' };
 
       return line;
     }),
@@ -73,11 +138,11 @@ export const createDefaultSong = (): Song => {
     author: DEFAULT_SONG_AUTHOR,
     year: new Date().getFullYear(),
     speed: 6,
-    patternLength: defaultPatternLength,
+    length: defaultPatternLength,
     loop: null,
-    patterns: [defaultPatternA, defaultPatternB, defaultPatternC],
-    playlist: [{ trackA: '01', trackB: '02', trackC: '03' }],
-    instruments: [
+    pattern: [defaultPatternA, defaultPatternB, defaultPatternC],
+    line: [{ A: '01', B: '02', C: '03' }],
+    instrument: [
       {
         id: '00',
         name: 'Default Instrument',
@@ -87,7 +152,7 @@ export const createDefaultSong = (): Song => {
           -16, -12, -8, -4, ...Array(8).fill(0),
         ],
         pitch: Array(32).fill(0),
-        noiseEnvelope: Array(32).fill(0),
+        noise: Array(32).fill(0),
         mode: Array(32).fill(0),
         base: DEFAULT_BASE_KEY,
         sustain: null,
@@ -100,7 +165,7 @@ export const createDefaultSong = (): Song => {
           12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0),
         ],
         pitch: Array(32).fill(0),
-        noiseEnvelope: Array(32).fill(0),
+        noise: Array(32).fill(0),
         mode: Array(32).fill(0),
         base: DEFAULT_BASE_KEY,
         sustain: null,
@@ -113,7 +178,7 @@ export const createDefaultSong = (): Song => {
           24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0),
         ],
         pitch: Array(32).fill(0),
-        noiseEnvelope: Array(32).fill(0),
+        noise: Array(32).fill(0),
         mode: Array(32).fill(0),
         base: DEFAULT_BASE_KEY,
         sustain: null,
@@ -139,8 +204,9 @@ export function loadInitialSong(): Song {
         const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
         const clampedSpeed = Math.max(2, baseSpeed);
         const evenSpeed = clampedSpeed & ~1;
+        const normalized = normalizeStoredSongToCurrentSchema(parsedSong);
         return {
-          ...(parsedSong as unknown as Song),
+          ...normalized,
           speed: evenSpeed,
         };
       }
@@ -165,11 +231,11 @@ export interface OptimizeSongResult {
 }
 
 export function optimizeSongData(song: Song): OptimizeSongResult {
-  const patternLength = song.patternLength || PATTERN_LENGTH;
+  const patternLength = song.length || PATTERN_LENGTH;
 
   const usedPatternIds = new Set<string>();
-  song.playlist.forEach((entry) => {
-    [entry.trackA, entry.trackB, entry.trackC].forEach((id) => {
+  song.line.forEach((entry) => {
+    [entry.A, entry.B, entry.C].forEach((id) => {
       if (typeof id === 'string') {
         const trimmed = id.trim();
         if (trimmed && trimmed !== '--') {
@@ -183,13 +249,13 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
   const removedPatternIds: string[] = [];
   const trimmedLinesInfo: { id: string; name: string; removed: number }[] = [];
 
-  song.patterns.forEach((pattern) => {
+  song.pattern.forEach((pattern) => {
     if (!usedPatternIds.has(pattern.id)) {
       removedPatternIds.push(pattern.id);
       return;
     }
 
-    const existingLines = pattern.lines || [];
+    const existingLines = pattern.step || [];
     const removedCount =
       existingLines.length > patternLength ? existingLines.length - patternLength : 0;
 
@@ -199,21 +265,21 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
       newLines = existingLines.slice(0, patternLength);
       trimmedLinesInfo.push({ id: pattern.id, name: pattern.name, removed: removedCount });
     } else if (existingLines.length < patternLength) {
-      const emptyLine: PatternLine = { trackA: null, trackB: null, trackC: null };
+      const emptyLine: Step = { A: null, B: null, C: null };
       const extra = Array.from({ length: patternLength - existingLines.length }, () => ({
         ...emptyLine,
       }));
       newLines = [...existingLines, ...extra];
     }
 
-    newPatterns.push({ ...pattern, lines: newLines });
+    newPatterns.push({ ...pattern, step: newLines });
   });
 
   const usedInstrumentIds = new Set<string>();
   newPatterns.forEach((pattern) => {
-    (pattern.lines || []).forEach((line) => {
-      const tracks: TrackKey[] = ['trackA', 'trackB', 'trackC'];
-      tracks.forEach((trackKey) => {
+    (pattern.step || []).forEach((line) => {
+      const tracks: TrackKey[] = ['A', 'B', 'C'];
+      tracks.forEach((trackKey: TrackKey) => {
         type NoteWithLegacyInstrument = Note & { instrument: string | number };
         const note = line[trackKey] as NoteWithLegacyInstrument | null;
         if (note && note.instrument !== undefined && note.instrument !== null) {
@@ -237,7 +303,7 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
   const newInstruments: Instrument[] = [];
   const removedInstrumentIds: string[] = [];
 
-  song.instruments.forEach((inst) => {
+  song.instrument.forEach((inst) => {
     if (!inst) return;
 
     const idNorm = (inst.id || '').trim().toUpperCase();
@@ -250,9 +316,9 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
 
   const optimizedSong: Song = {
     ...song,
-    patternLength,
-    patterns: newPatterns,
-    instruments: newInstruments,
+    length: patternLength,
+    pattern: newPatterns,
+    instrument: newInstruments,
   };
 
   const summaryLines: string[] = [];
@@ -307,7 +373,7 @@ export interface RenumberSongResult {
 
 export function renumberSongData(song: Song, currentInstrument: Instrument | null): RenumberSongResult {
   const patternById = new Map<string, Pattern>();
-  song.patterns.forEach((pattern) => {
+  song.pattern.forEach((pattern) => {
     if (pattern && typeof pattern.id === 'string') {
       patternById.set(pattern.id.trim().toUpperCase(), pattern);
     }
@@ -329,14 +395,14 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
     orderedPatternIds.push(trimmed);
   };
 
-  song.playlist.forEach((entry) => {
+  song.line.forEach((entry) => {
     if (!entry) return;
-    if (typeof entry.trackA === 'string') addPatternId(entry.trackA);
-    if (typeof entry.trackB === 'string') addPatternId(entry.trackB);
-    if (typeof entry.trackC === 'string') addPatternId(entry.trackC);
+    if (typeof entry.A === 'string') addPatternId(entry.A);
+    if (typeof entry.B === 'string') addPatternId(entry.B);
+    if (typeof entry.C === 'string') addPatternId(entry.C);
   });
 
-  song.patterns.forEach((pattern) => {
+  song.pattern.forEach((pattern) => {
     if (!pattern || typeof pattern.id !== 'string') return;
     const idNorm = pattern.id.trim().toUpperCase();
     if (!patternById.has(idNorm) || seenPatternIds.has(idNorm)) {
@@ -359,12 +425,12 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
     return mapped || trimmed;
   };
 
-  const newPlaylist = song.playlist.map((entry) => {
+  const newPlaylist = song.line.map((entry) => {
     if (!entry) return entry;
     return {
-      trackA: typeof entry.trackA === 'string' ? remapPatternId(entry.trackA) : entry.trackA,
-      trackB: typeof entry.trackB === 'string' ? remapPatternId(entry.trackB) : entry.trackB,
-      trackC: typeof entry.trackC === 'string' ? remapPatternId(entry.trackC) : entry.trackC,
+      A: typeof entry.A === 'string' ? remapPatternId(entry.A) : entry.A,
+      B: typeof entry.B === 'string' ? remapPatternId(entry.B) : entry.B,
+      C: typeof entry.C === 'string' ? remapPatternId(entry.C) : entry.C,
     };
   });
 
@@ -376,21 +442,22 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
       }
 
       const newId = patternIdMap[oldId];
-      const newLines: PatternLine[] = (original.lines || []).map((line) => ({
-        trackA: line.trackA ? { ...line.trackA } : null,
-        trackB: line.trackB ? { ...line.trackB } : null,
-        trackC: line.trackC ? { ...line.trackC } : null,
+      const newSteps: Step[] = (original.step || []).map((line) => ({
+        A: line.A ? { ...line.A } : null,
+        B: line.B ? { ...line.B } : null,
+        C: line.C ? { ...line.C } : null,
+        ...(line.volume !== undefined ? { volume: line.volume } : {}),
       }));
 
       return {
         ...original,
         id: newId,
-        lines: newLines,
+        step: newSteps,
       };
     })
     .filter((pattern): pattern is Pattern => Boolean(pattern));
 
-  const instruments = song.instruments || [];
+  const instruments = song.instrument || [];
   const instrumentsSorted = [...instruments].sort((a, b) => {
     const nameA = (a?.name || '').toLowerCase();
     const nameB = (b?.name || '').toLowerCase();
@@ -416,10 +483,10 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
   });
 
   const remappedPatternsWithInstruments: Pattern[] = remappedPatterns.map((pattern) => {
-    const lines = (pattern.lines || []).map((line) => {
-      const newLine: PatternLine = { ...line };
+    const steps = (pattern.step || []).map((line) => {
+      const newLine: Step = { ...line };
 
-      (['trackA', 'trackB', 'trackC'] as TrackKey[]).forEach((key) => {
+      (['A', 'B', 'C'] as TrackKey[]).forEach((key) => {
         const note = newLine[key] as Note | null;
         if (note && typeof note.instrument === 'string') {
           const raw = note.instrument.trim().toUpperCase();
@@ -438,7 +505,7 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
 
     return {
       ...pattern,
-      lines,
+      step: steps,
     };
   });
 
@@ -454,9 +521,9 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
 
   const renumberedSong: Song = {
     ...song,
-    patterns: remappedPatternsWithInstruments,
-    playlist: newPlaylist,
-    instruments: newInstruments,
+    pattern: remappedPatternsWithInstruments,
+    line: newPlaylist,
+    instrument: newInstruments,
   };
 
   const summaryLines: string[] = [];
@@ -490,9 +557,9 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
   const hasInstrumentChanges = instrumentMappingLines.length > 0;
 
   if (hasPatternChanges || hasInstrumentChanges) {
-    summaryLines.push(`Patterns: ${song.patterns.length} -> ${renumberedSong.patterns.length}`);
+    summaryLines.push(`Patterns: ${song.pattern.length} -> ${renumberedSong.pattern.length}`);
     summaryLines.push(
-      `Instruments: ${song.instruments.length} -> ${renumberedSong.instruments.length}`,
+      `Instruments: ${song.instrument.length} -> ${renumberedSong.instrument.length}`,
     );
 
     if (hasPatternChanges) {

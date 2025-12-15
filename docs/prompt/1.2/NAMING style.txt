@@ -29,3 +29,16 @@ Change CSS name from "instrument-id-header" to "instrument-number-header" and fr
 Change CSS name from "line-number-header" to "track-header-left" and from "playlist-move-header" to "track-header-right"
 
 ---
+
+Make refactorings in SoundDriver.ts:
+ - in interface PatternLine change fields "trackA" to "A", "trackB" to "B", "trackC" to "C"
+ - rename interface PatternLine to Step.
+ - in interface Pattern change field "lines" to "step"
+ - in interface Song change field name "patterns" to "pattern"
+ - introduce interface or type Line that will be used for "playlist" field in interface Song
+ - in interface Song change field name "playlist" to "line"
+ - in interface Instrument change field "noiseEnvelope" to "noise"
+ - in interface Song change field name "patternLength" to "length"
+ - in interface Song change field name "instruments" to "instrument"
+
+---

@@ -3,9 +3,9 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { formatPatternDisplay } from '../utils/playlistUtils';
 
 interface PlaylistEntry {
-  trackA: string;
-  trackB: string;
-  trackC: string;
+  A: string;
+  B: string;
+  C: string;
 }
 
 interface PlaylistLineProps {
@@ -79,7 +79,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
   const renderPatternCell = (track: 'A' | 'B' | 'C') => {
     const patternClass =
       track === 'A' ? patternClassA : track === 'B' ? patternClassB : patternClassC;
-    const patternValue = track === 'A' ? entry.trackA : track === 'B' ? entry.trackB : entry.trackC;
+    const patternValue = track === 'A' ? entry.A : track === 'B' ? entry.B : entry.C;
 
     if (isCurrentLine && currentTrack === track && isEditing) {
       return (

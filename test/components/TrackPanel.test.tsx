@@ -7,17 +7,17 @@ import type { NavigationSection } from '../../src/constants/navigation';
 const createTestPattern = (): Pattern => ({
   id: '00',
   name: 'Test Pattern',
-  lines: [
+  step: [
     {
-      trackA: { note: 'C', octave: 4, instrument: '00' },
-      trackB: null,
-      trackC: null,
+      A: { note: 'C', octave: 4, instrument: '00' },
+      B: null,
+      C: null,
       volume: null,
     },
     {
-      trackA: null,
-      trackB: null,
-      trackC: null,
+      A: null,
+      B: null,
+      C: null,
       volume: null,
     },
   ],
@@ -29,7 +29,7 @@ const createTestInstrument = (): Instrument => ({
   volume: [0x0f],
   arpeggio: [0],
   pitch: [0],
-  noiseEnvelope: [0],
+  noise: [0],
   mode: [0],
 });
 
@@ -51,7 +51,7 @@ describe('TrackPanel', () => {
         setActiveSection={setActiveSection}
         currentOctave={4}
         currentLine={0}
-        patternLength={pattern.lines.length}
+        patternLength={pattern.step.length}
         onLineChange={handleLineChange}
         pattern={pattern}
         onPatternChange={handlePatternChange}
@@ -92,7 +92,7 @@ describe('TrackPanel', () => {
         setActiveSection={setActiveSection}
         currentOctave={4}
         currentLine={0}
-        patternLength={pattern.lines.length}
+        patternLength={pattern.step.length}
         onLineChange={handleLineChange}
         pattern={pattern}
         onPatternChange={handlePatternChange}

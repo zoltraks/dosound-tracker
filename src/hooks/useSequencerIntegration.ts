@@ -65,7 +65,7 @@ export function useSequencerIntegration({
 
   const instrumentLookup = useMemo(() => {
     const map = new Map<string, Instrument>();
-    for (const inst of currentSong.instruments) {
+    for (const inst of currentSong.instrument) {
       if (!inst || !inst.id) continue;
       const key = normalizeInstrumentId(inst.id);
       if (key) {
@@ -75,7 +75,7 @@ export function useSequencerIntegration({
       }
     }
     return map;
-  }, [currentSong.instruments]);
+  }, [currentSong.instrument]);
   
   const sequencerCallback = useCallback((state: SequencerState) => {
     const lastUiRow = lastUiRowRef.current;
@@ -155,7 +155,7 @@ export function useSequencerIntegration({
         }
       }
 
-      const playlistLength = currentSong.playlist.length;
+      const playlistLength = currentSong.line.length;
 
       if (playlistLength === 0) {
         stop();
@@ -177,23 +177,23 @@ export function useSequencerIntegration({
         }
       }
 
-      const currentPlaylistEntry = currentSong.playlist[effectivePatternIndex];
+      const currentPlaylistEntry = currentSong.line[effectivePatternIndex];
       
       if (currentPlaylistEntry) {
         // Get pattern data for each track
-        const patternA = currentPlaylistEntry.trackA ? patternsById.get(currentPlaylistEntry.trackA) : undefined;
-        const patternB = currentPlaylistEntry.trackB ? patternsById.get(currentPlaylistEntry.trackB) : undefined;
-        const patternC = currentPlaylistEntry.trackC ? patternsById.get(currentPlaylistEntry.trackC) : undefined;
+        const patternA = currentPlaylistEntry.A ? patternsById.get(currentPlaylistEntry.A) : undefined;
+        const patternB = currentPlaylistEntry.B ? patternsById.get(currentPlaylistEntry.B) : undefined;
+        const patternC = currentPlaylistEntry.C ? patternsById.get(currentPlaylistEntry.C) : undefined;
         
         // Allow playback even if some tracks are empty (using --)
         // Get current line data (patterns are track-agnostic - read trackA data for any track)
-        const lineA = patternA?.lines[state.currentLine];
-        const lineB = patternB?.lines[state.currentLine];
-        const lineC = patternC?.lines[state.currentLine];
+        const lineA = patternA?.step[state.currentLine];
+        const lineB = patternB?.step[state.currentLine];
+        const lineC = patternC?.step[state.currentLine];
 
-        const noteA = lineA?.trackA || null;
-        const noteB = patternB ? (lineB?.trackA || null) : null; // Read trackA for track B
-        const noteC = patternC ? (lineC?.trackA || null) : null; // Read trackA for track C
+        const noteA = lineA?.A || null;
+        const noteB = patternB ? (lineB?.A || null) : null; // Read A for track B
+        const noteC = patternC ? (lineC?.A || null) : null; // Read A for track C
 
         const notes = [noteA, noteB, noteC];
         const patterns = [patternA, patternB, patternC];
@@ -340,7 +340,7 @@ export function useSequencerIntegration({
                 null, 
                 instrumentLookup, 
                 currentInstrument, 
-                currentSong.instruments[0], 
+                currentSong.instrument[0], 
                 0
               );
               lastNotes[ch] = null;
@@ -372,7 +372,7 @@ export function useSequencerIntegration({
               null, 
               instrumentLookup, 
               currentInstrument, 
-              currentSong.instruments[0], 
+              currentSong.instrument[0], 
               0
             );
             lastNotes[ch] = null;
@@ -469,7 +469,7 @@ export function useSequencerIntegration({
               activeNote, 
               instrumentLookup, 
               currentInstrument, 
-              currentSong.instruments[0], 
+              currentSong.instrument[0], 
               step, 
               volumeModifier
             );

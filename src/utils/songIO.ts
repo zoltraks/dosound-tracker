@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import type { Song } from '../synth/SoundDriver';
+import type { Song, Step } from '../synth/SoundDriver';
 import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat';
 
@@ -17,11 +17,12 @@ const isZeroDefault = (values: number[]): boolean =>
   values.length === 0 || (values.length === 1 && values[0] === 0);
 
 export const buildSongYamlForExport = (currentSong: Song): string => {
-  const instruments = currentSong.instruments.map((inst, index) => {
+  const instrumentSource = currentSong.instrument ?? currentSong.instruments ?? [];
+  const instruments = instrumentSource.map((inst, index) => {
     const volumeEnv = trimEnvelope(inst.volume);
     const arpeggioEnv = trimEnvelope(inst.arpeggio);
     const pitchEnv = trimEnvelope(inst.pitch);
-    const noiseEnv = trimEnvelope(inst.noiseEnvelope);
+    const noiseEnv = trimEnvelope(inst.noise ?? inst.noiseEnvelope ?? []);
     const modeEnv = trimEnvelope(inst.mode);
 
     const number =
@@ -104,24 +105,38 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   // Playlist: A/B/C keys instead of trackA/trackB/trackC.
   // Omit tracks that have no pattern assigned ("--").
-  const line = currentSong.playlist.map(entry => {
+  const lineSource = currentSong.line ?? currentSong.playlist ?? [];
+  type LegacyLineEntry = {
+    A?: string;
+    B?: string;
+    C?: string;
+    trackA?: string;
+    trackB?: string;
+    trackC?: string;
+  };
+
+  const line = lineSource.map((entry: LegacyLineEntry) => {
     const row: { A?: string; B?: string; C?: string } = {};
-    if (entry.trackA && entry.trackA !== '--') row.A = entry.trackA;
-    if (entry.trackB && entry.trackB !== '--') row.B = entry.trackB;
-    if (entry.trackC && entry.trackC !== '--') row.C = entry.trackC;
+    const A = entry.A ?? entry.trackA;
+    const B = entry.B ?? entry.trackB;
+    const C = entry.C ?? entry.trackC;
+    if (A && A !== '--') row.A = A;
+    if (B && B !== '--') row.B = B;
+    if (C && C !== '--') row.C = C;
     return row;
   });
 
   // Patterns: single-track (track A) steps with note strings or space,
   // plus optional per-line volume modifier.
-  const targetLength = currentSong.patternLength || PATTERN_LENGTH;
-  const patterns = currentSong.patterns.map((pattern, index) => {
+  const targetLength = currentSong.length ?? currentSong.patternLength ?? PATTERN_LENGTH;
+  const patternSource = currentSong.pattern ?? currentSong.patterns ?? [];
+  const patterns = patternSource.map((pattern, index) => {
     const number =
       typeof pattern.id === 'string' && pattern.id.trim()
         ? pattern.id
         : index.toString(16).padStart(2, '0').toUpperCase();
 
-    const rawLines = pattern.lines || [];
+    const rawLines = pattern.step ?? pattern.lines ?? [];
     type PatternStep = {
       wait?: boolean | number;
       off?: boolean;
@@ -133,8 +148,8 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     const lines: PatternStep[] = [];
 
     for (let i = 0; i < targetLength; i += 1) {
-      const raw = rawLines[i] || { trackA: null, trackB: null, trackC: null };
-      const cell = raw.trackA;
+      const raw: Step = rawLines[i] || { A: null, B: null, C: null };
+      const cell = raw.A ?? raw.trackA ?? null;
 
       const volRaw = raw.volume;
       const hasVolume = volRaw !== undefined && volRaw !== null;
@@ -271,7 +286,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   }
 
   songNode.speed = currentSong.speed;
-  songNode.length = currentSong.patternLength;
+  songNode.length = currentSong.length;
   if (hasLoop) {
     songNode.loop = Math.max(0, Math.floor(currentSong.loop as number));
   }
