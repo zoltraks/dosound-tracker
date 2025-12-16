@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { YM2149 } from '../synth/YM2149';
 
 interface DumpPanelProps {
@@ -17,6 +17,7 @@ interface DerivedRegisters {
 }
 
 export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
+  const ym2149Ref = useRef<YM2149 | null>(null);
   const [derived, setDerived] = useState<DerivedRegisters>({
     toneA: 0,
     toneB: 0,
@@ -29,10 +30,41 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
   });
 
   useEffect(() => {
-    if (!ym2149) return;
+    ym2149Ref.current = ym2149;
+  }, [ym2149]);
 
-    const updateInterval = setInterval(() => {
-      const registers = ym2149.getRegistersArray();
+  useEffect(() => {
+    const updateInterval = window.setInterval(() => {
+      const currentYm2149 = ym2149Ref.current;
+      if (!currentYm2149) {
+        setDerived(prev => {
+          if (
+            prev.toneA === 0 &&
+            prev.toneB === 0 &&
+            prev.toneC === 0 &&
+            prev.volumeA === 0 &&
+            prev.volumeB === 0 &&
+            prev.volumeC === 0 &&
+            prev.mixer === 0 &&
+            prev.noisePeriod === 0
+          ) {
+            return prev;
+          }
+          return {
+            toneA: 0,
+            toneB: 0,
+            toneC: 0,
+            volumeA: 0,
+            volumeB: 0,
+            volumeC: 0,
+            mixer: 0,
+            noisePeriod: 0,
+          };
+        });
+        return;
+      }
+
+      const registers = currentYm2149.getRegistersArray();
 
       const toneA = ((registers[1] & 0x0f) << 8) | (registers[0] || 0);
       const toneB = ((registers[3] & 0x0f) << 8) | (registers[2] || 0);
@@ -58,7 +90,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     }, 100); // Update every 100ms
 
     return () => clearInterval(updateInterval);
-  }, [ym2149]);
+  }, []);
 
   const formatHex = (value: number, width: number) => {
     return value.toString(16).toUpperCase().padStart(width, '0');

@@ -1,0 +1,3 @@
+When I change the selected instrument it seems that "Dump" section stops working and is not updating register values during playback or preview.
+
+---
