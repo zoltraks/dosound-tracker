@@ -3,12 +3,11 @@ import { render, screen, fireEvent, within } from '@testing-library/react';
 import { ColorPicker } from '../../src/components/ColorPicker';
 
 describe('ColorPicker', () => {
-  it('renders title and preview with provided value', () => {
+  it('renders preview with provided value', () => {
     const handleChange = vi.fn();
 
     render(<ColorPicker value="#888" onChange={handleChange} />);
 
-    expect(screen.getByText('Color Picker')).toBeTruthy();
     expect(screen.getByText('#888')).toBeTruthy();
   });
 

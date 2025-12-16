@@ -63,8 +63,6 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
     return null;
   }
 
-  const displayName = (instrument.name || '').trim() || '(unnamed)';
-
   return (
     <div className="modal-backdrop">
       <div
@@ -73,16 +71,9 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
       >
         <div className="modal-title">Instrument Color</div>
         <div className="modal-body">
-          <div style={{ marginBottom: '8px', fontSize: '10px' }}>
-            <div>
-              Instrument: {instrument.id} - {displayName}
-            </div>
-          </div>
-
           <ColorPicker
             value={selectedColor}
             onChange={setSelectedColor}
-            title="Color Picker"
           />
         </div>
         <div className="modal-actions about-actions">

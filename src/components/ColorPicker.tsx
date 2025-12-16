@@ -12,10 +12,6 @@ export interface ColorPickerProps {
    */
   onChange?: (color: string) => void;
   /**
-   * Optional title text. Defaults to "Color Picker".
-   */
-  title?: string;
-  /**
    * Optional extra class name for the root container.
    */
   className?: string;
@@ -36,13 +32,13 @@ const DEFAULT_COLOR = '#888';
 
 const BASE_PALETTE: PaletteTone[] = [
   { name: 'gray', shades: ['#000', '#222', '#444', '#666', '#888', '#aaa', '#ccc', '#eee'] },
-  { name: 'red', shades: ['#900', '#b33', '#d55', '#f77', '#f99', '#fbb', '#fdd', '#fee'] },
-  { name: 'green', shades: ['#090', '#3b3', '#5d5', '#7f7', '#9f9', '#bfb', '#dfd', '#efe'] },
-  { name: 'blue', shades: ['#009', '#33b', '#55d', '#77f', '#99f', '#bbf', '#ddf', '#eef'] },
-  { name: 'orange', shades: ['#930', '#b53', '#d75', '#f97', '#fb9', '#fdb', '#fec', '#fee'] },
-  { name: 'cyan', shades: ['#099', '#3bb', '#5dd', '#7ff', '#9ff', '#bff', '#dff', '#eff'] },
-  { name: 'yellow', shades: ['#990', '#bb3', '#dd5', '#ff7', '#ff9', '#ffb', '#ffd', '#ffe'] },
+  { name: 'red', shades: ['#800', '#b33', '#d55', '#e66', '#f77', '#f99', '#fbb', '#fdd'] },
+  { name: 'green', shades: ['#080', '#3b3', '#5d5', '#7f7', '#9f9', '#bfb', '#dfd', '#efe'] },
+  { name: 'blue', shades: ['#008', '#33b', '#55d', '#77f', '#99f', '#bbf', '#ddf', '#eef'] },
+  { name: 'cyan', shades: ['#099', '#3bb', '#5dd', '#6ee', '#7ff', '#9ff', '#bff', '#dff'] },
   { name: 'magenta', shades: ['#909', '#b3b', '#d5d', '#f7f', '#f9f', '#fbf', '#fdf', '#fef'] },
+  { name: 'orange', shades: ['#930', '#a41', '#b53', '#d75', '#e85', '#e96', '#fa7', '#fb8'] },
+  { name: 'yellow', shades: ['#990', '#bb3', '#dd5', '#ee6', '#ff7', '#ff9', '#ffb', '#ffd'] },
 ];
 
 const PALETTE_ENTRIES: PaletteEntry[] = BASE_PALETTE.flatMap(tone =>
@@ -97,7 +93,6 @@ const getTextColorForBackground = (color: string): string => {
 export const ColorPicker: React.FC<ColorPickerProps> = ({
   value,
   onChange,
-  title,
   className,
 }) => {
   const [selectedColor, setSelectedColor] = useState<string>(() => normalizeColor(value));
@@ -180,8 +175,6 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 
   return (
     <div className={rootClassName}>
-      <div className="color-picker-title">{title || 'Color Picker'}</div>
-
       <div
         className="color-preview-bar"
         style={{ backgroundColor: effectivePreviewColor }}

@@ -124,3 +124,11 @@ You may remove vertical scrollbar in mobile view in "playlist-line-container", i
 In mobile view place "left-column" after "information-panel" but before "playlist-panel".
 
 ---
+
+In "Instrument Color" modal dialog remove div with instrument name and also remove title for ColorPicker component:
+
+```
+<div class="color-picker-title">Color Picker</div>
+```
+
+---
