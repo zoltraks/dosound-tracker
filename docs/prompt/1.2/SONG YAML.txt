@@ -5,3 +5,31 @@ Maintain backward compatibility.
 Also, update the corresponding variable names, fields, types, or function names in the source code to ensure naming consistency and coherence.
 
 ---
+
+There is small inconsequence when saving song in YAML format.
+In the "pattern" definition block value for "number" key is written
+in double quotes when its value < 16 and hexadecimal representation has only digits,
+and without double quotes when it contains letters.
+Always write value for "number" with double quotes.
+
+```yaml
+  pattern:
+    - number: "01"
+      step:
+        - wait: 2
+        - note: "E-2"
+          instrument: "01"
+        - wait: 1
+    - number: 0B
+      step:
+        - note: "C-3"
+          instrument: "00"
+        - wait: 5
+        - note: "C-3"
+          instrument: "00"
+        - wait: 5
+        - note: "C-4"
+          instrument: "03"
+```
+
+---
