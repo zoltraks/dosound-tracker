@@ -20,3 +20,9 @@ When changing the instrument, all envelope panels has to be updated.
 Try to fix this so UI update while changing selected instrument doesn't cause sequencer delays.
 
 ---
+
+While playing song or pattern I noticed that if I change UI theme there is audible delay in sequencer routine after color theme is updated.
+Try to find the reason and fix it so changing color theme will not affect sequencer routine and playback.
+Make changes safe to not break any functionality.
+
+---

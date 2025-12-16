@@ -53,6 +53,8 @@ export class YM2149 {
   private noiseGainNode: GainNode;
   private envelopeGainNode: GainNode;
   private lastNoisePeriod: number = -1; // Track noise period changes
+  private batchDepth: number = 0;
+  private pendingUpdate: boolean = false;
 
   constructor(audioContext: AudioContext) {
     this.audioContext = audioContext;
@@ -107,8 +109,27 @@ export class YM2149 {
     }
 
     this.registers[register] = masked;
+
+    if (this.batchDepth > 0) {
+      this.pendingUpdate = true;
+      return;
+    }
+
     this.updateState();
     this.updateAudioNodes();
+  }
+
+  beginBatch(): void {
+    this.batchDepth += 1;
+  }
+
+  endBatch(): void {
+    this.batchDepth = Math.max(0, this.batchDepth - 1);
+    if (this.batchDepth === 0 && this.pendingUpdate) {
+      this.pendingUpdate = false;
+      this.updateState();
+      this.updateAudioNodes();
+    }
   }
 
   private updateState(): void {
@@ -364,6 +385,8 @@ export class YM2149 {
     envelopeTick: number = 0,
     volumeModifier?: number | null
   ) => {
+    this.beginBatch();
+    try {
     const volumeRegister = 8 + channel; // R8, R9, R10
     const fineRegister = channel * 2;        // R0, R2, R4
     const coarseRegister = channel * 2 + 1;  // R1, R3, R5
@@ -449,6 +472,9 @@ export class YM2149 {
     // Noise envelope whenever noise is active
     if (noiseActive) {
       this.applyNoiseEnvelopeValue(instrument, safeTick);
+    }
+    } finally {
+      this.endBatch();
     }
   };
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, startTransition } from 'react';
 
 export const useTheme = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
@@ -21,7 +21,9 @@ export const useTheme = () => {
   }, [isDarkMode]);
 
   const toggleTheme = () => {
-    setIsDarkMode(prev => !prev);
+    startTransition(() => {
+      setIsDarkMode(prev => !prev);
+    });
   };
 
   return {

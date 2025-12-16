@@ -286,48 +286,82 @@ export function useSequencerIntegration({
           }
         }
 
-        for (let ch = 0; ch < 3; ch++) {
-          if (channelMutes[ch]) {
-            const volumeRegister = 8 + ch;
-            ym2149.writeRegister(volumeRegister, 0x00);
-            continue;
-          }
-
-          const pattern = patterns[ch];
-          const noteOnRow = notes[ch];
-          const volumeOnRow = volumes[ch];
-          const last = lastNotes[ch];
-
-          // If no pattern is assigned on this channel for the current
-          // playlist position, treat it as sustain/no-op: keep any
-          // previously playing note sounding instead of forcing an
-          // immediate rest here. Initial startup silence is still
-          // handled separately by the isFirstTick logic below.
-          if (!pattern) {
-            // Nothing to do on this row for this channel; fall through so
-            // envelope timing and note-hold behaviour continue unchanged.
-          }
-
-          // Explicit note-off event on this row. Only act on the first
-          // tick of the row so we match the offline export logic.
-          if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
-            // For MIDI output, treat this as an explicit key release and
-            // send a matching Note Off for any active note on this
-            // playback channel.
-            const helpers = midiHelpersRef.current;
-            if (helpers) {
-              helpers.sendInstrumentMidiNoteOffForChannel(ch);
+        ym2149.beginBatch();
+        try {
+          for (let ch = 0; ch < 3; ch++) {
+            if (channelMutes[ch]) {
+              const volumeRegister = 8 + ch;
+              ym2149.writeRegister(volumeRegister, 0x00);
+              continue;
             }
 
-            const sustainIndex = channelSustainRef.current[ch];
+            const pattern = patterns[ch];
+            const noteOnRow = notes[ch];
+            const volumeOnRow = volumes[ch];
+            const last = lastNotes[ch];
 
-            if (
-              sustainIndex === null ||
-              sustainIndex === undefined ||
-              sustainIndex < 0 ||
-              !last
-            ) {
-              // No sustain defined (or no active note) - treat as hard mute
+            // If no pattern is assigned on this channel for the current
+            // playlist position, treat it as sustain/no-op: keep any
+            // previously playing note sounding instead of forcing an
+            // immediate rest here. Initial startup silence is still
+            // handled separately by the isFirstTick logic below.
+            if (!pattern) {
+              // Nothing to do on this row for this channel; fall through so
+              // envelope timing and note-hold behaviour continue unchanged.
+            }
+
+            // Explicit note-off event on this row. Only act on the first tick of the
+            // row so we match the offline export logic.
+            if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
+              // For MIDI output, treat this as an explicit key release and
+              // send a matching Note Off for any active note on this
+              // playback channel.
+              const helpers = midiHelpersRef.current;
+              if (helpers) {
+                helpers.sendInstrumentMidiNoteOffForChannel(ch);
+              }
+
+              const sustainIndex = channelSustainRef.current[ch];
+
+              if (
+                sustainIndex === null ||
+                sustainIndex === undefined ||
+                sustainIndex < 0 ||
+                !last
+              ) {
+                // No sustain defined (or no active note) - treat as hard mute
+                channelEnvelopeStepRef.current[ch] = 0;
+                channelSubTickRef.current[ch] = 0;
+                updateChannelWithInstrument(
+                  ym2149, 
+                  ch, 
+                  null, 
+                  instrumentLookup, 
+                  currentInstrument, 
+                  currentSong.instrument[0], 
+                  0
+                );
+                lastNotes[ch] = null;
+                channelSustainRef.current[ch] = null;
+                channelReleasedRef.current[ch] = false;
+                continue;
+              }
+
+              // Instrument has a sustain point and a note is active: this
+              // note-off acts as a release trigger instead of an immediate
+              // mute. Keep holding the last note and allow the envelope to
+              // continue past the sustain position.
+              channelReleasedRef.current[ch] = true;
+              // Do not reset envelope step or clear lastNotes; fall through
+            }
+
+            // On the very first tick after starting playback, if there is no
+            // explicit note on this row, ensure the channel starts from a
+            // silent state so we do not accidentally reuse a stale note from a
+            // previous run. Afterwards, notes are allowed to sustain naturally
+            // across pattern boundaries unless an explicit note-off or rest is
+            // present in the data.
+            if (isFirstTick && !noteOnRow) {
               channelEnvelopeStepRef.current[ch] = 0;
               channelSubTickRef.current[ch] = 0;
               updateChannelWithInstrument(
@@ -345,162 +379,133 @@ export function useSequencerIntegration({
               continue;
             }
 
-            // Instrument has a sustain point and a note is active: this
-            // note-off acts as a release trigger instead of an immediate
-            // mute. Keep holding the last note and allow the envelope to
-            // continue past the sustain position.
-            channelReleasedRef.current[ch] = true;
-            // Do not reset envelope step or clear lastNotes; fall through
-          }
+            // Determine active note: explicit note on this row if present, otherwise
+            // continue holding the last active note.
+            let activeNote: Note | null = last;
+            const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
 
-          // On the very first tick after starting playback, if there is no
-          // explicit note on this row, ensure the channel starts from a
-          // silent state so we do not accidentally reuse a stale note from a
-          // previous run. Afterwards, notes are allowed to sustain naturally
-          // across pattern boundaries unless an explicit note-off or rest is
-          // present in the data.
-          if (isFirstTick && !noteOnRow) {
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            updateChannelWithInstrument(
-              ym2149, 
-              ch, 
-              null, 
-              instrumentLookup, 
-              currentInstrument, 
-              currentSong.instrument[0], 
-              0
-            );
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
-            continue;
-          }
+            // Update per-channel volume modifier when a volume nibble is present on this row.
+            if (volumeOnRow !== undefined && volumeOnRow !== null) {
+              const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+              channelVolumeModifierRef.current[ch] = clamped;
+            }
 
-          // Determine active note: explicit note on this row if present, otherwise
-          // continue holding the last active note.
-          let activeNote: Note | null = last;
-          const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
+            if (hasExplicitNote) {
+              // New explicit note on this row
+              activeNote = noteOnRow;
 
-          // Update per-channel volume modifier when a volume nibble is present on this row.
-          if (volumeOnRow !== undefined && volumeOnRow !== null) {
-            const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-            channelVolumeModifierRef.current[ch] = clamped;
-          }
+              // Retrigger envelopes and send MIDI output only on the first tick of the
+              // row so that the same note is not re-sent multiple times when
+              // ticksPerRow > 1.
+              if (state.currentTick === 0) {
+                channelEnvelopeStepRef.current[ch] = 0;
+                channelSubTickRef.current[ch] = 0;
 
-          if (hasExplicitNote) {
-            // New explicit note on this row
-            activeNote = noteOnRow;
+                // Resolve sustain position for the instrument used by this note.
+                const instId = activeNote && typeof activeNote.instrument === 'string'
+                  ? activeNote.instrument
+                  : '';
+                const instrument = instrumentsById.get(instId);
+                const rawSustain = instrument?.sustain ?? null;
+                if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
+                  channelSustainRef.current[ch] = Math.floor(rawSustain);
+                } else {
+                  channelSustainRef.current[ch] = null;
+                }
+                channelReleasedRef.current[ch] = false;
 
-            // Retrigger envelopes and send MIDI output only on the first tick of the
-            // row so that the same note is not re-sent multiple times when
-            // ticksPerRow > 1.
-            if (state.currentTick === 0) {
-              channelEnvelopeStepRef.current[ch] = 0;
-              channelSubTickRef.current[ch] = 0;
+                let volumeForMidi: number | null = null;
+                if (volumeOnRow !== undefined && volumeOnRow !== null) {
+                  volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+                }
 
-              // Resolve sustain position for the instrument used by this note.
-              const instId = activeNote && typeof activeNote.instrument === 'string'
-                ? activeNote.instrument
-                : '';
-              const instrument = instrumentsById.get(instId);
-              const rawSustain = instrument?.sustain ?? null;
-              if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
-                channelSustainRef.current[ch] = Math.floor(rawSustain);
-              } else {
-                channelSustainRef.current[ch] = null;
-              }
-              channelReleasedRef.current[ch] = false;
-
-              let volumeForMidi: number | null = null;
-              if (volumeOnRow !== undefined && volumeOnRow !== null) {
-                volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-              }
-
-              if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
-                const helpers = midiHelpersRef.current;
-                if (helpers) {
-                  helpers.sendInstrumentMidiNoteOn(
-                    ch,
-                    instrument,
-                    activeNote.note,
-                    activeNote.octave,
-                    volumeForMidi
-                  );
+                if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {
+                  const helpers = midiHelpersRef.current;
+                  if (helpers) {
+                    helpers.sendInstrumentMidiNoteOn(
+                      ch,
+                      instrument,
+                      activeNote.note,
+                      activeNote.octave,
+                      volumeForMidi
+                    );
+                  }
                 }
               }
             }
-          }
 
-          if (activeNote && activeNote.note && activeNote.note !== '===') {
-            // Use current step as envelope tick (so a freshly triggered note
-            // starts at step 0, matching the piano keyboard behaviour), then
-            // advance the step every 40ms (every 2 x 20ms ticks).
-            const rawStep = channelEnvelopeStepRef.current[ch];
-            const sustainIndex = channelSustainRef.current[ch];
-            const isReleased = channelReleasedRef.current[ch];
+            if (activeNote && activeNote.note && activeNote.note !== '===') {
+              // Use current step as envelope tick (so a freshly triggered note
+              // starts at step 0, matching the piano keyboard behaviour), then
+              // advance the step every 40ms (every 2 x 20ms ticks).
+              const rawStep = channelEnvelopeStepRef.current[ch];
+              const sustainIndex = channelSustainRef.current[ch];
+              const isReleased = channelReleasedRef.current[ch];
 
-            // While the key is held and a sustain index is defined, clamp
-            // the effective envelope position at the sustain step. Once a
-            // key-release has occurred while at or before sustain, jump to
-            // the first post-sustain step immediately for this tick.
-            let step = rawStep;
-            const hasSustain =
-              sustainIndex !== null &&
-              sustainIndex !== undefined &&
-              sustainIndex >= 0;
+              // While the key is held and a sustain index is defined, clamp
+              // the effective envelope position at the sustain step. Once a
+              // key-release has occurred while at or before sustain, jump to
+              // the first post-sustain step immediately for this tick.
+              let step = rawStep;
+              const hasSustain =
+                sustainIndex !== null &&
+                sustainIndex !== undefined &&
+                sustainIndex >= 0;
 
-            if (hasSustain) {
-              if (!isReleased && rawStep >= sustainIndex) {
-                step = sustainIndex;
-              } else if (isReleased && rawStep <= sustainIndex) {
-                step = sustainIndex + 1;
+              if (hasSustain) {
+                if (!isReleased && rawStep >= sustainIndex) {
+                  step = sustainIndex;
+                } else if (isReleased && rawStep <= sustainIndex) {
+                  step = sustainIndex + 1;
+                }
               }
-            }
-            const volumeModifier = channelVolumeModifierRef.current[ch];
+              const volumeModifier = channelVolumeModifierRef.current[ch];
 
-            updateChannelWithInstrument(
-              ym2149, 
-              ch, 
-              activeNote, 
-              instrumentLookup, 
-              currentInstrument, 
-              currentSong.instrument[0], 
-              step, 
-              volumeModifier
-            );
+              updateChannelWithInstrument(
+                ym2149, 
+                ch, 
+                activeNote, 
+                instrumentLookup, 
+                currentInstrument, 
+                currentSong.instrument[0], 
+                step, 
+                volumeModifier
+              );
 
-            // Envelope progression at 25 Hz: only advance on every second tick
-            const sub = (channelSubTickRef.current[ch] + 1) % 2;
-            channelSubTickRef.current[ch] = sub;
-            if (sub === 0) {
-              // Advance the underlying envelope step only if either there is
-              // no sustain point, the note has been released, or we have
-              // not yet reached the sustain index. This implements a
-              // classic hold-at-sustain-until-release behaviour.
-              if (
-                sustainIndex === null ||
-                sustainIndex === undefined ||
-                sustainIndex < 0 ||
-                isReleased ||
-                rawStep < sustainIndex
-              ) {
-                channelEnvelopeStepRef.current[ch] = rawStep + 1;
+              // Envelope progression at 25 Hz: only advance on every second tick
+              const sub = (channelSubTickRef.current[ch] + 1) % 2;
+              channelSubTickRef.current[ch] = sub;
+              if (sub === 0) {
+                // Advance the underlying envelope step only if either there is
+                // no sustain point, the note has been released, or we have
+                // not yet reached the sustain index. This implements a
+                // classic hold-at-sustain-until-release behaviour.
+                if (
+                  sustainIndex === null ||
+                  sustainIndex === undefined ||
+                  sustainIndex < 0 ||
+                  isReleased ||
+                  rawStep < sustainIndex
+                ) {
+                  channelEnvelopeStepRef.current[ch] = rawStep + 1;
+                }
               }
+              lastNotes[ch] = activeNote;
+            } else {
+              // No active note at all. Explicit rests and hard mutes are
+              // already handled above (no pattern, note-off without
+              // sustain, or initial startup row). Leaving the YM2149
+              // registers as-is here avoids brief drop-outs if state
+              // transiently reports no note for a single tick.
+              channelEnvelopeStepRef.current[ch] = 0;
+              channelSubTickRef.current[ch] = 0;
+              lastNotes[ch] = null;
+              channelSustainRef.current[ch] = null;
+              channelReleasedRef.current[ch] = false;
             }
-            lastNotes[ch] = activeNote;
-          } else {
-            // No active note at all. Explicit rests and hard mutes are
-            // already handled above (no pattern, note-off without
-            // sustain, or initial startup row). Leaving the YM2149
-            // registers as-is here avoids brief drop-outs if state
-            // transiently reports no note for a single tick.
-            channelEnvelopeStepRef.current[ch] = 0;
-            channelSubTickRef.current[ch] = 0;
-            lastNotes[ch] = null;
-            channelSustainRef.current[ch] = null;
-            channelReleasedRef.current[ch] = false;
           }
+        } finally {
+          ym2149.endBatch();
         }
       }
     }
