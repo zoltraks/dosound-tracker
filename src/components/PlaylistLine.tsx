@@ -1,12 +1,16 @@
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { formatPatternDisplay } from '../utils/playlistUtils';
 
 interface PlaylistEntry {
   A: string;
   B: string;
   C: string;
 }
+
+const formatPatternDisplay = (patternId: string): string => {
+  if (patternId === '--') return '--';
+  return patternId;
+};
 
 interface PlaylistLineProps {
   index: number;

@@ -1,0 +1,4 @@
+I found that there is playlistUtils.ts file that contains only one function "formatPatternDisplay" and it seems that it is used only by PlaylistLine.tsx.
+Consider moving that function to patternUtils.ts or to PlaylistLine.tsx and remove playlistUtils.ts file.
+
+---
