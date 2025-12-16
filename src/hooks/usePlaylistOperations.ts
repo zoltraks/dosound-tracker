@@ -205,7 +205,7 @@ export function usePlaylistOperations({
 
     const duplicateTrack = (key: 'A' | 'B' | 'C') => {
       const patternId = sourceEntry[key];
-      if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+      if (!patternId || patternId === '--') {
         newEntry[key] = patternId;
         return;
       }

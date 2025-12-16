@@ -1,0 +1,6 @@
+Search the code for usage of "^^" for playlist.
+If you find it, consider it as a legacy code and remove it.
+It might happen that it is left after first approach to playlist looping.
+Make changes safe to not break any functionality.
+
+---

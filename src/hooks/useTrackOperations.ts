@@ -200,7 +200,7 @@ export function useTrackOperations({
         break;
     }
 
-    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+    if (!patternId || patternId === '--') {
       return;
     }
 
@@ -260,7 +260,7 @@ export function useTrackOperations({
         break;
     }
 
-    if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+    if (!patternId || patternId === '--') {
       return;
     }
 

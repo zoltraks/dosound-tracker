@@ -73,7 +73,7 @@ export function performTranspose(
           break;
       }
 
-      if (!patternId || patternId === '--' || patternId.startsWith('^^')) {
+      if (!patternId || patternId === '--') {
         continue;
       }
 
