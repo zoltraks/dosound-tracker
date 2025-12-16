@@ -130,12 +130,8 @@ export function useSequencerIntegration({
       };
 
       if (wrappedOrJumped || isFirstTick) {
-        // Debug: Log pattern wraps with timing
-        if (wrappedOrJumped && lastPos) {
-          const now = performance.now();
-          console.log(`[DEBUG] Pattern wrap detected: ${lastPos.pattern} -> ${state.currentPattern} at ${now.toFixed(2)}ms, line ${state.currentLine}, tick ${state.currentTick}`);
-        }
-        
+        // Debug: Pattern wrap handling
+
         // Always reset sub-tick timing on wrap/jump or first tick so 40ms
         // envelope steps realign, but avoid forcibly clearing notes just
         // because the playlist advanced to the next pattern.

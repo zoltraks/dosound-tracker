@@ -1,0 +1,3 @@
+Remove "Pattern wrap detected" debug messages
+
+---
