@@ -292,7 +292,7 @@ For whole-envelope operations, the editor treats the envelope as fully defined f
 
 - **ADD INST**: Create new instrument
 - **LOAD INST**: Import individual instrument
-- **SAVE INST****: Export single instrument
+- **SAVE INST**: Export single instrument
 - **DELETE INST**: Remove instrument
 - **CLONE INST**: Duplicate instrument
 - **PLAY INST**: Test sound
@@ -354,7 +354,7 @@ Application supports several export formats.
 
 **WAV Audio:**
 
-- 44.1kHz 16-bit stereo
+- 44.1kHz 16-bit mono
 - High-quality rendering
 - Cross-platform playback
 - Mastering ready
@@ -425,19 +425,19 @@ Application supports several export formats.
 
 This section describes core concepts used by this tool for both musicians and coders.
 
-### Song, Patterns, Playlist, Instruments
+### Song, Patterns, Line (Playlist), Instruments
 
 A **song** in DOSOUND Tracker is:
 
 - **Metadata** – `title`, `author`, `year`, `speed`, `length` (pattern length).
-- **Playlist** – which pattern plays on each of the three tracks per song line.
-- **Patterns** – monotrack step lists, always interpreted as **Track A** internally.
+- **Line (playlist)** – which pattern plays on each of the three channels per song line.
+- **Patterns** – step lists that can be assigned to channel A, B, or C.
 - **Instruments** – envelopes and mode settings describing how a note evolves over time.
 
 Conceptually:
 
 - **Patterns** = musical phrases.
-- **Playlist** = arrangement (which pattern plays where on tracks A/B/C).
+- **Line (playlist)** = arrangement (which pattern plays where on channels A/B/C).
 - **Instruments** = sound design.
 
 ### Time and Speed
@@ -482,7 +482,8 @@ Conceptually:
 - `speed`: Required. Positive integer, forced to **even** and at least **2**.
 - `length`: Required. Pattern length, clamped to **4..256** rows.
 - `loop`: Optional. 0‑based playlist index where playback loops (for exports that support looping).
-- `playlist`: Required list of rows (arrangement).
+- `line`: Required list of rows (arrangement).
+  - Loader also accepts the legacy key `playlist`.
 - `pattern` / `patterns`: Required list of pattern definitions.
 - `instrument` / `instruments`: Required list of instruments.
 
@@ -490,43 +491,31 @@ If you mess something up, the loader will attempt to rescue your tune instead of
 
 ### Arranging Patterns in Tracks
 
-Music progression is stored as a playlist of patterns organized in tracks assigned to each **YM 2149** channels.
+Music progression is stored as an **order list** in `song.line`.
 
-Each playlist entry is one **song line**:
+Each entry in `line` chooses which pattern plays on each **YM 2149** channel for the next `length` rows:
 
-- `A`: pattern number for Track A.
-- `B`: pattern number for Track B.
-- `C`: pattern number for Track C.
+- `A`: pattern number for channel A.
+- `B`: pattern number for channel B.
+- `C`: pattern number for channel C.
 
-Semantics:
+Pattern numbers are **quoted hex strings** like `"00"`, `"1A"`, `"3F"`.
 
-- Pattern IDs are **hex strings** like `"00"`, `"1A"`, `"3F"`.
-- Missing or non-string values become `"--"`, which means **no pattern** on that track for this song line.
-- When a track has `"--"`, any previously playing note can **sustain** across this playlist position (thanks to the export logic).
-
-Think of the playlist as a table:
-
-- Rows = time.
-- Columns = Track A/B/C pattern ID.
-
-Example mental picture:
-
-- Row 0: A=`00`, B=`01`, C=`--` → lead + bass.
-- Row 1: A=`00`, B=`01`, C=`02` → same lead & bass, add drums.
+Use `"--"` to mean “no pattern events on this channel for this segment”. This does not automatically stop sound; it simply leaves the channel unchanged (so a previously triggered note may keep playing until it is replaced or released).
 
 ### Monotrack Note Data
 
-Patterns are **monotrack** from the file format's point of view:
+A pattern is a **single list of steps** (one lane of note events). The same pattern can be assigned to `A`, `B`, or `C` in the order list.
 
-- Each pattern has a `number` (ID) and optional `name`.
-- Steps (called `steps` or `lines`) are **Track A** in the internal representation.
-- In the playlist, that same pattern ID can be assigned to Track A, B, or C.
+A pattern definition contains:
 
-A pattern is just an **ordered list of steps**, up to `length` rows. The loader also supports run‑length compression using `space` and `off` counters.
+- `number`: pattern ID.
+- `name`: optional.
+- `step`: the row list (can be shorter than `length`).
 
 #### Step Building Blocks
 
-Each step can contain combinations of:
+Each step describes what changes on that row. If a field is missing, the previous state continues.
 
 - **`note`** – like `"C-3"` or `"C#4"`.
   - Format: `NOTE` + optional `#` + `-` + `OCTAVE`.
@@ -534,35 +523,28 @@ Each step can contain combinations of:
 - **`instrument`** – hex string like `"00"`, `"1A"`, `"FF"`. Defaults to `"00"`.
 - **`volume`** – optional per‑row **volume nibble** (0..15) for this channel.
   - Can be number (**3**, **15**) or string (`"C"`, `"0C"`, `"$0C"`).
-- **`space`** – empty rows (no note on this pattern track).
-  - `space: true` → one empty row.
-  - `space: N` (N>0) → **N consecutive empty steps**.
-- **`off`** – explicit note‑off / key release.
-  - `off: true` → note‑off on this row.
-  - `off: N` → **N consecutive note‑offs** (expanded by the loader).
-
-Internally, note‑offs are represented as a special note:
-
-- `note: '==='`, `octave: 0`, `instrument: '00'`.
-
-You don't normally write that directly in YAML; `off: true` is friendlier than `"==="`.
+- **`wait`** – an empty row (no new note event).
+  - `wait: true` → one empty row.
+  - `wait: N` (N>0) → **N consecutive empty rows**.
+  - Legacy key `space` is accepted as an alias.
+- **`off`** – key release / note‑off.
+  - `off: true` → release on this row.
+  - `off: N` → **N consecutive releases** (expanded by the loader).
+  - `note: "OFF"` is also accepted.
 
 #### How Steps Expand
 
-For each pattern:
+When loading YAML, the loader turns the `step` list into a fixed‑length pattern of `length` rows:
 
-1. The loader **expands runs**:
-   - `space: N` → N rows with `space: true`.
-   - `off: N` → N rows with `off: true`.
-   - When combined with `volume`, the volume is copied into each expanded row.
-2. For each row up to `length`:
-   - `off: true` → internal note‑off on Track A.
-   - `space: true` → empty step.
-   - `note: "X-Y"` → parsed into `note` + `octave`.
-   - `instrument` missing → `"00"`.
+1. It **expands shorthand runs**:
+   - `wait: N` → N empty rows.
+   - `off: N` → N release rows.
+   - If `volume` is present alongside `wait: N` / `off: N`, that volume value is copied into each expanded row.
+2. It parses each row:
+   - `note: "X-Y"` → parsed into note + octave.
+   - `instrument` missing on a note row → `"00"`.
    - `volume` → parsed to 0..15 if possible.
-
-The result is a fixed‑length pattern of `length` rows.
+3. If `step` has fewer than `length` rows, the remaining rows are treated as empty (`wait`).
 
 ---
 
@@ -578,17 +560,16 @@ Internally, an instrument has:
 - `octave` – base octave for some exports.
 - `sustain` – optional sustain index in the envelope (0‑based).
 - `volume[0..31]` – 0..15 loudness per step.
-- `arpeggio[0..31]` – semitone offsets (approx. -24..+24).
+- `shift[0..31]` – semitone offsets (approx. -24..+24).
 - `pitch[0..31]` – raw divider delta, "vibrato / slide" in divider units.
-- `noiseEnvelope[0..31]` – 0..31 noise period per step.
+- `noise[0..31]` – 0..31 noise period per step.
 - `mode[0..31]` – 0 = tone, 1 = noise, 2 = tone+noise.
 
 In YAML, each instrument element (inside `song.instrument` or `instrument.instrument`) looks like:
 
 - `number`: hex slot index string, e.g. `"00"`, `"1A"`.
 - `name`, `base`, `octave`, `sustain`.
-- `volume`, `arpeggio`, `pitch`, `noiseEnvelope`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
-- `volume`, `arpeggio`, `pitch`, `noise`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
+- `volume`, `shift`, `pitch`, `noise`, `mode`: each is a **short list**; loader expands to **ENVELOPE_LENGTH = 32** steps.
 
 ### Volume Envelope (Loudness over Time)
 
@@ -625,7 +606,7 @@ This is how the tracker creates the illusion of full chords in a single square�
 ### Pitch Envelope (Fine Bends & Slides)
 
 - Values: integers in range `PITCH_MIN = -128` to `PITCH_MAX = 128`.
-- Applied directly to the ****YM 2149** divider** (`period = (period - pitchDelta) & 0x0FFF`).
+- Applied directly to the **YM 2149** divider** (`period = (period - pitchDelta) & 0x0FFF`).
 
 Use cases:
 
@@ -698,8 +679,10 @@ Symbols (conceptually):
 In YAML steps:
 
 - `note: "C-3"` → triggers the note.
-- `space: true` or `space: N` → rest(s).
+- `wait: true` or `wait: N` → rest(s).
+  - Legacy `space` is accepted.
 - `off: true` or `off: N` → note‑off(s).
+  - `note: "OFF"` is also accepted.
 
 ### Per‑Row Volume Column
 
@@ -722,9 +705,9 @@ Use cases:
 Imagine a 16‑row pattern (length = 16) with a simple bass every 4 rows:
 
 - Rows 0, 4, 8, 12: `C-2` with instrument `01`.
-- Everything else: space.
+- Everything else: wait.
 
-The tracker will expand `space: 3` etc. to fill up the remaining rows. You can then reuse this pattern across multiple playlist rows on different tracks.
+The tracker will expand `wait: 3` etc. to fill up the remaining rows. You can then reuse this pattern across multiple line entries on different channels.
 
 ### Example: Melody + Bass + Drums
 
@@ -734,7 +717,7 @@ Strategy:
 - **Pattern `01`** – bassline.
 - **Pattern `02`** – drums.
 
-Playlist:
+Line (playlist):
 
 - Row 0: `A: "00", B: "01", C: "02"`.
 - Row 1: `A: "00", B: "01", C: "02"` (repeat or use other pattern IDs).
@@ -816,13 +799,14 @@ If you want a tune that never ends, set the loop somewhere before your sanity do
 
 ### Step 8 – Export and Listen Outside the Editor
 
-Use the UI commands (or menu options) corresponding to:
+Use the UI commands corresponding to:
 
 - **SAVE SONG** – YAML.
 - **SAVE INST** – single instrument YAML.
-- **EXPORT DATA** – DOSOUND assembly.
-- **EXPORT BIN** – raw DOSOUND bytes.
-- **EXPORT VGM** / **EXPORT WAV** – for playback in external tools.
+- **EXPORT** – opens the Export dialog where you pick:
+  - What: **Song**, **Pattern (current playlist position)**, or **Instrument (current)**.
+  - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, or **OPTIMIZED DUMP**.
+  - Format: **DATA**, **DUMP**, **BIN**, **VGM**, **MAX**, **WAV**.
 
 Then:
 
@@ -844,7 +828,7 @@ The core export function (`exportToAssembly`) does this:
 1. **Initialize registers**:
    - Mixer (`R7`) = `0x38` (tones enabled, noise off by default for all channels in this tracker's mapping).
    - Volumes (`R8`, `R9`, `R10`) = 0.
-2. For each **playlist entry** and **pattern line**:
+2. For each **line (playlist entry)** and **pattern row**:
    - Determine the note (if any) for each channel.
    - On the first tick of a row:
      - Detect new notes vs. note‑offs.
@@ -876,18 +860,23 @@ DOSOUND Tracker follows this convention in assembly export:
 - `dc.b $FF, N` for **delay N frames** (at 50 Hz).
 - `dc.b $FF, 0` at the end → **STOP marker**.
 
-The example in `README.md` illustrates this, with comments such as `TA D-4`, `VA`, etc. Only **changed registers** are written in complex dump mode to keep data compact.
+The example in `README.md` illustrates this, with comments such as `TA D-4`, `VA`, etc. With the **COMPLEX DUMP** and **OPTIMIZED DUMP** strategies, only **changed registers** are written to keep data compact.
 
-### Complex Dump Mode vs Simple Dump Mode
+### Export Strategies: Simple vs Complex vs Optimized
 
-- **Simple dump mode**:
+In the UI this is chosen as **Strategy** in the Export dialog.
+
+- **SIMPLE DUMP** (`strategy: simple`):
   - Writes all relevant registers for every exported frame.
-  - Easier to debug, bigger size.
-- **Complex dump mode** (when `isComplexDumpMode = true`):
-  - Tracks `lastRegs` map.
+  - Easier to debug, larger output.
+- **COMPLEX DUMP** (`strategy: complex`):
+  - Tracks the last written register values.
   - Writes only registers that **changed** since the previous frame.
-  - Inserts beat markers between playlist positions.
-  - Forces tone registers (`R0..R5`) to be rewritten after beat markers so every playlist line starts well‑defined.
+  - Inserts markers between playlist positions.
+  - Forces tone registers (`R0..R5`) to be rewritten after markers so every playlist line starts well‑defined.
+- **OPTIMIZED DUMP** (`strategy: optimized`):
+  - Same register-diff approach as complex dump.
+  - Additionally merges consecutive delay commands to reduce size.
 
 In both cases, the stream ends by silencing channels (volumes to 0) and appending `dc.b $FF,0`.
 
@@ -895,7 +884,7 @@ In both cases, the stream ends by silencing channels (volumes to 0) and appendin
 
 Export format **BIN** is implemented as:
 
-1. Call `exportToAssembly(song, isComplexDumpMode)`.
+1. Call `exportToAssembly(song, strategy)`.
 2. Parse every `dc.b` line and extract `$XX` tokens.
 3. Pack them into a `Uint8Array` of raw bytes.
 
@@ -932,7 +921,7 @@ This section assumes you already know how to:
    - Call the DOSOUND function (via XBIOS or your own player) with the address of `music`.
    - The player processes the stream of register writes and delays until the stop marker.
 
-Check your preferred Atari ST documentation for the exact function signature of DOSOUND or your playback routine. The important part is: **you pass a pointer to this `dc.b` stream; it runs until `$FF,0`.**
+Check your preferred Atari ST documentation for the exact function signature of DOSOUND or your playback routine. The important part is: **you pass a pointer to this `dc.b` stream**. When you start playback, it runs until `$FF,0`.
 
 ### Memory & Performance Tips
 
@@ -1002,9 +991,9 @@ If your own instruments start looking similar, congratulations: you've just reve
 
 ### Why Is Hex Everywhere?
 
-Just because music is a story in hexadecimal.
+Because music is a story in hexadecimal.
 
-Also, it looks cooler in screenshots.
+And it looks cooler in screenshots.
 
 ---
 
