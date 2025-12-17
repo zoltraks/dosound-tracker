@@ -1,5 +1,16 @@
 # Changes
 
+## Version 1.2.4
+
+Stability fixes for EQ/DUMP refresh, export strategy cleanup, YAML export naming/formatting polish, and small editor and UI refinements since 1.2.3.
+
+- Fixed **EQ** and **DUMP** panels sometimes stopping updates after switching instruments by correcting the refresh scheduling so the panels reliably follow the currently selected instrument.
+- Replaced the legacy `isComplexDumpMode` flag with a unified **Export Strategy** flow end-to-end across the export modal, hooks, and exporters, simplifying behavior and reducing edge cases.
+- Improved **YAML export** consistency by standardizing quoting for song titles and instrument names, and by switching to clearer `.song.yaml` / `.inst.yaml` file naming.
+- Smoothed runtime performance by batching **YM2149 register writes** and deferring non-audio-critical theme updates to avoid sequencer hiccups.
+- Standardized **Backspace** behavior across envelope editors to set a default value and advance, making keyboard-based instrument editing more predictable.
+- Clarified **export scope** labels in the Export modal and applied small UI polish (button gradients/borders and instrument color modal tweaks).
+
 ## Version 1.2.3
 
 MIDI velocity support, faster envelope editing, richer manual markdown rendering, and continued schema cleanup since 1.2.2.
