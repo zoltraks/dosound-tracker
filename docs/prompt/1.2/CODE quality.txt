@@ -5,3 +5,11 @@ Check also playbackSimulation, as it seems also defaults to step.A for all chann
 Check overlapping/duplicated domain types (e.g. Instrument) in both YM2149.ts and SoundDriver.ts as that can silently diverge and cause bugs. Consolidating types would reduce risk.
 
 ---
+
+I noticed that in many places in the code, the variable "isComplexDumpMode" appears.  
+This is likely related to the fact that earlier in the application there was a distinction between "SIMPLE DUMP" and "COMPLEX DUMP" export types,
+which was later changed to an export strategy (SIMPLE, COMPLEX, OPTIMIZED).
+I'm concerned that some code might still be using the old approach to distinguish the data export method (simple, complex) instead of the currently used export strategy information.
+Analyze the source code and propose changes in the form of a plain text prompt for automatic code generation.
+
+---
