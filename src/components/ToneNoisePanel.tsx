@@ -1,5 +1,15 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
+import {
+  clampModeValue,
+  cycleModeValue,
+  getEmptyModeEnvelope,
+  getMovedModePosition,
+  getNextModePosition,
+  parseToneNoiseModeKey,
+  rotateModeEnvelopeData,
+  shiftModeEnvelopeDataValues,
+} from '../utils/toneNoisePanelUtils';
 
 interface ToneNoisePanelProps {
   activeSection: NavigationSection;
@@ -29,22 +39,6 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
 
   const toneNoiseData = (data && data.length > 0) ? data : defaultToneNoiseData;
 
-  const getFullModeEnvelope = useCallback((input: number[]) => {
-    const trimmed = input.slice(0, 32);
-    if (trimmed.length === 0) {
-      return Array(32).fill(0);
-    }
-    const last = trimmed[trimmed.length - 1];
-    while (trimmed.length < 32) {
-      trimmed.push(last);
-    }
-    return trimmed;
-  }, []);
-
-  const clampModeValue = useCallback((value: number) => {
-    return Math.max(0, Math.min(2, value));
-  }, []);
-
   useEffect(() => {
     if (isActive && panelRef.current) {
       panelRef.current.focus();
@@ -59,18 +53,14 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
     if (event.ctrlKey && event.shiftKey) {
       if (key === 'BACKSPACE') {
         event.preventDefault();
-        const newData = Array(32).fill(0);
+        const newData = getEmptyModeEnvelope();
         onChange?.(newData);
         return;
       }
 
       if (key === 'ARROWLEFT' || key === 'ARROWRIGHT') {
         event.preventDefault();
-        const source = getFullModeEnvelope(toneNoiseData);
-        const newData =
-          key === 'ARROWLEFT'
-            ? [...source.slice(1), source[0]]
-            : [source[31], ...source.slice(0, 31)];
+        const newData = rotateModeEnvelopeData(toneNoiseData, key === 'ARROWLEFT' ? 'left' : 'right');
         onChange?.(newData);
         return;
       }
@@ -78,8 +68,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
       if (key === 'ARROWUP' || key === 'ARROWDOWN') {
         event.preventDefault();
         const delta = key === 'ARROWUP' ? 1 : -1;
-        const source = getFullModeEnvelope(toneNoiseData);
-        const newData = source.map(value => clampModeValue(value + delta));
+        const newData = shiftModeEnvelopeDataValues(toneNoiseData, delta);
         onChange?.(newData);
         return;
       }
@@ -87,17 +76,17 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
     
     if (key === 'ARROWLEFT') {
       event.preventDefault();
-      setCurrentPosition(prev => Math.max(0, prev - 1));
+      setCurrentPosition(prev => getMovedModePosition(prev, 'left'));
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
-      setCurrentPosition(prev => Math.min(31, prev + 1));
+      setCurrentPosition(prev => getMovedModePosition(prev, 'right'));
     } else if (key === 'ARROWUP') {
       event.preventDefault();
       if (onChange) {
         const source = toneNoiseData;
         const newData = [...source];
         const currentValue = newData[currentPosition] ?? 0;
-        newData[currentPosition] = Math.min(2, currentValue + 1);
+        newData[currentPosition] = clampModeValue(currentValue + 1);
         onChange(newData);
       }
     } else if (key === 'ARROWDOWN') {
@@ -106,7 +95,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         const source = toneNoiseData;
         const newData = [...source];
         const currentValue = newData[currentPosition] ?? 0;
-        newData[currentPosition] = Math.max(0, currentValue - 1);
+        newData[currentPosition] = clampModeValue(currentValue - 1);
         onChange(newData);
       }
     } else if (key === 'BACKSPACE' || key === 'DELETE') {
@@ -118,19 +107,21 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         onChange(newData);
       }
       const length = toneNoiseData.length > 0 ? toneNoiseData.length : 32;
-      const nextPosition = (currentPosition + 1) % length;
+      const nextPosition = getNextModePosition(currentPosition, length);
       setCurrentPosition(nextPosition);
     } else if (key === 'T' || key === 'N' || key === 'B') {
       event.preventDefault();
       if (onChange) {
         const source = toneNoiseData;
         const newData = [...source];
-        const newValue = key === 'T' ? 0 : key === 'N' ? 1 : 2;
-        newData[currentPosition] = newValue;
-        onChange(newData);
+        const parsed = parseToneNoiseModeKey(key);
+        if (parsed != null) {
+          newData[currentPosition] = parsed;
+          onChange(newData);
+        }
       }
       const length = toneNoiseData.length > 0 ? toneNoiseData.length : 32;
-      const nextPosition = (currentPosition + 1) % length;
+      const nextPosition = getNextModePosition(currentPosition, length);
       setCurrentPosition(nextPosition);
     } else if (key === ' ') {
       event.preventDefault();
@@ -138,11 +129,11 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         const source = toneNoiseData;
         const newData = [...source];
         const currentValue = newData[currentPosition] ?? 0;
-        newData[currentPosition] = (currentValue + 1) % 3;
+        newData[currentPosition] = cycleModeValue(currentValue);
         onChange(newData);
       }
     }
-  }, [isActive, currentPosition, onChange, toneNoiseData, getFullModeEnvelope, clampModeValue]);
+  }, [isActive, currentPosition, onChange, toneNoiseData]);
 
   const handlePositionClick = useCallback((index: number) => {
     setCurrentPosition(index);

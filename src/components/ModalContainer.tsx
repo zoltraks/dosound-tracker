@@ -2,6 +2,8 @@ import React from 'react';
 import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, MarkdownModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
+import { CONFIRM_MODAL_TEXT } from '../constants/modalConfig';
+import { buildInfoModals } from '../utils/modalRendering';
 
 type InstrumentDeleteUsage = {
   instrumentId: string;
@@ -227,82 +229,44 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   midiCopySummary,
   onMidiSystemReset,
 }) => {
+  const infoModals = buildInfoModals({
+    songError,
+    setSongError,
+    instrumentError,
+    setInstrumentError,
+    trackClipboardError,
+    setTrackClipboardError,
+    optimizeSummary,
+    onCloseOptimizeSummary,
+    soundExportSummary,
+    onCloseSoundExportSummary,
+    dumpExportSummary,
+    onCloseDumpExportSummary,
+    transposeSummary,
+    onCloseTransposeSummary,
+    renumberSummary,
+    onCloseRenumberSummary,
+    instrumentOperationSummary,
+    onCloseInstrumentOperationSummary,
+    isDebugInfoOpen,
+    setIsDebugInfoOpen,
+    midiLoadError,
+    setMidiLoadError,
+    midiCopySummary,
+    setMidiCopySummary,
+  });
+
   return (
     <>
-      <InformationModal
-        isOpen={!!songError}
-        title="Song Load Error"
-        message={songError}
-        onClose={() => setSongError('')}
-      />
-
-      <InformationModal
-        isOpen={!!instrumentError}
-        title="Instrument Load Error"
-        message={instrumentError}
-        onClose={() => setInstrumentError('')}
-      />
-
-      <InformationModal
-        isOpen={!!trackClipboardError}
-        title="Track Clipboard Error"
-        message={trackClipboardError}
-        onClose={() => setTrackClipboardError('')}
-      />
-
-      <InformationModal
-        isOpen={!!optimizeSummary}
-        title="Optimization Summary"
-        message={optimizeSummary}
-        onClose={onCloseOptimizeSummary}
-      />
-
-      <InformationModal
-        isOpen={!!soundExportSummary}
-        title="Export Summary"
-        message={soundExportSummary}
-        onClose={onCloseSoundExportSummary}
-      />
-
-      <InformationModal
-        isOpen={!!dumpExportSummary}
-        title="Dump Export Summary"
-        message={dumpExportSummary}
-        onClose={onCloseDumpExportSummary}
-      />
-
-      <InformationModal
-        isOpen={!!transposeSummary}
-        title="Transpose Summary"
-        message={transposeSummary}
-        onClose={onCloseTransposeSummary}
-      />
-
-      <InformationModal
-        isOpen={!!renumberSummary}
-        title="Renumber Summary"
-        message={renumberSummary}
-        onClose={onCloseRenumberSummary}
-      />
-
-      <InformationModal
-        isOpen={!!instrumentOperationSummary}
-        title="Instrument Operation"
-        message={instrumentOperationSummary}
-        onClose={onCloseInstrumentOperationSummary}
-      />
-
-      <InformationModal
-        isOpen={isDebugInfoOpen}
-        title="Debug mode enabled"
-        message={
-          'Debug mode is now enabled.\n\n' +
-          'In this mode the tracker will output additional logging to the browser console.\n' +
-          'This extra logging may cause small delays or timing jitter in song playback due to performance overhead.\n\n' +
-          'For normal composing and playback, you can turn debug mode off again.'
-        }
-        onClose={() => setIsDebugInfoOpen(false)}
-      />
+      {infoModals.map(modal => (
+        <InformationModal
+          key={modal.key}
+          isOpen={modal.isOpen}
+          title={modal.title}
+          message={modal.message}
+          onClose={modal.onClose}
+        />
+      ))}
 
       <InstrumentTypeWarningModal
         isOpen={isInstrumentTypeWarningOpen}
@@ -316,41 +280,41 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
 
       <ConfirmationModal
         isOpen={isNewSongConfirmOpen}
-        title="Create new song?"
-        message="Current song data will be lost.\n\nContinue?"
+        title={CONFIRM_MODAL_TEXT.newSong.title}
+        message={CONFIRM_MODAL_TEXT.newSong.message}
         onConfirm={onConfirmNewSong}
         onCancel={onCancelNewSong}
       />
 
       <ConfirmationModal
         isOpen={isOptimizeConfirmOpen}
-        title="Optimize song?"
-        message="Optimize song by removing unused patterns and instruments and trimming pattern data beyond the current length.\n\nContinue?"
+        title={CONFIRM_MODAL_TEXT.optimize.title}
+        message={CONFIRM_MODAL_TEXT.optimize.message}
         onConfirm={onConfirmOptimize}
         onCancel={onCancelOptimize}
       />
 
       <ConfirmationModal
         isOpen={isRenumberConfirmOpen}
-        title="Renumber song?"
-        message="Renumber all patterns according to their order of appearance in the playlist (then any hidden patterns), and renumber all instruments alphabetically by name.\n\nThis will update all references in the playlist and patterns.\n\nContinue?"
+        title={CONFIRM_MODAL_TEXT.renumber.title}
+        message={CONFIRM_MODAL_TEXT.renumber.message}
         onConfirm={onConfirmRenumber}
         onCancel={onCancelRenumber}
       />
 
       <ConfirmationModal
         isOpen={isResetConfirmOpen}
-        title="Reset application?"
-        message="All saved data will be permanently deleted and the application will reload to default state.\n\nThis action cannot be undone.\n\nContinue with reset?"
+        title={CONFIRM_MODAL_TEXT.reset.title}
+        message={CONFIRM_MODAL_TEXT.reset.message}
         onConfirm={onConfirmReset}
         onCancel={onCancelReset}
-        confirmLabel="Reset"
+        confirmLabel={CONFIRM_MODAL_TEXT.reset.confirmLabel}
       />
 
       <ConfirmationModal
         isOpen={isQuitConfirmOpen}
-        title="Quit without saving?"
-        message="Current song changes have not been saved.\n\nIf you quit now, any unsaved changes will be lost.\n\nDo you still want to quit?"
+        title={CONFIRM_MODAL_TEXT.quit.title}
+        message={CONFIRM_MODAL_TEXT.quit.message}
         onConfirm={onConfirmQuit}
         onCancel={onCancelQuit}
       />
@@ -451,20 +415,6 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
       <DownloadModal
         isOpen={isDownloadOpen}
         onClose={() => setIsDownloadOpen(false)}
-      />
-
-      <InformationModal
-        isOpen={!!midiLoadError}
-        title="MIDI Config Error"
-        message={midiLoadError}
-        onClose={() => setMidiLoadError('')}
-      />
-
-      <InformationModal
-        isOpen={!!midiCopySummary}
-        title="MIDI Monitor"
-        message={midiCopySummary}
-        onClose={() => setMidiCopySummary('')}
       />
     </>
   );

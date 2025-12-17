@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
+import { formatHexId } from '../utils/hexFormatting';
 
 interface PlaylistEntry {
   A: string;
@@ -128,7 +129,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
       }}
     >
       <span className="line-number">
-        {index.toString(16).padStart(2, '0').toUpperCase()}
+        {formatHexId(index)}
       </span>
 
       {renderPatternCell('A')}

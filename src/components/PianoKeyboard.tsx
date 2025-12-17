@@ -6,6 +6,11 @@ import type { Instrument } from '../synth/SoundDriver';
 import { PianoKey } from './PianoKey';
 import { generatePianoKeys, parseBaseKey } from '../utils/pianoUtils';
 import type { PianoKeyConfig } from '../utils/pianoUtils';
+import { getKeyboardMappedNote } from '../utils/keyboardNoteMapping';
+import {
+  advancePreviewEnvelopeTick,
+  getPreviewEnvelopeApplyStep,
+} from '../utils/previewEnvelopeTiming';
 
 type PreviewInstrument = Instrument;
 
@@ -221,49 +226,23 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       const TICK_INTERVAL_MS = 20;
       const nowTick = performance.now();
 
-      let nextTickTime = previewNextTickTimeRef.current[keyId];
-      if (!nextTickTime) {
-        nextTickTime = nowTick + TICK_INTERVAL_MS;
-      }
+      const advanced = advancePreviewEnvelopeTick({
+        now: nowTick,
+        nextTickTime: previewNextTickTimeRef.current[keyId],
+        subTick: previewSubTicksRef.current[keyId],
+        rawStep: previewEnvelopeStepsRef.current[keyId],
+        sustainIndex: sustain,
+        released,
+        tickIntervalMs: TICK_INTERVAL_MS,
+      });
 
-      let subTick = previewSubTicksRef.current[keyId] ?? 0;
-      let rawStep = previewEnvelopeStepsRef.current[keyId] ?? 0;
-
-      // Catch up on any missed 20ms ticks due to timer jitter.
-      while (nowTick >= nextTickTime) {
-        subTick = (subTick + 1) % 2;
-
-        if (subTick === 0) {
-          if (
-            sustain === null ||
-            sustain === undefined ||
-            sustain < 0 ||
-            released ||
-            rawStep < sustain
-          ) {
-            rawStep = rawStep + 1;
-          }
-        }
-
-        nextTickTime += TICK_INTERVAL_MS;
-      }
-
-      previewSubTicksRef.current[keyId] = subTick;
-      previewEnvelopeStepsRef.current[keyId] = rawStep;
+      previewSubTicksRef.current[keyId] = advanced.subTick;
+      previewEnvelopeStepsRef.current[keyId] = advanced.rawStep;
       previewLastTickTimeRef.current[keyId] = nowTick;
-      previewNextTickTimeRef.current[keyId] = nextTickTime;
+      previewNextTickTimeRef.current[keyId] = advanced.nextTickTime;
 
-      const effectiveRawStep = rawStep;
-      let stepForApply = effectiveRawStep;
-      if (
-        sustain !== null &&
-        sustain !== undefined &&
-        sustain >= 0 &&
-        !released &&
-        effectiveRawStep >= sustain
-      ) {
-        stepForApply = sustain;
-      }
+      const effectiveRawStep = advanced.rawStep;
+      const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
 
       ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
 
@@ -345,12 +324,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     const key = event.key.toUpperCase();
     
     // Handle computer keyboard notes
-    if (KEYBOARD_TO_NOTE[key]) {
+    const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
+    if (mapped) {
       event.preventDefault();
-      const { note, octaveOffset } = KEYBOARD_TO_NOTE[key];
-      const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
-      const keyId = `${note}${finalOctave}`;
-      
+      const { note, octave: finalOctave, keyId } = mapped;
+
       if (!pressedKeys.has(keyId)) {
         setPressedKeys(prev => new Set(prev).add(keyId));
         playNoteWithAudioUnlock(note, finalOctave);
@@ -390,18 +368,17 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     }
 
     const key = event.key.toUpperCase();
-    
-    if (KEYBOARD_TO_NOTE[key]) {
-      const { note, octaveOffset } = KEYBOARD_TO_NOTE[key];
-      const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
-      const keyId = `${note}${finalOctave}`;
-      
+
+    const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
+    if (mapped) {
+      const { note, octave: finalOctave, keyId } = mapped;
+
       setPressedKeys(prev => {
         const newSet = new Set(prev);
         newSet.delete(keyId);
         return newSet;
       });
-      
+
       if (pressedKeys.has(keyId)) {
         stopNote(note, finalOctave);
       }

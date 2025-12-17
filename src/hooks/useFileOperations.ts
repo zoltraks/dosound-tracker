@@ -2,6 +2,13 @@ import { useCallback, useState } from 'react';
 import type { Song, Instrument } from '../synth/SoundDriver';
 import type { ExportType, ExportStrategy } from '../constants/export';
 import {
+  buildInstrumentExportBaseName,
+  buildPatternExportBaseName,
+  buildSongExportBaseName,
+  buildDumpExportBaseName,
+  getUnsafeSongTitleTokenForExport,
+} from '../utils/exportFileNaming';
+import {
   exportToAssembly,
   exportSongRegisterDump,
   exportInstrumentToAssembly,
@@ -51,7 +58,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   const handleExportData = useCallback(() => {
     try {
       const assemblyContent = exportToAssembly(song, isComplexDumpMode);
-      const filename = `${song.title.replace(/[^a-zA-Z0-9]/g, '_')}.s`;
+      const filename = `${getUnsafeSongTitleTokenForExport(song.title)}.s`;
       downloadAssemblyFile(assemblyContent, filename);
 
       const lines: string[] = [];
@@ -74,7 +81,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   const handleExportBin = useCallback(() => {
     try {
       const bytes = exportToBinary(song, isComplexDumpMode);
-      const filename = `${song.title.replace(/[^a-zA-Z0-9]/g, '_')}.bin`;
+      const filename = `${getUnsafeSongTitleTokenForExport(song.title)}.bin`;
       downloadBinaryFile(bytes, filename);
 
       const lines: string[] = [];
@@ -98,8 +105,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   const handleExportVgm = useCallback(() => {
     try {
       const result = exportSongToVgm(song);
-      const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}.vgm`;
+      const filename = `${buildSongExportBaseName(song.title)}.vgm`;
       downloadVgmFile(result.buffer, filename);
 
       const lines: string[] = [];
@@ -124,8 +130,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
     try {
       const strategy: ExportStrategy = isComplexDumpMode ? 'complex' : 'simple';
       const result = exportSongToMax(song, strategy);
-      const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}.max`;
+      const filename = `${buildSongExportBaseName(song.title)}.max`;
       downloadMaxFile(result.buffer, filename);
 
       const lines: string[] = [];
@@ -149,8 +154,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   const handleExportWav = useCallback(() => {
     try {
       const result = exportSongToWav(song);
-      const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}.wav`;
+      const filename = `${buildSongExportBaseName(song.title)}.wav`;
 
       downloadWavFile(result.buffer, filename);
 
@@ -184,8 +188,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   const handleExportDump = useCallback(() => {
     try {
       const { content, cycleCount } = exportSongRegisterDump(song);
-      const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-      const filename = `${safeTitle}_dump.s`;
+      const filename = `${buildDumpExportBaseName(song.title)}.s`;
 
       downloadAssemblyFile(content, filename);
 
@@ -220,10 +223,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
 
         if (ctx.type === 'instrument' && ctx.instrument) {
           assemblyContent = exportInstrumentToAssembly(ctx.instrument, song);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          const rawInstId = ctx.instrument.id || 'inst';
-          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
-          filenameBase = `${safeTitle}_inst_${safeInstId}`;
+          filenameBase = buildInstrumentExportBaseName(song.title, ctx.instrument.id);
         } else {
           let scopedSong: Song = song;
           if (ctx.type === 'pattern' && song.line.length > 0) {
@@ -242,8 +242,10 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
           }
 
           assemblyContent = exportToAssembly(scopedSong, ctx.strategy);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          filenameBase = ctx.type === 'pattern' ? `${safeTitle}_pattern` : safeTitle;
+          filenameBase =
+            ctx.type === 'pattern'
+              ? buildPatternExportBaseName(song.title)
+              : buildSongExportBaseName(song.title);
         }
 
         const filename = `${filenameBase}.s`;
@@ -285,10 +287,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       try {
         if (ctx.type === 'instrument' && ctx.instrument) {
           const result = exportInstrumentToMax(ctx.instrument, song, ctx.strategy);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          const rawInstId = ctx.instrument.id || 'inst';
-          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
-          const filename = `${safeTitle}_inst_${safeInstId}.max`;
+          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.max`;
           downloadMaxFile(result.buffer, filename);
 
           const lines: string[] = [];
@@ -320,9 +319,11 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         }
 
         const result = exportSongToMax(scopedSong, ctx.strategy);
-        const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-        const suffix = ctx.type === 'pattern' ? '_pattern' : '';
-        const filename = `${safeTitle}${suffix}.max`;
+        const filenameBase =
+          ctx.type === 'pattern'
+            ? buildPatternExportBaseName(song.title)
+            : buildSongExportBaseName(song.title);
+        const filename = `${filenameBase}.max`;
         downloadMaxFile(result.buffer, filename);
 
         const lines: string[] = [];
@@ -361,10 +362,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         if (ctx.type === 'instrument' && ctx.instrument) {
           const asm = exportInstrumentToAssembly(ctx.instrument, song);
           bytes = parseAssemblyToBinary(asm);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          const rawInstId = ctx.instrument.id || 'inst';
-          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
-          filenameBase = `${safeTitle}_inst_${safeInstId}`;
+          filenameBase = buildInstrumentExportBaseName(song.title, ctx.instrument.id);
         } else {
           let scopedSong: Song = song;
           if (ctx.type === 'pattern' && song.line.length > 0) {
@@ -383,8 +381,10 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
           }
 
           bytes = exportToBinary(scopedSong, ctx.strategy);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          filenameBase = ctx.type === 'pattern' ? `${safeTitle}_pattern` : safeTitle;
+          filenameBase =
+            ctx.type === 'pattern'
+              ? buildPatternExportBaseName(song.title)
+              : buildSongExportBaseName(song.title);
         }
 
         const filename = `${filenameBase}.bin`;
@@ -427,10 +427,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       try {
         if (ctx.type === 'instrument' && ctx.instrument) {
           const result = exportInstrumentToVgm(ctx.instrument, song);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          const rawInstId = ctx.instrument.id || 'inst';
-          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
-          const filename = `${safeTitle}_inst_${safeInstId}.vgm`;
+          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.vgm`;
           downloadVgmFile(result.buffer, filename);
 
           const lines: string[] = [];
@@ -462,9 +459,11 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         }
 
         const result = exportSongToVgm(scopedSong, ctx.strategy);
-        const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-        const suffix = ctx.type === 'pattern' ? '_pattern' : '';
-        const filename = `${safeTitle}${suffix}.vgm`;
+        const filenameBase =
+          ctx.type === 'pattern'
+            ? buildPatternExportBaseName(song.title)
+            : buildSongExportBaseName(song.title);
+        const filename = `${filenameBase}.vgm`;
         downloadVgmFile(result.buffer, filename);
 
         const lines: string[] = [];
@@ -498,10 +497,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       try {
         if (ctx.type === 'instrument' && ctx.instrument) {
           const result = exportInstrumentToWav(ctx.instrument, song);
-          const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-          const rawInstId = ctx.instrument.id || 'inst';
-          const safeInstId = rawInstId.replace(/[^a-zA-Z0-9]/g, '_') || 'inst';
-          const filename = `${safeTitle}_inst_${safeInstId}.wav`;
+          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.wav`;
           downloadWavFile(result.buffer, filename);
 
           const lines: string[] = [];
@@ -542,9 +538,11 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
         }
 
         const result = exportSongToWav(scopedSong);
-        const safeTitle = song.title.replace(/[^a-zA-Z0-9]/g, '_') || 'music';
-        const suffix = ctx.type === 'pattern' ? '_pattern' : '';
-        const filename = `${safeTitle}${suffix}.wav`;
+        const filenameBase =
+          ctx.type === 'pattern'
+            ? buildPatternExportBaseName(song.title)
+            : buildSongExportBaseName(song.title);
+        const filename = `${filenameBase}.wav`;
         downloadWavFile(result.buffer, filename);
 
         const lines: string[] = [];

@@ -16,45 +16,7 @@ export const NOTE_FREQUENCIES: { [key: string]: number } = {
 // Reference octave for NOTE_FREQUENCIES (A-4 = 440 Hz, C-4 = 261.63, etc.)
 export const NOTE_BASE_OCTAVE = 4;
 
-export const KEYBOARD_TO_NOTE: { [key: string]: { note: string; octaveOffset: number } } = {
-  'Z': { note: 'C', octaveOffset: 0 },
-  'S': { note: 'C#', octaveOffset: 0 },
-  'X': { note: 'D', octaveOffset: 0 },
-  'D': { note: 'D#', octaveOffset: 0 },
-  'C': { note: 'E', octaveOffset: 0 },
-  'V': { note: 'F', octaveOffset: 0 },
-  'G': { note: 'F#', octaveOffset: 0 },
-  'B': { note: 'G', octaveOffset: 0 },
-  'H': { note: 'G#', octaveOffset: 0 },
-  'N': { note: 'A', octaveOffset: 0 },
-  'J': { note: 'A#', octaveOffset: 0 },
-  'M': { note: 'B', octaveOffset: 0 },
-  ',': { note: 'C', octaveOffset: 1 },
-  'L': { note: 'C#', octaveOffset: 1 },
-  '.': { note: 'D', octaveOffset: 1 },
-  ';': { note: 'D#', octaveOffset: 1 },
-  '/': { note: 'E', octaveOffset: 1 },
-  'Q': { note: 'C', octaveOffset: 1 },
-  '2': { note: 'C#', octaveOffset: 1 },
-  'W': { note: 'D', octaveOffset: 1 },
-  '3': { note: 'D#', octaveOffset: 1 },
-  'E': { note: 'E', octaveOffset: 1 },
-  'R': { note: 'F', octaveOffset: 1 },
-  '5': { note: 'F#', octaveOffset: 1 },
-  'T': { note: 'G', octaveOffset: 1 },
-  '6': { note: 'G#', octaveOffset: 1 },
-  'Y': { note: 'A', octaveOffset: 1 },
-  '7': { note: 'A#', octaveOffset: 1 },
-  'U': { note: 'B', octaveOffset: 1 },
-  'I': { note: 'C', octaveOffset: 2 },
-  '9': { note: 'C#', octaveOffset: 2 },
-  'O': { note: 'D', octaveOffset: 2 },
-  '0': { note: 'D#', octaveOffset: 2 },
-  'P': { note: 'E', octaveOffset: 2 },
-  '[': { note: 'F', octaveOffset: 2 },
-  '+': { note: 'F#', octaveOffset: 2 },
-  ']': { note: 'G', octaveOffset: 2 }
-};
+export { KEYBOARD_TO_NOTE } from './keyboardLayout';
 
 export const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 

@@ -1,6 +1,8 @@
 import type { Instrument, Song, Pattern, Step, Note } from '../synth/SoundDriver';
 import { PATTERN_LENGTH, ENVELOPE_LENGTH } from '../constants/music';
 import defaultSongYaml from '../assets/song.yaml?raw';
+import { formatHexId } from '../utils/hexFormatting';
+import { formatInstrumentSlotId } from '../utils/instrumentSelection';
 import {
   DEFAULT_BASE_KEY,
   DEFAULT_SONG_TITLE,
@@ -312,10 +314,7 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
         if (typeof note.instrument === 'string') {
           id = note.instrument.trim().toUpperCase();
         } else if (typeof note.instrument === 'number') {
-          id = Math.floor(note.instrument)
-            .toString(16)
-            .padStart(2, '0')
-            .toUpperCase();
+          id = formatHexId(Math.floor(note.instrument));
         }
         if (id) {
           usedInstrumentIds.add(id);
@@ -438,7 +437,7 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
 
   const patternIdMap: Record<string, string> = {};
   orderedPatternIds.forEach((oldId, index) => {
-    patternIdMap[oldId] = index.toString(16).padStart(2, '0').toUpperCase();
+    patternIdMap[oldId] = formatHexId(index);
   });
 
   const remapPatternId = (rawId: string): string => {
@@ -494,7 +493,7 @@ export function renumberSongData(song: Song, currentInstrument: Instrument | nul
 
   const newInstruments: Instrument[] = instrumentsSorted.map((inst, index) => {
     const oldIdNorm = (inst.id || '').trim().toUpperCase();
-    const newId = index.toString(16).padStart(2, '0').toUpperCase();
+    const newId = formatInstrumentSlotId(index);
     if (oldIdNorm) {
       instrumentIdMap[oldIdNorm] = newId;
     }

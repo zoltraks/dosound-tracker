@@ -5,6 +5,13 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import type { Instrument } from '../synth/SoundDriver';
 import { isInstrumentEmpty } from '../utils/instrument';
+import { formatInstrumentSlotId } from '../utils/instrumentSelection';
+import {
+  computeVisibleSlotCount,
+  getInstrumentForSlot as getInstrumentForSlotFromUtils,
+  getMovedInstrumentIndex,
+  isMidiEnabled,
+} from '../utils/instrumentPanelUtils';
 import colorModeDark from '../assets/svg/color-mode-dark.svg';
 import colorModeLight from '../assets/svg/color-mode-light.svg';
 
@@ -67,49 +74,15 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
     }
   }, [currentIndex, isActive]);
 
-  const visibleSlotCount = (() => {
-    let lastIndex = -1;
-
-    for (let i = 0; i < instruments.length; i++) {
-      const inst = instruments[i];
-      if (inst && !isInstrumentEmpty(inst)) {
-        lastIndex = i;
-      }
-    }
-
-    if (lastIndex < 0 && instruments.length > 0) {
-      lastIndex = instruments.length - 1;
-    }
-
-    if (lastIndex < currentIndex) {
-      lastIndex = currentIndex;
-    }
-
-    if (lastIndex < 0) {
-      return 1;
-    }
-
-    const count = lastIndex + 1;
-    return Math.max(1, Math.min(MAX_INSTRUMENTS, count));
-  })();
+  const visibleSlotCount = computeVisibleSlotCount(
+    instruments,
+    currentIndex,
+    MAX_INSTRUMENTS,
+    isInstrumentEmpty
+  );
 
   const getInstrumentForSlot = useCallback((slotIndex: number): Instrument => {
-    const existing = instruments[slotIndex];
-    if (existing) {
-      return existing;
-    }
-
-    const slotId = slotIndex.toString(16).padStart(2, '0').toUpperCase();
-
-    return {
-      id: slotId,
-      name: '',
-      volume: Array(ENVELOPE_LENGTH).fill(0),
-      shift: Array(ENVELOPE_LENGTH).fill(0),
-      pitch: Array(ENVELOPE_LENGTH).fill(0),
-      noise: Array(ENVELOPE_LENGTH).fill(0),
-      mode: Array(ENVELOPE_LENGTH).fill(0)
-    };
+    return getInstrumentForSlotFromUtils(instruments, slotIndex, ENVELOPE_LENGTH);
   }, [instruments]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
@@ -157,7 +130,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
       case 'ARROWUP':
         event.preventDefault();
         {
-          const newIndex = Math.max(0, currentIndex - 1);
+          const newIndex = getMovedInstrumentIndex(currentIndex, 'up', visibleSlotCount);
           setCurrentIndex(newIndex);
           onSelectInstrument(getInstrumentForSlot(newIndex));
         }
@@ -165,7 +138,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
       case 'ARROWDOWN':
         event.preventDefault();
         {
-          const newIndex = Math.min(visibleSlotCount - 1, currentIndex + 1);
+          const newIndex = getMovedInstrumentIndex(currentIndex, 'down', visibleSlotCount);
           setCurrentIndex(newIndex);
           onSelectInstrument(getInstrumentForSlot(newIndex));
         }
@@ -213,15 +186,10 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
           {Array.from({ length: visibleSlotCount }, (_, slotIndex) => {
             const instrument = instruments[slotIndex];
             const isCurrent = slotIndex === currentIndex;
-            const midi = instrument && instrument.midi;
-            const hasMidiChannel =
-              !!midi && typeof midi.channel === 'number' && Number.isFinite(midi.channel);
-            const hasMidiProgram =
-              !!midi && typeof midi.program === 'number' && Number.isFinite(midi.program);
-            const isMidiEnabled = hasMidiChannel || hasMidiProgram;
+            const midiEnabled = isMidiEnabled(instrument);
 
             const midiButtonClassNames = ['instrument-midi-btn'];
-            midiButtonClassNames.push(isMidiEnabled ? 'instrument-midi-enabled' : 'instrument-midi-disabled');
+            midiButtonClassNames.push(midiEnabled ? 'instrument-midi-enabled' : 'instrument-midi-disabled');
             const displayName =
               isCurrent
                 ? currentInstrument.name
@@ -237,7 +205,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                 onClick={() => handleInstrumentClick(slotIndex)}
               >
                 <span className="instrument-number">
-                  {slotIndex.toString(16).padStart(2, '0').toUpperCase()}
+                  {formatInstrumentSlotId(slotIndex)}
                 </span>
                 <span className="instrument-name">
                   {isCurrent ? (

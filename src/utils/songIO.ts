@@ -2,6 +2,8 @@ import yaml from 'js-yaml';
 import type { Song, Step } from '../synth/SoundDriver';
 import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat';
+import { formatHexId } from './hexFormatting';
+import { formatInstrumentSlotId } from './instrumentSelection';
 
 const trimEnvelope = (values: number[]): number[] => {
   if (!values || values.length === 0) return [];
@@ -28,7 +30,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     const number =
       typeof inst.id === 'string' && inst.id.trim()
         ? inst.id
-        : index.toString(16).padStart(2, '0').toUpperCase();
+        : formatInstrumentSlotId(index);
 
     const instrumentNode: Record<string, unknown> = {
       number,
@@ -134,7 +136,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     const number =
       typeof pattern.id === 'string' && pattern.id.trim()
         ? pattern.id
-        : index.toString(16).padStart(2, '0').toUpperCase();
+        : formatHexId(index);
 
     const rawLines = pattern.step;
     type PatternStep = {

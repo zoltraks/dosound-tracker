@@ -2,6 +2,7 @@ import type { Instrument, Song } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import { DEFAULT_BASE_KEY } from '../utils/songParser';
 import { isInstrumentEmpty } from '../utils/instrument';
+import { formatInstrumentSlotId } from '../utils/instrumentSelection';
 
 export interface InstrumentCreationResult {
   updatedSong: Song;
@@ -16,7 +17,7 @@ export function createNewInstrumentForSong(song: Song): InstrumentCreationResult
     slotIndex = instruments.length;
   }
 
-  const slotId = slotIndex.toString(16).padStart(2, '0').toUpperCase();
+  const slotId = formatInstrumentSlotId(slotIndex);
 
   const newInstrument: Instrument = {
     id: slotId,
@@ -67,7 +68,7 @@ export function updateInstrumentInSong(
 
       for (let i = instruments.length; i <= clamped; i += 1) {
         if (!instruments[i]) {
-          const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+          const slotId = formatInstrumentSlotId(i);
           instruments[i] = {
             id: slotId,
             name: '',
@@ -115,7 +116,7 @@ export function applyLoadedInstrumentToSong(
 
       for (let i = instruments.length; i <= clamped; i += 1) {
         if (!instruments[i]) {
-          const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+          const slotId = formatInstrumentSlotId(i);
           instruments[i] = {
             id: slotId,
             name: '',
