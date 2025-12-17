@@ -3,6 +3,8 @@ import type { Instrument, Song, Pattern, Step } from '../synth/SoundDriver';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { validateSongData } from './validation';
 import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
+import { formatHexId } from './hexFormatting';
+import { formatInstrumentSlotId } from './instrumentSelection';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -177,7 +179,7 @@ export const parseSongFromYaml = (content: string): Song => {
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
         ? rawNumber.trim().toUpperCase()
-        : patternIndex.toString(16).padStart(2, '0').toUpperCase();
+        : formatHexId(patternIndex);
 
     const name =
       typeof patternNode.name === 'string' && patternNode.name.trim()
@@ -357,7 +359,7 @@ export const parseSongFromYaml = (content: string): Song => {
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
         ? rawNumber.trim().toUpperCase()
-        : index.toString(16).padStart(2, '0').toUpperCase();
+        : formatInstrumentSlotId(index);
 
     const slotIndex = parseInt(number, 16);
     if (!Number.isFinite(slotIndex) || slotIndex < 0 || slotIndex >= MAX_INSTRUMENTS) {
@@ -470,7 +472,7 @@ export const parseSongFromYaml = (content: string): Song => {
 
     for (let i = instruments.length; i <= slotIndex; i++) {
       if (!instruments[i]) {
-        const slotId = i.toString(16).padStart(2, '0').toUpperCase();
+        const slotId = formatInstrumentSlotId(i);
         instruments[i] = {
           id: slotId,
           name: '',

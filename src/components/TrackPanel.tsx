@@ -6,6 +6,28 @@ import type { Pattern, Note, Instrument, Step } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
 import { TrackLine } from './TrackLine';
 import { computeEffectiveVolume } from '../utils/trackUtils';
+import {
+  buildInstrumentColorMap,
+  formatTrackNoteDisplay,
+  getInstrumentColorForNote,
+  getTrackLineClass,
+  getTrackNotes as getTrackNotesForPattern,
+} from '../utils/trackRendering';
+import { stepInstrumentId } from '../utils/instrumentSelection';
+import {
+  createNoteOff,
+  getKeyboardMappedNote,
+  getNextTrackSection,
+  getPreviousTrackSection,
+  isNavigationKey,
+  parseVolumeNibble,
+  stepLineIndex,
+  updatePatternStep,
+} from '../utils/trackPanelUtils';
+import {
+  advancePreviewEnvelopeTick,
+  getPreviewEnvelopeApplyStep,
+} from '../utils/previewEnvelopeTiming';
 
 type PreviewInstrument = Instrument;
 
@@ -84,21 +106,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   const isActive = activeSection === sectionName;
 
   const instrumentColorMap = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const inst of instruments) {
-      if (!inst || typeof inst.id !== 'string') {
-        continue;
-      }
-      const id = inst.id.trim().toUpperCase();
-      if (!id) {
-        continue;
-      }
-      const color = typeof inst.color === 'string' && inst.color.trim() ? inst.color : null;
-      if (color) {
-        map.set(id, color);
-      }
-    }
-    return map;
+    return buildInstrumentColorMap(instruments);
   }, [instruments]);
 
   const effectiveVolume = useMemo(
@@ -213,50 +221,23 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         const TICK_INTERVAL_MS = 20;
         const nowTick = performance.now();
 
-        let nextTickTime = previewNextTickTimeRef.current;
-        if (!nextTickTime) {
-          nextTickTime = nowTick + TICK_INTERVAL_MS;
-        }
+        const advanced = advancePreviewEnvelopeTick({
+          now: nowTick,
+          nextTickTime: previewNextTickTimeRef.current,
+          subTick: previewSubTickRef.current,
+          rawStep: previewEnvelopeStepRef.current,
+          sustainIndex: sustain,
+          released,
+          tickIntervalMs: TICK_INTERVAL_MS,
+        });
 
-        let subTick = previewSubTickRef.current;
-        let rawStep = previewEnvelopeStepRef.current;
-
-        // Catch up on any missed 20ms ticks due to timer jitter.
-        while (nowTick >= nextTickTime) {
-          subTick = (subTick + 1) % 2;
-
-          if (
-            subTick === 0 &&
-            (
-              sustain === null ||
-              sustain === undefined ||
-              sustain < 0 ||
-              released ||
-              rawStep < sustain
-            )
-          ) {
-            rawStep = rawStep + 1;
-          }
-
-          nextTickTime += TICK_INTERVAL_MS;
-        }
-
-        previewSubTickRef.current = subTick;
-        previewEnvelopeStepRef.current = rawStep;
+        previewSubTickRef.current = advanced.subTick;
+        previewEnvelopeStepRef.current = advanced.rawStep;
         previewLastTickTimeRef.current = nowTick;
-        previewNextTickTimeRef.current = nextTickTime;
+        previewNextTickTimeRef.current = advanced.nextTickTime;
 
-        const effectiveRawStep = rawStep;
-        let stepForApply = effectiveRawStep;
-        if (
-          sustain !== null &&
-          sustain !== undefined &&
-          sustain >= 0 &&
-          !released &&
-          effectiveRawStep >= sustain
-        ) {
-          stepForApply = sustain;
-        }
+        const effectiveRawStep = advanced.rawStep;
+        const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
 
         ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
 
@@ -291,24 +272,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     }, [ym2149, trackId, currentInstrumentData, onPreviewMidiNoteOn, onPreviewMidiNoteOff, stopPreview]);
 
   // Get notes for this track from the pattern
-  const getTrackNotes = useCallback(() => {
-    if (!pattern) return Array(Math.max(1, patternLength)).fill(null);
-
-    // For shared patterns, show the same content in all tracks
-    // Use trackA data as the shared content for all tracks
-    const safeLength = Math.max(1, patternLength);
-    const lines = pattern.step || [];
-    const notes = [] as (Note | null)[];
-
-    for (let i = 0; i < safeLength; i++) {
-      const line = lines[i] || { note: null };
-      notes.push(line.note);
-    }
-
-    return notes;
+  const computeTrackNotes = useCallback(() => {
+    return getTrackNotesForPattern(pattern, patternLength);
   }, [pattern, patternLength]);
 
-  const trackNotes = getTrackNotes();
+  const trackNotes = computeTrackNotes();
 
   useEffect(() => {
     if (isActive && trackRef.current) {
@@ -332,17 +300,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
     const key = event.key.toUpperCase();
 
-    const isNavigationKey =
-      key === 'ARROWUP' ||
-      key === 'ARROWDOWN' ||
-      key === 'ARROWLEFT' ||
-      key === 'ARROWRIGHT' ||
-      key === 'PAGEUP' ||
-      key === 'PAGEDOWN' ||
-      key === 'HOME' ||
-      key === 'END';
+    const isNavKey = isNavigationKey(key);
 
-    if (event.repeat && !isNavigationKey) {
+    if (event.repeat && !isNavKey) {
       event.preventDefault();
       return;
     }
@@ -350,27 +310,18 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Navigation
     if (key === 'ARROWUP') {
       event.preventDefault();
-      const length = Math.max(1, patternLength || 1);
-      const wrappedIndex = ((currentLine - 1) % length + length) % length;
-      onLineChange(wrappedIndex);
+      onLineChange(stepLineIndex(currentLine, patternLength, -1));
     } else if (key === 'ARROWDOWN') {
       event.preventDefault();
-      const length = Math.max(1, patternLength || 1);
-      const wrappedIndex = (currentLine + 1) % length;
-      onLineChange(wrappedIndex);
+      onLineChange(stepLineIndex(currentLine, patternLength, 1));
     } else if (key === 'PAGEUP') {
       event.preventDefault();
-      const length = Math.max(1, patternLength || 1);
       const step = 16;
-      const rawIndex = currentLine - step;
-      const wrappedIndex = ((rawIndex % length) + length) % length;
-      onLineChange(wrappedIndex);
+      onLineChange(stepLineIndex(currentLine, patternLength, -step));
     } else if (key === 'PAGEDOWN') {
       event.preventDefault();
-      const length = Math.max(1, patternLength || 1);
       const step = 16;
-      const wrappedIndex = (currentLine + step) % length;
-      onLineChange(wrappedIndex);
+      onLineChange(stepLineIndex(currentLine, patternLength, step));
     } else if (key === 'HOME') {
       event.preventDefault();
       onLineChange(0);
@@ -385,14 +336,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         setCurrentColumn('note');
       } else {
         // Move to previous track and select its volume column
-        let targetTrack: NavigationSection;
-        if (trackId === 'A') {
-          targetTrack = 'trackC';
-        } else if (trackId === 'B') {
-          targetTrack = 'trackA';
-        } else {
-          targetTrack = 'trackB';
-        }
+        const targetTrack: NavigationSection = getPreviousTrackSection(trackId);
         setActiveSection(targetTrack);
         setCurrentColumn('volume');
       }
@@ -403,14 +347,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         setCurrentColumn('volume');
       } else {
         // Move to next track and select its note column
-        let targetTrack: NavigationSection;
-        if (trackId === 'A') {
-          targetTrack = 'trackB';
-        } else if (trackId === 'B') {
-          targetTrack = 'trackC';
-        } else {
-          targetTrack = 'trackA';
-        }
+        const targetTrack: NavigationSection = getNextTrackSection(trackId);
         setActiveSection(targetTrack);
         setCurrentColumn('note');
       }
@@ -420,110 +357,86 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     } else if (event.key === 'Delete' || event.key === 'Backspace') {
       event.preventDefault();
       if (!pattern) return;
-      const newPattern = { ...pattern };
-      newPattern.step = [...newPattern.step];
-      newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
 
-      if (currentColumn === 'volume') {
-        // Clear only the per-line volume modifier
-        newPattern.step[currentLine].volume = undefined;
-      } else {
+      const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+        if (currentColumn === 'volume') {
+          // Clear only the per-line volume modifier
+          return { ...step, volume: undefined };
+        }
+
         // Clear the note (and implicitly any volume) for shared pattern (trackA)
-        newPattern.step[currentLine].note = null;
-        newPattern.step[currentLine].volume = undefined;
-      }
+        return { ...step, note: null, volume: undefined };
+      });
 
       onPatternChange(newPattern);
     } else if (event.ctrlKey && key === ' ') {
       event.preventDefault();
       // Note off (set to rest)
       if (pattern) {
-        const newPattern = { ...pattern };
-        newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
-
-        // Set note off for shared pattern (always use trackA)
-        const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
-        newPattern.step[currentLine].note = noteOff;
-
+        const noteOff: Note = createNoteOff();
+        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+          // Set note off for shared pattern (always use trackA)
+          return { ...step, note: noteOff };
+        });
         onPatternChange(newPattern);
       }
     } else if (key === ' ') {
       event.preventDefault();
       // Clear current position in the active column and move to next line
       if (pattern) {
-        const newPattern = { ...pattern };
-        newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
-
-        if (currentColumn === 'volume') {
-          newPattern.step[currentLine].volume = undefined;
-        } else {
-          newPattern.step[currentLine].note = null;
-          newPattern.step[currentLine].volume = undefined;
-        }
-
+        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+          if (currentColumn === 'volume') {
+            return { ...step, volume: undefined };
+          }
+          return { ...step, note: null, volume: undefined };
+        });
         onPatternChange(newPattern);
         // Move to next line (wrap around pattern length)
-        const length = Math.max(1, patternLength || 1);
-        const wrappedIndex = (currentLine + 1) % length;
-        onLineChange(wrappedIndex);
+        onLineChange(stepLineIndex(currentLine, patternLength, 1));
       }
     } else if (!event.ctrlKey && key === '-') {
       event.preventDefault();
       // Insert explicit key-release step (note-off) and move to next line
       if (pattern) {
-        const newPattern = { ...pattern };
-        newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
-
-        const noteOff: Note = { note: '===', octave: 0, instrument: '00' };
-        newPattern.step[currentLine].note = noteOff;
-
+        const noteOff: Note = createNoteOff();
+        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+          return { ...step, note: noteOff };
+        });
         onPatternChange(newPattern);
-        const length = Math.max(1, patternLength || 1);
-        const wrappedIndex = (currentLine + 1) % length;
-        onLineChange(wrappedIndex);
+        onLineChange(stepLineIndex(currentLine, patternLength, 1));
       }
     } else if (event.ctrlKey && key === '-') {
       event.preventDefault();
       // Previous instrument
-      setCurrentInstrument(prev => {
-        const instNum = parseInt(prev, 16);
-        const newInst = Math.max(0, instNum - 1);
-        return newInst.toString(16).padStart(2, '0').toUpperCase();
-      });
+      setCurrentInstrument((prev) => stepInstrumentId(prev, -1));
     } else if (event.ctrlKey && (key === '+' || key === '=')) {
       event.preventDefault();
       // Next instrument
-      setCurrentInstrument(prev => {
-        const instNum = parseInt(prev, 16);
-        const newInst = Math.min(255, instNum + 1);
-        return newInst.toString(16).padStart(2, '0').toUpperCase();
-      });
-    } else if (!event.ctrlKey && currentColumn === 'volume' && /^[0-9A-F]$/.test(key)) {
+      setCurrentInstrument((prev) => stepInstrumentId(prev, 1));
+
+    } else if (!event.ctrlKey && currentColumn === 'volume' && parseVolumeNibble(key) !== null) {
+      const nibble = parseVolumeNibble(key) as number;
+
       event.preventDefault();
       // Hex input for per-line volume modifier
       if (pattern) {
-        const newPattern = { ...pattern };
-        newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
-
-        const value = parseInt(key, 16);
-        const clamped = Math.max(0, Math.min(0x0f, value));
-        newPattern.step[currentLine].volume = clamped;
-
+        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+          return { ...step, volume: nibble };
+        });
         onPatternChange(newPattern);
         // Move to next line after entering a volume nibble (wrap around pattern length)
-        const length = Math.max(1, patternLength || 1);
-        const wrappedIndex = (currentLine + 1) % length;
-        onLineChange(wrappedIndex);
+        onLineChange(stepLineIndex(currentLine, patternLength, 1));
       }
-    } else if (KEYBOARD_TO_NOTE[key]) {
+
+    } else {
+      const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
+      if (!mapped) {
+        return;
+      }
+
       event.preventDefault();
-      const { note, octaveOffset } = KEYBOARD_TO_NOTE[key];
-      const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
-      const keyId = `${note}${finalOctave}`;
+
+      const { note, octave: finalOctave, keyId } = mapped;
 
       if (pressedNoteKeysRef.current.has(keyId)) {
         return;
@@ -534,20 +447,15 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       // Insert note
       if (pattern) {
-        const newPattern = { ...pattern };
-        newPattern.step = [...newPattern.step];
-        newPattern.step[currentLine] = { ...(newPattern.step[currentLine] || { note: null }) };
-
         const newNote: Note = { note, octave: finalOctave, instrument: currentInstrumentData.id };
 
-        // Set the note for shared pattern (always use trackA)
-        newPattern.step[currentLine].note = newNote;
-
+        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+          // Set the note for shared pattern (always use trackA)
+          return { ...step, note: newNote };
+        });
         onPatternChange(newPattern);
         // Move to next line (wrap around pattern length)
-        const length = Math.max(1, patternLength || 1);
-        const wrappedIndex = (currentLine + 1) % length;
-        onLineChange(wrappedIndex);
+        onLineChange(stepLineIndex(currentLine, patternLength, 1));
       }
     }
   }, [
@@ -573,15 +481,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       const key = event.key.toUpperCase();
 
-      if (!KEYBOARD_TO_NOTE[key]) {
+      const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
+      if (!mapped) {
         return;
       }
 
       event.preventDefault();
 
-      const { note, octaveOffset } = KEYBOARD_TO_NOTE[key];
-      const finalOctave = Math.max(0, Math.min(7, currentOctave + octaveOffset));
-      const keyId = `${note}${finalOctave}`;
+      const { keyId } = mapped;
 
       if (pressedNoteKeysRef.current.has(keyId)) {
         pressedNoteKeysRef.current.delete(keyId);
@@ -616,26 +523,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   );
 
   const formatNoteDisplay = useCallback((noteData: Note | null) => {
-    if (!noteData) return '---';
-    if (noteData.note === '===') return '===';
-
-    // Format note: natural notes get "-", sharps keep "#"
-    const formattedNote = noteData.note.includes('#')
-      ? noteData.note
-      : noteData.note + '-';
-
-    return `${formattedNote}${noteData.octave} ${noteData.instrument}`;
+    return formatTrackNoteDisplay(noteData);
   }, []);
 
   const getLineClass = useCallback((lineIndex: number) => {
-    const classes = ['track-line'];
-    if (lineIndex === currentLine) {
-      classes.push('current');
-    }
-    if (lineIndex % 4 === 0) {
-      classes.push('beat-line');
-    }
-    return classes.join(' ');
+    return getTrackLineClass(lineIndex, currentLine);
   }, [currentLine]);
 
   return (
@@ -664,19 +556,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             const noteIsActive = isCurrentLine && currentColumn === 'note';
 
             let instrumentColor: string | null = null;
-            // Never tint note-off rows; they should look like empty steps.
-            if (noteData && noteData.note !== '===' && typeof noteData.instrument === 'string') {
-              const rawInst = noteData.instrument.trim();
-              if (rawInst) {
-                const sanitized = rawInst.startsWith('$') ? rawInst.slice(1) : rawInst;
-                const upper = sanitized.toUpperCase();
-                // Only treat proper hex instrument IDs (1-2 hex digits) as colorable.
-                // This avoids coloring steps with no instrument value (e.g. note off without instrument).
-                if (/^[0-9A-F]{1,2}$/.test(upper)) {
-                  instrumentColor = instrumentColorMap.get(upper) ?? null;
-                }
-              }
-            }
+            instrumentColor = getInstrumentColorForNote(noteData, instrumentColorMap);
 
             const lineClassName = `${getLineClass(lineIndex)}${instrumentColor ? ' track-line-colored' : ''}`.trim();
             const lineStyle = instrumentColor

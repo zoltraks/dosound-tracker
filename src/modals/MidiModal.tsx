@@ -3,6 +3,7 @@ import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useM
 import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
 import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
 import { buildMidiConfigYaml, parseMidiConfigFromYaml, MidiConfigFormatError } from '../utils/midiConfig';
+import { downloadFile } from '../utils/fileOperations';
 
 interface MidiModalProps {
   isOpen: boolean;
@@ -84,15 +85,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     try {
       const yamlContent = buildMidiConfigYaml(localConfig);
 
-      const blob = new Blob([yamlContent], { type: 'text/yaml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'midi-config.yaml';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      downloadFile(yamlContent, 'midi-config.yaml', 'text/yaml');
     } catch (error) {
       console.error('Failed to export MIDI config:', error);
     }

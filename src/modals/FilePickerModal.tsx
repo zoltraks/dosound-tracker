@@ -1,4 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import {
+  LIST_FILE_NAME,
+  buildHref,
+  getFileLabel,
+  getSortedUniqueFiles,
+  normalizeDirectory,
+  parseListFileText,
+  stripExtension,
+} from '../utils/filePickerUtils';
 
 export type FilePickerMode = 'download' | 'pick';
 
@@ -28,39 +37,6 @@ interface FilePickerModalProps {
    */
   onPick?: (fileUrl: string) => void;
 }
-
-const LIST_FILE_NAME = 'LIST.txt';
-
-const normalizeDirectory = (directory: string): string => {
-  const trimmed = directory.trim();
-  if (!trimmed) return '';
-  return trimmed.replace(/\/+$/u, '');
-};
-
-const buildHref = (directory: string, file: string): string => {
-  const normalizedDir = normalizeDirectory(directory);
-  const encodedPath = file
-    .split(/[\\/]/u)
-    .map(segment => encodeURIComponent(segment))
-    .join('/');
-
-  if (!normalizedDir) {
-    return encodedPath;
-  }
-
-  return `${normalizedDir}/${encodedPath}`;
-};
-
-const getLabel = (file: string): string => {
-  const parts = file.split(/[\\/]/u);
-  return parts[parts.length - 1] || file;
-};
-
-const stripExtension = (name: string): string => {
-  const lastDot = name.lastIndexOf('.');
-  if (lastDot <= 0) return name;
-  return name.slice(0, lastDot);
-};
 
 export const FilePickerModal: React.FC<FilePickerModalProps> = ({
   isOpen,
@@ -110,24 +86,16 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
         }
 
         const text = await response.text();
-        const lines = text.split(/\r?\n/u);
-        const trimmed = lines.map(line => line.trim());
-        const nonEmpty = trimmed.filter(line => line.length > 0);
-        const validFiles = nonEmpty.filter(line => {
-          const base = (line.split(/[\\/]/u).pop() || '').toLowerCase();
-          return base !== '.gitkeep' && base !== 'list.txt';
-        });
+        const uniqueFiles = parseListFileText(text);
 
         if (cancelled) {
           return;
         }
 
-        if (validFiles.length === 0) {
+        if (uniqueFiles.length === 0) {
           setInternalFiles([]);
           return;
         }
-
-        const uniqueFiles = Array.from(new Set(validFiles));
 
         const first = uniqueFiles[0].toLowerCase();
         if (first.startsWith('<!doctype') || first.startsWith('<html')) {
@@ -169,22 +137,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
   }, [files, isOpen]);
 
   const sortedFiles = useMemo(() => {
-    const normalized = internalFiles
-      .map(file => file.trim())
-      .filter(file => file.length > 0);
-
-    if (normalized.length === 0) {
-      return [];
-    }
-
-    const unique = Array.from(new Set(normalized));
-
-    unique.sort((a, b) => {
-      const cmp = a.localeCompare(b, undefined, { sensitivity: 'base' });
-      return sortDescending ? -cmp : cmp;
-    });
-
-    return unique;
+    return getSortedUniqueFiles(internalFiles, sortDescending);
   }, [internalFiles, sortDescending]);
 
   if (!isOpen) {
@@ -215,7 +168,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
               <table className="file-picker-table">
                 <tbody>
                   {sortedFiles.map(file => {
-                    const baseLabel = getLabel(file);
+                    const baseLabel = getFileLabel(file);
                     const displayLabel =
                       mode === 'pick' ? stripExtension(baseLabel) : baseLabel;
 

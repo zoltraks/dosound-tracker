@@ -9,6 +9,7 @@ import {
 } from '../utils/songParser';
 import { buildSongYamlForExport } from '../utils/songIO';
 import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/instrumentIO';
+import { downloadFile } from '../utils/fileOperations';
 import {
   SONG_STORAGE_KEY,
   loadInitialSong,
@@ -146,18 +147,10 @@ export const useDataManagement = () => {
   const saveSong = useCallback(() => {
     try {
       const yamlContent = buildSongYamlForExport(currentSong);
-
-      const blob = new Blob([yamlContent], { type: 'text/yaml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
       const rawTitle = (currentSong.title || '').trim();
       const safeTitle = rawTitle ? rawTitle.replace(/[^a-zA-Z0-9]/g, '_') : 'NONAME';
-      a.download = `${safeTitle || 'NONAME'}.song.yaml`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+
+      downloadFile(yamlContent, `${safeTitle || 'NONAME'}.song.yaml`, 'text/yaml');
       setIsSongDirty(false);
     } catch (error) {
       console.error('Failed to save song:', error);
@@ -201,20 +194,12 @@ export const useDataManagement = () => {
   const saveInstrument = useCallback(() => {
     try {
       const yamlContent = buildInstrumentYamlForExport(currentInstrument);
-
-      const blob = new Blob([yamlContent], { type: 'text/yaml' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
       const rawName = (currentInstrument.name || '').trim();
       const safeName = rawName
         ? rawName.replace(/[^a-zA-Z0-9]/g, '_')
         : `Instrument_${String(currentInstrument.id || '').toUpperCase()}`;
-      a.download = `${safeName}.inst.yaml`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+
+      downloadFile(yamlContent, `${safeName}.inst.yaml`, 'text/yaml');
     } catch (error) {
       console.error('Failed to save instrument:', error);
     }

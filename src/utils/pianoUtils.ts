@@ -1,5 +1,7 @@
 import { MIN_OCTAVE, MAX_OCTAVE, PIANO_SHOW_EXTRA_TOP_C } from '../constants/music';
 
+export { parseBaseKey } from './songFormat';
+
 export interface PianoKeyConfig {
   note: string;
   octave: number;
@@ -73,27 +75,4 @@ export function generatePianoKeys(isCompactLayout: boolean, currentOctave: numbe
   }
 
   return keys;
-}
-
-export function parseBaseKey(value?: string): { note: string; octave: number } | null {
-  if (!value) return null;
-  const raw = value.trim().toUpperCase();
-  if (!raw) return null;
-
-  let notePart = raw.charAt(0);
-  let rest = raw.slice(1);
-
-  if (rest.startsWith('#')) {
-    notePart += '#';
-    rest = rest.slice(1);
-  }
-
-  if (rest.startsWith('-')) {
-    rest = rest.slice(1);
-  }
-
-  const octave = parseInt(rest, 10);
-  if (!Number.isFinite(octave)) return null;
-
-  return { note: notePart, octave };
 }

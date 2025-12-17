@@ -4,7 +4,12 @@ import type { Song, Pattern, Step, Note, Instrument } from '../synth/SoundDriver
 import type { YM2149 } from '../synth/YM2149';
 import type { MidiConfig, MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
-import { NOTES, MIN_OCTAVE, MAX_OCTAVE, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
+import { NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
+import { advancePreviewEnvelopeTick, getPreviewEnvelopeApplyStep } from '../utils/previewEnvelopeTiming';
+import {
+  transposeMidiNoteToInstrumentBase,
+  velocityToVolumeNibble,
+} from '../utils/midiActionsUtils';
 
 interface MidiHelpersRef {
   sendInstrumentMidiNoteOn: (
@@ -132,17 +137,6 @@ export function useMidiActions({
 
       const { type, noteNumber, noteName, octave, channel: midiChannel, velocity: midiVelocity } = event;
 
-      const velocityToVolumeNibble = (velocity: number): number => {
-        const clamped = Math.max(0, Math.min(127, velocity | 0));
-        return Math.max(1, Math.min(15, Math.round((clamped / 127) * 15)));
-      };
-
-      const normalizedNote = noteName.toUpperCase();
-      const noteIndex = NOTES.indexOf(normalizedNote);
-      if (noteIndex === -1) {
-        return;
-      }
-
       // Transpose incoming MIDI notes by the current instrument's base so that
       // pressing C-4 on the controller corresponds to the instrument's base
       // pitch (e.g. C-3), and all other keys shift by the same semitone offset.
@@ -150,26 +144,13 @@ export function useMidiActions({
         parseBaseKeyString(currentInstrument.base || 'C-4') ||
         { note: 'C', octave: NOTE_BASE_OCTAVE };
 
-      const baseNoteName = baseKey.note.toUpperCase();
-      const baseIndexRaw = NOTES.indexOf(baseNoteName);
-      const baseNoteIndex = baseIndexRaw === -1 ? 0 : baseIndexRaw;
-
-      const inputSemis = noteIndex + octave * 12;
-      const refSemis = 0 + NOTE_BASE_OCTAVE * 12; // C-<NOTE_BASE_OCTAVE>
-      const baseSemis = baseNoteIndex + baseKey.octave * 12;
-      const offsetSemis = baseSemis - refSemis;
-
-      const transposedSemis = inputSemis + offsetSemis;
-      let transposedOctave = Math.floor(transposedSemis / 12);
-      let transposedNoteIndex = transposedSemis % 12;
-
-      if (transposedNoteIndex < 0) {
-        transposedNoteIndex += 12;
-        transposedOctave -= 1;
+      const transposed = transposeMidiNoteToInstrumentBase(noteName, octave, baseKey);
+      if (!transposed) {
+        return;
       }
 
-      const clampedOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, transposedOctave));
-      const transposedNoteName = NOTES[transposedNoteIndex];
+      const clampedOctave = transposed.octave;
+      const transposedNoteName = transposed.note;
 
       const isTrackFocused =
         activeSection === 'trackA' ||
@@ -298,49 +279,23 @@ export function useMidiActions({
 
           const now = performance.now();
 
-          let nextTickTime = midiLiveNextTickTimeRef.current;
-          if (!nextTickTime) {
-            nextTickTime = now + TICK_INTERVAL_MS;
-          }
+          const advanced = advancePreviewEnvelopeTick({
+            now,
+            nextTickTime: midiLiveNextTickTimeRef.current,
+            subTick: midiLiveSubTickRef.current,
+            rawStep: midiLiveEnvelopeStepRef.current,
+            sustainIndex: sustain,
+            released,
+            tickIntervalMs: TICK_INTERVAL_MS,
+          });
 
-          let subTick = midiLiveSubTickRef.current ?? 0;
-          let rawStep = midiLiveEnvelopeStepRef.current ?? 0;
-
-          while (now >= nextTickTime) {
-            subTick = (subTick + 1) % 2;
-
-            if (subTick === 0) {
-              if (
-                sustain === null ||
-                sustain === undefined ||
-                sustain < 0 ||
-                released ||
-                rawStep < sustain
-              ) {
-                rawStep = rawStep + 1;
-              }
-            }
-
-            nextTickTime += TICK_INTERVAL_MS;
-          }
-
-          midiLiveSubTickRef.current = subTick;
-          midiLiveEnvelopeStepRef.current = rawStep;
+          midiLiveSubTickRef.current = advanced.subTick;
+          midiLiveEnvelopeStepRef.current = advanced.rawStep;
           midiLiveLastTickTimeRef.current = now;
-          midiLiveNextTickTimeRef.current = nextTickTime;
+          midiLiveNextTickTimeRef.current = advanced.nextTickTime;
 
-          const effectiveRawStep = rawStep;
-          let stepForApply = effectiveRawStep;
-
-          if (
-            sustain !== null &&
-            sustain !== undefined &&
-            sustain >= 0 &&
-            !released &&
-            effectiveRawStep >= sustain
-          ) {
-            stepForApply = sustain;
-          }
+          const effectiveRawStep = advanced.rawStep;
+          const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
 
           ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
 

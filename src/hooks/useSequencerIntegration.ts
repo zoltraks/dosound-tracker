@@ -3,6 +3,7 @@ import type { Song, Pattern, Note, Instrument } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
 import type { SequencerState } from './useSequencer';
 import { updateChannelWithInstrument, normalizeInstrumentId } from '../utils/playbackUtils';
+import { formatHexId } from '../utils/hexFormatting';
 import type { PlaybackSimulationState } from './usePlaybackSimulation';
 
 interface UseSequencerIntegrationArgs {
@@ -226,8 +227,8 @@ export function useSequencerIntegration({
             // Each worker tick is ~20ms; treat two ticks (40ms) as one cycle.
             const tickCount = debugTickCounterRef.current;
             const cycle = Math.floor(tickCount / 2) & 0xffff;
-            const cycleHex = cycle.toString(16).toUpperCase().padStart(4, '0');
-            const stepHex = state.currentLine.toString(16).toUpperCase().padStart(2, '0');
+            const cycleHex = formatHexId(cycle, 4);
+            const stepHex = formatHexId(state.currentLine);
 
             const channelStrings = [0, 1, 2].map(ch => {
               const noteOnRow = notes[ch];
@@ -256,7 +257,7 @@ export function useSequencerIntegration({
               let instText = '';
 
               if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
-                instText = rawInst.toString(16).padStart(2, '0').toUpperCase();
+                instText = formatHexId(rawInst);
               } else if (typeof rawInst === 'string') {
                 const trimmed = rawInst.trim();
                 if (trimmed) {

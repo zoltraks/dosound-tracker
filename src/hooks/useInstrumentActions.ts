@@ -1,10 +1,20 @@
 import { useCallback } from 'react';
 import type { RefObject, MutableRefObject } from 'react';
-import type { Song, Instrument, Step } from '../synth/SoundDriver';
-import { MAX_INSTRUMENTS } from '../constants/music';
+import type { Song, Instrument } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
 import type { YM2149 } from '../synth/YM2149';
-import { isInstrumentEmpty } from '../utils/instrument';
+import {
+  clearInstrumentAndNotes,
+  clearInstrumentOnly,
+  cloneInstrumentToNextFreeSlot,
+  countInstrumentUsage,
+  createClearedInstrument,
+  moveInstrumentAndRemapPatterns,
+} from '../utils/instrumentOperations';
+import {
+  buildInstrumentRemovalSummary,
+  getInstrumentPlaybackChannel,
+} from '../utils/instrumentActionUtils';
 
 interface InstrumentDeleteUsage {
   instrumentId: string;
@@ -82,18 +92,7 @@ export function useInstrumentActions({
 
     const ym2149 = ym2149Ref.current;
 
-    const channel =
-      activeSection === 'trackA'
-        ? 0
-        : activeSection === 'trackB'
-        ? 1
-        : activeSection === 'trackC'
-        ? 2
-        : lastTrackId === 'B'
-        ? 1
-        : lastTrackId === 'C'
-        ? 2
-        : 0;
+    const channel = getInstrumentPlaybackChannel(activeSection, lastTrackId);
 
     if (playInstTimerRef.current !== null) {
       window.clearInterval(playInstTimerRef.current);
@@ -128,61 +127,14 @@ export function useInstrumentActions({
   }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString, ym2149Ref, playInstTimerRef, playInstStepRef]);
 
   const handleCloneInstrument = useCallback(() => {
-    const instruments = currentSong.instrument;
-    if (instruments.length >= MAX_INSTRUMENTS) {
-      setInstrumentOperationSummary('No free instrument slots available.');
+    const result = cloneInstrumentToNextFreeSlot(currentSong.instrument, currentInstrument);
+    if (!result.ok) {
+      setInstrumentOperationSummary(result.message);
       return;
     }
 
-    const currentIndex = instruments.findIndex(inst => inst.id === currentInstrument.id);
-
-    const isSlotFree = (inst: Instrument | undefined) => !inst || isInstrumentEmpty(inst);
-
-    let slotIndex = -1;
-
-    if (currentIndex >= 0) {
-      for (let i = currentIndex + 1; i < instruments.length; i++) {
-        if (isSlotFree(instruments[i])) {
-          slotIndex = i;
-          break;
-        }
-      }
-
-      if (slotIndex === -1) {
-        for (let i = 0; i <= currentIndex; i++) {
-          if (isSlotFree(instruments[i])) {
-            slotIndex = i;
-            break;
-          }
-        }
-      }
-    }
-
-    if (slotIndex === -1) {
-      slotIndex = instruments.length;
-    }
-
-    if (slotIndex >= MAX_INSTRUMENTS) {
-      setInstrumentOperationSummary('No free instrument slots available.');
-      return;
-    }
-
-    const slotId = slotIndex.toString(16).padStart(2, '0').toUpperCase();
-
-    const clonedInstrument: Instrument = {
-      ...currentInstrument,
-      id: slotId,
-    };
-
-    const updatedInstruments = [...instruments];
-    if (slotIndex < updatedInstruments.length) {
-      updatedInstruments[slotIndex] = clonedInstrument;
-    } else {
-      updatedInstruments.push(clonedInstrument);
-    }
-
-    updateSong({ instrument: updatedInstruments });
-    setCurrentInstrument(clonedInstrument);
+    updateSong({ instrument: result.instruments });
+    setCurrentInstrument(result.clonedInstrument);
     setActiveSection('instrumentList');
   }, [currentSong.instrument, currentInstrument, updateSong, setCurrentInstrument, setActiveSection, setInstrumentOperationSummary]);
 
@@ -203,51 +155,17 @@ export function useInstrumentActions({
       return;
     }
 
-    let usageCount = 0;
-    let patternCount = 0;
-
-    currentSong.pattern.forEach(pattern => {
-      if (!pattern) {
-        return;
-      }
-
-      let patternHasUsage = false;
-
-      (pattern.step || []).forEach(line => {
-        if (!line) {
-          return;
-        }
-
-        const note = line.note;
-        if (!note) {
-          return;
-        }
-
-        const noteInstIdNorm = normalizeInstrumentId(note.instrument);
-        if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
-          usageCount++;
-          patternHasUsage = true;
-        }
-      });
-
-      if (patternHasUsage) {
-        patternCount++;
-      }
-    });
+    const { usageCount, patternCount } = countInstrumentUsage(
+      currentSong.pattern,
+      targetIdNorm,
+      normalizeInstrumentId
+    );
 
     if (usageCount === 0) {
       const slot = instruments[index];
       const slotId = slot?.id || currentInstrument.id;
 
-      const clearedInstrument: Instrument = {
-        id: slotId,
-        name: '',
-        volume: Array(32).fill(0),
-        shift: Array(32).fill(0),
-        pitch: Array(32).fill(0),
-        noise: Array(32).fill(0),
-        mode: Array(32).fill(0),
-      };
+      const clearedInstrument = createClearedInstrument(slotId);
 
       const newInstruments = [...instruments];
       newInstruments[index] = clearedInstrument;
@@ -284,84 +202,25 @@ export function useInstrumentActions({
 
   const handleMoveInstrument = useCallback(
     (index: number, direction: 'up' | 'down') => {
-      const instruments = currentSong.instrument;
-      const length = instruments.length;
+      const moved = moveInstrumentAndRemapPatterns(
+        currentSong.instrument,
+        currentSong.pattern,
+        index,
+        direction
+      );
 
-      if (length === 0) {
+      if (!moved) {
         return;
       }
 
-      const delta = direction === 'up' ? -1 : 1;
-      const targetIndex = index + delta;
-
-      if (targetIndex < 0 || targetIndex >= length) {
-        return;
-      }
-
-      const instrumentIdMap: Record<string, string> = {};
-      const newInstruments: Instrument[] = [];
-
-      for (let i = 0; i < length; i++) {
-        const inst = instruments[i];
-        if (!inst) {
-          continue;
-        }
-
-        let newIndex = i;
-        if (i === index) {
-          newIndex = targetIndex;
-        } else if (i === targetIndex) {
-          newIndex = index;
-        }
-
-        const newId = newIndex.toString(16).padStart(2, '0').toUpperCase();
-        const oldIdNorm = (inst.id || '').trim().toUpperCase();
-        if (oldIdNorm) {
-          instrumentIdMap[oldIdNorm] = newId;
-        }
-
-        newInstruments[newIndex] = {
-          ...inst,
-          id: newId,
-        };
-      }
-
-      const remappedPatterns = currentSong.pattern.map(pattern => {
-        const step = (pattern.step || []).map(line => {
-          const newLine: Step = { ...line };
-
-          const note = newLine.note;
-          if (note && typeof note.instrument === 'string') {
-            const raw = note.instrument.trim().toUpperCase();
-            const mapped = instrumentIdMap[raw];
-            if (mapped) {
-              newLine.note = {
-                ...note,
-                instrument: mapped,
-              };
-            }
-          }
-
-          return newLine;
-        });
-
-        return {
-          ...pattern,
-          step,
-        };
-      });
-
-      updateSong({
-        instrument: newInstruments,
-        pattern: remappedPatterns,
-      });
+      updateSong({ instrument: moved.instruments, pattern: moved.remappedPatterns });
 
       let nextCurrentInstrument = currentInstrument;
       if (currentInstrument) {
         const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
-        const mappedId = instrumentIdMap[currentIdNorm];
+        const mappedId = moved.instrumentIdMap[currentIdNorm];
         if (mappedId) {
-          const updatedFromList = newInstruments.find(inst => inst && inst.id === mappedId);
+          const updatedFromList = moved.instruments.find(inst => inst && inst.id === mappedId);
           if (updatedFromList) {
             nextCurrentInstrument = updatedFromList;
           } else {
@@ -401,96 +260,38 @@ export function useInstrumentActions({
     const instruments = currentSong.instrument;
     const patterns = currentSong.pattern;
 
-    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
-    if (index === -1) {
+    const cleared = clearInstrumentAndNotes(instruments, patterns, targetIdNorm, normalizeInstrumentId);
+    if (!cleared) {
       setIsInstrumentDeleteOpen(false);
       setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
       return;
     }
 
-    const slot = instruments[index];
-    const slotId = slot?.id || instrumentDeleteUsage.instrumentId;
-    const slotName = slot?.name || instrumentDeleteUsage.instrumentName || '';
+    updateSong({ instrument: cleared.instruments, pattern: cleared.patterns });
 
-    const clearedInstrument: Instrument = {
-      id: slotId,
-      name: '',
-      volume: Array(32).fill(0),
-      shift: Array(32).fill(0),
-      pitch: Array(32).fill(0),
-      noise: Array(32).fill(0),
-      mode: Array(32).fill(0),
-    };
-
-    const newInstruments = [...instruments];
-    newInstruments[index] = clearedInstrument;
-
-    let notesCleared = 0;
-    let patternsTouched = 0;
-
-    const updatedPatterns = patterns.map(pattern => {
-      if (!pattern) {
-        return pattern;
-      }
-
-      let patternChanged = false;
-      const newStep = (pattern.step || []).map(line => {
-        const newLine: Step = { ...line };
-        let lineChanged = false;
-
-        const note = newLine.note;
-        if (note) {
-          const noteInstIdNorm = normalizeInstrumentId(note.instrument);
-          if (noteInstIdNorm && noteInstIdNorm === targetIdNorm) {
-            newLine.note = null;
-            lineChanged = true;
-            notesCleared++;
-          }
-        }
-
-        if (lineChanged) {
-          patternChanged = true;
-        }
-
-        return newLine;
-      });
-
-      if (patternChanged) {
-        patternsTouched++;
-        return {
-          ...pattern,
-          step: newStep,
-        };
-      }
-
-      return pattern;
-    });
-
-    updateSong({
-      instrument: newInstruments,
-      pattern: updatedPatterns,
-    });
-
-    setCurrentInstrument(clearedInstrument);
+    setCurrentInstrument(cleared.clearedInstrument);
     setActiveSection('instrumentList');
     setIsInstrumentDeleteOpen(false);
+
+    const slotId = cleared.slotId || instrumentDeleteUsage.instrumentId;
+    const slotName = cleared.slotName || instrumentDeleteUsage.instrumentName || '';
 
     const idLabel = slotId.trim() || '--';
     const nameLabel = slotName || '';
 
-    const lines: string[] = [];
-    lines.push('Instrument removal complete.');
-    lines.push('');
-    lines.push(`Instrument: ${idLabel}${nameLabel ? ` (${nameLabel})` : ''}`);
-    lines.push('Mode: Delete notes using this instrument and clear slot.');
-    lines.push('');
-    lines.push(`Patterns with this instrument before delete: ${instrumentDeleteUsage.patternCount}`);
-    lines.push(`Notes using this instrument before delete: ${instrumentDeleteUsage.usageCount}`);
-    lines.push('');
-    lines.push(`Patterns changed in this operation: ${patternsTouched}`);
-    lines.push(`Notes cleared in this operation: ${notesCleared}`);
+    const summary = buildInstrumentRemovalSummary({
+      slotId: idLabel,
+      slotName: nameLabel,
+      modeLabel: 'Delete notes using this instrument and clear slot.',
+      patternsBeforeLabel: 'Patterns with this instrument before delete',
+      notesBeforeLabel: 'Notes using this instrument before delete',
+      patternsBefore: instrumentDeleteUsage.patternCount,
+      notesBefore: instrumentDeleteUsage.usageCount,
+      patternsChanged: cleared.patternsTouched,
+      notesCleared: cleared.notesCleared,
+    });
 
-    setInstrumentOperationSummary(lines.join('\n'));
+    setInstrumentOperationSummary(summary);
   }, [
     currentSong.instrument,
     currentSong.pattern,
@@ -519,51 +320,38 @@ export function useInstrumentActions({
     }
 
     const instruments = currentSong.instrument;
-    const index = instruments.findIndex((inst: Instrument | undefined) => normalizeInstrumentId(inst?.id) === targetIdNorm);
-    if (index === -1) {
+
+    const cleared = clearInstrumentOnly(instruments, targetIdNorm, normalizeInstrumentId);
+    if (!cleared) {
       setIsInstrumentDeleteOpen(false);
       setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
       return;
     }
 
-    const slot = instruments[index];
-    const slotId = slot?.id || instrumentDeleteUsage.instrumentId;
-    const slotName = slot?.name || instrumentDeleteUsage.instrumentName || '';
-
-    const clearedInstrument: Instrument = {
-      id: slotId,
-      name: '',
-      volume: Array(32).fill(0),
-      shift: Array(32).fill(0),
-      pitch: Array(32).fill(0),
-      noise: Array(32).fill(0),
-      mode: Array(32).fill(0),
-    };
-
-    const newInstruments = [...instruments];
-    newInstruments[index] = clearedInstrument;
-
-    updateSong({ instrument: newInstruments });
-    setCurrentInstrument(clearedInstrument);
+    updateSong({ instrument: cleared.instruments });
+    setCurrentInstrument(cleared.clearedInstrument);
     setActiveSection('instrumentList');
     setIsInstrumentDeleteOpen(false);
+
+    const slotId = cleared.slotId || instrumentDeleteUsage.instrumentId;
+    const slotName = cleared.slotName || instrumentDeleteUsage.instrumentName || '';
 
     const idLabel = slotId.trim() || '--';
     const nameLabel = slotName || '';
 
-    const lines: string[] = [];
-    lines.push('Instrument removal complete.');
-    lines.push('');
-    lines.push(`Instrument: ${idLabel}${nameLabel ? ` (${nameLabel})` : ''}`);
-    lines.push('Mode: Clear instrument only (keep notes).');
-    lines.push('');
-    lines.push(`Patterns that reference this instrument: ${instrumentDeleteUsage.patternCount}`);
-    lines.push(`Notes that reference this instrument: ${instrumentDeleteUsage.usageCount}`);
-    lines.push('');
-    lines.push('Patterns changed in this operation: 0');
-    lines.push('Notes cleared in this operation: 0');
+    const summary = buildInstrumentRemovalSummary({
+      slotId: idLabel,
+      slotName: nameLabel,
+      modeLabel: 'Clear instrument only (keep notes).',
+      patternsBeforeLabel: 'Patterns that reference this instrument',
+      notesBeforeLabel: 'Notes that reference this instrument',
+      patternsBefore: instrumentDeleteUsage.patternCount,
+      notesBefore: instrumentDeleteUsage.usageCount,
+      patternsChanged: 0,
+      notesCleared: 0,
+    });
 
-    setInstrumentOperationSummary(lines.join('\n'));
+    setInstrumentOperationSummary(summary);
   }, [
     currentSong.instrument,
     instrumentDeleteUsage.instrumentId,
