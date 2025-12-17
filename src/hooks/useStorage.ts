@@ -1,19 +1,28 @@
 import type { MutableRefObject } from 'react';
 
+export type ScheduledSaveHandle =
+  | { kind: 'timeout'; id: number }
+  | { kind: 'idle'; id: number };
+
 export function scheduleJsonSave<T>(
   key: string,
   value: T,
-  timeoutRef: MutableRefObject<number | null>,
+  timeoutRef: MutableRefObject<ScheduledSaveHandle | null>,
   delayMs: number = 300,
 ): void {
   const win = window as unknown as { requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void; };
 
   if (timeoutRef.current !== null) {
     // Clear any previously scheduled save before scheduling a new one.
-    window.clearTimeout(timeoutRef.current);
-    if (typeof win.cancelIdleCallback === 'function') {
-      win.cancelIdleCallback(timeoutRef.current);
+    const handle = timeoutRef.current;
+    if (handle.kind === 'timeout') {
+      window.clearTimeout(handle.id);
+    } else if (handle.kind === 'idle') {
+      if (typeof win.cancelIdleCallback === 'function') {
+        win.cancelIdleCallback(handle.id);
+      }
     }
+    timeoutRef.current = null;
   }
 
   const performSave = () => {
@@ -33,18 +42,22 @@ export function scheduleJsonSave<T>(
       },
       { timeout: delayMs },
     );
-    timeoutRef.current = handle as number;
+    timeoutRef.current = { kind: 'idle', id: handle as number };
   } else {
-    timeoutRef.current = window.setTimeout(performSave, delayMs);
+    timeoutRef.current = { kind: 'timeout', id: window.setTimeout(performSave, delayMs) };
   }
 }
 
-export function clearScheduledSave(timeoutRef: MutableRefObject<number | null>): void {
+export function clearScheduledSave(timeoutRef: MutableRefObject<ScheduledSaveHandle | null>): void {
   const win = window as unknown as { cancelIdleCallback?: (handle: number) => void };
   if (timeoutRef.current !== null) {
-    window.clearTimeout(timeoutRef.current);
-    if (typeof win.cancelIdleCallback === 'function') {
-      win.cancelIdleCallback(timeoutRef.current);
+    const handle = timeoutRef.current;
+    if (handle.kind === 'timeout') {
+      window.clearTimeout(handle.id);
+    } else if (handle.kind === 'idle') {
+      if (typeof win.cancelIdleCallback === 'function') {
+        win.cancelIdleCallback(handle.id);
+      }
     }
     timeoutRef.current = null;
   }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { YM2149 } from '../synth/YM2149';
 
 interface EQPanelProps {
@@ -10,16 +10,37 @@ interface EQPanelProps {
 export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggleChannelMute }) => {
   const [volumes, setVolumes] = useState<number[]>([0, 0, 0]);
 
+  const ym2149Ref = useRef<YM2149 | null | undefined>(null);
+
   useEffect(() => {
-    if (!ym2149) return;
-
-    const updateInterval = setInterval(() => {
-      const state = ym2149.getState();
-      setVolumes(state.channels.map(channel => channel.volume));
-    }, 50); // Update every 50ms for smooth visualization
-
-    return () => clearInterval(updateInterval);
+    ym2149Ref.current = ym2149;
   }, [ym2149]);
+
+  useEffect(() => {
+    const updateInterval = window.setInterval(() => {
+      const currentYm2149 = ym2149Ref.current;
+      if (!currentYm2149) {
+        setVolumes(prev => {
+          if (prev[0] === 0 && prev[1] === 0 && prev[2] === 0) {
+            return prev;
+          }
+          return [0, 0, 0];
+        });
+        return;
+      }
+
+      const state = currentYm2149.getState();
+      const next = state.channels.map(channel => channel.volume);
+      setVolumes(prev => {
+        if (prev[0] === next[0] && prev[1] === next[1] && prev[2] === next[2]) {
+          return prev;
+        }
+        return next;
+      });
+    }, 50);
+
+    return () => window.clearInterval(updateInterval);
+  }, []);
 
   const getBarHeight = (volume: number) => {
     return (volume / 15) * 100; // Volume is 0-15

@@ -22,7 +22,7 @@ import {
   applyLoadedInstrumentToSong,
 } from './useInstrumentManagement';
 import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManagement';
-import { scheduleJsonSave, clearScheduledSave } from './useStorage';
+import { scheduleJsonSave, clearScheduledSave, type ScheduledSaveHandle } from './useStorage';
 
 const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
 
@@ -47,8 +47,8 @@ export const useDataManagement = () => {
   const [instrumentError, setInstrumentError] = useState('');
   const [isSongDirty, setIsSongDirty] = useState(false);
 
-  const songSaveTimeoutRef = useRef<number | null>(null);
-  const instrumentSaveTimeoutRef = useRef<number | null>(null);
+  const songSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
+  const instrumentSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
 
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {

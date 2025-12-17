@@ -1,0 +1,7 @@
+When I change the selected instrument it seems that "EQ" section stops working and is not updating during playback or preview.
+
+---
+
+After several changes of selected instrument EQ panel stops being updated as well as Dump panel
+
+---
