@@ -178,7 +178,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         setEnvelopeData(newData);
         onChange(newData);
       }
-      if (type === 'volume' || type === 'shift' || type === 'noise') {
+      if (type === 'volume' || type === 'shift' || type === 'noise' || type === 'pitch') {
         lastPositionRef.current = currentPosition;
         const nextPosition = (currentPosition + 1) % ENVELOPE_LENGTH;
         setCurrentPosition(nextPosition);

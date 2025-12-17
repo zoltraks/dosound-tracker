@@ -256,27 +256,26 @@ Envelope panels (Mode, Volume, Arpeggio, Pitch, Noise) are edited step-by-step.
 
 For whole-envelope operations, the editor treats the envelope as fully defined for all **32 steps**.
 
-| Key binding              | Applies to                     | Operation                                              |
-| ------------------------ | ------------------------------ | ------------------------------------------------------ |
-| Left / Right             | All envelopes                  | Move the current envelope position                     |
-| Up / Down                | All envelopes                  | Increase / decrease current position value by 1        |
-| Backspace                | Volume, Arpeggio, Noise        | Set current position to 0 and advance to next position |
-| Backspace                | Pitch                          | Set current position to 0                              |
-| 0-9, A-F                 | Volume                         | Set value (hex 0..F) and advance                       |
-| 0-9, A-F                 | Noise                          | Set value (0..15) and advance                          |
-| Shift + 0-9, A-F         | Noise                          | Add 16 to the typed hex value and advance              |
-| 0-9, A-F                 | Arpeggio                       | Set positive value (+0..+15) and advance               |
-| Shift + 1-9, A-F         | Arpeggio                       | Set negative value (-1..-15) and advance               |
-| T / N / B                | Mode                           | Set Tone / Noise / Both and advance                    |
-| Space                    | All but Mode                   | Set value from the previously selected position        |
-| Space                    | Mode                           | Cycle mode (T -> N -> B -> T) at current position      |
-| S                        | Volume                         | Toggle sustain point at current position               |
-| Ctrl + Shift + Backspace | All envelopes                  | Reset the entire envelope                              |
-| Ctrl + Shift + Left      | All envelopes                  | Rotate envelope left: step 0 becomes step 31           |
-| Ctrl + Shift + Right     | All envelopes                  | Rotate envelope right: step 31 becomes step 0          |
-| Ctrl + Shift + Up        | All envelopes                  | Increase all 32 values by 1 (clamped)                  |
-| Ctrl + Shift + Down      | All envelopes                  | Decrease all 32 values by 1 (clamped)                  |
-| Ctrl + Shift + Enter     | Arpeggio                       | Repeat-fill steps 0..current until step 31             |
+| Key binding              | Applies to    | Operation                                              |
+| ------------------------ | ------------- | ------------------------------------------------------ |
+| Left / Right             | All envelopes | Move the current envelope position                     |
+| Up / Down                | All envelopes | Increase / decrease current position value by 1        |
+| Backspace                | All envelopes | Set current position to 0 and advance to next position |
+| 0-9, A-F                 | Volume        | Set value (hex 0..F) and advance                       |
+| 0-9, A-F                 | Noise         | Set value (0..15) and advance                          |
+| Shift + 0-9, A-F         | Noise         | Add 16 to the typed hex value and advance              |
+| 0-9, A-F                 | Arpeggio      | Set positive value (+0..+15) and advance               |
+| Shift + 1-9, A-F         | Arpeggio      | Set negative value (-1..-15) and advance               |
+| T / N / B                | Mode          | Set Tone / Noise / Both and advance                    |
+| Space                    | All but Mode  | Set value from the previously selected position        |
+| Space                    | Mode          | Cycle mode (T -> N -> B -> T) at current position      |
+| S                        | Volume        | Toggle sustain point at current position               |
+| Ctrl + Shift + Backspace | All envelopes | Reset the entire envelope                              |
+| Ctrl + Shift + Left      | All envelopes | Rotate envelope left: step 0 becomes step 31           |
+| Ctrl + Shift + Right     | All envelopes | Rotate envelope right: step 31 becomes step 0          |
+| Ctrl + Shift + Up        | All envelopes | Increase all 32 values by 1 (clamped)                  |
+| Ctrl + Shift + Down      | All envelopes | Decrease all 32 values by 1 (clamped)                  |
+| Ctrl + Shift + Enter     | Arpeggio      | Repeat-fill steps 0..current until step 31             |
 
 ### Data Management
 

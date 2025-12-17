@@ -1,0 +1,11 @@
+Make Backspace key in Mode (ToneNoise) envelope work like in other envelopes, so pressing will set default value at current position (0) and proceed to next position.
+
+Update keyboard shortcuts table in MANUAL.md after that.
+
+---
+
+Make Backspace key in Pitch envelope work like in other envelopes, so pressing will set default value at current position (0) and proceed to next position.
+
+Update keyboard shortcuts table in MANUAL.md after that.
+
+---

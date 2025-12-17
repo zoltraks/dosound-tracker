@@ -109,6 +109,17 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         newData[currentPosition] = Math.max(0, currentValue - 1);
         onChange(newData);
       }
+    } else if (key === 'BACKSPACE' || key === 'DELETE') {
+      event.preventDefault();
+      if (onChange) {
+        const source = toneNoiseData;
+        const newData = [...source];
+        newData[currentPosition] = 0;
+        onChange(newData);
+      }
+      const length = toneNoiseData.length > 0 ? toneNoiseData.length : 32;
+      const nextPosition = (currentPosition + 1) % length;
+      setCurrentPosition(nextPosition);
     } else if (key === 'T' || key === 'N' || key === 'B') {
       event.preventDefault();
       if (onChange) {
