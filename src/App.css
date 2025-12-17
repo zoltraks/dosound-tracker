@@ -34,7 +34,7 @@
   --button-text: #e2e8ff;
   --button-hover: #343a52;
   --button-active: #3b425b;
-  --button-border-hover: #dee7f7;
+  --button-border-hover: #9bb8eb;
   
   --debug-btn-bg-left: #774b26;
   --debug-btn-bg-right: #36230a;
@@ -68,16 +68,20 @@
   --new-song-btn-bg-right: #4d3158;
   --new-song-btn-border: #9e58e0;
 
-  --demo-song-btn-bg-left: #5421a0;
+  --demo-song-btn-bg-left: #4c218d;
   --demo-song-btn-bg-right: #342446;
   --demo-song-btn-border: #8a4ec2;
   
-  --play-song-idle-bg: #263a32;
-  --play-song-idle-border: #3a8265;
+  --play-song-btn-idle-bg-left: #1a5a35;
+  --play-song-btn-idle-bg-right: #20362a;
+  --play-song-btn-idle-border: #27916a;
+
   --play-line-idle-bg: #3a3024;
   --play-line-idle-border: #91663c;
-  --stop-idle-bg: #3a2327;
-  --stop-idle-border: #a4535a;
+  
+  --stop-btn-idle-bg-left: #5e383e;
+  --stop-btn-idle-bg-right: #27181a;
+  --stop-btn-idle-border: #a4535a;
   
   /* Playback button accent colors (dark theme) */
   --play-song-bg: #1f4730;
@@ -222,12 +226,16 @@
   --demo-song-btn-bg-right: #ffe48b;
   --demo-song-btn-border: #af9e3e;
 
-  --play-song-idle-bg: #e8f8ed;
-  --play-song-idle-border: #6cc896;
+  --play-song-btn-idle-bg-left: #e8f8ed;
+  --play-song-btn-idle-bg-right: #617768;
+  --play-song-btn-idle-border: #6cc896;
+
   --play-line-idle-bg: #fff3e6;
   --play-line-idle-border: #ea9a3a;
-  --stop-idle-bg: #ffe6ea;
-  --stop-idle-border: #f97373;
+
+  --stop-btn-idle-bg-left: #ffe6ea;
+  --stop-btn-idle-bg-right: #747474;
+  --stop-btn-idle-border: #f97373;
 
   /* Playback button accent colors (light theme) */
   --play-song-bg: #bbf7d0;
@@ -554,8 +562,8 @@ body {
 }
 
 .command-btn.play-song-btn {
-  background: linear-gradient(135deg, var(--play-song-idle-bg) 0%, var(--button-bg) 100%);
-  border-color: var(--play-song-idle-border);
+  background: linear-gradient(135deg, var(--play-song-btn-idle-bg-left) 0%, var(--play-song-btn-idle-bg-right) 100%);
+  border-color: var(--play-song-btn-idle-border);
 }
 
 .command-btn.play-line-btn {
@@ -564,8 +572,8 @@ body {
 }
 
 .command-btn.stop-btn {
-  background: linear-gradient(135deg, var(--stop-idle-bg) 0%, var(--button-bg) 100%);
-  border-color: var(--stop-idle-border);
+  background: linear-gradient(135deg, var(--stop-btn-idle-bg-left) 0%, var(--stop-btn-idle-bg-right) 100%);
+  border-color: var(--stop-btn-idle-border);
 }
 
 .command-btn::before {
