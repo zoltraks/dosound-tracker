@@ -106,3 +106,9 @@ Focus the document on:
 - Clear phase organization without scheduling details
 
 ---
+
+Inspect directory docs/refactoring/1.2.3
+
+Create README.md in that directory with links to all documents inside that folder and short description.
+
+---
