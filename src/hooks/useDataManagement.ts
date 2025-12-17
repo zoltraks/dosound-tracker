@@ -19,7 +19,7 @@ import {
   createNewInstrumentForSong,
   updateInstrumentInSong,
   applyLoadedInstrumentToSong,
-} from './useInstrumentManagement';
+} from './useInstrument';
 import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManagement';
 import { scheduleJsonSave, clearScheduledSave } from './useStorage';
 
