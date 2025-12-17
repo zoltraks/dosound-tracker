@@ -23,13 +23,9 @@ import {
  */
 export function exportToAssembly(
   song: Song,
-  isComplexDumpMode: boolean | ExportStrategy = false
+  strategy: ExportStrategy = 'complex'
 ): string {
   const normalizedSong = normalizeSongForExport(song);
-  const strategy: ExportStrategy =
-    typeof isComplexDumpMode === 'boolean'
-      ? (isComplexDumpMode ? 'complex' : 'simple')
-      : isComplexDumpMode;
 
   // Simulate playback and collect register states per frame
   const frames: SimulationFrame[] = [];

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ExportType, ExportStrategy } from '../constants/export';
 
@@ -9,8 +9,6 @@ export interface UseAppStateResult {
   setExportType: Dispatch<SetStateAction<ExportType>>;
   exportStrategy: ExportStrategy;
   setExportStrategy: Dispatch<SetStateAction<ExportStrategy>>;
-  isComplexDumpMode: boolean;
-  setIsComplexDumpMode: Dispatch<SetStateAction<boolean>>;
   transposeScope: 'line' | 'song';
   setTransposeScope: Dispatch<SetStateAction<'line' | 'song'>>;
   transposeTrackScope: 'current' | 'all';
@@ -59,28 +57,13 @@ export function useAppState(): UseAppStateResult {
     return 'complex';
   });
 
-  const isComplexDumpMode = exportStrategy !== 'simple';
-
-  const setIsComplexDumpMode: Dispatch<SetStateAction<boolean>> = useCallback(
-    (valueOrUpdater) => {
-      setExportStrategy(prevStrategy => {
-        const prevIsComplex = prevStrategy !== 'simple';
-        const nextIsComplex =
-          typeof valueOrUpdater === 'function'
-            ? (valueOrUpdater as (prev: boolean) => boolean)(prevIsComplex)
-            : valueOrUpdater;
-
-        if (!nextIsComplex) {
-          return 'simple';
-        }
-
-        // When switching to a complex-style mode, preserve "optimized" if it
-        // was already selected; otherwise fall back to "complex".
-        return prevStrategy === 'optimized' ? 'optimized' : 'complex';
-      });
-    },
-    []
-  );
+  useEffect(() => {
+    try {
+      localStorage.setItem('dosound-tracker-dump-mode', exportStrategy);
+    } catch {
+      // ignore
+    }
+  }, [exportStrategy]);
 
   const [transposeScope, setTransposeScope] = useState<'line' | 'song'>(() => {
     try {
@@ -155,8 +138,6 @@ export function useAppState(): UseAppStateResult {
     setExportType,
     exportStrategy,
     setExportStrategy,
-    isComplexDumpMode,
-    setIsComplexDumpMode,
     transposeScope,
     setTransposeScope,
     transposeTrackScope,

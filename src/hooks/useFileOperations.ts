@@ -6,7 +6,6 @@ import {
   buildPatternExportBaseName,
   buildSongExportBaseName,
   buildDumpExportBaseName,
-  getUnsafeSongTitleTokenForExport,
 } from '../utils/exportFileNaming';
 import {
   exportToAssembly,
@@ -29,17 +28,14 @@ interface ExportContext {
 
 interface UseFileOperationsArgs {
   song: Song;
-  isComplexDumpMode: boolean;
+  exportStrategy: ExportStrategy;
 }
 
 interface UseFileOperationsResult {
   soundExportSummary: string;
   dumpExportSummary: string;
-  handleExportData: () => void;
-  handleExportBin: () => void;
   handleExportVgm: () => void;
   handleExportWav: () => void;
-  handleExportMax: () => void;
   handleExportDump: () => void;
   exportDataWithContext: (ctx: ExportContext) => void;
   exportBinWithContext: (ctx: ExportContext) => void;
@@ -51,60 +47,13 @@ interface UseFileOperationsResult {
   handleCloseDumpExportSummary: () => void;
 }
 
-export function useFileOperations({ song, isComplexDumpMode }: UseFileOperationsArgs): UseFileOperationsResult {
+export function useFileOperations({ song, exportStrategy }: UseFileOperationsArgs): UseFileOperationsResult {
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
 
-  const handleExportData = useCallback(() => {
-    try {
-      const assemblyContent = exportToAssembly(song, isComplexDumpMode);
-      const filename = `${getUnsafeSongTitleTokenForExport(song.title)}.s`;
-      downloadAssemblyFile(assemblyContent, filename);
-
-      const lines: string[] = [];
-      lines.push('DATA export completed.');
-      lines.push('');
-      lines.push(`File: ${filename}`);
-
-      setSoundExportSummary(lines.join('\n'));
-    } catch (error) {
-      console.error('Export failed:', error);
-      const lines: string[] = [];
-      lines.push('DATA export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setSoundExportSummary(lines.join('\n'));
-    }
-  }, [song, isComplexDumpMode]);
-
-  const handleExportBin = useCallback(() => {
-    try {
-      const bytes = exportToBinary(song, isComplexDumpMode);
-      const filename = `${getUnsafeSongTitleTokenForExport(song.title)}.bin`;
-      downloadBinaryFile(bytes, filename);
-
-      const lines: string[] = [];
-      lines.push('BIN export completed.');
-      lines.push('');
-      lines.push(`File: ${filename}`);
-      lines.push(`Bytes: ${bytes.length}`);
-
-      setSoundExportSummary(lines.join('\n'));
-    } catch (error) {
-      console.error('Binary export failed:', error);
-      const lines: string[] = [];
-      lines.push('BIN export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setSoundExportSummary(lines.join('\n'));
-    }
-  }, [song, isComplexDumpMode]);
-
   const handleExportVgm = useCallback(() => {
     try {
-      const result = exportSongToVgm(song);
+      const result = exportSongToVgm(song, exportStrategy);
       const filename = `${buildSongExportBaseName(song.title)}.vgm`;
       downloadVgmFile(result.buffer, filename);
 
@@ -124,32 +73,7 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
       }
       setSoundExportSummary(lines.join('\n'));
     }
-  }, [song]);
-
-  const handleExportMax = useCallback(() => {
-    try {
-      const strategy: ExportStrategy = isComplexDumpMode ? 'complex' : 'simple';
-      const result = exportSongToMax(song, strategy);
-      const filename = `${buildSongExportBaseName(song.title)}.max`;
-      downloadMaxFile(result.buffer, filename);
-
-      const lines: string[] = [];
-      lines.push('MAX export completed.');
-      lines.push('');
-      lines.push(`File: ${filename}`);
-      lines.push(`Frames: ${result.frameCount}`);
-
-      setSoundExportSummary(lines.join('\n'));
-    } catch (error) {
-      console.error('MAX export failed:', error);
-      const lines: string[] = [];
-      lines.push('MAX export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setSoundExportSummary(lines.join('\n'));
-    }
-  }, [song, isComplexDumpMode]);
+  }, [song, exportStrategy]);
 
   const handleExportWav = useCallback(() => {
     try {
@@ -599,11 +523,8 @@ export function useFileOperations({ song, isComplexDumpMode }: UseFileOperations
   return {
     soundExportSummary,
     dumpExportSummary,
-    handleExportData,
-    handleExportBin,
     handleExportVgm,
     handleExportWav,
-    handleExportMax,
     handleExportDump,
     exportDataWithContext,
     exportBinWithContext,

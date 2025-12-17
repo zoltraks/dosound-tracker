@@ -44,9 +44,9 @@ export function parseAssemblyToBinary(assembly: string): Uint8Array {
 
 export function exportToBinary(
   song: Song,
-  isComplexDumpMode: boolean | ExportStrategy = false
+  strategy: ExportStrategy = 'complex'
 ): Uint8Array {
-  const assembly = exportToAssembly(song, isComplexDumpMode);
+  const assembly = exportToAssembly(song, strategy);
   return parseAssemblyToBinary(assembly);
 }
 

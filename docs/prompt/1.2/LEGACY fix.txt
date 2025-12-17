@@ -4,3 +4,92 @@ It might happen that it is left after first approach to playlist looping.
 Make changes safe to not break any functionality.
 
 ---
+
+I noticed that in many places in the code, the variable "isComplexDumpMode" appears.  
+This is likely related to the fact that earlier in the application there was a distinction between "SIMPLE DUMP" and "COMPLEX DUMP" export types,
+which was later changed to an export strategy (SIMPLE, COMPLEX, OPTIMIZED).
+I'm concerned that some code might still be using the old approach to distinguish the data export method (simple, complex) instead of the currently used export strategy information.
+Analyze the source code and propose changes in the form of a plain text prompt for automatic code generation.
+
+---
+
+TASK: Remove legacy "isComplexDumpMode" boolean usage as a decision mechanism for export behavior, and use ExportStrategy ('simple' | 'complex' | 'optimized') end-to-end. Keep temporary compatibility only where necessary, but make it harder to accidentally collapse 'optimized' into 'complex'.
+
+CONTEXT:
+- ExportStrategy is defined in src/constants/export.ts as 'simple'|'complex'|'optimized'.
+- useAppState currently exposes exportStrategy + also exposes a legacy derived boolean isComplexDumpMode and setIsComplexDumpMode.
+- useFileOperations currently takes isComplexDumpMode boolean and contains legacy export handlers that use it, which can collapse 'optimized' into 'complex'.
+- ExportModal passes ctx.strategy correctly via export*WithContext methods.
+- Exporters asm.ts and bin.ts still accept boolean | ExportStrategy.
+
+GOALS:
+1) useFileOperations should accept exportStrategy: ExportStrategy instead of isComplexDumpMode boolean.
+2) Any export invocation must pass ExportStrategy (not a boolean), so 'optimized' is preserved.
+3) Remove dead/legacy "handleExportData/handleExportBin/handleExportMax" boolean-based handlers from useFileOperations (or rewrite them to use exportStrategy and keep them only if truly required).
+4) Reduce "isComplexDumpMode" footprint: prefer deriving "isComplexDumpMode" locally only for UI toggles if still needed, but do not use it to choose exporters.
+5) Maintain backwards compatibility of exporter functions only if there are external call sites; otherwise migrate them too.
+
+IMPLEMENTATION DETAILS (do these edits):
+
+A) src/hooks/useFileOperations.ts
+- Change UseFileOperationsArgs:
+  - Replace `isComplexDumpMode: boolean` with `exportStrategy: ExportStrategy`.
+- Update export hook signature:
+  - `export function useFileOperations({ song, exportStrategy }: UseFileOperationsArgs)`
+- Remove legacy handler functions that take no context and use boolean:
+  - Remove (or fully rewrite) `handleExportData`, `handleExportBin`, `handleExportMax`.
+  - If you keep them for convenience, rewrite them to use ExportStrategy:
+    - [exportToAssembly(song, exportStrategy)](cci:1://file:///c:/PROJECT/ROOT/dosound-tracker/src/exports/asm.ts:17:0-47:1)
+    - `exportToBinary(song, exportStrategy)`
+    - [exportSongToMax(song, exportStrategy)](cci:1://file:///c:/PROJECT/ROOT/dosound-tracker/src/exports/max.ts:165:0-224:1)
+- Ensure the returned object from the hook no longer includes those removed handlers.
+- Ensure React hook dependency arrays are updated accordingly.
+- The context-aware functions (exportDataWithContext/exportBinWithContext/exportMaxWithContext/...) already accept ctx.strategy and should remain strategy-first.
+
+B) src/App.tsx
+- Update the call:
+  - Replace [useFileOperations({ song: currentSong, isComplexDumpMode })](cci:1://file:///c:/PROJECT/ROOT/dosound-tracker/src/hooks/useFileOperations.ts:53:0-616:1)
+  - With [useFileOperations({ song: currentSong, exportStrategy })](cci:1://file:///c:/PROJECT/ROOT/dosound-tracker/src/hooks/useFileOperations.ts:53:0-616:1)
+- Update destructuring from useFileOperations result if any legacy handlers were removed (App.tsx currently uses only the context-aware ones + close handlers; keep that working).
+
+C) src/hooks/useAppState.ts
+- Deprecate legacy boolean API surface:
+  - Prefer returning only `exportStrategy` and `setExportStrategy`.
+  - Remove `isComplexDumpMode` and `setIsComplexDumpMode` from [UseAppStateResult](cci:2://file:///c:/PROJECT/ROOT/dosound-tracker/src/hooks/useAppState.ts:4:0-23:1) and from the returned object.
+- If some UI still needs a boolean for display (e.g. a checkbox), derive it locally where needed as `exportStrategy !== 'simple'`.
+- Keep localStorage behavior the same:
+  - Continue persisting strategy in `dosound-tracker-dump-mode`.
+  - Keep default strategy as 'complex' (unchanged).
+
+D) Fix all compile errors due to removed fields
+- Search in src for `isComplexDumpMode` and `setIsComplexDumpMode` usage.
+- Replace:
+  - Any logic that only wanted "simple vs not simple" should become explicit:
+    - For "simple vs other": `exportStrategy === 'simple'` / `exportStrategy !== 'simple'`
+  - Any logic that chooses between complex/optimized must not use a boolean; it must use the actual strategy.
+
+E) Exporter signatures (optional but recommended)
+- In src/exports/asm.ts and src/exports/bin.ts:
+  - Change function signatures to accept only ExportStrategy (not boolean | ExportStrategy):
+    - exportToAssembly(song: Song, strategy: ExportStrategy = 'complex'): string
+    - exportToBinary(song: Song, strategy: ExportStrategy = 'complex'): Uint8Array
+  - Remove the boolean normalization logic.
+- Only do this if no call sites still pass boolean. After refactor in steps A/B/C, there should be no boolean call sites.
+- Keep behavior:
+  - 'simple' => unoptimized dump (write all regs)
+  - 'complex' => change-tracking dump
+  - 'optimized' => complex + extra optimization (combineDelayLines)
+- In src/exports/max.ts:
+  - Keep existing behavior: 'simple' uses RAW8; 'complex' uses change stream; 'optimized' additionally optimizes reg7 delays.
+
+VALIDATION:
+- Ensure TypeScript build passes.
+- Ensure ExportModal still exports:
+  - Strategy: simple/complex/optimized (unchanged UI)
+  - And the generated output differs between complex and optimized where intended.
+
+NOTES:
+- Do not change any comments or documentation text in files unless required by TypeScript errors.
+- Do not modify anything under docs/.
+
+---

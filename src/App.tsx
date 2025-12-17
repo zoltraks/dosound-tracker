@@ -147,7 +147,6 @@ const App: React.FC = () => {
     setExportType,
     exportStrategy,
     setExportStrategy,
-    isComplexDumpMode,
     transposeScope,
     setTransposeScope,
     transposeTrackScope,
@@ -260,7 +259,7 @@ const App: React.FC = () => {
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,
     exportMaxWithContext,
-  } = useFileOperations({ song: currentSong, isComplexDumpMode });
+  } = useFileOperations({ song: currentSong, exportStrategy });
 
   const isNavigationSuspended =
     !!songError ||
