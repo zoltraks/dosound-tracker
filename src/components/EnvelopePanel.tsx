@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
-import { ENVELOPE_LENGTH, VOLUME_MAX, NOISE_MAX, SHIFT_MIN, SHIFT_MAX, PITCH_MIN, PITCH_MAX } from '../constants/music';
+import { ENVELOPE_LENGTH } from '../constants/music';
+import { useEnvelopeValueHandling } from '../hooks/useEnvelopeValueHandling';
 
 interface EnvelopePanelProps {
   type: 'volume' | 'shift' | 'pitch' | 'noise' | 'mode';
@@ -21,15 +22,29 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   sustainIndex,
   onSustainChange
 }) => {
-  const [currentPosition, setCurrentPosition] = useState(0);
-  const [envelopeData, setEnvelopeData] = useState<number[]>(
-    data || Array(ENVELOPE_LENGTH).fill(0)
-  );
   const envelopeRef = useRef<HTMLDivElement>(null);
   const lastPositionRef = useRef<number | null>(null);
 
   const sectionName = type === 'mode' ? 'mode' : type;
   const isActive = activeSection === sectionName;
+
+  // Use the envelope value handling hook
+  const {
+    envelopeData,
+    currentPosition,
+    setCurrentPosition,
+    handleValueChange,
+    clampEnvelopeValue,
+    formatValue,
+    getBarHeight,
+    getCenteredBarPosition,
+    getFullEnvelope,
+    updateData
+  } = useEnvelopeValueHandling({
+    type,
+    data,
+    onChange
+  });
 
   useEffect(() => {
     if (isActive && envelopeRef.current) {
@@ -40,69 +55,9 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   useEffect(() => {
     if (data) {
       /* eslint-disable react-hooks/set-state-in-effect */
-      setEnvelopeData(data);
+      updateData(data);
     }
-  }, [data]);
-
-  const handleValueChange = useCallback((delta: number) => {
-    if (!onChange) return;
-
-    const newData = [...envelopeData];
-    const currentValue = newData[currentPosition];
-    let newValue = currentValue;
-
-    switch (type) {
-      case 'volume':
-        newValue = Math.max(0, Math.min(VOLUME_MAX, currentValue + delta));
-        break;
-      case 'noise':
-        newValue = Math.max(0, Math.min(NOISE_MAX, currentValue + delta));
-        break;
-      case 'shift':
-        newValue = Math.max(SHIFT_MIN, Math.min(SHIFT_MAX, currentValue + delta));
-        break;
-      case 'pitch':
-        newValue = Math.max(PITCH_MIN, Math.min(PITCH_MAX, currentValue + delta));
-        break;
-      case 'mode':
-        // Clamp between 0 (tone), 1 (noise) and 2 (tone+noise)
-        newValue = Math.max(0, Math.min(2, currentValue + delta));
-        break;
-    }
-
-    newData[currentPosition] = newValue;
-    setEnvelopeData(newData);
-    onChange(newData);
-  }, [envelopeData, currentPosition, type, onChange]);
-
-  const getFullEnvelope = useCallback((input: number[]) => {
-    const trimmed = input.slice(0, ENVELOPE_LENGTH);
-    if (trimmed.length === 0) {
-      return Array(ENVELOPE_LENGTH).fill(0);
-    }
-    const last = trimmed[trimmed.length - 1];
-    while (trimmed.length < ENVELOPE_LENGTH) {
-      trimmed.push(last);
-    }
-    return trimmed;
-  }, []);
-
-  const clampEnvelopeValue = useCallback((value: number) => {
-    switch (type) {
-      case 'volume':
-        return Math.max(0, Math.min(VOLUME_MAX, value));
-      case 'noise':
-        return Math.max(0, Math.min(NOISE_MAX, value));
-      case 'shift':
-        return Math.max(SHIFT_MIN, Math.min(SHIFT_MAX, value));
-      case 'pitch':
-        return Math.max(PITCH_MIN, Math.min(PITCH_MAX, value));
-      case 'mode':
-        return Math.max(0, Math.min(2, value));
-      default:
-        return value;
-    }
-  }, [type]);
+  }, [data, updateData]);
 
   const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
     if (!isActive) return;
@@ -115,7 +70,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       if (key === 'BACKSPACE') {
         event.preventDefault();
         const newData = Array(ENVELOPE_LENGTH).fill(0);
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange?.(newData);
         return;
       }
@@ -127,7 +82,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
           key === 'ARROWLEFT'
             ? [...source.slice(1), source[0]]
             : [source[ENVELOPE_LENGTH - 1], ...source.slice(0, ENVELOPE_LENGTH - 1)];
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange?.(newData);
         return;
       }
@@ -137,7 +92,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const delta = key === 'ARROWUP' ? 1 : -1;
         const source = getFullEnvelope(envelopeData);
         const newData = source.map(value => clampEnvelopeValue(value + delta));
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange?.(newData);
         return;
       }
@@ -149,7 +104,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const newData = Array.from({ length: ENVELOPE_LENGTH }, (_, index) => {
           return pattern.length > 0 ? pattern[index % pattern.length] : 0;
         });
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange?.(newData);
         return;
       }
@@ -158,11 +113,11 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     if (key === 'ARROWLEFT') {
       event.preventDefault();
       lastPositionRef.current = currentPosition;
-      setCurrentPosition(prev => Math.max(0, prev - 1));
+      setCurrentPosition(Math.max(0, currentPosition - 1));
     } else if (key === 'ARROWRIGHT') {
       event.preventDefault();
       lastPositionRef.current = currentPosition;
-      setCurrentPosition(prev => Math.min(ENVELOPE_LENGTH - 1, prev + 1));
+      setCurrentPosition(Math.min(ENVELOPE_LENGTH - 1, currentPosition + 1));
     } else if (key === 'ARROWUP') {
       event.preventDefault();
       handleValueChange(1);
@@ -175,7 +130,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       if (onChange) {
         const newData = [...envelopeData];
         newData[currentPosition] = 0;
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange(newData);
       }
       if (type === 'volume' || type === 'shift' || type === 'noise' || type === 'pitch') {
@@ -189,7 +144,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const newData = [...envelopeData];
         const newValue = parseInt(hexKey, 16);
         newData[currentPosition] = newValue;
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange(newData);
       }
       lastPositionRef.current = currentPosition;
@@ -204,7 +159,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
           newValue = -newValue;
         }
         newData[currentPosition] = newValue;
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange(newData);
       }
       lastPositionRef.current = currentPosition;
@@ -216,10 +171,10 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const newData = [...envelopeData];
         let newValue = parseInt(hexKey, 16);
         if (event.shiftKey) {
-          newValue = Math.min(NOISE_MAX, newValue + 16);
+          newValue = Math.min(31, newValue + 16); // NOISE_MAX = 31
         }
         newData[currentPosition] = newValue;
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange(newData);
       }
       lastPositionRef.current = currentPosition;
@@ -231,7 +186,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const newData = [...envelopeData];
         const newValue = key === 'T' ? 0 : key === 'N' ? 1 : 2;
         newData[currentPosition] = newValue;
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange(newData);
       }
       lastPositionRef.current = currentPosition;
@@ -243,7 +198,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         const sourceIndex = lastPositionRef.current;
         const newData = getFullEnvelope(envelopeData);
         newData[currentPosition] = newData[sourceIndex];
-        setEnvelopeData(newData);
+        updateData(newData);
         onChange(newData);
       }
     } else if (type === 'volume' && key === 'S' && onSustainChange) {
@@ -273,55 +228,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     setCurrentPosition(position);
     setActiveSection(sectionName);
   }, [setActiveSection, sectionName, currentPosition]);
-
-  const formatValue = useCallback((value: number) => {
-    switch (type) {
-      case 'volume':
-        return value.toString(16).toUpperCase();
-      case 'noise':
-        return value.toString(16).toUpperCase();
-      case 'shift':
-        return value >= 0 ? `+${value}` : value.toString();
-      case 'pitch':
-        return value >= 0 ? `+${value}` : value.toString();
-      case 'mode':
-        if (value === 0) return 'TONE';
-        if (value === 1) return 'NOISE';
-        return 'BOTH';
-      default:
-        return value.toString();
-    }
-  }, [type]);
-
-  const getBarHeight = useCallback((value: number) => {
-    switch (type) {
-      case 'volume':
-        return (value / VOLUME_MAX) * 100;
-      case 'noise':
-        return (value / NOISE_MAX) * 100;
-      case 'shift':
-        return Math.abs(value) / Math.max(Math.abs(SHIFT_MIN), SHIFT_MAX) * 100;
-      case 'pitch':
-        return Math.abs(value) / Math.max(Math.abs(PITCH_MIN), PITCH_MAX) * 100;
-      case 'mode':
-        return value * 100;
-      default:
-        return 0;
-    }
-  }, [type]);
-
-  const getCenteredBarPosition = useCallback((value: number) => {
-    switch (type) {
-      case 'shift':
-        // Position: 50% for 0, less for positive (go up), more for negative (go down)
-        return 50 - (value / SHIFT_MAX) * 50;
-      case 'pitch':
-        // Position: 50% for 0, less for positive (go up), more for negative (go down)
-        return 50 - (value / PITCH_MAX) * 50;
-      default:
-        return 50;
-    }
-  }, [type]);
 
   const getTitle = useCallback(() => {
     switch (type) {
