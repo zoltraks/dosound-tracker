@@ -2,7 +2,8 @@ import type { Song, Instrument } from '../synth/SoundDriver';
 import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK } from '../synth/YM2149';
 import type { ExportStrategy } from '../constants/export';
-import { normalizeSongForExport, buildInstrumentPreviewSong, downloadFile, exportSongRegisterDump, parseAssemblyToBinary } from './core';
+import { normalizeSongForExport, buildInstrumentPreviewSong, downloadFile } from './core';
+import { simulateSong } from '../utils/playbackSimulation';
 
 export interface VgmExportResult {
   buffer: ArrayBuffer;
@@ -166,47 +167,61 @@ export function exportSongToVgm(
   let commands: number[] = [];
   const SAMPLES_PER_TICK = 882; // 1/50 second at 44100 Hz
   let totalSamples = 0;
-  let loopSampleOffset = 0;
-  let loopCommandOffset = -1;
 
-  commands.push(0x66); // STOP
-  commands.push(0x62); // WAIT 735 samples (1/60 second)
-  commands.push(0x63); // WAIT 882 samples (1/50 second)
+  const relevantRegs = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a];
+  const lastRegs: { [register: number]: number } = {};
 
-  const dump = exportSongRegisterDump(song);
-  const dumpBytes = parseAssemblyToBinary(dump.content);
-
-  if (dumpBytes.length > 0 && dumpBytes.length % 11 === 0) {
-    const frameCount = dumpBytes.length / 11;
-    for (let frame = 0; frame < frameCount; frame++) {
-      const base = frame * 11;
-      for (let reg = 0; reg < 11; reg++) {
-        const value = dumpBytes[base + reg];
-        commands.push(0xa0, reg, value);
-      }
-      commands.push(0x63); // WAIT 882 samples (1/50 second)
-      totalSamples += SAMPLES_PER_TICK;
-    }
-
-    // Set loop information if song has a loop point
-    if (normalizedSong.loop !== null && normalizedSong.loop !== undefined) {
-      const loopLine = normalizedSong.loop;
-      if (loopLine >= 0 && loopLine < normalizedSong.line.length) {
-        // Calculate loop command offset based on the loop line
-        const loopCommandsBefore = (loopLine * normalizedSong.speed || 6) * 12; // Approximate
-        loopCommandOffset = 12 + loopCommandsBefore; // After initial commands
-        loopSampleOffset = loopLine * SAMPLES_PER_TICK * (normalizedSong.speed || 6);
-      }
+  const playlistLength = normalizedSong.line.length;
+  let loopPlaylistIndex: number | null = null;
+  if (normalizedSong.loop != null && playlistLength > 0) {
+    const rawLoop = normalizedSong.loop as number;
+    if (typeof rawLoop === 'number' && Number.isFinite(rawLoop)) {
+      loopPlaylistIndex = Math.max(0, Math.min(playlistLength - 1, rawLoop | 0));
     }
   }
 
-  commands.push(0x66); // STOP
+  let loopCommandOffset = -1;
+  let loopSampleOffset = 0;
 
-  let optimizedCommands = commands;
+  const writeAyRegister = (register: number, value: number): void => {
+    commands.push(0xa0, register & 0xff, value & 0xff);
+  };
+
+  simulateSong(song, (frame) => {
+    const { registers, isFirstFrame, playlistIndex, patternLineIndex, tick } = frame;
+    
+    if (
+      loopCommandOffset < 0 &&
+      loopPlaylistIndex !== null &&
+      playlistIndex === loopPlaylistIndex &&
+      patternLineIndex === 0 &&
+      tick === 0
+    ) {
+      loopCommandOffset = commands.length;
+      loopSampleOffset = totalSamples;
+    }
+
+    for (let i = 0; i < relevantRegs.length; i++) {
+      const reg = relevantRegs[i];
+      const defaultValue = reg === 0x07 ? 0x38 : 0x00;
+      const current = registers[reg] !== undefined ? registers[reg] : defaultValue;
+      const previous = lastRegs[reg];
+      if (isFirstFrame || previous !== current) {
+        writeAyRegister(reg, current);
+        lastRegs[reg] = current;
+      }
+    }
+
+    commands.push(0x63);
+    totalSamples += SAMPLES_PER_TICK;
+  });
+
+  commands.push(0x66);
+
   if (strategy === 'optimized') {
-    const result = optimizeVgmDelays(commands, loopCommandOffset);
-    optimizedCommands = result.commands;
-    loopCommandOffset = result.loopCommandOffset;
+    const optimized = optimizeVgmDelays(commands, loopCommandOffset);
+    commands = optimized.commands;
+    loopCommandOffset = optimized.loopCommandOffset;
   }
 
   const dataOffset = 0x100;
@@ -215,7 +230,7 @@ export function exportSongToVgm(
   const gd3Tag = buildGd3Tag(normalizedSong);
   const gd3Length = gd3Tag ? gd3Tag.length : 0;
 
-  const fileSize = headerSize + optimizedCommands.length + gd3Length;
+  const fileSize = headerSize + commands.length + gd3Length;
   const eofOffset = fileSize - 4;
 
   const header = new Uint8Array(headerSize);
@@ -236,7 +251,7 @@ export function exportSongToVgm(
   writeUint32LE(0x18, totalSamples);
 
   if (gd3Tag && gd3Length > 0) {
-    const gd3Offset = headerSize + optimizedCommands.length;
+    const gd3Offset = headerSize + commands.length;
     const gd3OffsetRel = gd3Offset - 0x14;
     writeUint32LE(0x14, gd3OffsetRel);
   } else {
@@ -262,10 +277,10 @@ export function exportSongToVgm(
 
   const fileBytes = new Uint8Array(fileSize);
   fileBytes.set(header, 0);
-  fileBytes.set(new Uint8Array(optimizedCommands), headerSize);
+  fileBytes.set(new Uint8Array(commands), headerSize);
 
   if (gd3Tag && gd3Length > 0) {
-    fileBytes.set(gd3Tag, headerSize + optimizedCommands.length);
+    fileBytes.set(gd3Tag, headerSize + commands.length);
   }
 
   const buffer = fileBytes.buffer;
