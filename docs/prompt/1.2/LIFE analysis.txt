@@ -1,0 +1,26 @@
+Perform project change analysis.
+Don't switch branches during performing analysis.
+You are allowed to use "git log" command to get the commit list and read what modifications were made.
+Read commit messages and analyze the changes for every commit.
+
+Create a "lifecycle" report describing the implementation processes of the product.
+Analyze the commit list and estimate the effort for individual changes.
+I am interested in how the work on aspects of the source code such as: feature development, bug fixes, and refactoring is distributed.
+Create tables with summaries.
+I am interested in how the work in these three aspects is distributed across the application development lifecycle from version to version.
+
+Include section "Version by Version Effort Summary" with example table:
+
+| Version Range | Feature Dev | Bug Fixes | Refactoring | Total Commits |
+|---------------|-------------|-----------|-------------|---------------|
+| 1.0.14-1.0.20 | 60% | 30% | 10% | ~45 commits |
+| 1.0.21-1.0.22 | 50% | 25% | 25% | ~35 commits |
+| 1.1.0-1.1.2 | 55% | 20% | 25% | ~40 commits |
+| 1.1.3-1.1.9 | 60% | 25% | 15% | ~60 commits |
+| 1.2.0-1.2.3 | 45% | 30% | 25% | ~70 commits |
+
+Make similar table for "Week by Week Effort Summary" based on commit date.
+
+Save the report in "docs/report/1.2.3/LIFE.md".
+
+---
