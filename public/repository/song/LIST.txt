@@ -1,4 +1,3 @@
-Arp_Loop.yaml
-LIST.txt
-Nice_Song.yaml
-Warmball.yaml
+Arp_Loop.song.yaml
+Nice_Song.song.yaml
+Warmball.song.yaml
