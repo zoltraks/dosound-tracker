@@ -76,7 +76,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 checked={exportType === 'song'}
                 onChange={() => onChangeType('song')}
               />{' '}
-              Song (entire playlist)
+              Song (entire playlist playback)
             </label>
             <br />
             <label>
@@ -96,7 +96,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 checked={exportType === 'instrument'}
                 onChange={() => onChangeType('instrument')}
               />{' '}
-              Instrument (current)
+              Instrument (current selected instrument)
             </label>
           </div>
 
