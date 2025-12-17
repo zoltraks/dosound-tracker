@@ -4,7 +4,7 @@ This directory contains various refactoring proposals aimed at improving the cod
 
 ## Documents
 
-- [**Refactoring Proposals Comparison**](Refactoring Proposals Comparison.md)  
+- [**Refactoring Proposals Comparison**](Refactoring%20Proposals%20Comparison.md)  
   A detailed comparison of three independent refactoring proposals (Grok, Minimax, Devstral) with strengths analysis and a comprehensive synthesis combining the best elements from each.
 
 - [**REFACTORING-devstral**](REFACTORING-devstral.md)  
