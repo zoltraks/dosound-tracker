@@ -377,6 +377,20 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     });
   };
 
+  const quoteTitleValues = (text: string): string => {
+    const titleLineRegex = /^(\s+)(title):\s*(.+)$/gm;
+    return text.replace(titleLineRegex, (_match, indent: string, key: string, value: string) => {
+      let inner = String(value).trim();
+      if (
+        (inner.startsWith('"') && inner.endsWith('"')) ||
+        (inner.startsWith('\'') && inner.endsWith('\''))
+      ) {
+        inner = inner.slice(1, -1);
+      }
+      return `${indent}${key}: "${inner}"`;
+    });
+  };
+
   const keys = ['volume', 'shift', 'pitch', 'noise', 'mode'];
   for (const key of keys) {
     yamlContent = compressInstrumentArray(key, yamlContent);
@@ -386,6 +400,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   yamlContent = quoteNoteValues(yamlContent);
   yamlContent = quoteBaseValues(yamlContent);
   yamlContent = quoteNumberValues(yamlContent);
+  yamlContent = quoteTitleValues(yamlContent);
   const quoteColorValues = (text: string): string => {
     const colorLineRegex = /^(\s*-\s+|\s+)(color):\s*(.+)$/gm;
     return text.replace(colorLineRegex, (_match, indent: string, key: string, value: string) => {

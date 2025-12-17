@@ -102,11 +102,28 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
       ) {
         inner = inner.slice(1, -1);
       }
+      inner = inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      return `${indent}${key}: "${inner}"`;
+    });
+  };
+
+  const quoteNameValues = (text: string): string => {
+    const nameLineRegex = /^(\s+)(name):\s*(.+)$/gm;
+    return text.replace(nameLineRegex, (_match, indent: string, key: string, value: string) => {
+      let inner = String(value).trim();
+      if (
+        (inner.startsWith('"') && inner.endsWith('"')) ||
+        (inner.startsWith('\'') && inner.endsWith('\''))
+      ) {
+        inner = inner.slice(1, -1);
+      }
+      inner = inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
       return `${indent}${key}: "${inner}"`;
     });
   };
 
   yamlContent = quoteBaseValues(yamlContent);
+  yamlContent = quoteNameValues(yamlContent);
   yamlContent = quoteColorValues(yamlContent);
 
   return yamlContent;

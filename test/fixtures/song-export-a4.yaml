@@ -1,0 +1,30 @@
+song:
+  title: "TEST A-4"
+  year: 2025
+  speed: 16
+  length: 4
+  line:
+    - A: "00"
+    - B: "00"
+    - C: "00"
+    - {}
+  pattern:
+    - number: "00"
+      step:
+        - note: "A-4"
+          instrument: "00"
+          volume: 15
+        - note: "A-4"
+          instrument: "00"
+          volume: 14
+        - note: "A-4"
+          instrument: "00"
+          volume: 13
+        - note: "A-4"
+          instrument: "00"
+          volume: 12
+  instrument:
+    - number: "00"
+      base: "C-4"
+      volume: [15, 0]
+      shift: [0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12]

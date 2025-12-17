@@ -50,6 +50,7 @@
     "electron": "^39.2.6",
     "electron-builder": "^24.13.3",
     "eslint": "^9.39.1",
+    "eslint-formatter-compact": "^9.0.1",
     "eslint-formatter-unix": "^9.0.1",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.4.24",

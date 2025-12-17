@@ -33,3 +33,35 @@ Always write value for "number" with double quotes.
 ```
 
 ---
+
+When saving song in YAML write value for "title" always in double quotes like this:
+
+```yaml
+song:
+  title: "TEST A-4"
+```
+
+---
+
+When saving song with title "TEST A-4" the download file name is "TEST_A_4.yaml".
+Make it to be "TEST_A_4.song.yaml" (.song.yaml instead of .yaml as extension).
+But when song has no title, then file is just "yaml" and that's wrong.
+Assume that if there is no title, the download file should be just "NONAME.song.yaml".
+
+---
+
+When saving instrument in YAML the download name is formatted in lower case.
+Make it similar how the name of the song is made.
+Keep "Instrument_XX" as base file name if instrument has no name set.
+Use ".inst.yaml" as file extension instead of just ".yaml".
+
+---
+
+When saving instrument in YAML write value for "name" always in double quotes like this:
+
+```yaml
+instrument:
+  name: "X y"
+```
+
+---

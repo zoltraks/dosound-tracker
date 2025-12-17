@@ -151,8 +151,9 @@ export const useDataManagement = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const safeTitle = currentSong.title.replace(/[^a-zA-Z0-9]/g, '_');
-      a.download = `${safeTitle}.yaml`;
+      const rawTitle = (currentSong.title || '').trim();
+      const safeTitle = rawTitle ? rawTitle.replace(/[^a-zA-Z0-9]/g, '_') : 'NONAME';
+      a.download = `${safeTitle || 'NONAME'}.song.yaml`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -205,10 +206,11 @@ export const useDataManagement = () => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      const safeName = (currentInstrument.name || `instrument_${currentInstrument.id}`)
-        .replace(/[^a-z0-9]/gi, '_')
-        .toLowerCase();
-      a.download = `${safeName}.yaml`;
+      const rawName = (currentInstrument.name || '').trim();
+      const safeName = rawName
+        ? rawName.replace(/[^a-zA-Z0-9]/g, '_')
+        : `Instrument_${String(currentInstrument.id || '').toUpperCase()}`;
+      a.download = `${safeName}.inst.yaml`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);

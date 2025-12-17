@@ -57,6 +57,9 @@ describe('instrument color in song YAML IO', () => {
     };
 
     const yaml = buildSongYamlForExport(song);
+
+    expect(yaml).toMatch(/^\s{2}title: "Color Test"$/m);
+
     const parsed = parseSongFromYaml(yaml);
 
     expect(parsed.instrument[0].color).toBe('#abc');
