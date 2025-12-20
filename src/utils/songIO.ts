@@ -394,7 +394,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     }
 
     // Disallow characters that could break plain scalars or introduce YAML syntax.
-    return /[:{}\[\],&*#?|\-<>=!%@`"]/.test(value);
+    return /[:{}[\],&*#?|\-<>=!%@`"]/.test(value);
   };
 
   const quoteTitleValues = (text: string): string => {

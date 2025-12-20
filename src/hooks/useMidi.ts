@@ -1,11 +1,11 @@
 import { useCallback, useState } from 'react';
-import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry, MidiNoteEvent } from '../utils/midiUtils';
+import type { MidiConfiguration, MidiMonitorEntry, MidiNoteEvent, MidiDeviceInfo } from '../utils/midiUtils';
 import { STORAGE_KEY } from '../utils/midiUtils';
 import { useMidiDeviceManagement } from './useMidiDeviceManagement';
 import { useMidiMessageProcessing } from './useMidiMessageProcessing';
 
 // Re-export types for backward compatibility
-export type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry, MidiNoteEvent };
+export type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry, MidiNoteEvent };
 
 export interface UseMidiResult {
   isSupported: boolean;
@@ -14,8 +14,8 @@ export interface UseMidiResult {
     inputs: MidiDeviceInfo[];
     outputs: MidiDeviceInfo[];
   };
-  config: MidiConfig;
-  setConfig: (config: MidiConfig) => void;
+  configuration: MidiConfiguration;
+  setConfiguration: (configuration: MidiConfiguration) => void;
   inMonitor: MidiMonitorEntry[];
   outMonitor: MidiMonitorEntry[];
   clearMonitors: () => void;
@@ -26,7 +26,7 @@ export interface UseMidiResult {
   sendSystemReset: () => void;
 }
 
-interface RawMidiConfig {
+interface RawMidiConfiguration {
   inputEnabled?: boolean;
   outputEnabled?: boolean;
   inputId?: string | null;
@@ -51,7 +51,7 @@ export function useMidi(
   } = useMidiDeviceManagement();
 
   // 2. Configuration Management
-  const [config, setConfigState] = useState<MidiConfig>(() => {
+  const [configuration, setConfigurationState] = useState<MidiConfiguration>(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
@@ -64,7 +64,7 @@ export function useMidi(
           ignoreOutputVolume: true,
         };
       }
-      const parsed = JSON.parse(raw) as RawMidiConfig;
+      const parsed = JSON.parse(raw) as RawMidiConfiguration;
       return {
         inputEnabled: !!parsed.inputEnabled,
         outputEnabled: !!parsed.outputEnabled,
@@ -87,16 +87,16 @@ export function useMidi(
     }
   });
 
-  const setConfig = useCallback((next: MidiConfig) => {
-    setConfigState(next);
+  const setConfiguration = useCallback((configuration: MidiConfiguration) => {
+    setConfigurationState(configuration);
     try {
-      const toStore: RawMidiConfig = {
-        inputEnabled: !!next.inputEnabled,
-        outputEnabled: !!next.outputEnabled,
-        inputId: next.inputId ?? null,
-        outputId: next.outputId ?? null,
-        ignoreInputVolume: !!next.ignoreInputVolume,
-        ignoreOutputVolume: !!next.ignoreOutputVolume,
+      const toStore: RawMidiConfiguration = {
+        inputEnabled: !!configuration.inputEnabled,
+        outputEnabled: !!configuration.outputEnabled,
+        inputId: configuration.inputId ?? null,
+        outputId: configuration.outputId ?? null,
+        ignoreInputVolume: !!configuration.ignoreInputVolume,
+        ignoreOutputVolume: !!configuration.ignoreOutputVolume,
       };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
     } catch {
@@ -116,7 +116,7 @@ export function useMidi(
   } = useMidiMessageProcessing(
     midiAccessRef,
     devices,
-    config,
+    configuration,
     enableMonitors,
     onNoteEvent
   );
@@ -125,8 +125,8 @@ export function useMidi(
     isSupported,
     accessError,
     devices,
-    config,
-    setConfig,
+    configuration,
+    setConfiguration,
     inMonitor,
     outMonitor,
     clearMonitors,

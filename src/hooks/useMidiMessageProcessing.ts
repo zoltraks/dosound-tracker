@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback, type MutableRefObject } from 'react';
-import type { MidiConfig, MidiMonitorEntry, MidiNoteEvent, MidiDeviceInfo } from '../utils/midiUtils';
+import type { MidiConfiguration, MidiMonitorEntry, MidiNoteEvent, MidiDeviceInfo } from '../utils/midiUtils';
 import { resolveDeviceName, formatTime, MAX_MONITOR_ENTRIES } from '../utils/midiUtils';
 
 const isElectronEnv =
@@ -9,7 +9,7 @@ const isElectronEnv =
 export function useMidiMessageProcessing(
   midiAccessRef: MutableRefObject<MIDIAccess | null>,
   devices: { inputs: MidiDeviceInfo[]; outputs: MidiDeviceInfo[] },
-  config: MidiConfig,
+  configuration: MidiConfiguration,
   enableMonitors: boolean,
   onNoteEvent: (event: MidiNoteEvent) => void
 ) {
@@ -84,7 +84,7 @@ export function useMidiMessageProcessing(
     let noteLabel = '';
     let value: number | null = null;
 
-    let deviceId: string = config.inputId || '';
+    let deviceId: string = configuration.inputId || '';
     const target = event.target as MIDIInput | null;
     if (target && typeof target.id === 'string') {
       deviceId = target.id;
@@ -230,7 +230,7 @@ export function useMidiMessageProcessing(
     }
   }, [
     addInMonitorEntry,
-    config.inputId,
+    configuration.inputId,
     devices.inputs,
     enableMonitors,
     onNoteEvent,
@@ -243,7 +243,7 @@ export function useMidiMessageProcessing(
       noteNumber: number,
       velocity: number = 0x40
     ) => {
-      if (!config.outputEnabled) {
+      if (!configuration.outputEnabled) {
         return;
       }
 
@@ -251,7 +251,7 @@ export function useMidiMessageProcessing(
       const clampedNote = Math.max(0, Math.min(127, noteNumber | 0));
 
       let vel = Math.max(0, Math.min(127, velocity | 0));
-      if (kind === 'noteOn' && config.ignoreOutputVolume) {
+      if (kind === 'noteOn' && configuration.ignoreOutputVolume) {
         vel = 0x7f;
       }
 
@@ -265,7 +265,7 @@ export function useMidiMessageProcessing(
         .join(' ');
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
-      const outputDeviceName = resolveDeviceName(config.outputId ?? null, devices.outputs, 'MIDI Out');
+      const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');
 
       const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
       const midiOctave = Math.floor(clampedNote / 12) - 1;
@@ -318,9 +318,9 @@ export function useMidiMessageProcessing(
       }
     }, [
       addOutMonitorEntry,
-      config.ignoreOutputVolume,
-      config.outputEnabled,
-      config.outputId,
+      configuration.ignoreOutputVolume,
+      configuration.outputEnabled,
+      configuration.outputId,
       devices.outputs,
       enableMonitors,
     ]);
@@ -341,7 +341,7 @@ export function useMidiMessageProcessing(
 
   const sendProgramChange = useCallback(
     (channel: number, program: number) => {
-      if (!config.outputEnabled) {
+      if (!configuration.outputEnabled) {
         return;
       }
 
@@ -356,7 +356,7 @@ export function useMidiMessageProcessing(
         .join(' ');
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
-      const outputDeviceName = resolveDeviceName(config.outputId ?? null, devices.outputs, 'MIDI Out');
+      const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');
 
       const type = 'Program Change';
       const noteLabel = `PC ${clampedProgram}`;
@@ -404,14 +404,14 @@ export function useMidiMessageProcessing(
       }
     }, [
       addOutMonitorEntry,
-      config.outputEnabled,
-      config.outputId,
+      configuration.outputEnabled,
+      configuration.outputId,
       devices.outputs,
       enableMonitors,
     ]);
 
   const sendSystemReset = useCallback(() => {
-    if (!config.outputEnabled) {
+    if (!configuration.outputEnabled) {
       return;
     }
 
@@ -427,7 +427,7 @@ export function useMidiMessageProcessing(
       .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
       .join(' ');
 
-    const outputDeviceName = resolveDeviceName(config.outputId ?? null, devices.outputs, 'MIDI Out');
+    const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');
 
     addOutMonitorEntry({
       data: dataHex,
@@ -464,8 +464,8 @@ export function useMidiMessageProcessing(
     }
   }, [
     addOutMonitorEntry,
-    config.outputEnabled,
-    config.outputId,
+    configuration.outputEnabled,
+    configuration.outputId,
     devices.outputs,
     enableMonitors,
   ]);
@@ -478,10 +478,10 @@ export function useMidiMessageProcessing(
     }
 
     let nextInput: MIDIInput | null = null;
-    if (config.inputEnabled && config.inputId) {
+    if (configuration.inputEnabled && configuration.inputId) {
       try {
         const rawInput = access.inputs && typeof access.inputs.get === 'function'
-          ? access.inputs.get(config.inputId)
+          ? access.inputs.get(configuration.inputId)
           : null;
         nextInput = rawInput ?? null;
       } catch {
@@ -521,7 +521,7 @@ export function useMidiMessageProcessing(
     currentInputRef.current = nextInput;
     currentInputHandlerRef.current = null;
 
-    if (nextInput && config.inputEnabled) {
+    if (nextInput && configuration.inputEnabled) {
       try {
         try {
           if (typeof nextInput.open === 'function') {
@@ -546,7 +546,7 @@ export function useMidiMessageProcessing(
         // ignore listener errors
       }
     }
-  }, [config.inputEnabled, config.inputId, handleMidiMessage, midiAccessRef]);
+  }, [configuration.inputEnabled, configuration.inputId, handleMidiMessage, midiAccessRef]);
 
   // Handle Output Changes
   useEffect(() => {
@@ -567,10 +567,10 @@ export function useMidiMessageProcessing(
     }
 
     let nextOutput: MIDIOutput | null = null;
-    if (config.outputEnabled && config.outputId) {
+    if (configuration.outputEnabled && configuration.outputId) {
       try {
         const rawOutput = access.outputs && typeof access.outputs.get === 'function'
-          ? access.outputs.get(config.outputId)
+          ? access.outputs.get(configuration.outputId)
           : null;
         nextOutput = rawOutput ?? null;
       } catch {
@@ -589,7 +589,7 @@ export function useMidiMessageProcessing(
       }
     }
 
-    if (nextOutput && config.outputEnabled) {
+    if (nextOutput && configuration.outputEnabled) {
       try {
         if (typeof nextOutput.open === 'function') {
           const result = nextOutput.open();
@@ -606,10 +606,10 @@ export function useMidiMessageProcessing(
 
     currentOutputRef.current = nextOutput;
 
-    if (!isElectronEnv && nextOutput && config.outputEnabled && nextOutput !== previousOutput) {
+    if (!isElectronEnv && nextOutput && configuration.outputEnabled && nextOutput !== previousOutput) {
       sendSystemReset();
     }
-  }, [config.outputEnabled, config.outputId, sendSystemReset, midiAccessRef]);
+  }, [configuration.outputEnabled, configuration.outputId, sendSystemReset, midiAccessRef]);
 
   // Cleanup on unmount
   useEffect(() => {

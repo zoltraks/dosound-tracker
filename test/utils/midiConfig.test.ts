@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import type { MidiConfig } from '../../src/hooks/useMidi';
+import type { MidiConfiguration } from '../../src/hooks/useMidi';
 import {
-  buildMidiConfigYaml,
-  parseMidiConfigFromYaml,
-  MidiConfigFormatError,
+  buildMidiConfigurationYaml,
+  parseMidiConfigurationFromYaml,
+  MidiConfigurationFormatError,
 } from '../../src/utils/midiConfig';
 
-const makeConfig = (overrides: Partial<MidiConfig> = {}): MidiConfig => ({
+const makeConfig = (overrides: Partial<MidiConfiguration> = {}): MidiConfiguration => ({
   inputEnabled: false,
   outputEnabled: false,
   inputId: null,
@@ -27,7 +27,7 @@ describe('midiConfig YAML helpers', () => {
       ignoreOutputVolume: true,
     });
 
-    const yaml = buildMidiConfigYaml(original);
+    const yaml = buildMidiConfigurationYaml(original);
 
     // Use a different current config to verify YAML fully drives the result
     const fallback = makeConfig({
@@ -39,7 +39,7 @@ describe('midiConfig YAML helpers', () => {
       ignoreOutputVolume: false,
     });
 
-    const parsed = parseMidiConfigFromYaml(yaml, fallback);
+    const parsed = parseMidiConfigurationFromYaml(yaml, fallback);
 
     expect(parsed).toEqual(original);
   });
@@ -63,7 +63,7 @@ describe('midiConfig YAML helpers', () => {
       ignoreOutputVolume: false,
     });
 
-    const parsed = parseMidiConfigFromYaml(yaml, fallback);
+    const parsed = parseMidiConfigurationFromYaml(yaml, fallback);
 
     expect(parsed.inputEnabled).toBe(true); // "yes" -> true
     expect(parsed.ignoreInputVolume).toBe(false); // "no" -> false
@@ -87,29 +87,29 @@ describe('midiConfig YAML helpers', () => {
       outputId: 'fallback-output',
     });
 
-    const parsed = parseMidiConfigFromYaml(yaml, fallback);
+    const parsed = parseMidiConfigurationFromYaml(yaml, fallback);
 
     expect(parsed.inputId).toBe('input-device');
     expect(parsed.outputId).toBeNull();
   });
 
-  it('throws MidiConfigFormatError when root midi key is missing', () => {
+  it('throws MidiConfigurationFormatError when root midi key is missing', () => {
     const yaml = 'root: {}';
     const current = makeConfig();
 
-    expect(() => parseMidiConfigFromYaml(yaml, current)).toThrowError(MidiConfigFormatError);
-    expect(() => parseMidiConfigFromYaml(yaml, current)).toThrowError(
-      /Invalid MIDI config file: missing "midi" root key\./,
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(MidiConfigurationFormatError);
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      /Invalid MIDI configuration file: missing "midi" root key\./,
     );
   });
 
-  it('throws MidiConfigFormatError when midi section is not an object', () => {
+  it('throws MidiConfigurationFormatError when midi section is not an object', () => {
     const yaml = 'midi: 123';
     const current = makeConfig();
 
-    expect(() => parseMidiConfigFromYaml(yaml, current)).toThrowError(MidiConfigFormatError);
-    expect(() => parseMidiConfigFromYaml(yaml, current)).toThrowError(
-      /"midi" section is not an object\./,
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(MidiConfigurationFormatError);
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      /Invalid MIDI configuration file: "midi" section is not an object\./,
     );
   });
 });

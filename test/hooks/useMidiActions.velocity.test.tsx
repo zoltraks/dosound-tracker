@@ -4,7 +4,7 @@ import { render, waitFor, act } from '@testing-library/react';
 import type { YM2149 } from '../../src/synth/YM2149';
 import type { Instrument, Pattern, Song } from '../../src/synth/SoundDriver';
 import { useMidiActions } from '../../src/hooks/useMidiActions';
-import type { MidiConfig, MidiNoteEvent } from '../../src/hooks/useMidi';
+import type { MidiConfiguration, MidiNoteEvent } from '../../src/hooks/useMidi';
 
 type HookResult = ReturnType<typeof useMidiActions>;
 
@@ -35,7 +35,7 @@ const makeSong = (): Song => ({
   instrument: [makeInstrument()],
 });
 
-const makeMidiConfig = (overrides: Partial<MidiConfig> = {}): MidiConfig => ({
+const makeMidiConfig = (overrides: Partial<MidiConfiguration> = {}): MidiConfiguration => ({
   inputEnabled: true,
   outputEnabled: true,
   inputId: 'in',
@@ -82,9 +82,9 @@ describe('useMidiActions velocity handling', () => {
       sendInstrumentMidiNoteOffForChannel: vi.fn(),
     };
 
-    const midiConfigRef = {
+    const midiConfigurationRef = {
       current: makeMidiConfig({ ignoreInputVolume: false, ignoreOutputVolume: true }),
-    } as React.RefObject<MidiConfig | null>;
+    } as React.RefObject<MidiConfiguration | null>;
 
     const ym2149Ref = { current: ym2149 } as React.RefObject<YM2149 | null>;
     const midiHelpersRef = { current: midiHelpers } as React.RefObject<typeof midiHelpers | null>;
@@ -108,7 +108,7 @@ describe('useMidiActions velocity handling', () => {
           handlePatternChange: vi.fn(),
           ym2149Ref,
           midiHelpersRef,
-          midiConfigRef,
+          midiConfigurationRef,
           parseBaseKeyString: vi.fn(() => ({ note: 'C', octave: 4 })),
         }}
       />
@@ -140,9 +140,9 @@ describe('useMidiActions velocity handling', () => {
       sendInstrumentMidiNoteOffForChannel: vi.fn(),
     };
 
-    const midiConfigRef = {
+    const midiConfigurationRef = {
       current: makeMidiConfig({ ignoreInputVolume: true, ignoreOutputVolume: true }),
-    } as React.RefObject<MidiConfig | null>;
+    } as React.RefObject<MidiConfiguration | null>;
 
     const ym2149Ref = { current: ym2149 } as React.RefObject<YM2149 | null>;
     const midiHelpersRef = { current: midiHelpers } as React.RefObject<typeof midiHelpers | null>;
@@ -166,7 +166,7 @@ describe('useMidiActions velocity handling', () => {
           handlePatternChange: vi.fn(),
           ym2149Ref,
           midiHelpersRef,
-          midiConfigRef,
+          midiConfigurationRef,
           parseBaseKeyString: vi.fn(() => ({ note: 'C', octave: 4 })),
         }}
       />
@@ -197,9 +197,9 @@ describe('useMidiActions velocity handling', () => {
       sendInstrumentMidiNoteOffForChannel: vi.fn(),
     };
 
-    const midiConfigRef = {
+    const midiConfigurationRef = {
       current: makeMidiConfig({ ignoreInputVolume: true, ignoreOutputVolume: false }),
-    } as React.RefObject<MidiConfig | null>;
+    } as React.RefObject<MidiConfiguration | null>;
 
     const ym2149Ref = { current: ym2149 } as React.RefObject<YM2149 | null>;
     const midiHelpersRef = { current: midiHelpers } as React.RefObject<typeof midiHelpers | null>;
@@ -223,7 +223,7 @@ describe('useMidiActions velocity handling', () => {
           handlePatternChange: vi.fn(),
           ym2149Ref,
           midiHelpersRef,
-          midiConfigRef,
+          midiConfigurationRef,
           parseBaseKeyString: vi.fn(() => ({ note: 'C', octave: 4 })),
         }}
       />

@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react';
 import { useMidi } from './useMidi';
-import type { MidiConfig, MidiNoteEvent, MidiMonitorEntry, MidiDeviceInfo } from './useMidi';
+import type { MidiConfiguration, MidiNoteEvent, MidiMonitorEntry, MidiDeviceInfo } from './useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 import { NOTES } from '../constants/music';
 
@@ -16,8 +16,8 @@ interface UseMidiHandlingResult {
     inputs: MidiDeviceInfo[];
     outputs: MidiDeviceInfo[];
   };
-  midiConfig: MidiConfig;
-  setMidiConfig: (config: MidiConfig) => void;
+  midiConfiguration: MidiConfiguration;
+  setMidiConfiguration: (configuration: MidiConfiguration) => void;
   midiInMonitor: MidiMonitorEntry[];
   midiOutMonitor: MidiMonitorEntry[];
   clearMidiMonitors: () => void;
@@ -49,8 +49,8 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     isSupported,
     accessError,
     devices,
-    config,
-    setConfig,
+    configuration,
+    setConfiguration,
     inMonitor,
     outMonitor,
     clearMonitors,
@@ -171,15 +171,15 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     sendInstrumentMidiNoteOffForChannel(ymChannel);
   };
 
-  const midiInputEnabled = config.inputEnabled && !!config.inputId;
-  const midiOutputEnabled = config.outputEnabled && !!config.outputId;
+  const midiInputEnabled = configuration.inputEnabled && !!configuration.inputId;
+  const midiOutputEnabled = configuration.outputEnabled && !!configuration.outputId;
 
   return {
     isMidiSupported: isSupported,
     midiAccessError: accessError,
     midiDevices: devices,
-    midiConfig: config,
-    setMidiConfig: setConfig,
+    midiConfiguration: configuration,
+    setMidiConfiguration: setConfiguration,
     midiInMonitor: inMonitor,
     midiOutMonitor: outMonitor,
     clearMidiMonitors: clearMonitors,

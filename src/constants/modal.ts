@@ -8,7 +8,7 @@ export const INFO_MODAL_TITLES = {
   transposeSummary: 'Transpose Summary',
   renumberSummary: 'Renumber Summary',
   instrumentOperationSummary: 'Instrument Operation',
-  midiLoadError: 'MIDI Config Error',
+  midiLoadError: 'MIDI Configuration Error',
   midiCopySummary: 'MIDI Monitor',
 } as const;
 
