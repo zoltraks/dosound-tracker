@@ -1,5 +1,16 @@
 # Changes
 
+## Version 1.2.5
+
+Song YAML compatibility improvements (chip/frame metadata + safer load warnings), MIDI configuration naming cleanup with automatic localStorage migration, and minor UI polishing since 1.2.4.
+
+- Added optional `chip` and `frame` fields to **song YAML** (defaults: `YM` / `50`) and show a confirmation dialog when loading a song with unsupported values so you can decide whether to load anyway.
+- Song YAML loading now accepts either `song:` or `music:` as the root key for better compatibility with external tools and older/newer formats.
+- Refined **song YAML export** formatting for consistency, including stable field ordering and quoting, and more compact pattern encoding using `wait` runs and `note: "OFF"` for key-release steps.
+- Renamed demo song repository files to the clearer `.song.yaml` extension and updated the song repository list accordingly.
+- Renamed MIDI “config” naming to **configuration** across the app, including the exported filename (`midi-configuration.yaml`) and the localStorage key (with automatic migration from the old key so existing settings are preserved).
+- Improved confirmation modal button layout and ensured file inputs reset properly so loading the same file twice works reliably.
+
 ## Version 1.2.4
 
 Stability fixes for EQ/DUMP refresh, export strategy cleanup, YAML export naming/formatting polish, and small editor and UI refinements since 1.2.3.
