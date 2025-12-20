@@ -1,6 +1,6 @@
 import React from 'react';
 import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, MarkdownModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
-import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
+import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 import { CONFIRM_MODAL_TEXT } from '../constants/modal';
 import { buildInfoModals } from '../utils/modalRendering';
@@ -109,18 +109,18 @@ export interface ModalContainerProps {
   isMidiModalOpen: boolean;
   isMidiSupported: boolean;
   midiAccessError: string | null;
-  midiConfig: MidiConfig;
+  midiConfiguration: MidiConfiguration;
   midiDevices: {
     inputs: MidiDeviceInfo[];
     outputs: MidiDeviceInfo[];
   };
   midiInMonitor: MidiMonitorEntry[];
   midiOutMonitor: MidiMonitorEntry[];
-  onSaveMidiConfig: (config: MidiConfig) => void;
+  onSaveMidiConfiguration: (configuration: MidiConfiguration) => void;
   onCloseMidi: () => void;
   onClearMidiMonitors: () => void;
   onRescanMidiDevices: () => void;
-  onLiveMidiConfigChange: (patch: Partial<MidiConfig>) => void;
+  onLiveMidiConfigurationChange: (patch: Partial<MidiConfiguration>) => void;
   setMidiCopySummary: (value: string) => void;
   setMidiLoadError: (value: string) => void;
   isDownloadOpen: boolean;
@@ -220,15 +220,15 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   isMidiModalOpen,
   isMidiSupported,
   midiAccessError,
-  midiConfig,
+  midiConfiguration,
   midiDevices,
   midiInMonitor,
   midiOutMonitor,
-  onSaveMidiConfig,
+  onSaveMidiConfiguration,
   onCloseMidi,
   onClearMidiMonitors,
   onRescanMidiDevices,
-  onLiveMidiConfigChange,
+  onLiveMidiConfigurationChange,
   setMidiCopySummary,
   setMidiLoadError,
   isDownloadOpen,
@@ -414,15 +414,15 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         isOpen={isMidiModalOpen}
         isSupported={isMidiSupported}
         accessError={midiAccessError}
-        config={midiConfig}
+        configuration={midiConfiguration}
         devices={midiDevices}
         inMonitor={midiInMonitor}
         outMonitor={midiOutMonitor}
-        onSave={onSaveMidiConfig}
+        onSave={onSaveMidiConfiguration}
         onCancel={onCloseMidi}
         onClear={onClearMidiMonitors}
         onRescan={onRescanMidiDevices}
-        onChangeConfig={onLiveMidiConfigChange}
+        onChangeConfig={onLiveMidiConfigurationChange}
         onCopySummary={setMidiCopySummary}
         onLoadError={setMidiLoadError}
         onSystemReset={onMidiSystemReset}

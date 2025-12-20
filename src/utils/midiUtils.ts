@@ -1,4 +1,4 @@
-export interface MidiConfig {
+export interface MidiConfiguration {
   inputEnabled: boolean;
   outputEnabled: boolean;
   inputId: string | null;
@@ -35,7 +35,7 @@ export interface MidiNoteEvent {
 }
 
 export const MAX_MONITOR_ENTRIES = 1000;
-export const STORAGE_KEY = 'dosound-tracker-midi-config';
+export const STORAGE_KEY = 'dosound-tracker-midi-configuration';
 
 export function formatTime(): string {
   const now = new Date();

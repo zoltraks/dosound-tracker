@@ -2,7 +2,7 @@ import { useCallback, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Song, Pattern, Step, Note, Instrument } from '../synth/SoundDriver';
 import type { YM2149 } from '../synth/YM2149';
-import type { MidiConfig, MidiNoteEvent } from './useMidi';
+import type { MidiConfiguration, MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
 import { NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { advancePreviewEnvelopeTick, getPreviewEnvelopeApplyStep } from '../utils/previewEnvelopeTiming';
@@ -34,7 +34,7 @@ interface UseMidiActionsArgs {
   handlePatternChange: (pattern: Pattern) => void;
   ym2149Ref: RefObject<YM2149 | null>;
   midiHelpersRef: RefObject<MidiHelpersRef | null>;
-  midiConfigRef: RefObject<MidiConfig | null>;
+  midiConfigurationRef: RefObject<MidiConfiguration | null>;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
 }
 
@@ -55,7 +55,7 @@ export function useMidiActions({
   handlePatternChange,
   ym2149Ref,
   midiHelpersRef,
-  midiConfigRef,
+  midiConfigurationRef,
   parseBaseKeyString,
 }: UseMidiActionsArgs): UseMidiActionsResult {
   const lastMidiPreviewRef = useRef<{
@@ -162,8 +162,8 @@ export function useMidiActions({
       // When a track panel is focused, insert notes into the current pattern and advance the cursor,
       // then start a sustain-aware live preview on that track's channel.
       if (isTrackFocused && type === 'noteOn') {
-        const ignoreInputVolume = midiConfigRef.current?.ignoreInputVolume ?? true;
-        const ignoreOutputVolume = midiConfigRef.current?.ignoreOutputVolume ?? true;
+        const ignoreInputVolume = midiConfigurationRef.current?.ignoreInputVolume ?? true;
+        const ignoreOutputVolume = midiConfigurationRef.current?.ignoreOutputVolume ?? true;
         const liveVolumeModifier = ignoreInputVolume ? 0x0f : velocityToVolumeNibble(midiVelocity);
         const midiOutVelocity = ignoreOutputVolume ? null : midiVelocity;
 
@@ -384,8 +384,8 @@ export function useMidiActions({
             : 0;
 
         if (type === 'noteOn') {
-          const ignoreInputVolume = midiConfigRef.current?.ignoreInputVolume ?? true;
-          const ignoreOutputVolume = midiConfigRef.current?.ignoreOutputVolume ?? true;
+          const ignoreInputVolume = midiConfigurationRef.current?.ignoreInputVolume ?? true;
+          const ignoreOutputVolume = midiConfigurationRef.current?.ignoreOutputVolume ?? true;
           const liveVolumeModifier = ignoreInputVolume ? 0x0f : velocityToVolumeNibble(midiVelocity);
           const midiOutVelocity = ignoreOutputVolume ? null : midiVelocity;
 
@@ -587,7 +587,7 @@ export function useMidiActions({
       setSharedCurrentLine,
       sharedCurrentLine,
       midiHelpersRef,
-      midiConfigRef,
+      midiConfigurationRef,
       ym2149Ref,
       parseBaseKeyString
     ]

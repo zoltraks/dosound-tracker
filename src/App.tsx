@@ -23,7 +23,7 @@ import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
 import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES } from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
-import type { MidiConfig } from './hooks/useMidi';
+import type { MidiConfiguration } from './hooks/useMidi';
 import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -611,7 +611,7 @@ const App: React.FC = () => {
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   } | null>(null);
 
-  const midiConfigRef = useRef<MidiConfig | null>(null);
+  const midiConfigurationRef = useRef<MidiConfiguration | null>(null);
 
   const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
   const {
@@ -1779,7 +1779,7 @@ const App: React.FC = () => {
     handlePatternChange,
     ym2149Ref,
     midiHelpersRef,
-    midiConfigRef,
+    midiConfigurationRef,
     parseBaseKeyString,
   });
 
@@ -2036,8 +2036,8 @@ const App: React.FC = () => {
     isMidiSupported,
     midiAccessError,
     midiDevices,
-    midiConfig,
-    setMidiConfig,
+    midiConfiguration,
+    setMidiConfiguration,
     midiInMonitor,
     midiOutMonitor,
     clearMidiMonitors,
@@ -2062,14 +2062,14 @@ const App: React.FC = () => {
   }, [sendInstrumentMidiNoteOn, sendInstrumentMidiNoteOffForChannel]);
 
   useEffect(() => {
-    midiConfigRef.current = midiConfig;
-  }, [midiConfig]);
+    midiConfigurationRef.current = midiConfiguration;
+  }, [midiConfiguration]);
 
   const handleLiveMidiConfigChange = useCallback(
-    (patch: Partial<MidiConfig>) => {
-      setMidiConfig({ ...midiConfig, ...patch });
+    (patch: Partial<MidiConfiguration>) => {
+      setMidiConfiguration({ ...midiConfiguration, ...patch });
     },
-    [midiConfig, setMidiConfig]
+    [midiConfiguration, setMidiConfiguration]
   );
 
   const handleShowMidi = useCallback(() => {
@@ -2082,12 +2082,12 @@ const App: React.FC = () => {
   }, [resetMidiProgramCache]);
 
   const handleSaveMidiConfig = useCallback(
-    (config: MidiConfig) => {
-      setMidiConfig(config);
+    (configuration: MidiConfiguration) => {
+      setMidiConfiguration(configuration);
       resetMidiProgramCache();
       setIsMidiModalOpen(false);
     },
-    [resetMidiProgramCache, setMidiConfig]
+    [resetMidiProgramCache, setMidiConfiguration]
   );
 
   const handleClearMidiMonitors = useCallback(() => {
@@ -2464,15 +2464,15 @@ const App: React.FC = () => {
               isMidiModalOpen={isMidiModalOpen}
               isMidiSupported={isMidiSupported}
               midiAccessError={midiAccessError}
-              midiConfig={midiConfig}
+              midiConfiguration={midiConfiguration}
               midiDevices={midiDevices}
               midiInMonitor={midiInMonitor}
               midiOutMonitor={midiOutMonitor}
-              onSaveMidiConfig={handleSaveMidiConfig}
+              onSaveMidiConfiguration={handleSaveMidiConfig}
               onCloseMidi={handleCloseMidi}
               onClearMidiMonitors={handleClearMidiMonitors}
               onRescanMidiDevices={handleRescanMidiDevices}
-              onLiveMidiConfigChange={handleLiveMidiConfigChange}
+              onLiveMidiConfigurationChange={handleLiveMidiConfigChange}
               setMidiCopySummary={setMidiCopySummary}
               setMidiLoadError={setMidiLoadError}
               isDownloadOpen={isDownloadOpen}

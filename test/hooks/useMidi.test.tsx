@@ -1,9 +1,9 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useMidi, type MidiConfig } from '../../src/hooks/useMidi';
+import { useMidi, type MidiConfiguration } from '../../src/hooks/useMidi';
 
-const STORAGE_KEY = 'dosound-tracker-midi-config';
+const STORAGE_KEY = 'dosound-tracker-midi-configuration';
 
 type HookResult = ReturnType<typeof useMidi>;
 
@@ -20,7 +20,7 @@ const MidiHookHarness: React.FC<{ onReady: (value: HookResult) => void }> = ({ o
 };
 
 describe('useMidi', () => {
-  it('initializes config with safe defaults when no localStorage value is present', async () => {
+  it('initializes configuration with safe defaults when no localStorage value is present', async () => {
     window.localStorage.removeItem(STORAGE_KEY);
 
     let hook: HookResult | null = null;
@@ -30,7 +30,7 @@ describe('useMidi', () => {
       expect(hook).not.toBeNull();
     });
 
-    expect(hook!.config).toEqual({
+    expect(hook!.configuration).toEqual({
       inputEnabled: false,
       outputEnabled: false,
       inputId: null,
@@ -40,7 +40,7 @@ describe('useMidi', () => {
     });
   });
 
-  it('restores persisted config from localStorage when available', async () => {
+  it('restores persisted configuration from localStorage when available', async () => {
     const stored = {
       inputEnabled: true,
       outputEnabled: true,
@@ -48,7 +48,7 @@ describe('useMidi', () => {
       outputId: 'output-1',
       ignoreInputVolume: false,
       ignoreOutputVolume: false,
-    } satisfies Partial<MidiConfig>;
+    } satisfies Partial<MidiConfiguration>;
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
@@ -59,7 +59,7 @@ describe('useMidi', () => {
       expect(hook).not.toBeNull();
     });
 
-    expect(hook!.config).toEqual({
+    expect(hook!.configuration).toEqual({
       inputEnabled: true,
       outputEnabled: true,
       inputId: 'input-1',
@@ -69,7 +69,7 @@ describe('useMidi', () => {
     });
   });
 
-  it('persists sanitized config back to localStorage when setConfig is called', async () => {
+  it('persists sanitized configuration back to localStorage when setConfiguration is called', async () => {
     window.localStorage.removeItem(STORAGE_KEY);
 
     let hook: HookResult | null = null;
@@ -79,7 +79,7 @@ describe('useMidi', () => {
       expect(hook).not.toBeNull();
     });
 
-    const nextConfig: MidiConfig = {
+    const nextConfig: MidiConfiguration = {
       inputEnabled: true,
       outputEnabled: true,
       inputId: 'in-device',
@@ -89,7 +89,7 @@ describe('useMidi', () => {
     };
 
     await act(async () => {
-      hook!.setConfig(nextConfig);
+      hook!.setConfiguration(nextConfig);
     });
 
     const raw = window.localStorage.getItem(STORAGE_KEY);
