@@ -105,3 +105,13 @@ Allow to use "PAL" (case insensitive) as value for "frame" in song YAML and
 treat it the same as default accepted value 50 (no confirmation needed).
 
 ---
+
+When I try to "LOAD SONG" with the file having unsupported frame rate and confirmation dialog
+is shown and I press "CANCEL" and try to load song again, no confirmation is shown like my action
+is ignored.
+
+---
+
+When loading song YAML data, allow to use "music" as the root node istead of "song" while keeping "song" root node by default.
+
+---

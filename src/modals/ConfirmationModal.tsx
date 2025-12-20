@@ -35,13 +35,17 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             </React.Fragment>
           ))}
         </div>
-        <div className="modal-actions">
-          <button className="command-btn" onClick={onConfirm}>
-            {confirmLabel}
-          </button>
-          <button className="command-btn" onClick={onCancel}>
-            {cancelLabel}
-          </button>
+        <div className="modal-actions confirm-actions">
+          <div className="confirm-actions-left">
+            <button className="command-btn" onClick={onCancel}>
+              {cancelLabel}
+            </button>
+          </div>
+          <div className="confirm-actions-right">
+            <button className="command-btn" onClick={onConfirm}>
+              {confirmLabel}
+            </button>
+          </div>
         </div>
       </div>
     </div>

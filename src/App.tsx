@@ -888,7 +888,7 @@ const App: React.FC = () => {
       parsed = yaml.load(content) as unknown;
     } catch (error) {
       console.error('Error loading instrument:', error);
-      setInstrumentError('Error loading instrument file. Please check the file format.');
+      setInstrumentError('Error loading instrument file.');
       return;
     }
 
@@ -976,7 +976,7 @@ const App: React.FC = () => {
         })
         .catch(error => {
           console.error('Error loading repository instrument:', error);
-          setInstrumentError('Error loading instrument file. Please check the file format.');
+          setInstrumentError('Error loading instrument file.');
         })
         .finally(() => {
           setIsRepositoryInstrumentOpen(false);
@@ -1018,7 +1018,7 @@ const App: React.FC = () => {
         })
         .catch(error => {
           console.error('Error loading demo song:', error);
-          setSongError('Error loading song file. Please check the file format.');
+          setSongError('Error loading song file.');
         })
         .finally(() => {
           setIsDemoSongPickerOpen(false);

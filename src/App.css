@@ -1269,6 +1269,17 @@ body {
   gap: 6px;
 }
 
+/* Confirm modal actions */
+.modal-actions.confirm-actions {
+  justify-content: space-between;
+}
+
+.confirm-actions-left,
+.confirm-actions-right {
+  display: flex;
+  gap: 6px;
+}
+
 /* Main Content */
 .main-content {
   flex: 1;

@@ -21,6 +21,7 @@ import {
 
 type SongYamlRoot = {
   song?: unknown;
+  music?: unknown;
 };
 
 interface SongYamlNode {
@@ -126,12 +127,12 @@ export interface ParseSongOptions {
 export const parseSongFromYaml = (content: string, options?: ParseSongOptions): Song => {
   const parsed = yaml.load(content) as unknown;
 
-  if (!parsed || typeof parsed !== 'object' || !('song' in parsed)) {
-    throw new Error('Root "song" key not found.');
+  if (!parsed || typeof parsed !== 'object' || (!('song' in parsed) && !('music' in parsed))) {
+    throw new Error('Root "song" or "music" key not found.');
   }
 
   const root = parsed as SongYamlRoot;
-  const node = root.song;
+  const node = root.song ?? root.music;
   if (!node || typeof node !== 'object') {
     throw new Error('Invalid song file format');
   }

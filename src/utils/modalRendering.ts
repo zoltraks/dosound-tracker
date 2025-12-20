@@ -35,20 +35,25 @@ export type BuildInfoModalsArgs = {
   setMidiCopySummary: (value: string) => void;
 };
 
+const FILE_FORMAT_HINT = 'Please check the file format.';
+
 export function buildInfoModals(args: BuildInfoModalsArgs): InfoModalDescriptor[] {
+  const decorateFileError = (message: string) =>
+    message ? `${message}\n\n${FILE_FORMAT_HINT}` : message;
+
   return [
     {
       key: 'songError',
       isOpen: !!args.songError,
       title: INFO_MODAL_TITLES.songError,
-      message: args.songError,
+      message: decorateFileError(args.songError),
       onClose: () => args.setSongError(''),
     },
     {
       key: 'instrumentError',
       isOpen: !!args.instrumentError,
       title: INFO_MODAL_TITLES.instrumentError,
-      message: args.instrumentError,
+      message: decorateFileError(args.instrumentError),
       onClose: () => args.setInstrumentError(''),
     },
     {

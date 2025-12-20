@@ -62,7 +62,7 @@ describe('parseSongFromYaml', () => {
   it('throws when root song key is missing', () => {
     const yamlContent = 'title: Missing root';
 
-    expect(() => parseSongFromYaml(yamlContent)).toThrowError(/Root "song" key not found\./);
+    expect(() => parseSongFromYaml(yamlContent)).toThrowError(/Root "song" or "music" key not found\./);
   });
 
   it('throws when line is missing or empty', () => {

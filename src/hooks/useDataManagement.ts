@@ -212,7 +212,7 @@ export const useDataManagement = () => {
         applyParsedSong(newSong);
       } catch (error) {
         console.error('Error loading song:', error);
-        setSongError('Error loading song file. Please check the file format.');
+        setSongError('Error loading song file.');
       }
     },
     [applyParsedSong, setSongError]
@@ -268,7 +268,7 @@ export const useDataManagement = () => {
         setIsSongDirty(true);
       } catch (error) {
         console.error('Error loading instrument:', error);
-        setInstrumentError('Error loading instrument file. Please check the file format.');
+        setInstrumentError('Error loading instrument file.');
       }
     },
     [currentInstrument.id, setCurrentInstrument, setCurrentSong, setIsSongDirty, setInstrumentError],
@@ -361,7 +361,12 @@ export const useDataManagement = () => {
   }, [currentSong, currentInstrument]);
 
   const triggerFileLoad = useCallback(() => {
-    fileInputRef.current?.click();
+    if (!fileInputRef.current) {
+      return;
+    }
+
+    fileInputRef.current.value = '';
+    fileInputRef.current.click();
   }, []);
 
   return {

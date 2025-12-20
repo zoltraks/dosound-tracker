@@ -9,3 +9,11 @@ Make Backspace key in Pitch envelope work like in other envelopes, so pressing w
 Update keyboard shortcuts table in MANUAL.md after that.
 
 ---
+
+In confirmation modal dialog place "CANCEL" button on the left side of modal-actions bar leaving "OK" on the right side.
+
+---
+
+Button "CANCEL" in confirmation modal dialog should be moved to the left side of modal dialog not just before "OK".
+
+---
