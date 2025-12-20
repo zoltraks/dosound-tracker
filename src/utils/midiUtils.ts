@@ -1,4 +1,4 @@
-export interface MidiConfig {
+export interface MidiConfiguration {
   inputEnabled: boolean;
   outputEnabled: boolean;
   inputId: string | null;

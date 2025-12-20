@@ -23,7 +23,7 @@ import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
 import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES } from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
-import type { MidiConfig } from './hooks/useMidi';
+import type { MidiConfiguration } from './hooks/useMidi';
 import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
 import yaml from 'js-yaml';
 import { HeaderPanel } from './components/HeaderPanel';
@@ -611,7 +611,7 @@ const App: React.FC = () => {
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   } | null>(null);
 
-  const midiConfigRef = useRef<MidiConfig | null>(null);
+  const midiConfigurationRef = useRef<MidiConfiguration | null>(null);
 
   const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
   const {
@@ -1779,7 +1779,7 @@ const App: React.FC = () => {
     handlePatternChange,
     ym2149Ref,
     midiHelpersRef,
-    midiConfigRef,
+    midiConfigurationRef,
     parseBaseKeyString,
   });
 
@@ -2036,8 +2036,8 @@ const App: React.FC = () => {
     isMidiSupported,
     midiAccessError,
     midiDevices,
-    midiConfig,
-    setMidiConfig,
+    midiConfiguration,
+    setMidiConfiguration,
     midiInMonitor,
     midiOutMonitor,
     clearMidiMonitors,
@@ -2050,7 +2050,10 @@ const App: React.FC = () => {
     midiOutputEnabled,
     resetMidiProgramCache,
     sendSystemReset,
-  } = useMidiHandling({ onNoteEvent: handleMidiNoteEvent, monitorsEnabled: isDebugMode || isMidiModalOpen });
+  } = useMidiHandling({
+    onNoteEvent: handleMidiNoteEvent,
+    monitorsEnabled: isDebugMode || isMidiModalOpen,
+  });
 
   // Keep MIDI helper ref in sync with the latest MIDI send functions from the
   // useMidiHandling hook so callbacks defined earlier can use them safely.
@@ -2062,14 +2065,14 @@ const App: React.FC = () => {
   }, [sendInstrumentMidiNoteOn, sendInstrumentMidiNoteOffForChannel]);
 
   useEffect(() => {
-    midiConfigRef.current = midiConfig;
-  }, [midiConfig]);
+    midiConfigurationRef.current = midiConfiguration;
+  }, [midiConfiguration]);
 
-  const handleLiveMidiConfigChange = useCallback(
-    (patch: Partial<MidiConfig>) => {
-      setMidiConfig({ ...midiConfig, ...patch });
+  const handleLiveMidiConfigurationChange = useCallback(
+    (patch: Partial<MidiConfiguration>) => {
+      setMidiConfiguration({ ...midiConfiguration, ...patch });
     },
-    [midiConfig, setMidiConfig]
+    [midiConfiguration, setMidiConfiguration]
   );
 
   const handleShowMidi = useCallback(() => {
@@ -2081,13 +2084,13 @@ const App: React.FC = () => {
     setIsMidiModalOpen(false);
   }, [resetMidiProgramCache]);
 
-  const handleSaveMidiConfig = useCallback(
-    (config: MidiConfig) => {
-      setMidiConfig(config);
+  const handleSaveMidiConfiguration = useCallback(
+    (configuration: MidiConfiguration) => {
+      setMidiConfiguration(configuration);
       resetMidiProgramCache();
       setIsMidiModalOpen(false);
     },
-    [resetMidiProgramCache, setMidiConfig]
+    [resetMidiProgramCache, setMidiConfiguration]
   );
 
   const handleClearMidiMonitors = useCallback(() => {
@@ -2464,15 +2467,15 @@ const App: React.FC = () => {
               isMidiModalOpen={isMidiModalOpen}
               isMidiSupported={isMidiSupported}
               midiAccessError={midiAccessError}
-              midiConfig={midiConfig}
+              midiConfiguration={midiConfiguration}
               midiDevices={midiDevices}
               midiInMonitor={midiInMonitor}
               midiOutMonitor={midiOutMonitor}
-              onSaveMidiConfig={handleSaveMidiConfig}
+              onSaveMidiConfiguration={handleSaveMidiConfiguration}
               onCloseMidi={handleCloseMidi}
               onClearMidiMonitors={handleClearMidiMonitors}
               onRescanMidiDevices={handleRescanMidiDevices}
-              onLiveMidiConfigChange={handleLiveMidiConfigChange}
+              onLiveMidiConfigurationChange={handleLiveMidiConfigurationChange}
               setMidiCopySummary={setMidiCopySummary}
               setMidiLoadError={setMidiLoadError}
               isDownloadOpen={isDownloadOpen}

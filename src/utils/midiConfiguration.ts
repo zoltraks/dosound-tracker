@@ -1,28 +1,28 @@
 import yaml from 'js-yaml';
-import type { MidiConfig } from '../hooks/useMidi';
+import type { MidiConfiguration } from '../hooks/useMidi';
 
-export class MidiConfigFormatError extends Error {
+export class MidiConfigurationFormatError extends Error {
   constructor(message: string) {
     super(message);
-    this.name = 'MidiConfigFormatError';
+    this.name = 'MidiConfigurationFormatError';
   }
 }
 
-export const buildMidiConfigYaml = (config: MidiConfig): string => {
+export const buildMidiConfigurationYaml = (configuration: MidiConfiguration): string => {
   const inputNode: Record<string, unknown> = {
-    enable: !!config.inputEnabled,
-    agnostic: !!config.ignoreInputVolume,
+    enable: !!configuration.inputEnabled,
+    agnostic: !!configuration.ignoreInputVolume,
   };
-  if (config.inputId) {
-    inputNode.device = config.inputId;
+  if (configuration.inputId) {
+    inputNode.device = configuration.inputId;
   }
 
   const outputNode: Record<string, unknown> = {
-    enable: !!config.outputEnabled,
-    agnostic: !!config.ignoreOutputVolume,
+    enable: !!configuration.outputEnabled,
+    agnostic: !!configuration.ignoreOutputVolume,
   };
-  if (config.outputId) {
-    outputNode.device = config.outputId;
+  if (configuration.outputId) {
+    outputNode.device = configuration.outputId;
   }
 
   const exportData = {
@@ -42,14 +42,14 @@ export const buildMidiConfigYaml = (config: MidiConfig): string => {
   return yamlContent;
 };
 
-export const parseMidiConfigFromYaml = (
+export const parseMidiConfigurationFromYaml = (
   text: string,
-  currentConfig: MidiConfig,
-): MidiConfig => {
+  currentConfiguration: MidiConfiguration,
+): MidiConfiguration => {
   const parsed = yaml.load(text) as unknown;
 
   if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
-    throw new MidiConfigFormatError('Invalid MIDI config file: missing "midi" root key.');
+    throw new MidiConfigurationFormatError('Invalid MIDI config file: missing "midi" root key.');
   }
 
   type MidiFileRoot = {
@@ -60,7 +60,7 @@ export const parseMidiConfigFromYaml = (
   const node = root.midi;
 
   if (!node || typeof node !== 'object') {
-    throw new MidiConfigFormatError('Invalid MIDI config file: "midi" section is not an object.');
+    throw new MidiConfigurationFormatError('Invalid MIDI config file: "midi" section is not an object.');
   }
 
   const midiNode = node as {
@@ -106,14 +106,14 @@ export const parseMidiConfigFromYaml = (
     return fallback;
   };
 
-  const nextConfig: MidiConfig = {
-    inputEnabled: parseBool(inputNode.enable, currentConfig.inputEnabled),
-    outputEnabled: parseBool(outputNode.enable, currentConfig.outputEnabled),
-    inputId: parseDeviceId(inputNode.device, currentConfig.inputId),
-    outputId: parseDeviceId(outputNode.device, currentConfig.outputId),
-    ignoreInputVolume: parseBool(inputNode.agnostic, currentConfig.ignoreInputVolume),
-    ignoreOutputVolume: parseBool(outputNode.agnostic, currentConfig.ignoreOutputVolume),
+  const nextConfiguration: MidiConfiguration = {
+    inputEnabled: parseBool(inputNode.enable, currentConfiguration.inputEnabled),
+    outputEnabled: parseBool(outputNode.enable, currentConfiguration.outputEnabled),
+    inputId: parseDeviceId(inputNode.device, currentConfiguration.inputId),
+    outputId: parseDeviceId(outputNode.device, currentConfiguration.outputId),
+    ignoreInputVolume: parseBool(inputNode.agnostic, currentConfiguration.ignoreInputVolume),
+    ignoreOutputVolume: parseBool(outputNode.agnostic, currentConfiguration.ignoreOutputVolume),
   };
 
-  return nextConfig;
+  return nextConfiguration;
 };

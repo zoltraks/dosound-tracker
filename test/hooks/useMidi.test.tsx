@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useMidi, type MidiConfig } from '../../src/hooks/useMidi';
+import { useMidi, type MidiConfiguration } from '../../src/hooks/useMidi';
 
 const STORAGE_KEY = 'dosound-tracker-midi-config';
 
@@ -30,7 +30,7 @@ describe('useMidi', () => {
       expect(hook).not.toBeNull();
     });
 
-    expect(hook!.config).toEqual({
+    expect(hook!.configuration).toEqual({
       inputEnabled: false,
       outputEnabled: false,
       inputId: null,
@@ -48,7 +48,7 @@ describe('useMidi', () => {
       outputId: 'output-1',
       ignoreInputVolume: false,
       ignoreOutputVolume: false,
-    } satisfies Partial<MidiConfig>;
+    } satisfies Partial<MidiConfiguration>;
 
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
@@ -59,7 +59,7 @@ describe('useMidi', () => {
       expect(hook).not.toBeNull();
     });
 
-    expect(hook!.config).toEqual({
+    expect(hook!.configuration).toEqual({
       inputEnabled: true,
       outputEnabled: true,
       inputId: 'input-1',
@@ -79,7 +79,7 @@ describe('useMidi', () => {
       expect(hook).not.toBeNull();
     });
 
-    const nextConfig: MidiConfig = {
+    const nextConfiguration: MidiConfiguration = {
       inputEnabled: true,
       outputEnabled: true,
       inputId: 'in-device',
@@ -89,7 +89,7 @@ describe('useMidi', () => {
     };
 
     await act(async () => {
-      hook!.setConfig(nextConfig);
+      hook!.setConfiguration(nextConfiguration);
     });
 
     const raw = window.localStorage.getItem(STORAGE_KEY);
