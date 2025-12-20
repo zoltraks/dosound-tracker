@@ -1,4 +1,4 @@
-import { DEBUG_MODE_INFO_MESSAGE, INFO_MODAL_TITLES } from '../constants/modalConfig';
+import { DEBUG_MODE_INFO_MESSAGE, INFO_MODAL_TITLES } from '../constants/modal';
 
 export type InfoModalDescriptor = {
   key: string;

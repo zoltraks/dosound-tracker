@@ -65,3 +65,43 @@ instrument:
 ```
 
 ---
+
+When saving song in YAML format add two additional fields "chip" and "format" with default values.
+
+This is part of current song YAML:
+
+```yaml
+song:
+  title: "Warmball"
+  author: Zoltar X / New Generation
+  year: 2025
+  speed: 4
+  length: 32
+  loop: 0
+```
+
+Extended version:
+
+```
+song:
+  title: "Warmball"
+  author: Zoltar X / New Generation
+  year: 2025
+  chip: YM
+  frame: 50
+  speed: 4
+  length: 32
+  loop: 0
+```
+
+When loading song YAML and "chip" or "frame" keys are present
+perform simple check if they have supported values: "YM" (case insensitive) for "chip", 50 for "frame".
+If not, show confirmation modal dialog before loading with the warning
+and allow user to proceed ("OK") or not ("CANCEL").
+
+---
+
+Allow to use "PAL" (case insensitive) as value for "frame" in song YAML and
+treat it the same as default accepted value 50 (no confirmation needed).
+
+---

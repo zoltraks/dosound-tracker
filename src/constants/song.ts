@@ -1,0 +1,5 @@
+export const DEFAULT_SONG_CHIP = 'YM';
+export const DEFAULT_SONG_FRAME = 50;
+
+export const SUPPORTED_SONG_CHIPS = [DEFAULT_SONG_CHIP];
+export const SUPPORTED_SONG_FRAMES = [DEFAULT_SONG_FRAME];

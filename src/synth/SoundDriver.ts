@@ -70,6 +70,8 @@ export interface Song {
   speed: number;
   length: number;
   loop?: number | null;
+  chip?: string;
+  frame?: number;
   pattern: Pattern[];
   line: Line[];
   instrument: Instrument[];

@@ -1,10 +1,23 @@
 import yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, Step } from '../synth/SoundDriver';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH, PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
+import {
+  MAX_INSTRUMENTS,
+  ENVELOPE_LENGTH,
+  PATTERN_LENGTH,
+  DEFAULT_OCTAVE,
+  MIN_OCTAVE,
+  MAX_OCTAVE,
+} from '../constants/music';
 import { validateSongData } from './validation';
 import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
 import { formatHexId } from './hexFormatting';
 import { formatInstrumentSlotId } from './instrumentSelection';
+import {
+  DEFAULT_SONG_CHIP,
+  DEFAULT_SONG_FRAME,
+  SUPPORTED_SONG_CHIPS,
+  SUPPORTED_SONG_FRAMES,
+} from '../constants/song';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -17,6 +30,8 @@ interface SongYamlNode {
   speed?: unknown;
   year?: unknown;
   loop?: unknown;
+  chip?: unknown;
+  frame?: unknown;
   line?: unknown;
   playlist?: unknown;
   pattern?: unknown;
@@ -93,7 +108,22 @@ const parseVolumeNibble = (value: unknown): number | null => {
  */
 export { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
 
-export const parseSongFromYaml = (content: string): Song => {
+export interface SongParseMetadata {
+  hasChipField: boolean;
+  providedChipValue: unknown;
+  normalizedChip: string;
+  isChipSupported: boolean;
+  hasFrameField: boolean;
+  providedFrameValue: unknown;
+  normalizedFrame: number;
+  isFrameSupported: boolean;
+}
+
+export interface ParseSongOptions {
+  onMetadata?: (metadata: SongParseMetadata) => void;
+}
+
+export const parseSongFromYaml = (content: string, options?: ParseSongOptions): Song => {
   const parsed = yaml.load(content) as unknown;
 
   if (!parsed || typeof parsed !== 'object' || !('song' in parsed)) {
@@ -513,6 +543,20 @@ export const parseSongFromYaml = (content: string): Song => {
     }
   }
 
+  const hasChipField = Object.prototype.hasOwnProperty.call(songNode, 'chip');
+  const chipRawValue = hasChipField ? songNode.chip : null;
+  const chipRaw =
+    typeof songNode.chip === 'string'
+      ? songNode.chip.trim()
+      : typeof songNode.chip === 'number' && Number.isFinite(songNode.chip)
+        ? String(songNode.chip)
+        : '';
+  const frameRaw = Number(songNode.frame);
+
+  const normalizedChip = chipRaw ? chipRaw.toUpperCase() : DEFAULT_SONG_CHIP;
+  const normalizedFrame = Number.isFinite(frameRaw) ? Math.floor(frameRaw) : DEFAULT_SONG_FRAME;
+  const hasFrameField = Object.prototype.hasOwnProperty.call(songNode, 'frame');
+
   const song: Song = {
     title,
     author,
@@ -523,7 +567,22 @@ export const parseSongFromYaml = (content: string): Song => {
     pattern: patterns,
     line,
     instrument: instruments,
+    chip: normalizedChip,
+    frame: normalizedFrame,
   };
+
+  if (options?.onMetadata) {
+    options.onMetadata({
+      hasChipField,
+      providedChipValue: chipRawValue,
+      normalizedChip,
+      isChipSupported: SUPPORTED_SONG_CHIPS.includes(normalizedChip),
+      hasFrameField,
+      providedFrameValue: hasFrameField ? songNode.frame : null,
+      normalizedFrame,
+      isFrameSupported: SUPPORTED_SONG_FRAMES.includes(normalizedFrame),
+    });
+  }
 
   return validateSongData(song);
 };

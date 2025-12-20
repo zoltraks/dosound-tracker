@@ -16,7 +16,7 @@ export const NOTE_FREQUENCIES: { [key: string]: number } = {
 // Reference octave for NOTE_FREQUENCIES (A-4 = 440 Hz, C-4 = 261.63, etc.)
 export const NOTE_BASE_OCTAVE = 4;
 
-export { KEYBOARD_TO_NOTE } from './keyboardLayout';
+export { KEYBOARD_TO_NOTE } from './keyboard';
 
 export const NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 

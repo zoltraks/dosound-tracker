@@ -6,7 +6,9 @@ import {
   DEFAULT_SONG_TITLE,
   DEFAULT_SONG_AUTHOR,
   parseSongFromYaml,
+  type SongParseMetadata,
 } from '../utils/songParser';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
 import { buildSongYamlForExport } from '../utils/songIO';
 import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/instrumentIO';
 import { downloadFile } from '../utils/fileOperations';
@@ -25,6 +27,22 @@ import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManage
 import { scheduleJsonSave, clearScheduledSave, type ScheduledSaveHandle } from './useStorage';
 
 const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
+
+type PendingSongImport = {
+  song: Song;
+  metadata: SongParseMetadata;
+};
+
+const shouldWarnForSongConfiguration = (metadata: SongParseMetadata | null): boolean => {
+  if (!metadata) {
+    return false;
+  }
+
+  const chipWarning = metadata.hasChipField && !metadata.isChipSupported;
+  const frameWarning = metadata.hasFrameField && !metadata.isFrameSupported;
+
+  return chipWarning || frameWarning;
+};
 
 export const useDataManagement = () => {
   const [currentSong, setCurrentSong] = useState<Song>(() => loadInitialSong());
@@ -46,6 +64,7 @@ export const useDataManagement = () => {
   const [songError, setSongError] = useState('');
   const [instrumentError, setInstrumentError] = useState('');
   const [isSongDirty, setIsSongDirty] = useState(false);
+  const [pendingSongImport, setPendingSongImport] = useState<PendingSongImport | null>(null);
 
   const songSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
   const instrumentSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
@@ -126,7 +145,9 @@ export const useDataManagement = () => {
       loop: null,
       pattern: patterns,
       line: [{ A: '01', B: '02', C: '03' }],
-      instrument: [newCurrentInstrument]
+      instrument: [newCurrentInstrument],
+      chip: DEFAULT_SONG_CHIP,
+      frame: DEFAULT_SONG_FRAME,
     };
 
     setCurrentSong(newSong);
@@ -157,27 +178,56 @@ export const useDataManagement = () => {
     }
   }, [currentSong, setIsSongDirty]);
 
+  const applyParsedSong = useCallback(
+    (newSong: Song) => {
+      setPendingSongImport(null);
+      setCurrentSong(newSong);
+
+      const firstInstrument = newSong.instrument.find(
+        inst => inst && inst.name && inst.name.trim()
+      );
+      if (firstInstrument) {
+        setCurrentInstrument(firstInstrument);
+      }
+      setIsSongDirty(false);
+    },
+    [setCurrentInstrument]
+  );
+
   const loadSongFromText = useCallback(
     (content: string) => {
       try {
-        const newSong = parseSongFromYaml(content);
+        let metadata: SongParseMetadata | null = null;
+        const newSong = parseSongFromYaml(content, {
+          onMetadata: data => {
+            metadata = data;
+          },
+        });
 
-        setCurrentSong(newSong);
-
-        const firstInstrument = newSong.instrument.find(
-          inst => inst && inst.name && inst.name.trim()
-        );
-        if (firstInstrument) {
-          setCurrentInstrument(firstInstrument);
+        if (metadata && shouldWarnForSongConfiguration(metadata)) {
+          setPendingSongImport({ song: newSong, metadata });
+          return;
         }
-        setIsSongDirty(false);
+
+        applyParsedSong(newSong);
       } catch (error) {
         console.error('Error loading song:', error);
         setSongError('Error loading song file. Please check the file format.');
       }
     },
-    [setCurrentInstrument, setSongError]
+    [applyParsedSong, setSongError]
   );
+
+  const confirmPendingSongImport = useCallback(() => {
+    if (!pendingSongImport) {
+      return;
+    }
+    applyParsedSong(pendingSongImport.song);
+  }, [pendingSongImport, applyParsedSong]);
+
+  const cancelPendingSongImport = useCallback(() => {
+    setPendingSongImport(null);
+  }, []);
 
   const loadSong = useCallback(
     (file: File) => {
@@ -338,5 +388,8 @@ export const useDataManagement = () => {
     triggerFileLoad,
     isSongDirty,
     loadSongFromText,
+    pendingSongImport,
+    confirmPendingSongImport,
+    cancelPendingSongImport,
   };
 };

@@ -42,3 +42,11 @@ Make refactorings in SoundDriver.ts:
  - in interface Song change field name "instruments" to "instrument"
 
 ---
+
+Fix Lint warning by droping unused DEFAULT_SONG_CHIP/FRAME import in test/utils/songParser.test.ts.
+
+Change name "SongMetadata" to "SongConfiguration" so instead of i.e. "songMetadataWarningMessage" use "songConfigurationWarningMessage", instead of "onConfirmSongMetadataWarning" use "onConfirmSongConfigurationWarning" and so on.
+
+Simplify file names in @constants directory: change "keyboardLayout.ts" to "keyboard.ts", "modalConfig.ts" to "modal.ts" and "songMetadata" to "song.ts".
+
+---

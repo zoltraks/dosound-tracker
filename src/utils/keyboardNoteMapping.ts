@@ -1,4 +1,4 @@
-import type { KeyboardToNoteMap } from '../constants/keyboardLayout';
+import type { KeyboardToNoteMap } from '../constants/keyboard';
 
 export function clampOctave(value: number): number {
   const numeric = Number.isFinite(value) ? Math.floor(value) : 0;

@@ -21,6 +21,7 @@ import { useDownloadAvailability } from './hooks/useDownloadAvailability';
 import { usePlaybackSimulation } from './hooks/usePlaybackSimulation';
 import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
+import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES } from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
 import type { MidiConfig } from './hooks/useMidi';
 import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
@@ -246,7 +247,47 @@ const App: React.FC = () => {
     renumberSong,
     isSongDirty,
     loadSongFromText,
+    pendingSongImport,
+    confirmPendingSongImport,
+    cancelPendingSongImport,
   } = useDataManagement();
+
+  const configurationWarningMessage = useMemo(() => {
+    if (!pendingSongImport) {
+      return '';
+    }
+
+    const warnings: string[] = [];
+    const { metadata } = pendingSongImport;
+
+    if (metadata.hasChipField && !metadata.isChipSupported) {
+      const provided = metadata.providedChipValue ?? metadata.normalizedChip;
+      warnings.push(
+        `Chip value "${String(provided)}" is not supported.\n\nSupported chips: ${SUPPORTED_SONG_CHIPS.join(', ')}.`,
+      );
+    }
+
+    if (metadata.hasFrameField && !metadata.isFrameSupported) {
+      const provided = metadata.providedFrameValue ?? metadata.normalizedFrame;
+      warnings.push(
+        `Frame value "${String(provided)}" is not supported.\n\nSupported frame rates: ${SUPPORTED_SONG_FRAMES.join(', ')}.`,
+      );
+    }
+
+    if (warnings.length === 0) {
+      return '';
+    }
+
+    return `${warnings.join('\n\n')}\n\nLoad the song anyway?`;
+  }, [pendingSongImport]);
+
+  const handleConfirmSongConfigurationWarning = useCallback(() => {
+    confirmPendingSongImport();
+  }, [confirmPendingSongImport]);
+
+  const handleCancelSongConfigurationWarning = useCallback(() => {
+    cancelPendingSongImport();
+  }, [cancelPendingSongImport]);
 
   const {
     soundExportSummary,
@@ -289,7 +330,8 @@ const App: React.FC = () => {
     isInstrumentMidiOpen ||
     isInstrumentColorOpen ||
     isExportModalOpen ||
-    isPasteTrackModalOpen;
+    isPasteTrackModalOpen ||
+    !!pendingSongImport;
 
   const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(isNavigationSuspended);
 
@@ -2438,6 +2480,13 @@ const App: React.FC = () => {
               midiLoadError={midiLoadError}
               midiCopySummary={midiCopySummary}
               onMidiSystemReset={handleMidiSystemReset}
+              isSongConfigurationWarningOpen={!!pendingSongImport}
+              songConfigurationWarningMessage={
+                configurationWarningMessage ||
+                `Song YAML includes unsupported metadata values.\n\nLoad the song anyway?`
+              }
+              onConfirmSongConfigurationWarning={handleConfirmSongConfigurationWarning}
+              onCancelSongConfigurationWarning={handleCancelSongConfigurationWarning}
             />
             <FilePickerModal
               isOpen={isRepositoryInstrumentOpen}

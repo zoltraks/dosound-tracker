@@ -2,7 +2,7 @@ import React from 'react';
 import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, MarkdownModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
 import type { MidiConfig, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
-import { CONFIRM_MODAL_TEXT } from '../constants/modalConfig';
+import { CONFIRM_MODAL_TEXT } from '../constants/modal';
 import { buildInfoModals } from '../utils/modalRendering';
 
 type InstrumentDeleteUsage = {
@@ -61,6 +61,10 @@ export interface ModalContainerProps {
   isQuitConfirmOpen: boolean;
   onConfirmQuit: () => void;
   onCancelQuit: () => void;
+  isSongConfigurationWarningOpen: boolean;
+  songConfigurationWarningMessage: string;
+  onConfirmSongConfigurationWarning: () => void;
+  onCancelSongConfigurationWarning: () => void;
   isInstrumentDeleteOpen: boolean;
   instrumentDeleteUsage: InstrumentDeleteUsage;
   onConfirmDeleteInstrumentAndNotes: () => void;
@@ -168,6 +172,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   isQuitConfirmOpen,
   onConfirmQuit,
   onCancelQuit,
+  isSongConfigurationWarningOpen,
+  songConfigurationWarningMessage,
+  onConfirmSongConfigurationWarning,
+  onCancelSongConfigurationWarning,
   isInstrumentDeleteOpen,
   instrumentDeleteUsage,
   onConfirmDeleteInstrumentAndNotes,
@@ -284,6 +292,14 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         message={CONFIRM_MODAL_TEXT.newSong.message}
         onConfirm={onConfirmNewSong}
         onCancel={onCancelNewSong}
+      />
+
+      <ConfirmationModal
+        isOpen={isSongConfigurationWarningOpen}
+        title="Unsupported song configuration"
+        message={songConfigurationWarningMessage}
+        onConfirm={onConfirmSongConfigurationWarning}
+        onCancel={onCancelSongConfigurationWarning}
       />
 
       <ConfirmationModal

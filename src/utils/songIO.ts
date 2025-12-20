@@ -4,6 +4,7 @@ import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../const
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat';
 import { formatHexId } from './hexFormatting';
 import { formatInstrumentSlotId } from './instrumentSelection';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
 
 const trimEnvelope = (values: number[]): number[] => {
   if (!values || values.length === 0) return [];
@@ -292,6 +293,8 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   if (hasLoop) {
     songNode.loop = Math.max(0, Math.floor(currentSong.loop as number));
   }
+  songNode.chip = (currentSong.chip || DEFAULT_SONG_CHIP).toUpperCase();
+  songNode.frame = currentSong.frame ?? DEFAULT_SONG_FRAME;
   songNode.line = line;
   songNode.pattern = patterns;
   songNode.instrument = instruments;

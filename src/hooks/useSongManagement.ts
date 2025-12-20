@@ -9,6 +9,7 @@ import {
   DEFAULT_SONG_AUTHOR,
   parseSongFromYaml,
 } from '../utils/songParser';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
 
 export type TrackKey = 'A' | 'B' | 'C';
 
@@ -108,12 +109,19 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
     };
   });
 
+  const rawChip = typeof song.chip === 'string' ? song.chip.trim().toUpperCase() : '';
+  const normalizedChip = rawChip || DEFAULT_SONG_CHIP;
+  const frameCandidate = Number(song.frame);
+  const normalizedFrame = Number.isFinite(frameCandidate) ? Math.floor(frameCandidate) : DEFAULT_SONG_FRAME;
+
   return {
     ...(song as unknown as Song),
     length,
     pattern,
     line,
     instrument,
+    chip: normalizedChip,
+    frame: normalizedFrame,
   };
 }
 
@@ -213,8 +221,10 @@ export const createDefaultSong = (): Song => {
         sustain: null,
       },
     ],
+    chip: DEFAULT_SONG_CHIP,
+    frame: DEFAULT_SONG_FRAME,
   };
-};
+}
 
 export function loadInitialSong(): Song {
   try {
