@@ -1,7 +1,7 @@
 import type { Song, Instrument, Pattern, Step } from '../synth/SoundDriver';
 import { NOTES, PATTERN_LENGTH } from '../constants/music';
 import { YM_CLOCK } from '../synth/YM2149';
-import { parseBaseKey } from '../utils/pianoUtils';
+import { ensureBaseKey } from '../utils/songFormat';
 
 export { downloadFile, type DownloadFileContent } from '../utils/fileOperations';
 
@@ -13,24 +13,6 @@ export function normalizeSongForExport(song: Song): Song {
     pattern: song.pattern ?? [],
     instrument: song.instrument ?? [],
   };
-}
-
-// Parse base key string like "C-4" or "C#4" into note/octave
-export function parseBaseKeyForExport(rawBase?: string): { note: string; octave: number } {
-  const fallback = 'C-4';
-
-  const value = (rawBase || fallback).trim();
-  const parsed = parseBaseKey(value);
-  if (parsed) {
-    return parsed;
-  }
-
-  const fallbackParsed = parseBaseKey(fallback);
-  if (fallbackParsed) {
-    return fallbackParsed;
-  }
-
-  return { note: 'C', octave: 4 };
 }
 
 export function formatNoteLabel(baseNote: string, baseOctave: number, semitoneOffset: number): string {
@@ -71,7 +53,7 @@ export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: S
   const patternLength = normalizedSong.length || PATTERN_LENGTH;
   const speed = normalizedSong.speed || 6;
 
-  const base = parseBaseKeyForExport(instrument.base || 'C-4');
+  const base = ensureBaseKey(instrument.base || 'C-4');
 
   const step: Step[] = [];
   for (let i = 0; i < patternLength; i++) {

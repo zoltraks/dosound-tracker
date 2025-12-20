@@ -21,6 +21,7 @@ import { useDownloadAvailability } from './hooks/useDownloadAvailability';
 import { usePlaybackSimulation } from './hooks/usePlaybackSimulation';
 import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
+import { formatBaseKey, parseBaseKey } from './utils/songFormat';
 import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES } from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
 import type { MidiConfiguration } from './hooks/useMidi';
@@ -1094,32 +1095,13 @@ const App: React.FC = () => {
     return foundPattern;
   }, [currentSong, sequencerState.currentPattern, updateSong]);
 
-  const formatNoteKey = useCallback((note: string, octave: number): string => {
-    const upper = note.toUpperCase();
-    return upper.endsWith('#') ? `${upper}${octave}` : `${upper}-${octave}`;
-  }, []);
+  const formatNoteKey = formatBaseKey;
 
   const parseBaseKeyString = useCallback((value?: string): { note: string; octave: number } | null => {
-    if (!value) return null;
-    const raw = value.trim().toUpperCase();
-    if (!raw) return null;
-
-    let notePart = raw.charAt(0);
-    let rest = raw.slice(1);
-
-    if (rest.startsWith('#')) {
-      notePart += '#';
-      rest = rest.slice(1);
+    if (typeof value !== 'string' || !value.trim()) {
+      return null;
     }
-
-    if (rest.startsWith('-')) {
-      rest = rest.slice(1);
-    }
-
-    const octave = parseInt(rest, 10);
-    if (!Number.isFinite(octave)) return null;
-
-    return { note: notePart, octave };
+    return parseBaseKey(value);
   }, []);
 
   const getPasteTrackMode = useCallback(

@@ -5,7 +5,7 @@ import type { YM2149 } from '../synth/YM2149';
 import type { MidiConfiguration, MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
 import { NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
-import { advancePreviewEnvelopeTick, getPreviewEnvelopeApplyStep } from '../utils/previewEnvelopeTiming';
+import { advanceEnvelopeTick, resolveEnvelopeStep } from '../utils/envelopeOperations';
 import {
   transposeMidiNoteToInstrumentBase,
   velocityToVolumeNibble,
@@ -279,7 +279,7 @@ export function useMidiActions({
 
           const now = performance.now();
 
-          const advanced = advancePreviewEnvelopeTick({
+          const advanced = advanceEnvelopeTick({
             now,
             nextTickTime: midiLiveNextTickTimeRef.current,
             subTick: midiLiveSubTickRef.current,
@@ -295,7 +295,7 @@ export function useMidiActions({
           midiLiveNextTickTimeRef.current = advanced.nextTickTime;
 
           const effectiveRawStep = advanced.rawStep;
-          const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
+          const stepForApply = resolveEnvelopeStep(effectiveRawStep, sustain, released);
 
           ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
 
@@ -455,49 +455,23 @@ export function useMidiActions({
 
             const now = performance.now();
 
-            let nextTickTime = midiLiveNextTickTimeRef.current;
-            if (!nextTickTime) {
-              nextTickTime = now + TICK_INTERVAL_MS;
-            }
+            const advanced = advanceEnvelopeTick({
+              now,
+              nextTickTime: midiLiveNextTickTimeRef.current,
+              subTick: midiLiveSubTickRef.current,
+              rawStep: midiLiveEnvelopeStepRef.current,
+              sustainIndex: sustain,
+              released,
+              tickIntervalMs: TICK_INTERVAL_MS,
+            });
 
-            let subTick = midiLiveSubTickRef.current ?? 0;
-            let rawStep = midiLiveEnvelopeStepRef.current ?? 0;
-
-            while (now >= nextTickTime) {
-              subTick = (subTick + 1) % 2;
-
-              if (subTick === 0) {
-                if (
-                  sustain === null ||
-                  sustain === undefined ||
-                  sustain < 0 ||
-                  released ||
-                  rawStep < sustain
-                ) {
-                  rawStep = rawStep + 1;
-                }
-              }
-
-              nextTickTime += TICK_INTERVAL_MS;
-            }
-
-            midiLiveSubTickRef.current = subTick;
-            midiLiveEnvelopeStepRef.current = rawStep;
+            midiLiveSubTickRef.current = advanced.subTick;
+            midiLiveEnvelopeStepRef.current = advanced.rawStep;
             midiLiveLastTickTimeRef.current = now;
-            midiLiveNextTickTimeRef.current = nextTickTime;
+            midiLiveNextTickTimeRef.current = advanced.nextTickTime;
 
-            const effectiveRawStep = rawStep;
-            let stepForApply = effectiveRawStep;
-
-            if (
-              sustain !== null &&
-              sustain !== undefined &&
-              sustain >= 0 &&
-              !released &&
-              effectiveRawStep >= sustain
-            ) {
-              stepForApply = sustain;
-            }
+            const effectiveRawStep = advanced.rawStep;
+            const stepForApply = resolveEnvelopeStep(effectiveRawStep, sustain, released);
 
             ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
 

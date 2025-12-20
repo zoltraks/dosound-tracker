@@ -1,5 +1,4 @@
 import type { NavigationSection } from '../constants/navigation';
-import type { Note, Pattern, Step } from '../synth/SoundDriver';
 
 export { clampOctave, getKeyboardMappedNote } from './keyboardNoteMapping';
 
@@ -35,32 +34,6 @@ export function getNextTrackSection(trackId: 'A' | 'B' | 'C'): NavigationSection
   if (trackId === 'A') return 'trackB';
   if (trackId === 'B') return 'trackC';
   return 'trackA';
-}
-
-function ensureStep(step: Step | null | undefined): Step {
-  if (!step) {
-    return { note: null };
-  }
-  return { ...step };
-}
-
-export function updatePatternStep(
-  pattern: Pattern,
-  lineIndex: number,
-  updater: (step: Step) => Step
-): Pattern {
-  const newPattern = { ...pattern };
-  newPattern.step = [...newPattern.step];
-
-  const existing = ensureStep(newPattern.step[lineIndex]);
-  const nextStep = updater(existing);
-  newPattern.step[lineIndex] = nextStep;
-
-  return newPattern;
-}
-
-export function createNoteOff(): Note {
-  return { note: '===', octave: 0, instrument: '00' };
 }
 
 export function parseVolumeNibble(keyUpper: string): number | null {

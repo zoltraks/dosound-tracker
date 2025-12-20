@@ -283,7 +283,9 @@ export function useSequencerIntegration({
             };
             debugLastTimeRef.current = nowMs;
           } catch (error) {
-            console.error('Debug logging failed:', error);
+            if (isDebugMode) {
+              console.error('Debug logging failed:', error);
+            }
           }
         }
 

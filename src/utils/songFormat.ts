@@ -30,6 +30,23 @@ export const parseBaseKey = (value: unknown): { note: string; octave: number } |
   return { note: notePart, octave };
 };
 
+export const ensureBaseKey = (
+  value?: string,
+  fallback: string = DEFAULT_BASE_KEY
+): { note: string; octave: number } => {
+  const parsed = parseBaseKey(value);
+  if (parsed) {
+    return parsed;
+  }
+
+  const fallbackParsed = parseBaseKey(fallback);
+  if (fallbackParsed) {
+    return fallbackParsed;
+  }
+
+  return { note: 'C', octave: 4 };
+};
+
 /**
  * Normalize an arbitrary YAML color value to a 3-digit hex string (e.g. "#abc")
  * or null when the value is missing/invalid.

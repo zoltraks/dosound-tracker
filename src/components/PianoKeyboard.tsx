@@ -8,9 +8,9 @@ import { generatePianoKeys, parseBaseKey } from '../utils/pianoUtils';
 import type { PianoKeyConfig } from '../utils/pianoUtils';
 import { getKeyboardMappedNote } from '../utils/keyboardNoteMapping';
 import {
-  advancePreviewEnvelopeTick,
-  getPreviewEnvelopeApplyStep,
-} from '../utils/previewEnvelopeTiming';
+  advanceEnvelopeTick,
+  resolveEnvelopeStep,
+} from '../utils/envelopeOperations';
 
 type PreviewInstrument = Instrument;
 
@@ -226,7 +226,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       const TICK_INTERVAL_MS = 20;
       const nowTick = performance.now();
 
-      const advanced = advancePreviewEnvelopeTick({
+      const advanced = advanceEnvelopeTick({
         now: nowTick,
         nextTickTime: previewNextTickTimeRef.current[keyId],
         subTick: previewSubTicksRef.current[keyId],
@@ -242,7 +242,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       previewNextTickTimeRef.current[keyId] = advanced.nextTickTime;
 
       const effectiveRawStep = advanced.rawStep;
-      const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
+      const stepForApply = resolveEnvelopeStep(effectiveRawStep, sustain, released);
 
       ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
 

@@ -1,10 +1,10 @@
-export interface PreviewEnvelopeAdvanceResult {
+export interface EnvelopeAdvanceResult {
   nextTickTime: number;
   subTick: number;
   rawStep: number;
 }
 
-export interface PreviewEnvelopeAdvanceArgs {
+export interface EnvelopeAdvanceArgs {
   now: number;
   nextTickTime: number | null | undefined;
   subTick: number | null | undefined;
@@ -14,7 +14,7 @@ export interface PreviewEnvelopeAdvanceArgs {
   tickIntervalMs?: number;
 }
 
-export function advancePreviewEnvelopeTick({
+export function advanceEnvelopeTick({
   now,
   nextTickTime,
   subTick,
@@ -22,7 +22,7 @@ export function advancePreviewEnvelopeTick({
   sustainIndex,
   released,
   tickIntervalMs = 20,
-}: PreviewEnvelopeAdvanceArgs): PreviewEnvelopeAdvanceResult {
+}: EnvelopeAdvanceArgs): EnvelopeAdvanceResult {
   const interval = tickIntervalMs;
 
   let next = nextTickTime;
@@ -59,7 +59,7 @@ export function advancePreviewEnvelopeTick({
   };
 }
 
-export function getPreviewEnvelopeApplyStep(
+export function resolveEnvelopeStep(
   rawStep: number,
   sustainIndex: number | null | undefined,
   released: boolean

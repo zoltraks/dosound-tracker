@@ -12,8 +12,8 @@ import {
   formatNoteLabel,
   frequencyToPeriod,
   normalizeSongForExport,
-  parseBaseKeyForExport,
 } from './core';
+import { ensureBaseKey } from '../utils/songFormat';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -334,7 +334,7 @@ function formatDelayLine(frames: number): string {
  * Output follows strict formatting rules.
  */
 export function exportInstrumentToAssembly(instrument: Instrument, song?: Song): string {
-  const base = parseBaseKeyForExport(instrument.base || 'C-4');
+  const base = ensureBaseKey(instrument.base || 'C-4');
 
   // Base frequency for the instrument's root note
   const baseFreq = NOTE_FREQUENCIES[base.note] || 440.0;
