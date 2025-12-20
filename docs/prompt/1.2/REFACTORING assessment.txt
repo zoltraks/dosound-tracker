@@ -1,0 +1,30 @@
+I ordered the refactoring process according to the query below.
+
+```
+I don't like short "config" or "Config" names in parameter names, variables, function names, etc.
+Refactor code, instead of "config" use "configuration" and instead of "Config", use "Configuration".
+This change should affect only the code, it must not change any behavior or file formats.
+```
+
+The refactoring process was conducted independently in two processes
+using the "GPT 5.1 Codex" model and the "Grok Code Fast 1" model,
+and saved in two repository branches: "refactoring/1.2.4-configuration-gpt"
+and "refactoring/1.2.4-configuration-grok".
+
+Compare in detail the outcome of the performed refactoring 
+by analyzing the repository commit history and conducting a thorough 
+comparison of changes in the code of individual files, then compile a summary 
+of these changes.
+
+Place the report in the "docs/report/1.2.4-configuration" directory in the file ASSESSMENT.md.
+
+---
+
+Compare these three assessment reports about refactoring process.
+These assessment reports came from "KAT-Coder-Pro V1" (ASSESSMENT-kat.md),
+"MiniMax-M2" (ASSESSMENT-minimax.md), "Devstral 2 2512" (ASSESSMENT-devstral.md).
+
+Make a comprehensive comparisation of these reports, choose the best analysis, and
+make a synthesis of them creating final assessment report.
+
+---
