@@ -4,7 +4,7 @@ import {
   buildMidiConfigurationYaml,
   parseMidiConfigurationFromYaml,
   MidiConfigurationFormatError,
-} from '../../src/utils/midiConfig';
+} from '../../src/utils/midiConfiguration';
 
 const makeConfig = (overrides: Partial<MidiConfiguration> = {}): MidiConfiguration => ({
   inputEnabled: false,

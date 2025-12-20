@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
 import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
-import { buildMidiConfigurationYaml, parseMidiConfigurationFromYaml, MidiConfigurationFormatError } from '../utils/midiConfig';
+import { buildMidiConfigurationYaml, parseMidiConfigurationFromYaml, MidiConfigurationFormatError } from '../utils/midiConfiguration';
 import { downloadFile } from '../utils/fileOperations';
 
 interface MidiModalProps {
