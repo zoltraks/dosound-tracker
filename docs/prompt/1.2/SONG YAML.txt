@@ -115,3 +115,68 @@ is ignored.
 When loading song YAML data, allow to use "music" as the root node istead of "song" while keeping "song" root node by default.
 
 ---
+
+When saving song YAML data keep fields "chip" and "frame" in order after
+"title", "author", "year" but before "speed".
+
+Instead:
+
+```
+song:
+  title: "Warmball"
+  author: Zoltar X / New Generation
+  year: 2025
+  speed: 4
+  length: 32
+  loop: 0
+  chip: YM
+  frame: 50
+```
+
+Write:
+
+```yaml
+song:
+  title: "Warmball"
+  author: Zoltar X / New Generation
+  year: 2025
+  chip: YM
+  frame: 50
+  speed: 4
+  length: 32
+  loop: 0
+```
+
+---
+
+For "title" field in song YAML you don't need to use double quotes if not necessary.
+
+Instead of:
+
+```yaml
+song:
+  title: "Warmball"
+  author: Zoltar X / New Generation
+  year: 2025
+  chip: YM
+  frame: 50
+  speed: 4
+  length: 32
+  loop: 0
+```
+
+Write:
+
+```yaml
+song:
+  title: Warmball
+  author: Zoltar X / New Generation
+  year: 2025
+  chip: YM
+  frame: 50
+  speed: 4
+  length: 32
+  loop: 0
+```
+
+---

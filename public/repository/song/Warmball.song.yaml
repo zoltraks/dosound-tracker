@@ -2,10 +2,12 @@ song:
   title: Warmball
   author: Zoltar X / New Generation
   year: 2025
+  chip: YM
+  frame: 50
   speed: 4
   length: 32
   loop: 0
-  playlist:
+  line:
     - A: "00"
       B: "01"
       C: "02"
@@ -83,54 +85,54 @@ song:
       step:
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "F-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 3
+        - wait: 3
         - note: "G-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "F-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 5
+        - wait: 5
         - note: "A-1"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-2"
           instrument: "00"
     - number: "01"
       step:
-        - space: 2
+        - wait: 2
         - note: "D-2"
           instrument: "01"
-        - space: 9
+        - wait: 9
         - note: "D-2"
           instrument: "01"
-        - space: 5
+        - wait: 5
         - note: "D-2"
           instrument: "01"
-        - space: 9
+        - wait: 9
         - note: "D-2"
           instrument: "01"
     - number: "02"
@@ -138,106 +140,106 @@ song:
       step:
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "F-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 3
+        - wait: 3
         - note: "G-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "F-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 3
+        - wait: 3
         - note: "A-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "F-3"
           instrument: "00"
     - number: "04"
       step:
         - note: "D-2"
           instrument: "03"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "C-3"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "C-3"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "D-2"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "D-3"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "03"
     - number: "05"
       step:
         - note: "D-2"
           instrument: "03"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "C-3"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "C-3"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "D-2"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "06"
     - number: "06"
       step:
         - note: "D-6"
           instrument: "05"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "01"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "A-4"
           instrument: "04"
         - note: "D-4"
@@ -252,18 +254,18 @@ song:
           instrument: "05"
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "G-5"
           instrument: "05"
         - note: "A-5"
           instrument: "05"
-        - space: 2
+        - wait: 2
         - note: "A-5"
           instrument: "04"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-6"
           instrument: "04"
         - note: "A-5"
@@ -276,49 +278,49 @@ song:
       step:
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "02"
         - note: "D-3"
@@ -327,49 +329,49 @@ song:
       step:
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "02"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "03"
-        - space: 1
+        - wait: 1
         - note: "A-2"
           instrument: "06"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "02"
         - note: "D-3"
@@ -378,19 +380,19 @@ song:
       step:
         - note: "D-6"
           instrument: "05"
-        - space: 1
+        - wait: 1
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "C-3"
           instrument: "01"
-        - space: 1
+        - wait: 1
         - note: "D-3"
           instrument: "01"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "00"
-        - space: 1
+        - wait: 1
         - note: "D-5"
           instrument: "04"
         - note: "A-3"
@@ -431,20 +433,20 @@ song:
           instrument: "04"
         - note: "A-4"
           instrument: "05"
-    - number: 0A
+    - number: "0A"
       step:
         - note: "D-2"
           instrument: "03"
-        - space: 3
+        - wait: 3
         - note: "D-2"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "C-3"
           instrument: "02"
-        - space: 3
+        - wait: 3
         - note: "C-3"
           instrument: "02"
-        - space: 5
+        - wait: 5
         - note: "D-2"
           instrument: "02"
   instrument:
@@ -459,6 +461,7 @@ song:
       volume: [11, 11, 11, 11, 7, 0]
     - number: "02"
       name: Hihat
+      base: "C-4"
       volume: [10, 2, 0]
       noise: [2, 1, 0]
       mode: [1, 1, 1, 0]
@@ -471,10 +474,12 @@ song:
       mode: [1, 0, 0, 1, 1, 1, 0]
     - number: "04"
       name: Pim 1
+      base: "C-4"
       volume: [12, 14, 10, 4, 0]
-      arpeggio: [12, 0]
+      shift: [12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0]
     - number: "05"
       name: Pim 2
+      base: "C-4"
       volume: [10, 6, 0]
     - number: "06"
       name: Snare

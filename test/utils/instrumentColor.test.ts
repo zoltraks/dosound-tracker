@@ -58,10 +58,103 @@ describe('instrument color in song YAML IO', () => {
 
     const yaml = buildSongYamlForExport(song);
 
-    expect(yaml).toMatch(/^\s{2}title: "Color Test"$/m);
+    expect(yaml).toMatch(/^\s{2}title: Color Test$/m);
 
     const parsed = parseSongFromYaml(yaml);
 
     expect(parsed.instrument[0].color).toBe('#abc');
+  });
+
+  it('orders chip/frame between year and speed when exporting song YAML', () => {
+    const step: Step[] = Array.from({ length: 4 }, () => ({ note: null }));
+
+    const song: Song = {
+      title: 'Warmball',
+      author: 'Zoltar X / New Generation',
+      year: 2025,
+      chip: 'YM',
+      frame: 50,
+      speed: 4,
+      length: 32,
+      loop: 0,
+      pattern: [
+        {
+          id: '00',
+          name: 'Pattern 00',
+          step,
+        },
+      ],
+      line: [{ A: '00', B: '--', C: '--' }],
+      instrument: [
+        {
+          id: '00',
+          name: 'Default',
+          volume: [15],
+          shift: [0],
+          pitch: [0],
+          noise: [0],
+          mode: [0],
+          base: 'C-4',
+          octave: 4,
+          sustain: null,
+        },
+      ],
+    };
+
+    const yaml = buildSongYamlForExport(song);
+
+    const titleIndex = yaml.indexOf('title: Warmball');
+    const authorIndex = yaml.indexOf('author: Zoltar X / New Generation');
+    const yearIndex = yaml.indexOf('year: 2025');
+    const chipIndex = yaml.indexOf('chip: YM');
+    const frameIndex = yaml.indexOf('frame: 50');
+    const speedIndex = yaml.indexOf('speed: 4');
+
+    expect(yaml).toMatch(/^\s{2}title: Warmball$/m);
+    expect(titleIndex).toBeGreaterThanOrEqual(0);
+    expect(authorIndex).toBeGreaterThan(titleIndex);
+    expect(yearIndex).toBeGreaterThan(authorIndex);
+    expect(chipIndex).toBeGreaterThan(yearIndex);
+    expect(frameIndex).toBeGreaterThan(chipIndex);
+    expect(speedIndex).toBeGreaterThan(frameIndex);
+  });
+
+  it('quotes song title when it includes reserved YAML characters', () => {
+    const step: Step[] = Array.from({ length: 4 }, () => ({ note: null }));
+
+    const song: Song = {
+      title: 'Level: Intro',
+      author: 'Tester',
+      year: 2025,
+      speed: 6,
+      length: 4,
+      loop: null,
+      pattern: [
+        {
+          id: '00',
+          name: 'Pattern 00',
+          step,
+        },
+      ],
+      line: [{ A: '00', B: '--', C: '--' }],
+      instrument: [
+        {
+          id: '00',
+          name: 'Default',
+          volume: [15],
+          shift: [0],
+          pitch: [0],
+          noise: [0],
+          mode: [0],
+          base: 'C-4',
+          octave: 4,
+          sustain: null,
+        },
+      ],
+    };
+
+    const yaml = buildSongYamlForExport(song);
+
+    expect(yaml).toMatch(/^\s{2}title: "Level: Intro"$/m);
   });
 });

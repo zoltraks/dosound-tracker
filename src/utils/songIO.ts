@@ -288,13 +288,16 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     songNode.year = yearValue;
   }
 
+  const normalizedChip = (currentSong.chip || DEFAULT_SONG_CHIP).toUpperCase();
+  const normalizedFrame = currentSong.frame ?? DEFAULT_SONG_FRAME;
+
+  songNode.chip = normalizedChip;
+  songNode.frame = normalizedFrame;
   songNode.speed = currentSong.speed;
   songNode.length = currentSong.length;
   if (hasLoop) {
     songNode.loop = Math.max(0, Math.floor(currentSong.loop as number));
   }
-  songNode.chip = (currentSong.chip || DEFAULT_SONG_CHIP).toUpperCase();
-  songNode.frame = currentSong.frame ?? DEFAULT_SONG_FRAME;
   songNode.line = line;
   songNode.pattern = patterns;
   songNode.instrument = instruments;
@@ -382,6 +385,18 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     });
   };
 
+  const shouldQuoteTitle = (value: string): boolean => {
+    if (!value) {
+      return true;
+    }
+    if (/^\s|\s$/.test(value)) {
+      return true;
+    }
+
+    // Disallow characters that could break plain scalars or introduce YAML syntax.
+    return /[:{}\[\],&*#?|\-<>=!%@`"]/.test(value);
+  };
+
   const quoteTitleValues = (text: string): string => {
     const titleLineRegex = /^(\s+)(title):\s*(.+)$/gm;
     return text.replace(titleLineRegex, (_match, indent: string, key: string, value: string) => {
@@ -392,7 +407,13 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       ) {
         inner = inner.slice(1, -1);
       }
-      return `${indent}${key}: "${inner}"`;
+
+      if (shouldQuoteTitle(inner)) {
+        const escaped = inner.replace(/"/g, '\\"');
+        return `${indent}${key}: "${escaped}"`;
+      }
+
+      return `${indent}${key}: ${inner}`;
     });
   };
 

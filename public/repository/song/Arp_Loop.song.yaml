@@ -1,7 +1,9 @@
 song:
-  title: "Arp Loop"
+  title: Arp Loop
   author: Zoltar X / New Generation
   year: 2025
+  chip: YM
+  frame: 50
   speed: 4
   length: 16
   loop: 4
