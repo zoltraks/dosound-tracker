@@ -28,3 +28,15 @@ Make a comprehensive comparisation of these reports, choose the best analysis, a
 make a synthesis of them creating final assessment report.
 
 ---
+
+I need to make refactoring for my project. 
+This is my prompt to make a refactoring proposal I used to make it:
+
+...
+
+Compare these three refactoring proposals. 
+They came from "KAT-Coder-Pro V1" (REFACTORING-kat.md), "MiniMax-M2" (REFACTORING-minimax.md), "Devstral 2 2512" (REFACTORING-devstral.md). 
+Make a comprehensive comparisation of these reports and choose the best proposal in COMPARISATION.md pointing why. 
+In another file make a synthesis of them creating final refactoring proposal REFACTORING.md.
+
+---
