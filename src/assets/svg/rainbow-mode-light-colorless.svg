@@ -8,7 +8,7 @@
    id="Layer_1"
    data-name="Layer 1"
    version="1.1"
-   sodipodi:docname="rainbow-mode-light-colorless.svg"
+   sodipodi:docname="rainbow-mode-dark-colorless.svg"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
@@ -16,7 +16,7 @@
    xmlns:svg="http://www.w3.org/2000/svg">
   <sodipodi:namedview
      id="namedview3"
-     pagecolor="#ffffff"
+     pagecolor="#000000"
      bordercolor="#666666"
      borderopacity="1.0"
      inkscape:showpageshadow="2"
@@ -24,8 +24,8 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:zoom="0.73892659"
-     inkscape:cx="610.3448"
-     inkscape:cy="391.10786"
+     inkscape:cx="633.35115"
+     inkscape:cy="292.31591"
      inkscape:window-width="1920"
      inkscape:window-height="1009"
      inkscape:window-x="-8"
@@ -41,15 +41,15 @@
      class="cls-1"
      d="M1.5,16.75a10.5,10.5,0,0,1,21,0"
      id="path1"
-     style="fill:#cccccc;stroke:#797673;stroke-opacity:1" />
+     style="fill:#131313;stroke:#acafb6;stroke-opacity:1;fill-opacity:1" />
   <path
      class="cls-1"
      d="M5.32,16.75a6.68,6.68,0,0,1,13.36,0"
      id="path2"
-     style="stroke:#717572;fill:#cccccc;stroke-opacity:1" />
+     style="stroke:#a6ada7;fill:#131313;stroke-opacity:1" />
   <path
      class="cls-1"
      d="M9.14,16.75a2.86,2.86,0,0,1,5.72,0"
      id="path3"
-     style="stroke:#777972;stroke-opacity:1" />
+     style="stroke:#b5aaaa;stroke-opacity:1" />
 </svg>
