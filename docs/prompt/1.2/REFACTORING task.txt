@@ -112,3 +112,43 @@ Inspect directory docs/refactoring/1.2.3
 Create README.md in that directory with links to all documents inside that folder and short description.
 
 ---
+
+Read project documentation and guidelines for refactoring proposals.
+Make refactoring proposal for the current version.
+Forget about previous refactorings.
+Don't read files in docs/refactoring or docs/prompt directories.
+Use guidelines from docs/ARCHITECT.md and docs/GUIDELINES.md files.
+Remember about proper report file name REFACTORING.md in correct directory inside docs/refactoring followed by version number.
+Use naming convention already used in the project.
+
+Remember that playback and sequencer needs to work efficiently and frequently (20 ms or 40ms for a cycle).
+We don't need to support any other sound chip than YM2149.
+
+This refactoring proposal will be used as a guide for AI assisted code generation, not for human programmers.
+Create an implementation plan organized in phases, but do not break it into time frames or schedules.
+When creating document, avoid using emoji in section titles.
+Don't write conclusions, future considerations, implementation timelines, or files modified summaries.
+Don't include implementation safety measures, git workflow strategies, or rollback plans.
+Don't mention sources of recommendations (e.g., "from X proposal", "based on Y analysis").
+Skip any time-based implementation references (e.g., "Week 2, Day 5", "Days 1-3").
+
+Analyse the project deeply from scratch.
+
+Focus on unused or duplicated code.
+Try to simplify things for increasing maintainability.
+
+Omit sound generation procedures, it's working properly and we don't want to break it.
+Proposed changes must be safe and not break anything.
+Don't extend file structure too much, keep as flat as possible.
+Current file structure is acceptable and maintainable.
+
+Aim to fit the changes within a single sprint.
+
+Focus the document on:
+- Technical specifications and executable requirements
+- Code structures, function signatures, and expected outcomes
+- Safety constraints (what must NOT be modified)
+- Testing requirements for automated verification
+- Clear phase organization without scheduling details
+
+---
