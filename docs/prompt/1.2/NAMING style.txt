@@ -50,3 +50,10 @@ Change name "SongMetadata" to "SongConfiguration" so instead of i.e. "songMetada
 Simplify file names in @constants directory: change "keyboardLayout.ts" to "keyboard.ts", "modalConfig.ts" to "modal.ts" and "songMetadata" to "song.ts".
 
 ---
+
+I don't like short "config" or "Config" names in parameter names, variables, function names, etc.
+Refactor code, instead of "config" use "configuration" and instead of "Config", use "Configuration".
+This change should affect only the code, it must not change any behavior or file formats.
+
+---
+
