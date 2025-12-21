@@ -300,3 +300,8 @@ REFACTORING.md that will be used for project maintenance.
 File `REFACTORING proposal.md` contains the query that was used to generate each of the documents.
 
 ---
+
+Read ARCHITECT.md.
+Make full assessment report in ASSESSMENT.md file of the incoming refactorings done in branch "refactoring/1.2.5-grok" according to last REFACTORING.md file for version 1.2.5 and current source code in branch "main".
+
+---
