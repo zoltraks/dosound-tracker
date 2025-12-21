@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.2.6
+
+Internal refactoring for maintainability (App split into dedicated components), plus centralized logging/formatting/storage key utilities and new unit tests since 1.2.5.
+
+- Refactored `App.tsx` by extracting hidden file input elements into `FileInputs` and consolidating modal rendering into a dedicated `ModalsContainer`, reducing top-level component complexity without changing workflows.
+- Introduced a centralized `logger` utility and replaced direct `console.*` calls across the app so errors and debug output are more consistent (with MIDI debug logs routed through the same system).
+- Added a shared `Formatter` helper and wired it into hex/envelope formatting and assembly export formatting to keep numeric display/output consistent.
+- Centralized selected localStorage key names via `StorageKeys` to reduce key drift and simplify future migrations.
+- Added unit tests for the new logger/formatter utilities (plus a new `clean-check.song.yaml` fixture).
+
 ## Version 1.2.5
 
 Song YAML compatibility improvements (chip/frame metadata + safer load warnings), MIDI configuration naming cleanup with automatic localStorage migration, and minor UI polishing since 1.2.4.
