@@ -1,9 +1,10 @@
 import { useState, useEffect, startTransition } from 'react';
+import { StorageKeys } from '../utils/storageKeys';
 
 export const useTheme = () => {
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     try {
-      const savedTheme = localStorage.getItem('dosound-tracker-theme');
+      const savedTheme = localStorage.getItem(StorageKeys.THEME);
       if (savedTheme === 'dark') return true;
       if (savedTheme === 'light') return false;
     } catch {
@@ -14,7 +15,7 @@ export const useTheme = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-theme', isDarkMode ? 'dark' : 'light');
+      localStorage.setItem(StorageKeys.THEME, isDarkMode ? 'dark' : 'light');
     } catch {
       // ignore
     }

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef, useCallback, type MutableRefObject } from 'react';
+import { logger } from '../utils/logger';
 import type { MidiConfiguration, MidiMonitorEntry, MidiNoteEvent, MidiDeviceInfo } from '../utils/midiUtils';
 import { resolveDeviceName, formatTime, MAX_MONITOR_ENTRIES } from '../utils/midiUtils';
+import { StorageKeys } from '../utils/storageKeys';
 
 const isElectronEnv =
   typeof window !== 'undefined' &&
@@ -75,7 +77,7 @@ export function useMidiMessageProcessing(
 
     let debugOn = false;
     try {
-      debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+      debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
     } catch {
       debugOn = false;
     }
@@ -111,7 +113,7 @@ export function useMidiMessageProcessing(
       });
 
       if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
+        logger.debug('MIDI IN', {
           time,
           note: noteLabel,
           channel,
@@ -153,7 +155,7 @@ export function useMidiMessageProcessing(
       });
 
       if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
+        logger.debug('MIDI IN', {
           time,
           note: noteLabel,
           channel,
@@ -190,7 +192,7 @@ export function useMidiMessageProcessing(
       });
 
       if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
+        logger.debug('MIDI IN', {
           time,
           note: noteLabel,
           channel,
@@ -216,7 +218,7 @@ export function useMidiMessageProcessing(
       });
 
       if (debugOn && enableMonitors) {
-        console.log('MIDI IN', {
+        logger.debug('MIDI IN', {
           time,
           type,
           data: dataHex,
@@ -286,14 +288,14 @@ export function useMidiMessageProcessing(
 
       let debugOn = false;
       try {
-        debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+        debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
       } catch {
         debugOn = false;
       }
 
       if (debugOn && enableMonitors) {
         const time = formatTime();
-        console.log('MIDI OUT', {
+        logger.debug('MIDI OUT', {
           time,
           note: noteLabel,
           channel: safeChannel,
@@ -372,14 +374,14 @@ export function useMidiMessageProcessing(
 
       let debugOn = false;
       try {
-        debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
+        debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
       } catch {
         debugOn = false;
       }
 
       if (debugOn && enableMonitors) {
         const time = formatTime();
-        console.log('MIDI OUT', {
+        logger.debug('MIDI OUT', {
           time,
           note: noteLabel,
           channel: safeChannel,
@@ -447,7 +449,7 @@ export function useMidiMessageProcessing(
 
     if (debugOn && enableMonitors) {
       const time = formatTime();
-      console.log('MIDI OUT', {
+      logger.debug('MIDI OUT', {
         time,
         type: 'System Reset',
         status,

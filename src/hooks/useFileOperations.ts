@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { Song, Instrument } from '../synth/SoundDriver';
 import type { ExportType, ExportStrategy } from '../constants/export';
+import { logger } from '../utils/logger';
 import {
   buildInstrumentExportBaseName,
   buildPatternExportBaseName,
@@ -65,7 +66,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      console.error('VGM export failed:', error);
+      logger.error('VGM export failed', error);
       const lines: string[] = [];
       lines.push('VGM export failed.');
       if (error instanceof Error) {
@@ -99,7 +100,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
-      console.error('WAV export failed:', error);
+      logger.error('WAV export failed', error);
       const lines: string[] = [];
       lines.push('WAV export failed.');
       if (error instanceof Error) {
@@ -129,7 +130,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
       setDumpExportSummary(lines.join('\n'));
     } catch (error) {
-      console.error('Dump export failed:', error);
+      logger.error('Dump export failed', error);
       const lines: string[] = [];
       lines.push('Dump export failed.');
       if (error instanceof Error) {
@@ -194,7 +195,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        console.error('Context-aware DATA export failed:', error);
+        logger.error('Context-aware DATA export failed', error);
         const lines: string[] = [];
         lines.push('DATA export failed.');
         if (error instanceof Error) {
@@ -265,7 +266,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        console.error('Context-aware MAX export failed:', error);
+        logger.error('Context-aware MAX export failed', error);
         const lines: string[] = [];
         lines.push('MAX export failed.');
         if (error instanceof Error) {
@@ -334,7 +335,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        console.error('Context-aware BIN export failed:', error);
+        logger.error('Context-aware BIN export failed', error);
         const lines: string[] = [];
         lines.push('BIN export failed.');
         if (error instanceof Error) {
@@ -404,7 +405,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        console.error('Context-aware VGM export failed:', error);
+        logger.error('Context-aware VGM export failed', error);
         const lines: string[] = [];
         lines.push('VGM export failed.');
         if (error instanceof Error) {
@@ -492,7 +493,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
-        console.error('Context-aware WAV export failed:', error);
+        logger.error('Context-aware WAV export failed', error);
         const lines: string[] = [];
         lines.push('WAV export failed.');
         if (error instanceof Error) {

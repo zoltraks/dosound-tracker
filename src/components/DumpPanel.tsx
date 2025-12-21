@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { logger } from '../utils/logger';
 import { YM2149 } from '../synth/YM2149';
 
 interface DumpPanelProps {
@@ -104,7 +105,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     try {
       if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
         void navigator.clipboard.writeText(text).catch((error) => {
-          console.error('Failed to copy to clipboard:', error);
+          logger.error('Failed to copy to clipboard', error);
         });
         return;
       }
@@ -121,7 +122,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
         document.body.removeChild(textarea);
       }
     } catch (error) {
-      console.error('Clipboard copy failed:', error);
+      logger.error('Clipboard copy failed', error);
     }
   };
 

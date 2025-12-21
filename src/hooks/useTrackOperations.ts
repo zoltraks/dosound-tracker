@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { logger } from '../utils/logger';
 import type { Song, Pattern } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
 import { PATTERN_LENGTH } from '../constants/music';
@@ -87,7 +88,7 @@ export function useTrackOperations({
 
       await navigator.clipboard.writeText(yamlContent);
     } catch (error) {
-      console.error('Failed to copy track:', error);
+      logger.error('Failed to copy track', error);
       const message = error instanceof Error ? error.message : String(error);
       setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
     }
@@ -163,7 +164,7 @@ export function useTrackOperations({
       );
       updateSong({ pattern: updatedPatterns });
     } catch (error) {
-      console.error('Failed to paste track:', error);
+      logger.error('Failed to paste track', error);
       const message = error instanceof Error ? error.message : String(error);
       setTrackClipboardError('Failed to paste track from clipboard.\n\n' + message);
     }

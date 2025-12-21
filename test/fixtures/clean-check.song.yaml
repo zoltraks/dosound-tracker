@@ -1,0 +1,73 @@
+song:
+  title: Clean Check
+  year: 2025
+  chip: YM
+  frame: 50
+  speed: 6
+  length: 32
+  line:
+    - A: "01"
+      B: "02"
+      C: "03"
+  pattern:
+    - number: "01"
+      step:
+        - note: "C-4"
+          instrument: "00"
+          volume: 15
+        - wait: 6
+        - note: "E-4"
+          instrument: "00"
+          volume: 11
+        - volume: 12
+        - volume: 13
+        - wait: 2
+        - note: "C-4"
+          instrument: "00"
+          volume: 15
+        - wait: 5
+        - note: "G-4"
+          instrument: "00"
+        - wait: 5
+        - note: "C-4"
+          instrument: "00"
+    - number: "02"
+      step:
+        - wait: 4
+        - note: "E-4"
+          instrument: "00"
+          volume: 15
+        - wait: 6
+        - note: "G-4"
+          instrument: "00"
+          volume: 11
+        - volume: 12
+        - volume: 13
+        - note: "E-4"
+          instrument: "00"
+          volume: 15
+        - wait: 5
+        - note: "C-5"
+          instrument: "00"
+    - number: "03"
+      step:
+        - wait: 3
+        - note: "C-4"
+          instrument: "00"
+          volume: 11
+        - volume: 12
+        - volume: 13
+        - wait: 2
+        - note: "G-4"
+          instrument: "00"
+          volume: 15
+        - wait: 7
+        - note: "F-4"
+          instrument: "00"
+        - wait: 5
+        - note: "G-3"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      base: "C-4"
+      volume: [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]

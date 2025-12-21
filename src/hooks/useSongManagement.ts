@@ -10,6 +10,8 @@ import {
   parseSongFromYaml,
 } from '../utils/songParser';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
+import { logger } from '../utils/logger';
+import { StorageKeys } from '../utils/storageKeys';
 
 export type TrackKey = 'A' | 'B' | 'C';
 
@@ -24,7 +26,7 @@ export type StoredSongForMigration = {
   [key: string]: unknown;
 };
 
-export const SONG_STORAGE_KEY = 'dosound-tracker-song';
+export const SONG_STORAGE_KEY = StorageKeys.SONG;
 
 function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
   const song = (rawSong || {}) as Record<string, unknown>;
@@ -253,13 +255,13 @@ export function loadInitialSong(): Song {
       localStorage.removeItem(SONG_STORAGE_KEY);
     }
   } catch (error) {
-    console.warn('Failed to load song from localStorage:', error);
+    logger.warn('Failed to load song from localStorage', error);
   }
 
   try {
     return parseSongFromYaml(defaultSongYaml);
   } catch (error) {
-    console.error('Failed to parse bundled default song YAML:', error);
+    logger.error('Failed to parse bundled default song YAML', error);
     return createDefaultSong();
   }
 }

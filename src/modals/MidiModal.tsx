@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { logger } from '../utils/logger';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
 import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
@@ -87,7 +88,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
 
       downloadFile(yamlContent, 'midi-configuration.yaml', 'text/yaml');
     } catch (error) {
-      console.error('Failed to export MIDI configuration:', error);
+      logger.error('Failed to export MIDI configuration', error);
     }
   };
 
@@ -112,12 +113,12 @@ export const MidiModal: React.FC<MidiModalProps> = ({
         onChangeConfig(nextConfig);
       } catch (error) {
         if (error instanceof MidiConfigurationFormatError) {
-          console.error(error.message);
+          logger.error(error.message);
           if (onLoadError) {
             onLoadError(error.message);
           }
         } else {
-          console.error('Failed to load MIDI configuration file:', error);
+          logger.error('Failed to load MIDI configuration file', error);
           if (onLoadError) {
             const message = error instanceof Error ? error.message : String(error);
             onLoadError(`Failed to load MIDI configuration file: ${message}`);

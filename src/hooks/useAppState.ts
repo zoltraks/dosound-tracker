@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ExportType, ExportStrategy } from '../constants/export';
+import { StorageKeys } from '../utils/storageKeys';
 
 export interface UseAppStateResult {
   isDebugMode: boolean;
@@ -24,7 +25,7 @@ export interface UseAppStateResult {
 export function useAppState(): UseAppStateResult {
   const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
     try {
-      const stored = localStorage.getItem('dosound-tracker-debug-mode');
+      const stored = localStorage.getItem(StorageKeys.DEBUG_MODE);
       if (stored === 'on') return true;
       if (stored === 'off') return false;
     } catch {
@@ -35,7 +36,7 @@ export function useAppState(): UseAppStateResult {
 
   const [exportType, setExportType] = useState<ExportType>(() => {
     try {
-      const stored = localStorage.getItem('dosound-tracker-export-type');
+      const stored = localStorage.getItem(StorageKeys.EXPORT_TYPE);
       if (stored === 'song' || stored === 'pattern' || stored === 'instrument') {
         return stored;
       }
@@ -47,7 +48,7 @@ export function useAppState(): UseAppStateResult {
 
   const [exportStrategy, setExportStrategy] = useState<ExportStrategy>(() => {
     try {
-      const savedDumpMode = localStorage.getItem('dosound-tracker-dump-mode');
+      const savedDumpMode = localStorage.getItem(StorageKeys.DUMP_MODE);
       if (savedDumpMode === 'simple' || savedDumpMode === 'complex' || savedDumpMode === 'optimized') {
         return savedDumpMode;
       }
@@ -59,7 +60,7 @@ export function useAppState(): UseAppStateResult {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-dump-mode', exportStrategy);
+      localStorage.setItem(StorageKeys.DUMP_MODE, exportStrategy);
     } catch {
       // ignore
     }
@@ -67,7 +68,7 @@ export function useAppState(): UseAppStateResult {
 
   const [transposeScope, setTransposeScope] = useState<'line' | 'song'>(() => {
     try {
-      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
       if (settings?.scope === 'line' || settings?.scope === 'song') {
         return settings.scope;
       }
@@ -77,7 +78,7 @@ export function useAppState(): UseAppStateResult {
 
   const [transposeTrackScope, setTransposeTrackScope] = useState<'current' | 'all'>(() => {
     try {
-      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
       if (settings?.trackScope === 'current' || settings?.trackScope === 'all') {
         return settings.trackScope;
       }
@@ -87,7 +88,7 @@ export function useAppState(): UseAppStateResult {
 
   const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>(() => {
     try {
-      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
       if (settings?.instrumentScope === 'all' || settings?.instrumentScope === 'selected') {
         return settings.instrumentScope;
       }
@@ -97,7 +98,7 @@ export function useAppState(): UseAppStateResult {
 
   const [transposeAmount, setTransposeAmount] = useState<number>(() => {
     try {
-      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
       if (typeof settings?.amount === 'number' && Number.isFinite(settings.amount)) {
         return settings.amount;
       }
@@ -107,7 +108,7 @@ export function useAppState(): UseAppStateResult {
 
   const [transposeAmountInput, setTransposeAmountInput] = useState<string>(() => {
     try {
-      const settings = JSON.parse(localStorage.getItem('dosound-tracker-transpose-settings') || 'null');
+      const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
       if (typeof settings?.amount === 'number' && Number.isFinite(settings.amount)) {
         return String(settings.amount);
       }
@@ -125,7 +126,7 @@ export function useAppState(): UseAppStateResult {
         instrumentScope: transposeInstrumentScope,
         amount: transposeAmount,
       };
-      localStorage.setItem('dosound-tracker-transpose-settings', JSON.stringify(payload));
+      localStorage.setItem(StorageKeys.TRANSPOSE_SETTINGS, JSON.stringify(payload));
     } catch {
       // ignore
     }

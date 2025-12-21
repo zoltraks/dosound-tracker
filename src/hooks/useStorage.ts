@@ -1,4 +1,5 @@
 import type { MutableRefObject } from 'react';
+import { logger } from '../utils/logger';
 
 export type ScheduledSaveHandle =
   | { kind: 'timeout'; id: number }
@@ -29,7 +30,7 @@ export function scheduleJsonSave<T>(
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.warn(`Failed to save ${key} to localStorage:`, error);
+      logger.warn(`Failed to save ${key} to localStorage`, error);
     }
   };
 

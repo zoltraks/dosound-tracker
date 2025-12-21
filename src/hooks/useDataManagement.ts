@@ -12,6 +12,8 @@ import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
 import { buildSongYamlForExport } from '../utils/songIO';
 import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/instrumentIO';
 import { downloadFile } from '../utils/fileOperations';
+import { logger } from '../utils/logger';
+import { StorageKeys } from '../utils/storageKeys';
 import {
   SONG_STORAGE_KEY,
   loadInitialSong,
@@ -26,7 +28,7 @@ import {
 import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManagement';
 import { scheduleJsonSave, clearScheduledSave, type ScheduledSaveHandle } from './useStorage';
 
-const INSTRUMENT_STORAGE_KEY = 'dosound-tracker-instrument';
+const INSTRUMENT_STORAGE_KEY = StorageKeys.INSTRUMENT;
 
 type PendingSongImport = {
   song: Song;
@@ -174,7 +176,7 @@ export const useDataManagement = () => {
       downloadFile(yamlContent, `${safeTitle || 'NONAME'}.song.yaml`, 'text/yaml');
       setIsSongDirty(false);
     } catch (error) {
-      console.error('Failed to save song:', error);
+      logger.error('Failed to save song', error);
     }
   }, [currentSong, setIsSongDirty]);
 
@@ -211,7 +213,7 @@ export const useDataManagement = () => {
 
         applyParsedSong(newSong);
       } catch (error) {
-        console.error('Error loading song:', error);
+        logger.error('Error loading song', error);
         setSongError('Error loading song file.');
       }
     },
@@ -251,7 +253,7 @@ export const useDataManagement = () => {
 
       downloadFile(yamlContent, `${safeName}.inst.yaml`, 'text/yaml');
     } catch (error) {
-      console.error('Failed to save instrument:', error);
+      logger.error('Failed to save instrument', error);
     }
   }, [currentInstrument]);
 
@@ -267,7 +269,7 @@ export const useDataManagement = () => {
         );
         setIsSongDirty(true);
       } catch (error) {
-        console.error('Error loading instrument:', error);
+        logger.error('Error loading instrument', error);
         setInstrumentError('Error loading instrument file.');
       }
     },

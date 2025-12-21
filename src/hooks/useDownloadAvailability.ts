@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { logger } from '../utils/logger';
 
 /**
  * Hook to check if files are available in the download directory.
@@ -49,7 +50,7 @@ export function useDownloadAvailability(): boolean {
         setHasFiles(validFiles.length > 0);
       } catch (error) {
         // On any error, assume no downloads available
-        console.error('Failed to check download availability:', error);
+        logger.error('Failed to check download availability', error);
         setHasFiles(false);
       }
     };

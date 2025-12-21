@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { logger } from '../utils/logger';
 
 export const useAudioContext = () => {
   const [audioContext, setAudioContext] = useState<AudioContext | null>(null);
@@ -20,7 +21,7 @@ export const useAudioContext = () => {
         setAudioContext(context);
       } catch (err) {
         setError('Failed to initialize audio context');
-        console.error('Audio context initialization failed:', err);
+        logger.error('Audio context initialization failed', err);
       }
     };
 

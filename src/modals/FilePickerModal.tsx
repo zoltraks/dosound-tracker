@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { logger } from '../utils/logger';
 import {
   LIST_FILE_NAME,
   buildHref,
@@ -111,7 +112,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
 
         // Keep behavior similar to the existing download handling: on error,
         // simply expose an empty list.
-        console.error('Failed to load file list:', error);
+        logger.error('Failed to load file list', error);
         setInternalFiles([]);
       }
     };

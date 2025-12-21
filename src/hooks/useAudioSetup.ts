@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { YM2149 } from '../synth/YM2149';
+import { logger } from '../utils/logger';
 
 type WindowWithYm2149 = Window & {
   ym2149?: YM2149;
@@ -24,7 +25,7 @@ export function useAudioSetup(): UseAudioSetupResult {
     }
 
     try {
-      console.log('AudioContext created with rate', audioContext.sampleRate, audioContext.state);
+      logger.info('AudioContext created with rate', audioContext.sampleRate, audioContext.state);
 
       const ymInstance = new YM2149(audioContext);
       ym2149Ref.current = ymInstance;
@@ -43,7 +44,7 @@ export function useAudioSetup(): UseAudioSetupResult {
       // Short test tone to validate audio path
       const testFrequency = 261.63;
       const testPeriod = Math.floor(2000000 / (16 * testFrequency));
-      console.log('YM2149 test tone frequency', testFrequency);
+      logger.info('YM2149 test tone frequency', testFrequency);
 
       ymInstance.writeRegister(0x00, testPeriod & 0xff);
       ymInstance.writeRegister(0x01, (testPeriod >> 8) & 0x0f);
@@ -61,10 +62,10 @@ export function useAudioSetup(): UseAudioSetupResult {
           void audioContext
             .resume()
             .then(() => {
-              console.log('AudioContext resumed by user interaction');
+              logger.info('AudioContext resumed by user interaction');
             })
             .catch(err => {
-              console.error('AudioContext resume failed:', err);
+              logger.error('AudioContext resume failed', err);
             });
         }
       };
@@ -91,7 +92,7 @@ export function useAudioSetup(): UseAudioSetupResult {
         }
       };
     } catch (e) {
-      console.error('Failed to initialize audio:', e);
+      logger.error('Failed to initialize audio', e);
     }
   }, [audioContext]);
 

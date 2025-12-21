@@ -14,6 +14,7 @@ import {
   normalizeSongForExport,
   parseBaseKeyForExport,
 } from './core';
+import { Formatter } from '../utils/formatters';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -302,18 +303,9 @@ function periodToNoteAndPitch(period: number): { label: string; pitchDelta: numb
   return { label: bestLabel, pitchDelta: bestPitchDelta };
 }
 
-// Helper: hex formatting using short form for nibbles when possible
-function toHex(value: number, forceByte: boolean = false): string {
-  const v = value & 0xff;
-  if (!forceByte && v < 0x10) {
-    return v.toString(16).toUpperCase();
-  }
-  return v.toString(16).toUpperCase().padStart(2, '0');
-}
-
 // Helper: format one dc.b line with TAB indent and aligned comment
 function formatAsmLine(bytes: number[], comment: string): string {
-  const code = '\t' + 'dc.b ' + bytes.map((b) => `$${toHex(b)}`).join(',');
+  const code = '\t' + 'dc.b ' + bytes.map((b) => `$${Formatter.hex(b, { noPad: true })}`).join(',');
   const targetCol = 20;
   const padLength = Math.max(1, targetCol - code.length);
   return code + ' '.repeat(padLength) + '; ' + comment + '\n';
@@ -692,7 +684,7 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
       vc,
     ];
 
-    const line = '\t' + 'dc.b ' + bytes.map((b) => `$${toHex(b, true)}`).join(',');
+    const line = '\t' + 'dc.b ' + bytes.map((b) => `$${Formatter.hex(b)}`).join(',');
     lines.push(line);
     cycleCount++;
   }
