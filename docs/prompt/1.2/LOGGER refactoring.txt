@@ -1,0 +1,7 @@
+Change the name of the field `timestamp` to simply `time` in LogEntry interface.
+
+In Logger class change the name of the field `logLevel` to simply `level`.
+
+Apply these changes in the project code as well as in `docs/feature/LOGGER.md`.
+
+---

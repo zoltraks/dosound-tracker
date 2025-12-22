@@ -82,7 +82,7 @@ describe('Logger', () => {
     it('should set log level to DEBUG when debug mode enabled', () => {
       loggerInstance.setLogLevel(LogLevel.ERROR);
       loggerInstance.setDebugMode(true);
-      expect(loggerInstance['logLevel']).toBe(LogLevel.DEBUG);
+      expect(loggerInstance['level']).toBe(LogLevel.DEBUG);
     });
   });
 
