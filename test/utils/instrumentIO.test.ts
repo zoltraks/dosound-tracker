@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import type { Instrument } from '../../src/synth/SoundDriver';
 import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../../src/utils/instrumentIO';
+import { asInstrumentId } from '../../src/types/branded';
 
 describe('instrument YAML IO', () => {
   it('always double-quotes instrument.name when exporting YAML', () => {
@@ -21,7 +22,7 @@ describe('instrument YAML IO', () => {
 
     expect(yaml).toMatch(/^\s{2}name: "X y"$/m);
 
-    const parsed = parseInstrumentFromText(yaml, instrument.id);
+    const parsed = parseInstrumentFromText(yaml, asInstrumentId(instrument.id));
     expect(parsed.name).toBe('X y');
   });
 });

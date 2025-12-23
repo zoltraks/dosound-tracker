@@ -2,12 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import { PlaylistHeader } from './PlaylistHeader';
 import { PlaylistLine } from './PlaylistLine';
-
-interface PlaylistEntry {
-  A: string;
-  B: string;
-  C: string;
-}
+import type { PlaylistEntry } from '../types/playlist';
+import { asPlaylistPatternId } from '../types/branded';
 
 interface PlaylistPanelProps {
   playlist: PlaylistEntry[];
@@ -71,9 +67,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     // Validate pattern ID (should be 2-digit hex or '--')
     if (patternId === '--' || (patternId.length === 2 && /^[0-9A-Fa-f]{2}$/.test(patternId))) {
       switch (track) {
-        case 'A': entry.A = patternId; break;
-        case 'B': entry.B = patternId; break;
-        case 'C': entry.C = patternId; break;
+        case 'A': entry.A = patternId === '--' ? '--' : asPlaylistPatternId(patternId); break;
+        case 'B': entry.B = patternId === '--' ? '--' : asPlaylistPatternId(patternId); break;
+        case 'C': entry.C = patternId === '--' ? '--' : asPlaylistPatternId(patternId); break;
       }
       
       newPlaylist[lineIndex] = entry;

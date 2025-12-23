@@ -9,7 +9,12 @@ import {
   MAX_OCTAVE,
 } from '../constants/music';
 import { validateSongData } from './validation';
-import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
+import {
+  DEFAULT_BASE_KEY,
+  formatBaseKey,
+  parseBaseKey,
+  normalizeInstrumentColor,
+} from './songFormat';
 import { formatHexId } from './hexFormatting';
 import { formatInstrumentSlotId } from './instrumentSelection';
 import {
@@ -18,6 +23,7 @@ import {
   SUPPORTED_SONG_CHIPS,
   SUPPORTED_SONG_FRAMES,
 } from '../constants/song';
+import { expandEnvelope, expandLoopingEnvelope } from './envelopeUtils';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -340,44 +346,6 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
   }
 
   const instruments: Instrument[] = [];
-
-  const expandEnvelope = (values: unknown, length: number, defaultValue: number): number[] => {
-    const rawArray = Array.isArray(values) ? (values as unknown[]) : [];
-    const numericValues = rawArray
-      .map((v) => Number(v))
-      .filter((v) => Number.isFinite(v));
-
-    if (numericValues.length === 0) {
-      return Array(length).fill(defaultValue);
-    }
-
-    const result: number[] = [];
-    for (let i = 0; i < length; i++) {
-      if (i < numericValues.length) {
-        result[i] = numericValues[i];
-      } else {
-        result[i] = numericValues[numericValues.length - 1];
-      }
-    }
-    return result;
-  };
-
-  const expandLoopingEnvelope = (values: unknown, length: number, defaultValue: number): number[] => {
-    const rawArray = Array.isArray(values) ? (values as unknown[]) : [];
-    const numericValues = rawArray
-      .map((v) => Number(v))
-      .filter((v) => Number.isFinite(v));
-
-    if (numericValues.length === 0) {
-      return Array(length).fill(defaultValue);
-    }
-
-    const result: number[] = [];
-    for (let i = 0; i < length; i++) {
-      result[i] = numericValues[i % numericValues.length];
-    }
-    return result;
-  };
 
   instrumentNodes.forEach((instNode, index: number) => {
     if (!instNode || typeof instNode !== 'object') {

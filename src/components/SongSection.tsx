@@ -1,6 +1,8 @@
 import React from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Instrument, Song } from '../synth/SoundDriver';
+import type { PlaylistEntry } from '../types/playlist';
+import { mapSongLineToPlaylistEntries } from '../types/playlist';
 import { InformationPanel } from './InformationPanel';
 import { PlaylistPanel } from './PlaylistPanel';
 import { InstrumentPanel } from './InstrumentSection';
@@ -15,7 +17,7 @@ interface SongSectionProps {
   updateSong: (patch: Partial<Song>) => void;
   clampedPlaybackPosition: number;
   onPositionSelect: (position: number) => void;
-  onPlaylistChange: (playlist: Song['line']) => void;
+  onPlaylistChange: (playlist: PlaylistEntry[]) => void;
   onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   targetTrackId: 'A' | 'B' | 'C';
   currentInstrument: Instrument;
@@ -51,6 +53,8 @@ export const SongSection: React.FC<SongSectionProps> = ({
   channelMutes,
   onToggleChannelMute,
 }) => {
+  const playlistEntries = mapSongLineToPlaylistEntries(song.line);
+
   return (
     <div className="right-column">
       <InformationPanel
@@ -61,7 +65,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
       />
 
       <PlaylistPanel
-        playlist={song.line}
+        playlist={playlistEntries}
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         onPlaylistChange={onPlaylistChange}

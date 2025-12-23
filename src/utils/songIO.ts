@@ -5,19 +5,8 @@ import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './son
 import { formatHexId } from './hexFormatting';
 import { formatInstrumentSlotId } from './instrumentSelection';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
-
-const trimEnvelope = (values: number[]): number[] => {
-  if (!values || values.length === 0) return [];
-  const last = values[values.length - 1];
-  let i = values.length - 2;
-  while (i >= 0 && values[i] === last) {
-    i -= 1;
-  }
-  return values.slice(0, i + 1).concat(last);
-};
-
-const isZeroDefault = (values: number[]): boolean =>
-  values.length === 0 || (values.length === 1 && values[0] === 0);
+import { isEnvelopeZeroDefault, trimEnvelope } from './envelopeUtils';
+import { quoteYamlValues } from './yamlUtils';
 
 export const buildSongYamlForExport = (currentSong: Song): string => {
   const instrumentSource = currentSong.instrument;
@@ -59,17 +48,17 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     }
 
     instrumentNode.volume = volumeEnv;
-    if (!isZeroDefault(shiftEnv)) {
+    if (!isEnvelopeZeroDefault(shiftEnv)) {
       instrumentNode.shift = shiftEnv;
     }
 
-    if (!isZeroDefault(pitchEnv)) {
+    if (!isEnvelopeZeroDefault(pitchEnv)) {
       instrumentNode.pitch = pitchEnv;
     }
-    if (!isZeroDefault(noiseEnv)) {
+    if (!isEnvelopeZeroDefault(noiseEnv)) {
       instrumentNode.noise = noiseEnv;
     }
-    if (!isZeroDefault(modeEnv)) {
+    if (!isEnvelopeZeroDefault(modeEnv)) {
       instrumentNode.mode = modeEnv;
     }
 
@@ -329,61 +318,10 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     });
   };
 
-  const quoteLineValues = (text: string): string => {
-    const lineRegex = /^(\s*-\s+|\s+)([ABC]):\s*(.+)$/gm;
-    return text.replace(lineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
-
-  const quoteNoteValues = (text: string): string => {
-    const noteLineRegex = /^(\s*-\s+|\s+)(note):\s*(.+)$/gm;
-    return text.replace(noteLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
-
-  const quoteBaseValues = (text: string): string => {
-    const baseLineRegex = /^(\s*-\s+|\s+)(base):\s*(.+)$/gm;
-    return text.replace(baseLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
-
-  const quoteNumberValues = (text: string): string => {
-    const numberLineRegex = /^(\s*-\s+|\s+)(number):\s*(.+)$/gm;
-    return text.replace(numberLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
+  const quoteLineValues = (text: string): string => quoteYamlValues(text, '[ABC]');
+  const quoteNoteValues = (text: string): string => quoteYamlValues(text, 'note');
+  const quoteBaseValues = (text: string): string => quoteYamlValues(text, 'base');
+  const quoteNumberValues = (text: string): string => quoteYamlValues(text, 'number');
 
   const shouldQuoteTitle = (value: string): boolean => {
     if (!value) {
@@ -427,19 +365,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   yamlContent = quoteBaseValues(yamlContent);
   yamlContent = quoteNumberValues(yamlContent);
   yamlContent = quoteTitleValues(yamlContent);
-  const quoteColorValues = (text: string): string => {
-    const colorLineRegex = /^(\s*-\s+|\s+)(color):\s*(.+)$/gm;
-    return text.replace(colorLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
+  const quoteColorValues = (text: string): string => quoteYamlValues(text, 'color');
 
   yamlContent = quoteColorValues(yamlContent);
 

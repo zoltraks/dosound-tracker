@@ -1,23 +1,25 @@
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument, Note } from '../synth/SoundDriver';
+import { asInstrumentId } from '../types/branded';
+import type { InstrumentId } from '../types/branded';
 
-export function normalizeInstrumentId(value?: string | number | null): string {
+export function normalizeInstrumentId(value?: string | number | null): InstrumentId {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return value.toString(16).padStart(2, '0').toUpperCase();
+    return asInstrumentId(value.toString(16).padStart(2, '0').toUpperCase());
   }
 
   if (typeof value === 'string') {
     const trimmed = value.trim();
-    if (!trimmed) return '';
+    if (!trimmed) return asInstrumentId('');
     const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
     const upper = sanitized.toUpperCase();
     if (/^[0-9A-F]{1,2}$/.test(upper)) {
-      return upper.padStart(2, '0');
+      return asInstrumentId(upper.padStart(2, '0'));
     }
-    return upper;
+    return asInstrumentId(upper);
   }
 
-  return '';
+  return asInstrumentId('');
 }
 
 export function updateChannelWithInstrument(

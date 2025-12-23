@@ -2,26 +2,22 @@ import yaml from 'js-yaml';
 import type { Instrument } from '../synth/SoundDriver';
 import { ENVELOPE_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
+import {
+  expandEnvelope,
+  expandLoopingEnvelope,
+  isEnvelopeZeroDefault,
+  trimEnvelope,
+} from './envelopeUtils';
+import { quoteYamlValues } from './yamlUtils';
+import { normalizeInstrumentId } from './playbackUtils';
+import type { InstrumentId } from '../types/branded';
 
 export const buildInstrumentYamlForExport = (currentInstrument: Instrument): string => {
-  const trimEnvelopeLocal = (values: number[]): number[] => {
-    if (!values || values.length === 0) return [];
-    const last = values[values.length - 1];
-    let i = values.length - 2;
-    while (i >= 0 && values[i] === last) {
-      i -= 1;
-    }
-    return values.slice(0, i + 1).concat(last);
-  };
-
-  const volumeEnv = trimEnvelopeLocal(currentInstrument.volume);
-  const shiftEnv = trimEnvelopeLocal(currentInstrument.shift);
-  const pitchEnv = trimEnvelopeLocal(currentInstrument.pitch);
-  const noiseEnv = trimEnvelopeLocal(currentInstrument.noise);
-  const modeEnv = trimEnvelopeLocal(currentInstrument.mode);
-
-  const isZeroDefaultLocal = (values: number[]): boolean =>
-    values.length === 0 || (values.length === 1 && values[0] === 0);
+  const volumeEnv = trimEnvelope(currentInstrument.volume);
+  const shiftEnv = trimEnvelope(currentInstrument.shift);
+  const pitchEnv = trimEnvelope(currentInstrument.pitch);
+  const noiseEnv = trimEnvelope(currentInstrument.noise);
+  const modeEnv = trimEnvelope(currentInstrument.mode);
 
   const instrumentNode: Record<string, unknown> = {};
 
@@ -49,19 +45,19 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
     }
   }
 
-  if (!isZeroDefaultLocal(modeEnv)) {
+  if (!isEnvelopeZeroDefault(modeEnv)) {
     instrumentNode.mode = modeEnv;
   }
 
   instrumentNode.volume = volumeEnv;
-  if (!isZeroDefaultLocal(shiftEnv)) {
+  if (!isEnvelopeZeroDefault(shiftEnv)) {
     instrumentNode.shift = shiftEnv;
   }
 
-  if (!isZeroDefaultLocal(pitchEnv)) {
+  if (!isEnvelopeZeroDefault(pitchEnv)) {
     instrumentNode.pitch = pitchEnv;
   }
-  if (!isZeroDefaultLocal(noiseEnv)) {
+  if (!isEnvelopeZeroDefault(noiseEnv)) {
     instrumentNode.noise = noiseEnv;
   }
 
@@ -78,49 +74,9 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
     flowLevel: 2,
   });
 
-  const quoteBaseValues = (text: string): string => {
-    const baseLineRegex = /^(\s*-\s+|\s+)(base):\s*(.+)$/gm;
-    return text.replace(baseLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
-
-  const quoteColorValues = (text: string): string => {
-    const colorLineRegex = /^(\s*-\s+|\s+)(color):\s*(.+)$/gm;
-    return text.replace(colorLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      inner = inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
-
-  const quoteNameValues = (text: string): string => {
-    const nameLineRegex = /^(\s+)(name):\s*(.+)$/gm;
-    return text.replace(nameLineRegex, (_match, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      inner = inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
+  const quoteBaseValues = (text: string): string => quoteYamlValues(text, 'base');
+  const quoteColorValues = (text: string): string => quoteYamlValues(text, 'color');
+  const quoteNameValues = (text: string): string => quoteYamlValues(text, 'name');
 
   yamlContent = quoteBaseValues(yamlContent);
   yamlContent = quoteNameValues(yamlContent);
@@ -131,7 +87,7 @@ export const buildInstrumentYamlForExport = (currentInstrument: Instrument): str
 
 export const parseInstrumentFromText = (
   content: string,
-  currentInstrumentId: string,
+  currentInstrumentId: InstrumentId,
 ): Instrument => {
   const parsed = yaml.load(content) as unknown;
 
@@ -162,40 +118,6 @@ export const parseInstrumentFromText = (
   }
 
   const instNode = node as InstrumentFileNode;
-
-  const expandEnvelope = (field: string, length: number, defaultValue: number): number[] => {
-    const raw = Array.isArray(instNode[field]) ? (instNode[field] as unknown[]) : [];
-    const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
-
-    if (values.length === 0) {
-      return Array(length).fill(defaultValue);
-    }
-
-    const result: number[] = [];
-    for (let i = 0; i < length; i += 1) {
-      if (i < values.length) {
-        result[i] = values[i];
-      } else {
-        result[i] = values[values.length - 1];
-      }
-    }
-    return result;
-  };
-
-  const expandLoopingEnvelope = (field: string, length: number, defaultValue: number): number[] => {
-    const raw = Array.isArray(instNode[field]) ? (instNode[field] as unknown[]) : [];
-    const values = raw.map(v => Number(v)).filter(v => Number.isFinite(v));
-
-    if (values.length === 0) {
-      return Array(length).fill(defaultValue);
-    }
-
-    const result: number[] = [];
-    for (let i = 0; i < length; i += 1) {
-      result[i] = values[i % values.length];
-    }
-    return result;
-  };
 
   const rawOctave = instNode.octave;
   let octave = DEFAULT_OCTAVE;
@@ -238,18 +160,18 @@ export const parseInstrumentFromText = (
   const color = normalizeInstrumentColor((instNode as { color?: unknown }).color);
 
   const instrument: Instrument = {
-    id: currentInstrumentId,
+    id: normalizeInstrumentId(currentInstrumentId),
     name: parsedName,
-    mode: expandEnvelope('mode', ENVELOPE_LENGTH, 0),
-    volume: expandEnvelope('volume', ENVELOPE_LENGTH, 0x0f),
+    mode: expandEnvelope(instNode.mode, ENVELOPE_LENGTH, 0),
+    volume: expandEnvelope(instNode.volume, ENVELOPE_LENGTH, 0x0f),
     shift:
-      Array.isArray(instNode.shift)
-        ? expandEnvelope('shift', ENVELOPE_LENGTH, 0)
-        : Array.isArray(instNode.arpeggio)
-          ? expandLoopingEnvelope('arpeggio', ENVELOPE_LENGTH, 0)
+      instNode.shift !== undefined
+        ? expandEnvelope(instNode.shift, ENVELOPE_LENGTH, 0)
+        : instNode.arpeggio !== undefined
+          ? expandLoopingEnvelope(instNode.arpeggio, ENVELOPE_LENGTH, 0)
           : Array(ENVELOPE_LENGTH).fill(0),
-    pitch: expandEnvelope('pitch', ENVELOPE_LENGTH, 0),
-    noise: expandEnvelope('noise', ENVELOPE_LENGTH, 0),
+    pitch: expandEnvelope(instNode.pitch, ENVELOPE_LENGTH, 0),
+    noise: expandEnvelope(instNode.noise, ENVELOPE_LENGTH, 0),
     base: (() => {
       const parsedBase = parseBaseKey(instNode.base);
       if (!parsedBase) return DEFAULT_BASE_KEY;

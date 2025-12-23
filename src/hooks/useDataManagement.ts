@@ -14,6 +14,13 @@ import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/
 import { downloadFile } from '../utils/fileOperations';
 import { logger } from '../utils/logger';
 import { StorageKeys } from '../utils/storageKeys';
+import { normalizeInstrumentId } from '../utils/playbackUtils';
+import {
+  asInstrumentId,
+  asPatternId,
+  asPlaylistPatternId,
+  type PatternId,
+} from '../types/branded';
 import {
   SONG_STORAGE_KEY,
   loadInitialSong,
@@ -26,6 +33,7 @@ import {
   applyLoadedInstrumentToSong,
 } from './useInstrumentManagement';
 import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManagement';
+import type { PlaylistEntry } from '../types/playlist';
 import { scheduleJsonSave, clearScheduledSave, type ScheduledSaveHandle } from './useStorage';
 
 const INSTRUMENT_STORAGE_KEY = StorageKeys.INSTRUMENT;
@@ -51,7 +59,7 @@ export const useDataManagement = () => {
 
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>(() => {
     return {
-      id: '00',
+      id: asInstrumentId('00'),
       name: 'Default Instrument',
       volume: Array(32).fill(0x0F),
       shift: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
@@ -73,7 +81,10 @@ export const useDataManagement = () => {
 
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
-    const songInstrument = currentSong.instrument.find(inst => inst.id === currentInstrument.id);
+    const currentId = normalizeInstrumentId(currentInstrument.id);
+    const songInstrument = currentSong.instrument.find(
+      inst => normalizeInstrumentId(inst?.id) === currentId
+    );
     if (!songInstrument || songInstrument === currentInstrument) {
       return;
     }
@@ -114,11 +125,14 @@ export const useDataManagement = () => {
 
     const emptyLine: Step = { note: null };
 
-    const createBlankPattern = (id: string): Pattern => ({
-      id,
-      name: `Pattern ${id}`,
-      step: Array.from({ length: targetLength }, () => ({ ...emptyLine }))
-    });
+    const createBlankPattern = (id: string): Pattern => {
+      const patternId = asPatternId(id);
+      return {
+        id: patternId,
+        name: `Pattern ${patternId}`,
+        step: Array.from({ length: targetLength }, () => ({ ...emptyLine })),
+      };
+    };
 
     const patterns: Pattern[] = [
       createBlankPattern('01'),
@@ -127,7 +141,7 @@ export const useDataManagement = () => {
     ];
 
     const newCurrentInstrument: Instrument = {
-      id: '00',
+      id: asInstrumentId('00'),
       name: '',
       volume: Array(ENVELOPE_LENGTH).fill(0),
       shift: Array(ENVELOPE_LENGTH).fill(0),
@@ -146,7 +160,11 @@ export const useDataManagement = () => {
       length: targetLength,
       loop: null,
       pattern: patterns,
-      line: [{ A: '01', B: '02', C: '03' }],
+      line: [{
+        A: asPlaylistPatternId('01'),
+        B: asPlaylistPatternId('02'),
+        C: asPlaylistPatternId('03'),
+      }],
       instrument: [newCurrentInstrument],
       chip: DEFAULT_SONG_CHIP,
       frame: DEFAULT_SONG_FRAME,
@@ -260,12 +278,12 @@ export const useDataManagement = () => {
   const loadInstrument = useCallback(
     (content: string) => {
       try {
-        const newInstrument = parseInstrumentFromText(content, currentInstrument.id);
+        const targetInstrumentId = normalizeInstrumentId(currentInstrument.id);
+        const newInstrument = parseInstrumentFromText(content, targetInstrumentId);
 
         setCurrentInstrument(newInstrument);
-
         setCurrentSong((prev) =>
-          applyLoadedInstrumentToSong(prev, currentInstrument.id, newInstrument),
+          applyLoadedInstrumentToSong(prev, targetInstrumentId, newInstrument),
         );
         setIsSongDirty(true);
       } catch (error) {
@@ -276,37 +294,41 @@ export const useDataManagement = () => {
     [currentInstrument.id, setCurrentInstrument, setCurrentSong, setIsSongDirty, setInstrumentError],
   );
 
-  const updateSong = useCallback((updates: Partial<Song>) => {
-    setIsSongDirty(true);
-    setCurrentSong(prev => {
-      // Handle pattern length updates with clamping and pattern resizing
-      const next: Song = { ...prev, ...updates } as Song;
+  const updateSong = useCallback(
+    (updates: Partial<Song>) => {
+      setIsSongDirty(true);
+      setCurrentSong((prev) => {
+        const next: Song = { ...prev, ...updates } as Song;
 
-      const legacyLength = (updates as unknown as { patternLength?: number }).patternLength;
-      const rawLength = typeof updates.length === 'number' ? updates.length : legacyLength;
-      if (typeof rawLength === 'number') {
-        const clampedLength = Math.max(4, Math.min(256, Math.floor(rawLength)));
+        const legacyLength = (updates as { patternLength?: number }).patternLength;
+        const rawLength = typeof updates.length === 'number' ? updates.length : legacyLength;
+        if (typeof rawLength === 'number') {
+          const clampedLength = Math.max(4, Math.min(256, Math.floor(rawLength)));
 
-        next.length = clampedLength;
+          next.length = clampedLength;
 
-        next.pattern = prev.pattern.map(pattern => {
-          const existingLines = pattern.step || [];
+          next.pattern = prev.pattern.map((pattern) => {
+            const existingLines = pattern.step || [];
 
-          if (existingLines.length >= clampedLength) {
-            return pattern;
-          }
+            if (existingLines.length >= clampedLength) {
+              return pattern;
+            }
 
-          const emptyLine: Step = { note: null };
-          const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({ ...emptyLine }));
-          const newLines: Step[] = [...existingLines, ...extra];
+            const emptyLine: Step = { note: null };
+            const extra = Array.from({ length: clampedLength - existingLines.length }, () => ({
+              ...emptyLine,
+            }));
+            const newLines: Step[] = [...existingLines, ...extra];
 
-          return { ...pattern, step: newLines };
-        });
-      }
+            return { ...pattern, step: newLines };
+          });
+        }
 
-      return next;
-    });
-  }, []);
+        return next;
+      });
+    },
+    [setIsSongDirty],
+  );
 
   const updateInstrument = useCallback(
     (updates: Partial<Instrument>) => {
@@ -322,7 +344,7 @@ export const useDataManagement = () => {
   );
 
   const createNewPattern = useCallback(
-    (patternId: string) => {
+    (patternId: PatternId) => {
       const { updatedSong, newPattern } = createPatternForSong(currentSong, patternId);
       setCurrentSong(updatedSong);
       setIsSongDirty(true);
@@ -332,7 +354,7 @@ export const useDataManagement = () => {
   );
 
   const addPlaylistEntry = useCallback(
-    (entry: { A: string; B: string; C: string }) => {
+    (entry: PlaylistEntry) => {
       const updatedSong = addPlaylistEntryToSong(currentSong, entry);
       setCurrentSong(updatedSong);
       setIsSongDirty(true);

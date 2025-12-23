@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSequencer, type SequencerState } from './useSequencer';
 import type { Song } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
+import { mapSongLineToPlaylistEntries } from '../types/playlist';
 
 interface UsePlaybackControlsArgs {
   currentSong: Song;
@@ -30,6 +31,10 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
     updateSongLoop,
     setPatternLoopMode,
   } = useSequencer(currentSong.speed, currentSong.length || PATTERN_LENGTH);
+  const playlistEntries = useMemo(
+    () => mapSongLineToPlaylistEntries(currentSong.line),
+    [currentSong.line]
+  );
 
   useEffect(() => {
     updateSpeed(currentSong.speed);
@@ -40,9 +45,9 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
   }, [currentSong.length, updatePatternLength]);
 
   useEffect(() => {
-    const playlistLength = currentSong.line.length;
+    const playlistLength = playlistEntries.length;
     updateSongLoop(playlistLength, currentSong.loop as number | null | undefined);
-  }, [currentSong.line, currentSong.loop, updateSongLoop]);
+  }, [playlistEntries.length, currentSong.loop, updateSongLoop]);
 
   return {
     sequencerState,

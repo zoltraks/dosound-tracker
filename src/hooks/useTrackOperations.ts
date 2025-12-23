@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { logger } from '../utils/logger';
 import type { Song, Pattern } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
@@ -15,6 +15,7 @@ import {
   type TransposeResult 
 } from '../utils/transposeUtils';
 import { insertPatternStep, deletePatternStep } from '../utils/patternUtils';
+import { mapSongLineToPlaylistEntries } from '../types/playlist';
 
 export type { TrackPasteMode, TransposeOptions, TransposeResult };
 
@@ -58,6 +59,7 @@ export function useTrackOperations({
   getPasteTrackMode,
 }: UseTrackOperationsArgs): UseTrackOperationsResult {
   const [trackClipboardError, setTrackClipboardError] = useState('');
+  const playlistEntries = useMemo(() => mapSongLineToPlaylistEntries(song.line), [song.line]);
 
   const getActiveTrackId = useCallback((): 'A' | 'B' | 'C' => {
     if (activeSection === 'trackA') return 'A';
@@ -179,27 +181,17 @@ export function useTrackOperations({
   ]);
 
   const handleInsertStep = useCallback(() => {
-    const playlistLength = song.line.length;
+    const playlistLength = playlistEntries.length;
     if (playlistLength === 0) {
       return;
     }
 
     const currentIndex = Math.max(0, Math.min(sequencerPatternIndex, playlistLength - 1));
-    const entry = song.line[currentIndex];
+    const entry = playlistEntries[currentIndex];
     const trackId = getActiveTrackId();
 
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = entry.A;
-        break;
-      case 'B':
-        patternId = entry.B;
-        break;
-      case 'C':
-        patternId = entry.C;
-        break;
-    }
+    const patternValue = entry ? entry[trackId] : '--';
+    const patternId = patternValue === '--' ? '--' : (patternValue as string);
 
     if (!patternId || patternId === '--') {
       return;
@@ -227,7 +219,7 @@ export function useTrackOperations({
     setActiveSection(section);
     setTrackFocusRevision(prev => prev + 1);
   }, [
-    song.line,
+    playlistEntries,
     song.pattern,
     song.length,
     getActiveTrackId,
@@ -239,27 +231,17 @@ export function useTrackOperations({
   ]);
 
   const handleDeleteStep = useCallback(() => {
-    const playlistLength = song.line.length;
+    const playlistLength = playlistEntries.length;
     if (playlistLength === 0) {
       return;
     }
 
     const currentIndex = Math.max(0, Math.min(sequencerPatternIndex, playlistLength - 1));
-    const entry = song.line[currentIndex];
+    const entry = playlistEntries[currentIndex];
     const trackId = getActiveTrackId();
 
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = entry.A;
-        break;
-      case 'B':
-        patternId = entry.B;
-        break;
-      case 'C':
-        patternId = entry.C;
-        break;
-    }
+    const patternValue = entry ? entry[trackId] : '--';
+    const patternId = patternValue === '--' ? '--' : (patternValue as string);
 
     if (!patternId || patternId === '--') {
       return;
@@ -286,7 +268,7 @@ export function useTrackOperations({
     const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
     setActiveSection(section);
   }, [
-    song.line,
+    playlistEntries,
     song.pattern,
     song.length,
     getActiveTrackId,

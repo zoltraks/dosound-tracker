@@ -1,3 +1,5 @@
+import type { EnvelopePanelType } from './envelopeTypes';
+
 export interface FormatOptions {
   padWidth?: number;
   uppercase?: boolean;
@@ -57,11 +59,11 @@ export class Formatter {
    * @param value - Value to format
    * @returns Formatted string appropriate for type
    */
-  static envelopeValue(type: string, value: number): string {
+  static envelopeValue(type: EnvelopePanelType, value: number): string {
     switch (type) {
       case 'volume':
       case 'noise':
-        return Formatter.hex(value);
+        return Formatter.hex(value, { padWidth: 2, uppercase: true, noPad: false });
       case 'shift':
       case 'pitch':
         return Formatter.signed(value);

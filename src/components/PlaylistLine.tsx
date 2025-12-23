@@ -1,12 +1,7 @@
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { formatHexId } from '../utils/hexFormatting';
-
-interface PlaylistEntry {
-  A: string;
-  B: string;
-  C: string;
-}
+import type { PlaylistEntry } from '../types/playlist';
 
 const formatPatternDisplay = (patternId: string): string => {
   if (patternId === '--') return '--';

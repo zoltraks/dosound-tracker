@@ -7,6 +7,7 @@ import type { ExportType, ExportStrategy } from '../constants/export';
 import type { TrackPasteMode } from '../hooks/useTrackOperations';
 import type { Instrument } from '../synth/SoundDriver';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
+import type { InstrumentDeleteUsage } from '../hooks/useModalState';
 
 interface ModalsContainerProps {
   // Error and summary states
@@ -57,12 +58,7 @@ interface ModalsContainerProps {
   onConfirmQuit: () => void;
   onCancelQuit: () => void;
   isInstrumentDeleteOpen: boolean;
-  instrumentDeleteUsage: {
-    instrumentId: string;
-    instrumentName: string;
-    usageCount: number;
-    patternCount: number;
-  };
+  instrumentDeleteUsage: InstrumentDeleteUsage;
   onConfirmDeleteInstrumentAndNotes: () => void;
   onConfirmDeleteInstrumentOnly: () => void;
   onCancelInstrumentDelete: () => void;
