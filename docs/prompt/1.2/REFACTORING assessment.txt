@@ -40,3 +40,284 @@ Make a comprehensive comparisation of these reports and choose the best proposal
 In another file make a synthesis of them creating final refactoring proposal REFACTORING.md.
 
 ---
+
+# Refactoring Evaluation Prompt
+
+## Purpose
+
+Evaluate the completed refactoring by performing deep source code analysis of the refactored codebase and comparing it against the original refactoring proposal document (REFACTORING.md).
+
+## Prerequisites
+
+**Required Documents:**
+- `REFACTORING.md` - The original refactoring proposal for the current version in `docs/refactoring/version`.
+- Complete access to the refactored source code (current branch)
+- Access to project documentation (docs/ARCHITECT.md, docs/GUIDELINES.md)
+
+## Deep Source Code Analysis Requirements
+
+**MANDATORY POST-REFACTORING CODE ANALYSIS:**
+- Read and analyze EVERY source file in the refactored project completely
+- Verify the execution flow from entry points through all code paths
+- Confirm all function calls work correctly, including indirect calls and callbacks
+- Validate module dependencies and coupling relationships
+- Examine every modified function, class, variable, and constant
+- Verify the purpose and usage of each refactored component
+- Trace data structures through their lifecycle to ensure integrity
+- Confirm configuration and initialization code works correctly
+- Validate timing-critical sections maintain performance requirements
+- Verify error handling and edge case management remain intact
+
+**Analysis must thoroughly verify:**
+- All proposed changes were implemented correctly
+- No proposed changes were accidentally omitted
+- No unproposed changes were introduced
+- Code structure and organization improvements are effective
+- Function and variable naming follows proposed conventions
+- Module dependencies match the refactoring plan
+- Code duplication was properly addressed
+- Unused code was safely removed
+- Design patterns are correctly applied
+- Data structures function as intended
+- Performance-critical sections maintain their efficiency
+- Timing-sensitive code (20ms/40ms cycles) remains unaffected
+- All callback mechanisms and event handlers work correctly
+
+## Evaluation Structure
+
+Create a comprehensive evaluation document named `ASSESSMENT.md`
+in the same directory as `REFACTORING.md`.
+
+## Evaluation Sections
+
+### Executive Summary
+- Overall assessment: Success/Partial Success/Failure
+- Number of proposed changes successfully implemented
+- Number of proposed changes not implemented or partially implemented
+- Critical issues discovered (if any)
+- Overall impact on code quality and maintainability
+
+### Implementation Verification
+
+For EACH proposed change in `REFACTORING.md`:
+
+**Change Identification:**
+- Reference to original proposal section
+- Description of proposed change
+- Expected outcome
+
+**Implementation Status:**
+- ✅ Fully Implemented - change completed as proposed
+- ⚠️ Partially Implemented - change completed but with deviations
+- ❌ Not Implemented - change was not made
+- 🔄 Modified - change was made differently than proposed
+
+**Verification Details:**
+- Exact code locations affected
+- Code snippets showing the implemented change
+- Comparison with original proposal
+- Explanation of any deviations from proposal
+- Assessment of whether the change achieved its goal
+
+**Safety Validation:**
+- Confirmation that sound generation was not affected
+- Confirmation that sequencer functionality was not affected
+- Verification that timing-critical sections remain efficient
+- Confirmation that DEBUG mode functionality is preserved
+- Evidence that no unintended side effects were introduced
+
+### Unused Code Removal Analysis
+
+For each proposed code removal:
+- Was the code actually removed?
+- Code location and exact removal scope
+- Verification that removal was safe (no broken references)
+- Confirmation that DEBUG mode doesn't need the removed code
+- Evidence that no functionality was broken by the removal
+
+### Code Deduplication Analysis
+
+For each proposed deduplication:
+- Was the duplication properly unified?
+- Location of the unified code
+- All instances that now use the unified version
+- Verification that behavior is identical to original duplicates
+- Confirmation that performance was not degraded
+- Evidence that timing-sensitive code is unaffected
+
+### Naming Convention Compliance
+
+- Verification that new naming conventions are applied consistently
+- Examples of correct naming convention usage
+- Identification of any naming inconsistencies
+- Assessment of naming clarity improvements
+
+### Testing Verification
+
+For each refactored function that required tests:
+- Were unit tests added as required?
+- Do tests cover all specified scenarios?
+- Do all tests pass?
+- Are regression tests in place?
+- Are performance tests implemented for timing-critical code?
+- Test coverage assessment
+
+### Critical Safety Audit
+
+**MANDATORY verification that protected code was NOT modified:**
+
+✅ Sound Generation Functions:
+- List all YM2149 chip emulation functions
+- Confirm NONE were modified
+- Evidence: file checksums, git diffs, or code inspection
+
+✅ Sequencer Functions:
+- List all sequencer and playback functions
+- Confirm NONE were modified
+- Evidence: file checksums, git diffs, or code inspection
+
+✅ Audio Processing:
+- List all audio callback and buffer management functions
+- Confirm NONE were modified
+- Evidence: file checksums, git diffs, or code inspection
+
+✅ Timing-Critical Sections:
+- Identify all 20ms/40ms cycle code
+- Confirm performance characteristics unchanged
+- Evidence: performance benchmarks or profiling data
+
+✅ DEBUG Mode Functionality:
+- Verify all debug logging remains intact
+- Confirm debug mode still produces expected output
+- Evidence: debug mode test results
+
+**If ANY protected code was modified:**
+- Mark as CRITICAL ISSUE
+- Document exact modifications
+- Assess risk level
+- Recommend immediate corrective action
+
+### Unintended Changes Analysis
+
+**Identify ANY changes not proposed in REFACTORING.md:**
+- Location of unintended change
+- Nature of the change
+- Whether the change is beneficial, neutral, or harmful
+- Whether the change should be reverted or documented
+- Impact on system functionality
+
+### Code Quality Assessment
+
+**Compare before and after refactoring:**
+- Code complexity reduction (quantitative if possible)
+- Maintainability improvements
+- Code organization improvements
+- Documentation quality improvements
+- Module coupling changes
+- Code readability enhancements
+
+**Metrics (if available):**
+- Lines of code removed
+- Code duplication percentage reduction
+- Cyclomatic complexity changes
+- Test coverage changes
+
+### Issues and Concerns
+
+**Document all problems discovered:**
+
+**Critical Issues:**
+- Broken functionality
+- Modified protected code (sound/sequencer/timing)
+- Performance degradation
+- Missing required tests
+
+**Major Issues:**
+- Incomplete implementations
+- Deviations from proposal without justification
+- New bugs introduced
+- Incorrect deduplication or removal
+
+**Minor Issues:**
+- Inconsistent naming
+- Missing documentation
+- Incomplete test coverage
+- Style inconsistencies
+
+**For each issue:**
+- Severity level
+- Exact location in code
+- Description of the problem
+- Recommended fix
+- Impact assessment
+
+### Recommendations
+
+**Based on the evaluation:**
+- Required corrective actions (if any)
+- Suggested improvements for future refactorings
+- Additional refactoring opportunities discovered
+- Process improvements for next iteration
+
+### Final Assessment
+
+**Overall Evaluation:**
+- Success rating: Excellent/Good/Acceptable/Poor/Failed
+- Whether the refactoring achieved its goals
+- Whether the codebase is better than before
+- Whether the refactoring was worth the effort
+- Readiness for production deployment
+
+**Quantitative Summary:**
+- X of Y proposed changes fully implemented
+- Z critical issues found
+- Code quality improvement: [assessment]
+- Risk level: Low/Medium/High
+
+## Evaluation Guidelines
+
+**Be thorough and objective:**
+- Base assessment on actual code analysis, not assumptions
+- Provide specific evidence for all claims
+- Include code snippets and file references
+- Use git diffs or similar tools to verify changes
+- Test the refactored code if possible
+
+**Be honest about problems:**
+- Don't hide issues or failures
+- Clearly mark severity levels
+- Provide actionable recommendations
+- Distinguish between critical and minor issues
+
+**Focus on facts:**
+- Avoid subjective opinions without evidence
+- Provide measurable improvements where possible
+- Use specific examples from the codebase
+- Reference exact file locations and line numbers
+
+**Verify safety thoroughly:**
+- Actually inspect protected code areas
+- Run tests to confirm functionality
+- Check performance of timing-critical sections
+- Validate DEBUG mode operation
+- Test audio generation and sequencer operation
+
+## Document Requirements
+
+- Use clear, technical language
+- Organize with markdown formatting
+- Include code snippets where relevant
+- Use checkboxes (✅ ❌ ⚠️) for quick visual assessment
+- Reference specific files and line numbers
+- Provide evidence for all assessments
+- No emoji in section titles
+- No time-based references
+- No scheduling or timeline information
+- Focus on technical accuracy and completeness
+
+## Critical Reminder
+
+This evaluation must be based on ACTUAL CODE INSPECTION, not assumptions. 
+Read every relevant source file, trace every proposed change, and verify every claim with concrete evidence from the codebase.
+
+---
