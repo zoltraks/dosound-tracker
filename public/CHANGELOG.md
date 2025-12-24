@@ -1,5 +1,13 @@
 # Changes
 
+## Version 1.2.7
+
+Type-safety refinements and naming clarity since 1.2.6.
+
+- Introduced branded identifier types for instruments, patterns, tracks, and playlist entries, with shared playlist conversion utilities to prevent mixing IDs across playback, storage, and file operations.
+- Updated song/instrument IO helpers, sequencer/playback hooks, and storage handling to use the stricter types, improving validation when normalizing playlists and serializing data.
+- Renamed `ModalsContainer` to `ModalManager` for clearer component naming in line with the README naming rule.
+
 ## Version 1.2.6
 
 Internal refactoring for maintainability (App split into dedicated components), plus centralized logging/formatting/storage key utilities and new unit tests since 1.2.5.
