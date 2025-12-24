@@ -2,6 +2,7 @@ import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
 import { useModalState } from '../../src/hooks/useModalState';
+import { asInstrumentId } from '../../src/types/branded';
 
 type HookResult = ReturnType<typeof useModalState>;
 
@@ -49,7 +50,7 @@ describe('useModalState', () => {
     expect(hook!.midiCopySummary).toBe('');
 
     expect(hook!.instrumentDeleteUsage).toEqual({
-      instrumentId: '',
+      instrumentId: asInstrumentId(''),
       instrumentName: '',
       usageCount: 0,
       patternCount: 0,
@@ -71,7 +72,7 @@ describe('useModalState', () => {
       hook!.setChangelogContent('Changes');
       hook!.setTransposeSummary('Transpose summary');
       hook!.setInstrumentDeleteUsage({
-        instrumentId: '01',
+        instrumentId: asInstrumentId('01'),
         instrumentName: 'Test Inst',
         usageCount: 3,
         patternCount: 2,
@@ -83,7 +84,7 @@ describe('useModalState', () => {
     expect(hook!.changelogContent).toBe('Changes');
     expect(hook!.transposeSummary).toBe('Transpose summary');
     expect(hook!.instrumentDeleteUsage).toEqual({
-      instrumentId: '01',
+      instrumentId: asInstrumentId('01'),
       instrumentName: 'Test Inst',
       usageCount: 3,
       patternCount: 2,

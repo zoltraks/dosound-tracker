@@ -15,13 +15,8 @@ import {
   buildInstrumentRemovalSummary,
   getInstrumentPlaybackChannel,
 } from '../utils/instrumentActionUtils';
-
-interface InstrumentDeleteUsage {
-  instrumentId: string;
-  instrumentName: string;
-  usageCount: number;
-  patternCount: number;
-}
+import type { InstrumentId } from '../types/branded';
+import type { InstrumentDeleteUsage } from './useModalState';
 
 interface UseInstrumentActionsArgs {
   currentSong: Song;
@@ -36,7 +31,7 @@ interface UseInstrumentActionsArgs {
   instrumentDeleteUsage: InstrumentDeleteUsage;
   setInstrumentDeleteUsage: (usage: InstrumentDeleteUsage) => void;
   setIsInstrumentDeleteOpen: (open: boolean) => void;
-  normalizeInstrumentId: (value?: string | number | null) => string;
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
   ym2149Ref: RefObject<YM2149 | null>;
   playInstTimerRef: MutableRefObject<number | null>;
@@ -163,7 +158,7 @@ export function useInstrumentActions({
 
     if (usageCount === 0) {
       const slot = instruments[index];
-      const slotId = slot?.id || currentInstrument.id;
+      const slotId = normalizeInstrumentId(slot?.id || currentInstrument.id);
 
       const clearedInstrument = createClearedInstrument(slotId);
 
@@ -177,7 +172,7 @@ export function useInstrumentActions({
     }
 
     const slot = instruments[index];
-    const slotId = slot?.id || currentInstrument.id;
+    const slotId = normalizeInstrumentId(slot?.id || currentInstrument.id);
     const slotName = slot?.name || currentInstrument.name || '';
 
     setInstrumentDeleteUsage({

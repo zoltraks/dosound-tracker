@@ -2,6 +2,7 @@ import type { Instrument, Pattern, Step } from '../synth/SoundDriver';
 import { ENVELOPE_LENGTH, MAX_INSTRUMENTS } from '../constants/music';
 import { isInstrumentEmpty } from './instrument';
 import { formatInstrumentSlotId } from './instrumentSelection';
+import type { InstrumentId } from '../types/branded';
 
 export interface InstrumentUsageCounts {
   usageCount: number;
@@ -19,7 +20,7 @@ export interface FailureResult {
   message: string;
 }
 
-export function createClearedInstrument(slotId: string): Instrument {
+export function createClearedInstrument(slotId: InstrumentId): Instrument {
   return {
     id: slotId,
     name: '',
@@ -33,8 +34,8 @@ export function createClearedInstrument(slotId: string): Instrument {
 
 export function countInstrumentUsage(
   patterns: Pattern[],
-  targetInstrumentIdNorm: string,
-  normalizeInstrumentId: (value?: string | number | null) => string
+  targetInstrumentIdNorm: InstrumentId,
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId
 ): InstrumentUsageCounts {
   let usageCount = 0;
   let patternCount = 0;
@@ -135,7 +136,7 @@ export function cloneInstrumentToNextFreeSlot(
 export interface MoveInstrumentResult {
   instruments: Instrument[];
   remappedPatterns: Pattern[];
-  instrumentIdMap: Record<string, string>;
+  instrumentIdMap: Record<string, InstrumentId>;
 }
 
 export function moveInstrumentAndRemapPatterns(
@@ -157,7 +158,7 @@ export function moveInstrumentAndRemapPatterns(
     return null;
   }
 
-  const instrumentIdMap: Record<string, string> = {};
+  const instrumentIdMap: Record<string, InstrumentId> = {};
   const newInstruments: Instrument[] = [];
 
   for (let i = 0; i < length; i++) {
@@ -221,7 +222,7 @@ export interface ClearInstrumentAndNotesResult {
   instruments: Instrument[];
   patterns: Pattern[];
   clearedInstrument: Instrument;
-  slotId: string;
+  slotId: InstrumentId;
   slotName: string;
   notesCleared: number;
   patternsTouched: number;
@@ -230,8 +231,8 @@ export interface ClearInstrumentAndNotesResult {
 export function clearInstrumentAndNotes(
   instruments: Instrument[],
   patterns: Pattern[],
-  targetInstrumentIdNorm: string,
-  normalizeInstrumentId: (value?: string | number | null) => string
+  targetInstrumentIdNorm: InstrumentId,
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId
 ): ClearInstrumentAndNotesResult | null {
   const index = instruments.findIndex((inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm);
   if (index === -1) {
@@ -239,7 +240,7 @@ export function clearInstrumentAndNotes(
   }
 
   const slot = instruments[index];
-  const slotId = slot?.id || '';
+  const slotId = normalizeInstrumentId(slot?.id);
   const slotName = slot?.name || '';
 
   const clearedInstrument = createClearedInstrument(slotId);
@@ -302,14 +303,14 @@ export function clearInstrumentAndNotes(
 export interface ClearInstrumentOnlyResult {
   instruments: Instrument[];
   clearedInstrument: Instrument;
-  slotId: string;
+  slotId: InstrumentId;
   slotName: string;
 }
 
 export function clearInstrumentOnly(
   instruments: Instrument[],
-  targetInstrumentIdNorm: string,
-  normalizeInstrumentId: (value?: string | number | null) => string
+  targetInstrumentIdNorm: InstrumentId,
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId
 ): ClearInstrumentOnlyResult | null {
   const index = instruments.findIndex((inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm);
   if (index === -1) {
@@ -317,7 +318,7 @@ export function clearInstrumentOnly(
   }
 
   const slot = instruments[index];
-  const slotId = slot?.id || '';
+  const slotId = normalizeInstrumentId(slot?.id);
   const slotName = slot?.name || '';
 
   const clearedInstrument = createClearedInstrument(slotId);

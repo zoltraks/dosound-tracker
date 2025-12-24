@@ -214,6 +214,8 @@ For guidelines on refactoring processes, architectural decisions, and code gener
 > The initial project specification guidelines are described in [PROJECT.md](docs/PROJECT.md).
 > That document was used to bootstrap this project but is **not** used for the current development process anymore.
 
+**Naming Rule:** When introducing new files (components, hooks, utilities, etc.) within the same directory, ensure their names remain distinct and unambiguous. Avoid singular vs. plural variations (e.g., `ModalContainer` vs. `ModalManager`) or other near-duplicates that might cause confusion. If two files serve related purposes, give them clearly differentiated names that describe their unique roles (e.g., `ModalContainer` vs. `ModalManager`). This keeps imports readable and prevents accidental misuse.
+
 ### Data Format Documentation
 
 For a detailed technical specification of all save and export formats (song/instrument YAML, clipboard formats, assembly, binary, VGM, and WAV), see:

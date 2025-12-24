@@ -1,7 +1,9 @@
 import { useState } from 'react';
+import type { InstrumentId } from '../types/branded';
+import { asInstrumentId } from '../types/branded';
 
-interface InstrumentDeleteUsage {
-  instrumentId: string;
+export interface InstrumentDeleteUsage {
+  instrumentId: InstrumentId;
   instrumentName: string;
   usageCount: number;
   patternCount: number;
@@ -83,7 +85,7 @@ export function useModalState(): UseModalStateResult {
   const [isDebugInfoOpen, setIsDebugInfoOpen] = useState(false);
   const [isInstrumentDeleteOpen, setIsInstrumentDeleteOpen] = useState(false);
   const [instrumentDeleteUsage, setInstrumentDeleteUsage] = useState<InstrumentDeleteUsage>({
-    instrumentId: '',
+    instrumentId: asInstrumentId(''),
     instrumentName: '',
     usageCount: 0,
     patternCount: 0,

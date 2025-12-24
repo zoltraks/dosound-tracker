@@ -3,6 +3,8 @@ import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
 import { DEFAULT_BASE_KEY } from '../utils/songParser';
 import { isInstrumentEmpty } from '../utils/instrument';
 import { formatInstrumentSlotId } from '../utils/instrumentSelection';
+import { normalizeInstrumentId } from '../utils/playbackUtils';
+import type { InstrumentId } from '../types/branded';
 
 export interface InstrumentCreationResult {
   updatedSong: Song;
@@ -58,11 +60,18 @@ export function updateInstrumentInSong(
 ): InstrumentUpdateResult {
   const instruments = [...song.instrument];
 
-  let targetIndex = instruments.findIndex((inst) => inst.id === currentInstrument.id);
-  const updatedInstrument: Instrument = { ...currentInstrument, ...updates } as Instrument;
+  const targetInstrumentId = normalizeInstrumentId(currentInstrument.id);
+  let targetIndex = instruments.findIndex(
+    (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentId
+  );
+  const updatedInstrument: Instrument = {
+    ...currentInstrument,
+    ...updates,
+    id: targetInstrumentId,
+  };
 
   if (targetIndex === -1) {
-    const slotFromId = parseInt(currentInstrument.id, 16);
+    const slotFromId = parseInt(targetInstrumentId, 16);
     if (Number.isFinite(slotFromId) && slotFromId >= 0 && slotFromId < MAX_INSTRUMENTS) {
       const clamped = slotFromId;
 
@@ -102,12 +111,14 @@ export function updateInstrumentInSong(
 
 export function applyLoadedInstrumentToSong(
   song: Song,
-  currentInstrumentId: string,
+  currentInstrumentId: InstrumentId,
   newInstrument: Instrument,
 ): Song {
   const instruments = [...song.instrument];
 
-  let targetIndex = instruments.findIndex((inst) => inst.id === currentInstrumentId);
+  let targetIndex = instruments.findIndex(
+    (inst) => normalizeInstrumentId(inst?.id) === currentInstrumentId
+  );
 
   if (targetIndex === -1) {
     const slotFromId = parseInt(currentInstrumentId, 16);

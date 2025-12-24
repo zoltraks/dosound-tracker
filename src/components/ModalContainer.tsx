@@ -4,13 +4,7 @@ import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hoo
 import type { Instrument } from '../synth/SoundDriver';
 import { CONFIRM_MODAL_TEXT } from '../constants/modal';
 import { buildInfoModals } from '../utils/modalRendering';
-
-type InstrumentDeleteUsage = {
-  instrumentId: string;
-  instrumentName: string;
-  usageCount: number;
-  patternCount: number;
-};
+import type { InstrumentDeleteUsage } from '../hooks/useModalState';
 
 type TransposeScope = 'line' | 'song';
 type TransposeTrackScope = 'current' | 'all';

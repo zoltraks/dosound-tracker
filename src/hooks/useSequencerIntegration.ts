@@ -5,6 +5,7 @@ import type { SequencerState } from './useSequencer';
 import { updateChannelWithInstrument, normalizeInstrumentId } from '../utils/playbackUtils';
 import { formatHexId } from '../utils/hexFormatting';
 import type { PlaybackSimulationState } from './usePlaybackSimulation';
+import { mapSongLineToPlaylistEntries } from '../types/playlist';
 
 interface UseSequencerIntegrationArgs {
   currentSong: Song;
@@ -77,6 +78,11 @@ export function useSequencerIntegration({
     }
     return map;
   }, [currentSong.instrument]);
+
+  const playlistEntries = useMemo(
+    () => mapSongLineToPlaylistEntries(currentSong.line),
+    [currentSong.line]
+  );
   
   const sequencerCallback = useCallback((state: SequencerState) => {
     const lastUiRow = lastUiRowRef.current;
@@ -152,7 +158,7 @@ export function useSequencerIntegration({
         }
       }
 
-      const playlistLength = currentSong.line.length;
+      const playlistLength = playlistEntries.length;
 
       if (playlistLength === 0) {
         stop();
@@ -174,7 +180,7 @@ export function useSequencerIntegration({
         }
       }
 
-      const currentPlaylistEntry = currentSong.line[effectivePatternIndex];
+      const currentPlaylistEntry = playlistEntries[effectivePatternIndex];
       
       if (currentPlaylistEntry) {
         // Get pattern data for each track
@@ -512,6 +518,7 @@ export function useSequencerIntegration({
     }
   }, [
     currentSong,
+    playlistEntries,
     patternsById,
     channelMutes,
     instrumentsById,

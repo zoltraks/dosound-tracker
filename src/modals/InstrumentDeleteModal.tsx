@@ -1,8 +1,9 @@
 import React from 'react';
+import type { InstrumentId } from '../types/branded';
 
 interface InstrumentDeleteModalProps {
   isOpen: boolean;
-  instrumentId: string;
+  instrumentId: InstrumentId;
   instrumentName: string;
   usageCount: number;
   patternCount: number;

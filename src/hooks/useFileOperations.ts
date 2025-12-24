@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { Song, Instrument } from '../synth/SoundDriver';
 import type { ExportType, ExportStrategy } from '../constants/export';
 import { logger } from '../utils/logger';
@@ -18,6 +18,10 @@ import { exportToBinary, parseAssemblyToBinary, downloadBinaryFile } from '../ex
 import { exportSongToVgm, exportInstrumentToVgm, downloadVgmFile } from '../exports/vgm';
 import { exportSongToWav, exportInstrumentToWav, downloadWavFile } from '../exports/wav';
 import { exportSongToMax, exportInstrumentToMax, downloadMaxFile } from '../exports/max';
+import {
+  mapSongLineToPlaylistEntries,
+  mapPlaylistEntriesToSongLine,
+} from '../types/playlist';
 
 interface ExportContext {
   type: ExportType;
@@ -51,6 +55,29 @@ interface UseFileOperationsResult {
 export function useFileOperations({ song, exportStrategy }: UseFileOperationsArgs): UseFileOperationsResult {
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
+  const playlistEntries = useMemo(() => mapSongLineToPlaylistEntries(song.line), [song.line]);
+
+  const getScopedSongForPattern = useCallback(
+    (playlistIndex: number): Song | null => {
+      const entriesLength = playlistEntries.length;
+      if (entriesLength === 0) {
+        return null;
+      }
+      const rawIndex = playlistIndex;
+      const index = Math.max(
+        0,
+        Math.min(entriesLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+      );
+      const entry = playlistEntries[index];
+      const serializedLine = mapPlaylistEntriesToSongLine([entry]);
+      return {
+        ...song,
+        line: serializedLine,
+        loop: null,
+      };
+    },
+    [playlistEntries, song]
+  );
 
   const handleExportVgm = useCallback(() => {
     try {
@@ -151,21 +178,12 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
           filenameBase = buildInstrumentExportBaseName(song.title, ctx.instrument.id);
         } else {
           let scopedSong: Song = song;
-          if (ctx.type === 'pattern' && song.line.length > 0) {
-            const playlistLength = song.line.length;
-            const rawIndex = ctx.playlistIndex;
-            const index = Math.max(
-              0,
-              Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
-            );
-            const entry = song.line[index];
-            scopedSong = {
-              ...song,
-              line: [entry],
-              loop: null,
-            };
+          if (ctx.type === 'pattern') {
+            const scoped = getScopedSongForPattern(ctx.playlistIndex);
+            if (scoped) {
+              scopedSong = scoped;
+            }
           }
-
           assemblyContent = exportToAssembly(scopedSong, ctx.strategy);
           filenameBase =
             ctx.type === 'pattern'
@@ -204,7 +222,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song]
+    [song, getScopedSongForPattern]
   );
 
   const exportMaxWithContext = useCallback(
@@ -228,19 +246,11 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         }
 
         let scopedSong: Song = song;
-        if (ctx.type === 'pattern' && song.line.length > 0) {
-          const playlistLength = song.line.length;
-          const rawIndex = ctx.playlistIndex;
-          const index = Math.max(
-            0,
-            Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
-          );
-          const entry = song.line[index];
-          scopedSong = {
-            ...song,
-            line: [entry],
-            loop: null,
-          };
+        if (ctx.type === 'pattern') {
+          const scoped = getScopedSongForPattern(ctx.playlistIndex);
+          if (scoped) {
+            scopedSong = scoped;
+          }
         }
 
         const result = exportSongToMax(scopedSong, ctx.strategy);
@@ -275,7 +285,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song]
+    [song, getScopedSongForPattern]
   );
 
   const exportBinWithContext = useCallback(
@@ -290,19 +300,11 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
           filenameBase = buildInstrumentExportBaseName(song.title, ctx.instrument.id);
         } else {
           let scopedSong: Song = song;
-          if (ctx.type === 'pattern' && song.line.length > 0) {
-            const playlistLength = song.line.length;
-            const rawIndex = ctx.playlistIndex;
-            const index = Math.max(
-              0,
-              Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
-            );
-            const entry = song.line[index];
-            scopedSong = {
-              ...song,
-              line: [entry],
-              loop: null,
-            };
+          if (ctx.type === 'pattern') {
+            const scoped = getScopedSongForPattern(ctx.playlistIndex);
+            if (scoped) {
+              scopedSong = scoped;
+            }
           }
 
           bytes = exportToBinary(scopedSong, ctx.strategy);
@@ -344,7 +346,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song]
+    [song, getScopedSongForPattern]
   );
 
   const exportVgmWithContext = useCallback(
@@ -368,19 +370,11 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         }
 
         let scopedSong: Song = song;
-        if (ctx.type === 'pattern' && song.line.length > 0) {
-          const playlistLength = song.line.length;
-          const rawIndex = ctx.playlistIndex;
-          const index = Math.max(
-            0,
-            Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
-          );
-          const entry = song.line[index];
-          scopedSong = {
-            ...song,
-            line: [entry],
-            loop: null,
-          };
+        if (ctx.type === 'pattern') {
+          const scoped = getScopedSongForPattern(ctx.playlistIndex);
+          if (scoped) {
+            scopedSong = scoped;
+          }
         }
 
         const result = exportSongToVgm(scopedSong, ctx.strategy);
@@ -414,7 +408,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song]
+    [song, getScopedSongForPattern]
   );
 
   const exportWavWithContext = useCallback(
@@ -447,19 +441,11 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         }
 
         let scopedSong: Song = song;
-        if (ctx.type === 'pattern' && song.line.length > 0) {
-          const playlistLength = song.line.length;
-          const rawIndex = ctx.playlistIndex;
-          const index = Math.max(
-            0,
-            Math.min(playlistLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
-          );
-          const entry = song.line[index];
-          scopedSong = {
-            ...song,
-            line: [entry],
-            loop: null,
-          };
+        if (ctx.type === 'pattern') {
+          const scoped = getScopedSongForPattern(ctx.playlistIndex);
+          if (scoped) {
+            scopedSong = scoped;
+          }
         }
 
         const result = exportSongToWav(scopedSong);
@@ -502,7 +488,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song]
+    [song, getScopedSongForPattern]
   );
 
   const exportDumpWithContext = useCallback(

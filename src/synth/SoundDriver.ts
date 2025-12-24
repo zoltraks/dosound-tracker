@@ -1,5 +1,4 @@
 import { YM2149 } from './YM2149';
-import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
 import { optimizeEvents } from './EventOptimizer';
 
 export const DOSOUND_REGISTER_WRITE = 0xFF;
@@ -133,89 +132,59 @@ export class SoundDriver {
   }
 
   private processPattern(pattern: Pattern, channel: number, events: SoundEvent[]): void {
-    for (let lineIndex = 0; lineIndex < pattern.step.length; lineIndex++) {
-      const step = pattern.step[lineIndex];
-      void channel;
-      const note: Note | null = step.note;
+    const steps = pattern.step ?? [];
+    const toneFineRegister = channel * 2;
+    const toneCoarseRegister = channel * 2 + 1;
+    const volumeRegister = 0x08 + channel;
 
-      if (note) {
-        this.processNote(note, channel, events);
+    for (const step of steps) {
+      if (!step) {
+        events.push({ type: 'delay', delay: this.playbackSpeed });
+        continue;
       }
+
+      const volumeValue = this.clampVolume(step.volume);
+      const note = step.note;
+
+      if (note && note.note && note.note !== '===') {
+        const period = this.getNotePeriod(note.note, note.octave);
+        if (period > 0) {
+          events.push({ type: 'register', register: toneFineRegister, value: period & 0xff });
+          events.push({ type: 'register', register: toneCoarseRegister, value: (period >> 8) & 0x0f });
+        }
+        events.push({ type: 'register', register: volumeRegister, value: volumeValue });
+      } else {
+        events.push({ type: 'register', register: volumeRegister, value: 0x00 });
+      }
+
+      events.push({ type: 'delay', delay: this.playbackSpeed });
     }
   }
 
-  private processNote(note: Note, channel: number, events: SoundEvent[]): void {
-    // Find instrument
-    const instrument = this.findInstrument(note.instrument);
-    if (!instrument) return;
-
-    // Calculate note frequency
-    const frequency = this.calculateNoteFrequency(note.note, note.octave);
-    const period = this.frequencyToPeriod(frequency);
-
-    // Channel registers
-    const fineReg = channel * 2;
-    const coarseReg = channel * 2 + 1;
-    const volumeReg = 0x08 + channel;
-
-    // Set tone period
-    events.push({ type: 'register', register: fineReg, value: period & 0xFF });
-    events.push({ type: 'register', register: coarseReg, value: (period >> 8) & 0x0F });
-
-    // Set mixer (enable tone, disable noise for simplicity)
-    const mixerValue = this.calculateMixerValue(channel, instrument);
-    events.push({ type: 'register', register: 0x07, value: mixerValue });
-
-    // Set volume (start with first envelope value)
-    const initialVolume = instrument.volume[0] || 0;
-    events.push({ type: 'register', register: volumeReg, value: initialVolume & 0x0F });
+  private clampVolume(volume: number | null | undefined): number {
+    if (typeof volume !== 'number' || !Number.isFinite(volume)) {
+      return 0x0f;
+    }
+    return Math.max(0, Math.min(0x0f, Math.floor(volume)));
   }
 
-  private findInstrument(instrumentId: string): Instrument | null {
-    // This would be passed from the song context
-    // For now, return a default instrument
-    return {
-      id: instrumentId,
-      name: 'Default',
-      volume: [0x0F, 0x0E, 0x0D, 0x0C],
-      shift: [0, 0, 0, 0],
-      pitch: [0, 0, 0, 0],
-      noise: [0, 0, 0, 0],
-      mode: Array(32).fill(0),
-      sustain: null
-    };
-  }
-
-  private calculateNoteFrequency(note: string, octave: number): number {
-    const baseFreq = NOTE_FREQUENCIES[note] || 440.00;
-    return baseFreq * Math.pow(2, octave - NOTE_BASE_OCTAVE);
-  }
-
-  private frequencyToPeriod(frequency: number): number {
-    if (frequency <= 0) return 0;
-    return Math.floor(2000000 / (16 * frequency));
-  }
-
-  private calculateMixerValue(channel: number, instrument: Instrument): number {
-    // Default mixer: enable tone for all channels, disable noise
-    let mixer = 0x38; // 00111000 - noise enabled for all channels, tone disabled
-
-    const modeValue = (instrument.mode && instrument.mode.length > 0)
-      ? instrument.mode[0] || 0
-      : 0;
-
-    const toneActive = modeValue === 0 || modeValue === 2;
-    const noiseActive = modeValue === 1 || modeValue === 2;
-
-    if (toneActive) {
-      mixer &= ~(1 << channel); // Enable tone for this channel
+  private getNotePeriod(noteName: string, octave: number): number {
+    const normalized = noteName.trim().toUpperCase();
+    const cleaned = normalized.replace(/[^A-G#]/g, '');
+    const noteOrder = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+    const index = noteOrder.indexOf(cleaned);
+    if (index === -1) {
+      return 0;
     }
 
-    if (!noiseActive) {
-      mixer |= (0x08 << channel); // Disable noise for this channel
-    }
+    const semitoneFromC0 = (Math.max(0, Math.min(9, Number.isFinite(octave) ? Math.floor(octave) : 0)) * 12) + index;
+    const a4Index = 4 * 12 + noteOrder.indexOf('A');
+    const semitoneFromA4 = semitoneFromC0 - a4Index;
+    const frequency = 440 * Math.pow(2, semitoneFromA4 / 12);
 
-    return mixer;
+    const AY_CLOCK_HZ = 1773400; // Typical AY-3-8910 clock on many systems
+    const divider = Math.max(1, Math.round(AY_CLOCK_HZ / (16 * frequency)));
+    return Math.min(0x0fff, divider);
   }
 
   playEvents(events: SoundEvent[]): void {

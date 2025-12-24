@@ -35,7 +35,7 @@ import { TrackerSection } from './components/TrackerSection';
 import { EnvelopeSection } from './components/EnvelopeSection';
 import { SongSection } from './components/SongSection';
 import { FileInputs } from './components/FileInputs';
-import { ModalsContainer } from './components/ModalsContainer';
+import { ModalManager } from './components/ModalManager';
 import { useFileOperations } from './hooks/useFileOperations';
 import type { UiStore } from './stores/uiStore';
 import { useUiStore } from './stores/uiStore';
@@ -2346,7 +2346,7 @@ const App: React.FC = () => {
           />
         }
         modals={
-          <ModalsContainer
+          <ModalManager
             // Error and summary states
             songError={songError}
             setSongError={setSongError}

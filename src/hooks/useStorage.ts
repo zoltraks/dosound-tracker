@@ -1,13 +1,26 @@
 import type { MutableRefObject } from 'react';
+import type { Instrument, Song } from '../synth/SoundDriver';
+import { StorageKeys } from '../utils/storageKeys';
 import { logger } from '../utils/logger';
 
 export type ScheduledSaveHandle =
   | { kind: 'timeout'; id: number }
   | { kind: 'idle'; id: number };
 
-export function scheduleJsonSave<T>(
-  key: string,
-  value: T,
+type SongStorageKey = typeof StorageKeys.SONG;
+type InstrumentStorageKey = typeof StorageKeys.INSTRUMENT;
+
+type JsonStorageKey = SongStorageKey | InstrumentStorageKey;
+
+type JsonStorageValue<K extends JsonStorageKey> = K extends SongStorageKey
+  ? Song
+  : K extends InstrumentStorageKey
+    ? Instrument
+    : never;
+
+export function scheduleJsonSave<K extends JsonStorageKey>(
+  key: K,
+  value: JsonStorageValue<K>,
   timeoutRef: MutableRefObject<ScheduledSaveHandle | null>,
   delayMs: number = 300,
 ): void {
