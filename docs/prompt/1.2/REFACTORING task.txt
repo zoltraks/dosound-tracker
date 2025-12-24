@@ -305,3 +305,25 @@ Read ARCHITECT.md.
 Make full assessment report in ASSESSMENT.md file of the incoming refactorings done in branch "refactoring/1.2.5-grok" according to last REFACTORING.md file for version 1.2.5 and current source code in branch "main".
 
 ---
+
+Analyse all refactoring asessments.
+
+These comes from different models:
+ - `ASSESSMENT-grok.md` from "Grok Code Fast V1"
+ - `ASSESSMENT-devstral.md` from "Devstral 2 2512"
+ - `ASSESSMENT-kat.md` from "KAT Coder Pro V1"
+ - `ASSESSMENT-gemini.md` from "Gemini 3 Pro (high)"
+ - `ASSESSMENT-gpt.md` from "GPT 5.2 (low)"
+ - `ASSESSMENT-swe.md` from "SWE 1.5"
+ - `ASSESSMENT-claude.md` from "Claude Opus 4.5 (thinking)"
+ - `ASSESSMENT-deepseek.md` from "DeepSeek R1 (0528)"
+ - `ASSESSMENT-minimax.md` from "MiniMax M2"
+ - `ASSESSMENT-qwen.md` from "Qwen3 Coder"
+Make detailed comparisation of all of them in `ASSESSMENT_COMPARISATION.md`.
+Include tables for different factors.
+Find weak and strong points and decide which one is the best.
+Read all documents carefully and combine them into a single document `ASSESSMENT.md`.
+
+File `REFACTORING.md` contains original refactoring proposal document.
+
+---
