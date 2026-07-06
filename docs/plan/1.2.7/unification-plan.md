@@ -39,7 +39,7 @@ The following decisions were confirmed by the user before this plan was written.
 | Vite direction       | Keep rolldown-vite 7 in DOSOUND (no change to Vite setup)              |
 | Path aliases         | Add `@/*` path aliases to DOSOUND tsconfig and vite config             |
 | Coverage thresholds  | Add 80% coverage thresholds (tests must be written first to pass)     |
-| Extra tooling        | Add Prettier, Playwright E2E, coverage tools (no CLAUDE.md)           |
+| Extra tooling        | Add Prettier, Playwright E2E, coverage tools                         |
 | Feature/prompt dirs  | Leave `docs/feature/` and `docs/prompt/` untouched                     |
 | ARCHITECT.md         | Rename to `ARCHITECTURE.md` and rewrite as full architecture document |
 

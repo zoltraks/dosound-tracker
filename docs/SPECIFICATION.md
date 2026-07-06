@@ -7,16 +7,18 @@ The project is built as a desktop application using Electron, with the audio eng
 
 ## Technology Stack
 
-| Technology | Version | Purpose |
-|---|---|---|
-| React | 19.2 | UI component library and rendering |
-| TypeScript | 5.9 | Static typing and compile-time safety |
-| rolldown-vite | 7.2 | Build tool and dev server (Vite-compatible, Rolldown-backed) |
-| Zustand | 4.5 | Lightweight state management |
-| Web Audio API | native | Real-time YM2149 sound synthesis in the browser |
-| Electron | 39.2 | Desktop application packaging for Windows, macOS, and Linux |
-| Vitest | 3.2 | Unit and component test runner |
-| ESLint | 9.39 | Linting and code style enforcement |
+See `package.json` for exact version numbers. The project uses the following technologies:
+
+| Technology | Purpose |
+|---|---|
+| React | UI component library and rendering |
+| TypeScript | Static typing and compile-time safety |
+| rolldown-vite | Build tool and dev server (Vite-compatible, Rolldown-backed) |
+| Zustand | Lightweight state management |
+| Web Audio API | Real-time YM2149 sound synthesis in the browser |
+| Electron | Desktop application packaging for Windows, macOS, and Linux |
+| Vitest | Unit and component test runner |
+| ESLint | Linting and code style enforcement |
 
 Additional libraries include js-yaml for song file parsing, lucide-react for icons, and electron-builder for cross-platform packaging.
 
