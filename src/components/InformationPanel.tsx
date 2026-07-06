@@ -1,7 +1,14 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Song } from '../synth/SoundDriver';
+import {
+  DEFAULT_SONG_FRAME,
+  DEFAULT_SONG_CLOCK,
+  SUPPORTED_SONG_FRAMES,
+  SUPPORTED_SONG_CLOCKS,
+} from '../constants/song';
 import NumberSpinner from './NumberSpinner';
+import ToggleValueButton from './ToggleValueButton';
 
 interface InformationPanelProps {
   song: Song;
@@ -137,6 +144,18 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
     handleKeyDown(event);
   }, [handleKeyDown, handleLoopChange]);
 
+  const formatFrame = useCallback((frame: number) => `${frame} Hz`, []);
+
+  const formatClock = useCallback((clock: number) => `${clock / 1000000} MHz`, []);
+
+  const handleFrameToggle = useCallback((next: number) => {
+    handleFieldChange('frame', next);
+  }, [handleFieldChange]);
+
+  const handleClockToggle = useCallback((next: number) => {
+    handleFieldChange('clock', next);
+  }, [handleFieldChange]);
+
   return (
     <div 
       className={`information-panel ${isActive ? 'active' : ''}`}
@@ -145,7 +164,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
       <div className="information-header">Song</div>
       
       <div className="information-content">
-        <div className="information-field">
+        <div className="information-field information-field-with-toggle">
           <label>Title:</label>
           <input
             ref={titleRef}
@@ -156,9 +175,16 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
             onFocus={() => setLastFocusedField('title')}
             className="information-input"
           />
+          <ToggleValueButton
+            value={song.frame ?? DEFAULT_SONG_FRAME}
+            values={SUPPORTED_SONG_FRAMES}
+            formatValue={formatFrame}
+            onChange={handleFrameToggle}
+            ariaLabel="Replay rate"
+          />
         </div>
-        
-        <div className="information-field">
+
+        <div className="information-field information-field-with-toggle">
           <label>Author:</label>
           <input
             ref={authorRef}
@@ -168,6 +194,13 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
             onKeyDown={handleKeyDown}
             onFocus={() => setLastFocusedField('author')}
             className="information-input"
+          />
+          <ToggleValueButton
+            value={song.clock ?? DEFAULT_SONG_CLOCK}
+            values={SUPPORTED_SONG_CLOCKS}
+            formatValue={formatClock}
+            onChange={handleClockToggle}
+            ariaLabel="Chip clock"
           />
         </div>
 

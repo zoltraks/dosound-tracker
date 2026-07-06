@@ -2043,6 +2043,45 @@ body {
   box-sizing: border-box;
 }
 
+.toggle-value-button {
+  width: 38px;
+  height: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.toggle-value-button:hover {
+  border-color: var(--active-border);
+}
+
+.toggle-value-button:focus-visible {
+  outline: none;
+  border-color: var(--active-border);
+}
+
+.information-field-with-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.information-field-with-toggle .information-input {
+  flex: 1;
+}
+
+.information-field-with-toggle .toggle-value-button {
+  flex: 0 0 auto;
+}
+
 /* Color Picker (compact, modal-friendly) */
 .color-picker {
   display: flex;

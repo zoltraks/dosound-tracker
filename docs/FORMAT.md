@@ -39,6 +39,9 @@ song:
   speed: 6                 # required, positive integer (clamped and forced even)
   length: 64               # required, pattern length in rows (4..256)
   loop: 0                  # optional, 0-based playlist index
+  chip: "YM"               # optional, chip type (default "YM")
+  frame: 50                # optional, replay rate in Hz (default 50)
+  clock: 2000000           # optional, chip clock in Hz (default 2000000)
   playlist: [...]          # required list
   pattern: [...]           # required list (or `patterns` alias when loading)
   instrument: [...]        # required list (or `instruments` alias when loading)
@@ -50,6 +53,13 @@ Loader rules (from `parseSongFromYaml`):
 - `speed`: invalid or ≤0 → defaults to 6, then clamped to ≥2 and forced even.
 - `length`: invalid → defaults to `PATTERN_LENGTH` (64), then clamped to `[4, 256]`.
 - `loop`: numeric or numeric string; clamped to `[0, playlist.length-1]`; otherwise `null`.
+- `chip`: missing or non-string → defaults to `"YM"`; string values are trimmed and uppercased.
+- `frame`: missing or non-numeric → defaults to `50`; numeric values are floored to integers.
+- `clock`: missing or non-numeric → defaults to `2000000`; numeric values are floored to integers.
+
+Saver rules (from `buildSongYamlForExport`):
+
+- `chip`, `frame`, and `clock` are always written. `chip` is normalised to uppercase (default `"YM"`). `frame` defaults to `50` when missing. `clock` defaults to `2000000` when missing.
 
 ### Playlist
 

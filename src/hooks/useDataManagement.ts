@@ -8,7 +8,7 @@ import {
   parseSongFromYaml,
   type SongParseMetadata,
 } from '../utils/songParser';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { buildSongYamlForExport } from '../utils/songIO';
 import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../utils/instrumentIO';
 import { downloadFile } from '../utils/fileOperations';
@@ -168,6 +168,7 @@ export const useDataManagement = () => {
       instrument: [newCurrentInstrument],
       chip: DEFAULT_SONG_CHIP,
       frame: DEFAULT_SONG_FRAME,
+      clock: DEFAULT_SONG_CLOCK,
     };
 
     setCurrentSong(newSong);

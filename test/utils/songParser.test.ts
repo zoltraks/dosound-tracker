@@ -96,4 +96,121 @@ song:
 
     expect(() => parseSongFromYaml(yamlContent)).toThrowError(/Song patterns are missing/);
   });
+
+  it('defaults clock to 2000000 when missing', () => {
+    const yamlContent = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlContent);
+
+    expect(song.clock).toBe(2000000);
+  });
+
+  it('reads clock from YAML', () => {
+    const yamlContent = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  clock: 1000000
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlContent);
+
+    expect(song.clock).toBe(1000000);
+  });
+
+  it('reports clock metadata via onMetadata callback', () => {
+    const yamlContent = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  clock: 1000000
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    let metadata: ReturnType<typeof Object> | null = null;
+    parseSongFromYaml(yamlContent, {
+      onMetadata: (meta) => {
+        metadata = meta;
+      },
+    });
+
+    expect(metadata).not.toBeNull();
+    expect((metadata as { hasClockField: boolean }).hasClockField).toBe(true);
+    expect((metadata as { normalizedClock: number }).normalizedClock).toBe(1000000);
+    expect((metadata as { isClockSupported: boolean }).isClockSupported).toBe(true);
+  });
+
+  it('reports hasClockField false when clock is missing', () => {
+    const yamlContent = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    let metadata: ReturnType<typeof Object> | null = null;
+    parseSongFromYaml(yamlContent, {
+      onMetadata: (meta) => {
+        metadata = meta;
+      },
+    });
+
+    expect(metadata).not.toBeNull();
+    expect((metadata as { hasClockField: boolean }).hasClockField).toBe(false);
+    expect((metadata as { normalizedClock: number }).normalizedClock).toBe(2000000);
+  });
 });

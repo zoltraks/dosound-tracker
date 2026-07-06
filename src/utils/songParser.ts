@@ -20,8 +20,10 @@ import { formatInstrumentSlotId } from './instrumentSelection';
 import {
   DEFAULT_SONG_CHIP,
   DEFAULT_SONG_FRAME,
+  DEFAULT_SONG_CLOCK,
   SUPPORTED_SONG_CHIPS,
   SUPPORTED_SONG_FRAMES,
+  SUPPORTED_SONG_CLOCKS,
 } from '../constants/song';
 import { expandEnvelope, expandLoopingEnvelope } from './envelopeUtils';
 
@@ -39,6 +41,7 @@ interface SongYamlNode {
   loop?: unknown;
   chip?: unknown;
   frame?: unknown;
+  clock?: unknown;
   line?: unknown;
   playlist?: unknown;
   pattern?: unknown;
@@ -124,6 +127,10 @@ export interface SongParseMetadata {
   providedFrameValue: unknown;
   normalizedFrame: number;
   isFrameSupported: boolean;
+  hasClockField: boolean;
+  providedClockValue: unknown;
+  normalizedClock: number;
+  isClockSupported: boolean;
 }
 
 export interface ParseSongOptions {
@@ -521,10 +528,13 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
         ? String(songNode.chip)
         : '';
   const frameRaw = Number(songNode.frame);
+  const clockRaw = Number(songNode.clock);
 
   const normalizedChip = chipRaw ? chipRaw.toUpperCase() : DEFAULT_SONG_CHIP;
   const normalizedFrame = Number.isFinite(frameRaw) ? Math.floor(frameRaw) : DEFAULT_SONG_FRAME;
   const hasFrameField = Object.prototype.hasOwnProperty.call(songNode, 'frame');
+  const normalizedClock = Number.isFinite(clockRaw) ? Math.floor(clockRaw) : DEFAULT_SONG_CLOCK;
+  const hasClockField = Object.prototype.hasOwnProperty.call(songNode, 'clock');
 
   const song: Song = {
     title,
@@ -538,6 +548,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     instrument: instruments,
     chip: normalizedChip,
     frame: normalizedFrame,
+    clock: normalizedClock,
   };
 
   if (options?.onMetadata) {
@@ -550,6 +561,10 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       providedFrameValue: hasFrameField ? songNode.frame : null,
       normalizedFrame,
       isFrameSupported: SUPPORTED_SONG_FRAMES.includes(normalizedFrame),
+      hasClockField,
+      providedClockValue: hasClockField ? songNode.clock : null,
+      normalizedClock,
+      isClockSupported: SUPPORTED_SONG_CLOCKS.includes(normalizedClock),
     });
   }
 

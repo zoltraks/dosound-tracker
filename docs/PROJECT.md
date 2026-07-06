@@ -143,6 +143,10 @@ The system must deploy as:
 - A desktop application via Electron for Windows, macOS, and Linux.
 - A responsive interface for mobile devices.
 
+**F-14: Replay Rate and Chip Clock Selection**
+
+The system must provide toggle buttons in the Song information panel for selecting the replay rate (50 Hz or 60 Hz) and the YM2149 chip clock (2 MHz or 1 MHz). The Rate button is placed in the Title row and the Clock button in the Author row. Both buttons match the combined width of the two number-spinner buttons used elsewhere in the panel. New songs default to 50 Hz and 2 MHz. Songs loaded without these settings fall back to the same defaults. Both values are persisted in the song YAML file format.
+
 ## Non-Functional Requirements
 
 **N-01: Audio Performance**

@@ -65,7 +65,7 @@ describe('instrument color in song YAML IO', () => {
     expect(parsed.instrument[0].color).toBe('#abc');
   });
 
-  it('orders chip/frame between year and speed when exporting song YAML', () => {
+  it('orders chip/frame/clock between year and speed when exporting song YAML', () => {
     const step: Step[] = Array.from({ length: 4 }, () => ({ note: null }));
 
     const song: Song = {
@@ -74,6 +74,7 @@ describe('instrument color in song YAML IO', () => {
       year: 2025,
       chip: 'YM',
       frame: 50,
+      clock: 2000000,
       speed: 4,
       length: 32,
       loop: 0,
@@ -108,6 +109,7 @@ describe('instrument color in song YAML IO', () => {
     const yearIndex = yaml.indexOf('year: 2025');
     const chipIndex = yaml.indexOf('chip: YM');
     const frameIndex = yaml.indexOf('frame: 50');
+    const clockIndex = yaml.indexOf('clock: 2000000');
     const speedIndex = yaml.indexOf('speed: 4');
 
     expect(yaml).toMatch(/^\s{2}title: Warmball$/m);
@@ -116,7 +118,8 @@ describe('instrument color in song YAML IO', () => {
     expect(yearIndex).toBeGreaterThan(authorIndex);
     expect(chipIndex).toBeGreaterThan(yearIndex);
     expect(frameIndex).toBeGreaterThan(chipIndex);
-    expect(speedIndex).toBeGreaterThan(frameIndex);
+    expect(clockIndex).toBeGreaterThan(frameIndex);
+    expect(speedIndex).toBeGreaterThan(clockIndex);
   });
 
   it('quotes song title when it includes reserved YAML characters', () => {

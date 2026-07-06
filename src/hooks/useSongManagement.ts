@@ -9,7 +9,7 @@ import {
   DEFAULT_SONG_AUTHOR,
   parseSongFromYaml,
 } from '../utils/songParser';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { logger } from '../utils/logger';
 import { StorageKeys } from '../utils/storageKeys';
 
@@ -115,6 +115,8 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
   const normalizedChip = rawChip || DEFAULT_SONG_CHIP;
   const frameCandidate = Number(song.frame);
   const normalizedFrame = Number.isFinite(frameCandidate) ? Math.floor(frameCandidate) : DEFAULT_SONG_FRAME;
+  const clockCandidate = Number(song.clock);
+  const normalizedClock = Number.isFinite(clockCandidate) ? Math.floor(clockCandidate) : DEFAULT_SONG_CLOCK;
 
   return {
     ...(song as unknown as Song),
@@ -124,6 +126,7 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
     instrument,
     chip: normalizedChip,
     frame: normalizedFrame,
+    clock: normalizedClock,
   };
 }
 
@@ -225,6 +228,7 @@ export const createDefaultSong = (): Song => {
     ],
     chip: DEFAULT_SONG_CHIP,
     frame: DEFAULT_SONG_FRAME,
+    clock: DEFAULT_SONG_CLOCK,
   };
 }
 

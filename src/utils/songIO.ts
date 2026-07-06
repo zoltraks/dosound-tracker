@@ -4,7 +4,7 @@ import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../const
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat';
 import { formatHexId } from './hexFormatting';
 import { formatInstrumentSlotId } from './instrumentSelection';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME } from '../constants/song';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { isEnvelopeZeroDefault, trimEnvelope } from './envelopeUtils';
 import { quoteYamlValues } from './yamlUtils';
 
@@ -279,9 +279,11 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   const normalizedChip = (currentSong.chip || DEFAULT_SONG_CHIP).toUpperCase();
   const normalizedFrame = currentSong.frame ?? DEFAULT_SONG_FRAME;
+  const normalizedClock = currentSong.clock ?? DEFAULT_SONG_CLOCK;
 
   songNode.chip = normalizedChip;
   songNode.frame = normalizedFrame;
+  songNode.clock = normalizedClock;
   songNode.speed = currentSong.speed;
   songNode.length = currentSong.length;
   if (hasLoop) {

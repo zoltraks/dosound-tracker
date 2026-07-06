@@ -36,7 +36,7 @@ Additional libraries include js-yaml for song file parsing, lucide-react for ico
 | src/stores | 1 | Zustand store definitions for global application state |
 | src/synth | 4 | YM2149 hardware emulator and sound driver engine |
 | src/types | 2 | Branded type definitions and playlist type helpers |
-| src/utils | 42 | Utility functions for parsing, formatting, validation, and simulation |
+| src/utils | 43 | Utility functions for parsing, formatting, validation, and simulation |
 | src/workers | 1 | Web Worker for background audio or export processing |
 
 
@@ -44,7 +44,7 @@ Additional libraries include js-yaml for song file parsing, lucide-react for ico
 
 The core data models represent the musical content of a song. See src/synth/SoundDriver.ts for Song, Instrument, Pattern, Note, Step, and Line type definitions.
 
-**Song** is the top-level container. It holds metadata (title, author, year, speed, length, loop point, chip type, frame rate), an array of Pattern objects, an array of Line objects forming the playlist, and an array of Instrument objects.
+**Song** is the top-level container. It holds metadata (title, author, year, speed, length, loop point, chip type, frame rate, chip clock), an array of Pattern objects, an array of Line objects forming the playlist, and an array of Instrument objects.
 
 **Instrument** defines a synthesized voice. Each instrument contains arrays for volume, shift, pitch, noise, and mode envelopes of length ENVELOPE_LENGTH (32 steps). Optional fields include a base key, default octave, sustain position, display color, and MIDI metadata. See src/synth/SoundDriver.ts for the Instrument interface.
 
@@ -107,7 +107,7 @@ Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in 
 
 The playback speed parameter controls how many delay cycles elapse between sequencer steps. The minimum speed is 2 (MIN_DELAY_CYCLES = 2). In DOSOUND mode, only even values are accepted: if an odd value is provided, it is rounded up to the next even number. This constraint is enforced in SoundDriver.setPlaybackSpeed.
 
-The song speed field on the Song object determines the global tempo. The frame rate field (default 50) and chip field (default "YM") are defined in src/constants/song.ts.
+The song speed field on the Song object determines the global tempo. The frame rate field (default 50), chip field (default "YM"), and chip clock field (default 2000000) are defined in src/constants/song.ts. Supported frame rates are 50 and 60 Hz. Supported chip clocks are 2000000 (2 MHz) and 1000000 (1 MHz).
 
 
 ## Export Formats
@@ -133,7 +133,7 @@ Application constants are organized in src/constants/. Each file covers a specif
 
 - **music.ts** defines note frequencies (NOTE_FREQUENCIES with C4 = 261.63 Hz through B4), the base octave (NOTE_BASE_OCTAVE = 4), the chromatic note list, octave bounds (0-7), pattern length (64), max instruments (256), volume and noise limits, pitch and shift ranges, and envelope length (32).
 - **keyboard.ts** defines the KEYBOARD_TO_NOTE map linking computer keyboard keys to musical notes with octave offsets.
-- **song.ts** defines default song chip ("YM"), default frame rate (50), and arrays of supported chips and frame rates.
+- **song.ts** defines default song chip ("YM"), default frame rate (50), default chip clock (2000000), and arrays of supported chips, frame rates, and chip clocks.
 - **export.ts** defines ExportType (song, pattern, instrument), ExportStrategy (simple, complex, optimized), and ExportFormat (dump, data, bin, vgm, max, wav) union types.
 - **navigation.ts** defines NAVIGATION_ORDER for UI section focus cycling and KEYBOARD_SHORTCUTS mapping key combinations to application actions.
 

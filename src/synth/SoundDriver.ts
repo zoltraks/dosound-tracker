@@ -71,6 +71,7 @@ export interface Song {
   loop?: number | null;
   chip?: string;
   frame?: number;
+  clock?: number;
   pattern: Pattern[];
   line: Line[];
   instrument: Instrument[];
