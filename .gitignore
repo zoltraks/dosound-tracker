@@ -24,6 +24,19 @@ dist-ssr
 *.sw?
 /release
 
+# Coverage reports
+coverage/
+*.lcov
+
+# Playwright
+/playwright-report/
+/test-results/
+/blob-report/
+
+# Temporary files
+/work/
+*.tmp
+
 # Ignore everything in public/download except .gitkeep
 public/download/*
 !public/download/.gitkeep
