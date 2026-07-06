@@ -41,8 +41,8 @@ Do not begin implementation until the user confirms the plan.
 
 ## Key Rules
 
-- No commits unless explicitly told to commit.
-- No version bumps unless explicitly instructed.
+- No commits unless explicitly told to commit. The AI assistant never commits.
+- No version bumps unless explicitly instructed. Use `npm run bump` to bump and build; `npm run build` builds without bumping.
 - No commit message prefixes (`feat:`, `fix:`, `docs:`, etc.).
 - Update documentation before writing any code.
 - Run the verification loop before the first code change and after finishing implementation: `npm run typecheck && npm run lint && npm run build && npm test`.

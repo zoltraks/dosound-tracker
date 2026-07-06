@@ -22,8 +22,8 @@
   ],
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/bump-version.mjs && npm run build:core",
-    "build:core": "tsc -b && vite build",
+    "build": "tsc -b && vite build",
+    "bump": "node scripts/bump-version.mjs && npm run build",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit",
@@ -33,8 +33,8 @@
     "test:e2e": "playwright test",
     "preview": "vite preview",
     "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://localhost:8008 && electron .\"",
-    "electron:build": "npm run build:core && electron-builder",
-    "electron:preview": "npm run build:core && electron ."
+    "electron:build": "npm run build && electron-builder",
+    "electron:preview": "npm run build && electron ."
   },
   "dependencies": {
     "js-yaml": "^4.1.0",

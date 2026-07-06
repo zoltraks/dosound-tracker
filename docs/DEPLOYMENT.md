@@ -14,7 +14,7 @@ Creates the `dist/` directory with:
 - `assets/`, JavaScript bundles, CSS, and fonts.
 - Static assets from `public/`.
 
-The build command also runs the automated version bump script (`scripts/bump-version.mjs`) before the core build.
+The build command does not bump the version. To bump the version and build, run `npm run bump` instead.
 
 **Build Optimisation**
 
@@ -101,7 +101,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-RUN npm run build:core
+RUN npm run build
 
 FROM nginx:alpine
 COPY --from=builder /app/dist /usr/share/nginx/html

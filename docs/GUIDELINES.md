@@ -60,6 +60,14 @@ Examples:
 **Git Commits**
 
 - Do not commit unless specifically told to make commits automatically.
+- The AI assistant must never commit changes. The user commits manually when ready.
+
+**Version Bumps**
+
+- Do not bump the version unless explicitly instructed.
+- Version bumps are performed only via `npm run bump`, which runs the automated bump script and then builds.
+- `npm run build` builds the application without bumping the version. Never use it to bump versions.
+- See `VERSIONING.md` for the complete version bump procedure.
 
 ## Sources of Truth
 
