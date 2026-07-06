@@ -2,16 +2,17 @@
 
 ## Document Information
 
-**Version**: 1.6
+**Version**: 1.7
 
-**Date**: 2026-07-05
+**Date**: 2026-07-07
 
-**State**: Release Candidate 6
+**State**: Release Candidate 7
 
 ## Version History
 
 | Date           | Version     |
 |----------------|-------------|
+| **2026-07-07** | Version 1.7 |
 | **2026-07-05** | Version 1.6 |
 | **2026-06-20** | Version 1.5 |
 | **2026-01-18** | Version 1.4 |
@@ -570,7 +571,8 @@ This means that the data is a log of register value change writes.
 At the beginning of playback, the player must set all registers of the sound chip to their initial values.
 In most cases, the initial value is simply zero.
 However, there may be exceptions specific to a given sound chip.
-For example, the SKCTL register in the POKEY chip requires a specific initial value.
+For example, the SKCTL register in the POKEY chip requires a specific reset sequence.
+See the Player Implementation section for the complete chip reset procedure.
 
 From the very first frame, the change log contains only the data of those registers whose values must be set in that given frame.
 
@@ -803,3 +805,91 @@ Tests indicate that this format offers little compression benefit and increases 
 | ``04`` | LZ4  | LZ4 compression  |
 | ``08`` | ZX0  | ZX0 compression  |
 | ``10`` | LZSS | LZSS compression |
+
+## Player Implementation
+
+This section describes how a player should process a MAX file to produce sound.
+
+### Initialization
+
+Before replay begins, the player must prepare the sound hardware and all internal state.
+
+**Parse the file header**
+
+Read the 4-byte magic number at offset ``00`` and verify it matches ``'MAX '``.
+Reject the file if the magic number does not match.
+
+**Read the version chunk**
+
+Locate the version chunk (type ``'V'``) and read the version number.
+The player should verify that it supports the declared version.
+If the version is unsupported, the player should reject the file or apply backward-compatible handling.
+
+**Read chip setup chunks**
+
+Locate all chip setup chunks (type ``'C'``).
+Each chunk identifies a sound chip model, panning, update speed, and clock rate.
+The player must configure each sound chip according to these parameters before processing any stream data.
+
+**Read stream definition chunks**
+
+Locate all stream definition chunks (type ``'S'``).
+Each stream definition specifies the stream format, compression method, uncompressed stream size, and optional frame size.
+The player must prepare the appropriate decoder for each stream based on these parameters.
+
+### Chip Reset
+
+At the beginning of replay, the player must reset all sound chips by zeroing every register.
+
+This ensures that the differential formats (REG7, REG7N, POKEY4) start from a known state.
+Since these formats only encode register changes relative to the previous state, the initial state must be deterministic.
+
+**General reset procedure**
+
+For each sound chip identified in the file:
+
+1. Write zero to every programmable register.
+2. Apply any chip-specific reset requirements described below.
+
+**POKEY reset**
+
+The POKEY chip requires a specific reset sequence for the ``SKCTL`` register.
+
+1. Write ``0`` to ``SKCTL`` to disable all serial and timer functions.
+2. Write ``3`` to ``SKCTL`` to re-enable the keyboard scan and two-tone mode with normal operation.
+
+This two-step sequence ensures that the POKEY chip is fully reset and ready for replay.
+Writing ``SKCTL`` to ``0`` first clears all internal state, and writing ``3`` restores the normal operating configuration expected by the stream data.
+
+All other POKEY registers (``AUDF1``, ``AUDC1``, ``AUDF2``, ``AUDC2``, ``AUDF3``, ``AUDC3``, ``AUDF4``, ``AUDC4``, ``AUDCTL``) should be zeroed during reset.
+
+### Stream Playback
+
+After chip reset, the player processes each stream in order.
+
+**Decompress the stream data**
+
+If the stream definition specifies a compression method other than ``RAW`` (``00``), the player must decompress the stream data chunk (type ``'d'``) before parsing register writes.
+
+The uncompressed stream size from the stream definition chunk indicates the expected output length after decompression.
+
+**Parse register writes**
+
+For dump formats (RAW8, TIA), each frame contains a fixed number of register values.
+The player writes every value in the frame to the corresponding register.
+
+For differential formats (REG7, REG7N, POKEY4), the player reads register number and value pairs until a frame delimiter is encountered.
+Only the specified registers are written.
+The frame delimiter indicates the end of the current frame and the delay before the next frame.
+
+**Apply frame delays**
+
+After processing all register writes in a frame, the player waits for the number of frames specified by the frame delimiter before processing the next frame.
+
+The frame duration is determined by the chip update speed from the chip setup chunk.
+For example, a 50 Hz update speed means each frame lasts 20 ms.
+
+**Handle loop points**
+
+If the file contains a loop chunk, the player should jump to the specified loop point when the end of the stream is reached.
+If no loop chunk is present, playback stops at the end of the last stream.

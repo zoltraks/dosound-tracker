@@ -3,8 +3,17 @@ import { VBLANK_RATE } from '../synth/SoundDriver';
 import { YM_CLOCK } from '../synth/YM2149';
 import type { ExportStrategy } from '../constants/export';
 import { buildInstrumentPreviewSong, downloadFile } from './core';
-import { exportSongRegisterDump } from './asm';
-import { parseAssemblyToBinary } from './bin';
+import { simulateSong } from '../utils/playbackSimulation';
+import { compressZX0 } from '../utils/zx0';
+
+// Number of YM2149 registers captured per frame (R0-R13).
+const YM_REGISTER_COUNT = 14;
+// ZX0 ring-buffer window expected by hardware MAX players (1024 bytes).
+const MAX_ZX0_OFFSET = 1023;
+// REG7 frame delimiter base value (high bit set, 1 frame delay).
+const REG7_DELIMITER_BASE = 0x80;
+// Maximum frames encodable in a single REG7 delimiter byte (0xFF = 128).
+const REG7_MAX_DELAY_PER_BYTE = 128;
 
 export interface MaxExportResult {
   buffer: ArrayBuffer;
@@ -74,53 +83,56 @@ function buildMaxInfoChunk(song: Song): number[] | null {
   return buildMaxShortChunk('I', data);
 }
 
-function buildMaxStreamFromDumpBytes(
-  dumpBytes: Uint8Array,
-  strategy: ExportStrategy
-): { streamFormat: number; streamData: number[]; frameCount: number } {
-  const frameWidth = 11;
-  if (dumpBytes.length === 0 || dumpBytes.length % frameWidth !== 0) {
-    return { streamFormat: 0x08, streamData: [], frameCount: 0 };
-  }
+function captureMaxFrames(song: Song): { frames: number[][]; frameCount: number } {
+  const frames: number[][] = [];
 
-  const frameCount = dumpBytes.length / frameWidth;
-
-  if (strategy === 'simple') {
-    const data: number[] = [];
-    for (let i = 0; i < dumpBytes.length; i++) {
-      data.push(dumpBytes[i] & 0xff);
+  simulateSong(song, (frame) => {
+    const regs = frame.registers;
+    const snapshot: number[] = new Array(YM_REGISTER_COUNT).fill(0);
+    for (let reg = 0; reg < YM_REGISTER_COUNT; reg++) {
+      const value = regs[reg];
+      snapshot[reg] = value === undefined ? 0 : value & 0xff;
     }
-    return { streamFormat: 0x08, streamData: data, frameCount };
-  }
+    frames.push(snapshot);
+  });
 
-  const regCount = frameWidth;
-  const regNumbers: number[] = [];
-  for (let i = 0; i < regCount; i++) {
-    regNumbers.push(i);
-  }
-  const prev: number[] = new Array(regCount).fill(0);
+  return { frames, frameCount: frames.length };
+}
+
+function buildRaw8Stream(frames: number[][]): number[] {
   const data: number[] = [];
+  for (const frame of frames) {
+    for (let reg = 0; reg < YM_REGISTER_COUNT; reg++) {
+      data.push(frame[reg] & 0xff);
+    }
+  }
+  return data;
+}
 
-  for (let frame = 0; frame < frameCount; frame++) {
-    const base = frame * frameWidth;
+function buildReg7Stream(frames: number[][]): number[] {
+  const data: number[] = [];
+  const prev: number[] = new Array(YM_REGISTER_COUNT).fill(0);
 
-    for (let i = 0; i < regCount; i++) {
-      const value = dumpBytes[base + i] & 0xff;
-      if (frame === 0 || value !== prev[i]) {
-        const reg = regNumbers[i] & 0x7f;
-        data.push(reg, value);
-        prev[i] = value;
+  for (let frameIndex = 0; frameIndex < frames.length; frameIndex++) {
+    const frame = frames[frameIndex];
+
+    for (let reg = 0; reg < YM_REGISTER_COUNT; reg++) {
+      const value = frame[reg] & 0xff;
+      // The player zeroes all registers before replay starts, so the initial
+      // "previous" state is all zeros. Only write registers that differ from
+      // the previous frame (including the first frame, where only non-zero
+      // registers are emitted).
+      if (value !== prev[reg]) {
+        data.push(reg & 0x7f, value);
+        prev[reg] = value;
       }
     }
 
-    // End-of-frame marker: use a register byte with the high bit set and
-    // value $80 to indicate the end of the data frame with no extra delay.
-    data.push(0x80, 0x80);
+    // Single-byte frame delimiter: 0x80 = end of frame, 1 frame delay.
+    data.push(REG7_DELIMITER_BASE);
   }
 
-  const streamData = strategy === 'optimized' ? optimizeReg7Delays(data) : data;
-
-  return { streamFormat: 0x07, streamData, frameCount };
+  return data;
 }
 
 function optimizeReg7Delays(input: number[]): number[] {
@@ -129,48 +141,65 @@ function optimizeReg7Delays(input: number[]): number[] {
   let i = 0;
 
   while (i < len) {
-    const cmd = input[i] & 0xff;
+    const byte = input[i] & 0xff;
 
-    if (cmd === 0x80 && i + 1 < len) {
-      let frames = 0;
-
-      while (i < len && input[i] === 0x80 && i + 1 < len) {
-        const value = input[i + 1] & 0xff;
-        if ((value & 0x80) === 0) {
-          break;
-        }
-
-        const extra = value & 0x7f;
-        frames += 1 + extra;
+    if (byte < REG7_DELIMITER_BASE) {
+      // Register write pair: address (0x00-0x7F) followed by value byte.
+      out.push(byte);
+      if (i + 1 < len) {
+        out.push(input[i + 1] & 0xff);
         i += 2;
+      } else {
+        i += 1;
       }
-
-      while (frames > 0) {
-        const chunk = frames > 128 ? 128 : frames;
-        const extra = chunk - 1;
-        const value = 0x80 | (extra & 0x7f);
-        out.push(0x80, value);
-        frames -= chunk;
-      }
-
       continue;
     }
 
-    out.push(cmd);
-    i++;
+    // Collect consecutive single-byte frame delimiters and coalesce their delays.
+    let delay = 0;
+    while (i < len && (input[i] & 0xff) >= REG7_DELIMITER_BASE) {
+      delay += (input[i] & 0x7f) + 1;
+      i += 1;
+    }
+
+    while (delay > 0) {
+      const chunk = delay > REG7_MAX_DELAY_PER_BYTE ? REG7_MAX_DELAY_PER_BYTE : delay;
+      out.push(REG7_DELIMITER_BASE | ((chunk - 1) & 0x7f));
+      delay -= chunk;
+    }
   }
 
   return out;
 }
 
-export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple'): MaxExportResult {
-  const dump = exportSongRegisterDump(song);
-  const dumpBytes = parseAssemblyToBinary(dump.content);
+function buildMaxStream(
+  song: Song,
+  strategy: ExportStrategy
+): { streamFormat: number; streamData: number[]; frameCount: number } {
+  const { frames, frameCount } = captureMaxFrames(song);
 
-  const { streamFormat, streamData, frameCount } = buildMaxStreamFromDumpBytes(
-    dumpBytes,
-    strategy
-  );
+  if (strategy === 'simple') {
+    return { streamFormat: 0x08, streamData: buildRaw8Stream(frames), frameCount };
+  }
+
+  const reg7Data = buildReg7Stream(frames);
+  const streamData = strategy === 'optimized' ? optimizeReg7Delays(reg7Data) : reg7Data;
+
+  return { streamFormat: 0x07, streamData, frameCount };
+}
+
+export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple'): MaxExportResult {
+  const { streamFormat, streamData, frameCount } = buildMaxStream(song, strategy);
+
+  const uncompressedSize = streamData.length;
+  const compressed =
+    uncompressedSize > 0
+      ? compressZX0(new Uint8Array(streamData), { maxOffset: MAX_ZX0_OFFSET })
+      : new Uint8Array(0);
+  const compressedData: number[] = [];
+  for (let i = 0; i < compressed.length; i++) {
+    compressedData.push(compressed[i] & 0xff);
+  }
 
   const fileBytes: number[] = [];
 
@@ -195,26 +224,30 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
 
   fileBytes.push(...buildMaxShortChunk('C', chipData));
 
-  const compression = 0x00;
+  // Stream definition: format, ZX0 compression (0x08), 3-byte big-endian
+  // uncompressed size, and frame size for RAW8 dumps.
+  const compression = 0x08; // ZX0
+  const sizeHi = (uncompressedSize >>> 16) & 0xff;
+  const sizeMid = (uncompressedSize >>> 8) & 0xff;
+  const sizeLo = uncompressedSize & 0xff;
 
   let streamDefData: number[];
   if (streamFormat === 0x08) {
-    const frameSize = 11; // RAW8 AY/YM frame size in bytes
     streamDefData = [
       streamFormat & 0xff,
       compression,
-      0x00,
-      0x00,
-      0x00,
-      frameSize & 0xff,
+      sizeHi,
+      sizeMid,
+      sizeLo,
+      YM_REGISTER_COUNT & 0xff,
     ];
   } else {
-    streamDefData = [streamFormat & 0xff, compression];
+    streamDefData = [streamFormat & 0xff, compression, sizeHi, sizeMid, sizeLo];
   }
 
   fileBytes.push(...buildMaxShortChunk('S', streamDefData));
 
-  fileBytes.push(...buildMaxLongChunk('d', streamData));
+  fileBytes.push(...buildMaxLongChunk('d', compressedData));
 
   const buffer = new Uint8Array(fileBytes).buffer;
 

@@ -141,7 +141,7 @@ describe('exportSongToMax', () => {
 
   it('uses single-byte REG7 delimiters (0x80 = 1 frame, not 0x80 0x80)', () => {
     const song = loadSongYaml('song-vgm-tone.yaml');
-    const { buffer } = exportSongToMax(song, 'complex');
+    const { buffer, frameCount } = exportSongToMax(song, 'complex');
     const bytes = new Uint8Array(buffer);
 
     const streamDef = findChunk(bytes, 0x53);
@@ -158,23 +158,29 @@ describe('exportSongToMax', () => {
 
     expect(decompressed.length).toBe(uncompressedSize);
 
-    // The first frame must write all 14 registers (28 bytes) then a single 0x80 delimiter.
-    // Registers 0-13 are written as (reg, value) pairs = 28 bytes, then 0x80.
-    // Check that byte at index 28 is 0x80 (single-byte delimiter) and byte 29 is NOT 0x80
-    // (i.e. it's the start of the next frame's register writes, not a second delimiter byte).
-    expect(decompressed[28]).toBe(0x80);
-    // The next byte after the delimiter should be a register number (0x00-0x0d) or another
-    // delimiter if the next frame has no changes. It must NOT be 0x80 again as part of a
-    // two-byte marker — but consecutive delimiters are valid for idle frames. The key
-    // assertion is that the delimiter is a SINGLE byte, not a pair. We verify by checking
-    // that the total stream length is consistent with single-byte delimiters: each frame
-    // contributes at most 28 register bytes + 1 delimiter = 29 bytes minimum.
-    // The old bug would have added an extra byte per frame.
-    // We assert the decompressed length matches the expected uncompressed size.
-    expect(decompressed.length).toBe(uncompressedSize);
+    // Parse the REG7 stream and verify every delimiter is a single byte.
+    // Each frame consists of zero or more (reg, value) pairs followed by
+    // exactly one delimiter byte (>= 0x80). The old bug emitted two-byte
+    // delimiters (0x80 0x80). We verify by counting frames parsed with
+    // single-byte delimiters and confirming the count matches frameCount.
+    let pos = 0;
+    let parsedFrames = 0;
+    while (pos < decompressed.length) {
+      // Skip register/value pairs (register address < 0x80).
+      while (pos < decompressed.length && decompressed[pos] < 0x80) {
+        pos += 2; // skip register number and value
+      }
+      // Now we must be at a delimiter byte.
+      expect(pos).toBeLessThan(decompressed.length);
+      expect(decompressed[pos]).toBe(0x80); // single-byte delimiter, 1 frame delay
+      pos += 1;
+      parsedFrames++;
+    }
+
+    expect(parsedFrames).toBe(frameCount);
   });
 
-  it('includes all 14 registers (R0-R13) in the first REG7 frame', () => {
+  it('only writes non-zero registers in the first REG7 frame', () => {
     const song = loadSongYaml('song-vgm-tone.yaml');
     const { buffer } = exportSongToMax(song, 'complex');
     const bytes = new Uint8Array(buffer);
@@ -186,19 +192,26 @@ describe('exportSongToMax', () => {
     const compressed = bytes.slice(dataChunk.dataOffset, dataChunk.dataOffset + dataChunk.size);
     const decompressed = decompressZX0(compressed);
 
-    // First frame: 14 register pairs (28 bytes) then delimiter.
-    // Collect the register numbers written in the first frame.
-    const registersInFirstFrame: number[] = [];
+    // The player zeroes all registers before replay, so the first frame
+    // should only contain registers whose values differ from zero.
+    const registersInFirstFrame: { reg: number; value: number }[] = [];
     let pos = 0;
     while (pos < decompressed.length && decompressed[pos] < 0x80) {
-      registersInFirstFrame.push(decompressed[pos]);
-      pos += 2; // skip register number and value
+      const reg = decompressed[pos];
+      const value = decompressed[pos + 1];
+      registersInFirstFrame.push({ reg, value });
+      pos += 2;
     }
 
-    expect(registersInFirstFrame.length).toBe(14);
-    for (let reg = 0; reg < 14; reg++) {
-      expect(registersInFirstFrame[reg]).toBe(reg);
+    // Every register written in the first frame must have a non-zero value.
+    for (const entry of registersInFirstFrame) {
+      expect(entry.value).not.toBe(0);
     }
+
+    // The first frame should not write all 14 registers — zero-valued
+    // registers are skipped because the player initialises them to zero.
+    expect(registersInFirstFrame.length).toBeLessThan(14);
+    expect(registersInFirstFrame.length).toBeGreaterThan(0);
   });
 
   it('round-trips the compressed stream through decompressZX0 for simple strategy', () => {
