@@ -1,106 +1,252 @@
-# Project Guidelines
+# DOSOUND Tracker Project Specification
 
-This document outlines the coding conventions and specific implementation requirements for the `dosound-tracker` project, ensuring consistency and accuracy in emulating the Atari ST's audio system.
+## Vision
 
-## AI Assistants and Code Generators
+DOSOUND Tracker is a music creation tool for the AY/YM sound chip used in the Atari ST.
 
-- All tools that generate, analyze, or refactor code must **ignore** every file under the `docs/prompt/` directory.
-- Files in `docs/prompt/` are project prompts and design notes, not source code, and must not be used as templates or modified automatically.
-- All tools that generate, analyze, or refactor code must **ignore** every file under the `docs/refactoring/` directory unless clearly specified.
-- Files in `docs/refactoring/` are refactoring notes and assessments, not source code, and must not be used as templates or modified automatically unless clearly specified.
+It functions as a complete three-track music tracker that leverages the unique audio capabilities of the Yamaha YM2149 Programmable Sound Generator (PSG).
 
-## File Format
+The application's core feature is its ability to export music data directly into the assembly format compatible with the DOSOUND function of the XBIOS subsystem on the Atari ST's TOS operating system.
 
-Reading and writing the complete song, as well as the selected instrument, should use the YAML text format for readability.
+## Goals and Non-Goals
 
-## Naming Conventions
+**Goals**
 
-### React Components
+- Provide a complete three-track music tracker for the YM2149 PSG.
+- Export music data as DOSOUND-compatible assembly code for the Atari ST.
+- Support composition across three independent audio channels (Tracks A, B, and C).
+- Provide a pattern-based playlist system for song arrangement.
+- Offer 256 instrument slots with full parameter control.
+- Emulate the YM2149 chip with bit-perfect register simulation.
+- Support multiple export formats (assembly, binary, VGM, WAV, MAX).
+- Provide real-time audio playback with sub-millisecond timing.
+- Support MIDI input for live recording and instrument control.
+- Deploy as both a web application and a cross-platform desktop application via Electron.
 
-**Naming:** Use **PascalCase** for component file names (e.g., `InstrumentPanel.js`, `TrackerView.js`).
+**Non-Goals**
 
-**Props:** Use **camelCase** for all component properties. Destructure props at the top of the component function.
+- Multi-chip support (only YM2149, no support for other sound chips).
+- Multi-track beyond three channels (hardware limitation of the YM2149).
+- Modern audio synthesis techniques (the focus is authentic retro chip sound).
+- Server-side processing (all synthesis happens client-side).
 
-### General JavaScript
+## Target Audience
 
-**Variables/Functions:** Use **camelCase** (e.g., `calculateFrequency`, `trackData`).
+- Retro computing enthusiasts.
+- Chiptune composers.
+- Anyone who appreciates the raw, unfiltered sound of retro synthesis.
+- Atari ST demoscene developers needing DOSOUND-compatible music data.
 
-**Constants:** Use **SCREAMING_SNAKE_CASE** for global constants, especially those related to YM2149 register values (e.g., `YM_BASE_CLOCK`, `MAX_CHANNEL_VOLUME`).
+## Glossary
 
-## YM2149 / DOSOUND Implementation
+| Term      | Definition                                                              |
+| --------- | ----------------------------------------------------------------------- |
+| YM2149    | Yamaha YM2149 Programmable Sound Generator (PSG) used in the Atari ST   |
+| PSG       | Programmable Sound Generator                                            |
+| DOSOUND   | XBIOS function on Atari ST TOS for playing music data                   |
+| XBIOS     | Extended BIOS of the Atari ST operating system                          |
+| VBLANK    | Vertical blanking interrupt, 50Hz on PAL Atari ST                       |
+| Chiptune  | Music written for sound chips from old computers and consoles           |
+| Pattern   | A 64-step sequence of notes for a single track                          |
+| Playlist  | A sequence of pattern references defining the song arrangement          |
+| Track     | One of three independent audio channels (A, B, C)                       |
+| Instrument| A set of parameters defining the sound of a note                        |
+| Envelope  | A sequence of volume or pitch values over time                          |
+| LFSR      | Linear Feedback Shift Register, used for noise generation               |
+
+## Functional Requirements
+
+**F-01: Three-Track Composition**
+
+The system must support composition across three independent audio channels (Tracks A, B, and C) with simultaneous playback.
+
+**F-02: Pattern-Based Sequencing**
+
+The system must use pattern-based composition with 64-step pattern length. Patterns are single-track sequences.
+
+**F-03: Playlist Arrangement**
+
+The system must provide a playlist system to define the sequence of single-track patterns for the entire song arrangement.
+
+**F-04: Instrument Editor**
+
+The system must provide 256 instrument slots with the following parameters:
+
+- Mode control: pure tone, pure noise, or mixed tone and noise generation.
+- Volume envelope: 32-step amplitude control (ADSR-like shaping).
+- Arpeggio engine: real-time pitch shifting in semitone increments (-24 to +24).
+- Pitch modulation: direct frequency deviation for vibrato and fine-tuning.
+- Noise generation: dynamic noise period control (0-31 range).
+- Sustain points: realistic note release behavior with configurable sustain.
+
+**F-05: Real-Time Audio Playback**
+
+The system must provide real-time audio playback with sub-millisecond timing using the Web Audio API.
+
+**F-06: YM2149 Emulation**
+
+The system must emulate the YM2149 chip with:
+
+- Bit-perfect register simulation of all 16 registers.
+- Proper AY/YM logarithmic volume curves (16 levels, approximately -2dB per step).
+- Accurate noise generation using 17-bit LFSR algorithm.
+- 2MHz clock precision with proper frequency calculations.
+- Square wave synthesis with period-accurate tone generation.
+
+**F-07: DOSOUND Assembly Export**
+
+The system must export music data as DOSOUND-compatible assembly code with:
+
+- Register change tracking (only output changed registers).
+- Automatic delay insertion for proper timing resolution.
+- Volume-based optimization (remove unnecessary data when channels are silent).
+- Pattern boundary markers with comments.
+
+**F-08: Multiple Export Formats**
+
+The system must support the following export formats:
+
+- DOSOUND assembly (native Atari ST format with optimization).
+- WAV audio (44.1kHz 16-bit stereo rendering).
+- Register dump (raw YM2149 register state sequences).
+- Instrument-only export (individual instrument definitions).
+- Binary export.
+- VGM (Video Game Music) format.
+- MAX (Music Audio eXchange) format.
+
+**F-09: File I/O**
+
+The system must support loading and saving complete songs or individual instrument definitions in YAML format.
+
+**F-10: Keyboard Input**
+
+The system must support keyboard input for:
+
+- Piano keyboard mapping (Z=C, S=C#, X=D, etc.).
+- Navigation between sections using TAB and Shift+TAB.
+- Note entry, clearing (Space/Backspace), and note off (Ctrl+Space).
+- Instrument selection (Ctrl+/-).
+
+**F-11: MIDI Support**
+
+The system must support MIDI input for live recording and instrument control, including device selection and velocity sensitivity.
+
+**F-12: Theme Support**
+
+The system must support both a night mode (dark, default) and a day mode (light) with a theme toggle in the top-right corner.
+
+**F-13: Cross-Platform Deployment**
+
+The system must deploy as:
+
+- A web application supporting Chrome, Firefox, Safari, and Edge.
+- A desktop application via Electron for Windows, macOS, and Linux.
+- A responsive interface for mobile devices.
+
+## Non-Functional Requirements
+
+**N-01: Audio Performance**
+
+Audio stability is the highest priority. React best practices are secondary to audio performance. The system must maintain consistent audio timing without glitches, pops, or stuttering.
+
+**N-02: Timing Accuracy**
+
+The system must use 50Hz VBLANK timing matching the original Atari ST DOSOUND behavior. Envelope progression must occur every 40ms (every 2 ticks).
+
+**N-03: Export Fidelity**
+
+Exported assembly code must be 100% compatible with the original Atari ST DOSOUND XBIOS function.
+
+**N-04: Type Safety**
+
+The codebase must use TypeScript strict mode with no `any` types.
+
+**N-05: Code Quality**
+
+The codebase must pass ESLint with zero errors and zero warnings, with documented exceptions for audio-critical linting warnings.
+
+**N-06: Test Coverage**
+
+The project targets 80% coverage for lines, functions, branches, and statements.
+
+## Use Cases
+
+**C-01: Compose a Song**
+
+A user creates a new song, enters notes in the track panels using the piano keyboard or computer keyboard, creates instruments with custom envelopes, arranges patterns in the playlist, and plays back the song in real time.
+
+**C-02: Export for Atari ST**
+
+A user composes a song, selects the DOSOUND assembly export, configures optimization options, and downloads the generated assembly file ready to be included in custom Atari ST software.
+
+**C-03: Edit an Instrument**
+
+A user selects an instrument from the instrument list, edits the volume envelope, arpeggio, pitch modulation, and noise parameters, and previews the sound in real time using the on-screen piano keyboard.
+
+**C-04: Save and Load**
+
+A user saves the current song to a YAML file, closes the application, reopens it, and loads the song file to continue editing.
+
+**C-05: MIDI Recording**
+
+A user connects a MIDI keyboard, selects the device in the application, plays notes on the MIDI keyboard to enter them into the current track, and adjusts velocity sensitivity.
+
+## Quality Targets
+
+- Audio playback with zero glitches during normal operation.
+- Export output byte-identical for the same input song.
+- Application loads in under 2 seconds.
+- Song file size under 100KB for typical compositions.
+- Assembly export optimized for minimal memory usage on target hardware.
+
+## YM2149 Implementation Reference
 
 The emulation logic is split into two core areas under `src/synth/`.
 
-### YM2149 Chip Emulation (`src/synth/ym2149/`)
+**YM2149 Chip Emulation**
 
-**Core Logic:** This module is responsible for the low-level register simulation.
+This module is responsible for the low-level register simulation.
 
- * Implement functions to handle the 14 programmable YM2149 registers (R0 through R13).
+- Implement functions to handle the 14 programmable YM2149 registers (R0 through R13).
+- Ensure accurate calculation of tone frequencies, noise generation, and envelope shapes.
 
- * Ensure accurate calculation of tone frequencies, noise generation, and envelope shapes.
+**DOSOUND Driver Logic**
 
-### DOSOUND Driver Logic (`src/synth/dosound/`)
+The DOSOUND format uses a packed data structure to define musical events, relying on delays and data blocks rather than a simple note-on/note-off stream.
 
-**Data Format:** The DOSOUND format uses a specific **packed data structure** to define musical events, often relying on delays and data blocks rather than a simple note-on/note-off stream.
+- The logic must correctly read and interpret the DOSOUND data format and translate these events into sequential register writes for the YM2149 emulator.
+- The timing must be tied to the Atari ST's 50Hz VBLANK, as the original DOSOUND routine relied on this timing.
 
-**Parsing:** The logic here must correctly read and interpret the DOSOUND data format (or its abstracted representation) and translate these events into sequential register writes for the YM2149 emulator.
+**Playback**
 
-**Playback Rate:** The timing must be tied to the Atari ST's 50Hz VBLANK (or equivalent), as the original DOSOUND routine relied on this timing.
+The playback procedure should behave exactly as the DOSOUND function from the XBIOS subsystem does. If, at a given moment, more than one instrument specifies a value for noise, only the last value should be taken into account. If the values do not change in a given cycle, the delay should be extended accordingly for optimization purposes.
 
-## Sequencer Logic
+**Export Optimization**
 
-**Timing:** The main sequencer loop (`useSequencer.js`) must be driven by high-precision timing (e.g., using `requestAnimationFrame` or Web Audio's internal clock) and calculate musical time (BPM, Ticks per Row) relative to the **50Hz update rate** of the DOSOUND driver.
+The DOSOUND format export must be efficient and optimized. When an instrument's volume is silenced (volume = 0), all remaining sequence data for that channel (noise, pitch changes, arpeggio) must be ignored and excluded from the exported data stream to minimize memory usage and processing overhead on the target Atari ST system.
 
-**Playback speed:** is a value that determines the time in cycles between consecutive positions of the pattern. The minimum allowable value is 2.
-Due to the limitations of the DOSOUND mode, only even values can be selected in this mode.
+## User Interface Reference
 
-**Instrument Definition:** The instrument structure must accurately map UI elements (Volume Envelope (0-15), Vibrato Envelope (-128 to +128 frequency in "cents"), Noise Generator Value (0-31), Tone/Noise Selection, Arpeggio (-24 to +24 semitones) to the parameters required by the YM2149 chip and the DOSOUND logic.
+The UI must be simple, monospaced, and DOS-like. Avoid complex modern UI features where simple text and pseudo-graphic rendering is sufficient.
 
-**Playback:** The playback procedure should behave exactly as the DOSOUND function from the XBIOS subsystem does. If, at a given moment, more than one instrument specifies a value for noise, only the last value should be taken into account. If the values do not change in a given cycle, the delay should be extended accordingly for optimization purposes.
+**Hexadecimal Display**
 
-## Data Management
+Use hexadecimal notation (0x prefix) for displaying all hardware-related values in the user interface, including position numbers, instrument IDs, pattern positions, and register values. This maintains consistency with the underlying Atari ST hardware and assembly format.
 
-Allow exporting the full song or individual instrument definitions into a raw **assembly language data format** (`dc.b` directives), ready to be included and played back by custom Atari ST software.
+The note C sharp is written as "C#".
 
-Support loading and saving complete songs or individual instrument definitions.
+**Layout Requirements**
 
-**Export Optimization:** The DOSOUND format export must be efficient and optimized. When an instrument's volume is silenced (volume = 0), all remaining sequence data for that channel (noise, pitch changes, arpeggio) must be ignored and excluded from the exported data stream to minimize memory usage and processing overhead on the target Atari ST system.
+- The application screen should fit entirely within the browser tab so that using the scroll bar is not necessary.
+- The application should support both a night mode (dark, default) and a day mode (light).
+- In the top-right corner, there should be an icon to switch the theme.
+- Place the application logo in the top-left corner.
+- Keyboard support is required. The active section should be highlighted, and navigation between sections should use the TAB key clockwise or Shift+TAB in reverse.
+- Individual blocks can be scrolled vertically (pattern positions, instrument list, playlist) and horizontally (envelope blocks).
+- All three track blocks (A, B, and C) must scroll simultaneously with the position number block.
+- The interface should keep the current element centered vertically during navigation.
 
-## User interface
-
-The UI must be **simple, monospaced, DOS-like**. Avoid complex modern UI features where simple text/pseudo-graphic rendering is sufficient.
-
-**Hexadecimal Display:** Use hexadecimal notation (0x prefix) for displaying all hardware-related values in the user interface, including position numbers, instrument IDs, pattern positions, and register values. This maintains consistency with the underlying Atari ST hardware and assembly format.
-
-The note C♯ is written as "C#".
-
-## User interface 
-
-The application screen should fit entirely within the browser tab so that using the scroll bar is not necessary.
-
-The application should support both a night mode (dark, default) and a day mode (light).
-
-In the top-right corner of the user interface, there should be an icon to switch the theme from light to dark.
-Place the application logo in the top-left corner. 
-Use the 🎶 emoji as the application icon.
-
-It is necessary to implement keyboard support for the application. The active section should be highlighted, and navigation between individual sections should be done using the TAB key in a clockwise direction or Shift+TAB in reverse order. Keyboard shortcuts for specific functions will also be supported.
-
-Let us assume that the application will be displayed on an HD screen with a resolution of 1920×1080. However, since the application runs in a browser, the usable workspace is slightly smaller. It is necessary to implement automatic scaling so that the user can slightly reduce the size of the browser window.
-
-Individual blocks, however, can be scrolled. This applies both to the positions within a pattern and to the instrument list or the playlist entries, which can be shifted vertically within their local area. The interface should properly react to position changes so that the current element is always centered vertically, and navigation icons (up, down) will need to be added to the mentioned blocks.
-
-For the volume envelope blocks and other sequence-based sections, horizontal navigation is required.
-
-All three track blocks (A, B, and C) must be scrolled simultaneously together with the block containing the position number.
-
-Each block should have at least one corresponding React block definition to ensure clarity and ease of future extension.
-
-The graphical layout is illustrated below using semigraphic characters, but each section is accompanied by an image.
-
-### Interface layout
-
-The overall layout of the application is as follows, labels indicate the type of each section.
+**Interface Layout Diagram**
 
 ```
 ┌───┐┌───────────────────────────────────────────────┐┌─┬─┬─┬─┬─┬─┬─┬─┐┌───┐
@@ -108,131 +254,56 @@ The overall layout of the application is as follows, labels indicate the type of
 └───┘└───────────────────────────────────────────────┘└─┴─┴─┴─┴─┴─┴─┴─┘└───┘
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ Command (operations) button panel                                        │
-│                                                                          │
 └──────────────────────────────────────────────────────────────────────────┘
 ┌──┐┌─────────┐┌─────────┐┌─────────┐┌─────────────────┐┌──────────────────┐
 │  ││ Track A ││ Track B ││ Track C ││ Tone/Noise mode ││ Song information │
 │  ││         ││         ││         │└─────────────────┘└──────────────────┘
 │00││         ││         ││         │┌─────────────────┐┌──────────────────┐
 │01││         ││         ││         ││ Volume          ││ Song playlist    │
-│02││         ││         ││         ││                 ││                  │
-│03││         ││         ││         ││                 ││                  │
-│04││         ││         ││         │└─────────────────┘└──────────────────┘
-│05││         ││         ││         │┌─────────────────┐┌──────────────────┐
-│06││         ││         ││         ││ Arpeggio        ││ Instrument list  │
-│07││         ││         ││         ││                 ││                  │
-│08││         ││         ││         ││                 ││                  │
-│09││         ││         ││         │└─────────────────┘│                  │
-│0A││         ││         ││         │┌─────────────────┐│                  │
-│0B││         ││         ││         ││ Pitch           ││                  │
-│0C││         ││         ││         ││                 ││                  │
-│0D││         ││         ││         ││                 ││                  │
-│0E││         ││         ││         │└─────────────────┘└──────────────────┘
-│0F││         ││         ││         │┌─────────────────┐┌────────────┐┌────┐
-│10││         ││         ││         ││ Noise           ││ Dump       ││ EQ │
-│11││         ││         ││         ││                 ││            ││    │
-│12││         ││         ││         ││                 ││            ││    │
+│..││         ││         ││         ││                 ││                  │
+│..││         ││         ││         │└─────────────────┘└──────────────────┘
+│..││         ││         ││         │┌─────────────────┐┌──────────────────┐
+│..││         ││         ││         ││ Arpeggio        ││ Instrument list  │
+│..││         ││         ││         ││                 ││                  │
+│..││         ││         ││         │└─────────────────┘│                  │
+│..││         ││         ││         │┌─────────────────┐│                  │
+│..││         ││         ││         ││ Pitch           ││                  │
+│..││         ││         ││         ││                 ││                  │
+│..││         ││         ││         │└─────────────────┘└──────────────────┘
+│..││         ││         ││         │┌─────────────────┐┌────────────┐┌────┐
+│..││         ││         ││         ││ Noise           ││ Dump       ││ EQ │
+│..││         ││         ││         ││                 ││            ││    │
 └──┘└─────────┘└─────────┘└─────────┘└─────────────────┘└────────────┘└────┘
 ┌──────────────────────────────────────────────────────────────────────────┐
 │ On-screen piano keyboard                                                 │
 └──────────────────────────────────────────────────────────────────────────┘
 ```
 
-![](media/layout.png)
+See `media/layout.png` for the full layout image.
 
-### Commands (operations) button panel.
+**Navigation Block Order**
 
-The buttons are arranged in several rows and should be placed at the top of the user interface.
+- Octave selection
+- Theme mode (dark/light)
+- Track A
+- Track B
+- Track C
+- Tone/Noise
+- Volume
+- Arpeggio
+- Pitch
+- Noise
+- Song information
+- Song playlist
+- Instrument list
+- On-screen piano keyboard
 
-```
-┌──────────┐┌───────────┐┌───────────┐┌─────────────┐┌─────────────┐
-│ NEW SONG ││ LOAD SONG ││ SAVE SONG ││ INSERT LINE ││ DELETE LINE │
-└──────────┘└───────────┘└───────────┘└─────────────┘└─────────────┘
-┌──────────┐┌───────────┐┌───────────┐┌────────────┐┌─────────────┐
-│ NEW INST ││ LOAD INST ││ SAVE INST ││ CLONE INST ││ DELETE INST │
-└──────────┘└───────────┘└───────────┘└────────────┘└─────────────┘
-┌─────────────┐┌──────────────┐┌───────────────┐┌────────────────┐┌───────────┐
-│ NEW PATTERN ││ COPY PATTERN ││ PASTE PATTERN ││ DELETE PATTERN ││ TRANSPOSE │
-└─────────────┘└──────────────┘└───────────────┘└────────────────┘└───────────┘
-┌───────────┐┌──────────────┐┌───────────┐┌──────────────┐┌─────────────┐
-│ PLAY SONG ││ PLAY PATTERN ││ PLAY INST ││ DOSOUND MODE ││ EXPORT DATA │
-└───────────┘└──────────────┘└───────────┘└──────────────┘└─────────────┘
-```
+Do not focus on Dump, EQ, logo, or title during navigation.
 
-![](media/command.png)
-
-### Octave selection
-
-This block alows user to select base octave, default is 3.
-Minimum is 0 and maximum is 7.
-
-```
-┌─┬─┬─┬─┬─┬─┬─┬─┐
-│0│1│2│3│4│5│6│7│
-└─┴─┴─┴─┴─┴─┴─┴─┘
-```
-
-![](media/octave.png)
-
-### Song information
-
-The music settings include fields allowing the user to specify the title of the tune, the year, the author, and the playback speed (the speed parameter).
-
-```
-┌───────────────────────────────────┐
-│ Title:  Title of the song         │
-│ Author: Zoltar X / New Generation │
-│ Year:   2025                      │
-│ Speed:  6                         │
-└───────────────────────────────────┘
-```
-
-![](media/song.png)
-
-### Song playlist
-
-The playlist contains the recorded music arrangement. Each row corresponds to one “song line,” specifying the pattern number for each of the three tracks.
-
-```
-┌────┬──────────┐
-│ 00 │ -- 1A -- │
-│ 01 │ 31 1B -- │
-│ 02 │ 31 1C 22 │
-│ 03 │ ^^ 01 -- │
-└────┴──────────┘
-```
-
-This block is scrolled vertically.
-
-![](media/playlist.png)
-
-Such a notation means that three arrangement rows are defined. In the first row, pattern 1A will be played on track B; in the second row, pattern 31 on track A and 1B on track B; and in the third row, pattern 31 on track A, 1C on track B, and pattern 22 on track C.
-
-The last row, numbered 03, contains a GOTO command specifying the row number to which playback should jump. This is relevant only during playback, since the DOSOUND function does not support such a jump, and the music playback should end at this point.
-
-### On-screen piano keyboard
-
-On-screen piano keyboard that allows playing sounds and selecting a key signature for playback using the “PLAY INST” function.
-
-It should be located at the bottom of the user interface.
-
-```
-┌─┬─┬┬─┬─┬─┬─┬┬─┬┬─┬─┬─┬─┬┬─┬─┬─┬─┬┬─┬┬─┬─┬─┬─┬┬─┬─┬─┬─┬┬─┬┬─┬─┬─┬─┬┬─┬─┬─┬─┬┬─┬┬─┬─┐
-│ │ ││ │ │ │ ││ ││ │ │ │ ││ │ │ │ ││ ││ │ │ │ ││ │ │ │ ││ ││ │ │ │ ││ │ │ │ ││ ││ │ │
-│ │ ││ │ │ │ ││ ││ │ │ │ ││ │ │ │ ││ ││ │ │ │ ││ │ │ │ ││ ││ │ │ │ ││ │ │ │ ││ ││ │ │
-│ └┬┘└┬┘ │ └┬┘└┬┘└┬┘ │ └┬┘└┬┘ │ └┬┘└┬┘└┬┘ │ └┬┘└┬┘ │ └┬┘└┬┘└┬┘ │ └┬┘└┬┘ │ └┬┘└┬┘└┬┘ │
-│  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │  │
-└──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┘
-```
-
-![](media/piano.png)
-
-If the focus is on the on-screen piano keyboard block, pressing the keys corresponding to piano keys should play the sound of the currently selected instrument at the specific note and octave according to the current settings.
-
-Some of the keyboard keys are mapped to the same piano notes.
+**Piano Keyboard Mapping**
 
 | Keyboard key | Piano note | Relative octave |
-| :----------: | :--------: | :-------------: |
+| ------------ | ---------- | --------------- |
 | Z            | C          | +0              |
 | S            | C#         | +0              |
 | X            | D          | +0              |
@@ -271,97 +342,4 @@ Some of the keyboard keys are mapped to the same piano notes.
 | +            | F#         | +2              |
 | ]            | G          | +2              |
 
-
-## Evelope view
-
-This kind of block is used for "Volume", "Arpeggio", "Pitch" and "Noise".
-Remember that "Arpeggio" and "Pitch" contains relative values where 0 is in the middle and means "no change".
-For "Volume" and "Noise" 0 is minimum value. Maximum value for "Volume" is F and for "Noise" is 1F.
-All these blocks should be scrolled simultaneously together and navigation should be possible with arrow keys.
-
-Example of the contents of an envelope block:
-
-```
- █ 
- █ █   
- █ █ █ 
- █ █ █ █ 
- █ █ █ █ █ 
- █ █ █ █ █ █ █               
- █ █ █ █ █ █ █ █ █    
-```
-
-![](media/envelope.png)
-
-This block is scrolled horizontally together with all other envelope blocks as well as "Tone/Noise" block.
-
-## Tone/Noise
-
-This block is very short because it contains only the setting (TONE or NOISE) of the generator’s operating mode along the timeline.
-
-## Track
-
-```
-┌─────────┐
-│ Track A │
-│         │
-│ C-3  01 │
-│ ---     │
-│ G-3  01 │
-│ ---     │
-│ ===     │
-│ ---     │
-│ ---     │
-│ ---     │
-│ D#3  01 │
-│ ---     │
-│ ---     │
-│ ===     │
-│ ---     │
-│ ---     │
-│ ---     │
-│ ---     │
-└─────────┘
-```
-
-![](media/track.png)
-
-Each row contains no operation "---" or a note together with instrument number like "C#3 05" which means C# note with octave 3 and instrument number 05.
-
-If the focus is on any block of a track, it should be possible to enter note values using both the on-screen keyboard and the keys representing individual notes on the piano keyboard.
-
-Empty (no instruction) position is indicated with "---".
-
-If Space or Backspace is pressed current position should be cleared.
-If Ctrl+Space is pressed, then note off "===" should be set at the position.
-If Ctrl together with - (minus) is pressed, then previous intrument should be selected.
-If Ctrl together with + (plus) is pressed, then next instrument should be selected.
-
-### Dump
-
-Dump block should contain current values for all chip registers that are in use by the player routine in hexadecimal format.
-
-### EQ
-
-This is simple volume bar for each track (3 vertical bars).
-
-### Navigation
-
-Block order for navigation using the keyboard:
-
- - Octave selection
- - Theme mode (dark/light)
- - Track A
- - Track B
- - Track C
- - Tone/Noise
- - Volume
- - Arpeggio
- - Pitch
- - Noise
- - Song information
- - Song playlist
- - Instrument List
- - On-screen piano keyboard
-
-Don't focus on Dump, EQ nor logo or title.
+See `SPECIFICATION.md` for the complete keyboard shortcut and input binding reference.

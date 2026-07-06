@@ -202,31 +202,72 @@ music:
     dc.b $ff,0
 ```
 
-## Development Guidelines
+## Documentation
 
-### Architecture & Code Guidelines
+This project follows an Agentic Software Engineering (ASE) documentation structure. All documentation lives under `docs/`.
 
-For guidelines on refactoring processes, architectural decisions, and code generation principles, see:
+**Core Guidelines**
 
-- [ARCHITECT.md](docs/ARCHITECT.md)
-- [GUIDELINES.md](docs/GUIDELINES.md) - **Audio-critical development principles and linting trade-offs**
+| File                                | Purpose                                                          |
+| ----------------------------------- | ---------------------------------------------------------------- |
+| [README.md](docs/README.md)         | Primary entry point for AI tooling                               |
+| [GUIDELINES.md](docs/GUIDELINES.md) | Central source of truth for development rules and audio-critical principles |
+| [PROJECT.md](docs/PROJECT.md)       | Project description, scope, requirements, use cases, and quality targets |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, module boundaries, state domains, and patterns |
+| [SPECIFICATION.md](docs/SPECIFICATION.md) | Project-specific implementation details, stack, schemas, and constants |
+| [COPYRIGHTS.md](docs/COPYRIGHTS.md) | Copyright and licensing rules                                    |
+| [WORKFLOW.md](docs/WORKFLOW.md)     | Day-to-day development workflow                                  |
+| [REFACTORING.md](docs/REFACTORING.md) | Refactoring proposal and assessment process                      |
+| [TESTING.md](docs/TESTING.md)       | Testing strategy, test types, fixtures, and CI                   |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment targets and hosting                                   |
+| [VERSIONING.md](docs/VERSIONING.md) | Version numbering scheme, bumping rules, and CHANGELOG format    |
+| [FORMAT.md](docs/FORMAT.md)         | Project file format specification for song and instrument files  |
+| [MAX.md](docs/MAX.md)               | MAX audio file format specification                              |
 
-> The initial project specification guidelines are described in [PROJECT.md](docs/PROJECT.md).
-> That document was used to bootstrap this project but is **not** used for the current development process anymore.
+**Engineering Standards**
 
-**Naming Rule:** When introducing new files (components, hooks, utilities, etc.) within the same directory, ensure their names remain distinct and unambiguous. Avoid singular vs. plural variations (e.g., `ModalContainer` vs. `ModalManager`) or other near-duplicates that might cause confusion. If two files serve related purposes, give them clearly differentiated names that describe their unique roles (e.g., `ModalContainer` vs. `ModalManager`). This keeps imports readable and prevents accidental misuse.
+| File                                                  | Purpose                                              |
+| ----------------------------------------------------- | ---------------------------------------------------- |
+| [standard/ts-react-development.md](docs/standard/ts-react-development.md) | TypeScript and React engineering standard |
 
-### Data Format Documentation
+**Document Templates**
 
-For a detailed technical specification of all save and export formats (song/instrument YAML, clipboard formats, assembly, binary, VGM, and WAV), see:
+| File                                                          | Purpose                                    |
+| ------------------------------------------------------------- | ------------------------------------------ |
+| [template/change-request-template.md](docs/template/change-request-template.md) | Template for change request documents |
+| [template/implementation-plan-template.md](docs/template/implementation-plan-template.md) | Template for implementation plan documents |
 
-- [FORMAT.md](docs/FORMAT.md)
+**ASE Directory Structure**
+
+| Directory                     | Purpose                                                        |
+| ----------------------------- | -------------------------------------------------------------- |
+| `docs/change/<version>/`      | Change request descriptions: features, bug fixes, enhancements |
+| `docs/plan/<version>/`        | Implementation plans created from change requests              |
+| `docs/refactoring/<version>/` | Refactoring proposals and assessments after implementation     |
+| `docs/archive/`               | Historical documents                                           |
+| `docs/feature/`               | Feature proposals (historical, not part of active workflow)    |
+| `docs/prompt/`                | Historical AI prompt logs (historical, not part of active workflow) |
+| `docs/report/`                | Generated analysis reports                                     |
+| `docs/media/`                 | Images and media files for documentation                       |
+
+**New Feature Implementation Workflow**
+
+When asked to implement a new feature, follow this sequence:
+
+1. Read all guidelines files and follow rules.
+2. Analyze current implementation.
+3. Make required research.
+4. Create change request in `docs/change/<version>/`.
+5. Create implementation plan in `docs/plan/<version>/`.
+6. Ask for confirmation to implement.
+
+Do not begin implementation until the user confirms the plan.
+
+See [GUIDELINES.md](docs/GUIDELINES.md) for the complete rule set, including audio-critical development principles that override standard React best practices.
 
 ---
 
 *Built with dedication to authentic retro computing and the timeless appeal of 8-bit chiptune music. Every envelope, every register write, every frequency calculation aims to capture the pure essence of what made the YM2149 chip a cornerstone of computer music history.*
-
----
 
 ## License
 
