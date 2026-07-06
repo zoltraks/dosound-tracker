@@ -353,25 +353,47 @@ Details:
 
 ### Output file
 
-- Binary format: **MAX** (Music Assembly eXchange).
+- Binary format: **MAX** (Music Assembly eXchange), specification v1.6.
 - Typical extension: `.max`.
 - Produced by `exportSongToMax(song, strategy)` or `exportInstrumentToMax(instrument, song, strategy)`.
-- Contains compressed YM2149 register streams with metadata.
+- Contains ZX0-compressed YM2149 register streams with metadata.
 
 ### Structure
 
 - File header: magic `"MAX "` (4 bytes).
 - Version chunk: `'V'` + size + version number (currently 1).
 - Optional info chunk: `'I'` + metadata (title, author, year).
-- Chip definition chunk: `'C'` + YM2149 clock and VBlank rate.
-- Stream definition chunk: `'S'` + format and compression flags.
-- Data chunk: `'d'` + compressed register stream.
+- Chip definition chunk: `'C'` + YM2149 chip id (`A9`), panning, VBlank rate (50 Hz), and clock speed (2 MHz).
+- Stream definition chunk: `'S'` + stream format, compression byte, 3-byte uncompressed stream size, and optional frame size.
+- Data chunk: `'d'` + ZX0-compressed register stream.
+
+### Frame capture
+
+The export calls `simulateSong` directly and captures one register snapshot per VBLANK tick (50 Hz, 20 ms per frame). All 14 YM2149 registers (R0–R13) are included in every snapshot. Registers R11–R13 (envelope period and shape) default to 0 because the simulation does not yet model the hardware envelope generator.
 
 ### Export strategies
 
-- **Simple**: Raw register dumps (11 bytes per frame).
-- **Complex**: Optimized format that only writes changed registers.
-- **Optimized**: Complex format with additional delay optimization.
+Each strategy selects a stream format. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (`maxOffset: 1023`) before writing the data chunk.
+
+- **Simple**: RAW8 stream format (`0x08`). Flat dump of all 14 register values per frame, with no delimiters or differencing. The stream definition chunk includes a frame size of 14.
+- **Complex**: REG7 stream format (`0x07`). Differential format that writes only registers whose values changed since the previous frame, followed by a single-byte frame delimiter. The stream definition chunk omits the frame size field.
+- **Optimized**: REG7 stream format (`0x07`) with delay optimization. Consecutive frame delimiters are coalesced into the minimal set of `0x80`–`0xFF` bytes, with runs longer than 128 frames split across multiple delimiters.
+
+### REG7 frame delimiter encoding
+
+The REG7 format uses a single delimiter byte with the high bit set:
+
+| Value   | Meaning                        |
+|---------|--------------------------------|
+| `$80`   | End of frame, 1 frame delay    |
+| `$81`   | End of frame, 2 frames delay   |
+| `$FF`   | End of frame, 128 frames delay |
+
+The low 7 bits encode `delay - 1`. Delays exceeding 128 frames are split across multiple consecutive delimiter bytes.
+
+### ZX0 compression
+
+The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Saukas, BSD 3-Clause) ported in `src/utils/zx0.ts`. The `maxOffset` parameter is set to 1023, constraining back-references to the 1024-byte ring-buffer window expected by hardware MAX players. The stream definition chunk records compression byte `0x08` and the uncompressed stream size as a 3-byte big-endian integer.
 
 ### Instrument export
 
