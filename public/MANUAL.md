@@ -148,6 +148,16 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - Pattern chaining and loops
 - Position tracking and navigation
 
+**Song Information Panel:**
+
+- Title and author text inputs
+- Year number spinner (range 1980-2030)
+- Speed number spinner (range 2-255, even values only, step 2)
+- Length number spinner (range 4-256, pattern length)
+- Loop point number input (0-based playlist index, can be cleared for no loop)
+- Replay rate toggle button (50 Hz / 60 Hz) in the Title row
+- Chip clock toggle button (2 MHz / 1 MHz) in the Author row
+
 ### Advanced Instrument System
 
 **256 Instrument Slots:**
@@ -200,13 +210,13 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 
 - Bit-perfect register simulation
 - Authentic AY/YM logarithmic volume curves
-- 2MHz clock precision
+- Configurable chip clock: 2 MHz (default, YM2149) or 1 MHz (AY-3-8910 range)
 - Square wave synthesis
 - 17-bit LFSR noise generation
 
 **Real-Time Playback:**
 
-- 50Hz VBLANK timing (Atari ST compatible)
+- Configurable replay rate: 50 Hz (PAL/Atari ST, default) or 60 Hz (NTSC)
 - Sub-millisecond timing accuracy
 - Live pattern switching
 - Seamless loop detection
@@ -314,7 +324,7 @@ For whole-envelope operations, the editor treats the envelope as fully defined f
 
 ### Export Capabilities
 
-Application supports several export formats.
+Application supports several export formats. Each format can target the full song, a single pattern (current playlist position), or a single instrument.
 
 **DOSOUND Assembly (DATA):**
 
@@ -322,6 +332,7 @@ Application supports several export formats.
 - ``dc.b`` directive stream
 - XBIOS compatible
 - 68k assembly integration
+- Three strategies: simple, complex, optimized
 
 **Register Dump (DUMP):**
 
@@ -339,22 +350,28 @@ Application supports several export formats.
 
 **VGM Format:**
 
-- Video Game Music standard
-- Universal compatibility
-- Loop point support
-- Metadata inclusion
+- Video Game Music standard format
+- Universal chiptune compatibility
+- Loop point support via song `loop` field
+- Chip clock and frame rate recorded in VGM header
+- Wait commands adapted to frame rate (0x62 for 60 Hz, 0x63 for 50 Hz, 0x61 for other rates)
 
 **MAX Format:**
 
-- Extended data export
-- Additional metadata
-- Research compatibility
-- Future format support
+- MAX specification v1.6 chunk-based binary format
+- Info chunks for song metadata
+- Chip setup chunk recording frame rate and chip clock
+- Stream definition chunk with compression info
+- Three strategies: simple (RAW8 dump, 14 bytes per frame), complex (REG7 differential stream with single-byte frame delimiters), optimized (REG7 stream with coalesced multi-frame delays)
+- ZX0 compression with 1024-byte ring-buffer window applied to all strategies
+- All 14 YM2149 registers (R0 through R13) captured per frame
 
 **WAV Audio:**
 
-- 44.1kHz 16-bit mono
-- High-quality rendering
+- 44.1kHz 16-bit mono PCM
+- Software YM2149 simulation including noise LFSR
+- Samples per tick derived from song frame rate (882 at 50 Hz, 735 at 60 Hz)
+- Frequency calculation uses song chip clock
 - Cross-platform playback
 - Mastering ready
 
@@ -362,16 +379,22 @@ Application supports several export formats.
 
 - **SIMPLE DUMP**: All registers every frame
 - **COMPLEX DUMP**: Changed registers only
-- **OPTIMIZED DUMP**: Maximum compression
+- **OPTIMIZED DUMP**: Maximum compression with coalesced delays
 
 ### Advanced Features
 
 **MIDI Support:**
 
-- MIDI input for live recording
-- MIDI output for external playback
-- Channel mapping
-- Program change support
+- MIDI input for live recording and playback
+- MIDI output for external synthesizer playback
+- Input and output device selection dropdowns
+- Input and output enable/disable toggles
+- Ignore volume toggle for input and output (default: on)
+- Channel mapping and program change support
+- Per-instrument MIDI configuration with note range assignment
+- Real-time input and output event monitors
+- Device refresh button
+- All settings persist to localStorage
 
 **Debug Mode:**
 
@@ -381,42 +404,113 @@ Application supports several export formats.
 - Playback analysis
 
 **Transposition:**
-- Pattern-wide pitch shifting
-- Track-specific transposition
-- Scope targeting
-- Musical key awareness
+
+- Pattern-wide pitch shifting with semitone offset
+- Track-specific transposition (current track or all tracks)
+- Instrument scope targeting (all instruments or selected only)
+- Playlist scope targeting (current position or entire song)
+- Semitone range: -99 to +99
+- Quick buttons: octave down (-12), note down (-1), note up (+1), octave up (+12)
+- Result summary showing patterns affected, notes changed, and notes clipped at range limits
 
 **Pattern Utilities:**
+
 - Renumber patterns automatically
-- Optimize song structure
+- Optimize song structure (removes unused patterns and instruments)
 - Remove duplicate patterns
 - Compress song data
+
+**Channel Muting and EQ:**
+
+- Three channel mute buttons (A, B, C) in the EQ panel
+- Click volume bar to toggle mute
+- Real-time volume level display (0-15) per channel
+- Mute state persists to localStorage
+
+**Track Paste Modes:**
+
+- Replace: overwrite entire track with clipboard content
+- Overwrite All: overwrite all non-empty cells with clipboard content
+- Overwrite Empty: only fill empty cells with clipboard content
+- Mode selection persists to localStorage
+
+**Per-Instrument Color:**
+
+- Color picker for each instrument
+- Color indicators in instrument list
+- Track background color toggle (rainbow mode)
+- Persists to localStorage
+
+**Real-Time Register Dump Panel:**
+
+- Displays TA, TB, TC (tone registers), VA, VB, VC (volume registers), MX (mixer), NS (noise period)
+- Updates every 100 ms during playback
+- Click individual values to copy to clipboard
+- Click Dump header to copy entire dump as formatted text
+
+**Demo Song:**
+
+- Load built-in demo song via DEMO button
+- Demonstrates arpeggio envelopes, percussion, bass, and lead instruments
+
+**About and Changelog:**
+
+- About dialog with application version and runtime information
+- In-app changelog viewer
+- Built-in manual viewer
+
+**Theme:**
+
+- Dark theme (default) and light theme
+- Toggle button in header panel
+- Persists to localStorage
+
+**Persistence:**
+
+The following settings persist across sessions via localStorage:
+
+- Theme preference (dark or light)
+- MIDI configuration (input/output enable, device selection, volume ignore)
+- Transpose settings (scope, track, instrument, amount)
+- Export type and strategy
+- Channel mute states
+- Track background color toggle
+- Instrument octave selection
+- Paste track mode
+- Debug mode
 
 ### Technical Specifications
 
 **Performance:**
-- Real-time synthesis at 60fps
+
+- Real-time synthesis at configurable frame rate (50 Hz or 60 Hz)
 - Buffer size: 256 samples
 - Latency: <10ms typical
 - CPU usage: <5% on modern hardware
 
 **File Formats:**
-- YAML for human-readable storage
-- JSON for programmatic access
-- Custom binary formats
-- Compressed data support
+
+- YAML for human-readable song and instrument storage
+- Custom binary formats (BIN, MAX with ZX0 compression)
+- VGM standard chiptune format
+- WAV 44.1 kHz 16-bit PCM audio
 
 **Compatibility:**
+
 - Web browsers (Chrome, Firefox, Safari, Edge)
-- Desktop applications (Windows, macOS, Linux)
+- Desktop applications (Windows, macOS, Linux via Electron)
 - Mobile responsive design
-- Atari ST assembly integration
+- Atari ST assembly integration via DOSOUND XBIOS export
 
 **Development:**
+
 - React 19 + TypeScript
-- Web Audio API
+- Web Audio API for real-time synthesis
+- Zustand for state management
 - Vite build system
 - Electron desktop wrapper
+- Vitest test runner
+- Playwright end-to-end tests
 
 ---
 
@@ -441,25 +535,27 @@ Conceptually:
 
 ### Time and Speed
 
-Two clocks matter:
+Three clocks matter:
 
-- **VBLANK / DOSOUND tick**: 50 Hz → one tick = 20 ms.
+- **Replay rate (frame rate)**: configurable per song. 50 Hz (PAL, Atari ST default) → one tick = 20 ms. 60 Hz (NTSC) → one tick = 16.66 ms. Toggle in the Song information panel.
+- **Chip clock**: configurable per song. 2 MHz (YM2149 default) or 1 MHz (AY-3-8910 range). Affects pitch: at 1 MHz, period values are half of the 2 MHz values for the same note. Toggle in the Song information panel.
 - **Tracker speed** (`speed`): how many ticks per **row** in a pattern.
 
 Rules (from the implementation):
 
 - `speed` is clamped to **even** values (2, 4, 6, …).
-- **Envelope steps** advance every **2 ticks** (40 ms) → "envelope FPS" is `50 / 2 = 25 Hz`.
+- **Envelope steps** advance every **2 ticks** (40 ms at 50 Hz, 33.33 ms at 60 Hz).
 
 Approximate pattern duration:
 
-- Let `S` = `speed`, `L` = `length` (rows per pattern).
-- One row lasts `S * 20 ms`.
-- One pattern lasts `L * S * 20 ms`.
+- Let `S` = `speed`, `L` = `length` (rows per pattern), `R` = frame rate (50 or 60).
+- One row lasts `S * (1000 / R) ms`.
+- One pattern lasts `L * S * (1000 / R) ms`.
 
 Example:
 
-- `speed: 4`, `length: 64` → `64 * 4 * 20 ms = 5120 ms ≈ 5.12 s` per pattern.
+- `speed: 4`, `length: 64`, `frame: 50` → `64 * 4 * 20 ms = 5120 ms ≈ 5.12 s` per pattern.
+- `speed: 4`, `length: 64`, `frame: 60` → `64 * 4 * 16.66 ms = 4266 ms ≈ 4.27 s` per pattern.
 
 The music will still be faster than your loader.
 
@@ -477,10 +573,13 @@ Conceptually:
 
 - `title`: Optional; defaults to something generic if you forget.
 - `author`: Optional; defaults to a placeholder.
-- `year`: Optional; defaults to current year if missing.
-- `speed`: Required. Positive integer, forced to **even** and at least **2**.
+- `year`: Optional; defaults to current year if missing. Range 1980-2030.
+- `speed`: Required. Positive integer, forced to **even** and at least **2**. Range 2-255.
 - `length`: Required. Pattern length, clamped to **4..256** rows.
 - `loop`: Optional. 0‑based playlist index where playback loops (for exports that support looping).
+- `frame`: Optional. Replay rate in Hz. Supported values: `50` (default) or `60`.
+- `clock`: Optional. Chip clock in Hz. Supported values: `2000000` (2 MHz, default) or `1000000` (1 MHz).
+- `chip`: Optional. Chip type. Currently only `"YM"` is supported.
 - `line`: Required list of rows (arrangement).
   - Loader also accepts the legacy key `playlist`.
 - `pattern` / `patterns`: Required list of pattern definitions.
@@ -856,7 +955,7 @@ In DOSOUND format (see classic Atari ST docs), commands are typically encoded as
 DOSOUND Tracker follows this convention in assembly export:
 
 - `dc.b $reg, $value` for register writes.
-- `dc.b $FF, N` for **delay N frames** (at 50 Hz).
+- `dc.b $FF, N` for **delay N frames** (at the song's configured frame rate).
 - `dc.b $FF, 0` at the end → **STOP marker**.
 
 The example in `README.md` illustrates this, with comments such as `TA D-4`, `VA`, etc. With the **COMPLEX DUMP** and **OPTIMIZED DUMP** strategies, only **changed registers** are written to keep data compact.
@@ -899,8 +998,10 @@ Relevant **YM 2149** registers used:
 - `R6` – Noise period.
 - `R7` – Mixer (enable/disable tone+noise per channel).
 - `R8, R9, R10` – Volumes for A/B/C.
+- `R11, R12` – Envelope period (fine and coarse).
+- `R13` – Envelope shape.
 
-Other registers (envelopes in the chip's own hardware sense) are not used directly; instead, DOSOUND Tracker emulates envelopes and writes plain tone+noise registers.
+In DOSOUND assembly export, envelopes are emulated in software and only tone, noise, mixer, and volume registers are written. In MAX export, all 14 registers (R0 through R13) are captured per frame.
 
 ---
 
@@ -1012,4 +1113,4 @@ Use this manual as a **field guide**:
 
 When both sides meet, what comes out of the monitor speakers is more than the sum of 16 volume levels and a few random bits of noise.
 
-Now go write something that will make 2025 hardware jealous of 1985 silicon.
+Now go write something that will make modern hardware jealous of 1985 silicon.

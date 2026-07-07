@@ -65,8 +65,9 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 
 ### Timing and Sequencing
 
-- **50Hz VBLANK timing** matching original ATARI ST DOSOUND behavior
-- **Envelope progression** every 40ms (every 2 ticks)
+- **Configurable replay rate** (50 Hz / 60 Hz) matching original ATARI ST DOSOUND behavior or NTSC systems
+- **Configurable chip clock** (2 MHz / 1 MHz) for YM2149 or AY-3-8910 frequency ranges
+- **Envelope progression** every 2 ticks (40 ms at 50 Hz, 33.33 ms at 60 Hz)
 - **Pattern-based playback** with seamless loop detection
 
 ### YM2149 Emulation
@@ -74,7 +75,7 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 - **Bit-perfect register simulation** of all 16 YM2149 registers
 - **Proper AY/YM logarithmic volume curves** (16 levels, ~-2dB per step)
 - **Accurate noise generation** using 17-bit LFSR algorithm
-- **2MHz clock precision** with proper frequency calculations
+- **Configurable clock precision** (2 MHz or 1 MHz) with proper frequency calculations
 - **Square wave synthesis** with period-accurate tone generation
 
 ### Modern Web Implementation
@@ -95,7 +96,10 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 ### Multiple Export Features
 
 - **DOSOUND Assembly**: Native Atari ST format with optimization
-- **WAV Audio Export**: 44.1kHz 16-bit stereo rendering
+- **Binary Export**: Raw DOSOUND command stream for direct memory loading
+- **WAV Audio Export**: 44.1kHz 16-bit PCM rendering with software YM2149 simulation
+- **VGM Export**: Video Game Music standard format with loop point support
+- **MAX Export**: MAX specification v1.6 with ZX0 compression
 - **Register Dump**: Raw YM2149 register state sequences
 - **Instrument-only Export**: Individual instrument definitions
 
@@ -104,16 +108,19 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 ### Technology Stack
 
 - **Frontend**: React 19, TypeScript, Vite 7
+- **State**: Zustand
 - **Audio**: Web Audio API, custom YM2149 emulator
 - **Build**: Electron 28, Electron Builder 24
-- **Testing**: Vitest, jsdom
+- **Testing**: Vitest, jsdom, Playwright
 - **Linting**: ESLint 9 with TypeScript support
+- **Formatting**: Prettier
 
 ### **Implementation Details**
 
-- **2MHz YM2149 clock** with precise frequency calculations
+- **Configurable YM2149 chip clock** (2 MHz or 1 MHz) with precise frequency calculations
+- **Configurable replay rate** (50 Hz or 60 Hz) for PAL and NTSC compatibility
 - **Logarithmic volume mapping** matching AY/YM chip characteristics
-- **Real-time envelope processing** at 25Hz update rate
+- **Real-time envelope processing** at half the frame rate (25 Hz at 50 Hz, 30 Hz at 60 Hz)
 - **Pattern-based sequencing** with 64-step resolution
 - **Optimized export pipeline** for minimal assembly output
 
@@ -206,11 +213,12 @@ music:
 
 This project follows an Agentic Software Engineering (ASE) documentation structure. All documentation lives under `docs/`.
 
+The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES.md). Read it first, then read every file listed in its Sources of Truth section before making any change.
+
 **Core Guidelines**
 
 | File                                | Purpose                                                          |
 | ----------------------------------- | ---------------------------------------------------------------- |
-| [README.md](docs/README.md)         | Primary entry point for AI tooling                               |
 | [GUIDELINES.md](docs/GUIDELINES.md) | Central source of truth for development rules and audio-critical principles |
 | [PROJECT.md](docs/PROJECT.md)       | Project description, scope, requirements, use cases, and quality targets |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, module boundaries, state domains, and patterns |
@@ -223,6 +231,7 @@ This project follows an Agentic Software Engineering (ASE) documentation structu
 | [VERSIONING.md](docs/VERSIONING.md) | Version numbering scheme, bumping rules, and CHANGELOG format    |
 | [FORMAT.md](docs/FORMAT.md)         | Project file format specification for song and instrument files  |
 | [MAX.md](docs/MAX.md)               | MAX audio file format specification                              |
+| [FUTURE.md](docs/FUTURE.md)         | Candidate future enhancements (not committed work)              |
 
 **Engineering Standards**
 
@@ -250,20 +259,7 @@ This project follows an Agentic Software Engineering (ASE) documentation structu
 | `docs/report/`                | Generated analysis reports                                     |
 | `docs/media/`                 | Images and media files for documentation                       |
 
-**New Feature Implementation Workflow**
-
-When asked to implement a new feature, follow this sequence:
-
-1. Read all guidelines files and follow rules.
-2. Analyze current implementation.
-3. Make required research.
-4. Create change request in `docs/change/<version>/`.
-5. Create implementation plan in `docs/plan/<version>/`.
-6. Ask for confirmation to implement.
-
-Do not begin implementation until the user confirms the plan.
-
-See [GUIDELINES.md](docs/GUIDELINES.md) for the complete rule set, including audio-critical development principles that override standard React best practices.
+See [GUIDELINES.md](docs/GUIDELINES.md) for the complete rule set, including the new feature implementation workflow, audio-critical development principles, and sources of truth.
 
 ---
 

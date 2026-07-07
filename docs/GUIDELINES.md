@@ -75,7 +75,6 @@ The active documentation set is composed of the following files. Each file is th
 
 | File                                       | Purpose                                                          |
 | ------------------------------------------ | ---------------------------------------------------------------- |
-| `README.md`                                | Primary entry point for AI tooling                               |
 | `GUIDELINES.md`                            | Central source of truth for AI-assisted development rules (this file) |
 | `PROJECT.md`                               | Project description, scope, requirements, use cases, and quality targets |
 | `ARCHITECTURE.md`                          | System architecture, module boundaries, state domains, and patterns |
@@ -88,6 +87,7 @@ The active documentation set is composed of the following files. Each file is th
 | `VERSIONING.md`                            | Version numbering scheme, bumping rules, and CHANGELOG format    |
 | `FORMAT.md`                                | Project file format specification for song and instrument files  |
 | `MAX.md`                                   | MAX audio file format specification                              |
+| `FUTURE.md`                                | Candidate future enhancements (not committed work)              |
 | `standard/ts-react-development.md`         | TypeScript and React engineering standard                        |
 | `template/change-request-template.md`      | Template for change request specification documents              |
 | `template/implementation-plan-template.md` | Template for implementation plan documents                       |
@@ -99,7 +99,6 @@ The active documentation set is composed of the following files. Each file is th
 This rule is mandatory and unconditional. Before making any change in this codebase, read every file in the active documentation set listed below. Never assume a subset is sufficient. No matter how small the change, every guideline file must be reviewed first.
 
 - Always read all guideline files before making changes. The required files are:
-  - `README.md`
   - `GUIDELINES.md`
   - `PROJECT.md`
   - `ARCHITECTURE.md`
