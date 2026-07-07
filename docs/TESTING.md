@@ -6,6 +6,7 @@ A clean build means **zero errors and zero warnings** across all verification st
 
 - **TypeScript compilation** (`npm run typecheck`) must pass with no errors.
 - **Linting** (`npm run lint`) must produce no errors and no warnings.
+- **Formatting** (`npm run format`) must be applied to all source files.
 - **Build** (`npm run build`) must complete successfully with no errors.
 - **Tests** (`npm test`) must all pass.
 
@@ -49,9 +50,10 @@ Run during implementation iterations after each code change. This is the canonic
 ```
 1. Typecheck -> npm run typecheck
 2. Lint      -> npm run lint
-3. Build     -> npm run build
-4. Test      -> npm test <targeted test pattern>
-5. Fix       -> address every error and warning
+3. Format    -> npm run format
+4. Build     -> npm run build
+5. Test      -> npm test <targeted test pattern>
+6. Fix       -> address every error and warning
 ```
 
 Run only the tests that cover the code being modified. Use a test file path or pattern to limit scope (for example `npm test src/utils/songParser` or `npm test -- test/utils/`).
@@ -70,7 +72,7 @@ Run the complete suite with `npm test` (no pattern) at these milestones:
 
 - If any step produces errors or warnings, fix them immediately.
 - Re-run all steps after each fix.
-- Work is only finished when steps 1 to 4 pass with zero errors and zero warnings.
+- Work is only finished when steps 1 to 5 pass with zero errors and zero warnings.
 
 **When the verification loop is required**
 

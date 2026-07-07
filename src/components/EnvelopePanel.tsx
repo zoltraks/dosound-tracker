@@ -8,7 +8,7 @@ import {
   getEnvelopeTitle,
 } from '../utils/envelopeTypes';
 import { getEnvelopeBarHeight, getEnvelopeCenteredBarPosition } from '../utils/barRendering';
-import { formatEnvelopeValue } from '../utils/valueFormatting';
+import { Formatter } from '../utils/formatters';
 import {
   copyEnvelopeValueFromLastPosition,
   getMovedEnvelopePosition,
@@ -231,7 +231,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   }, [setActiveSection, sectionName, currentPosition]);
 
   const formatValue = useCallback((value: number) => {
-    return formatEnvelopeValue(type, value);
+    return Formatter.envelopeValue(type, value);
   }, [type]);
 
   const getBarHeight = useCallback((value: number) => {

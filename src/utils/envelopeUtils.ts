@@ -4,9 +4,13 @@ export const expandEnvelope = (
   defaultValue: number,
 ): number[] => {
   const rawArray = Array.isArray(values) ? values : [];
-  const numericValues = rawArray
-    .map((value) => Number(value))
-    .filter((value) => Number.isFinite(value));
+  const numericValues: number[] = [];
+  for (let i = 0; i < rawArray.length; i += 1) {
+    const n = Number(rawArray[i]);
+    if (Number.isFinite(n)) {
+      numericValues.push(n);
+    }
+  }
 
   if (numericValues.length === 0) {
     return Array(length).fill(defaultValue);
@@ -29,9 +33,13 @@ export const expandLoopingEnvelope = (
   defaultValue: number,
 ): number[] => {
   const rawArray = Array.isArray(values) ? values : [];
-  const numericValues = rawArray
-    .map((value) => Number(value))
-    .filter((value) => Number.isFinite(value));
+  const numericValues: number[] = [];
+  for (let i = 0; i < rawArray.length; i += 1) {
+    const n = Number(rawArray[i]);
+    if (Number.isFinite(n)) {
+      numericValues.push(n);
+    }
+  }
 
   if (numericValues.length === 0) {
     return Array(length).fill(defaultValue);

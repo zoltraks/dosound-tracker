@@ -2,7 +2,7 @@ import yaml from 'js-yaml';
 import type { Song, Step } from '../synth/SoundDriver';
 import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat';
-import { formatHexId } from './hexFormatting';
+import { Formatter } from './formatters';
 import { formatInstrumentSlotId } from './instrumentSelection';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { isEnvelopeZeroDefault, trimEnvelope } from './envelopeUtils';
@@ -95,8 +95,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     return instrumentNode;
   });
 
-  // Playlist: A/B/C keys instead of trackA/trackB/trackC.
-  // Omit tracks that have no pattern assigned ("--").
+  // Playlist uses A/B/C keys; omit tracks with no pattern ("--").
   const lineSource = currentSong.line;
   type LegacyLineEntry = {
     A?: string;
@@ -118,15 +117,14 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     return row;
   });
 
-  // Patterns: single-track (track A) steps with note strings or space,
-  // plus optional per-line volume modifier.
+  // Single-track steps with note strings or space, plus optional per-line volume.
   const targetLength = currentSong.length ?? PATTERN_LENGTH;
   const patternSource = currentSong.pattern;
   const patterns = patternSource.map((pattern, index) => {
     const number =
       typeof pattern.id === 'string' && pattern.id.trim()
         ? pattern.id
-        : formatHexId(index);
+        : Formatter.hex(index, { padWidth: 2, uppercase: true });
 
     const rawLines = pattern.step;
     type PatternStep = {

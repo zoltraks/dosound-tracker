@@ -41,12 +41,7 @@ export interface SimulationOptions {
   clock?: number;
 }
 
-/**
- * Simulates the playback of a song and emits frames with register states.
- * @param song The song to simulate
- * @param callback Callback function called for each tick
- * @param options Simulation options
- */
+/** Simulates playback of a song, emitting frames with register states for each tick. */
 export function simulateSong(
   song: Song, 
   callback: PlaybackCallback, 
@@ -75,7 +70,6 @@ export function simulateSong(
   // Process each playlist entry
   for (let playlistIdx = 0; playlistIdx < song.line.length; playlistIdx++) {
     const playlistEntry = song.line[playlistIdx];
-    // Get patterns for each track
     const patterns = [
       song.pattern.find(p => p.id === playlistEntry.A),
       song.pattern.find(p => p.id === playlistEntry.B),

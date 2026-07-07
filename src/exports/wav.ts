@@ -2,7 +2,7 @@ import type { Instrument, Song } from '../synth/SoundDriver';
 import { YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
 import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { simulateSong } from '../utils/playbackSimulation';
-import { buildInstrumentPreviewSong, downloadFile, normalizeSongForExport } from './core';
+import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core';
 
 const WAV_SAMPLE_RATE = 44100;
 
@@ -172,8 +172,7 @@ export function exportSongToWav(song: Song): WavExportResult {
 }
 
 export function exportInstrumentToWav(instrument: Instrument, song: Song): WavExportResult {
-  const previewSong = buildInstrumentPreviewSong(instrument, song);
-  return exportSongToWav(previewSong);
+  return exportInstrumentWith(instrument, song, exportSongToWav);
 }
 
 export function downloadWavFile(buffer: ArrayBuffer, filename: string = 'music.wav'): void {

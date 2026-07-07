@@ -21,6 +21,7 @@ import { useDownloadAvailability } from './hooks/useDownloadAvailability';
 import { usePlaybackSimulation } from './hooks/usePlaybackSimulation';
 import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
+import { clearIntervalRef } from './utils/timerUtils';
 import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
 import type { MidiConfiguration } from './hooks/useMidi';
@@ -1411,10 +1412,7 @@ const App: React.FC = () => {
     setIsLinePlaying(false);
     
     // Stop any instrument preview playback
-    if (playInstTimerRef.current !== null) {
-      window.clearInterval(playInstTimerRef.current);
-      playInstTimerRef.current = null;
-    }
+    clearIntervalRef(playInstTimerRef);
 
     // Reset cycle counters and silence all channels
     handleStopPlayback();
@@ -1429,10 +1427,7 @@ const App: React.FC = () => {
     setIsLinePlaying(false);
     
     // Stop any instrument preview playback
-    if (playInstTimerRef.current !== null) {
-      window.clearInterval(playInstTimerRef.current);
-      playInstTimerRef.current = null;
-    }
+    clearIntervalRef(playInstTimerRef);
     
     // Reset cycle counters and silence all channels
     handleStopPlayback();

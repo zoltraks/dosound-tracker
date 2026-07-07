@@ -10,6 +10,7 @@ import { simulateSong, type SimulationFrame } from '../utils/playbackSimulation'
 import {
   downloadFile,
   formatNoteLabel,
+  formatPitchDelta,
   frequencyToPeriod,
   normalizeSongForExport,
   parseBaseKeyForExport,
@@ -128,11 +129,11 @@ function formatFramesToAssembly(
               ? `${meta.note}${meta.octave}`
               : `${meta.note}-${meta.octave}`;
             const delta = meta.pitchDelta || 0;
-            const pitchText = delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
+            const pitchText = formatPitchDelta(delta);
             comment = `T${channelLabel} ${baseLabel}${pitchText}`;
           } else {
             const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
-            const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
+            const pitchText = formatPitchDelta(pitchDelta);
             comment = noteLabel
               ? `T${channelLabel} ${noteLabel}${pitchText}`
               : `T${channelLabel}`;
@@ -206,11 +207,11 @@ function formatFramesToAssembly(
             ? `${meta.note}${meta.octave}`
             : `${meta.note}-${meta.octave}`;
           const delta = meta.pitchDelta || 0;
-          const pitchText = delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
+          const pitchText = formatPitchDelta(delta);
           comment = `T${channelLabel} ${baseLabel}${pitchText}`;
         } else {
           const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
-          const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
+          const pitchText = formatPitchDelta(pitchDelta);
           comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
         }
 
@@ -504,7 +505,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   if (firstToneActive) {
     const firstCF = getCoarseFine(first.period);
     const firstLabel = formatNoteLabel(base.note, base.octave, first.semitone || 0);
-    const pitchText = first.pitchDelta ? ` ${first.pitchDelta > 0 ? '+' : ''}${first.pitchDelta}` : '';
+    const pitchText = formatPitchDelta(first.pitchDelta);
     asm += formatAsmLine(
       [0x01, firstCF.coarse, 0x00, firstCF.fine],
       `TA ${firstLabel}${pitchText}`
@@ -555,7 +556,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     if (toneActive && step.period !== prevPeriod) {
       const cf = getCoarseFine(step.period);
       const label = formatNoteLabel(base.note, base.octave, step.semitone || 0);
-      const pitchText = step.pitchDelta ? ` ${step.pitchDelta > 0 ? '+' : ''}${step.pitchDelta}` : '';
+      const pitchText = formatPitchDelta(step.pitchDelta);
       asm += formatAsmLine(
         [0x01, cf.coarse, 0x00, cf.fine],
         `TA ${label}${pitchText}`

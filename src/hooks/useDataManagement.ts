@@ -33,6 +33,7 @@ import {
   applyLoadedInstrumentToSong,
 } from './useInstrumentManagement';
 import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManagement';
+import { createEmptyInstrument } from '../utils/instrumentPanelUtils';
 import type { PlaylistEntry } from '../types/playlist';
 import { scheduleJsonSave, clearScheduledSave, type ScheduledSaveHandle } from './useStorage';
 
@@ -141,13 +142,7 @@ export const useDataManagement = () => {
     ];
 
     const newCurrentInstrument: Instrument = {
-      id: asInstrumentId('00'),
-      name: '',
-      volume: Array(ENVELOPE_LENGTH).fill(0),
-      shift: Array(ENVELOPE_LENGTH).fill(0),
-      pitch: Array(ENVELOPE_LENGTH).fill(0),
-      noise: Array(ENVELOPE_LENGTH).fill(0),
-      mode: Array(ENVELOPE_LENGTH).fill(0),
+      ...createEmptyInstrument(asInstrumentId('00'), ENVELOPE_LENGTH),
       base: DEFAULT_BASE_KEY,
       sustain: null
     };

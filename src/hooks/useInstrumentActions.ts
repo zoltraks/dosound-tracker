@@ -18,6 +18,7 @@ import {
 } from '../utils/instrumentActionUtils';
 import type { InstrumentId } from '../types/branded';
 import type { InstrumentDeleteUsage } from './useModalState';
+import { clearIntervalRef } from '../utils/timerUtils';
 
 interface UseInstrumentActionsArgs {
   currentSong: Song;
@@ -96,10 +97,7 @@ export function useInstrumentActions({
 
     const channel = getInstrumentPlaybackChannel(activeSection, lastTrackId);
 
-    if (playInstTimerRef.current !== null) {
-      window.clearInterval(playInstTimerRef.current);
-      playInstTimerRef.current = null;
-    }
+    clearIntervalRef(playInstTimerRef);
 
     playInstStepRef.current = 0;
     let playInstSubTick = 0;
@@ -119,10 +117,7 @@ export function useInstrumentActions({
       }
 
       if (playInstStepRef.current >= 64) {
-        if (playInstTimerRef.current !== null) {
-          window.clearInterval(playInstTimerRef.current);
-          playInstTimerRef.current = null;
-        }
+        clearIntervalRef(playInstTimerRef);
         ym2149.writeRegister(0x08 + channel, 0x00);
       }
     }, tickIntervalMsRef.current);

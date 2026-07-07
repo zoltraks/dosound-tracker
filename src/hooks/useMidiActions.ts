@@ -11,6 +11,7 @@ import {
   transposeMidiNoteToInstrumentBase,
   velocityToVolumeNibble,
 } from '../utils/midiActionsUtils';
+import { clearIntervalRef } from '../utils/timerUtils';
 
 interface MidiHelpersRef {
   sendInstrumentMidiNoteOn: (
@@ -104,10 +105,7 @@ export function useMidiActions({
     (ymChannel: number) => {
       const ym2149 = ym2149Ref.current;
 
-      if (midiLiveTimerRef.current !== null) {
-        window.clearInterval(midiLiveTimerRef.current);
-        midiLiveTimerRef.current = null;
-      }
+      clearIntervalRef(midiLiveTimerRef);
 
       midiLiveSubTickRef.current = 0;
       midiLiveEnvelopeStepRef.current = 0;
@@ -144,9 +142,6 @@ export function useMidiActions({
 
       const { type, noteNumber, noteName, octave, channel: midiChannel, velocity: midiVelocity } = event;
 
-      // Transpose incoming MIDI notes by the current instrument's base so that
-      // pressing C-4 on the controller corresponds to the instrument's base
-      // pitch (e.g. C-3), and all other keys shift by the same semitone offset.
       const baseKey =
         parseBaseKeyString(currentInstrument.base || 'C-4') ||
         { note: 'C', octave: NOTE_BASE_OCTAVE };
@@ -219,15 +214,11 @@ export function useMidiActions({
         const nextIndex = Math.min(totalLines - 1, safeIndex + 1);
         setSharedCurrentLine(nextIndex);
 
-        // Sustain-aware live preview on the track's channel (same engine as non-track MIDI preview)
         const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
         const instrument = currentInstrument;
         const noteData = { note: transposedNoteName, octave: clampedOctave };
 
-        if (midiLiveTimerRef.current !== null) {
-          window.clearInterval(midiLiveTimerRef.current);
-          midiLiveTimerRef.current = null;
-        }
+        clearIntervalRef(midiLiveTimerRef);
 
         midiLiveReleasedRef.current = false;
 
@@ -359,10 +350,7 @@ export function useMidiActions({
           if (hasSustain && midiLiveTimerRef.current !== null) {
             midiLiveReleasedRef.current = true;
           } else {
-            if (midiLiveTimerRef.current !== null) {
-              window.clearInterval(midiLiveTimerRef.current);
-              midiLiveTimerRef.current = null;
-            }
+            clearIntervalRef(midiLiveTimerRef);
 
             midiLiveSubTickRef.current = 0;
             midiLiveEnvelopeStepRef.current = 0;
@@ -399,10 +387,7 @@ export function useMidiActions({
           const noteData = { note: transposedNoteName, octave: clampedOctave };
           const instrument = currentInstrument;
 
-          if (midiLiveTimerRef.current !== null) {
-            window.clearInterval(midiLiveTimerRef.current);
-            midiLiveTimerRef.current = null;
-          }
+          clearIntervalRef(midiLiveTimerRef);
 
           midiLiveReleasedRef.current = false;
 
@@ -562,10 +547,7 @@ export function useMidiActions({
             if (hasSustain && midiLiveTimerRef.current !== null) {
               midiLiveReleasedRef.current = true;
             } else {
-              if (midiLiveTimerRef.current !== null) {
-                window.clearInterval(midiLiveTimerRef.current);
-                midiLiveTimerRef.current = null;
-              }
+              clearIntervalRef(midiLiveTimerRef);
 
               midiLiveSubTickRef.current = 0;
               midiLiveEnvelopeStepRef.current = 0;

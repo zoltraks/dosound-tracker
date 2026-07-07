@@ -57,7 +57,7 @@ export function useMidiMessageProcessing(
       return;
     }
 
-    const data: number[] = Array.from(event.data);
+    const data = event.data;
     if (data.length === 0) return;
 
     const status = data[0] | 0;
@@ -67,9 +67,11 @@ export function useMidiMessageProcessing(
     const command = status & 0xf0;
     const channel = (status & 0x0f) + 1; // 1-16
 
-    const dataHex = data
-      .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-      .join(' ');
+    let dataHex = '';
+    for (let i = 0; i < data.length; i += 1) {
+      if (i > 0) dataHex += ' ';
+      dataHex += (data[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
+    }
 
     const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
 
@@ -262,9 +264,11 @@ export function useMidiMessageProcessing(
 
       const bytes = [status, clampedNote, vel];
 
-      const dataHex = bytes
-        .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-        .join(' ');
+      let dataHex = '';
+      for (let i = 0; i < bytes.length; i += 1) {
+        if (i > 0) dataHex += ' ';
+        dataHex += (bytes[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
+      }
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
       const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');

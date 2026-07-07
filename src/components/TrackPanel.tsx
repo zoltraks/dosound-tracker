@@ -7,6 +7,7 @@ import { YM2149 } from '../synth/YM2149';
 import { DEFAULT_SONG_FRAME } from '../constants/song';
 import { TrackLine } from './TrackLine';
 import { computeEffectiveVolume } from '../utils/trackUtils';
+import { clearIntervalRef } from '../utils/timerUtils';
 import {
   buildInstrumentColorMap,
   formatTrackNoteDisplay,
@@ -122,10 +123,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     // Map track to channel
     const channel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
 
-    if (envelopeTimerRef.current !== null) {
-      window.clearInterval(envelopeTimerRef.current);
-      envelopeTimerRef.current = null;
-    }
+    clearIntervalRef(envelopeTimerRef);
 
     previewSubTickRef.current = 0;
     previewEnvelopeStepRef.current = 0;
@@ -253,10 +251,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           effectiveRawStep >= lastVolumeIndex &&
           lastVolumeValue <= 0
         ) {
-          if (envelopeTimerRef.current !== null) {
-            window.clearInterval(envelopeTimerRef.current);
-            envelopeTimerRef.current = null;
-          }
+          clearIntervalRef(envelopeTimerRef);
 
           previewSubTickRef.current = 0;
           previewEnvelopeStepRef.current = 0;

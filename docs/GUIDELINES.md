@@ -260,7 +260,7 @@ These rules apply to every change made in this project. Follow them in order; do
 
 Run the full verification loop defined in `TESTING.md` before the first code modification to establish a known-good baseline. Do not begin implementation until this baseline passes with zero errors and zero warnings.
 
-During implementation, run the targeted verification loop (typecheck, lint, build, and only the tests covering the modified code) after each iteration.
+During implementation, run the targeted verification loop (typecheck, lint, format, build, and only the tests covering the modified code) after each iteration.
 
 After implementation is finished, run the full verification loop again. The work is finished only when both the pre-change baseline and the post-change run pass with zero errors and zero warnings, the implementation matches the documentation, and any plan in scope has been satisfied.
 

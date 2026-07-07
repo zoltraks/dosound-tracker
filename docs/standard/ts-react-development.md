@@ -7,20 +7,6 @@ It covers language conventions, component patterns, state management guidance, t
 
 Apply these standards unless a project-specific document overrides them.
 
-## Audio-Critical Override
-
-This project is a real-time audio application where timing is critical.
-The `GUIDELINES.md` document defines audio-critical development principles that override standard React best practices.
-
-The following patterns are intentional and must not be "fixed" in audio-critical code paths:
-
-- **Prop mirroring**: local state synced with props for stable timing.
-- **Sparse dependency arrays**: minimal dependencies to prevent unnecessary re-renders.
-- **Direct setState calls**: synchronous state updates for predictable timing.
-- **Manual memoization**: carefully controlled memoization vs React's automatic optimizations.
-
-Consult `GUIDELINES.md` before applying any linting fixes or React optimisations to audio-related code.
-
 ## Documentation
 
 ### TypeScript
@@ -57,10 +43,9 @@ Organize source code by responsibility. Typical directories include:
 - `utils/` — pure utility functions
 - `types/` — TypeScript type definitions
 - `stores/` — global state modules
-- `exports/` — export format logic
-- `synth/` — audio synthesis and hardware emulation
-- `workers/` — Web Worker modules
 - `constants/` — constant definitions
+
+Add project-specific directories as needed (for example `exports/`, `synth/`, `workers/`, `io/`, `operations/`).
 
 Group related files together. Use barrel exports only when they meaningfully aggregate a domain and do not create tight coupling.
 
@@ -120,6 +105,10 @@ import { useForm } from '@/hooks/useForm';
 import { Button } from '../../components/Button';
 ```
 
+### Branded Types
+
+When the project uses branded types to prevent mixing critical identifiers at compile time, define the brand and constructor functions in a single `types/` module. Accept `number | BrandedType` in factory functions when callers may provide either a numeric index or a pre-branded ID string.
+
 ## Code Conventions
 
 ### React Components
@@ -135,6 +124,14 @@ import { Button } from '../../components/Button';
 - Custom hooks start with `use`.
 - Keep hooks focused on a single responsibility.
 - Document hook parameters and return values with JSDoc when they are public.
+
+### Reusable Hook Patterns
+
+**useLocalStorageState**
+
+When multiple components need state that initializes from `localStorage` and persists on change, extract a generic `useLocalStorageState<T>` hook. The hook accepts a key, a default value, and optional `read` and `write` functions for custom serialization. This eliminates the duplicated `useState(() => { try { localStorage.getItem(key) } catch { default } })` plus `useEffect(() => { try { localStorage.setItem(key, value) } catch {} })` pattern.
+
+When localStorage states share a single JSON key with multiple sub-fields, do not migrate them to individual `useLocalStorageState` calls without changing the storage format. Shared-key patterns require either extending the hook with sub-field access or restructuring the storage scheme as a separate behaviour change.
 
 ### State Management
 
@@ -157,6 +154,10 @@ Zustand selectors only trigger re-renders when the selected value changes. If a 
 - Define domain-specific error classes for domain errors.
 - Never swallow errors silently.
 
+### Empty Catch Blocks
+
+When a catch block intentionally ignores errors (for example when localStorage access fails in a browser environment), include a `// ignore` comment inside the empty block to satisfy the `no-empty` lint rule and signal intent.
+
 ### Async/Await
 
 - Use `async/await` exclusively.
@@ -171,10 +172,6 @@ Zustand selectors only trigger re-renders when the selected value changes. If a 
 - `console.log` in production code — use proper logging or remove.
 - `setState` in `useEffect` without a dependency check — causes infinite loops.
 - Direct DOM manipulation outside of React refs.
-
-**Audio-Critical Exception**
-
-The `setState` in `useEffect` prohibition does not apply to audio-critical code paths documented in `GUIDELINES.md`. In audio paths, synchronous state updates are intentional for predictable timing.
 
 ## Component Organization
 
@@ -202,6 +199,38 @@ Shared UI primitives such as modals, dialogs, and panels must be presentational.
 - Presentational components depend on abstractions (callbacks, props) rather than concrete stores or command factories beyond their own domain.
 - When a callback is captured as a closure at the time a modal opens, resolve current state inside the closure using the store's `getState()` method rather than capturing the full state snapshot.
 
+## Code Deduplication
+
+### Rule of Three
+
+Do not extract a shared abstraction from a single call site. Do not pre-emptively generalise a pattern that appears twice. Wait until at least three concrete duplicates exist before introducing a helper, hook, or component, and write the abstraction to match the three real call sites rather than to a hypothetical future fourth one.
+
+### Thin Wrapper Files
+
+Do not create a file that wraps a single function from another module without adding logic. If `moduleA` exports `foo` and `moduleB` just re-exports `foo` under a different name, delete `moduleB` and update import sites to use `moduleA` directly. Thin wrappers add indirection without value and create maintenance overhead when the wrapped function's signature changes.
+
+### Generic Export Wrappers
+
+When multiple export functions follow the same "prepare input then call format-specific exporter" pattern, extract a generic wrapper that accepts the preparation step and the exporter as a callback. This consolidates the preparation logic and ensures new formats automatically benefit from it.
+
+### Timer Ref Utilities
+
+When multiple hooks and components clear interval timers with the same `if (ref.current !== null) { window.clearInterval(ref.current); ref.current = null; }` pattern, extract a `clearIntervalRef` utility function. This eliminates duplication and ensures the null-check pattern is consistently applied. Only replace patterns that call `clearInterval`; do not replace `clearTimeout` patterns or patterns that set a flag instead of clearing the interval.
+
+## Efficiency
+
+### Hot Path Allocation Avoidance
+
+In code that executes on every event in a high-frequency stream (for example MIDI messages, audio callbacks, pointer events), avoid per-event allocations:
+
+- Do not call `Array.from()` on typed arrays (`Uint8Array`, `Float32Array`) when direct indexed access suffices.
+- Replace `array.map(transform).join(delimiter)` with a pre-allocated string concatenation loop.
+- Replace `array.map(transform).filter(predicate)` with a single-pass `for` loop or `reduce` that combines both operations.
+
+### Behaviour Preservation Check
+
+Before proposing an efficiency optimization, verify that it preserves exact observable behaviour. Optimizations that change the number of iterations (for example early exit from a loop that also counts matches), the length of a returned array (for example `filter` before `map`), or the order of side effects are behaviour changes, not refactoring. Document the behaviour-preservation argument for each optimization.
+
 ## Testing
 
 ### Test Organization
@@ -213,6 +242,7 @@ Keep tests close to the code they exercise. Co-locate unit tests with source fil
 - One test file per module.
 - Cover happy paths, edge cases, and error conditions.
 - Mock external dependencies and browser APIs.
+- Add unit tests for every new utility function and hook extracted during refactoring.
 
 ### Component Tests
 
@@ -236,6 +266,20 @@ Define build, test, and lint scripts in the project manifest. Every project must
 - Use a single Prettier configuration for the whole project.
 - Both tools must run in CI. A pull request that fails either check is not accepted.
 
+### Verification Loop Order
+
+When running a production-ready build or verification loop, execute the formatter after linting and before building. The canonical order is:
+
+```
+1. Typecheck
+2. Lint
+3. Format (write)
+4. Build
+5. Test
+```
+
+Formatting after linting ensures that lint has already caught code-level issues before the formatter rewrites style. Formatting before building ensures the build operates on consistently formatted source. If the formatter modifies any files, re-run typecheck and lint before building to catch any formatting-induced issues.
+
 ## Comments
 
 Code is self-documenting through naming. Limit comments to:
@@ -244,7 +288,7 @@ Code is self-documenting through naming. Limit comments to:
 - JSDoc for public APIs and hooks.
 - A file-level comment stating single responsibility.
 
-Never use numbered comments. Do not comment what the code does. Do not leave commented-out code.
+Never use numbered comments. Do not comment what the code does. Do not leave commented-out code. Do not add section marker comments (for example `// 1. Device Management`) that restate the structure of the code below them.
 
 ## Dependency Management
 
@@ -280,6 +324,8 @@ When asked to create a refactoring proposal without specific focus areas, analyz
 - Testing coverage.
 
 The analysis must be autonomous. Examine recent changes, the current codebase, existing guidelines, and good practices to determine the most valuable refactoring focus.
+
+When analyzing for comment removal, verify each reported comment exists in the actual file content before including it in the proposal. Do not rely on cached or stale file metadata for line numbers or comment text.
 
 ## General Principles
 

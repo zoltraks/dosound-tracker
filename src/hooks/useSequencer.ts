@@ -40,9 +40,6 @@ export const useSequencer = (
     ticksPerRow: Math.max(1, songSpeed | 0)
   });
 
-  // Internal playback state used by the timer loop. This is kept in sync with
-  // the React state but can also be advanced independently on each tick
-  // without forcing a full React render at the frame rate.
   const playbackStateRef = useRef<SequencerState>({
     isPlaying: false,
     isPatternLoop: false,
@@ -127,10 +124,6 @@ export const useSequencer = (
         switch (type) {
           case 'tick':
           case 'update': {
-            // If React has already marked playback as stopped, never allow
-            // late worker ticks to flip isPlaying back to true. This avoids
-            // UI flicker where transport controls briefly return to a
-            // "playing" state after the user presses STOP.
             const prevPlayback = playbackStateRef.current;
             const safeIsPlaying = prevPlayback.isPlaying ? data.isPlaying : false;
 
@@ -155,9 +148,6 @@ export const useSequencer = (
               }
             }
             
-            // Update React state only for row changes for tick messages, but
-            // always apply explicit position updates for 'update' messages so
-            // the UI stays in sync with seek/jump operations.
             if (type === 'tick') {
               setSequencerState(prev => {
                 const rowChanged =

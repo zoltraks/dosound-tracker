@@ -1,8 +1,14 @@
 import type { Instrument } from '../synth/SoundDriver';
+import type { InstrumentId } from '../types/branded';
 import { formatInstrumentSlotId } from './instrumentSelection';
 
-export function createEmptyInstrument(slotIndex: number, envelopeLength: number): Instrument {
-  const slotId = formatInstrumentSlotId(slotIndex);
+export function createEmptyInstrument(
+  slotIndexOrId: number | InstrumentId,
+  envelopeLength: number
+): Instrument {
+  const slotId = typeof slotIndexOrId === 'number'
+    ? formatInstrumentSlotId(slotIndexOrId)
+    : slotIndexOrId;
 
   return {
     id: slotId,

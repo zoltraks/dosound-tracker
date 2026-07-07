@@ -4,7 +4,6 @@ import { STORAGE_KEY } from '../utils/midiUtils';
 import { useMidiDeviceManagement } from './useMidiDeviceManagement';
 import { useMidiMessageProcessing } from './useMidiMessageProcessing';
 
-// Re-export types for backward compatibility
 export type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry, MidiNoteEvent };
 
 export interface UseMidiResult {
@@ -41,7 +40,6 @@ export function useMidi(
 ): UseMidiResult {
   const enableMonitors = options?.enableMonitors ?? true;
 
-  // 1. Device Management
   const {
     isSupported,
     accessError,
@@ -53,13 +51,13 @@ export function useMidi(
   const OLD_STORAGE_KEY = 'dosound-tracker-midi-config';
 
   // 2. Configuration Management
+  // 2. Configuration Management
   const [configuration, setConfigurationState] = useState<MidiConfiguration>(() => {
     try {
       let raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) {
         raw = localStorage.getItem(OLD_STORAGE_KEY);
         if (raw) {
-          // Migrate existing data to new key
           localStorage.setItem(STORAGE_KEY, raw);
           localStorage.removeItem(OLD_STORAGE_KEY);
         }
@@ -114,7 +112,6 @@ export function useMidi(
     }
   }, []);
 
-  // 3. Message Processing
   const {
     inMonitor,
     outMonitor,

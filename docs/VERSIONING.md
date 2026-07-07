@@ -59,7 +59,7 @@ The automated script handles only the version number increment. The following st
 
 When bumping the version manually (outside the automated build script):
 
-- **Ensure a clean and production-ready build first**: run the full verification loop from `TESTING.md` (`typecheck`, `lint`, `build`, `test`) and verify every step passes with zero errors and zero warnings before any version changes.
+- **Ensure a clean and production-ready build first**: run the full verification loop from `TESTING.md` (`typecheck`, `lint`, `format`, `build`, `test`) and verify every step passes with zero errors and zero warnings before any version changes.
 - **Run a security audit**: execute `npm audit` and review findings. If vulnerabilities are found:
   - Run `npm audit fix` to resolve fixable issues automatically.
   - If a vulnerability cannot be fixed automatically, evaluate whether it affects shipped dependencies (not devDependencies) and whether it is exploitable in the application's usage context.

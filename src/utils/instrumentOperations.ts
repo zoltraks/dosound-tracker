@@ -2,6 +2,7 @@ import type { Instrument, Pattern, Step } from '../synth/SoundDriver';
 import { ENVELOPE_LENGTH, MAX_INSTRUMENTS } from '../constants/music';
 import { isInstrumentEmpty } from './instrument';
 import { formatInstrumentSlotId } from './instrumentSelection';
+import { createEmptyInstrument } from './instrumentPanelUtils';
 import type { InstrumentId } from '../types/branded';
 
 export interface InstrumentUsageCounts {
@@ -21,15 +22,7 @@ export interface FailureResult {
 }
 
 export function createClearedInstrument(slotId: InstrumentId): Instrument {
-  return {
-    id: slotId,
-    name: '',
-    volume: Array(ENVELOPE_LENGTH).fill(0),
-    shift: Array(ENVELOPE_LENGTH).fill(0),
-    pitch: Array(ENVELOPE_LENGTH).fill(0),
-    noise: Array(ENVELOPE_LENGTH).fill(0),
-    mode: Array(ENVELOPE_LENGTH).fill(0),
-  };
+  return createEmptyInstrument(slotId, ENVELOPE_LENGTH);
 }
 
 export function countInstrumentUsage(

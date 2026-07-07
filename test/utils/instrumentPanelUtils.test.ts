@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Instrument } from '../../src/synth/SoundDriver';
+import { asInstrumentId } from '../../src/types/branded';
 import {
   computeVisibleSlotCount,
   createEmptyInstrument,
@@ -25,6 +26,12 @@ describe('instrumentPanelUtils', () => {
     expect(inst.name).toBe('');
     expect(inst.volume).toHaveLength(32);
     expect(inst.mode).toHaveLength(32);
+  });
+
+  it('createEmptyInstrument accepts an InstrumentId string directly', () => {
+    const inst = createEmptyInstrument(asInstrumentId('0F'), 16);
+    expect(inst.id).toBe('0F');
+    expect(inst.volume).toHaveLength(16);
   });
 
   it('getInstrumentForSlot returns existing instrument when present', () => {

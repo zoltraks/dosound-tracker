@@ -23,6 +23,22 @@ See `package.json` for exact version numbers. The project uses the following tec
 Additional libraries include js-yaml for song file parsing, lucide-react for icons, and electron-builder for cross-platform packaging.
 
 
+## Audio-Critical Development
+
+This project is a real-time audio application where timing is critical. The general TypeScript/React standards in `standard/ts-react-development.md` are overridden for audio-critical code paths as defined in `GUIDELINES.md`.
+
+The following patterns are intentional and must not be "fixed" in audio-critical code paths:
+
+- **Prop mirroring**: local state synced with props for stable timing.
+- **Sparse dependency arrays**: minimal dependencies to prevent unnecessary re-renders.
+- **Direct setState calls**: synchronous state updates for predictable timing.
+- **Manual memoization**: carefully controlled memoization vs React's automatic optimizations.
+
+The `setState` in `useEffect` prohibition from the general standard does not apply to audio-critical code paths. In audio paths, synchronous state updates are intentional for predictable timing.
+
+Consult `GUIDELINES.md` before applying any linting fixes or React optimisations to audio-related code.
+
+
 ## Source Directory Structure
 
 | Directory | File Count | Responsibility |
@@ -179,6 +195,36 @@ The computer keyboard doubles as a piano input device. The mapping is defined in
 - CTRL+I creates a new instrument
 
 The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
+
+
+## Project-Specific Conventions
+
+These conventions override or extend the general standards in `standard/ts-react-development.md` with rules specific to the DOSOUND Tracker codebase.
+
+### Shared Utilities
+
+The following utilities were extracted to eliminate duplication and are the canonical implementations for their respective patterns:
+
+- **`src/utils/timerUtils.ts`** — `clearIntervalRef` for clearing interval timer refs. Used across hooks and components that manage interval-based playback or preview timers.
+- **`src/hooks/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
+- **`src/exports/core.ts`** — `formatPitchDelta` for formatting signed pitch delta values in assembly export comments. `exportInstrumentWith` generic wrapper for instrument preview exports across VGM, MAX, and WAV formats.
+- **`src/utils/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
+
+### Branded Types
+
+Branded identifier types (`InstrumentId`, `PatternId`, `TrackId`, `PlaylistPatternId`) are defined in `src/types/branded.ts`. Factory functions that create domain objects accept `number | BrandedType` so callers can pass either a numeric slot index or a pre-branded ID string. Use `asInstrumentId`, `asPatternId`, `asTrackId`, and `asPlaylistPatternId` constructor functions to convert plain strings to branded types at system boundaries (file parsing, user input).
+
+### Export Output Stability
+
+Export modules in `src/exports/` must produce byte-identical output for the same input across refactoring changes. The test fixtures in `test/fixtures/` and the export test suite (`exportVgm.test.ts`, `exportMax.test.ts`, `exportWav.test.ts`, `exportAssemblyOptimized.test.ts`) verify zero diff in export output. Any change to export output is a behaviour change, not a refactoring, and must be routed through `docs/change/<version>/`.
+
+### YM2149 Emulation Stability
+
+The YM2149 register simulation, volume table, and noise generation algorithm in `src/synth/YM2149.ts` must not change during refactoring. These are hardware-accurate implementations. Any change to the emulation logic is a behaviour change, not a refactoring.
+
+### MIDI Message Processing
+
+MIDI message handling in `src/hooks/useMidiMessageProcessing.ts` is a hot path that executes on every incoming MIDI message. Avoid per-event allocations: use direct `Uint8Array` indexed access instead of `Array.from()`, and use string concatenation loops instead of `array.map().join()` for hex formatting.
 
 
 ## Known Limitations

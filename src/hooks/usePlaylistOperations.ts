@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import type { Song } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
-import { formatHexId } from '../utils/hexFormatting';
+import { Formatter } from '../utils/formatters';
 import {
   asPatternId,
   asPlaylistPatternId,
@@ -65,7 +65,7 @@ export function usePlaylistOperations({
     let index = song.pattern.length;
     let candidate: PatternId;
     do {
-      candidate = asPatternId(formatHexId(index));
+      candidate = asPatternId(Formatter.hex(index, { padWidth: 2, uppercase: true }));
       index++;
     } while (existingIds.includes(candidate));
     return candidate;
@@ -202,7 +202,7 @@ export function usePlaylistOperations({
       // Generate hex IDs like existing patterns (00, 01, 02, ...)
       // Ensure the ID is unique across all patterns, including newly-added ones.
       while (true) {
-        const id = formatHexId(nextIndex);
+        const id = Formatter.hex(nextIndex, { padWidth: 2, uppercase: true });
         nextIndex++;
         if (!existingIds.has(id)) {
           existingIds.add(id);

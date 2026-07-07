@@ -1,7 +1,7 @@
 import type { Instrument, Song } from '../synth/SoundDriver';
 import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import type { ExportStrategy } from '../constants/export';
-import { buildInstrumentPreviewSong, downloadFile, normalizeSongForExport } from './core';
+import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core';
 import { simulateSong } from '../utils/playbackSimulation';
 import { compressZX0 } from '../utils/zx0';
 
@@ -265,8 +265,7 @@ export function exportInstrumentToMax(
   song: Song,
   strategy: ExportStrategy = 'simple'
 ): MaxExportResult {
-  const previewSong = buildInstrumentPreviewSong(instrument, song);
-  return exportSongToMax(previewSong, strategy);
+  return exportInstrumentWith(instrument, song, (previewSong) => exportSongToMax(previewSong, strategy));
 }
 
 export function downloadMaxFile(buffer: ArrayBuffer, filename: string = 'music.max'): void {

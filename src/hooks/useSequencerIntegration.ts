@@ -3,7 +3,7 @@ import type { Song, Pattern, Note, Instrument } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
 import type { SequencerState } from './useSequencer';
 import { updateChannelWithInstrument, normalizeInstrumentId } from '../utils/playbackUtils';
-import { formatHexId } from '../utils/hexFormatting';
+import { Formatter } from '../utils/formatters';
 import type { PlaybackSimulationState } from './usePlaybackSimulation';
 import { mapSongLineToPlaylistEntries } from '../types/playlist';
 
@@ -120,8 +120,6 @@ export function useSequencerIntegration({
 
       wasPlayingRef.current = true;
 
-      // Count each timing tick while playing so we can derive
-      // debug cycles (every 2 ticks) independent of pattern/row boundaries.
       debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
 
       const lastPos = lastSequencerPositionRef.current;
@@ -137,16 +135,11 @@ export function useSequencerIntegration({
       };
 
       if (wrappedOrJumped || isFirstTick) {
-        // Debug: Pattern wrap handling
-
         // Always reset sub-tick timing on wrap/jump or first tick so
         // envelope steps realign, but avoid forcibly clearing notes just
         // because the playlist advanced to the next pattern.
         channelSubTickRef.current = [0, 0, 0];
 
-        // On the very first tick after starting playback, reset envelopes,
-        // notes, sustain state and per-channel volume modifiers so that any
-        // stale state from a previous run does not leak into the new one.
         if (isFirstTick) {
           channelEnvelopeStepRef.current = [0, 0, 0];
           lastNotesRef.current = [null, null, null];
@@ -183,12 +176,10 @@ export function useSequencerIntegration({
       const currentPlaylistEntry = playlistEntries[effectivePatternIndex];
       
       if (currentPlaylistEntry) {
-        // Get pattern data for each track
         const patternA = currentPlaylistEntry.A ? patternsById.get(currentPlaylistEntry.A) : undefined;
         const patternB = currentPlaylistEntry.B ? patternsById.get(currentPlaylistEntry.B) : undefined;
         const patternC = currentPlaylistEntry.C ? patternsById.get(currentPlaylistEntry.C) : undefined;
         
-        // Allow playback even if some tracks are empty (using --)
         // Get current line data (patterns are track-agnostic - read trackA data for any track)
         const lineA = patternA?.step[state.currentLine];
         const lineB = patternB?.step[state.currentLine];
@@ -230,11 +221,10 @@ export function useSequencerIntegration({
             const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
             const deltaStr = String(clampedDelta).padStart(3, '0');
 
-            // Each worker tick is one frame; treat two ticks as one cycle.
             const tickCount = debugTickCounterRef.current;
             const cycle = Math.floor(tickCount / 2) & 0xffff;
-            const cycleHex = formatHexId(cycle, 4);
-            const stepHex = formatHexId(state.currentLine);
+            const cycleHex = Formatter.hex(cycle, { padWidth: 4, uppercase: true });
+            const stepHex = Formatter.hex(state.currentLine, { padWidth: 2, uppercase: true });
 
             const channelStrings = [0, 1, 2].map(ch => {
               const noteOnRow = notes[ch];
@@ -263,7 +253,7 @@ export function useSequencerIntegration({
               let instText = '';
 
               if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
-                instText = formatHexId(rawInst);
+                instText = Formatter.hex(rawInst, { padWidth: 2, uppercase: true });
               } else if (typeof rawInst === 'string') {
                 const trimmed = rawInst.trim();
                 if (trimmed) {

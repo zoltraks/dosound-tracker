@@ -30,14 +30,7 @@ export const parseBaseKey = (value: unknown): { note: string; octave: number } |
   return { note: notePart, octave };
 };
 
-/**
- * Normalize an arbitrary YAML color value to a 3-digit hex string (e.g. "#abc")
- * or null when the value is missing/invalid.
- *
- * Accepts either 3-digit or 6-digit hex with optional leading '#'. For 6-digit
- * colors, each channel is quantized to the nearest 4-bit value so that the
- * resulting 3-digit color approximates the original.
- */
+/** Normalizes a YAML color value to a 3-digit hex string (e.g. "#abc"), quantizing 6-digit hex to nearest 4-bit per channel. */
 export const normalizeInstrumentColor = (value: unknown): string | null => {
   if (typeof value !== 'string') {
     return null;

@@ -134,6 +134,17 @@ For each version release, maintain a structured refactoring process to ensure sy
 
 Always use `REFACTORING.md` (not `REFACTORING PROPOSAL.md`) for consistency. Use the existing `REFACTORING.md` and `ASSESSMENT.md` files as templates for structure and content.
 
+**Assessment Document Content**
+
+The assessment document must be created after the refactoring implementation is complete and the full verification loop passes. It must compare the proposal against the actual implementation and include the following sections:
+
+- **Summary**: Overall result (complete, partial, or failed) with a quantitative table showing proposed vs achieved items.
+- **Proposal vs Implementation**: Item-by-item comparison of each planned step against what was actually done. Mark each item as completed, partially completed, or skipped. Explain any deviations from the plan.
+- **Deviations and Rationale**: For every deviation (skipped steps, modified approaches, additions not in the proposal), explain why the decision was made. Distinguish between technical infeasibility, incorrect analysis in the proposal, and scope decisions.
+- **Verification Results**: Final state of typecheck, lint, build, and test suite. Include test counts before and after.
+- **Remaining Gaps**: Items from the proposal that were not addressed, with a recommendation on whether they should be deferred to the next cycle or addressed immediately.
+- **Lessons Learned**: Observations about the proposal quality, analysis accuracy, and process improvements for the next refactoring cycle.
+
 **Guidelines**
 
 - Focus on measurable improvements in type safety, testing, performance, and maintainability.

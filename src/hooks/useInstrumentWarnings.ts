@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
+import { useLocalStorageState } from './useLocalStorageState';
 
 export interface InstrumentTypeInfo {
   hasTypeField: boolean;
@@ -20,25 +21,17 @@ const STORAGE_KEY = 'dosound-tracker-ignore-inst-type-warning';
 
 export function useInstrumentWarnings(): UseInstrumentWarningsResult {
   const [isInstrumentTypeWarningOpen, setIsInstrumentTypeWarningOpen] = useState(false);
-  const [ignoreInstrumentTypeWarning, setIgnoreInstrumentTypeWarning] = useState<boolean>(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw === '1';
-    } catch {
-      return false;
+  const [ignoreInstrumentTypeWarning, setIgnoreInstrumentTypeWarning] = useLocalStorageState<boolean>(
+    STORAGE_KEY,
+    false,
+    {
+      read: (stored) => stored === '1',
+      write: (value) => value ? '1' : '0',
     }
-  });
+  );
   const [instrumentTypeWarningIgnoreChecked, setInstrumentTypeWarningIgnoreChecked] = useState(false);
   const [pendingInstrumentContent, setPendingInstrumentContent] = useState<string | null>(null);
   const [pendingInstrumentTypeInfo, setPendingInstrumentTypeInfo] = useState<InstrumentTypeInfo | null>(null);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, ignoreInstrumentTypeWarning ? '1' : '0');
-    } catch {
-      // ignore
-    }
-  }, [ignoreInstrumentTypeWarning]);
 
   const openInstrumentTypeWarning = useCallback(
     (content: string, info: InstrumentTypeInfo) => {
@@ -71,6 +64,7 @@ export function useInstrumentWarnings(): UseInstrumentWarningsResult {
     pendingInstrumentContent,
     instrumentTypeWarningIgnoreChecked,
     ignoreInstrumentTypeWarning,
+    setIgnoreInstrumentTypeWarning,
   ]);
 
   const cancelInstrumentTypeWarning = useCallback(() => {

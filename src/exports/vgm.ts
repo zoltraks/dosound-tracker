@@ -2,7 +2,7 @@ import type { Instrument, Song } from '../synth/SoundDriver';
 import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import type { ExportStrategy } from '../constants/export';
 import { simulateSong } from '../utils/playbackSimulation';
-import { buildInstrumentPreviewSong, downloadFile, normalizeSongForExport } from './core';
+import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core';
 
 export interface VgmExportResult {
   buffer: ArrayBuffer;
@@ -305,6 +305,5 @@ export function downloadVgmFile(buffer: ArrayBuffer, filename: string = 'music.v
 }
 
 export function exportInstrumentToVgm(instrument: Instrument, song: Song): VgmExportResult {
-  const previewSong = buildInstrumentPreviewSong(instrument, song);
-  return exportSongToVgm(previewSong);
+  return exportInstrumentWith(instrument, song, exportSongToVgm);
 }

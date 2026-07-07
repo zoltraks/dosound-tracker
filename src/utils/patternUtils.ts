@@ -9,7 +9,6 @@ export function insertPatternStep(
   const totalLines = patternLength || PATTERN_LENGTH;
   const safeIndex = Math.max(0, Math.min(insertIndex, totalLines - 1));
   
-  // Clone lines to avoid mutation, filling up to totalLines if necessary
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
@@ -17,7 +16,6 @@ export function insertPatternStep(
     });
   }
 
-  // Shift lines down, starting from the end
   // We only shift trackA property to match existing behavior
   for (let i = totalLines - 1; i > safeIndex; i--) {
     const from = newLines[i - 1] || { note: null };
@@ -29,7 +27,6 @@ export function insertPatternStep(
     };
   }
 
-  // Clear the inserted line
   const base = newLines[safeIndex] || { note: null };
   newLines[safeIndex] = {
     ...base,
@@ -47,7 +44,6 @@ export function deletePatternStep(
   const totalLines = patternLength || PATTERN_LENGTH;
   const safeIndex = Math.max(0, Math.min(deleteIndex, totalLines - 1));
   
-  // Clone lines
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
@@ -55,7 +51,6 @@ export function deletePatternStep(
     });
   }
 
-  // Shift lines up
   // We only shift trackA property to match existing behavior
   for (let i = safeIndex; i < totalLines - 1; i++) {
     const from = newLines[i + 1] || { note: null };
@@ -67,7 +62,6 @@ export function deletePatternStep(
     };
   }
 
-  // Clear the last line
   const lastIndex = totalLines - 1;
   const lastBase = newLines[lastIndex] || { note: null };
   newLines[lastIndex] = {

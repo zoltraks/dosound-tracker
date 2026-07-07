@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { ExportType, ExportStrategy } from '../constants/export';
 import { StorageKeys } from '../utils/storageKeys';
+import { useLocalStorageState } from './useLocalStorageState';
 
 export interface UseAppStateResult {
   isDebugMode: boolean;
@@ -23,48 +24,32 @@ export interface UseAppStateResult {
 }
 
 export function useAppState(): UseAppStateResult {
-  const [isDebugMode, setIsDebugMode] = useState<boolean>(() => {
-    try {
-      const stored = localStorage.getItem(StorageKeys.DEBUG_MODE);
-      if (stored === 'on') return true;
-      if (stored === 'off') return false;
-    } catch {
-      // ignore
+  const [isDebugMode, setIsDebugMode] = useLocalStorageState<boolean>(
+    StorageKeys.DEBUG_MODE,
+    false,
+    {
+      read: (stored) => stored === 'on' ? true : stored === 'off' ? false : false,
+      write: (value) => value ? 'on' : 'off',
     }
-    return false;
-  });
+  );
 
-  const [exportType, setExportType] = useState<ExportType>(() => {
-    try {
-      const stored = localStorage.getItem(StorageKeys.EXPORT_TYPE);
-      if (stored === 'song' || stored === 'pattern' || stored === 'instrument') {
-        return stored;
-      }
-    } catch {
-      // ignore
+  const [exportType, setExportType] = useLocalStorageState<ExportType>(
+    StorageKeys.EXPORT_TYPE,
+    'song',
+    {
+      read: (stored) => stored === 'song' || stored === 'pattern' || stored === 'instrument' ? stored : 'song',
+      write: (value) => value,
     }
-    return 'song';
-  });
+  );
 
-  const [exportStrategy, setExportStrategy] = useState<ExportStrategy>(() => {
-    try {
-      const savedDumpMode = localStorage.getItem(StorageKeys.DUMP_MODE);
-      if (savedDumpMode === 'simple' || savedDumpMode === 'complex' || savedDumpMode === 'optimized') {
-        return savedDumpMode;
-      }
-    } catch {
-      // ignore
+  const [exportStrategy, setExportStrategy] = useLocalStorageState<ExportStrategy>(
+    StorageKeys.DUMP_MODE,
+    'complex',
+    {
+      read: (stored) => stored === 'simple' || stored === 'complex' || stored === 'optimized' ? stored : 'complex',
+      write: (value) => value,
     }
-    return 'complex';
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(StorageKeys.DUMP_MODE, exportStrategy);
-    } catch {
-      // ignore
-    }
-  }, [exportStrategy]);
+  );
 
   const [transposeScope, setTransposeScope] = useState<'line' | 'song'>(() => {
     try {

@@ -67,7 +67,7 @@ export function useMidiDeviceManagement() {
         }
       }
     } catch {
-      // Ignore device enumeration errors
+      // ignore
     }
 
     setDevices({ inputs, outputs });
@@ -101,7 +101,7 @@ export function useMidiDeviceManagement() {
             scanDevices();
           };
         } catch {
-          // ignore onstatechange errors
+          // ignore
         }
       })
       .catch((error: unknown) => {
@@ -154,7 +154,7 @@ export function useMidiDeviceManagement() {
             scanDevices();
           };
         } catch {
-          // ignore onstatechange errors
+          // ignore
         }
       })
       .catch((error: unknown) => {
@@ -166,9 +166,6 @@ export function useMidiDeviceManagement() {
 
     return () => {
       cancelled = true;
-      // We do NOT close midiAccess here because it might be shared or reused.
-      // However, usually MIDIAccess doesn't have a close method. 
-      // The individual inputs/outputs will be managed by the message processing hook.
     };
   }, [scanDevices]);
 

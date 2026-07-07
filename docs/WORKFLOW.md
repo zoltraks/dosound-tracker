@@ -4,7 +4,7 @@ This document describes the day-to-day operational steps for delivering changes.
 
 ## Verification Loop
 
-`TESTING.md` defines the canonical step order (`typecheck -> lint -> build -> test -> fix`), the zero-error/zero-warning bar, and the end-to-end test command. The verification loop has two modes documented in `TESTING.md`:
+`TESTING.md` defines the canonical step order (`typecheck -> lint -> format -> build -> test -> fix`), the zero-error/zero-warning bar, and the end-to-end test command. The verification loop has two modes documented in `TESTING.md`:
 
 - **Targeted verification loop** — run during implementation iterations, testing only the code being modified.
 - **Full verification loop** — run at milestones (before first code change, after finishing implementation, after refactoring, before version bump, and when asked for a production ready build).
@@ -31,6 +31,7 @@ When running the verification loop during the usual workflow (including refactor
 
 - All typecheck errors are resolved
 - All lint errors are resolved
+- All formatting is applied
 - All build errors are resolved
 - All test failures are resolved
 

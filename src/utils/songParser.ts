@@ -15,7 +15,7 @@ import {
   parseBaseKey,
   normalizeInstrumentColor,
 } from './songFormat';
-import { formatHexId } from './hexFormatting';
+import { Formatter } from './formatters';
 import { formatInstrumentSlotId } from './instrumentSelection';
 import {
   DEFAULT_SONG_CHIP,
@@ -113,9 +113,6 @@ const parseVolumeNibble = (value: unknown): number | null => {
   return null;
 };
 
-/**
- * Re-export shared formatting helpers for compatibility with existing imports.
- */
 export { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
 
 export interface SongParseMetadata {
@@ -223,7 +220,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
         ? rawNumber.trim().toUpperCase()
-        : formatHexId(patternIndex);
+        : Formatter.hex(patternIndex, { padWidth: 2, uppercase: true });
 
     const name =
       typeof patternNode.name === 'string' && patternNode.name.trim()

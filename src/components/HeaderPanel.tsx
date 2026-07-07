@@ -7,6 +7,7 @@ import type { Instrument } from '../synth/SoundDriver';
 import { DEFAULT_SONG_FRAME } from '../constants/song';
 import LogoDark from '../assets/svg/logo-dark.svg';
 import LogoLight from '../assets/svg/logo-light.svg';
+import { clearIntervalRef } from '../utils/timerUtils';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;
@@ -68,10 +69,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
 
     if (!ym2149) return;
 
-    if (previewTimerRef.current !== null) {
-      window.clearInterval(previewTimerRef.current);
-      previewTimerRef.current = null;
-    }
+    clearIntervalRef(previewTimerRef);
 
     const volumeRegister = 0x08 + previewChannel;
     ym2149.writeRegister(volumeRegister, 0x00);
@@ -80,10 +78,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   const playPreviewNote = (note: string, octave: number) => {
     if (!ym2149) return;
 
-    if (previewTimerRef.current !== null) {
-      window.clearInterval(previewTimerRef.current);
-      previewTimerRef.current = null;
-    }
+    clearIntervalRef(previewTimerRef);
 
     const channel = previewChannel;
     const instrument: Instrument = currentInstrument;

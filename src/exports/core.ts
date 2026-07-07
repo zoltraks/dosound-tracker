@@ -69,6 +69,10 @@ export function frequencyToPeriod(frequency: number, clock: number = YM_CLOCK): 
   return Math.floor(clock / (16 * frequency));
 }
 
+export function formatPitchDelta(delta: number): string {
+  return delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
+}
+
 export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): Song {
   const normalizedSong = normalizeSongForExport(sourceSong);
   const patternLength = normalizedSong.length || PATTERN_LENGTH;
@@ -109,4 +113,13 @@ export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: S
     loop: null,
     instrument: [instrument],
   };
+}
+
+export function exportInstrumentWith<T>(
+  instrument: Instrument,
+  song: Song,
+  exporter: (song: Song) => T
+): T {
+  const previewSong = buildInstrumentPreviewSong(instrument, song);
+  return exporter(previewSong);
 }

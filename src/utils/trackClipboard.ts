@@ -25,17 +25,8 @@ export function generateClipboardData(
 
   for (let i = 0; i < targetLength; i++) {
     const line: Step = rawLines[i] || { note: null };
-    // We assume the trackId passed allows us to select the correct cell, 
-    // BUT PatternLine only has trackA, trackB, trackC properties if we map them.
-    // However, the caller usually passes the relevant pattern for the *active* track 
-    // and often only looks at 'trackA' of that pattern if the pattern structure is per-track?
-    // Wait, looking at `useTrackOperations.ts`:
-    // `const cell = line.trackA;` 
-    // It seems `getCurrentPatternForTrack` returns a pattern where `trackA` is the relevant data?
-    // Let's check `useTrackOperations.ts` copy logic again.
-    // It does `const cell = line.trackA;` unconditionally.
-    // So yes, we just look at trackA of the lines provided.
-    
+    // Caller passes the relevant pattern; we read `note` from each line.
+
     const cell = line.note;
     const volRaw = line.volume;
     const hasVolume = volRaw !== undefined && volRaw !== null;

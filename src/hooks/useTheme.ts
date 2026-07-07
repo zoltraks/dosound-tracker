@@ -1,25 +1,16 @@
-import { useState, useEffect, startTransition } from 'react';
+import { startTransition } from 'react';
 import { StorageKeys } from '../utils/storageKeys';
+import { useLocalStorageState } from './useLocalStorageState';
 
 export const useTheme = () => {
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    try {
-      const savedTheme = localStorage.getItem(StorageKeys.THEME);
-      if (savedTheme === 'dark') return true;
-      if (savedTheme === 'light') return false;
-    } catch {
-      // ignore
+  const [isDarkMode, setIsDarkMode] = useLocalStorageState<boolean>(
+    StorageKeys.THEME,
+    true,
+    {
+      read: (stored) => stored === 'dark' ? true : stored === 'light' ? false : true,
+      write: (value) => value ? 'dark' : 'light',
     }
-    return true; // Default to dark mode
-  });
-
-  useEffect(() => {
-    try {
-      localStorage.setItem(StorageKeys.THEME, isDarkMode ? 'dark' : 'light');
-    } catch {
-      // ignore
-    }
-  }, [isDarkMode]);
+  );
 
   const toggleTheme = () => {
     startTransition(() => {

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { clearIntervalRef } from '../utils/timerUtils';
 
 interface UseMessageSystemResult {
   messages: string[];
@@ -105,9 +106,7 @@ export function useMessageSystem(): UseMessageSystemResult {
   }, [messages]);
 
   const handleNotesClick = useCallback(() => {
-    if (notesIntervalRef.current !== null) {
-      window.clearInterval(notesIntervalRef.current);
-    }
+    clearIntervalRef(notesIntervalRef);
 
     cycleMessages();
 
@@ -117,10 +116,7 @@ export function useMessageSystem(): UseMessageSystemResult {
   }, [cycleMessages]);
 
   useEffect(() => {
-    if (notesIntervalRef.current !== null) {
-      window.clearInterval(notesIntervalRef.current);
-      notesIntervalRef.current = null;
-    }
+    clearIntervalRef(notesIntervalRef);
 
     if (notesFadeTimeoutRef.current !== null) {
       window.clearTimeout(notesFadeTimeoutRef.current);
@@ -136,10 +132,7 @@ export function useMessageSystem(): UseMessageSystemResult {
     }, 10000);
 
     return () => {
-      if (notesIntervalRef.current !== null) {
-        window.clearInterval(notesIntervalRef.current);
-        notesIntervalRef.current = null;
-      }
+      clearIntervalRef(notesIntervalRef);
       if (notesFadeTimeoutRef.current !== null) {
         window.clearTimeout(notesFadeTimeoutRef.current);
         notesFadeTimeoutRef.current = null;
