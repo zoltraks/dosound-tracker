@@ -25,13 +25,14 @@ function readUtf16LeString(bytes: Uint8Array, offset: number): { value: string; 
   return { value, nextOffset: pos };
 }
 
-function countVgmDelayCommands(bytes: Uint8Array, view: DataView): { count61: number; count63: number } {
+function countVgmDelayCommands(bytes: Uint8Array, view: DataView): { count61: number; count62: number; count63: number } {
   const dataOffsetRel = view.getUint32(0x34, true);
   const dataStart = 0x34 + dataOffsetRel;
   const gd3OffsetRel = view.getUint32(0x14, true);
   const gd3Start = gd3OffsetRel > 0 ? 0x14 + gd3OffsetRel : bytes.length;
 
   let count61 = 0;
+  let count62 = 0;
   let count63 = 0;
   let pos = dataStart;
 
@@ -42,10 +43,10 @@ function countVgmDelayCommands(bytes: Uint8Array, view: DataView): { count61: nu
     } else if (cmd === 0x61) {
       count61++;
       pos += 2;
-    } else if (cmd === 0x62 || cmd === 0x63) {
-      if (cmd === 0x63) {
-        count63++;
-      }
+    } else if (cmd === 0x62) {
+      count62++;
+    } else if (cmd === 0x63) {
+      count63++;
     } else if (cmd === 0x66) {
       break;
     } else {
@@ -53,7 +54,7 @@ function countVgmDelayCommands(bytes: Uint8Array, view: DataView): { count61: nu
     }
   }
 
-  return { count61, count63 };
+  return { count61, count62, count63 };
 }
 
 describe('exportSongToVgm', () => {
@@ -322,5 +323,85 @@ describe('exportSongToVgm', () => {
     expect(simpleStats.count63).toBeGreaterThan(0);
     expect(optStats.count61).toBeGreaterThan(0);
     expect(optStats.count63).toBeLessThan(simpleStats.count63);
+  });
+
+  it('writes 60 Hz frame rate and uses 0x62 wait commands for 60 Hz songs', () => {
+    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const song = parseSongFromYaml(yamlContent);
+    const song60Hz: Song = { ...song, frame: 60 };
+
+    const { buffer, totalSamples } = exportSongToVgm(song60Hz);
+    const bytes = new Uint8Array(buffer);
+    const view = new DataView(buffer);
+
+    // Header frame rate should be 60
+    expect(view.getUint32(0x24, true)).toBe(60);
+
+    // 60 Hz = 735 samples per tick at 44100 Hz
+    const expectedSamplesPerTick = Math.round(44100 / 60);
+    expect(totalSamples % expectedSamplesPerTick).toBe(0);
+
+    // Should use 0x62 wait commands, not 0x63
+    const stats = countVgmDelayCommands(bytes, view);
+    expect(stats.count62).toBeGreaterThan(0);
+    expect(stats.count63).toBe(0);
+  });
+
+  it('writes 1000000 to the AY clock header for 1 MHz songs', () => {
+    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const song = parseSongFromYaml(yamlContent);
+    const song1MHz: Song = { ...song, clock: 1000000 };
+
+    const { buffer } = exportSongToVgm(song1MHz);
+    const view = new DataView(buffer);
+
+    expect(view.getUint32(0x74, true)).toBe(1000000);
+  });
+
+  it('produces halved tone period register values for 1 MHz songs', () => {
+    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const song = parseSongFromYaml(yamlContent);
+
+    const result2MHz = exportSongToVgm(song);
+    const song1MHz: Song = { ...song, clock: 1000000 };
+    const result1MHz = exportSongToVgm(song1MHz);
+
+    const bytes2MHz = new Uint8Array(result2MHz.buffer);
+    const bytes1MHz = new Uint8Array(result1MHz.buffer);
+    const view2MHz = new DataView(result2MHz.buffer);
+    const view1MHz = new DataView(result1MHz.buffer);
+
+    // The fine period for R0 at 1 MHz should be roughly half of the 2 MHz value
+    // (modulo 256 wrapping, so we compare the full 12-bit period from R0+R1)
+    function findFullPeriod(bytes: Uint8Array, view: DataView): number | null {
+      const dataOffsetRel = view.getUint32(0x34, true);
+      const dataStart = 0x34 + dataOffsetRel;
+      let fineA: number | null = null;
+      let coarseA: number | null = null;
+      for (let i = dataStart; i < bytes.length - 2; i++) {
+        if (bytes[i] === 0xa0) {
+          const reg = bytes[i + 1];
+          const value = bytes[i + 2];
+          if (reg === 0x00) fineA = value;
+          if (reg === 0x01) coarseA = value;
+          if (fineA !== null && coarseA !== null) {
+            return ((coarseA & 0x0f) << 8) | (fineA & 0xff);
+          }
+          i += 2;
+        } else if (bytes[i] === 0x66) {
+          break;
+        }
+      }
+      return null;
+    }
+
+    const period2MHz = findFullPeriod(bytes2MHz, view2MHz);
+    const period1MHz = findFullPeriod(bytes1MHz, view1MHz);
+
+    expect(period2MHz).not.toBeNull();
+    expect(period1MHz).not.toBeNull();
+    // At 1 MHz, period should be approximately half of the 2 MHz period
+    expect(period1MHz!).toBeLessThan(period2MHz!);
+    expect(Math.round(period2MHz! / period1MHz!)).toBe(2);
   });
 });

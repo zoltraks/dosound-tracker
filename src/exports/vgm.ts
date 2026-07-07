@@ -1,6 +1,5 @@
 import type { Instrument, Song } from '../synth/SoundDriver';
-import { VBLANK_RATE } from '../synth/SoundDriver';
-import { YM_CLOCK } from '../synth/YM2149';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import type { ExportStrategy } from '../constants/export';
 import { simulateSong } from '../utils/playbackSimulation';
 import { buildInstrumentPreviewSong, downloadFile, normalizeSongForExport } from './core';
@@ -12,7 +11,9 @@ export interface VgmExportResult {
 
 function optimizeVgmDelays(
   commands: number[],
-  loopCommandOffset: number
+  loopCommandOffset: number,
+  waitCommand: number,
+  samplesPerTick: number
 ): { commands: number[]; loopCommandOffset: number } {
   if (commands.length === 0) {
     return { commands, loopCommandOffset };
@@ -20,7 +21,7 @@ function optimizeVgmDelays(
 
   // If no valid loop point, just optimize the whole stream.
   if (loopCommandOffset < 0 || loopCommandOffset > commands.length) {
-    const merged = mergeVgmDelaySequence(commands);
+    const merged = mergeVgmDelaySequence(commands, waitCommand, samplesPerTick);
     return { commands: merged, loopCommandOffset };
   }
 
@@ -30,8 +31,8 @@ function optimizeVgmDelays(
   const pre = commands.slice(0, loopCommandOffset);
   const post = commands.slice(loopCommandOffset);
 
-  const preMerged = mergeVgmDelaySequence(pre);
-  const postMerged = mergeVgmDelaySequence(post);
+  const preMerged = mergeVgmDelaySequence(pre, waitCommand, samplesPerTick);
+  const postMerged = mergeVgmDelaySequence(post, waitCommand, samplesPerTick);
 
   return {
     commands: preMerged.concat(postMerged),
@@ -39,29 +40,32 @@ function optimizeVgmDelays(
   };
 }
 
-function mergeVgmDelaySequence(commands: number[]): number[] {
+function mergeVgmDelaySequence(
+  commands: number[],
+  waitCommand: number,
+  samplesPerTick: number
+): number[] {
   const out: number[] = [];
   const len = commands.length;
   let i = 0;
-  const SAMPLES_PER_TICK = 882; // Must match SAMPLES_PER_TICK in exportSongToVgm
 
   while (i < len) {
     const cmd = commands[i];
 
-    // Merge runs of 0x63 (wait 1/50s) into a single 0x61 (arbitrary sample wait)
-    if (cmd === 0x63) {
+    // Merge runs of the VBLANK wait command into a single 0x61 (arbitrary sample wait)
+    if (cmd === waitCommand) {
       let run = 0;
-      while (i < len && commands[i] === 0x63) {
+      while (i < len && commands[i] === waitCommand) {
         run++;
         i++;
       }
 
       if (run >= 4) {
-        const total = run * SAMPLES_PER_TICK;
+        const total = run * samplesPerTick;
         out.push(0x61, total & 0xff, (total >>> 8) & 0xff);
       } else {
         for (let k = 0; k < run; k++) {
-          out.push(0x63);
+          out.push(waitCommand);
         }
       }
       continue;
@@ -161,8 +165,12 @@ function buildGd3Tag(song: Song): Uint8Array | null {
 
 export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple'): VgmExportResult {
   const normalizedSong = normalizeSongForExport(song);
+  const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
+  const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
   let commands: number[] = [];
-  const SAMPLES_PER_TICK = 882; // 1/50 second at 44100 Hz
+  const SAMPLES_PER_TICK = Math.round(44100 / frameRate);
+  // VGM wait command: 0x63 for 50 Hz, 0x62 for 60 Hz, 0x61 (explicit samples) for other rates
+  const waitCommand = frameRate === 50 ? 0x63 : frameRate === 60 ? 0x62 : 0x61;
   let totalSamples = 0;
 
   const relevantRegs = [0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a];
@@ -184,7 +192,7 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
     commands.push(0xa0, register & 0xff, value & 0xff);
   };
 
-  simulateSong(song, (frame) => {
+  simulateSong(normalizedSong, (frame) => {
     const { registers, isFirstFrame, playlistIndex, patternLineIndex, tick } = frame;
 
     if (
@@ -209,14 +217,18 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
       }
     }
 
-    commands.push(0x63);
+    if (waitCommand === 0x61) {
+      commands.push(0x61, SAMPLES_PER_TICK & 0xff, (SAMPLES_PER_TICK >>> 8) & 0xff);
+    } else {
+      commands.push(waitCommand);
+    }
     totalSamples += SAMPLES_PER_TICK;
-  });
+  }, { clock: chipClock });
 
   commands.push(0x66);
 
   if (strategy === 'optimized') {
-    const optimized = optimizeVgmDelays(commands, loopCommandOffset);
+    const optimized = optimizeVgmDelays(commands, loopCommandOffset, waitCommand, SAMPLES_PER_TICK);
     commands = optimized.commands;
     loopCommandOffset = optimized.loopCommandOffset;
   }
@@ -265,12 +277,12 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
     writeUint32LE(0x1c, 0);
     writeUint32LE(0x20, 0);
   }
-  writeUint32LE(0x24, VBLANK_RATE);
+  writeUint32LE(0x24, frameRate);
 
   const relativeDataOffset = dataOffset - 0x34;
   writeUint32LE(0x34, relativeDataOffset);
 
-  writeUint32LE(0x74, YM_CLOCK);
+  writeUint32LE(0x74, chipClock);
 
   const fileBytes = new Uint8Array(fileSize);
   fileBytes.set(header, 0);

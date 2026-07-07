@@ -183,8 +183,8 @@ export class SoundDriver {
     const semitoneFromA4 = semitoneFromC0 - a4Index;
     const frequency = 440 * Math.pow(2, semitoneFromA4 / 12);
 
-    const AY_CLOCK_HZ = 1773400; // Typical AY-3-8910 clock on many systems
-    const divider = Math.max(1, Math.round(AY_CLOCK_HZ / (16 * frequency)));
+    const clock = this.ym2149.getClock();
+    const divider = Math.max(1, Math.round(clock / (16 * frequency)));
     return Math.min(0x0fff, divider);
   }
 

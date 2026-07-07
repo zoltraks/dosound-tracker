@@ -4,6 +4,7 @@ import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE } from '../constants/music';
 import type { Pattern, Note, Instrument, Step } from '../synth/SoundDriver';
 import { YM2149 } from '../synth/YM2149';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 import { TrackLine } from './TrackLine';
 import { computeEffectiveVolume } from '../utils/trackUtils';
 import {
@@ -54,6 +55,7 @@ interface TrackPanelProps {
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
   onRegisterStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  tickIntervalMs?: number;
 }
 
 export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
@@ -79,7 +81,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onPreviewMidiNoteOn,
     onPreviewMidiNoteOff,
     onHardStopLivePreview,
-    onRegisterStopPreview
+    onRegisterStopPreview,
+    tickIntervalMs = 1000 / DEFAULT_SONG_FRAME
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -213,12 +216,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
       const volumeRegister = 0x08 + channel;
 
-      // Start envelope timer - 20ms base tick, advance envelope step every 40ms
+      // Start envelope timer - base tick interval from song frame rate, advance envelope step every 2 ticks
       envelopeTimerRef.current = window.setInterval(() => {
         const sustain = previewSustainIndexRef.current;
         const released = previewReleasedRef.current;
 
-        const TICK_INTERVAL_MS = 20;
+        const TICK_INTERVAL_MS = tickIntervalMs;
         const nowTick = performance.now();
 
         const advanced = advancePreviewEnvelopeTick({
@@ -268,8 +271,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             onPreviewMidiNoteOff(channel);
           }
         }
-      }, 20);
-    }, [ym2149, trackId, currentInstrumentData, onPreviewMidiNoteOn, onPreviewMidiNoteOff, stopPreview]);
+      }, tickIntervalMs);
+    }, [ym2149, trackId, currentInstrumentData, tickIntervalMs, onPreviewMidiNoteOn, onPreviewMidiNoteOff, stopPreview]);
 
   // Get notes for this track from the pattern
   const computeTrackNotes = useCallback(() => {

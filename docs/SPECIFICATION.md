@@ -63,7 +63,7 @@ Branded identifier types (InstrumentId, PatternId, TrackId, PlaylistPatternId) p
 
 ## YM2149 Register Mapping
 
-The YM2149 PSG exposes 14 programmable registers (R0-R13). The chip runs at a 2 MHz clock frequency (YM_CLOCK = 2000000, defined in src/synth/YM2149.ts).
+The YM2149 PSG exposes 14 programmable registers (R0-R13). The chip runs at a configurable clock frequency (default 2 MHz, YM_CLOCK = 2000000, defined in src/synth/YM2149.ts). The clock is set per song via the `clock` field on the Song interface. Supported clocks are 2000000 (2 MHz) and 1000000 (1 MHz). At 1 MHz, tone period values are half of the 2 MHz values for the same note.
 
 | Register | Function |
 |---|---|
@@ -88,7 +88,7 @@ The tone period for each channel is a 12-bit value assembled from the coarse (hi
 f = YM_CLOCK / (16 * period)
 ```
 
-where YM_CLOCK is 2000000 Hz and period is the 12-bit tone period value. For example, a period of 284 produces approximately 440 Hz (A4).
+where YM_CLOCK is the configured chip clock (2000000 Hz by default, 1000000 Hz at 1 MHz) and period is the 12-bit tone period value. For example, at 2 MHz a period of 284 produces approximately 440 Hz (A4); at 1 MHz the same note uses a period of 142.
 
 The mixer register (R7) uses active-low bits: a bit value of 0 means the corresponding tone or noise generator is enabled. Bits 0-2 control tone for channels A, B, C and bits 3-5 control noise for channels A, B, C.
 
@@ -99,9 +99,9 @@ The register write path supports batch updates via beginBatch and endBatch to av
 
 ## Sequencer Timing
 
-Playback is driven by the Atari ST VBLANK interrupt rate of 50 Hz (VBLANK_RATE = 50, defined in src/synth/SoundDriver.ts). Each VBLANK tick corresponds to 20 ms.
+Playback is driven by the song's frame rate (default 50 Hz, VBLANK_RATE = 50, defined in src/synth/SoundDriver.ts). The frame rate is configurable per song via the `frame` field. Each tick corresponds to 1000 / frameRate milliseconds (20 ms at 50 Hz, 16.66 ms at 60 Hz).
 
-Envelope progression advances every 40 ms, which is every 2 ticks. This means instrument envelope arrays (volume, shift, pitch, noise, mode) step forward at half the VBLANK rate.
+Envelope progression advances every 2 ticks (40 ms at 50 Hz, 33.33 ms at 60 Hz). This means instrument envelope arrays (volume, shift, pitch, noise, mode) step forward at half the frame rate.
 
 Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in src/constants/music.ts). Each pattern contains 64 rows, and the playlist arranges patterns into a song sequence across three channels (A, B, C).
 
@@ -118,11 +118,11 @@ DOSOUND Tracker supports five export formats. Each format produces a downloadabl
 
 **Binary** parses the generated assembly output and extracts raw byte data from dc.b directives, producing a compact binary file suitable for direct memory loading. See src/exports/bin.ts.
 
-**MAX** produces a MAX-format binary file (MAX specification v1.6) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The export captures one register snapshot per VBLANK tick (50 Hz) and writes all 14 YM2149 registers (R0–R13). Three strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/zx0.ts.
+**MAX** produces a MAX-format binary file (MAX specification v1.6) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The chip setup chunk records the song's frame rate and chip clock. The export captures one register snapshot per tick and writes all 14 YM2149 registers (R0–R13). Three strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/zx0.ts.
 
-**VGM** generates a VGM (Video Game Music) file, a standard chiptune logging format. The export converts register writes and delays into VGM command stream with delay optimization and loop point preservation. See src/exports/vgm.ts.
+**VGM** generates a VGM (Video Game Music) file, a standard chiptune logging format. The export converts register writes and delays into VGM command stream with delay optimization and loop point preservation. The VGM header records the song's frame rate (offset 0x24) and chip clock (offset 0x74). Wait commands use 0x63 for 50 Hz, 0x62 for 60 Hz, and 0x61 with explicit sample counts for other rates. See src/exports/vgm.ts.
 
-**WAV** renders the song to a 16-bit PCM WAV file at 44100 Hz sample rate. The export uses a software YM2149 simulation including a noise LFSR to produce the final audio samples. See src/exports/wav.ts.
+**WAV** renders the song to a 16-bit PCM WAV file at 44100 Hz sample rate. The export uses a software YM2149 simulation including a noise LFSR to produce the final audio samples. The samples-per-tick is derived from the song's frame rate (882 at 50 Hz, 735 at 60 Hz) and the frequency calculation uses the song's chip clock. See src/exports/wav.ts.
 
 Export scope can target the full song, a single pattern, or a single instrument. Export strategies (simple, complex, optimized) and formats (dump, data, bin, vgm, max, wav) are typed in src/constants/export.ts.
 

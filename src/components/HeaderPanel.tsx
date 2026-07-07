@@ -4,6 +4,7 @@ import type { NavigationSection } from '../constants/navigation';
 import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 import LogoDark from '../assets/svg/logo-dark.svg';
 import LogoLight from '../assets/svg/logo-light.svg';
 
@@ -19,6 +20,7 @@ interface HeaderPanelProps {
   ym2149: YM2149 | null;
   currentInstrument: Instrument;
   previewChannel: number;
+  tickIntervalMs?: number;
   hasDownloads: boolean;
   onShowDownloads: () => void;
   onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
@@ -38,6 +40,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   ym2149,
   currentInstrument,
   previewChannel,
+  tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
   hasDownloads,
   onShowDownloads,
   onPreviewMidiNoteOn,
@@ -97,7 +100,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       onPreviewMidiNoteOn(channel, currentInstrument, note, octave);
     }
 
-    // Start envelope timer - 20ms tick, advance envelope step every 40ms
+    // Start envelope timer - base tick interval from song frame rate, advance envelope step every 2 ticks
     previewTimerRef.current = window.setInterval(() => {
       const currentSub = (previewSubTickRef.current ?? 0) + 1;
       previewSubTickRef.current = currentSub;
@@ -109,7 +112,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       }
 
       ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
-    }, 20);
+    }, tickIntervalMs);
   };
 
   const parseBaseKey = (value?: string): { note: string; octave: number } | null => {

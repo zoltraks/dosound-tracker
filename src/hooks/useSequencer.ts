@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { VBLANK_RATE } from '../synth/SoundDriver';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 
 export interface SequencerState {
   isPlaying: boolean;
@@ -24,7 +24,11 @@ type SequencerWorkerMessage =
   | { type: 'update'; data: SequencerWorkerTickData }
   | { type: 'stop'; data: SequencerWorkerTickData };
 
-export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) => {
+export const useSequencer = (
+  songSpeed: number = 6,
+  patternLength: number = 64,
+  frameRate: number = DEFAULT_SONG_FRAME
+) => {
   const [sequencerState, setSequencerState] = useState<SequencerState>({
     isPlaying: false,
     isPatternLoop: false,
@@ -32,13 +36,13 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     currentLine: 0,
     currentTick: 0,
     bpm: 125,
-    // Use song speed directly as number of VBLANK frames per row (50 Hz)
+    // Use song speed directly as number of frames per row
     ticksPerRow: Math.max(1, songSpeed | 0)
   });
 
   // Internal playback state used by the timer loop. This is kept in sync with
   // the React state but can also be advanced independently on each tick
-  // without forcing a full React render at 50 Hz.
+  // without forcing a full React render at the frame rate.
   const playbackStateRef = useRef<SequencerState>({
     isPlaying: false,
     isPatternLoop: false,
@@ -46,7 +50,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     currentLine: 0,
     currentTick: 0,
     bpm: 125,
-    // Use song speed directly as number of VBLANK frames per row (50 Hz)
+    // Use song speed directly as number of frames per row
     ticksPerRow: Math.max(1, songSpeed | 0)
   });
 
@@ -54,11 +58,11 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const tickCallbackRef = useRef<((tick: number) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
+  const frameRateRef = useRef(frameRate);
 
   const calculateTickInterval = useCallback(() => {
-    // Calculate interval based on BPM and ticks per row
-    // 50Hz VBLANK timing = 20ms per tick
-    const baseInterval = 1000 / VBLANK_RATE;
+    // Tick interval derived from the song's frame rate (20ms at 50Hz, 16.66ms at 60Hz)
+    const baseInterval = 1000 / frameRateRef.current;
     return baseInterval;
   }, []);
 
@@ -387,7 +391,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
   const updatePatternLength = useCallback((newLength: number) => {
     const clamped = Math.max(1, (newLength | 0) || 1);
     patternLengthRef.current = clamped;
-    
+
     setSequencerState(prev => ({
       ...prev,
       currentLine: Math.min(prev.currentLine, clamped - 1)
@@ -401,6 +405,19 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
       });
     }
   }, []);
+
+  const updateFrameRate = useCallback((newFrameRate: number) => {
+    const clamped = Math.max(1, newFrameRate | 0);
+    frameRateRef.current = clamped;
+
+    // Update worker tick interval
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'setParams',
+        data: { tickInterval: calculateTickInterval() }
+      });
+    }
+  }, [calculateTickInterval]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -428,6 +445,7 @@ export const useSequencer = (songSpeed: number = 6, patternLength: number = 64) 
     nextLine,
     previousLine,
     updatePatternLength,
+    updateFrameRate,
     updateSongLoop,
     setPatternLoopMode,
   };

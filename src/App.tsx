@@ -21,7 +21,7 @@ import { useDownloadAvailability } from './hooks/useDownloadAvailability';
 import { usePlaybackSimulation } from './hooks/usePlaybackSimulation';
 import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
-import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES } from './constants/song';
+import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
 import type { MidiConfiguration } from './hooks/useMidi';
 import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
@@ -484,7 +484,8 @@ const App: React.FC = () => {
 
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
-  const { audioContext, ym2149Ref, ym2149 } = useAudioSetup();
+  const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(currentSong.clock ?? DEFAULT_SONG_CLOCK);
+  const previewTickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
   const playInstStepRef = useRef<number>(0);
@@ -2201,6 +2202,7 @@ const App: React.FC = () => {
             ym2149={ym2149}
             currentInstrument={currentInstrument}
             previewChannel={previewChannel}
+            tickIntervalMs={previewTickIntervalMs}
             hasDownloads={hasDownloads}
             onShowDownloads={() => setIsDownloadOpen(true)}
             onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
@@ -2327,6 +2329,7 @@ const App: React.FC = () => {
             ym2149={ym2149}
             currentInstrument={currentInstrument}
             previewChannel={previewChannel}
+            tickIntervalMs={previewTickIntervalMs}
             onChangeBaseKey={handleChangeBaseKey}
             onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
             onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}

@@ -2,6 +2,7 @@ import React from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Pattern, Instrument, Song } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 import { TrackPanel } from './TrackPanel';
 import { YM2149 } from '../synth/YM2149';
 import RainbowModeLight from '../assets/svg/rainbow-mode-light.svg';
@@ -61,6 +62,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   isDarkMode,
 }) => {
   const patternLength = song.length || PATTERN_LENGTH;
+  const tickIntervalMs = 1000 / (song.frame ?? DEFAULT_SONG_FRAME);
 
   const positionIndices = React.useMemo(() => {
     return Array.from({ length: patternLength }, (_, i) => i);
@@ -128,6 +130,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 onPreviewMidiNoteOff={onPreviewMidiNoteOff}
                 onHardStopLivePreview={onHardStopLivePreview}
                 onRegisterStopPreview={onRegisterTrackStopPreview}
+                tickIntervalMs={tickIntervalMs}
               />
             ))}
           </div>

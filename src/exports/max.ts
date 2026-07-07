@@ -1,8 +1,7 @@
 import type { Instrument, Song } from '../synth/SoundDriver';
-import { VBLANK_RATE } from '../synth/SoundDriver';
-import { YM_CLOCK } from '../synth/YM2149';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import type { ExportStrategy } from '../constants/export';
-import { buildInstrumentPreviewSong, downloadFile } from './core';
+import { buildInstrumentPreviewSong, downloadFile, normalizeSongForExport } from './core';
 import { simulateSong } from '../utils/playbackSimulation';
 import { compressZX0 } from '../utils/zx0';
 
@@ -83,7 +82,7 @@ function buildMaxInfoChunk(song: Song): number[] | null {
   return buildMaxShortChunk('I', data);
 }
 
-function captureMaxFrames(song: Song): { frames: number[][]; frameCount: number } {
+function captureMaxFrames(song: Song, chipClock: number): { frames: number[][]; frameCount: number } {
   const frames: number[][] = [];
 
   simulateSong(song, (frame) => {
@@ -94,7 +93,7 @@ function captureMaxFrames(song: Song): { frames: number[][]; frameCount: number 
       snapshot[reg] = value === undefined ? 0 : value & 0xff;
     }
     frames.push(snapshot);
-  });
+  }, { clock: chipClock });
 
   return { frames, frameCount: frames.length };
 }
@@ -174,9 +173,10 @@ function optimizeReg7Delays(input: number[]): number[] {
 
 function buildMaxStream(
   song: Song,
-  strategy: ExportStrategy
+  strategy: ExportStrategy,
+  chipClock: number
 ): { streamFormat: number; streamData: number[]; frameCount: number } {
-  const { frames, frameCount } = captureMaxFrames(song);
+  const { frames, frameCount } = captureMaxFrames(song, chipClock);
 
   if (strategy === 'simple') {
     return { streamFormat: 0x08, streamData: buildRaw8Stream(frames), frameCount };
@@ -189,7 +189,10 @@ function buildMaxStream(
 }
 
 export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple'): MaxExportResult {
-  const { streamFormat, streamData, frameCount } = buildMaxStream(song, strategy);
+  const normalizedSong = normalizeSongForExport(song);
+  const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
+  const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
+  const { streamFormat, streamData, frameCount } = buildMaxStream(normalizedSong, strategy, chipClock);
 
   const uncompressedSize = streamData.length;
   const compressed =
@@ -209,7 +212,7 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
   // Version chunk: 'V', size 0, version 1
   fileBytes.push(...buildMaxShortChunk('V', [0x01]));
 
-  const infoChunk = buildMaxInfoChunk(song);
+  const infoChunk = buildMaxInfoChunk(normalizedSong);
   if (infoChunk) {
     fileBytes.push(...infoChunk);
   }
@@ -217,9 +220,9 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
   const chipData: number[] = [];
   chipData.push(0xa9);
   chipData.push(0x00);
-  chipData.push((VBLANK_RATE >>> 8) & 0xff, VBLANK_RATE & 0xff);
+  chipData.push((frameRate >>> 8) & 0xff, frameRate & 0xff);
 
-  const ymClock = YM_CLOCK >>> 0;
+  const ymClock = chipClock >>> 0;
   chipData.push((ymClock >>> 24) & 0xff, (ymClock >>> 16) & 0xff, (ymClock >>> 8) & 0xff, ymClock & 0xff);
 
   fileBytes.push(...buildMaxShortChunk('C', chipData));

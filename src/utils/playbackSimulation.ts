@@ -38,6 +38,7 @@ export type RetriggerBehavior = 'always' | 'new_note_only';
 
 export interface SimulationOptions {
   retriggerBehavior?: RetriggerBehavior;
+  clock?: number;
 }
 
 /**
@@ -51,7 +52,7 @@ export function simulateSong(
   callback: PlaybackCallback, 
   options: SimulationOptions = {}
 ): void {
-  const { retriggerBehavior = 'always' } = options;
+  const { retriggerBehavior = 'always', clock = YM_CLOCK } = options;
   const ticksPerRow = song.speed || 6;
   
   // Initialize register state
@@ -251,7 +252,8 @@ export function simulateSong(
                 instrument,
                 step,
                 channelState.isNewNote,
-                channelState.volumeModifier
+                channelState.volumeModifier,
+                clock
               );
             }
           }
@@ -305,7 +307,8 @@ export function applyInstrumentToRegisters(
   instrument: Instrument,
   envelopeStep: number,
   isNewNote: boolean,
-  volumeModifier?: number | null
+  volumeModifier?: number | null,
+  clock: number = YM_CLOCK
 ): void {
   const step = Math.max(0, envelopeStep);
   
@@ -343,7 +346,7 @@ export function applyInstrumentToRegisters(
   if (shift !== 0) {
     frequency = frequency * Math.pow(2, shift / 12);
   }
-  let period = Math.floor(YM_CLOCK / (16 * frequency)) & 0x0FFF;
+  let period = Math.floor(clock / (16 * frequency)) & 0x0FFF;
   if (pitch !== 0) {
     // Apply pitch envelope as a direct delta on the divider value.
     period = (period - pitch) & 0x0FFF;

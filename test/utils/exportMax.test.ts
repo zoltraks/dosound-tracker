@@ -5,7 +5,7 @@ import { exportSongToMax, exportInstrumentToMax } from '../../src/exports/max';
 import { decompressZX0 } from '../../src/utils/zx0';
 import { simulateSong } from '../../src/utils/playbackSimulation';
 import { YM_CLOCK } from '../../src/synth/YM2149';
-import { VBLANK_RATE } from '../../src/synth/SoundDriver';
+import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver';
 
 function loadSongYaml(name: string) {
   const yamlContent = readFileSync(`test/fixtures/${name}`, 'utf-8');
@@ -286,5 +286,36 @@ describe('exportSongToMax', () => {
     expect(bytes[1]).toBe(0x41); // 'A'
     expect(bytes[2]).toBe(0x58); // 'X'
     expect(bytes[3]).toBe(0x20); // ' '
+  });
+
+  it('writes 60 Hz frame rate to the chip setup chunk for 60 Hz songs', () => {
+    const song = loadSongYaml('song-vgm-tone.yaml');
+    const song60Hz: Song = { ...song, frame: 60 };
+    const { buffer } = exportSongToMax(song60Hz, 'simple');
+    const bytes = new Uint8Array(buffer);
+
+    const chip = findChunk(bytes, 0x43); // 'C'
+    expect(chip).not.toBeNull();
+    if (!chip) return;
+
+    const dataStart = chip.dataOffset;
+    // Frame rate is big-endian 16-bit at offset +2
+    const frameRate = (bytes[dataStart + 2] << 8) | bytes[dataStart + 3];
+    expect(frameRate).toBe(60);
+  });
+
+  it('writes 1000000 to the chip clock field for 1 MHz songs', () => {
+    const song = loadSongYaml('song-vgm-tone.yaml');
+    const song1MHz: Song = { ...song, clock: 1000000 };
+    const { buffer } = exportSongToMax(song1MHz, 'simple');
+    const bytes = new Uint8Array(buffer);
+
+    const chip = findChunk(bytes, 0x43); // 'C'
+    expect(chip).not.toBeNull();
+    if (!chip) return;
+
+    const dataStart = chip.dataOffset;
+    const clock = (bytes[dataStart + 4] << 24) | (bytes[dataStart + 5] << 16) | (bytes[dataStart + 6] << 8) | bytes[dataStart + 7];
+    expect(clock >>> 0).toBe(1000000);
   });
 });

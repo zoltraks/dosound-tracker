@@ -147,6 +147,10 @@ The system must deploy as:
 
 The system must provide toggle buttons in the Song information panel for selecting the replay rate (50 Hz or 60 Hz) and the YM2149 chip clock (2 MHz or 1 MHz). The Rate button is placed in the Title row and the Clock button in the Author row. Both buttons match the combined width of the two number-spinner buttons used elsewhere in the panel. New songs default to 50 Hz and 2 MHz. Songs loaded without these settings fall back to the same defaults. Both values are persisted in the song YAML file format.
 
+The selected replay rate drives the sequencer worker tick interval (20 ms at 50 Hz, 16.66 ms at 60 Hz) and all instrument preview envelope timers. The selected chip clock drives the YM2149 emulator frequency calculation and the tone period register values. At 1 MHz, period values are half of the 2 MHz values for the same note, preserving the composed pitch. Noise period register values are set directly from instrument envelopes and are not recalculated; the noise timbre change at 1 MHz is expected.
+
+All export formats (VGM, MAX, WAV, ASM, BIN) read the configured frame rate and chip clock from the song. VGM uses the appropriate wait command (0x63 for 50 Hz, 0x62 for 60 Hz) and writes the clock and rate to the header. MAX writes the frame rate and clock to the chip setup chunk. WAV renders at the correct samples-per-tick for the frame rate. ASM and BIN use the configured clock for period calculations.
+
 ## Non-Functional Requirements
 
 **N-01: Audio Performance**

@@ -120,8 +120,8 @@ export function useSequencerIntegration({
 
       wasPlayingRef.current = true;
 
-      // Count each timing tick (20ms VBLANK) while playing so we can derive
-      // 40ms debug cycles independent of pattern/row boundaries.
+      // Count each timing tick while playing so we can derive
+      // debug cycles (every 2 ticks) independent of pattern/row boundaries.
       debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
 
       const lastPos = lastSequencerPositionRef.current;
@@ -139,7 +139,7 @@ export function useSequencerIntegration({
       if (wrappedOrJumped || isFirstTick) {
         // Debug: Pattern wrap handling
 
-        // Always reset sub-tick timing on wrap/jump or first tick so 40ms
+        // Always reset sub-tick timing on wrap/jump or first tick so
         // envelope steps realign, but avoid forcibly clearing notes just
         // because the playlist advanced to the next pattern.
         channelSubTickRef.current = [0, 0, 0];
@@ -230,7 +230,7 @@ export function useSequencerIntegration({
             const clampedDelta = Math.max(0, Math.min(999, rawDelta | 0));
             const deltaStr = String(clampedDelta).padStart(3, '0');
 
-            // Each worker tick is ~20ms; treat two ticks (40ms) as one cycle.
+            // Each worker tick is one frame; treat two ticks as one cycle.
             const tickCount = debugTickCounterRef.current;
             const cycle = Math.floor(tickCount / 2) & 0xffff;
             const cycleHex = formatHexId(cycle, 4);
@@ -444,7 +444,7 @@ export function useSequencerIntegration({
             if (activeNote && activeNote.note && activeNote.note !== '===') {
               // Use current step as envelope tick (so a freshly triggered note
               // starts at step 0, matching the piano keyboard behaviour), then
-              // advance the step every 40ms (every 2 x 20ms ticks).
+              // advance the step every 2 ticks.
               const rawStep = channelEnvelopeStepRef.current[ch];
               const sustainIndex = channelSustainRef.current[ch];
               const isReleased = channelReleasedRef.current[ch];

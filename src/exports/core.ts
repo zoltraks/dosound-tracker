@@ -1,6 +1,7 @@
 import type { Song, Instrument, Pattern, Step } from '../synth/SoundDriver';
 import { NOTES, PATTERN_LENGTH } from '../constants/music';
 import { YM_CLOCK } from '../synth/YM2149';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { parseBaseKey } from '../utils/pianoUtils';
 
 export { downloadFile, type DownloadFileContent } from '../utils/fileOperations';
@@ -12,6 +13,8 @@ export function normalizeSongForExport(song: Song): Song {
     line: song.line ?? [],
     pattern: song.pattern ?? [],
     instrument: song.instrument ?? [],
+    frame: song.frame ?? DEFAULT_SONG_FRAME,
+    clock: song.clock ?? DEFAULT_SONG_CLOCK,
   };
 }
 
@@ -61,9 +64,9 @@ export function formatNoteLabel(baseNote: string, baseOctave: number, semitoneOf
   return note.includes('#') ? `${note}${octave}` : `${note}-${octave}`;
 }
 
-export function frequencyToPeriod(frequency: number): number {
+export function frequencyToPeriod(frequency: number, clock: number = YM_CLOCK): number {
   if (frequency <= 0) return 0;
-  return Math.floor(YM_CLOCK / (16 * frequency));
+  return Math.floor(clock / (16 * frequency));
 }
 
 export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): Song {

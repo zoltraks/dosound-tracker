@@ -3,6 +3,7 @@ import type { NavigationSection } from '../constants/navigation';
 import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
 import { YM2149 } from '../synth/YM2149';
 import type { Instrument } from '../synth/SoundDriver';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 import { PianoKey } from './PianoKey';
 import { generatePianoKeys, parseBaseKey } from '../utils/pianoUtils';
 import type { PianoKeyConfig } from '../utils/pianoUtils';
@@ -22,6 +23,7 @@ interface PianoKeyboardProps {
   ym2149: YM2149 | null;
   currentInstrument: Instrument;
   previewChannel: number;
+  tickIntervalMs?: number;
   onChangeBaseKey: (note: string, octave: number) => void;
   onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
@@ -36,6 +38,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   ym2149,
   currentInstrument,
   previewChannel,
+  tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
   onChangeBaseKey,
   onPreviewMidiNoteOn,
   onPreviewMidiNoteOff,
@@ -217,13 +220,13 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
     const volumeRegister = 0x08 + channel;
 
-    // Start envelope timer - 20ms base tick, advance envelope step every
-    // second virtual tick (40ms), with catch-up for missed ticks.
+    // Start envelope timer - base tick interval from song frame rate, advance
+    // envelope step every second virtual tick (2 ticks), with catch-up for missed ticks.
     envelopeTimersRef.current[keyId] = window.setInterval(() => {
       const sustain = previewSustainIndexRef.current[keyId];
       const released = previewReleasedRef.current[keyId] ?? false;
 
-      const TICK_INTERVAL_MS = 20;
+      const TICK_INTERVAL_MS = tickIntervalMs;
       const nowTick = performance.now();
 
       const advanced = advancePreviewEnvelopeTick({
@@ -281,8 +284,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
         ym2149.writeRegister(volumeRegister, 0x00);
       }
-    }, 20); // 20ms base tick, 40ms per envelope step
-  }, [ym2149, currentInstrument, previewChannel, stopNote, onPreviewMidiNoteOn]);
+    }, tickIntervalMs);
+  }, [ym2149, currentInstrument, previewChannel, tickIntervalMs, stopNote, onPreviewMidiNoteOn]);
 
   const playNoteWithAudioUnlock = useCallback(
     (note: string, octave: number) => {

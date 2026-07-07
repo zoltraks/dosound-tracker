@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useAudioContext } from './useAudioContext';
 import { YM2149 } from '../synth/YM2149';
+import { DEFAULT_SONG_CLOCK } from '../constants/song';
 import { logger } from '../utils/logger';
 
 type WindowWithYm2149 = Window & {
@@ -14,7 +15,7 @@ export interface UseAudioSetupResult {
   ym2149: YM2149 | null;
 }
 
-export function useAudioSetup(): UseAudioSetupResult {
+export function useAudioSetup(chipClock: number = DEFAULT_SONG_CLOCK): UseAudioSetupResult {
   const { audioContext, error } = useAudioContext();
   const ym2149Ref = useRef<YM2149 | null>(null);
   const [ym2149, setYm2149] = useState<YM2149 | null>(null);
@@ -27,9 +28,8 @@ export function useAudioSetup(): UseAudioSetupResult {
     try {
       logger.info('AudioContext created with rate', audioContext.sampleRate, audioContext.state);
 
-      const ymInstance = new YM2149(audioContext);
+      const ymInstance = new YM2149(audioContext, chipClock);
       ym2149Ref.current = ymInstance;
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setYm2149(ymInstance);
 
       // Expose on window for debugging
@@ -43,7 +43,7 @@ export function useAudioSetup(): UseAudioSetupResult {
 
       // Short test tone to validate audio path
       const testFrequency = 261.63;
-      const testPeriod = Math.floor(2000000 / (16 * testFrequency));
+      const testPeriod = Math.floor(chipClock / (16 * testFrequency));
       logger.info('YM2149 test tone frequency', testFrequency);
 
       ymInstance.writeRegister(0x00, testPeriod & 0xff);
@@ -94,7 +94,15 @@ export function useAudioSetup(): UseAudioSetupResult {
     } catch (e) {
       logger.error('Failed to initialize audio', e);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioContext]);
+
+  // Update the YM2149 clock when the song's chip clock changes
+  useEffect(() => {
+    if (ym2149Ref.current) {
+      ym2149Ref.current.setClock(chipClock);
+    }
+  }, [chipClock]);
 
   return {
     audioContext,

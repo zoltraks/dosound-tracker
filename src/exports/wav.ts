@@ -1,6 +1,6 @@
 import type { Instrument, Song } from '../synth/SoundDriver';
-import { VBLANK_RATE } from '../synth/SoundDriver';
-import { YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
+import { YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { simulateSong } from '../utils/playbackSimulation';
 import { buildInstrumentPreviewSong, downloadFile, normalizeSongForExport } from './core';
 
@@ -56,7 +56,8 @@ function synthTickSamples(
   regs: { [register: number]: number },
   phases: number[],
   samplesPerTick: number,
-  noiseState: YmNoiseState
+  noiseState: YmNoiseState,
+  clock: number
 ): void {
   const mixer = regs[0x07] !== undefined ? regs[0x07] : 0x38;
 
@@ -68,7 +69,7 @@ function synthTickSamples(
 
   const rawNoisePeriod = regs[0x06] !== undefined ? regs[0x06] : 0;
   const effectiveNoisePeriod = (rawNoisePeriod & 0x1f) === 0 ? 1 : rawNoisePeriod & 0x1f;
-  const noiseFrequency = YM_CLOCK / (16 * effectiveNoisePeriod);
+  const noiseFrequency = clock / (16 * effectiveNoisePeriod);
   const noiseStep = noiseFrequency / WAV_SAMPLE_RATE;
 
   for (let ch = 0; ch < 3; ch++) {
@@ -79,7 +80,7 @@ function synthTickSamples(
     const period = ((coarse & 0x0f) << 8) | (fine & 0xff);
     periods[ch] = period;
     if (period > 0) {
-      freqs[ch] = YM_CLOCK / (16 * period);
+      freqs[ch] = clock / (16 * period);
     } else {
       freqs[ch] = 0;
     }
@@ -144,17 +145,19 @@ function synthTickSamples(
 
 export function exportSongToWav(song: Song): WavExportResult {
   const normalizedSong = normalizeSongForExport(song);
+  const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
+  const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
   const samples: number[] = [];
   const phases = [0, 0, 0];
   const noiseState: YmNoiseState = {
     lfsr: 0x1ffff,
     phase: 0,
   };
-  const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / VBLANK_RATE));
+  const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / frameRate));
 
   simulateSong(normalizedSong, (frame) => {
-    synthTickSamples(samples, frame.registers, phases, samplesPerTick, noiseState);
-  });
+    synthTickSamples(samples, frame.registers, phases, samplesPerTick, noiseState, chipClock);
+  }, { clock: chipClock });
 
   const totalSamples = samples.length;
   const buffer = encodePcm16Wav(samples, WAV_SAMPLE_RATE);

@@ -45,6 +45,7 @@ export interface YMState {
 
 export class YM2149 {
   private audioContext: AudioContext;
+  private clock: number;
   private registers: number[];
   private state: YMState;
   private oscillators: OscillatorNode[];
@@ -56,8 +57,9 @@ export class YM2149 {
   private batchDepth: number = 0;
   private pendingUpdate: boolean = false;
 
-  constructor(audioContext: AudioContext) {
+  constructor(audioContext: AudioContext, clock: number = YM_CLOCK) {
     this.audioContext = audioContext;
+    this.clock = clock;
     this.registers = new Array(YM_REGISTER_COUNT).fill(0);
     this.state = {
       channels: [
@@ -98,6 +100,14 @@ export class YM2149 {
 
     this.noiseGainNode.connect(audioContext.destination);
     this.envelopeGainNode.connect(audioContext.destination);
+  }
+
+  setClock(clock: number): void {
+    this.clock = clock;
+  }
+
+  getClock(): number {
+    return this.clock;
   }
 
   writeRegister(register: number, value: number): void {
@@ -192,7 +202,7 @@ export class YM2149 {
       
       if (shouldPlayTone) {
         // YM2149 frequency calculation: f = clock / (16 * period)
-        const frequency = YM_CLOCK / (16 * channel.tonePeriod);
+        const frequency = this.clock / (16 * channel.tonePeriod);
         
         // Clamp frequency to reasonable range (20Hz - 20kHz)
         const clampedFrequency = Math.max(20, Math.min(20000, frequency));
@@ -256,7 +266,7 @@ export class YM2149 {
   private createNoiseBuffer(noisePeriod: number): AudioBuffer {
     const sampleRate = this.audioContext.sampleRate;
     const effectiveNoisePeriod = this.getEffectiveNoisePeriod(noisePeriod);
-    const noiseFrequency = YM_CLOCK / (16 * effectiveNoisePeriod);
+    const noiseFrequency = this.clock / (16 * effectiveNoisePeriod);
     const bufferLength = Math.ceil(sampleRate * 2);
     const buffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
     const data = buffer.getChannelData(0);
@@ -425,7 +435,7 @@ export class YM2149 {
         }
 
         // Convert to a base divider period using the YM clock
-        let period = Math.floor(YM_CLOCK / (16 * frequency));
+        let period = Math.floor(this.clock / (16 * frequency));
 
         // Apply pitch envelope as an integer delta on the period:
         // positive values decrease the divider, negative values increase it.

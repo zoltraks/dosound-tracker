@@ -373,13 +373,13 @@ Details:
 - File header: magic `"MAX "` (4 bytes).
 - Version chunk: `'V'` + size + version number (currently 1).
 - Optional info chunk: `'I'` + metadata (title, author, year).
-- Chip definition chunk: `'C'` + YM2149 chip id (`A9`), panning, VBlank rate (50 Hz), and clock speed (2 MHz).
+- Chip definition chunk: `'C'` + YM2149 chip id (`A9`), panning, VBlank rate (from `song.frame`, default 50 Hz), and clock speed (from `song.clock`, default 2 MHz).
 - Stream definition chunk: `'S'` + stream format, compression byte, 3-byte uncompressed stream size, and optional frame size.
 - Data chunk: `'d'` + ZX0-compressed register stream.
 
 ### Frame capture
 
-The export calls `simulateSong` directly and captures one register snapshot per VBLANK tick (50 Hz, 20 ms per frame). All 14 YM2149 registers (R0–R13) are included in every snapshot. Registers R11–R13 (envelope period and shape) default to 0 because the simulation does not yet model the hardware envelope generator.
+The export calls `simulateSong` directly and captures one register snapshot per tick. The tick rate is determined by the song's frame rate (default 50 Hz, 20 ms per frame; 60 Hz = 16.66 ms per frame). All 14 YM2149 registers (R0–R13) are included in every snapshot. Registers R11–R13 (envelope period and shape) default to 0 because the simulation does not yet model the hardware envelope generator. The simulation uses the song's chip clock for tone period calculations.
 
 ### Export strategies
 
@@ -428,12 +428,14 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
   - Version 0x00000171 at 0x08.
   - Total sample count at 0x18.
   - Optional loop offset at 0x1C and loop sample count at 0x20.
-  - VBlank rate at 0x24.
+  - VBlank rate at 0x24 (from `song.frame`, default 50).
   - Data offset (relative) at 0x34.
-  - YM clock at 0x74.
+  - YM clock at 0x74 (from `song.clock`, default 2000000).
 - Data block starts at offset 0x100 and is a stream of commands:
   - `0xA0, reg, value` → AY/YM register write.
-  - `0x63` → wait for 1/50 s (882 samples at 44100 Hz).
+  - `0x63` → wait for 1/50 s (882 samples at 44100 Hz), used when frame rate is 50 Hz.
+  - `0x62` → wait for 1/60 s (735 samples at 44100 Hz), used when frame rate is 60 Hz.
+  - `0x61, nn, nn` → wait for N samples (16-bit little-endian), used for other frame rates.
   - `0x66` → end of data.
 - Optional GD3 tag at end of file with metadata (title, author, year).
 
@@ -443,7 +445,7 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
 - For each relevant frame, it:
   - Updates an internal register map (`regs`).
   - Writes `0xA0` commands only for registers whose value changed since the last frame (based on a small set of relevant registers).
-  - Writes one `0x63` wait command per simulated tick.
+  - Writes one wait command per simulated tick (`0x63` for 50 Hz, `0x62` for 60 Hz, `0x61` with explicit sample count for other rates).
 - Loop handling:
   - If `song.loop` is set and within playlist bounds, the exporter records:
     - The command offset where the loop begins.
@@ -476,8 +478,8 @@ The exporter builds a standard PCM 16‑bit, mono WAV header using:
 
 - Playback is simulated over playlist and patterns using the same YM2149 envelopes used for export and live playback.
 - For each DOSOUND tick:
-  - It updates YM2149 registers via `applyInstrumentToRegisters`.
-  - It generates `samplesPerTick` PCM samples at 44100 Hz using `synthTickSamples`, taking into account:
+  - It updates YM2149 registers via `applyInstrumentToRegisters` using the song's chip clock for period calculations.
+  - It generates `samplesPerTick` PCM samples at 44100 Hz using `synthTickSamples`, where `samplesPerTick = round(44100 / song.frame)` (882 at 50 Hz, 735 at 60 Hz). The frequency calculation uses the song's chip clock. It takes into account:
     - Tone periods and volumes for channels A/B/C.
     - Noise generator state.
     - Mixer (tone/noise enable per channel).

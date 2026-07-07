@@ -75,4 +75,20 @@ describe('WAV export context', () => {
     const diff = Math.abs(result.durationSeconds - expectedDuration);
     expect(diff).toBeLessThan(1 / VBLANK_RATE);
   });
+
+  it('produces shorter duration for 60 Hz songs than 50 Hz songs', () => {
+    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const song = parseSongFromYaml(yamlContent);
+
+    const result50Hz = exportSongToWav(song);
+    const song60Hz: Song = { ...song, frame: 60 };
+    const result60Hz = exportSongToWav(song60Hz);
+
+    // 60 Hz should have fewer total samples (735 per tick vs 882 per tick)
+    expect(result60Hz.totalSamples).toBeLessThan(result50Hz.totalSamples);
+
+    // The ratio should be approximately 50/60
+    const ratio = result60Hz.totalSamples / result50Hz.totalSamples;
+    expect(ratio).toBeCloseTo(50 / 60, 1);
+  });
 });

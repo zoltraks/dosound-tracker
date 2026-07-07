@@ -27,18 +27,19 @@ export function exportToAssembly(
   strategy: ExportStrategy = 'complex'
 ): string {
   const normalizedSong = normalizeSongForExport(song);
+  const chipClock = normalizedSong.clock ?? YM_CLOCK;
 
   // Simulate playback and collect register states per frame
   const frames: SimulationFrame[] = [];
 
   simulateSong(normalizedSong, (frame) => {
-    // Store this frame only when envelope steps advance (every 40ms like instrument export)
+    // Store this frame only when envelope steps advance (every 2 ticks)
     // The simulation emits ticks based on song speed.
     // Original logic: if (tick === 0 || (tick % 2 === 0))
     if (frame.tick === 0 || frame.tick % 2 === 0) {
       frames.push(frame);
     }
-  });
+  }, { clock: chipClock });
 
   // Now convert frames to optimized assembly output
   return formatFramesToAssembly(frames, normalizedSong, strategy);
@@ -50,6 +51,7 @@ function formatFramesToAssembly(
   strategy: ExportStrategy
 ): string {
   // song parameter will be used for future optimization logic and pattern markers
+  const chipClock = song.clock ?? YM_CLOCK;
   let asm = 'music:\n\n\t; START\n\n';
 
   if (frames.length === 0) {
@@ -129,7 +131,7 @@ function formatFramesToAssembly(
             const pitchText = delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
             comment = `T${channelLabel} ${baseLabel}${pitchText}`;
           } else {
-            const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
+            const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
             const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
             comment = noteLabel
               ? `T${channelLabel} ${noteLabel}${pitchText}`
@@ -207,7 +209,7 @@ function formatFramesToAssembly(
           const pitchText = delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
           comment = `T${channelLabel} ${baseLabel}${pitchText}`;
         } else {
-          const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period);
+          const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
           const pitchText = pitchDelta ? ` ${pitchDelta > 0 ? '+' : ''}${pitchDelta}` : '';
           comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
         }
@@ -276,12 +278,12 @@ function combineDelayLines(asm: string): string {
   return out.join('\n');
 }
 
-function periodToNoteAndPitch(period: number): { label: string; pitchDelta: number } {
+function periodToNoteAndPitch(period: number, clock: number = YM_CLOCK): { label: string; pitchDelta: number } {
   if (period === 0) {
     return { label: '', pitchDelta: 0 };
   }
 
-  const targetFrequency = YM_CLOCK / (16 * period);
+  const targetFrequency = clock / (16 * period);
 
   let bestLabel = '';
   let bestPitchDelta = 0;
@@ -293,7 +295,7 @@ function periodToNoteAndPitch(period: number): { label: string; pitchDelta: numb
       const diff = Math.abs(freq - targetFrequency);
       if (diff < minDiff) {
         minDiff = diff;
-        const idealPeriod = Math.floor(YM_CLOCK / (16 * freq));
+        const idealPeriod = Math.floor(clock / (16 * freq));
         bestPitchDelta = idealPeriod - period;
         bestLabel = noteName.includes('#') ? `${noteName}${octave}` : `${noteName}-${octave}`;
       }
@@ -311,10 +313,10 @@ function formatAsmLine(bytes: number[], comment: string): string {
   return code + ' '.repeat(padLength) + '; ' + comment + '\n';
 }
 
-// Helper: format DOSOUND delay in frames (20ms units)
+// Helper: format DOSOUND delay in frames (one frame = 1000/frameRate ms)
 // DOSOUND bug: $ff,N delays N+1 frames, so $ff,1 = 2 frames delay
 function formatDelayLine(frames: number): string {
-  // Minimum delay is 2 frames (40ms) - can't delay just 1 frame
+  // Minimum delay is 2 frames - can't delay just 1 frame
   const f = Math.max(2, frames);
   const n = f - 1; // DOSOUND delay value: N = frames - 1
   return formatAsmLine([0xff, n], `DL ${f}`);
@@ -326,6 +328,8 @@ function formatDelayLine(frames: number): string {
  * Output follows strict formatting rules.
  */
 export function exportInstrumentToAssembly(instrument: Instrument, song?: Song): string {
+  const normalizedSong = song ? normalizeSongForExport(song) : undefined;
+  const chipClock = normalizedSong?.clock ?? YM_CLOCK;
   const base = parseBaseKeyForExport(instrument.base || 'C-4');
 
   // Base frequency for the instrument's root note
@@ -345,7 +349,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   const clampVol = (v: number) => Math.max(0, Math.min(0x0f, v | 0));
   const vols = volumeEnv.map(clampVol);
 
-  // Number of envelope steps to consider (40ms per step)
+  // Number of envelope steps to consider (one step every 2 ticks)
   const stepsCount = Math.max(
     vols.length,
     shiftEnv.length || 1,
@@ -358,8 +362,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   // speed (ticks per row) and pattern length so the dump matches the
   // duration of one pattern in the sequencer.
   let maxSteps = stepsCount;
-  if (song) {
-    const normalizedSong = normalizeSongForExport(song);
+  if (normalizedSong) {
     const rawSpeed = Number(normalizedSong.speed);
     const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
     const clampedSpeed = Math.max(2, baseSpeed);
@@ -369,7 +372,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     const patternLength =
       Number.isFinite(rawLength) && rawLength > 0 ? Math.floor(rawLength) : PATTERN_LENGTH;
 
-    // Envelopes advance every 40ms, i.e. every 2 ticks. With a speed
+    // Envelopes advance every 2 ticks. With a speed
     // of S ticks per row this yields S/2 envelope steps per row.
     const stepsPerRow = Math.max(1, Math.floor(evenSpeed / 2));
     const maxBySong = patternLength * stepsPerRow;
@@ -424,7 +427,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       }
     }
     // Base divider from frequency
-    let period = frequencyToPeriod(frequency) & 0x0fff;
+    let period = frequencyToPeriod(frequency, chipClock) & 0x0fff;
     // Apply pitch delta directly on divider (positive = decrease divider)
     if (pitchDelta !== 0) {
       period = (period - pitchDelta) & 0x0fff;
@@ -514,7 +517,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     asm += formatAsmLine([0x06, first.noisePeriod], `NS ${first.noisePeriod}`);
   }
 
-  // Emit delay for the first step (40ms = 2 frames)
+  // Emit delay for the first step (2 frames)
   asm += formatDelayLine(2);
 
   // Subsequent steps: track changes
@@ -560,7 +563,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       prevPeriod = step.period;
     }
 
-    // Emit delay (40ms = 2 frames)
+    // Emit delay (2 frames)
     asm += formatDelayLine(2);
   }
 

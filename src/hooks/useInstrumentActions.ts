@@ -1,8 +1,9 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject, MutableRefObject } from 'react';
 import type { Song, Instrument } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
 import type { YM2149 } from '../synth/YM2149';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 import {
   clearInstrumentAndNotes,
   clearInstrumentOnly,
@@ -68,6 +69,12 @@ export function useInstrumentActions({
   playInstTimerRef,
   playInstStepRef,
 }: UseInstrumentActionsArgs): UseInstrumentActionsResult {
+  const tickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
+  const tickIntervalMsRef = useRef(tickIntervalMs);
+  useEffect(() => {
+    tickIntervalMsRef.current = tickIntervalMs;
+  }, [tickIntervalMs]);
+
   const handleRenameInstrument = useCallback(
     (name: string) => {
       updateInstrument({ name });
@@ -102,7 +109,7 @@ export function useInstrumentActions({
     ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, 0, 0x0f);
 
     playInstTimerRef.current = window.setInterval(() => {
-      // Advance envelope step every 40ms (every 2 x 20ms ticks)
+      // Advance envelope step every 2 ticks
       const step = playInstStepRef.current;
       ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, step, 0x0f);
 
@@ -118,7 +125,7 @@ export function useInstrumentActions({
         }
         ym2149.writeRegister(0x08 + channel, 0x00);
       }
-    }, 20);
+    }, tickIntervalMsRef.current);
   }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString, ym2149Ref, playInstTimerRef, playInstStepRef]);
 
   const handleCloneInstrument = useCallback(() => {

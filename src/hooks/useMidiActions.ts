@@ -1,10 +1,11 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Song, Pattern, Step, Note, Instrument } from '../synth/SoundDriver';
 import type { YM2149 } from '../synth/YM2149';
 import type { MidiConfiguration, MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
 import { NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
+import { DEFAULT_SONG_FRAME } from '../constants/song';
 import { advancePreviewEnvelopeTick, getPreviewEnvelopeApplyStep } from '../utils/previewEnvelopeTiming';
 import {
   transposeMidiNoteToInstrumentBase,
@@ -58,6 +59,12 @@ export function useMidiActions({
   midiConfigurationRef,
   parseBaseKeyString,
 }: UseMidiActionsArgs): UseMidiActionsResult {
+  const tickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
+  const tickIntervalMsRef = useRef(tickIntervalMs);
+  useEffect(() => {
+    tickIntervalMsRef.current = tickIntervalMs;
+  }, [tickIntervalMs]);
+
   const lastMidiPreviewRef = useRef<{
     noteNumber: number;
     midiChannel: number;
@@ -271,7 +278,7 @@ export function useMidiActions({
           ymChannel
         };
 
-        const TICK_INTERVAL_MS = 20;
+        const TICK_INTERVAL_MS = tickIntervalMsRef.current;
 
         midiLiveTimerRef.current = window.setInterval(() => {
           const sustain = midiLiveSustainIndexRef.current;
@@ -326,7 +333,7 @@ export function useMidiActions({
 
             ym2149.writeRegister(0x08 + ymChannel, 0x00);
           }
-        }, 20);
+        }, TICK_INTERVAL_MS);
 
         return;
       }
@@ -447,7 +454,7 @@ export function useMidiActions({
             ymChannel
           };
 
-          const TICK_INTERVAL_MS = 20;
+          const TICK_INTERVAL_MS = tickIntervalMsRef.current;
 
           midiLiveTimerRef.current = window.setInterval(() => {
             const sustain = midiLiveSustainIndexRef.current;
@@ -528,7 +535,7 @@ export function useMidiActions({
 
               ym2149.writeRegister(0x08 + ymChannel, 0x00);
             }
-          }, 20);
+          }, TICK_INTERVAL_MS);
 
           return;
         }
