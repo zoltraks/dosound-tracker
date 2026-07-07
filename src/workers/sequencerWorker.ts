@@ -187,10 +187,16 @@ function setParams(params: { ticksPerRow?: number; patternLength?: number; tickI
   }
   if (params.tickInterval !== undefined) {
     tickInterval = params.tickInterval;
-    // Restart sequencer with new interval if playing
+    // Reschedule the next tick with the new interval if currently playing.
+    // We must NOT call stopSequencer()/startSequencer() here because the stop
+    // message would flip isPlaying to false on the main thread, and the
+    // "safeIsPlaying" guard would then suppress all subsequent tick messages.
     if (isPlaying) {
-      stopSequencer();
-      startSequencer();
+      if (intervalId !== null) {
+        clearTimeout(intervalId);
+      }
+      nextTickTime = 0;
+      intervalId = setTimeout(tickLoop, tickInterval);
     }
   }
   // Handle playlist parameters for song looping
