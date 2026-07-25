@@ -394,7 +394,7 @@ See `TESTING.md` for the canonical verification loop, test types, fixtures, and 
 - Do not add generated files to the repository unless explicitly required.
 - Do not change version numbers in project artefacts unless explicitly instructed.
 - **Header versions**: do not bump version numbers in document headers unless explicitly instructed by the user.
-- **CHANGELOG.md**: do not modify `CHANGELOG.md` outside the version bump procedure described in `VERSIONING.md`. Feature and fix entries accumulate in the codebase and are recorded only when the version is actually bumped.
+- **CHANGELOG.md**: do not modify `public/CHANGELOG.md` outside the version bump procedure described in `VERSIONING.md`. Feature and fix entries accumulate in the codebase and are recorded only when the version is actually bumped. Never delete or truncate older version entries when adding new versions - the complete historical record must be preserved.
 - **Binary output location**: all compiled output must go to a dedicated `dist/` or `build/` directory. Never build to the repository root, source directories, or outside the project. The `dist/` directory must be gitignored.
 - **Temporary files**: always use the `work` directory at the repository root for temporary files, test data, local-only configurations, and generated artifacts. Never create `work/` subdirectories inside component directories. Tests that generate files on disk must write them inside `work/` and must clean them up afterward using `try/finally` so no generated file is left behind inside or outside `work/`.
 

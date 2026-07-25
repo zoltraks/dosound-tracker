@@ -38,9 +38,10 @@ The MAJOR number has no maximum limit and can be incremented beyond 9:
 
 ## Files to Update
 
-| File           | Field                |
-| -------------- | -------------------- |
-| `package.json` | `"version": "X.Y.Z"` |
+| File                  | Field                            |
+| --------------------- | -------------------------------- |
+| `package.json`        | `"version": "X.Y.Z"`             |
+| `public/CHANGELOG.md` | Add new version entry at the top |
 
 ## Automated Version Bump
 
@@ -68,7 +69,7 @@ When bumping the version manually (outside the automated build script):
 - Calculate the new version number per the bumping rules above.
 - Update the version in `package.json`.
 - Run `npm install` to update `package-lock.json`.
-- **Create a CHANGELOG entry**: analyse all code changes since the last version bump, using `git log` if needed, and add a comprehensive entry to `CHANGELOG.md` at the repository root describing every significant change.
+- **Create a CHANGELOG entry**: analyse all code changes since the last version bump, using `git log` if needed, and add a comprehensive entry to `public/CHANGELOG.md` describing every significant change.
 - Rebuild the application with `npm run build` so generated files are refreshed with the new version.
 
 Do **not** create a new directory in `docs/change/` when bumping versions.
@@ -77,7 +78,11 @@ The AI assistant must **not** commit version changes. The user will commit manua
 
 ## CHANGELOG Conventions
 
-The repository has a single `CHANGELOG.md` at the root covering all changes.
+The repository has a single `CHANGELOG.md` in the `public/` directory covering all changes. This file is automatically copied to the `dist/` directory during the build process and is displayed in the application's CHANGES modal.
+
+**History Preservation**
+
+The CHANGELOG.md must preserve its complete version history. Never delete or truncate older version entries when adding new versions. The full historical record of all changes must be maintained.
 
 **Format**
 
