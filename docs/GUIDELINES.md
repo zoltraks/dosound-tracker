@@ -92,6 +92,22 @@ The active documentation set is composed of the following files. Each file is th
 | `template/change-request-template.md`      | Template for change request specification documents                      |
 | `template/implementation-plan-template.md` | Template for implementation plan documents                               |
 
+### Three Pillars of Technical Documentation
+
+Three documents form the pillars of the technical documentation. They separate concerns by role and must not duplicate each other. During implementation, update the pillar that owns the change first, before touching code.
+
+**PROJECT.md**
+
+General project overview with functional and non-functional requirements. It answers what the system must do. It holds the vision, goals and non-goals, target audience, glossary, requirements, use cases, and quality targets.
+
+**ARCHITECTURE.md**
+
+Architectural decisions and top-level assumptions. It answers how the system is organised. It holds the system overview, module boundaries, state domains, data flow, and the architectural decision log.
+
+**SPECIFICATION.md**
+
+Implementation technical decisions. It answers how the system works internally. It holds data models, algorithms, file formats, constants, input bindings, and known implementation limitations.
+
 ## General Workflow
 
 **Read all guidelines before any change**
@@ -347,6 +363,39 @@ Examples:
 **CHANGELOG Maintenance**
 
 For version bumping rules and CHANGELOG format, see `VERSIONING.md`.
+
+## Documentation Distillation
+
+Distillation keeps the documentation lean by removing content that is obvious from the source code and replacing it with cross-references. It is triggered on request, when the user says "distil" or "distill" in relation to documentation.
+
+Distillation is a documentation-only change and bypasses the verification loop.
+
+**Scope**
+
+Distil `SPECIFICATION.md` and `GUIDELINES.md`. Do not remove sections from `PROJECT.md`, `ARCHITECTURE.md`, or `WORKFLOW.md` unless they also contain raw code duplication.
+
+**What to remove**
+
+- Technology stack tables that duplicate `package.json`.
+- Directory trees that mirror the filesystem.
+- Store-to-file mapping tables obvious from the store directory.
+- Raw type interface blocks that duplicate `src/types/` or other source files.
+- Build configuration that duplicates config files.
+- Development script listings that duplicate `package.json` scripts.
+- Constants tables that duplicate `src/constants/`.
+
+**What to keep**
+
+- Behavioural rules and semantics not obvious from interfaces alone.
+- Extensibility contracts and design rationales.
+- Algorithm descriptions and interaction rules.
+- Error handling policies and severity behaviour.
+- Lifecycle and startup explanations.
+- Cross-references to the source files where definitions live.
+
+**Process**
+
+Replace each removed code block with a short reference such as `See src/synth/SoundDriver.ts for the Song, Pattern, and Instrument types`. Preserve all prose that explains why a type exists or how it behaves. Verify each cross-reference points to a file that exists before removing the duplicated content.
 
 ## Date and Time Format
 
