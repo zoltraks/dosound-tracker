@@ -181,6 +181,8 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - CTRL+6 plays the current line
 - CTRL+8 stops playback
 - ESC stops playback
+- ENTER in a track plays the current line from the cursor row and toggles playback, restoring the cursor on stop
+- CTRL+ENTER in a track plays the current line from its first row and toggles playback, restoring the cursor on stop
 
 **File operation shortcuts:**
 

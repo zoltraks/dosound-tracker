@@ -49,6 +49,7 @@ interface TrackPanelProps {
   trackBackgroundEnabled: boolean;
   isTargetTrack: boolean;
   onToggleLineFromCursor: (lineIndex: number) => void;
+  onToggleLineFromStart: (lineIndex: number) => void;
   currentColumn: 'note' | 'volume';
   setCurrentColumn: (column: 'note' | 'volume') => void;
   focusRevision: number;
@@ -81,6 +82,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     trackBackgroundEnabled,
     isTargetTrack,
     onToggleLineFromCursor,
+    onToggleLineFromStart,
     currentColumn,
     setCurrentColumn,
     focusRevision,
@@ -365,7 +367,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         }
       } else if (key === 'ENTER') {
         event.preventDefault();
-        onToggleLineFromCursor(currentLine);
+        if (event.ctrlKey) {
+          onToggleLineFromStart(currentLine);
+        } else {
+          onToggleLineFromCursor(currentLine);
+        }
       } else if (event.key === 'Delete' || event.key === 'Backspace') {
         event.preventDefault();
         if (!pattern) return;
@@ -486,6 +492,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       trackId,
       onPatternChange,
       onToggleLineFromCursor,
+      onToggleLineFromStart,
       currentColumn,
       setCurrentColumn,
       setActiveSection,

@@ -1809,6 +1809,37 @@ const App: React.FC = () => {
     ],
   );
 
+  // Ctrl+Enter in a track: play the line from its first row like the PLAY LINE
+  // menu command, remembering the cursor position so Enter restores it on stop.
+  const handleToggleLineFromStart = useCallback(
+    (lineIndex: number) => {
+      if (isLinePlaying && sequencerState.isPlaying) {
+        handleStopLinePlayback();
+        return;
+      }
+
+      const playlistLength = currentSong.line.length;
+      if (playlistLength === 0) {
+        return;
+      }
+
+      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+
+      // Save the cursor return position so pressing Enter or Ctrl+Enter restores it.
+      patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
+
+      handleStartLinePlayback();
+    },
+    [
+      isLinePlaying,
+      sequencerState.isPlaying,
+      sequencerState.currentPattern,
+      currentSong.line.length,
+      handleStopLinePlayback,
+      handleStartLinePlayback,
+    ],
+  );
+
   useKeyboardShortcuts({
     setGlobalShortcut,
     handleStartSong,
@@ -2388,6 +2419,7 @@ const App: React.FC = () => {
             currentInstrument={currentInstrument}
             targetTrackId={targetTrackId}
             onToggleLineFromCursor={handleToggleLineFromCursor}
+            onToggleLineFromStart={handleToggleLineFromStart}
             currentTrackColumn={currentTrackColumn}
             setCurrentTrackColumn={setCurrentTrackColumn}
             trackFocusRevision={trackFocusRevision}

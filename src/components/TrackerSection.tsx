@@ -24,6 +24,7 @@ interface TrackerSectionProps {
   currentInstrument: Instrument;
   targetTrackId: 'A' | 'B' | 'C';
   onToggleLineFromCursor: (lineIndex: number) => void;
+  onToggleLineFromStart: (lineIndex: number) => void;
   currentTrackColumn: 'note' | 'volume';
   setCurrentTrackColumn: (column: 'note' | 'volume') => void;
   trackFocusRevision: number;
@@ -55,6 +56,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   currentInstrument,
   targetTrackId,
   onToggleLineFromCursor,
+  onToggleLineFromStart,
   currentTrackColumn,
   setCurrentTrackColumn,
   trackFocusRevision,
@@ -137,6 +139,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 trackBackgroundEnabled={trackBackgroundEnabled}
                 isTargetTrack={targetTrackId === trackId}
                 onToggleLineFromCursor={onToggleLineFromCursor}
+                onToggleLineFromStart={onToggleLineFromStart}
                 currentColumn={currentTrackColumn}
                 setCurrentColumn={setCurrentTrackColumn}
                 focusRevision={trackFocusRevision}

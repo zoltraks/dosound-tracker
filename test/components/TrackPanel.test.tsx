@@ -57,6 +57,7 @@ describe('TrackPanel', () => {
         trackBackgroundEnabled={true}
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -98,6 +99,7 @@ describe('TrackPanel', () => {
         trackBackgroundEnabled={true}
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={vi.fn()}
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -138,6 +140,7 @@ describe('TrackPanel', () => {
         trackBackgroundEnabled={true}
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={vi.fn()}
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -180,6 +183,7 @@ describe('TrackPanel', () => {
         trackBackgroundEnabled={true}
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={vi.fn()}
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -223,6 +227,7 @@ describe('TrackPanel', () => {
         trackBackgroundEnabled={true}
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -265,6 +270,7 @@ describe('TrackPanel', () => {
         trackBackgroundEnabled={true}
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -277,5 +283,47 @@ describe('TrackPanel', () => {
     fireEvent.click(secondLine);
 
     expect(handleLineChange).toHaveBeenCalledWith(1);
+  });
+
+  it('routes Enter and Ctrl+Enter to the matching line play toggle', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+
+    const handleToggleLineFromCursor = vi.fn();
+    const handleToggleLineFromStart = vi.fn();
+
+    const { container } = render(
+      <TrackPanel
+        trackId="A"
+        activeSection={'trackA' as NavigationSection}
+        setActiveSection={vi.fn()}
+        currentOctave={4}
+        currentLine={5}
+        patternLength={pattern.step.length}
+        onLineChange={vi.fn()}
+        pattern={pattern}
+        onPatternChange={vi.fn()}
+        ym2149={null}
+        currentInstrumentData={instrument}
+        instruments={[instrument]}
+        trackBackgroundEnabled={true}
+        isTargetTrack={true}
+        onToggleLineFromCursor={handleToggleLineFromCursor}
+        onToggleLineFromStart={handleToggleLineFromStart}
+        currentColumn="note"
+        setCurrentColumn={vi.fn()}
+        focusRevision={0}
+      />,
+    );
+
+    const panel = container.querySelector('.track-panel') as HTMLElement;
+
+    fireEvent.keyDown(panel, { key: 'Enter' });
+    expect(handleToggleLineFromCursor).toHaveBeenCalledWith(5);
+    expect(handleToggleLineFromStart).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(panel, { key: 'Enter', ctrlKey: true });
+    expect(handleToggleLineFromStart).toHaveBeenCalledWith(5);
+    expect(handleToggleLineFromCursor).toHaveBeenCalledTimes(1);
   });
 });
