@@ -33,18 +33,18 @@ Examples of the YAML formats can be found under:
 
 ```yaml
 song:
-  title: "Title"           # optional string
-  author: "Author"         # optional string
-  year: 2025               # optional integer
-  speed: 6                 # required, positive integer (clamped and forced even)
-  length: 64               # required, pattern length in rows (4..256)
-  loop: 0                  # optional, 0-based playlist index
-  chip: "YM"               # optional, chip type (default "YM")
-  frame: 50                # optional, replay rate in Hz (default 50)
-  clock: 2000000           # optional, chip clock in Hz (default 2000000)
-  playlist: [...]          # required list
-  pattern: [...]           # required list (or `patterns` alias when loading)
-  instrument: [...]        # required list (or `instruments` alias when loading)
+  title: 'Title' # optional string
+  author: 'Author' # optional string
+  year: 2025 # optional integer
+  speed: 6 # required, positive integer (clamped and forced even)
+  length: 64 # required, pattern length in rows (4..256)
+  loop: 0 # optional, 0-based playlist index
+  chip: 'YM' # optional, chip type (default "YM")
+  frame: 50 # optional, replay rate in Hz (default 50)
+  clock: 2000000 # optional, chip clock in Hz (default 2000000)
+  playlist: [...] # required list
+  pattern: [...] # required list (or `patterns` alias when loading)
+  instrument: [...] # required list (or `instruments` alias when loading)
 ```
 
 Loader rules (from `parseSongFromYaml`):
@@ -68,10 +68,10 @@ Shape of each playlist row:
 ```yaml
 song:
   playlist:
-    - A: "00"  # pattern ID used for track A
-      B: "01"  # pattern ID used for track B
-      C: "02"  # pattern ID used for track C
-    - A: "03"  # B or C omitted → treated as "--"
+    - A: '00' # pattern ID used for track A
+      B: '01' # pattern ID used for track B
+      C: '02' # pattern ID used for track C
+    - A: '03' # B or C omitted → treated as "--"
 ```
 
 - `A`, `B`, `C` values should be strings (pattern identifiers such as `"01"`, `"1A"`).
@@ -86,9 +86,9 @@ song:
 Each pattern node has:
 
 ```yaml
-- number: "01"         # pattern ID (string recommended)
-  name: "Pattern 01"   # optional
-  steps: [...]         # or `lines: [...]`
+- number: '01' # pattern ID (string recommended)
+  name: 'Pattern 01' # optional
+  steps: [...] # or `lines: [...]`
 ```
 
 - `number`:
@@ -146,20 +146,20 @@ Loader behaviour:
 Each instrument node has:
 
 ```yaml
-- number: "00"           # instrument ID (string recommended)
-  name: "Bass"           # optional
-  base: "C-3"            # optional base key
-  octave: 1              # optional, clamped
-  sustain: 8             # optional, >=0 integer index
-  color: "#abc"          # optional 3-digit hex color
-  volume: [ ... ]        # required envelope (trimmed)
-  arpeggio: [ ... ]      # optional envelope
-  pitch: [ ... ]         # optional envelope
-  noise: [ ... ]         # optional envelope
-  mode: [ ... ]          # optional envelope
-  midi:                  # optional MIDI configuration
-    channel: 1           # MIDI channel (1-16)
-    program: 0           # MIDI program (0-127)
+- number: '00' # instrument ID (string recommended)
+  name: 'Bass' # optional
+  base: 'C-3' # optional base key
+  octave: 1 # optional, clamped
+  sustain: 8 # optional, >=0 integer index
+  color: '#abc' # optional 3-digit hex color
+  volume: [...] # required envelope (trimmed)
+  arpeggio: [...] # optional envelope
+  pitch: [...] # optional envelope
+  noise: [...] # optional envelope
+  mode: [...] # optional envelope
+  midi: # optional MIDI configuration
+    channel: 1 # MIDI channel (1-16)
+    program: 0 # MIDI program (0-127)
 ```
 
 Saver (`saveSong`) rules:
@@ -199,21 +199,21 @@ Loader (`parseSongFromYaml`) rules:
 
 ```yaml
 instrument:
-  type: "dosound"        # required format identifier
-  version: 1             # required format version
-  name: "Lead"           # optional
-  base: "C-4"            # optional
-  octave: 2              # optional
-  sustain: 5             # optional
-  color: "#abc"          # optional 3-digit hex color
-  volume: [ ... ]        # required envelope
-  arpeggio: [ ... ]      # optional envelope
-  pitch: [ ... ]         # optional envelope
-  noise: [ ... ]         # optional envelope
-  mode: [ ... ]          # optional envelope
-  midi:                  # optional MIDI configuration
-    channel: 1           # MIDI channel (1-16)
-    program: 0           # MIDI program (0-127)
+  type: 'dosound' # required format identifier
+  version: 1 # required format version
+  name: 'Lead' # optional
+  base: 'C-4' # optional
+  octave: 2 # optional
+  sustain: 5 # optional
+  color: '#abc' # optional 3-digit hex color
+  volume: [...] # required envelope
+  arpeggio: [...] # optional envelope
+  pitch: [...] # optional envelope
+  noise: [...] # optional envelope
+  mode: [...] # optional envelope
+  midi: # optional MIDI configuration
+    channel: 1 # MIDI channel (1-16)
+    program: 0 # MIDI program (0-127)
 ```
 
 Behaviour:
@@ -237,8 +237,8 @@ Behaviour:
 
 ```yaml
 steps:
-  - note: "C-4"
-    instrument: "00"
+  - note: 'C-4'
+    instrument: '00'
   - space: 3
   - off: true
   - volume: 12
@@ -393,11 +393,11 @@ Each strategy selects a stream format. All strategies apply ZX0 compression with
 
 The REG7 format uses a single delimiter byte with the high bit set:
 
-| Value   | Meaning                        |
-|---------|--------------------------------|
-| `$80`   | End of frame, 1 frame delay    |
-| `$81`   | End of frame, 2 frames delay   |
-| `$FF`   | End of frame, 128 frames delay |
+| Value | Meaning                        |
+| ----- | ------------------------------ |
+| `$80` | End of frame, 1 frame delay    |
+| `$81` | End of frame, 2 frames delay   |
+| `$FF` | End of frame, 128 frames delay |
 
 The low 7 bits encode `delay - 1`. Delays exceeding 128 frames are split across multiple consecutive delimiter bytes.
 
@@ -502,15 +502,15 @@ The resulting WAV file is suitable for direct playback in standard audio players
 
 ```yaml
 midi:
-  version: 1             # format version
-  input:                  # MIDI input configuration
-    enable: true          # enable MIDI input
-    agnostic: false       # ignore input volume
-    device: "device-id"   # optional device identifier
-  output:                 # MIDI output configuration
-    enable: true          # enable MIDI output
-    agnostic: false       # ignore output volume
-    device: "device-id"   # optional device identifier
+  version: 1 # format version
+  input: # MIDI input configuration
+    enable: true # enable MIDI input
+    agnostic: false # ignore input volume
+    device: 'device-id' # optional device identifier
+  output: # MIDI output configuration
+    enable: true # enable MIDI output
+    agnostic: false # ignore output volume
+    device: 'device-id' # optional device identifier
 ```
 
 ### Behaviour

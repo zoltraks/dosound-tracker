@@ -24,6 +24,7 @@ Primary goal of the refactoring: reduce file sizes and improve separation of con
 - `src/exports/core.ts` now relies on `simulateSong()` instead of maintaining its own duplicated simulation logic.
 
 Notable enhancements present in the merged implementation:
+
 - `toneMeta` captured per channel per frame (`note`, `octave`, `pitchDelta`) to improve assembly comments.
 - `retriggerBehavior` option (`'always' | 'new_note_only'`).
 
@@ -88,6 +89,7 @@ Risk level: **Medium** (changes audible behavior only if sustain was previously 
 `core.ts` now uses `toneMeta` for more precise comments, which will cause differences in assembly output text even if register writes are equivalent.
 
 In optimized modes, additional differences may occur due to:
+
 - skipping tone register writes on fully silent channels
 - forcing tone regs to re-emit after playlist boundary markers by clearing cached R0–R5
 
@@ -96,6 +98,7 @@ Risk level: **Low for audio correctness**, **Low/Medium for golden-file diff wor
 ### D) YAML formats: internal consistency is good, external compatibility must be verified
 
 The exported YAML schema in `songIO.ts` uses:
+
 - Playlist keys `A/B/C` (instead of `trackA/trackB/trackC`).
 - Pattern list key `pattern` and step key `step`.
 - Note-off encoded as `note: "OFF"`.
@@ -108,6 +111,7 @@ Risk level: **Low internally**, **Medium externally** if users/tools expect lega
 ### E) Instrument YAML IO mismatch (probable bug)
 
 In `instrumentIO.ts`:
+
 - Export writes `noise`.
 - Import expands envelopes from `noiseEnvelope`.
 
@@ -116,12 +120,14 @@ This likely breaks instrument round-trip for noise envelopes (export → re-impo
 Risk level: **High**.
 
 Recommended fix:
+
 - Accept both `noise` and `noiseEnvelope` as input keys, mapping either to `noiseEnvelope`.
   - This is backwards compatible and doesn’t require changing the export schema.
 
 ### F) Track clipboard/step utilities: semantics to confirm
 
 Potential behavior changes to verify:
+
 - Clipboard **replace** mode appears to clear `volume` when clipboard steps are missing.
 - `insertPatternStep` / `deletePatternStep` shift only `trackA`, not other properties (including any per-line volume), per documented intent in code.
 
@@ -157,6 +163,7 @@ Risk level: **Medium** (UX-visible, but localized).
 ## Verification Checklist
 
 ### Exports
+
 - Assembly export: verify playback correctness and expected register progression.
 - Check representative songs with:
   - sustain instruments
@@ -166,6 +173,7 @@ Risk level: **Medium** (UX-visible, but localized).
   - per-row volume changes
 
 ### Real-time Playback
+
 - Start/stop behavior:
   - YM2149 silence on stop
   - MIDI Note Off emitted for active channels
@@ -174,11 +182,13 @@ Risk level: **Medium** (UX-visible, but localized).
   - envelope timing remains consistent (40ms stepping)
 
 ### MIDI
+
 - Device hotplug while monitors enabled.
 - Switching input/output IDs repeatedly.
 - Output behavior in Electron vs non-Electron environment (system reset behavior).
 
 ### Track Editing
+
 - Copy/paste track data with:
   - compressed spaces
   - volume-only steps

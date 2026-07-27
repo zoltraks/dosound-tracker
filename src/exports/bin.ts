@@ -42,10 +42,7 @@ export function parseAssemblyToBinary(assembly: string): Uint8Array {
   return new Uint8Array(bytes);
 }
 
-export function exportToBinary(
-  song: Song,
-  strategy: ExportStrategy = 'complex'
-): Uint8Array {
+export function exportToBinary(song: Song, strategy: ExportStrategy = 'complex'): Uint8Array {
   const assembly = exportToAssembly(song, strategy);
   return parseAssemblyToBinary(assembly);
 }

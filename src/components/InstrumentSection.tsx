@@ -38,7 +38,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
   onMoveInstrument,
   onOpenInstrumentMidi,
   onOpenInstrumentColor,
-  focusRevision
+  focusRevision,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const listRef = useRef<HTMLDivElement>(null);
@@ -49,7 +49,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
 
   useEffect(() => {
     // Find current instrument index
-    const index = instruments.findIndex(inst => inst.id === currentInstrument.id);
+    const index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
     if (index !== -1) {
       setCurrentIndex(index);
     }
@@ -67,7 +67,9 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
     }
 
     const container = itemsContainerRef.current;
-    const itemElements = container.querySelectorAll('.instrument-item') as NodeListOf<HTMLDivElement>;
+    const itemElements = container.querySelectorAll(
+      '.instrument-item',
+    ) as NodeListOf<HTMLDivElement>;
     const target = itemElements[currentIndex];
     if (target) {
       target.scrollIntoView({ block: 'nearest' });
@@ -78,98 +80,110 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
     instruments,
     currentIndex,
     MAX_INSTRUMENTS,
-    isInstrumentEmpty
+    isInstrumentEmpty,
   );
 
-  const getInstrumentForSlot = useCallback((slotIndex: number): Instrument => {
-    return getInstrumentForSlotFromUtils(instruments, slotIndex, ENVELOPE_LENGTH);
-  }, [instruments]);
+  const getInstrumentForSlot = useCallback(
+    (slotIndex: number): Instrument => {
+      return getInstrumentForSlotFromUtils(instruments, slotIndex, ENVELOPE_LENGTH);
+    },
+    [instruments],
+  );
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (!isActive) return;
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (!isActive) return;
 
-    const target = event.target as HTMLElement | null;
-    if (target && target.tagName === 'INPUT') {
-      return;
-    }
-
-    // Ctrl+ArrowUp / Ctrl+ArrowDown: move current instrument up/down
-    if (event.ctrlKey) {
-      if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        if (currentIndex > 0 && currentIndex < instruments.length && instruments[currentIndex]) {
-          onMoveInstrument(currentIndex, 'up');
-        }
+      const target = event.target as HTMLElement | null;
+      if (target && target.tagName === 'INPUT') {
         return;
       }
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        if (currentIndex < instruments.length - 1 && instruments[currentIndex]) {
-          onMoveInstrument(currentIndex, 'down');
+
+      // Ctrl+ArrowUp / Ctrl+ArrowDown: move current instrument up/down
+      if (event.ctrlKey) {
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          if (currentIndex > 0 && currentIndex < instruments.length && instruments[currentIndex]) {
+            onMoveInstrument(currentIndex, 'up');
+          }
+          return;
         }
-        return;
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          if (currentIndex < instruments.length - 1 && instruments[currentIndex]) {
+            onMoveInstrument(currentIndex, 'down');
+          }
+          return;
+        }
+        if (event.key.toUpperCase() === 'M') {
+          event.preventDefault();
+          const instrument = instruments[currentIndex];
+          if (instrument) {
+            onOpenInstrumentMidi(instrument);
+          }
+          return;
+        }
       }
-      if (event.key.toUpperCase() === 'M') {
-        event.preventDefault();
-        const instrument = instruments[currentIndex];
-        if (instrument) {
-          onOpenInstrumentMidi(instrument);
-        }
-        return;
+
+      switch (event.key.toUpperCase()) {
+        case 'ENTER':
+          event.preventDefault();
+          if (nameInputRef.current) {
+            nameInputRef.current.focus();
+            nameInputRef.current.select();
+          }
+          break;
+        case 'ARROWUP':
+          event.preventDefault();
+          {
+            const newIndex = getMovedInstrumentIndex(currentIndex, 'up', visibleSlotCount);
+            setCurrentIndex(newIndex);
+            onSelectInstrument(getInstrumentForSlot(newIndex));
+          }
+          break;
+        case 'ARROWDOWN':
+          event.preventDefault();
+          {
+            const newIndex = getMovedInstrumentIndex(currentIndex, 'down', visibleSlotCount);
+            setCurrentIndex(newIndex);
+            onSelectInstrument(getInstrumentForSlot(newIndex));
+          }
+          break;
       }
-    }
+    },
+    [
+      isActive,
+      currentIndex,
+      instruments.length,
+      visibleSlotCount,
+      getInstrumentForSlot,
+      onSelectInstrument,
+      onMoveInstrument,
+    ],
+  );
 
-    switch (event.key.toUpperCase()) {
-      case 'ENTER':
-        event.preventDefault();
-        if (nameInputRef.current) {
-          nameInputRef.current.focus();
-          nameInputRef.current.select();
-        }
-        break;
-      case 'ARROWUP':
-        event.preventDefault();
-        {
-          const newIndex = getMovedInstrumentIndex(currentIndex, 'up', visibleSlotCount);
-          setCurrentIndex(newIndex);
-          onSelectInstrument(getInstrumentForSlot(newIndex));
-        }
-        break;
-      case 'ARROWDOWN':
-        event.preventDefault();
-        {
-          const newIndex = getMovedInstrumentIndex(currentIndex, 'down', visibleSlotCount);
-          setCurrentIndex(newIndex);
-          onSelectInstrument(getInstrumentForSlot(newIndex));
-        }
-        break;
-    }
-  }, [
-    isActive,
-    currentIndex,
-    instruments.length,
-    visibleSlotCount,
-    getInstrumentForSlot,
-    onSelectInstrument,
-    onMoveInstrument
-  ]);
+  const handleInstrumentClick = useCallback(
+    (slotIndex: number) => {
+      setCurrentIndex(slotIndex);
+      onSelectInstrument(getInstrumentForSlot(slotIndex));
+      setActiveSection('instrumentList');
+    },
+    [onSelectInstrument, setActiveSection, getInstrumentForSlot],
+  );
 
-  const handleInstrumentClick = useCallback((slotIndex: number) => {
-    setCurrentIndex(slotIndex);
-    onSelectInstrument(getInstrumentForSlot(slotIndex));
-    setActiveSection('instrumentList');
-  }, [onSelectInstrument, setActiveSection, getInstrumentForSlot]);
-
-  const getItemClass = useCallback((index: number) => {
-    const classes = ['instrument-item'];
-    if (index === currentIndex) {
-      classes.push('current');
-    }
-    if (isActive && index === currentIndex) {
-      classes.push('focused');
-    }
-    return classes.join(' ');
-  }, [currentIndex, isActive]);
+  const getItemClass = useCallback(
+    (index: number) => {
+      const classes = ['instrument-item'];
+      if (index === currentIndex) {
+        classes.push('current');
+      }
+      if (isActive && index === currentIndex) {
+        classes.push('focused');
+      }
+      return classes.join(' ');
+    },
+    [currentIndex, isActive],
+  );
 
   return (
     <div
@@ -189,24 +203,29 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
             const midiEnabled = isMidiEnabled(instrument);
 
             const midiButtonClassNames = ['instrument-midi-btn'];
-            midiButtonClassNames.push(midiEnabled ? 'instrument-midi-enabled' : 'instrument-midi-disabled');
-            const displayName =
-              isCurrent
-                ? currentInstrument.name
-                : instrument && instrument.name
-                  ? instrument.name
-                  : '';
+            midiButtonClassNames.push(
+              midiEnabled ? 'instrument-midi-enabled' : 'instrument-midi-disabled',
+            );
+            const displayName = isCurrent
+              ? currentInstrument.name
+              : instrument && instrument.name
+                ? instrument.name
+                : '';
 
             return (
               <div
                 key={slotIndex}
                 className={`${getItemClass(slotIndex)}${instrument && instrument.color ? ' instrument-item-colored' : ''}`.trim()}
-                style={instrument && instrument.color ? ({ ['--instrument-color' as string]: instrument.color } as React.CSSProperties) : undefined}
+                style={
+                  instrument && instrument.color
+                    ? ({
+                        ['--instrument-color' as string]: instrument.color,
+                      } as React.CSSProperties)
+                    : undefined
+                }
                 onClick={() => handleInstrumentClick(slotIndex)}
               >
-                <span className="instrument-number">
-                  {formatInstrumentSlotId(slotIndex)}
-                </span>
+                <span className="instrument-number">{formatInstrumentSlotId(slotIndex)}</span>
                 <span className="instrument-name">
                   {isCurrent ? (
                     <input
@@ -230,10 +249,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                     displayName || '...'
                   )}
                 </span>
-                <div
-                  className="instrument-actions"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div className="instrument-actions" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
                     className="instrument-color-btn"
@@ -270,34 +286,34 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                     MIDI
                   </button>
                   <div className="playlist-move-buttons">
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      onMoveInstrument(slotIndex, 'down');
-                      event.currentTarget.blur();
-                      if (listRef.current) {
-                        listRef.current.focus();
-                      }
-                    }}
-                    aria-label="Move instrument down"
-                    disabled={!instrument || slotIndex >= instruments.length - 1}
-                  >
-                    <ChevronDown className="h-3 w-3 rotate-90" />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={(event) => {
-                      onMoveInstrument(slotIndex, 'up');
-                      event.currentTarget.blur();
-                      if (listRef.current) {
-                        listRef.current.focus();
-                      }
-                    }}
-                    aria-label="Move instrument up"
-                    disabled={!instrument || slotIndex === 0}
-                  >
-                    <ChevronUp className="h-3 w-3 rotate-90" />
-                  </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        onMoveInstrument(slotIndex, 'down');
+                        event.currentTarget.blur();
+                        if (listRef.current) {
+                          listRef.current.focus();
+                        }
+                      }}
+                      aria-label="Move instrument down"
+                      disabled={!instrument || slotIndex >= instruments.length - 1}
+                    >
+                      <ChevronDown className="h-3 w-3 rotate-90" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={(event) => {
+                        onMoveInstrument(slotIndex, 'up');
+                        event.currentTarget.blur();
+                        if (listRef.current) {
+                          listRef.current.focus();
+                        }
+                      }}
+                      aria-label="Move instrument up"
+                      disabled={!instrument || slotIndex === 0}
+                    >
+                      <ChevronUp className="h-3 w-3 rotate-90" />
+                    </button>
                   </div>
                 </div>
               </div>

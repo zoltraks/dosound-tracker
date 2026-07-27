@@ -156,9 +156,7 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
                 value={amount}
                 onChange={(next) => {
                   const text =
-                    typeof next === 'number' && Number.isFinite(next)
-                      ? String(next)
-                      : '';
+                    typeof next === 'number' && Number.isFinite(next) ? String(next) : '';
                   onAmountChange(text);
                 }}
                 min={-99}

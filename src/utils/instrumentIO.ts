@@ -1,7 +1,12 @@
 import yaml from 'js-yaml';
 import type { Instrument } from '../synth/SoundDriver';
 import { ENVELOPE_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
-import { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
+import {
+  DEFAULT_BASE_KEY,
+  formatBaseKey,
+  parseBaseKey,
+  normalizeInstrumentColor,
+} from './songFormat';
 import {
   expandEnvelope,
   expandLoopingEnvelope,

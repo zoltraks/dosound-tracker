@@ -35,7 +35,7 @@ describe('toneNoisePanelUtils', () => {
   it('getEmptyModeEnvelope creates the default length', () => {
     const data = getEmptyModeEnvelope();
     expect(data).toHaveLength(32);
-    expect(data.every(v => v === 0)).toBe(true);
+    expect(data.every((v) => v === 0)).toBe(true);
   });
 
   it('rotateModeEnvelopeData pads to length then rotates', () => {

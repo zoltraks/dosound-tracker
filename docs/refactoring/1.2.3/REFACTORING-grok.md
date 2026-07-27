@@ -7,6 +7,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Current State Analysis
 
 ### Project Structure
+
 - Current version: 1.2.3
 - Primary language: TypeScript
 - Architecture: React-based UI with Web Audio API for sound synthesis
@@ -14,9 +15,11 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 - Performance requirements: 20ms or 40ms cycle times for playback and sequencer
 
 ### Export System Structure
+
 The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`, `max.ts`, `vgm.ts`, `wav.ts`) that currently re-export functions from `core.ts`. The `core.ts` file is 1615 lines and contains all export logic, leading to a monolithic structure.
 
 ### Identified Issues
+
 1. **Monolithic core.ts**: All export functions and helpers are in one file
 2. **Code duplication**: Download functions across formats are nearly identical
 3. **Unused code**: Minimal unused code identified; most functions are utilized
@@ -37,6 +40,7 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 **Current Issue**: `src/exports/core.ts` contains all export functions (1615 lines), with dedicated files only re-exporting.
 
 **Proposed Solution**:
+
 - Move assembly-related functions to `src/exports/asm.ts`
 - Move binary-related functions to `src/exports/bin.ts`
 - Move MAX-related functions to `src/exports/max.ts`
@@ -45,6 +49,7 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 - Keep shared utilities in `core.ts`
 
 **Functions to move**:
+
 - `asm.ts`: `exportToAssembly`, `exportInstrumentToAssembly`, `exportSongRegisterDump`, `downloadAssemblyFile`, and helpers (`formatFramesToAssembly`, `combineDelayLines`, `periodToNoteAndPitch`, `toHex`, `formatAsmLine`, `formatDelayLine`, `parseBaseKeyForExport`, `formatNoteLabel`, `frequencyToPeriod`, `getCoarseFine`, `getMixerForMode`, `getRegisterComment`)
 - `bin.ts`: `parseAssemblyToBinary`, `exportToBinary`, `downloadBinaryFile`
 - `max.ts`: `buildMaxShortChunk`, `buildMaxLongChunk`, `buildMaxInfoChunk`, `buildMaxStreamFromDumpBytes`, `optimizeReg7Delays`, `exportSongToMax`, `exportInstrumentToMax`, `downloadMaxFile`, `MaxExportResult`
@@ -52,6 +57,7 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 - `wav.ts`: `encodePcm16Wav`, `synthTickSamples`, `exportSongToWav`, `exportInstrumentToVav`, `downloadWavFile`, `WavExportResult`
 
 **Expected Benefits**:
+
 - Reduce `core.ts` by ~1400 lines
 - Improve maintainability through format-specific modules
 - Better separation of concerns
@@ -61,10 +67,12 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 **Current Issue**: Download functions (`downloadAssemblyFile`, `downloadBinaryFile`, etc.) are duplicated across formats with only MIME type differences.
 
 **Proposed Solution**:
+
 - Create `downloadFile` utility in `core.ts`
 - Refactor all download functions to use the common utility
 
 **Expected Benefits**:
+
 - Eliminate ~100 lines of duplicated code
 - Improve consistency and maintainability
 
@@ -73,10 +81,12 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 **Current Issue**: Analysis shows minimal unused code; most functions are utilized in tests and application logic.
 
 **Proposed Solution**:
+
 - No significant unused code identified for removal
 - Ensure all moved functions maintain their usage
 
 **Expected Benefits**:
+
 - Maintain clean codebase without unnecessary deletions
 
 ## Implementation Plan
@@ -101,15 +111,18 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 ## Risk Assessment
 
 ### Low Risk Changes
+
 - Moving functions between files within the same directory
 - Creating shared download utility
 - No changes to core application logic
 
 ### Medium Risk Changes
+
 - Ensuring all imports and exports are correctly updated
 - Verifying export outputs remain identical
 
 ### High Risk Changes (Avoided)
+
 - Any modifications to YM2149 emulation code
 - Changes to core playback timing logic
 - Alterations to existing export formats

@@ -46,7 +46,7 @@ describe('ZX0 compression', () => {
     const input = new Uint8Array(1000);
     for (let row = 0; row < 25; row++) {
       for (let col = 0; col < 40; col++) {
-        input[row * 40 + col] = col < 10 ? 0x20 : col < 30 ? (row & 0xff) : 0xa0;
+        input[row * 40 + col] = col < 10 ? 0x20 : col < 30 ? row & 0xff : 0xa0;
       }
     }
     roundTrip(input);

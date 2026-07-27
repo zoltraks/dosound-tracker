@@ -7,6 +7,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Current State Analysis
 
 ### Project Structure
+
 - Current version: 1.2.1
 - Primary language: TypeScript
 - Architecture: React-based UI with Web Audio API for sound synthesis
@@ -42,6 +43,7 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 **Current Issue**: `App.tsx` is overly large at 2939 lines, handling state management, playback logic, UI rendering, and numerous event handlers.
 
 **Proposed Solution**:
+
 - Extract playback-related logic into `src/hooks/usePlayback.ts`
 - Extract MIDI-related state and handlers into `src/hooks/useMidiState.ts`
 - Extract modal management into `src/hooks/useModalState.ts` (already exists but needs better integration)
@@ -49,6 +51,7 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 - Move keyboard shortcut handling to separate `src/hooks/useKeyboardShortcuts.ts` (already exists)
 
 **Expected Benefits**:
+
 - Reduce `App.tsx` by ~1200 lines
 - Better separation of concerns between UI and logic
 - Improved component reusability
@@ -59,12 +62,14 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 **Current Issue**: `useMidi.ts` is large at 981 lines, handling MIDI input/output, device management, and monitoring.
 
 **Proposed Solution**:
+
 - Create `src/hooks/useMidiDeviceManagement.ts` for device enumeration and selection
 - Create `src/hooks/useMidiMonitoring.ts` for MIDI monitoring functionality
 - Create `src/hooks/useMidiMessageHandling.ts` for MIDI message processing
 - Keep core MIDI functionality in refactored `useMidi.ts`
 
 **Expected Benefits**:
+
 - Reduce `useMidi.ts` by ~500 lines
 - Clearer separation between device management and message handling
 - Better maintainability of monitoring operations
@@ -75,12 +80,14 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 **Current Issue**: `TrackPanel.tsx` is large at 730 lines, containing track rendering, note playback, and envelope management.
 
 **Proposed Solution**:
+
 - Create `src/components/TrackLine.tsx` for individual line rendering
 - Create `src/hooks/useTrackPlayback.ts` for note playback logic
 - Create `src/utils/trackUtils.ts` for track-related utilities
 - Extract envelope timing logic to `src/hooks/useEnvelopeTiming.ts`
 
 **Expected Benefits**:
+
 - Reduce `TrackPanel.tsx` by ~300 lines
 - Better separation of rendering vs. playback logic
 - Reusable track line component
@@ -89,6 +96,7 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 ## Implementation Plan
 
 ### Phase 1: App Component Modularization (Days 1-3)
+
 1. Extract playback logic to `usePlayback.ts`
 2. Create MIDI state management hook
 3. Extract modal management functionality
@@ -96,6 +104,7 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 5. Update App.tsx to use new hooks
 
 ### Phase 2: MIDI Handling Split (Days 4-6)
+
 1. Create device management hook
 2. Extract monitoring functionality
 3. Create message handling hook
@@ -103,6 +112,7 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 5. Update imports throughout the codebase
 
 ### Phase 3: Track Panel Refactoring (Days 7-8)
+
 1. Extract track line components
 2. Create track playback hook
 3. Extract utility functions
@@ -119,16 +129,19 @@ From the 1.2.0 assessment, the following areas remain incomplete:
 ## Risk Assessment
 
 ### Low Risk Changes
+
 - UI component splitting (track lines)
 - Utility function extraction
 - Storage operations separation
 
 ### Medium Risk Changes
+
 - App component modularization (requires careful state management)
 - MIDI hook splitting (must maintain device connectivity)
 - Playback logic extraction (must preserve timing accuracy)
 
 ### High Risk Changes (Avoided)
+
 - Any modifications to YM2149 emulation code
 - Changes to core playback timing logic
 - Alterations to existing YAML file formats

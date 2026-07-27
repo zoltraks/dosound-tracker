@@ -24,7 +24,12 @@ interface HeaderPanelProps {
   tickIntervalMs?: number;
   hasDownloads: boolean;
   onShowDownloads: () => void;
-  onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
+  onPreviewMidiNoteOn?: (
+    ymChannel: number,
+    instrument: Instrument,
+    note: string,
+    octave: number,
+  ) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   onToggleCommandPanelMobile: () => void;
 }
@@ -46,7 +51,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   onShowDownloads,
   onPreviewMidiNoteOn,
   onPreviewMidiNoteOff,
-  onToggleCommandPanelMobile
+  onToggleCommandPanelMobile,
 }) => {
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
@@ -158,10 +163,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       event.preventDefault();
       event.stopPropagation();
       const { note, octaveOffset } = KEYBOARD_TO_NOTE[keyUpper];
-      const finalOctave = Math.max(
-        MIN_OCTAVE,
-        Math.min(MAX_OCTAVE, currentOctave + octaveOffset)
-      );
+      const finalOctave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, currentOctave + octaveOffset));
       playPreviewNote(note, finalOctave);
       return;
     }
@@ -283,10 +285,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
         </div>
       </header>
 
-      <div
-        className="header-panel-song-mobile"
-        onClick={onToggleCommandPanelMobile}
-      >
+      <div className="header-panel-song-mobile" onClick={onToggleCommandPanelMobile}>
         <span className="song-title">{title}</span>
       </div>
     </>

@@ -30,11 +30,7 @@ export const MarkdownModal: React.FC<MarkdownModalProps> = ({
         />
         <div className="modal-actions text-display-actions">
           <div className="text-display-actions-left">
-            <a
-              className="command-btn"
-              href={downloadHref}
-              download
-            >
+            <a className="command-btn" href={downloadHref} download>
               DOWNLOAD
             </a>
           </div>

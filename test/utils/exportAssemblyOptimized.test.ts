@@ -42,8 +42,8 @@ describe('exportToAssembly optimized strategy', () => {
     const sumOptimized = optimizedDelays.reduce((acc, m) => acc + Number(m[1] || 0), 0);
     expect(sumOptimized).toBe(sumComplex);
 
-    const complexDelay2Count = complexDelays.filter(m => Number(m[1]) === 2).length;
-    const optimizedDelay2Count = optimizedDelays.filter(m => Number(m[1]) === 2).length;
+    const complexDelay2Count = complexDelays.filter((m) => Number(m[1]) === 2).length;
+    const optimizedDelay2Count = optimizedDelays.filter((m) => Number(m[1]) === 2).length;
 
     // For this fixture we expect at least one DL 2 in the complex output
     // and fewer DL 2 entries after optimization.
@@ -52,7 +52,7 @@ describe('exportToAssembly optimized strategy', () => {
 
     // Optimized output should contain at least one delay longer than 2 frames,
     // indicating that multiple DL 2 entries have been merged.
-    const hasLongDelayOptimized = optimizedDelays.some(m => Number(m[1]) > 2);
+    const hasLongDelayOptimized = optimizedDelays.some((m) => Number(m[1]) > 2);
     expect(hasLongDelayOptimized).toBe(true);
   });
 });

@@ -22,7 +22,7 @@ export interface TransposeResult {
 export function performTranspose(
   song: Song,
   options: TransposeOptions,
-  updateSong: (patch: Partial<Song>) => void
+  updateSong: (patch: Partial<Song>) => void,
 ): TransposeResult | null {
   const {
     semitones,
@@ -98,12 +98,12 @@ export function performTranspose(
   let clippedLow = 0;
   let clippedHigh = 0;
 
-  const updatedPatterns = song.pattern.map(pattern => {
+  const updatedPatterns = song.pattern.map((pattern) => {
     if (!patternIds.has(pattern.id)) {
       return pattern;
     }
 
-    const newSteps = (pattern.step || []).map(step => {
+    const newSteps = (pattern.step || []).map((step) => {
       const newStep = { ...step } as Step;
       const cell = newStep.note;
 

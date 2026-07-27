@@ -8,7 +8,7 @@ export const useScrollSync = (sharedCurrentLine: number) => {
     const scrollTop = event.currentTarget.scrollTop;
     // Sync all tracks scroll when position block is scrolled
     const tracks = document.querySelectorAll('.track-content');
-    tracks.forEach(track => {
+    tracks.forEach((track) => {
       (track as HTMLDivElement).scrollTop = scrollTop;
     });
   }, []);
@@ -77,7 +77,7 @@ export const useScrollSync = (sharedCurrentLine: number) => {
       positionContent.scrollTop = newScrollTop;
 
       const tracks = document.querySelectorAll('.track-content');
-      tracks.forEach(track => {
+      tracks.forEach((track) => {
         if (track !== container) {
           (track as HTMLDivElement).scrollTop = newScrollTop;
         }

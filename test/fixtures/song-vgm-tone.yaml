@@ -6,24 +6,24 @@ song:
   length: 4
   loop: 1
   line:
-    - A: "00"
-    - A: "01"
+    - A: '00'
+    - A: '01'
     - {}
   pattern:
-    - number: "00"
+    - number: '00'
       name: Pattern 00
       steps:
-        - note: "C-4"
-          instrument: "00"
+        - note: 'C-4'
+          instrument: '00'
         - wait: 3
-    - number: "01"
+    - number: '01'
       name: Pattern 01
       steps:
         - wait: 1
-        - note: "E-4"
-          instrument: "00"
+        - note: 'E-4'
+          instrument: '00'
         - wait: 2
   instrument:
-    - number: "00"
+    - number: '00'
       name: Simple Lead
       volume: [15, 14, 12, 0]

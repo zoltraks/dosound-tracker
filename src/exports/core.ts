@@ -36,7 +36,11 @@ export function parseBaseKeyForExport(rawBase?: string): { note: string; octave:
   return { note: 'C', octave: 4 };
 }
 
-export function formatNoteLabel(baseNote: string, baseOctave: number, semitoneOffset: number): string {
+export function formatNoteLabel(
+  baseNote: string,
+  baseOctave: number,
+  semitoneOffset: number,
+): string {
   const idx = NOTES.indexOf(baseNote);
   if (idx === -1) {
     // Fallback: just use base values
@@ -56,7 +60,7 @@ export function formatNoteLabel(baseNote: string, baseOctave: number, semitoneOf
     const stepsDown = -total;
     const octaveDelta = Math.floor((stepsDown + n - 1) / n);
     octave -= octaveDelta;
-    const mod = ((idx + semitoneOffset) % n + n) % n;
+    const mod = (((idx + semitoneOffset) % n) + n) % n;
     noteIndex = mod;
   }
 
@@ -99,8 +103,8 @@ export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: S
   const suffix = instrument.name
     ? ` - ${instrument.name}`
     : instrument.id
-    ? ` - INST ${instrument.id}`
-    : ' - Instrument';
+      ? ` - INST ${instrument.id}`
+      : ' - Instrument';
   const title = titleBase ? `${titleBase}${suffix}` : `Instrument Preview${suffix}`;
 
   return {
@@ -118,7 +122,7 @@ export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: S
 export function exportInstrumentWith<T>(
   instrument: Instrument,
   song: Song,
-  exporter: (song: Song) => T
+  exporter: (song: Song) => T,
 ): T {
   const previewSong = buildInstrumentPreviewSong(instrument, song);
   return exporter(previewSong);

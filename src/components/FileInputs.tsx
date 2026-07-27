@@ -53,10 +53,11 @@ export const FileInputs: React.FC<FileInputsProps> = ({
           }
 
           const reader = new FileReader();
-          reader.onload = ev => {
-            const text = typeof ev.target?.result === 'string'
-              ? ev.target.result
-              : String(ev.target?.result ?? '');
+          reader.onload = (ev) => {
+            const text =
+              typeof ev.target?.result === 'string'
+                ? ev.target.result
+                : String(ev.target?.result ?? '');
             onLoadInstrument(text);
           };
           reader.readAsText(file);

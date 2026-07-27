@@ -49,7 +49,11 @@ describe('instrumentPanelUtils', () => {
 
     expect(computeVisibleSlotCount([], 0, 256, isEmpty)).toBe(1);
 
-    const instruments = [makeInstrument('00', ''), makeInstrument('01', ''), makeInstrument('02', 'Lead')];
+    const instruments = [
+      makeInstrument('00', ''),
+      makeInstrument('01', ''),
+      makeInstrument('02', 'Lead'),
+    ];
     expect(computeVisibleSlotCount(instruments, 0, 256, isEmpty)).toBe(3);
 
     // currentIndex forces visibility even if last non-empty is earlier

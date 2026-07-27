@@ -59,7 +59,7 @@ export class SequencerEngine {
     lineIndex: number,
     tick: number,
     patternIndex: number,
-    currentRegisters: RegisterState
+    currentRegisters: RegisterState,
   ): FrameState {
     const registers: RegisterState = { ...currentRegisters };
 

@@ -21,7 +21,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
   song,
   activeSection,
   setActiveSection,
-  onChange
+  onChange,
 }) => {
   const titleRef = useRef<HTMLInputElement>(null);
   const authorRef = useRef<HTMLInputElement>(null);
@@ -30,7 +30,9 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
   const lengthRef = useRef<HTMLInputElement>(null);
   const loopRef = useRef<HTMLInputElement>(null);
   const isActive = activeSection === 'songInfo';
-  const [lastFocusedField, setLastFocusedField] = useState<'title' | 'author' | 'year' | 'speed' | 'length' | 'loop'>('title');
+  const [lastFocusedField, setLastFocusedField] = useState<
+    'title' | 'author' | 'year' | 'speed' | 'length' | 'loop'
+  >('title');
 
   useEffect(() => {
     if (!isActive) return;
@@ -41,7 +43,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
       year: yearRef,
       speed: speedRef,
       length: lengthRef,
-      loop: loopRef
+      loop: loopRef,
     } as const;
 
     const targetRef = fieldMap[lastFocusedField] || titleRef;
@@ -50,119 +52,146 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
     }
   }, [isActive, lastFocusedField]);
 
-  const handleFieldChange = useCallback((field: keyof Song, value: string | number | null) => {
-    onChange({ [field]: value });
-  }, [onChange]);
+  const handleFieldChange = useCallback(
+    (field: keyof Song, value: string | number | null) => {
+      onChange({ [field]: value });
+    },
+    [onChange],
+  );
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (!isActive) return;
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isActive) return;
 
-    const target = event.target as HTMLInputElement | null;
+      const target = event.target as HTMLInputElement | null;
 
-    if (event.key === 'Tab') {
-      event.preventDefault();
-      // Let navigation handle tab
-      return;
-    }
-
-    if (!target) return;
-
-    const fields = [
-      titleRef.current,
-      authorRef.current,
-      yearRef.current,
-      speedRef.current,
-      lengthRef.current,
-      loopRef.current
-    ];
-    const index = fields.findIndex((el) => el === target);
-
-    if (index === -1) return;
-
-    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
-      event.preventDefault();
-      const delta = event.key === 'ArrowDown' ? 1 : -1;
-      const nextIndex = (index + delta + fields.length) % fields.length;
-      const next = fields[nextIndex];
-      if (next) {
-        next.focus();
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        // Let navigation handle tab
+        return;
       }
-    }
-  }, [isActive]);
 
-  const handleSpeedChange = useCallback((next: number | null) => {
-    if (typeof next !== 'number' || !Number.isFinite(next)) {
-      return;
-    }
-    const base = next;
-    const clamped = Math.max(2, base);
-    const even = clamped & ~1; // enforce even speed (2,4,6,...)
-    handleFieldChange('speed', even);
-  }, [handleFieldChange]);
+      if (!target) return;
 
-  const handleYearChange = useCallback((next: number | null) => {
-    const fallback = new Date().getFullYear();
-    const raw = typeof next === 'number' && Number.isFinite(next) ? next : fallback;
-    const clamped = Math.max(1980, Math.min(2030, raw));
-    handleFieldChange('year', clamped);
-  }, [handleFieldChange]);
+      const fields = [
+        titleRef.current,
+        authorRef.current,
+        yearRef.current,
+        speedRef.current,
+        lengthRef.current,
+        loopRef.current,
+      ];
+      const index = fields.findIndex((el) => el === target);
 
-  const handleLengthChange = useCallback((next: number | null) => {
-    const base = typeof next === 'number' && Number.isFinite(next) ? next : 64;
-    const clamped = Math.max(4, Math.min(256, base));
-    handleFieldChange('length', clamped);
-  }, [handleFieldChange]);
+      if (index === -1) return;
 
-  const handleLoopChange = useCallback((next: number | null) => {
-    if (typeof next !== 'number' || !Number.isFinite(next)) {
-      handleFieldChange('loop', null);
-      return;
-    }
-    const base = Math.floor(next as number);
-    const maxPos = Math.max(0, song.line.length - 1);
-    const clamped = Math.max(0, Math.min(maxPos, base));
-    handleFieldChange('loop', clamped);
-  }, [handleFieldChange, song.line.length]);
-
-  const handleLoopInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Backspace') {
-      const input = event.currentTarget;
-      const value = input.value || '';
-      const selectionStart = input.selectionStart ?? 0;
-      const selectionEnd = input.selectionEnd ?? 0;
-
-      const deletingAll =
-        value.length === 0 ||
-        (selectionStart === 0 && selectionEnd === value.length) ||
-        (value.length === 1 && selectionStart === 1 && selectionEnd === 1);
-
-      if (deletingAll) {
-        handleLoopChange(null);
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const delta = event.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex = (index + delta + fields.length) % fields.length;
+        const next = fields[nextIndex];
+        if (next) {
+          next.focus();
+        }
       }
-    }
+    },
+    [isActive],
+  );
 
-    handleKeyDown(event);
-  }, [handleKeyDown, handleLoopChange]);
+  const handleSpeedChange = useCallback(
+    (next: number | null) => {
+      if (typeof next !== 'number' || !Number.isFinite(next)) {
+        return;
+      }
+      const base = next;
+      const clamped = Math.max(2, base);
+      const even = clamped & ~1; // enforce even speed (2,4,6,...)
+      handleFieldChange('speed', even);
+    },
+    [handleFieldChange],
+  );
+
+  const handleYearChange = useCallback(
+    (next: number | null) => {
+      const fallback = new Date().getFullYear();
+      const raw = typeof next === 'number' && Number.isFinite(next) ? next : fallback;
+      const clamped = Math.max(1980, Math.min(2030, raw));
+      handleFieldChange('year', clamped);
+    },
+    [handleFieldChange],
+  );
+
+  const handleLengthChange = useCallback(
+    (next: number | null) => {
+      const base = typeof next === 'number' && Number.isFinite(next) ? next : 64;
+      const clamped = Math.max(4, Math.min(256, base));
+      handleFieldChange('length', clamped);
+    },
+    [handleFieldChange],
+  );
+
+  const handleLoopChange = useCallback(
+    (next: number | null) => {
+      if (typeof next !== 'number' || !Number.isFinite(next)) {
+        handleFieldChange('loop', null);
+        return;
+      }
+      const base = Math.floor(next as number);
+      const maxPos = Math.max(0, song.line.length - 1);
+      const clamped = Math.max(0, Math.min(maxPos, base));
+      handleFieldChange('loop', clamped);
+    },
+    [handleFieldChange, song.line.length],
+  );
+
+  const handleLoopInputKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Backspace') {
+        const input = event.currentTarget;
+        const value = input.value || '';
+        const selectionStart = input.selectionStart ?? 0;
+        const selectionEnd = input.selectionEnd ?? 0;
+
+        const deletingAll =
+          value.length === 0 ||
+          (selectionStart === 0 && selectionEnd === value.length) ||
+          (value.length === 1 && selectionStart === 1 && selectionEnd === 1);
+
+        if (deletingAll) {
+          handleLoopChange(null);
+        }
+      }
+
+      handleKeyDown(event);
+    },
+    [handleKeyDown, handleLoopChange],
+  );
 
   const formatFrame = useCallback((frame: number) => `${frame} Hz`, []);
 
   const formatClock = useCallback((clock: number) => `${clock / 1000000} MHz`, []);
 
-  const handleFrameToggle = useCallback((next: number) => {
-    handleFieldChange('frame', next);
-  }, [handleFieldChange]);
+  const handleFrameToggle = useCallback(
+    (next: number) => {
+      handleFieldChange('frame', next);
+    },
+    [handleFieldChange],
+  );
 
-  const handleClockToggle = useCallback((next: number) => {
-    handleFieldChange('clock', next);
-  }, [handleFieldChange]);
+  const handleClockToggle = useCallback(
+    (next: number) => {
+      handleFieldChange('clock', next);
+    },
+    [handleFieldChange],
+  );
 
   return (
-    <div 
+    <div
       className={`information-panel ${isActive ? 'active' : ''}`}
       onClick={() => setActiveSection('songInfo')}
     >
       <div className="information-header">Song</div>
-      
+
       <div className="information-content">
         <div className="information-field information-field-with-toggle">
           <label>Title:</label>
@@ -215,14 +244,14 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
                 max={2030}
                 step={1}
                 ariaLabel="Song year"
-                inputRef={el => {
+                inputRef={(el) => {
                   yearRef.current = el;
                 }}
                 onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('year')}
               />
             </div>
-            
+
             <div className="information-field">
               <label>Speed:</label>
               <NumberSpinner
@@ -232,7 +261,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
                 max={255}
                 step={2}
                 ariaLabel="Song speed"
-                inputRef={el => {
+                inputRef={(el) => {
                   speedRef.current = el;
                 }}
                 onInputKeyDown={handleKeyDown}
@@ -251,7 +280,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
                 max={256}
                 step={1}
                 ariaLabel="Pattern length"
-                inputRef={el => {
+                inputRef={(el) => {
                   lengthRef.current = el;
                 }}
                 onInputKeyDown={handleKeyDown}
@@ -262,13 +291,15 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
             <div className="information-field">
               <label>Loop:</label>
               <NumberSpinner
-                value={typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null}
+                value={
+                  typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null
+                }
                 onChange={handleLoopChange}
                 min={0}
                 max={Math.max(0, song.line.length - 1)}
                 step={1}
                 ariaLabel="Playlist loop position"
-                inputRef={el => {
+                inputRef={(el) => {
                   loopRef.current = el;
                 }}
                 onInputKeyDown={handleLoopInputKeyDown}

@@ -20,7 +20,13 @@ describe('useModalState', () => {
   it('exposes default closed and empty state for modals and summaries', async () => {
     let hook: HookResult | null = null;
 
-    render(<ModalStateHarness onReady={value => { hook = value; }} />);
+    render(
+      <ModalStateHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -60,7 +66,13 @@ describe('useModalState', () => {
   it('allows updating representative modal flags and summaries through setters', async () => {
     let hook: HookResult | null = null;
 
-    render(<ModalStateHarness onReady={value => { hook = value; }} />);
+    render(
+      <ModalStateHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();

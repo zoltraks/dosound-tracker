@@ -15,7 +15,7 @@ describe('FilePickerModal', () => {
         mode="download"
         defaultSortDescending={true}
         onClose={() => {}}
-      />
+      />,
     );
 
     expect(container.querySelector('.modal-backdrop')).toBeNull();
@@ -31,7 +31,7 @@ describe('FilePickerModal', () => {
         mode="download"
         defaultSortDescending={true}
         onClose={() => {}}
-      />
+      />,
     );
 
     const links = screen.getAllByRole('link');
@@ -54,12 +54,12 @@ describe('FilePickerModal', () => {
         mode="download"
         defaultSortDescending={true}
         onClose={() => {}}
-      />
+      />,
     );
 
     const scope = within(container);
     const sortButton = scope.getByRole('button', { name: 'SORT' });
-    const getLabels = () => scope.getAllByRole('link').map(link => link.textContent);
+    const getLabels = () => scope.getAllByRole('link').map((link) => link.textContent);
 
     expect(getLabels()).toEqual(['b.txt', 'a.txt']);
 
@@ -84,7 +84,7 @@ describe('FilePickerModal', () => {
         defaultSortDescending={false}
         onClose={handleClose}
         onPick={handlePick}
-      />
+      />,
     );
 
     const button = screen.getByRole('button', { name: 'file name' });

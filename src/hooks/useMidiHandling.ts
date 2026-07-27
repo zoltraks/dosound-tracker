@@ -28,14 +28,14 @@ interface UseMidiHandlingResult {
     note: string,
     octave: number,
     volumeFromStep?: number | null,
-    velocityOverride?: number | null
+    velocityOverride?: number | null,
   ) => void;
   sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   previewInstrumentMidiNoteOn: (
     ymChannel: number,
     instrument: Instrument,
     note: string,
-    octave: number
+    octave: number,
   ) => void;
   previewInstrumentMidiNoteOff: (ymChannel: number) => void;
   midiInputEnabled: boolean;
@@ -93,7 +93,7 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     note: string,
     octave: number,
     volumeFromStep?: number | null,
-    velocityOverride?: number | null
+    velocityOverride?: number | null,
   ) => {
     if (!instrument || !instrument.midi) {
       return;
@@ -130,9 +130,10 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
       const raw = velocityOverride | 0;
       velocity = Math.max(1, Math.min(127, raw));
     } else {
-      const rawVolume = volumeFromStep !== undefined && volumeFromStep !== null
-        ? ((volumeFromStep as number) | 0)
-        : null;
+      const rawVolume =
+        volumeFromStep !== undefined && volumeFromStep !== null
+          ? (volumeFromStep as number) | 0
+          : null;
 
       if (rawVolume !== null) {
         const volumeNibble = Math.max(0, Math.min(0x0f, rawVolume));
@@ -140,7 +141,8 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
       }
     }
 
-    const lastEntry = ymChannel >= 0 && ymChannel <= 2 ? playbackMidiNotesRef.current[ymChannel] : null;
+    const lastEntry =
+      ymChannel >= 0 && ymChannel <= 2 ? playbackMidiNotesRef.current[ymChannel] : null;
     if (lastEntry) {
       sendNoteOff(lastEntry.midiChannel, lastEntry.noteNumber);
       if (ymChannel >= 0 && ymChannel <= 2) {
@@ -162,7 +164,7 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
     ymChannel: number,
     instrument: Instrument,
     note: string,
-    octave: number
+    octave: number,
   ) => {
     sendInstrumentMidiNoteOn(ymChannel, instrument, note, octave, null);
   };

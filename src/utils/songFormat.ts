@@ -2,9 +2,7 @@ export const DEFAULT_BASE_KEY = 'C-4';
 
 export const formatBaseKey = (note: string, octave: number): string => {
   const upperNote = note.toUpperCase();
-  return upperNote.endsWith('#')
-    ? `${upperNote}${octave}`
-    : `${upperNote}-${octave}`;
+  return upperNote.endsWith('#') ? `${upperNote}${octave}` : `${upperNote}-${octave}`;
 };
 
 export const parseBaseKey = (value: unknown): { note: string; octave: number } | null => {

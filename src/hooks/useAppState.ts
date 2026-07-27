@@ -28,27 +28,29 @@ export function useAppState(): UseAppStateResult {
     StorageKeys.DEBUG_MODE,
     false,
     {
-      read: (stored) => stored === 'on' ? true : stored === 'off' ? false : false,
-      write: (value) => value ? 'on' : 'off',
-    }
+      read: (stored) => (stored === 'on' ? true : stored === 'off' ? false : false),
+      write: (value) => (value ? 'on' : 'off'),
+    },
   );
 
   const [exportType, setExportType] = useLocalStorageState<ExportType>(
     StorageKeys.EXPORT_TYPE,
     'song',
     {
-      read: (stored) => stored === 'song' || stored === 'pattern' || stored === 'instrument' ? stored : 'song',
+      read: (stored) =>
+        stored === 'song' || stored === 'pattern' || stored === 'instrument' ? stored : 'song',
       write: (value) => value,
-    }
+    },
   );
 
   const [exportStrategy, setExportStrategy] = useLocalStorageState<ExportStrategy>(
     StorageKeys.DUMP_MODE,
     'complex',
     {
-      read: (stored) => stored === 'simple' || stored === 'complex' || stored === 'optimized' ? stored : 'complex',
+      read: (stored) =>
+        stored === 'simple' || stored === 'complex' || stored === 'optimized' ? stored : 'complex',
       write: (value) => value,
-    }
+    },
   );
 
   const [transposeScope, setTransposeScope] = useState<'line' | 'song'>(() => {
@@ -57,7 +59,9 @@ export function useAppState(): UseAppStateResult {
       if (settings?.scope === 'line' || settings?.scope === 'song') {
         return settings.scope;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 'line';
   });
 
@@ -67,19 +71,25 @@ export function useAppState(): UseAppStateResult {
       if (settings?.trackScope === 'current' || settings?.trackScope === 'all') {
         return settings.trackScope;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 'current';
   });
 
-  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>(() => {
-    try {
-      const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
-      if (settings?.instrumentScope === 'all' || settings?.instrumentScope === 'selected') {
-        return settings.instrumentScope;
+  const [transposeInstrumentScope, setTransposeInstrumentScope] = useState<'all' | 'selected'>(
+    () => {
+      try {
+        const settings = JSON.parse(localStorage.getItem(StorageKeys.TRANSPOSE_SETTINGS) || 'null');
+        if (settings?.instrumentScope === 'all' || settings?.instrumentScope === 'selected') {
+          return settings.instrumentScope;
+        }
+      } catch {
+        /* ignore */
       }
-    } catch { /* ignore */ }
-    return 'all';
-  });
+      return 'all';
+    },
+  );
 
   const [transposeAmount, setTransposeAmount] = useState<number>(() => {
     try {
@@ -87,7 +97,9 @@ export function useAppState(): UseAppStateResult {
       if (typeof settings?.amount === 'number' && Number.isFinite(settings.amount)) {
         return settings.amount;
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return 0;
   });
 
@@ -97,7 +109,9 @@ export function useAppState(): UseAppStateResult {
       if (typeof settings?.amount === 'number' && Number.isFinite(settings.amount)) {
         return String(settings.amount);
       }
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
     return '0';
   });
 

@@ -43,27 +43,51 @@ export interface SimulationOptions {
 
 /** Simulates playback of a song, emitting frames with register states for each tick. */
 export function simulateSong(
-  song: Song, 
-  callback: PlaybackCallback, 
-  options: SimulationOptions = {}
+  song: Song,
+  callback: PlaybackCallback,
+  options: SimulationOptions = {},
 ): void {
   const { retriggerBehavior = 'always', clock = YM_CLOCK } = options;
   const ticksPerRow = song.speed || 6;
-  
+
   // Initialize register state
   let currentRegs: RegisterState = {
     0x07: 0x38, // Mixer: all tones enabled, noise disabled
     0x08: 0x00, // Volume A
     0x09: 0x00, // Volume B
-    0x0A: 0x00, // Volume C
+    0x0a: 0x00, // Volume C
   };
-  
+
   const channels: ChannelState[] = [
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
-    { note: null, envelopeStep: 0, subTick: 0, isNewNote: false, volumeModifier: 0x0f, sustainIndex: null, released: false },
+    {
+      note: null,
+      envelopeStep: 0,
+      subTick: 0,
+      isNewNote: false,
+      volumeModifier: 0x0f,
+      sustainIndex: null,
+      released: false,
+    },
+    {
+      note: null,
+      envelopeStep: 0,
+      subTick: 0,
+      isNewNote: false,
+      volumeModifier: 0x0f,
+      sustainIndex: null,
+      released: false,
+    },
+    {
+      note: null,
+      envelopeStep: 0,
+      subTick: 0,
+      isNewNote: false,
+      volumeModifier: 0x0f,
+      sustainIndex: null,
+      released: false,
+    },
   ];
-  
+
   let globalLineIndex = 0;
   let hasEmittedFrame = false;
 
@@ -71,9 +95,9 @@ export function simulateSong(
   for (let playlistIdx = 0; playlistIdx < song.line.length; playlistIdx++) {
     const playlistEntry = song.line[playlistIdx];
     const patterns = [
-      song.pattern.find(p => p.id === playlistEntry.A),
-      song.pattern.find(p => p.id === playlistEntry.B),
-      song.pattern.find(p => p.id === playlistEntry.C),
+      song.pattern.find((p) => p.id === playlistEntry.A),
+      song.pattern.find((p) => p.id === playlistEntry.B),
+      song.pattern.find((p) => p.id === playlistEntry.C),
     ];
 
     // Reset channel state if needed
@@ -96,10 +120,10 @@ export function simulateSong(
       channelState.sustainIndex = null;
       channelState.released = false;
     }
-    
+
     // Process each line in the pattern
     const lineCount = song.length || 64;
-    
+
     for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
       // Get notes for this line
       const notes = [
@@ -113,19 +137,19 @@ export function simulateSong(
         patterns[1]?.step[lineIdx]?.volume,
         patterns[2]?.step[lineIdx]?.volume,
       ];
-      
+
       // Process each tick in this row
       for (let tick = 0; tick < ticksPerRow; tick++) {
         const newRegs: RegisterState = { ...currentRegs };
         const toneMeta: ToneMetaByChannel = {};
-        
+
         // Process each channel
         for (let ch = 0; ch < 3; ch++) {
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
           const channelState = channels[ch];
           const volumeOnRow = volumes[ch];
-          
+
           if (tick === 0) {
             if (!pattern) {
               // No pattern for this channel in this playlist position -
@@ -158,9 +182,10 @@ export function simulateSong(
               channelState.released = true;
             } else if (noteOnRow && noteOnRow.note) {
               let shouldRetrigger = true;
-              
+
               if (retriggerBehavior === 'new_note_only') {
-                const isNew = !channelState.note ||
+                const isNew =
+                  !channelState.note ||
                   channelState.note.note !== noteOnRow.note ||
                   channelState.note.octave !== noteOnRow.octave ||
                   channelState.note.instrument !== noteOnRow.instrument;
@@ -173,9 +198,13 @@ export function simulateSong(
                 channelState.subTick = 0;
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
 
-                const instrument = song.instrument.find(i => i.id === noteOnRow.instrument);
+                const instrument = song.instrument.find((i) => i.id === noteOnRow.instrument);
                 const rawSustain = instrument?.sustain ?? null;
-                if (typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0) {
+                if (
+                  typeof rawSustain === 'number' &&
+                  Number.isFinite(rawSustain) &&
+                  rawSustain >= 0
+                ) {
                   channelState.sustainIndex = Math.floor(rawSustain);
                 } else {
                   channelState.sustainIndex = null;
@@ -194,10 +223,10 @@ export function simulateSong(
               channelState.volumeModifier = clamped;
             }
           }
-          
+
           // Update channel with current envelope step
           if (channelState.note) {
-            const instrument = song.instrument.find(i => i.id === channelState.note!.instrument);
+            const instrument = song.instrument.find((i) => i.id === channelState.note!.instrument);
             if (instrument) {
               const rawStep = channelState.envelopeStep;
               const sustainIndex = channelState.sustainIndex;
@@ -205,9 +234,7 @@ export function simulateSong(
 
               let step = rawStep;
               const hasSustain =
-                sustainIndex !== null &&
-                sustainIndex !== undefined &&
-                sustainIndex >= 0;
+                sustainIndex !== null && sustainIndex !== undefined && sustainIndex >= 0;
 
               if (hasSustain) {
                 if (!isReleased && rawStep >= sustainIndex) {
@@ -247,11 +274,11 @@ export function simulateSong(
                 step,
                 channelState.isNewNote,
                 channelState.volumeModifier,
-                clock
+                clock,
               );
             }
           }
-          
+
           // Advance envelope timing (every 2 frames = 40ms)
           if (channelState.note) {
             const sub = (channelState.subTick + 1) % 2;
@@ -273,7 +300,7 @@ export function simulateSong(
             }
           }
         }
-        
+
         callback({
           registers: newRegs,
           lineIndex: globalLineIndex + lineIdx,
@@ -281,15 +308,15 @@ export function simulateSong(
           patternLineIndex: lineIdx,
           tick: tick,
           toneMeta,
-          channels: channels.map(c => ({ ...c })), // Shallow copy to protect state
+          channels: channels.map((c) => ({ ...c })), // Shallow copy to protect state
           isFirstFrame: !hasEmittedFrame,
         });
-        
+
         currentRegs = newRegs;
         hasEmittedFrame = true;
       }
     }
-    
+
     globalLineIndex += lineCount;
   }
 }
@@ -302,29 +329,29 @@ export function applyInstrumentToRegisters(
   envelopeStep: number,
   isNewNote: boolean,
   volumeModifier?: number | null,
-  clock: number = YM_CLOCK
+  clock: number = YM_CLOCK,
 ): void {
   const step = Math.max(0, envelopeStep);
-  
+
   // Get envelope values
-  const volumeEnv = instrument.volume || [0x0F];
+  const volumeEnv = instrument.volume || [0x0f];
   const shiftEnv = instrument.shift || [0];
   const pitchEnv = instrument.pitch || [0];
   const modeEnv = instrument.mode || [0];
   const noiseEnv = instrument.noise || [0];
-  
+
   const volIdx = Math.min(step, volumeEnv.length - 1);
   const shiftIdx = Math.min(step, shiftEnv.length - 1);
   const pitchIdx = Math.min(step, pitchEnv.length - 1);
   const modeIdx = Math.min(step, modeEnv.length - 1);
   const noiseIdx = Math.min(step, noiseEnv.length - 1);
-  
-  let volume = Math.max(0, Math.min(0x0F, volumeEnv[volIdx] || 0));
+
+  let volume = Math.max(0, Math.min(0x0f, volumeEnv[volIdx] || 0));
   const shift = shiftEnv[shiftIdx] || 0;
   const pitch = (pitchEnv[pitchIdx] || 0) | 0;
   const mode = modeEnv[modeIdx] || 0;
-  const noisePeriod = Math.max(0, Math.min(0x1F, noiseEnv[noiseIdx] || 0));
-  
+  const noisePeriod = Math.max(0, Math.min(0x1f, noiseEnv[noiseIdx] || 0));
+
   // Apply optional per-step volume modifier (0-15) as attenuation, 15 = no attenuation.
   if (volumeModifier !== undefined && volumeModifier !== null) {
     const mod = Math.max(0, Math.min(0x0f, volumeModifier | 0));
@@ -333,42 +360,42 @@ export function applyInstrumentToRegisters(
 
   // Set volume
   regs[0x08 + channel] = volume;
-  
+
   // Calculate frequency with shift (NOTE_FREQUENCIES are defined for NOTE_BASE_OCTAVE)
   const baseFreq = NOTE_FREQUENCIES[note.note] || 440.0;
   let frequency = baseFreq * Math.pow(2, note.octave - NOTE_BASE_OCTAVE);
   if (shift !== 0) {
     frequency = frequency * Math.pow(2, shift / 12);
   }
-  let period = Math.floor(clock / (16 * frequency)) & 0x0FFF;
+  let period = Math.floor(clock / (16 * frequency)) & 0x0fff;
   if (pitch !== 0) {
     // Apply pitch envelope as a direct delta on the divider value.
-    period = (period - pitch) & 0x0FFF;
+    period = (period - pitch) & 0x0fff;
   }
-  
+
   // Update mixer based on mode
   const toneActive = mode === 0 || mode === 2;
   const noiseActive = mode === 1 || mode === 2;
-  
+
   let mixer = regs[0x07] || 0x38;
   if (toneActive) {
     mixer &= ~(1 << channel);
   } else {
-    mixer |= (1 << channel);
+    mixer |= 1 << channel;
   }
   if (noiseActive) {
     mixer &= ~(0x08 << channel);
   } else {
-    mixer |= (0x08 << channel);
+    mixer |= 0x08 << channel;
   }
   regs[0x07] = mixer;
-  
+
   // Set tone period if active (always set for new notes, even if not tone-active in current step)
   if (toneActive || isNewNote) {
-    regs[channel * 2] = period & 0xFF;
-    regs[channel * 2 + 1] = (period >> 8) & 0x0F;
+    regs[channel * 2] = period & 0xff;
+    regs[channel * 2 + 1] = (period >> 8) & 0x0f;
   }
-  
+
   // Set noise period if active
   if (noiseActive && noisePeriod > 0) {
     regs[0x06] = noisePeriod;

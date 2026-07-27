@@ -1,5 +1,17 @@
 import React from 'react';
-import { InformationModal, ConfirmationModal, TransposeModal, AboutModal, MarkdownModal, DownloadModal, InstrumentDeleteModal, InstrumentTypeWarningModal, MidiModal, InstrumentMidiModal, InstrumentColorModal } from '../modals';
+import {
+  InformationModal,
+  ConfirmationModal,
+  TransposeModal,
+  AboutModal,
+  MarkdownModal,
+  DownloadModal,
+  InstrumentDeleteModal,
+  InstrumentTypeWarningModal,
+  MidiModal,
+  InstrumentMidiModal,
+  InstrumentColorModal,
+} from '../modals';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 import { CONFIRM_MODAL_TEXT } from '../constants/modal';
@@ -260,7 +272,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
 
   return (
     <>
-      {infoModals.map(modal => (
+      {infoModals.map((modal) => (
         <InformationModal
           key={modal.key}
           isOpen={modal.isOpen}
@@ -366,7 +378,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onTrackScopeChange={setTransposeTrackScope}
         onInstrumentScopeChange={setTransposeInstrumentScope}
         onAmountChange={onTransposeAmountChange}
-        onAmountAdjust={delta => {
+        onAmountAdjust={(delta) => {
           const rawNext = transposeAmount + delta;
           const clamped = Math.max(-99, Math.min(99, rawNext));
           setTransposeAmount(clamped);
@@ -422,10 +434,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onSystemReset={onMidiSystemReset}
       />
 
-      <DownloadModal
-        isOpen={isDownloadOpen}
-        onClose={() => setIsDownloadOpen(false)}
-      />
+      <DownloadModal isOpen={isDownloadOpen} onClose={() => setIsDownloadOpen(false)} />
     </>
   );
 };

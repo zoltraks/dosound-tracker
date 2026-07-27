@@ -23,7 +23,9 @@ export default mergeConfig(
       onConsoleLog(log, type) {
         if (
           type === 'stderr' &&
-          log.includes('Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.')
+          log.includes(
+            'Both esbuild and oxc options were set. oxc options will be used and esbuild options will be ignored.',
+          )
         ) {
           return false;
         }
@@ -34,5 +36,5 @@ export default mergeConfig(
         '@': resolve(__dirname, './src'),
       },
     },
-  })
+  }),
 );

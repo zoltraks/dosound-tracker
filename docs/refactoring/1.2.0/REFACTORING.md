@@ -7,6 +7,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Current State Analysis
 
 ### Project Structure
+
 - Current version: 1.2.0
 - Primary language: TypeScript
 - Architecture: React-based UI with Web Audio API for sound synthesis
@@ -14,6 +15,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 - Performance requirements: 20ms or 40ms cycle times for playback and sequencer
 
 ### Large Files Identified
+
 1. `src/App.tsx` - 2939 lines (main application component)
 2. `src/utils/assemblyExport.ts` - 2495 lines (assembly export functionality)
 3. `src/hooks/useDataManagement.ts` - 982 lines (data management hook)
@@ -37,6 +39,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `assemblyExport.ts` is extremely large at 2495 lines, containing multiple export formats (assembly, binary, VGM, WAV, MAX).
 
 **Proposed Solution**:
+
 - Create `src/exports/asm.ts` for assembly-specific export
 - Create `src/exports/bin.ts` for BIN export functionality
 - Create `src/exports/vgm.ts` for VGM export functionality
@@ -44,6 +47,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 - Create `src/exports/max.ts` for MAX format export
 
 **Expected Benefits**:
+
 - Reduce `assemblyExport.ts` by ~1800 lines
 - Better separation of export format concerns
 - Improved testability of individual export formats
@@ -54,6 +58,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `App.tsx` is overly large at 2939 lines, handling state management, playback logic, UI rendering, and numerous event handlers.
 
 **Proposed Solution**:
+
 - Extract playback-related logic into `src/hooks/usePlayback.ts`
 - Extract MIDI-related state and handlers into `src/hooks/useMidiState.ts`
 - Extract modal management into `src/hooks/useModalState.ts`
@@ -61,6 +66,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 - Move keyboard shortcut handling to separate `src/hooks/useKeyboardShortcuts.ts`
 
 **Expected Benefits**:
+
 - Reduce `App.tsx` by ~1200 lines
 - Better separation of concerns between UI and logic
 - Improved component reusability
@@ -71,6 +77,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `useDataManagement.ts` is large at 982 lines, handling song, instrument, and pattern management.
 
 **Proposed Solution**:
+
 - Create `src/hooks/useSongManagement.ts` for song-specific operations
 - Create `src/hooks/useInstrumentManagement.ts` for instrument operations
 - Create `src/hooks/usePatternManagement.ts` for pattern operations
@@ -78,6 +85,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 - Keep core data management in refactored `useDataManagement.ts`
 
 **Expected Benefits**:
+
 - Reduce `useDataManagement.ts` by ~500 lines
 - Clearer separation between different data types
 - Better maintainability of storage operations
@@ -88,12 +96,14 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `PianoKeyboard.tsx` is large at 623 lines, containing keyboard rendering, note playback, and envelope management.
 
 **Proposed Solution**:
+
 - Create `src/components/PianoKey.tsx` for individual key rendering
 - Create `src/hooks/usePianoPlayback.ts` for note playback logic
 - Create `src/utils/pianoUtils.ts` for piano-related utilities
 - Extract envelope timing logic to `src/hooks/useEnvelopeTiming.ts`
 
 **Expected Benefits**:
+
 - Reduce `PianoKeyboard.tsx` by ~300 lines
 - Better separation of rendering vs. playback logic
 - Reusable piano key component
@@ -104,12 +114,14 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `PlaylistPanel.tsx` is large at 577 lines, handling playlist rendering, editing, and navigation.
 
 **Proposed Solution**:
+
 - Create `src/components/PlaylistLine.tsx` for individual line rendering
 - Create `src/components/PlaylistHeader.tsx` for header rendering
 - Create `src/hooks/usePlaylistNavigation.ts` for navigation logic
 - Create `src/utils/playlistUtils.ts` for playlist utilities
 
 **Expected Benefits**:
+
 - Reduce `PlaylistPanel.tsx` by ~250 lines
 - Better separation of rendering concerns
 - Reusable playlist components
@@ -118,6 +130,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Implementation Plan
 
 ### Phase 1: Export Functionality Refactoring (Days 1-3)
+
 1. Create new export module structure
 2. Move assembly export functionality to dedicated files
 3. Extract VGM, WAV, and MAX export formats
@@ -125,6 +138,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 5. Update imports throughout the codebase
 
 ### Phase 2: App Component Modularization (Days 4-6)
+
 1. Extract playback logic to `usePlayback.ts`
 2. Create MIDI state management hook
 3. Extract modal management functionality
@@ -132,6 +146,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 5. Update App.tsx to use new hooks
 
 ### Phase 3: Data Management Split (Days 7-8)
+
 1. Create song management hook
 2. Extract instrument management
 3. Create pattern management hook
@@ -139,6 +154,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 5. Refactor main data management hook
 
 ### Phase 4: UI Component Refactoring (Days 9-10)
+
 1. Extract piano keyboard components
 2. Split playlist panel components
 3. Create reusable UI elements
@@ -154,17 +170,20 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Risk Assessment
 
 ### Low Risk Changes
+
 - Export functionality extraction (assembly, VGM, WAV, MAX)
 - UI component splitting (piano keys, playlist lines)
 - Utility function extraction
 - Storage operations separation
 
 ### Medium Risk Changes
+
 - App component modularization (requires careful state management)
 - Data management hook splitting (must maintain data consistency)
 - Playback logic extraction (must preserve timing accuracy)
 
 ### High Risk Changes (Avoided)
+
 - Any modifications to YM2149 emulation code
 - Changes to core playback timing logic
 - Alterations to existing YAML file formats

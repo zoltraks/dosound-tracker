@@ -1,8 +1,4 @@
-export const expandEnvelope = (
-  values: unknown,
-  length: number,
-  defaultValue: number,
-): number[] => {
+export const expandEnvelope = (values: unknown, length: number, defaultValue: number): number[] => {
   const rawArray = Array.isArray(values) ? values : [];
   const numericValues: number[] = [];
   for (let i = 0; i < rawArray.length; i += 1) {
@@ -68,6 +64,4 @@ export const trimEnvelope = (values: number[]): number[] => {
 };
 
 export const isEnvelopeZeroDefault = (values: number[]): boolean =>
-  !values ||
-  values.length === 0 ||
-  (values.length === 1 && values[0] === 0);
+  !values || values.length === 0 || (values.length === 1 && values[0] === 0);

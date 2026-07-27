@@ -7,6 +7,7 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ## Current State Analysis
 
 ### Codebase Structure
+
 - The project follows a modular structure with clear separation of concerns
 - Export functionality is centralized in `src/exports/core.ts` with format-specific files in `src/exports/`
 - The codebase has grown organically with some duplication and unused code
@@ -25,6 +26,7 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ### 1. Export System Refactoring
 
 #### Current Structure Issues
+
 - `src/exports/core.ts` is overly large (1615 lines)
 - Format-specific files (`asm.ts`, `bin.ts`, etc.) only re-export from core
 - Mixed responsibilities: assembly formatting, binary parsing, MAX/VGM/WAV export logic
@@ -32,6 +34,7 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 #### Proposed Changes
 
 **Move format-specific functions to dedicated files:**
+
 - Move assembly-related functions to `src/exports/asm.ts`:
   - `exportToAssembly()`
   - `exportInstrumentToAssembly()`
@@ -63,6 +66,7 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
   - Helper functions: `encodePcm16Wav()`, `synthTickSamples()`, etc.
 
 **Shared utilities to remain in core.ts:**
+
 - `normalizeSongForExport()`
 - `parseBaseKeyForExport()`
 - `formatNoteLabel()`
@@ -73,11 +77,13 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ### 2. Code Duplication Removal
 
 **Identified duplicates:**
+
 - `parseBaseKeyForExport()` in `core.ts` vs `parseBaseKey()` in `utils/pianoUtils.ts`
 - Similar note/period conversion logic in multiple places
 - Redundant helper functions that could be consolidated
 
 **Proposed actions:**
+
 - Consolidate duplicate parsing functions
 - Create shared utilities for common operations
 - Remove unused helper functions
@@ -85,11 +91,13 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ### 3. Unused Code Removal
 
 **Functions to audit for usage:**
+
 - Internal helper functions in `core.ts` that may not be used externally
 - Redundant type definitions
 - Unused import statements
 
 **Proposed actions:**
+
 - Remove truly unused functions
 - Document internal-only functions
 - Clean up import statements
@@ -97,6 +105,7 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ### 4. Type Safety Improvements
 
 **Areas for improvement:**
+
 - Add explicit return types to all exported functions
 - Improve type definitions for complex data structures
 - Add proper typing for internal helper functions
@@ -104,12 +113,14 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ### 5. Performance Considerations
 
 **Critical requirements:**
+
 - Maintain 20ms/40ms cycle performance for playback and sequencer
 - No changes to audio processing logic
 - Preserve existing timing behavior
 - Keep React component structure unchanged
 
 **Safe refactoring approach:**
+
 - Only move functions between files, don't change their logic
 - Preserve all existing function signatures
 - Maintain identical import/export patterns
@@ -118,18 +129,21 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ## Implementation Plan
 
 ### Phase 1: Export System Restructuring
+
 1. **Create new format-specific files** with moved functions
 2. **Update core.ts** to remove moved functions and keep only shared utilities
 3. **Update imports** throughout the codebase to use new locations
 4. **Test all export formats** to ensure they work identically
 
 ### Phase 2: Code Cleanup
+
 1. **Remove duplicate functions** and consolidate logic
 2. **Clean up unused code** and imports
 3. **Improve type safety** with explicit types
 4. **Add documentation** for internal functions
 
 ### Phase 3: Testing and Validation
+
 1. **Verify all export formats** produce identical output
 2. **Test audio performance** remains unchanged
 3. **Validate TypeScript compilation** with no new errors
@@ -146,16 +160,19 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 ## Risk Assessment
 
 **Low Risk:**
+
 - Function movement without logic changes
 - Removal of truly unused code
 - Type safety improvements
 - Code organization changes
 
 **Medium Risk:**
+
 - Consolidation of duplicate functions (requires careful testing)
 - Import/export pattern changes (requires comprehensive testing)
 
 **High Risk:**
+
 - Any changes to audio processing logic (NOT included in this proposal)
 - Modifications to playback/sequencer timing (NOT included in this proposal)
 
@@ -172,7 +189,7 @@ This document outlines the refactoring proposal for DOSOUND Tracker version 1.2.
 This refactoring is designed to fit within a single sprint, with the following estimated breakdown:
 
 - **Export System Restructuring**: 3-4 days
-- **Code Cleanup and Type Safety**: 2-3 days  
+- **Code Cleanup and Type Safety**: 2-3 days
 - **Testing and Validation**: 2-3 days
 - **Buffer for unexpected issues**: 1-2 days
 
@@ -181,14 +198,16 @@ Total: ~10 days (within typical 2-week sprint)
 ## Files to be Modified
 
 ### Primary Changes:
+
 - `src/exports/core.ts` - Significant reduction in size
 - `src/exports/asm.ts` - Expanded with assembly-specific functions
-- `src/exports/bin.ts` - Expanded with binary-specific functions  
+- `src/exports/bin.ts` - Expanded with binary-specific functions
 - `src/exports/max.ts` - Expanded with MAX-specific functions
 - `src/exports/vgm.ts` - Expanded with VGM-specific functions
 - `src/exports/wav.ts` - Expanded with WAV-specific functions
 
 ### Secondary Changes:
+
 - Update import statements in files that use export functions
 - Remove duplicate functions from utility files
 - Clean up unused imports and code
@@ -211,6 +230,7 @@ Total: ~10 days (within typical 2-week sprint)
 ## Rollback Plan
 
 If any issues are discovered:
+
 1. Revert changes using git
 2. Identify root cause
 3. Fix issue in isolation
@@ -220,6 +240,7 @@ If any issues are discovered:
 ## Documentation Updates
 
 After successful implementation:
+
 1. Update project documentation to reflect new structure
 2. Add comments explaining the organization
 3. Document any new patterns or conventions
@@ -228,6 +249,7 @@ After successful implementation:
 ## Future Considerations
 
 This refactoring sets the foundation for:
+
 1. Easier addition of new export formats
 2. Better unit testing of export functionality
 3. Improved maintainability for future developers

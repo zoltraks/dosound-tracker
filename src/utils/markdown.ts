@@ -15,7 +15,10 @@ const applyInlineFormatting = (text: string): string => {
   });
 
   // Bold **text**
-  const withBold = withLinks.replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1</strong>');
+  const withBold = withLinks.replace(
+    /\*\*(.+?)\*\*/g,
+    '<strong class="markdown-strong">$1</strong>',
+  );
   return withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
 };
 
@@ -58,7 +61,7 @@ const renderInlineMarkdown = (text: string): string => {
 const parseTableRow = (line: string): string[] => {
   const trimmed = line.trim();
   const withoutOuterPipes = trimmed.replace(/^\|/, '').replace(/\|$/, '');
-  return withoutOuterPipes.split('|').map(cell => cell.trim());
+  return withoutOuterPipes.split('|').map((cell) => cell.trim());
 };
 
 const parseTableAlignment = (cell: string): 'left' | 'right' | 'center' | null => {
@@ -75,7 +78,7 @@ const isTableSeparatorLine = (line: string): boolean => {
   if (!line.includes('-')) return false;
   const cells = parseTableRow(line);
   if (cells.length === 0) return false;
-  return cells.every(cell => /^:?-{3,}:?$/.test(cell.trim()));
+  return cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
 };
 
 export const renderMarkdown = (md: string): string => {
@@ -104,12 +107,8 @@ export const renderMarkdown = (md: string): string => {
         codeBlockLang = trimmed.slice(3).trim();
         codeLines = [];
       } else {
-        const langClass = codeBlockLang
-          ? ` class="language-${escapeHtml(codeBlockLang)}"`
-          : '';
-        const codeHtml = codeLines
-          .map((codeLine) => escapeHtml(codeLine))
-          .join('\n');
+        const langClass = codeBlockLang ? ` class="language-${escapeHtml(codeBlockLang)}"` : '';
+        const codeHtml = codeLines.map((codeLine) => escapeHtml(codeLine)).join('\n');
         html.push(`<pre><code${langClass}>${codeHtml}</code></pre>`);
         inCodeBlock = false;
         codeBlockLang = '';
@@ -123,7 +122,7 @@ export const renderMarkdown = (md: string): string => {
       continue;
     }
 
-    const nextLine = (lineIndex + 1 < lines.length) ? (lines[lineIndex + 1] ?? '').trimEnd() : '';
+    const nextLine = lineIndex + 1 < lines.length ? (lines[lineIndex + 1] ?? '').trimEnd() : '';
     const nextTrimmed = nextLine.trim();
     if (trimmed && trimmed.includes('|') && isTableSeparatorLine(nextTrimmed)) {
       closeList();
@@ -161,7 +160,9 @@ export const renderMarkdown = (md: string): string => {
         html.push('<tr>');
         for (let cellIndex = 0; cellIndex < headerCells.length; cellIndex++) {
           const content = renderInlineMarkdown(rowCells[cellIndex] ?? '');
-          const align = alignments[cellIndex] ? ` style="text-align: ${alignments[cellIndex]}"` : '';
+          const align = alignments[cellIndex]
+            ? ` style="text-align: ${alignments[cellIndex]}"`
+            : '';
           html.push(`<td${align}>${content}</td>`);
         }
         html.push('</tr>');
@@ -222,12 +223,8 @@ export const renderMarkdown = (md: string): string => {
   }
 
   if (inCodeBlock) {
-    const langClass = codeBlockLang
-      ? ` class="language-${escapeHtml(codeBlockLang)}"`
-      : '';
-    const codeHtml = codeLines
-      .map((codeLine) => escapeHtml(codeLine))
-      .join('\n');
+    const langClass = codeBlockLang ? ` class="language-${escapeHtml(codeBlockLang)}"` : '';
+    const codeHtml = codeLines.map((codeLine) => escapeHtml(codeLine)).join('\n');
     html.push(`<pre><code${langClass}>${codeHtml}</code></pre>`);
   }
 

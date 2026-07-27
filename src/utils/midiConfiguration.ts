@@ -49,7 +49,9 @@ export const parseMidiConfigurationFromYaml = (
   const parsed = yaml.load(text) as unknown;
 
   if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
-    throw new MidiConfigurationFormatError('Invalid MIDI configuration file: missing "midi" root key.');
+    throw new MidiConfigurationFormatError(
+      'Invalid MIDI configuration file: missing "midi" root key.',
+    );
   }
 
   type MidiFileRoot = {
@@ -60,7 +62,9 @@ export const parseMidiConfigurationFromYaml = (
   const node = root.midi;
 
   if (!node || typeof node !== 'object') {
-    throw new MidiConfigurationFormatError('Invalid MIDI configuration file: "midi" section is not an object.');
+    throw new MidiConfigurationFormatError(
+      'Invalid MIDI configuration file: "midi" section is not an object.',
+    );
   }
 
   const midiNode = node as {

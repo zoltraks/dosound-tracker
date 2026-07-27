@@ -38,13 +38,7 @@ export function advancePreviewEnvelopeTick({
 
     if (st === 0) {
       const sustain = sustainIndex;
-      if (
-        sustain === null ||
-        sustain === undefined ||
-        sustain < 0 ||
-        released ||
-        step < sustain
-      ) {
+      if (sustain === null || sustain === undefined || sustain < 0 || released || step < sustain) {
         step = step + 1;
       }
     }
@@ -62,10 +56,16 @@ export function advancePreviewEnvelopeTick({
 export function getPreviewEnvelopeApplyStep(
   rawStep: number,
   sustainIndex: number | null | undefined,
-  released: boolean
+  released: boolean,
 ): number {
   const sustain = sustainIndex;
-  if (sustain !== null && sustain !== undefined && sustain >= 0 && !released && rawStep >= sustain) {
+  if (
+    sustain !== null &&
+    sustain !== undefined &&
+    sustain >= 0 &&
+    !released &&
+    rawStep >= sustain
+  ) {
     return sustain;
   }
 

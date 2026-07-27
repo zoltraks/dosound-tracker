@@ -10,7 +10,7 @@ Omit if the title is self-explanatory.
 ## Description
 
 The main body. Use paragraphs, lists, or subsections as needed.
-Describe *what* should happen, not *how* to implement it.
+Describe _what_ should happen, not _how_ to implement it.
 
 Include UI/UX details, behavioral rules, edge cases, or constraints
 that are part of the requirement — not part of the implementation plan.

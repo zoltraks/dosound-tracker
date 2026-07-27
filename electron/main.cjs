@@ -15,10 +15,10 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
-      backgroundThrottling: false
-    }
+      backgroundThrottling: false,
+    },
   });
-  
+
   const session = mainWindow.webContents.session;
 
   if (session && typeof session.setPermissionRequestHandler === 'function') {

@@ -15,28 +15,29 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 ## Version by Version Effort Summary
 
 | Version Range | Feature Dev | Bug Fixes | Refactoring | Total Commits |
-|---------------|-------------|-----------|-------------|---------------|
-| 1.0.14-1.0.20 | 65% | 25% | 10% | ~45 commits |
-| 1.0.21-1.0.22 | 50% | 30% | 20% | ~35 commits |
-| 1.1.0-1.1.2 | 55% | 20% | 25% | ~40 commits |
-| 1.1.3-1.1.9 | 60% | 25% | 15% | ~60 commits |
-| 1.2.0-1.2.3 | 45% | 30% | 25% | ~70 commits |
+| ------------- | ----------- | --------- | ----------- | ------------- |
+| 1.0.14-1.0.20 | 65%         | 25%       | 10%         | ~45 commits   |
+| 1.0.21-1.0.22 | 50%         | 30%       | 20%         | ~35 commits   |
+| 1.1.0-1.1.2   | 55%         | 20%       | 25%         | ~40 commits   |
+| 1.1.3-1.1.9   | 60%         | 25%       | 15%         | ~60 commits   |
+| 1.2.0-1.2.3   | 45%         | 30%       | 25%         | ~70 commits   |
 
 ## Week by Week Effort Summary
 
-| Week Range | Feature Dev | Bug Fixes | Refactoring | Total Commits |
-|------------|-------------|-----------|-------------|---------------|
-| 2025-11-17 to 2025-11-23 | 70% | 20% | 10% | ~50 commits |
-| 2025-11-24 to 2025-11-30 | 55% | 30% | 15% | ~40 commits |
-| 2025-12-01 to 2025-12-07 | 50% | 25% | 25% | ~35 commits |
-| 2025-12-08 to 2025-12-14 | 40% | 35% | 25% | ~45 commits |
-| 2025-12-15 to 2025-12-17 | 35% | 30% | 35% | ~30 commits |
+| Week Range               | Feature Dev | Bug Fixes | Refactoring | Total Commits |
+| ------------------------ | ----------- | --------- | ----------- | ------------- |
+| 2025-11-17 to 2025-11-23 | 70%         | 20%       | 10%         | ~50 commits   |
+| 2025-11-24 to 2025-11-30 | 55%         | 30%       | 15%         | ~40 commits   |
+| 2025-12-01 to 2025-12-07 | 50%         | 25%       | 25%         | ~35 commits   |
+| 2025-12-08 to 2025-12-14 | 40%         | 35%       | 25%         | ~45 commits   |
+| 2025-12-15 to 2025-12-17 | 35%         | 30%       | 35%         | ~30 commits   |
 
 ## Detailed Analysis
 
 ### Version 1.0.14-1.0.20 (Initial Feature Development)
 
 **Key Features Added:**
+
 - Core audio playback with YM2149 synthesizer
 - Pattern editor with note/volume columns
 - Instrument envelopes (volume, arpeggio, pitch)
@@ -44,6 +45,7 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 - Basic UI navigation and keyboard controls
 
 **Development Focus:**
+
 - 65% Feature Development: Building core tracker functionality
 - 25% Bug Fixes: Stabilizing basic playback and editing
 - 10% Refactoring: Minimal early-stage cleanup
@@ -51,12 +53,14 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 ### Version 1.0.21-1.0.22 (Stabilization Phase)
 
 **Key Improvements:**
+
 - Sustain and key-release support
 - Volume column integration
 - Mobile UI improvements
 - Export format enhancements
 
 **Development Focus:**
+
 - 50% Feature Development: Adding advanced editing features
 - 30% Bug Fixes: Addressing playback and export issues
 - 20% Refactoring: Code organization improvements
@@ -64,12 +68,14 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 ### Version 1.1.0-1.1.2 (MIDI Integration)
 
 **Key Features Added:**
+
 - MIDI input/output support
 - Live MIDI recording
 - Configuration management
 - Performance optimizations
 
 **Development Focus:**
+
 - 55% Feature Development: MIDI functionality expansion
 - 20% Bug Fixes: Timing and compatibility fixes
 - 25% Refactoring: Architecture improvements for MIDI
@@ -77,6 +83,7 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 ### Version 1.1.3-1.1.9 (UI/UX Refinement)
 
 **Key Improvements:**
+
 - Instrument color picker
 - Track coloring and tinting
 - Mobile layout enhancements
@@ -84,6 +91,7 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 - Markdown documentation
 
 **Development Focus:**
+
 - 60% Feature Development: UI/UX enhancements
 - 25% Bug Fixes: Visual and interaction issues
 - 15% Refactoring: Component modularization
@@ -91,6 +99,7 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 ### Version 1.2.0-1.2.3 (Maturity Phase)
 
 **Key Features Added:**
+
 - MIDI velocity support
 - Envelope editing shortcuts
 - Markdown table rendering
@@ -98,6 +107,7 @@ This report analyzes the development lifecycle of DOSOUND Tracker from version 1
 - Refactoring proposals
 
 **Development Focus:**
+
 - 45% Feature Development: Final feature polish
 - 30% Bug Fixes: Stability and edge cases
 - 25% Refactoring: Code quality and maintainability
@@ -111,6 +121,7 @@ The project shows a clear evolution from core functionality (1.0.x) to advanced 
 ### Bug Fix Patterns
 
 Bug fix activity increased as the product matured:
+
 - Early versions: 20-25% (basic stabilization)
 - Middle versions: 25-30% (feature integration issues)
 - Late versions: 30-35% (edge cases and polish)
@@ -118,6 +129,7 @@ Bug fix activity increased as the product matured:
 ### Refactoring Evolution
 
 Refactoring effort shows a steady increase:
+
 - Early versions: 10-15% (minimal cleanup)
 - Middle versions: 20-25% (architecture improvements)
 - Late versions: 25-35% (code quality focus)

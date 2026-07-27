@@ -50,9 +50,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
   onPick,
 }) => {
   const [internalFiles, setInternalFiles] = useState<string[]>([]);
-  const [sortDescending, setSortDescending] = useState<boolean>(
-    !!defaultSortDescending,
-  );
+  const [sortDescending, setSortDescending] = useState<boolean>(!!defaultSortDescending);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -72,9 +70,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
     const loadFromListFile = async () => {
       try {
         const normalizedDir = normalizeDirectory(directory);
-        const listPath = normalizedDir
-          ? `${normalizedDir}/${LIST_FILE_NAME}`
-          : LIST_FILE_NAME;
+        const listPath = normalizedDir ? `${normalizedDir}/${LIST_FILE_NAME}` : LIST_FILE_NAME;
         const listUrl = `${listPath}?ts=${Date.now()}`;
         const response = await fetch(listUrl, { cache: 'no-store' });
         if (!response.ok) {
@@ -168,19 +164,15 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
             {hasFiles ? (
               <table className="file-picker-table">
                 <tbody>
-                  {sortedFiles.map(file => {
+                  {sortedFiles.map((file) => {
                     const baseLabel = getFileLabel(file);
-                    const displayLabel =
-                      mode === 'pick' ? stripExtension(baseLabel) : baseLabel;
+                    const displayLabel = mode === 'pick' ? stripExtension(baseLabel) : baseLabel;
 
                     return (
                       <tr key={file} className="file-picker-row">
                         <td className="file-picker-cell">
                           {mode === 'download' ? (
-                            <a
-                              href={buildHref(directory, file)}
-                              className="download-link"
-                            >
+                            <a href={buildHref(directory, file)} className="download-link">
                               {displayLabel}
                             </a>
                           ) : (
@@ -208,18 +200,14 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
             <button
               className="command-btn"
               type="button"
-              onClick={() => setSortDescending(prev => !prev)}
+              onClick={() => setSortDescending((prev) => !prev)}
               disabled={!hasFiles}
             >
               SORT
             </button>
           </div>
           <div className="file-picker-actions-right">
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onClose}
-            >
+            <button className="command-btn" type="button" onClick={onClose}>
               CLOSE
             </button>
           </div>

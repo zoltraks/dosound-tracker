@@ -132,10 +132,10 @@ docker run -p 8080:80 dosound-tracker
 
 **Environment Variables**
 
-| Variable                | Description                                       |
-| ----------------------- | ------------------------------------------------- |
-| `VITE_APP_TITLE`        | Application title (default `DOSOUND Tracker`)     |
-| `VITE_APP_VERSION`      | Version shown in UI (sourced from `package.json`) |
+| Variable           | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| `VITE_APP_TITLE`   | Application title (default `DOSOUND Tracker`)     |
+| `VITE_APP_VERSION` | Version shown in UI (sourced from `package.json`) |
 
 Define these in an `.env` file for local development, or in hosting platform settings for production.
 

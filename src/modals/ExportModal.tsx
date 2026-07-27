@@ -143,22 +143,52 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 marginTop: '4px',
               }}
             >
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleDataClick}>
+              <button
+                type="button"
+                className="command-btn"
+                style={{ width: '100%' }}
+                onClick={handleDataClick}
+              >
                 DATA
               </button>
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleDumpClick}>
+              <button
+                type="button"
+                className="command-btn"
+                style={{ width: '100%' }}
+                onClick={handleDumpClick}
+              >
                 DUMP
               </button>
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleBinClick}>
+              <button
+                type="button"
+                className="command-btn"
+                style={{ width: '100%' }}
+                onClick={handleBinClick}
+              >
                 BIN
               </button>
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleVgmClick}>
+              <button
+                type="button"
+                className="command-btn"
+                style={{ width: '100%' }}
+                onClick={handleVgmClick}
+              >
                 VGM
               </button>
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleMaxClick}>
+              <button
+                type="button"
+                className="command-btn"
+                style={{ width: '100%' }}
+                onClick={handleMaxClick}
+              >
                 MAX
               </button>
-              <button type="button" className="command-btn" style={{ width: '100%' }} onClick={handleWavClick}>
+              <button
+                type="button"
+                className="command-btn"
+                style={{ width: '100%' }}
+                onClick={handleWavClick}
+              >
                 WAV
               </button>
             </div>

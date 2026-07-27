@@ -30,8 +30,8 @@ describe('useLocalStorageState', () => {
     const { result } = renderHook(() =>
       useLocalStorageState<boolean>('bool-key', false, {
         read: (stored) => stored === '1',
-        write: (value) => value ? '1' : '0',
-      })
+        write: (value) => (value ? '1' : '0'),
+      }),
     );
     expect(result.current[0]).toBe(false);
     act(() => {

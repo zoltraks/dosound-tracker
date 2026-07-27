@@ -141,12 +141,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
     }
 
     const key = event.key;
-    if (
-      key !== 'ArrowLeft' &&
-      key !== 'ArrowRight' &&
-      key !== 'ArrowUp' &&
-      key !== 'ArrowDown'
-    ) {
+    if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'ArrowUp' && key !== 'ArrowDown') {
       return;
     }
 
@@ -232,7 +227,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       ref={panelRef}
       className={`command-panel ${isActive ? 'active' : ''}`}
       tabIndex={0}
-      onFocus={event => {
+      onFocus={(event) => {
         if (!isActive) {
           return;
         }
@@ -252,11 +247,10 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           >
             PLAY
           </button>
-          <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO</button>
-          <button
-            onClick={onStop}
-            className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
-          >
+          <button onClick={onDemoSong} className="command-btn demo-song-btn">
+            DEMO
+          </button>
+          <button onClick={onStop} className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}>
             STOP
           </button>
         </div>
@@ -282,14 +276,26 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
             >
               STOP
             </button>
-            <button onClick={onNewSong} className="command-btn new-song-btn">NEW SONG</button>
-            <button onClick={onLoadSong} className="command-btn load-song-btn">LOAD SONG</button>
-            <button onClick={onSaveSong} className="command-btn save-song-btn">SAVE SONG</button>
-            <button onClick={onOptimize} className="command-btn">OPTIMIZE</button>
-            <button onClick={onRenumber} className="command-btn">RENUMBER</button>
-            <button onClick={onTranspose} className="command-btn">TRANSPOSE</button>
+            <button onClick={onNewSong} className="command-btn new-song-btn">
+              NEW SONG
+            </button>
+            <button onClick={onLoadSong} className="command-btn load-song-btn">
+              LOAD SONG
+            </button>
+            <button onClick={onSaveSong} className="command-btn save-song-btn">
+              SAVE SONG
+            </button>
+            <button onClick={onOptimize} className="command-btn">
+              OPTIMIZE
+            </button>
+            <button onClick={onRenumber} className="command-btn">
+              RENUMBER
+            </button>
+            <button onClick={onTranspose} className="command-btn">
+              TRANSPOSE
+            </button>
             <button
-              onClick={event => {
+              onClick={(event) => {
                 event.stopPropagation();
                 onShowMidi();
               }}
@@ -303,21 +309,39 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
             >
               BUG
             </button>
-            <button onClick={onReset} className="command-btn reset-btn">RESET</button>
+            <button onClick={onReset} className="command-btn reset-btn">
+              RESET
+            </button>
           </div>
 
           {/* Row 2: Playlist and track commands */}
           <div className="command-row">
-            <button onClick={onAddLine} className="command-btn">ADD LINE</button>
-            <button onClick={onDuplicateLine} className="command-btn">DUPLICATE LINE</button>
-            <button onClick={onCloneLine} className="command-btn">CLONE LINE</button>
-            <button onClick={onDeleteLine} className="command-btn">DELETE LINE</button>
-            <button onClick={onNewTrack} className="command-btn">ADD TRACK</button>
-            <button onClick={onCopyTrack} className="command-btn">COPY TRACK</button>
-            <button onClick={onPasteTrack} className="command-btn">PASTE TRACK</button>
-            <button onClick={onDeleteTrack} className="command-btn">DELETE TRACK</button>
+            <button onClick={onAddLine} className="command-btn">
+              ADD LINE
+            </button>
+            <button onClick={onDuplicateLine} className="command-btn">
+              DUPLICATE LINE
+            </button>
+            <button onClick={onCloneLine} className="command-btn">
+              CLONE LINE
+            </button>
+            <button onClick={onDeleteLine} className="command-btn">
+              DELETE LINE
+            </button>
+            <button onClick={onNewTrack} className="command-btn">
+              ADD TRACK
+            </button>
+            <button onClick={onCopyTrack} className="command-btn">
+              COPY TRACK
+            </button>
+            <button onClick={onPasteTrack} className="command-btn">
+              PASTE TRACK
+            </button>
+            <button onClick={onDeleteTrack} className="command-btn">
+              DELETE TRACK
+            </button>
             <button
-              onClick={event => {
+              onClick={(event) => {
                 event.stopPropagation();
                 onInsertStep();
               }}
@@ -326,7 +350,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
               INSERT STEP
             </button>
             <button
-              onClick={event => {
+              onClick={(event) => {
                 event.stopPropagation();
                 onDeleteStep();
               }}
@@ -338,16 +362,32 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
 
           {/* Row 3: Instrument and delete commands */}
           <div className="command-row">
-            <button onClick={onNewInstrument} className="command-btn">ADD INST</button>
-            <button onClick={onLoadInstrument} className="command-btn">LOAD INST</button>
-            <button onClick={onSaveInstrument} className="command-btn">SAVE INST</button>
-            <button onClick={onPlayInstrument} className="command-btn">PLAY INST</button>
-            <button onClick={onCloneInstrument} className="command-btn">CLONE INST</button>
-            <button onClick={onDeleteInstrument} className="command-btn">DELETE INST</button>
-            <button onClick={onPickInstrument} className="command-btn pick-inst-btn">PICK INST</button>
-            <button onClick={onDemoSong} className="command-btn demo-song-btn">DEMO SONG</button>
+            <button onClick={onNewInstrument} className="command-btn">
+              ADD INST
+            </button>
+            <button onClick={onLoadInstrument} className="command-btn">
+              LOAD INST
+            </button>
+            <button onClick={onSaveInstrument} className="command-btn">
+              SAVE INST
+            </button>
+            <button onClick={onPlayInstrument} className="command-btn">
+              PLAY INST
+            </button>
+            <button onClick={onCloneInstrument} className="command-btn">
+              CLONE INST
+            </button>
+            <button onClick={onDeleteInstrument} className="command-btn">
+              DELETE INST
+            </button>
+            <button onClick={onPickInstrument} className="command-btn pick-inst-btn">
+              PICK INST
+            </button>
+            <button onClick={onDemoSong} className="command-btn demo-song-btn">
+              DEMO SONG
+            </button>
             <button
-              onClick={event => {
+              onClick={(event) => {
                 event.stopPropagation();
                 onOpenExport();
               }}
@@ -360,4 +400,4 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       )}
     </div>
   );
-}
+};

@@ -113,7 +113,12 @@ const parseVolumeNibble = (value: unknown): number | null => {
   return null;
 };
 
-export { DEFAULT_BASE_KEY, formatBaseKey, parseBaseKey, normalizeInstrumentColor } from './songFormat';
+export {
+  DEFAULT_BASE_KEY,
+  formatBaseKey,
+  parseBaseKey,
+  normalizeInstrumentColor,
+} from './songFormat';
 
 export interface SongParseMetadata {
   hasChipField: boolean;
@@ -154,9 +159,13 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
   const clampedLength = Math.max(4, Math.min(256, Math.floor(patternLengthRaw)));
 
   const title =
-    typeof songNode.title === 'string' && songNode.title.trim() ? songNode.title : DEFAULT_SONG_TITLE;
+    typeof songNode.title === 'string' && songNode.title.trim()
+      ? songNode.title
+      : DEFAULT_SONG_TITLE;
   const author =
-    typeof songNode.author === 'string' && songNode.author.trim() ? songNode.author : DEFAULT_SONG_AUTHOR;
+    typeof songNode.author === 'string' && songNode.author.trim()
+      ? songNode.author
+      : DEFAULT_SONG_AUTHOR;
 
   const speedRaw = Number(songNode.speed);
   const baseSpeed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
@@ -245,15 +254,16 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
         const keys = Object.keys(ln);
         const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
-        const onlySpaceOrOff = keys.every(k => k === 'wait' || k === 'space' || k === 'off');
+        const onlySpaceOrOff = keys.every((k) => k === 'wait' || k === 'space' || k === 'off');
         const onlySpaceOffVolume = keys.every(
-          k => k === 'wait' || k === 'space' || k === 'off' || k === 'volume'
+          (k) => k === 'wait' || k === 'space' || k === 'off' || k === 'volume',
         );
 
         const spaceVal = ln.wait ?? ln.space;
         const offVal = ln.off;
 
-        const isNumericSpace = typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
+        const isNumericSpace =
+          typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
         const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
 
         // Pure runs without volume
@@ -273,7 +283,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
           const vol = ln.volume;
           for (let i = 0; i < count; i++) {
             expandedLineNodes.push(
-              isOff ? { off: true, volume: vol } : { wait: true, volume: vol }
+              isOff ? { off: true, volume: vol } : { wait: true, volume: vol },
             );
           }
           continue;
@@ -295,8 +305,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
         const ln = rawLineNode as PatternStepNodeYaml;
 
         const rawNote = ln.note;
-        const isOffNote =
-          typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
+        const isOffNote = typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
 
         if (ln.off === true || isOffNote) {
           // Empty or note-off line: currently treated as space
@@ -310,9 +319,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
         } else if (typeof rawNote === 'string') {
           const parsedKey = parseBaseKey(rawNote);
           if (!parsedKey) {
-            throw new Error(
-              `Invalid note value "${rawNote}" in pattern ${number} at line ${i}`
-            );
+            throw new Error(`Invalid note value "${rawNote}" in pattern ${number} at line ${i}`);
           }
 
           const instId =
@@ -343,7 +350,9 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     };
   });
 
-  const rawInstrumentNodes = Array.isArray(songNode.instrument) ? songNode.instrument : songNode.instruments;
+  const rawInstrumentNodes = Array.isArray(songNode.instrument)
+    ? songNode.instrument
+    : songNode.instruments;
   const instrumentNodes = Array.isArray(rawInstrumentNodes) ? rawInstrumentNodes : [];
   if (instrumentNodes.length === 0) {
     throw new Error('Song instruments are missing');
@@ -373,9 +382,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     const name = rawName.trim() ? rawName : '';
 
     const baseParsed = parseBaseKey(nodeObj.base);
-    const base = baseParsed
-      ? formatBaseKey(baseParsed.note, baseParsed.octave)
-      : DEFAULT_BASE_KEY;
+    const base = baseParsed ? formatBaseKey(baseParsed.note, baseParsed.octave) : DEFAULT_BASE_KEY;
 
     const rawOctave = nodeObj.octave;
     let octave = DEFAULT_OCTAVE;

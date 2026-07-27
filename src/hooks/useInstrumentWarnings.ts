@@ -21,17 +21,16 @@ const STORAGE_KEY = 'dosound-tracker-ignore-inst-type-warning';
 
 export function useInstrumentWarnings(): UseInstrumentWarningsResult {
   const [isInstrumentTypeWarningOpen, setIsInstrumentTypeWarningOpen] = useState(false);
-  const [ignoreInstrumentTypeWarning, setIgnoreInstrumentTypeWarning] = useLocalStorageState<boolean>(
-    STORAGE_KEY,
-    false,
-    {
+  const [ignoreInstrumentTypeWarning, setIgnoreInstrumentTypeWarning] =
+    useLocalStorageState<boolean>(STORAGE_KEY, false, {
       read: (stored) => stored === '1',
-      write: (value) => value ? '1' : '0',
-    }
-  );
-  const [instrumentTypeWarningIgnoreChecked, setInstrumentTypeWarningIgnoreChecked] = useState(false);
+      write: (value) => (value ? '1' : '0'),
+    });
+  const [instrumentTypeWarningIgnoreChecked, setInstrumentTypeWarningIgnoreChecked] =
+    useState(false);
   const [pendingInstrumentContent, setPendingInstrumentContent] = useState<string | null>(null);
-  const [pendingInstrumentTypeInfo, setPendingInstrumentTypeInfo] = useState<InstrumentTypeInfo | null>(null);
+  const [pendingInstrumentTypeInfo, setPendingInstrumentTypeInfo] =
+    useState<InstrumentTypeInfo | null>(null);
 
   const openInstrumentTypeWarning = useCallback(
     (content: string, info: InstrumentTypeInfo) => {

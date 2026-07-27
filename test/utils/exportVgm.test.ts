@@ -5,7 +5,10 @@ import { exportSongToVgm, exportInstrumentToVgm } from '../../src/exports/vgm';
 import { YM_CLOCK } from '../../src/synth/YM2149';
 import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver';
 
-function readUtf16LeString(bytes: Uint8Array, offset: number): { value: string; nextOffset: number } {
+function readUtf16LeString(
+  bytes: Uint8Array,
+  offset: number,
+): { value: string; nextOffset: number } {
   let value = '';
   let pos = offset;
 
@@ -25,7 +28,10 @@ function readUtf16LeString(bytes: Uint8Array, offset: number): { value: string; 
   return { value, nextOffset: pos };
 }
 
-function countVgmDelayCommands(bytes: Uint8Array, view: DataView): { count61: number; count62: number; count63: number } {
+function countVgmDelayCommands(
+  bytes: Uint8Array,
+  view: DataView,
+): { count61: number; count62: number; count63: number } {
   const dataOffsetRel = view.getUint32(0x34, true);
   const dataStart = 0x34 + dataOffsetRel;
   const gd3OffsetRel = view.getUint32(0x14, true);

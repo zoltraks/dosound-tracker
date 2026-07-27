@@ -7,7 +7,7 @@ export function useLocalStorageState<T>(
   options?: {
     read?: (stored: string | null) => T;
     write?: (value: T) => string;
-  }
+  },
 ): [T, Dispatch<SetStateAction<T>>] {
   const read = options?.read;
   const write = options?.write;

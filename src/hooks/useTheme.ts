@@ -3,24 +3,20 @@ import { StorageKeys } from '../utils/storageKeys';
 import { useLocalStorageState } from './useLocalStorageState';
 
 export const useTheme = () => {
-  const [isDarkMode, setIsDarkMode] = useLocalStorageState<boolean>(
-    StorageKeys.THEME,
-    true,
-    {
-      read: (stored) => stored === 'dark' ? true : stored === 'light' ? false : true,
-      write: (value) => value ? 'dark' : 'light',
-    }
-  );
+  const [isDarkMode, setIsDarkMode] = useLocalStorageState<boolean>(StorageKeys.THEME, true, {
+    read: (stored) => (stored === 'dark' ? true : stored === 'light' ? false : true),
+    write: (value) => (value ? 'dark' : 'light'),
+  });
 
   const toggleTheme = () => {
     startTransition(() => {
-      setIsDarkMode(prev => !prev);
+      setIsDarkMode((prev) => !prev);
     });
   };
 
   return {
     isDarkMode,
     setIsDarkMode,
-    toggleTheme
+    toggleTheme,
   } as const;
 };

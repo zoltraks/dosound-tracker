@@ -109,9 +109,7 @@ Files to modify:
 Create `src/utils/timerUtils.ts` with:
 
 ```typescript
-export function clearIntervalRef(
-  ref: { current: number | null }
-): void {
+export function clearIntervalRef(ref: { current: number | null }): void {
   if (ref.current !== null) {
     window.clearInterval(ref.current);
     ref.current = null;
@@ -166,7 +164,7 @@ Add to `src/exports/core.ts`:
 export function exportInstrumentWith<T>(
   instrument: Instrument,
   song: Song,
-  exporter: (song: Song) => T
+  exporter: (song: Song) => T,
 ): T {
   const previewSong = buildInstrumentPreviewSong(instrument, song);
   return exporter(previewSong);

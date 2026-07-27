@@ -1,9 +1,5 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
-import {
-  NOTE_FREQUENCIES,
-  NOTE_BASE_OCTAVE,
-  PATTERN_LENGTH,
-} from '../constants/music';
+import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { YM_CLOCK } from '../synth/YM2149';
 import type { ExportStrategy } from '../constants/export';
 import { simulateSong, type SimulationFrame } from '../utils/playbackSimulation';
@@ -23,24 +19,25 @@ import { Formatter } from '../utils/formatters';
  * @param isComplexDumpMode Whether to use complex dump mode (includes detailed comments and optimization)
  * @returns Assembly formatted string
  */
-export function exportToAssembly(
-  song: Song,
-  strategy: ExportStrategy = 'complex'
-): string {
+export function exportToAssembly(song: Song, strategy: ExportStrategy = 'complex'): string {
   const normalizedSong = normalizeSongForExport(song);
   const chipClock = normalizedSong.clock ?? YM_CLOCK;
 
   // Simulate playback and collect register states per frame
   const frames: SimulationFrame[] = [];
 
-  simulateSong(normalizedSong, (frame) => {
-    // Store this frame only when envelope steps advance (every 2 ticks)
-    // The simulation emits ticks based on song speed.
-    // Original logic: if (tick === 0 || (tick % 2 === 0))
-    if (frame.tick === 0 || frame.tick % 2 === 0) {
-      frames.push(frame);
-    }
-  }, { clock: chipClock });
+  simulateSong(
+    normalizedSong,
+    (frame) => {
+      // Store this frame only when envelope steps advance (every 2 ticks)
+      // The simulation emits ticks based on song speed.
+      // Original logic: if (tick === 0 || (tick % 2 === 0))
+      if (frame.tick === 0 || frame.tick % 2 === 0) {
+        frames.push(frame);
+      }
+    },
+    { clock: chipClock },
+  );
 
   // Now convert frames to optimized assembly output
   return formatFramesToAssembly(frames, normalizedSong, strategy);
@@ -49,7 +46,7 @@ export function exportToAssembly(
 function formatFramesToAssembly(
   frames: SimulationFrame[],
   song: Song,
-  strategy: ExportStrategy
+  strategy: ExportStrategy,
 ): string {
   // song parameter will be used for future optimization logic and pattern markers
   const chipClock = song.clock ?? YM_CLOCK;
@@ -95,7 +92,7 @@ function formatFramesToAssembly(
       if (i === 0 || (regs[0x07] || 0x38) !== (lastRegs[0x07] || 0x38)) {
         asm += formatAsmLine(
           [0x07, regs[0x07] || 0x38],
-          getRegisterComment(0x07, regs[0x07] || 0x38)
+          getRegisterComment(0x07, regs[0x07] || 0x38),
         );
         lastRegs[0x07] = regs[0x07] || 0x38;
       }
@@ -134,9 +131,7 @@ function formatFramesToAssembly(
           } else {
             const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
             const pitchText = formatPitchDelta(pitchDelta);
-            comment = noteLabel
-              ? `T${channelLabel} ${noteLabel}${pitchText}`
-              : `T${channelLabel}`;
+            comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
           }
 
           asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
@@ -186,7 +181,7 @@ function formatFramesToAssembly(
       // Write mixer register
       asm += formatAsmLine(
         [0x07, regs[0x07] || 0x38],
-        getRegisterComment(0x07, regs[0x07] || 0x38)
+        getRegisterComment(0x07, regs[0x07] || 0x38),
       );
 
       // Write tone registers for all three channels
@@ -279,7 +274,10 @@ function combineDelayLines(asm: string): string {
   return out.join('\n');
 }
 
-function periodToNoteAndPitch(period: number, clock: number = YM_CLOCK): { label: string; pitchDelta: number } {
+function periodToNoteAndPitch(
+  period: number,
+  clock: number = YM_CLOCK,
+): { label: string; pitchDelta: number } {
   if (period === 0) {
     return { label: '', pitchDelta: 0 };
   }
@@ -356,7 +354,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     shiftEnv.length || 1,
     pitchEnv.length || 1,
     modeEnv.length || 1,
-    noiseEnv.length || 1
+    noiseEnv.length || 1,
   );
 
   // Optionally cap the number of steps based on the current song's
@@ -402,9 +400,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     // Get noise period for this step
     const noiseIdx = noiseEnv.length > 0 ? Math.min(i, noiseEnv.length - 1) : 0;
     const noisePeriod =
-      noiseEnv.length > 0
-        ? Math.max(0, Math.min(0x1f, noiseEnv[noiseIdx] | 0))
-        : 0;
+      noiseEnv.length > 0 ? Math.max(0, Math.min(0x1f, noiseEnv[noiseIdx] | 0)) : 0;
 
     // Get pitch delta for this step (applied directly to divider value)
     let pitchDelta = 0;
@@ -508,7 +504,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     const pitchText = formatPitchDelta(first.pitchDelta);
     asm += formatAsmLine(
       [0x01, firstCF.coarse, 0x00, firstCF.fine],
-      `TA ${firstLabel}${pitchText}`
+      `TA ${firstLabel}${pitchText}`,
     );
   }
 
@@ -557,10 +553,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       const cf = getCoarseFine(step.period);
       const label = formatNoteLabel(base.note, base.octave, step.semitone || 0);
       const pitchText = formatPitchDelta(step.pitchDelta);
-      asm += formatAsmLine(
-        [0x01, cf.coarse, 0x00, cf.fine],
-        `TA ${label}${pitchText}`
-      );
+      asm += formatAsmLine([0x01, cf.coarse, 0x00, cf.fine], `TA ${label}${pitchText}`);
       prevPeriod = step.period;
     }
 
@@ -674,19 +667,7 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
     const vb = regs[0x09] ?? 0;
     const vc = regs[0x0a] ?? 0;
 
-    const bytes = [
-      taFine,
-      taCoarse,
-      tbFine,
-      tbCoarse,
-      tcFine,
-      tcCoarse,
-      ns,
-      mx,
-      va,
-      vb,
-      vc,
-    ];
+    const bytes = [taFine, taCoarse, tbFine, tbCoarse, tcFine, tcCoarse, ns, mx, va, vb, vc];
 
     const line = '\t' + 'dc.b ' + bytes.map((b) => `$${Formatter.hex(b)}`).join(',');
     lines.push(line);

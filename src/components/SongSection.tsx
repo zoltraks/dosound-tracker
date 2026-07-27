@@ -90,7 +90,11 @@ export const SongSection: React.FC<SongSectionProps> = ({
 
       <div className="monitor-panel">
         <DumpPanel ym2149={ym2149} />
-        <EQPanel ym2149={ym2149} channelMutes={channelMutes} onToggleChannelMute={onToggleChannelMute} />
+        <EQPanel
+          ym2149={ym2149}
+          channelMutes={channelMutes}
+          onToggleChannelMute={onToggleChannelMute}
+        />
       </div>
     </div>
   );

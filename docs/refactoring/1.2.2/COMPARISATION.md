@@ -12,6 +12,7 @@ Both branches implement phases 1-3 of the proposal with partial phase 4 implemen
 ## Implementation Summary
 
 ### GPT Branch (`reafactoring/1.2.2-gpt`)
+
 - **Commit**: "Extract playback simulation logic from App.tsx into useSequencerIntegration hook"
 - **Files Changed**: 14
 - **Net Change**: +2884 insertions, -2921 deletions
@@ -22,6 +23,7 @@ Both branches implement phases 1-3 of the proposal with partial phase 4 implemen
   - Track utilities: `trackClipboard.ts`, `transposeUtils.ts`
 
 ### Gemini Branch (`refactoring/1.2.2-gemini`)
+
 - **Commit**: "Extract playback simulation logic into dedicated hooks and utilities"
 - **Files Changed**: 20
 - **Net Change**: +3193 insertions, -3488 deletions
@@ -35,23 +37,25 @@ Both branches implement phases 1-3 of the proposal with partial phase 4 implemen
 
 ## File Size Impact
 
-| File | Original | GPT Target | GPT Actual | Gemini Target | Gemini Actual | Proposal Target |
-|------|----------|------------|------------|----------------|----------------|-----------------|
-| App.tsx | 3008 | ~1404 | ~1404 | ~1755 | ~1755 | ~2200 |
-| core.ts | 2495 | ~1727 | ~1727 | ~1416 | ~1416 | ~1295 |
-| useMidi.ts | 981 | ~353 | ~353 | ~73 | ~73 | ~581 |
-| useTrackOperations.ts | 889 | ~404 | ~404 | ~172 | ~172 | ~589 |
+| File                  | Original | GPT Target | GPT Actual | Gemini Target | Gemini Actual | Proposal Target |
+| --------------------- | -------- | ---------- | ---------- | ------------- | ------------- | --------------- |
+| App.tsx               | 3008     | ~1404      | ~1404      | ~1755         | ~1755         | ~2200           |
+| core.ts               | 2495     | ~1727      | ~1727      | ~1416         | ~1416         | ~1295           |
+| useMidi.ts            | 981      | ~353       | ~353       | ~73           | ~73           | ~581            |
+| useTrackOperations.ts | 889      | ~404       | ~404       | ~172          | ~172          | ~589            |
 
 Both achieve the required 30% size reduction goal.
 
 ## Comparative Analysis
 
 ### Strengths of GPT Implementation
+
 - More aggressive reduction of `App.tsx` (closer to proposal target)
 - Simpler, more direct extraction approach
 - Focused on core proposal requirements
 
 ### Strengths of Gemini Implementation
+
 - **Better Modularity**: Separates playback state (`usePlaybackSimulation`) from sequencer logic
 - **Enhanced Features**: `playbackSimulation.ts` includes `toneMeta` for improved export comments, `retriggerBehavior` options
 - **More Complete**: Implements `patternUtils` (phase 3) and additional phase 4 components
@@ -59,6 +63,7 @@ Both achieve the required 30% size reduction goal.
 - **Advanced Export Support**: Better structured for future export format additions
 
 ### Key Differences
+
 - Gemini's `useSequencerIntegration` is 358 lines shorter by leveraging `usePlaybackSimulation`
 - Gemini's `playbackSimulation.ts` has additional metadata and configuration options
 - Significant code differences in shared files (18 files differ between branches)

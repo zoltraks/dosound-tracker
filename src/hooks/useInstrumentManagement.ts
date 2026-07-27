@@ -62,7 +62,7 @@ export function updateInstrumentInSong(
 
   const targetInstrumentId = normalizeInstrumentId(currentInstrument.id);
   let targetIndex = instruments.findIndex(
-    (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentId
+    (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentId,
   );
   const updatedInstrument: Instrument = {
     ...currentInstrument,
@@ -117,7 +117,7 @@ export function applyLoadedInstrumentToSong(
   const instruments = [...song.instrument];
 
   let targetIndex = instruments.findIndex(
-    (inst) => normalizeInstrumentId(inst?.id) === currentInstrumentId
+    (inst) => normalizeInstrumentId(inst?.id) === currentInstrumentId,
   );
 
   if (targetIndex === -1) {

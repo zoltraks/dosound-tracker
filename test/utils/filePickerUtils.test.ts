@@ -33,14 +33,7 @@ describe('filePickerUtils', () => {
   });
 
   it('parseListFileText trims, filters empty lines, and ignores list.txt/.gitkeep', () => {
-    const text = [
-      '  a.txt  ',
-      '',
-      'LIST.txt',
-      '.gitkeep',
-      'b.txt',
-      'b.txt',
-    ].join('\n');
+    const text = ['  a.txt  ', '', 'LIST.txt', '.gitkeep', 'b.txt', 'b.txt'].join('\n');
 
     expect(parseListFileText(text)).toEqual(['a.txt', 'b.txt']);
   });

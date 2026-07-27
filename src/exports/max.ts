@@ -82,18 +82,25 @@ function buildMaxInfoChunk(song: Song): number[] | null {
   return buildMaxShortChunk('I', data);
 }
 
-function captureMaxFrames(song: Song, chipClock: number): { frames: number[][]; frameCount: number } {
+function captureMaxFrames(
+  song: Song,
+  chipClock: number,
+): { frames: number[][]; frameCount: number } {
   const frames: number[][] = [];
 
-  simulateSong(song, (frame) => {
-    const regs = frame.registers;
-    const snapshot: number[] = new Array(YM_REGISTER_COUNT).fill(0);
-    for (let reg = 0; reg < YM_REGISTER_COUNT; reg++) {
-      const value = regs[reg];
-      snapshot[reg] = value === undefined ? 0 : value & 0xff;
-    }
-    frames.push(snapshot);
-  }, { clock: chipClock });
+  simulateSong(
+    song,
+    (frame) => {
+      const regs = frame.registers;
+      const snapshot: number[] = new Array(YM_REGISTER_COUNT).fill(0);
+      for (let reg = 0; reg < YM_REGISTER_COUNT; reg++) {
+        const value = regs[reg];
+        snapshot[reg] = value === undefined ? 0 : value & 0xff;
+      }
+      frames.push(snapshot);
+    },
+    { clock: chipClock },
+  );
 
   return { frames, frameCount: frames.length };
 }
@@ -174,7 +181,7 @@ function optimizeReg7Delays(input: number[]): number[] {
 function buildMaxStream(
   song: Song,
   strategy: ExportStrategy,
-  chipClock: number
+  chipClock: number,
 ): { streamFormat: number; streamData: number[]; frameCount: number } {
   const { frames, frameCount } = captureMaxFrames(song, chipClock);
 
@@ -192,7 +199,11 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
   const normalizedSong = normalizeSongForExport(song);
   const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
   const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
-  const { streamFormat, streamData, frameCount } = buildMaxStream(normalizedSong, strategy, chipClock);
+  const { streamFormat, streamData, frameCount } = buildMaxStream(
+    normalizedSong,
+    strategy,
+    chipClock,
+  );
 
   const uncompressedSize = streamData.length;
   const compressed =
@@ -223,7 +234,12 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
   chipData.push((frameRate >>> 8) & 0xff, frameRate & 0xff);
 
   const ymClock = chipClock >>> 0;
-  chipData.push((ymClock >>> 24) & 0xff, (ymClock >>> 16) & 0xff, (ymClock >>> 8) & 0xff, ymClock & 0xff);
+  chipData.push(
+    (ymClock >>> 24) & 0xff,
+    (ymClock >>> 16) & 0xff,
+    (ymClock >>> 8) & 0xff,
+    ymClock & 0xff,
+  );
 
   fileBytes.push(...buildMaxShortChunk('C', chipData));
 
@@ -263,9 +279,11 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
 export function exportInstrumentToMax(
   instrument: Instrument,
   song: Song,
-  strategy: ExportStrategy = 'simple'
+  strategy: ExportStrategy = 'simple',
 ): MaxExportResult {
-  return exportInstrumentWith(instrument, song, (previewSong) => exportSongToMax(previewSong, strategy));
+  return exportInstrumentWith(instrument, song, (previewSong) =>
+    exportSongToMax(previewSong, strategy),
+  );
 }
 
 export function downloadMaxFile(buffer: ArrayBuffer, filename: string = 'music.max'): void {

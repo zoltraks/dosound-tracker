@@ -34,14 +34,14 @@ Phase 1 must be completed and confirmed before Phase 2 begins.
 
 The following decisions were confirmed by the user before this plan was written.
 
-| Decision             | Choice                                                                 |
-| -------------------- | ---------------------------------------------------------------------- |
-| Vite direction       | Keep rolldown-vite 7 in DOSOUND (no change to Vite setup)              |
-| Path aliases         | Add `@/*` path aliases to DOSOUND tsconfig and vite config             |
-| Coverage thresholds  | Add 80% coverage thresholds (tests must be written first to pass)     |
-| Extra tooling        | Add Prettier, Playwright E2E, coverage tools                         |
-| Feature/prompt dirs  | Leave `docs/feature/` and `docs/prompt/` untouched                     |
-| ARCHITECT.md         | Rename to `ARCHITECTURE.md` and rewrite as full architecture document |
+| Decision            | Choice                                                                |
+| ------------------- | --------------------------------------------------------------------- |
+| Vite direction      | Keep rolldown-vite 7 in DOSOUND (no change to Vite setup)             |
+| Path aliases        | Add `@/*` path aliases to DOSOUND tsconfig and vite config            |
+| Coverage thresholds | Add 80% coverage thresholds (tests must be written first to pass)     |
+| Extra tooling       | Add Prettier, Playwright E2E, coverage tools                          |
+| Feature/prompt dirs | Leave `docs/feature/` and `docs/prompt/` untouched                    |
+| ARCHITECT.md        | Rename to `ARCHITECTURE.md` and rewrite as full architecture document |
 
 ## Phase 1 — Documentation and ASE Workflow
 
@@ -49,13 +49,13 @@ The following decisions were confirmed by the user before this plan was written.
 
 Create the following directories under `docs/`:
 
-| Directory     | Purpose                                                        |
-| ------------- | -------------------------------------------------------------- |
-| `docs/change/`| Change request documents (new workflow from PET LAB)           |
-| `docs/plan/`  | Implementation plan documents (new workflow from PET LAB)      |
-| `docs/template/` | Document templates (change request + implementation plan)   |
-| `docs/standard/` | Engineering standards (TypeScript/React)                    |
-| `docs/archive/`   | Historical documents (mirrors PET LAB structure)            |
+| Directory        | Purpose                                                   |
+| ---------------- | --------------------------------------------------------- |
+| `docs/change/`   | Change request documents (new workflow from PET LAB)      |
+| `docs/plan/`     | Implementation plan documents (new workflow from PET LAB) |
+| `docs/template/` | Document templates (change request + implementation plan) |
+| `docs/standard/` | Engineering standards (TypeScript/React)                  |
+| `docs/archive/`  | Historical documents (mirrors PET LAB structure)          |
 
 Add `.gitkeep` files to empty directories (`change/`, `plan/`, `archive/`).
 
@@ -266,29 +266,29 @@ Initial CHANGELOG entry documenting the unification of documentation structure a
 
 ### 1.11 Documentation Files Summary
 
-| File                                | Action   | Source                                      |
-| ----------------------------------- | -------- | ------------------------------------------- |
-| `docs/README.md`                    | Create   | Adapted from PET LAB                        |
-| `docs/GUIDELINES.md`                | Rewrite  | Extend existing + PET LAB structure         |
-| `docs/ARCHITECTURE.md`              | Create   | Replace old ARCHITECT.md                    |
-| `docs/SPECIFICATION.md`             | Create   | New, adapted from PET LAB structure         |
-| `docs/COPYRIGHTS.md`                | Create   | Adapted from PET LAB                        |
-| `docs/WORKFLOW.md`                  | Create   | Adapted from PET LAB                        |
-| `docs/TESTING.md`                   | Create   | Adapted from PET LAB                        |
-| `docs/VERSIONING.md`                | Create   | Adapted from PET LAB                        |
-| `docs/DEPLOYMENT.md`                | Create   | Adapted from PET LAB                        |
-| `docs/REFACTORING.md`               | Create   | PET LAB structure + old ARCHITECT.md content|
-| `docs/PROJECT.md`                   | Update   | Rewrite as active requirements document     |
-| `docs/FORMAT.md`                    | Keep     | Already excellent, no changes needed        |
-| `docs/FUTURE.md`                    | Keep     | Retained as planning reference              |
-| `docs/MAX.md`                        | Keep     | Retained as format specification            |
-| `docs/feature/LOGGER.md`            | Keep     | Retained as feature proposal                |
-| `docs/template/change-request-template.md`    | Create | Adapted from PET LAB                 |
-| `docs/template/implementation-plan-template.md` | Create | Adapted from PET LAB              |
-| `docs/standard/ts-react-development.md`       | Create | Adapted from PET LAB                 |
-| `docs/ARCHITECT.md`                 | Delete   | Replaced by ARCHITECTURE.md                 |
-| `README.md`                         | Update   | Add documentation section                   |
-| `CHANGELOG.md`                      | Create   | New file at repo root                       |
+| File                                            | Action  | Source                                       |
+| ----------------------------------------------- | ------- | -------------------------------------------- |
+| `docs/README.md`                                | Create  | Adapted from PET LAB                         |
+| `docs/GUIDELINES.md`                            | Rewrite | Extend existing + PET LAB structure          |
+| `docs/ARCHITECTURE.md`                          | Create  | Replace old ARCHITECT.md                     |
+| `docs/SPECIFICATION.md`                         | Create  | New, adapted from PET LAB structure          |
+| `docs/COPYRIGHTS.md`                            | Create  | Adapted from PET LAB                         |
+| `docs/WORKFLOW.md`                              | Create  | Adapted from PET LAB                         |
+| `docs/TESTING.md`                               | Create  | Adapted from PET LAB                         |
+| `docs/VERSIONING.md`                            | Create  | Adapted from PET LAB                         |
+| `docs/DEPLOYMENT.md`                            | Create  | Adapted from PET LAB                         |
+| `docs/REFACTORING.md`                           | Create  | PET LAB structure + old ARCHITECT.md content |
+| `docs/PROJECT.md`                               | Update  | Rewrite as active requirements document      |
+| `docs/FORMAT.md`                                | Keep    | Already excellent, no changes needed         |
+| `docs/FUTURE.md`                                | Keep    | Retained as planning reference               |
+| `docs/MAX.md`                                   | Keep    | Retained as format specification             |
+| `docs/feature/LOGGER.md`                        | Keep    | Retained as feature proposal                 |
+| `docs/template/change-request-template.md`      | Create  | Adapted from PET LAB                         |
+| `docs/template/implementation-plan-template.md` | Create  | Adapted from PET LAB                         |
+| `docs/standard/ts-react-development.md`         | Create  | Adapted from PET LAB                         |
+| `docs/ARCHITECT.md`                             | Delete  | Replaced by ARCHITECTURE.md                  |
+| `README.md`                                     | Update  | Add documentation section                    |
+| `CHANGELOG.md`                                  | Create  | New file at repo root                        |
 
 ## Phase 2 — Package Upgrade and Tooling Alignment
 
@@ -300,55 +300,55 @@ Vite stays as rolldown-vite 7 (per user decision).
 
 **Packages to upgrade in DOSOUND:**
 
-| Package              | Current        | Target         | Reason                        |
-| -------------------- | -------------- | -------------- | ----------------------------- |
-| `vitest`             | `^3.2.0`       | `^4.1.5`       | Align to PET LAB              |
-| `electron`           | `^39.2.6`      | `^42.0.0`      | Align to PET LAB              |
-| `electron-builder`   | `^24.13.3`     | `^26.8.1`      | Align to PET LAB              |
-| `jsdom`              | `^27.2.0`      | `^29.0.0`      | Align to PET LAB              |
-| `concurrently`       | `^9.1.0`       | `^10.0.3`      | Align to PET LAB              |
-| `wait-on`            | `^7.2.0`       | `^8.0.0`       | Align to PET LAB              |
-| `@testing-library/react` | `^16.3.0` | `^16.3.2`      | Align to PET LAB              |
+| Package                  | Current    | Target    | Reason           |
+| ------------------------ | ---------- | --------- | ---------------- |
+| `vitest`                 | `^3.2.0`   | `^4.1.5`  | Align to PET LAB |
+| `electron`               | `^39.2.6`  | `^42.0.0` | Align to PET LAB |
+| `electron-builder`       | `^24.13.3` | `^26.8.1` | Align to PET LAB |
+| `jsdom`                  | `^27.2.0`  | `^29.0.0` | Align to PET LAB |
+| `concurrently`           | `^9.1.0`   | `^10.0.3` | Align to PET LAB |
+| `wait-on`                | `^7.2.0`   | `^8.0.0`  | Align to PET LAB |
+| `@testing-library/react` | `^16.3.0`  | `^16.3.2` | Align to PET LAB |
 
 **Packages already at or above PET LAB (no change):**
 
-| Package                       | DOSOUND        | PET LAB        |
-| ----------------------------- | -------------- | -------------- |
-| `react`                       | `^19.2.0`      | `^19.0.0`      |
-| `react-dom`                   | `^19.2.0`      | `^19.0.0`      |
-| `typescript`                  | `~5.9.3`       | `^5.3.0`       |
-| `@vitejs/plugin-react`        | `^5.1.0`       | `^4.2.0`       |
-| `eslint`                      | `^9.39.1`      | `^9.0.0`       |
-| `typescript-eslint`           | `^8.46.3`      | `^8.0.0`       |
-| `eslint-plugin-react-hooks`   | `^7.0.1`       | `^5.0.0`       |
-| `globals`                     | `^16.5.0`      | `^15.0.0`      |
-| `@types/node`                 | `^24.10.0`     | `^22.0.0`      |
-| `@types/react`                | `^19.2.2`      | `^19.0.0`      |
-| `@types/react-dom`            | `^19.2.2`      | `^19.0.0`      |
-| `vite`                        | `rolldown-vite@7.2.2` | `^6.0.0` |
-| `zustand`                     | `^4.5.0`       | `^4.5.0`       |
-| `js-yaml`                     | `^4.1.0`       | `^4.1.0`       |
-| `lucide-react`                | `^0.460.0`     | `^0.460.0`     |
-| `@types/js-yaml`              | `^4.0.9`       | `^4.0.9`       |
+| Package                     | DOSOUND               | PET LAB    |
+| --------------------------- | --------------------- | ---------- |
+| `react`                     | `^19.2.0`             | `^19.0.0`  |
+| `react-dom`                 | `^19.2.0`             | `^19.0.0`  |
+| `typescript`                | `~5.9.3`              | `^5.3.0`   |
+| `@vitejs/plugin-react`      | `^5.1.0`              | `^4.2.0`   |
+| `eslint`                    | `^9.39.1`             | `^9.0.0`   |
+| `typescript-eslint`         | `^8.46.3`             | `^8.0.0`   |
+| `eslint-plugin-react-hooks` | `^7.0.1`              | `^5.0.0`   |
+| `globals`                   | `^16.5.0`             | `^15.0.0`  |
+| `@types/node`               | `^24.10.0`            | `^22.0.0`  |
+| `@types/react`              | `^19.2.2`             | `^19.0.0`  |
+| `@types/react-dom`          | `^19.2.2`             | `^19.0.0`  |
+| `vite`                      | `rolldown-vite@7.2.2` | `^6.0.0`   |
+| `zustand`                   | `^4.5.0`              | `^4.5.0`   |
+| `js-yaml`                   | `^4.1.0`              | `^4.1.0`   |
+| `lucide-react`              | `^0.460.0`            | `^0.460.0` |
+| `@types/js-yaml`            | `^4.0.9`              | `^4.0.9`   |
 
 **New packages to add to DOSOUND:**
 
-| Package                       | Version    | Purpose                              |
-| ----------------------------- | ---------- | ------------------------------------ |
-| `prettier`                    | `^3.2.0`   | Code formatter (matches PET LAB)     |
-| `@playwright/test`            | `^1.48.0`  | E2E testing framework                |
-| `@vitest/coverage-v8`         | `^4.1.5`   | Coverage provider for Vitest         |
-| `@vitest/ui`                  | `^4.1.5`   | Vitest UI mode                       |
-| `@testing-library/dom`        | `^10.4.1`  | DOM testing utilities                |
-| `@testing-library/jest-dom`   | `^6.9.1`   | Custom Jest matchers for DOM         |
+| Package                     | Version   | Purpose                          |
+| --------------------------- | --------- | -------------------------------- |
+| `prettier`                  | `^3.2.0`  | Code formatter (matches PET LAB) |
+| `@playwright/test`          | `^1.48.0` | E2E testing framework            |
+| `@vitest/coverage-v8`       | `^4.1.5`  | Coverage provider for Vitest     |
+| `@vitest/ui`                | `^4.1.5`  | Vitest UI mode                   |
+| `@testing-library/dom`      | `^10.4.1` | DOM testing utilities            |
+| `@testing-library/jest-dom` | `^6.9.1`  | Custom Jest matchers for DOM     |
 
 **Packages to evaluate for removal:**
 
-| Package                       | Reason                                              |
-| ----------------------------- | --------------------------------------------------- |
-| `@babel/core`                 | PET LAB does not use it; check if Vite/rolldown needs it |
-| `eslint-formatter-compact`    | PET LAB does not use it; check if needed            |
-| `eslint-formatter-unix`       | PET LAB does not use it; check if needed            |
+| Package                    | Reason                                                   |
+| -------------------------- | -------------------------------------------------------- |
+| `@babel/core`              | PET LAB does not use it; check if Vite/rolldown needs it |
+| `eslint-formatter-compact` | PET LAB does not use it; check if needed                 |
+| `eslint-formatter-unix`    | PET LAB does not use it; check if needed                 |
 
 ### 2.2 Add Path Aliases
 
@@ -443,6 +443,7 @@ Add Prettier configuration and scripts.
 **package.json scripts**
 
 Add:
+
 ```json
 "format": "prettier --write ."
 ```
@@ -462,6 +463,7 @@ Add Playwright configuration and scripts.
 **package.json scripts**
 
 Add:
+
 ```json
 "test:e2e": "playwright test"
 ```
@@ -482,14 +484,14 @@ Create with `.gitkeep`. E2E tests will be written as part of future work.
 
 Add the following scripts to match PET LAB's script set:
 
-| Script              | Command                          | Notes                                    |
-| ------------------- | -------------------------------- | ---------------------------------------- |
-| `typecheck`         | `tsc --noEmit`                   | New script for standalone type checking  |
-| `format`            | `prettier --write .`             | New script for formatting                |
-| `test:ui`           | `vitest --ui`                    | New script for Vitest UI mode            |
-| `test:coverage`     | `vitest run --coverage`          | New script for coverage reporting        |
-| `test:e2e`          | `playwright test`                | New script for E2E tests                 |
-| `electron:preview`  | `npm run build:core && electron .` | New script for Electron preview        |
+| Script             | Command                            | Notes                                   |
+| ------------------ | ---------------------------------- | --------------------------------------- |
+| `typecheck`        | `tsc --noEmit`                     | New script for standalone type checking |
+| `format`           | `prettier --write .`               | New script for formatting               |
+| `test:ui`          | `vitest --ui`                      | New script for Vitest UI mode           |
+| `test:coverage`    | `vitest run --coverage`            | New script for coverage reporting       |
+| `test:e2e`         | `playwright test`                  | New script for E2E tests                |
+| `electron:preview` | `npm run build:core && electron .` | New script for Electron preview         |
 
 The existing `build` script (`node scripts/bump-version.mjs && npm run build:core`) is preserved.
 
@@ -566,15 +568,15 @@ The `npm run test:coverage` command may fail due to the 80% thresholds. This is 
 
 ## Risks and Mitigations
 
-| Risk                                        | Mitigation                                                        |
-| ------------------------------------------- | ----------------------------------------------------------------- |
-| Vitest 4.x incompatibility with rolldown-vite 7 | Test after upgrade; if incompatible, keep vitest 3.2.0 and document |
-| 80% coverage thresholds fail immediately    | Start with lower thresholds or only enforce on `test:coverage`    |
-| Electron 42 may have breaking changes       | Test Electron dev and build after upgrade                         |
-| Path alias migration is not done in this plan | Document as future refactoring; alias available for new code     |
-| `@babel/core` removal may break builds      | Test build after removal; restore if needed                       |
-| Prettier may conflict with existing formatting | Run `prettier --write .` and review diff before committing       |
-| Auto-bump script conflicts with manual versioning workflow | Document both approaches in VERSIONING.md; script is optional |
+| Risk                                                       | Mitigation                                                          |
+| ---------------------------------------------------------- | ------------------------------------------------------------------- |
+| Vitest 4.x incompatibility with rolldown-vite 7            | Test after upgrade; if incompatible, keep vitest 3.2.0 and document |
+| 80% coverage thresholds fail immediately                   | Start with lower thresholds or only enforce on `test:coverage`      |
+| Electron 42 may have breaking changes                      | Test Electron dev and build after upgrade                           |
+| Path alias migration is not done in this plan              | Document as future refactoring; alias available for new code        |
+| `@babel/core` removal may break builds                     | Test build after removal; restore if needed                         |
+| Prettier may conflict with existing formatting             | Run `prettier --write .` and review diff before committing          |
+| Auto-bump script conflicts with manual versioning workflow | Document both approaches in VERSIONING.md; script is optional       |
 
 ## Out of Scope
 

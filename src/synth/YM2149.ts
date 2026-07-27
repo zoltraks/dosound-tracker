@@ -4,22 +4,22 @@ const YM_REGISTER_COUNT = 16; // Number of YM2149 registers (0-15)
 // AY/YM style logarithmic volume table (16 levels, approx. -2dB per step)
 // Values are relative amplitudes; we'll scale them to keep headroom.
 export const YM_LOG_VOLUME_TABLE: number[] = [
-  0.0,    // 0: silence
+  0.0, // 0: silence
   0.0078, // 1
-  0.0110, // 2
+  0.011, // 2
   0.0157, // 3
   0.0221, // 4
   0.0313, // 5
   0.0442, // 6
   0.0625, // 7
   0.0884, // 8
-  0.1250, // 9
+  0.125, // 9
   0.1768, // 10
-  0.2500, // 11
+  0.25, // 11
   0.3536, // 12
-  0.5000, // 13
+  0.5, // 13
   0.7071, // 14
-  1.0000  // 15: max
+  1.0, // 15: max
 ];
 import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
 import type { Instrument } from './SoundDriver';
@@ -63,13 +63,31 @@ export class YM2149 {
     this.registers = new Array(YM_REGISTER_COUNT).fill(0);
     this.state = {
       channels: [
-        { tonePeriod: 0, toneEnabled: true, noiseEnabled: false, volume: 0, envelopeEnabled: false },
-        { tonePeriod: 0, toneEnabled: true, noiseEnabled: false, volume: 0, envelopeEnabled: false },
-        { tonePeriod: 0, toneEnabled: true, noiseEnabled: false, volume: 0, envelopeEnabled: false }
+        {
+          tonePeriod: 0,
+          toneEnabled: true,
+          noiseEnabled: false,
+          volume: 0,
+          envelopeEnabled: false,
+        },
+        {
+          tonePeriod: 0,
+          toneEnabled: true,
+          noiseEnabled: false,
+          volume: 0,
+          envelopeEnabled: false,
+        },
+        {
+          tonePeriod: 0,
+          toneEnabled: true,
+          noiseEnabled: false,
+          volume: 0,
+          envelopeEnabled: false,
+        },
       ],
       noisePeriod: 0,
       envelopeShape: 0,
-      envelopeEnabled: false
+      envelopeEnabled: false,
     };
 
     // Initialize audio nodes
@@ -83,17 +101,17 @@ export class YM2149 {
       const oscillator = audioContext.createOscillator();
       oscillator.type = 'square';
       oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // Default to A4
-      
+
       // Create gain node
       const gainNode = audioContext.createGain();
       gainNode.gain.setValueAtTime(0, audioContext.currentTime); // Start silent
-      
+
       // Connect: oscillator -> gain -> destination (bypassing DC offset for now)
       oscillator.connect(gainNode);
       gainNode.connect(audioContext.destination);
-      
+
       oscillator.start();
-      
+
       this.oscillators.push(oscillator);
       this.gainNodes.push(gainNode);
     }
@@ -113,7 +131,7 @@ export class YM2149 {
   writeRegister(register: number, value: number): void {
     if (register < 0 || register >= YM_REGISTER_COUNT) return;
 
-    const masked = value & 0xFF;
+    const masked = value & 0xff;
     if (this.registers[register] === masked) {
       return;
     }
@@ -144,48 +162,45 @@ export class YM2149 {
 
   private updateState(): void {
     // Channel A (R0, R1, R8)
-    this.state.channels[0].tonePeriod = 
-      (this.registers[1] & 0x0F) << 8 | this.registers[0];
+    this.state.channels[0].tonePeriod = ((this.registers[1] & 0x0f) << 8) | this.registers[0];
     this.state.channels[0].toneEnabled = !(this.registers[7] & 0x01);
     this.state.channels[0].noiseEnabled = !(this.registers[7] & 0x08);
-    this.state.channels[0].volume = this.registers[8] & 0x0F;
+    this.state.channels[0].volume = this.registers[8] & 0x0f;
     this.state.channels[0].envelopeEnabled = !!(this.registers[8] & 0x10);
 
     // Channel B (R2, R3, R9)
-    this.state.channels[1].tonePeriod = 
-      (this.registers[3] & 0x0F) << 8 | this.registers[2];
+    this.state.channels[1].tonePeriod = ((this.registers[3] & 0x0f) << 8) | this.registers[2];
     this.state.channels[1].toneEnabled = !(this.registers[7] & 0x02);
     this.state.channels[1].noiseEnabled = !(this.registers[7] & 0x10);
-    this.state.channels[1].volume = this.registers[9] & 0x0F;
+    this.state.channels[1].volume = this.registers[9] & 0x0f;
     this.state.channels[1].envelopeEnabled = !!(this.registers[9] & 0x10);
 
     // Channel C (R4, R5, R10)
-    this.state.channels[2].tonePeriod = 
-      (this.registers[5] & 0x0F) << 8 | this.registers[4];
+    this.state.channels[2].tonePeriod = ((this.registers[5] & 0x0f) << 8) | this.registers[4];
     this.state.channels[2].toneEnabled = !(this.registers[7] & 0x04);
     this.state.channels[2].noiseEnabled = !(this.registers[7] & 0x20);
-    this.state.channels[2].volume = this.registers[10] & 0x0F;
+    this.state.channels[2].volume = this.registers[10] & 0x0f;
     this.state.channels[2].envelopeEnabled = !!(this.registers[10] & 0x10);
 
     // Noise period (R6)
-    this.state.noisePeriod = this.registers[6] & 0x1F;
+    this.state.noisePeriod = this.registers[6] & 0x1f;
 
     // Envelope shape (R11, R12, R13)
-    this.state.envelopeShape = this.registers[13] & 0x0F;
+    this.state.envelopeShape = this.registers[13] & 0x0f;
     this.state.envelopeEnabled = !!(this.registers[13] & 0x10);
   }
 
   private getEffectiveNoisePeriod(period: number): number {
-    const masked = period & 0x1F;
+    const masked = period & 0x1f;
     return masked === 0 ? 1 : masked;
   }
 
   private updateAudioNodes(): void {
     const now = this.audioContext.currentTime;
-    
+
     // Update noise generator first
     this.updateNoiseGenerator();
-    
+
     for (let i = 0; i < 3; i++) {
       const channel = this.state.channels[i];
       const oscillator = this.oscillators[i];
@@ -193,45 +208,45 @@ export class YM2149 {
 
       // Check if channel should be silent (volume = 0 in YM2149 means silence)
       const isSilent = channel.volume === 0;
-      
+
       // Check if this channel should play sound (tone OR noise)
-      const shouldPlayTone = channel.toneEnabled && 
-                            channel.tonePeriod > 0 && 
-                            channel.tonePeriod < 4096 && 
-                            !isSilent;
-      
+      const shouldPlayTone =
+        channel.toneEnabled && channel.tonePeriod > 0 && channel.tonePeriod < 4096 && !isSilent;
+
       if (shouldPlayTone) {
         // YM2149 frequency calculation: f = clock / (16 * period)
         const frequency = this.clock / (16 * channel.tonePeriod);
-        
+
         // Clamp frequency to reasonable range (20Hz - 20kHz)
         const clampedFrequency = Math.max(20, Math.min(20000, frequency));
-        
+
         // Update frequency IMMEDIATELY (no glide/portamento)
         oscillator.frequency.setValueAtTime(clampedFrequency, now);
-        
+
         // Calculate volume using AY/YM logarithmic curve (0-15, where 15 is LOUDEST)
         const level = Math.max(0, Math.min(15, channel.volume | 0));
         const volume = YM_LOG_VOLUME_TABLE[level] * 0.3; // Scale for headroom
-        
+
         // Apply volume immediately for crisp note changes
         gainNode.gain.setValueAtTime(volume, now);
-        
       } else {
         // Complete silence for tone - immediate cutoff
         gainNode.gain.setValueAtTime(0, now);
       }
     }
-    
+
     // Update noise gain based on any channel using noise
-    const anyNoiseActive = this.state.channels.some(channel => channel.noiseEnabled && channel.volume > 0);
-    
+    const anyNoiseActive = this.state.channels.some(
+      (channel) => channel.noiseEnabled && channel.volume > 0,
+    );
+
     if (anyNoiseActive) {
       const noiseLevels = this.state.channels
-        .filter(channel => channel.noiseEnabled && channel.volume > 0)
-        .map(channel => Math.max(0, Math.min(15, channel.volume | 0)));
-      const combinedLevel = Math.min(1,
-        noiseLevels.reduce((sum, level) => sum + YM_LOG_VOLUME_TABLE[level], 0)
+        .filter((channel) => channel.noiseEnabled && channel.volume > 0)
+        .map((channel) => Math.max(0, Math.min(15, channel.volume | 0)));
+      const combinedLevel = Math.min(
+        1,
+        noiseLevels.reduce((sum, level) => sum + YM_LOG_VOLUME_TABLE[level], 0),
       );
       const noiseVolume = combinedLevel * 0.4; // Slight boost so noise matches perceived tone loudness
       this.noiseGainNode.gain.setValueAtTime(noiseVolume, now);
@@ -271,7 +286,7 @@ export class YM2149 {
     const buffer = this.audioContext.createBuffer(1, bufferLength, sampleRate);
     const data = buffer.getChannelData(0);
 
-    let lfsr = 0x1FFFF; // 17-bit LFSR seed (must be non-zero)
+    let lfsr = 0x1ffff; // 17-bit LFSR seed (must be non-zero)
     let phase = 0;
     const step = noiseFrequency / sampleRate;
 
@@ -284,11 +299,11 @@ export class YM2149 {
           const bit0 = lfsr & 1;
           const bit3 = (lfsr >> 3) & 1;
           const newBit = bit0 ^ bit3;
-          lfsr = ((lfsr >> 1) | (newBit << 16)) & 0x1FFFF;
+          lfsr = ((lfsr >> 1) | (newBit << 16)) & 0x1ffff;
         }
       }
 
-      data[i] = (lfsr & 1) ? 1 : -1;
+      data[i] = lfsr & 1 ? 1 : -1;
     }
 
     return buffer;
@@ -329,7 +344,7 @@ export class YM2149 {
     this.updateAudioNodes();
 
     // Hard-gate all gains to guarantee immediate silence regardless of previous state
-    this.gainNodes.forEach(gainNode => {
+    this.gainNodes.forEach((gainNode) => {
       gainNode.gain.setValueAtTime(0, now);
     });
     this.noiseGainNode.gain.setValueAtTime(0, now);
@@ -359,14 +374,14 @@ export class YM2149 {
   };
 
   public updateMixerForChannel = (channel: number, toneActive: boolean, noiseActive: boolean) => {
-    const currentMixer = this.registers[7] ?? 0x3F;
+    const currentMixer = this.registers[7] ?? 0x3f;
     let mixer = currentMixer;
 
     const toneBit = 1 << channel;
     const noiseBit = 0x08 << channel;
 
-    mixer = toneActive ? (mixer & ~toneBit) : (mixer | toneBit);
-    mixer = noiseActive ? (mixer & ~noiseBit) : (mixer | noiseBit);
+    mixer = toneActive ? mixer & ~toneBit : mixer | toneBit;
+    mixer = noiseActive ? mixer & ~noiseBit : mixer | noiseBit;
 
     if (mixer !== currentMixer) {
       this.writeRegister(0x07, mixer);
@@ -375,7 +390,7 @@ export class YM2149 {
 
   public applyNoiseEnvelopeValue = (instrument: Instrument, tick: number) => {
     let noisePeriod: number;
-    
+
     if (!instrument.noise || instrument.noise.length === 0) {
       // Default noise period when no envelope is defined
       noisePeriod = 15; // Mid-range noise period
@@ -384,7 +399,7 @@ export class YM2149 {
       const noiseValue = instrument.noise[noiseIndex];
       noisePeriod = Math.max(0, Math.min(31, typeof noiseValue === 'number' ? noiseValue : 0));
     }
-    
+
     this.writeRegister(0x06, noisePeriod);
   };
 
@@ -393,103 +408,102 @@ export class YM2149 {
     instrument: Instrument,
     noteData?: { note: string; octave: number },
     envelopeTick: number = 0,
-    volumeModifier?: number | null
+    volumeModifier?: number | null,
   ) => {
     this.beginBatch();
     try {
-    const volumeRegister = 8 + channel; // R8, R9, R10
-    const fineRegister = channel * 2;        // R0, R2, R4
-    const coarseRegister = channel * 2 + 1;  // R1, R3, R5
+      const volumeRegister = 8 + channel; // R8, R9, R10
+      const fineRegister = channel * 2; // R0, R2, R4
+      const coarseRegister = channel * 2 + 1; // R1, R3, R5
 
-    const safeTick = Math.max(0, envelopeTick | 0);
+      const safeTick = Math.max(0, envelopeTick | 0);
 
-    const { toneActive, noiseActive } = this.getToneNoiseState(instrument, safeTick);
-    this.updateMixerForChannel(channel, toneActive, noiseActive);
+      const { toneActive, noiseActive } = this.getToneNoiseState(instrument, safeTick);
+      this.updateMixerForChannel(channel, toneActive, noiseActive);
 
-    if (!noteData || noteData.note === '===') {
-      // No note or explicit note-off - silence channel
-      this.writeRegister(volumeRegister, 0x00);
-      return;
-    }
-
-    // Update tone frequency using shift (in semitones) and pitch envelope as
-    // a direct delta on the frequency divider (period).
-    if (toneActive) {
-      const baseFreq = NOTE_FREQUENCIES[noteData.note];
-      if (baseFreq) {
-        // Start from plain note frequency
-        let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
-
-        // Apply shift as semitone offsets on top of the note
-        let shiftSemitones = 0;
-        if (instrument.shift && instrument.shift.length > 0) {
-          const shiftIndex = Math.min(safeTick, instrument.shift.length - 1);
-          const shiftValue = instrument.shift[shiftIndex];
-          if (typeof shiftValue === 'number') {
-            shiftSemitones = shiftValue | 0;
-          }
-        }
-
-        if (shiftSemitones !== 0) {
-          frequency = frequency * Math.pow(2, shiftSemitones / 12);
-        }
-
-        // Convert to a base divider period using the YM clock
-        let period = Math.floor(this.clock / (16 * frequency));
-
-        // Apply pitch envelope as an integer delta on the period:
-        // positive values decrease the divider, negative values increase it.
-        let pitchDelta = 0;
-        if (instrument.pitch && instrument.pitch.length > 0) {
-          const pitchIndex = Math.min(safeTick, instrument.pitch.length - 1);
-          const pitchValue = instrument.pitch[pitchIndex];
-          if (typeof pitchValue === 'number') {
-            pitchDelta = pitchValue | 0;
-          }
-        }
-
-        if (pitchDelta !== 0) {
-          period -= pitchDelta;
-        }
-
-        // Clamp to valid 12-bit divider range (1..4095). Period 0 is treated as silence.
-        if (period <= 0 || period >= 4096) {
-          // Out of range: silence this tone by writing a large period
-          period = 4095;
-        }
-
-        this.writeRegister(fineRegister, period & 0xFF);
-        this.writeRegister(coarseRegister, (period >> 8) & 0x0F);
+      if (!noteData || noteData.note === '===') {
+        // No note or explicit note-off - silence channel
+        this.writeRegister(volumeRegister, 0x00);
+        return;
       }
-    }
 
-    // Volume envelope with optional per-step modifier.
-    const volumeArray = Array.isArray(instrument.volume) && instrument.volume.length > 0
-      ? instrument.volume
-      : [0];
-    const volumeIndex = Math.min(safeTick, volumeArray.length - 1);
-    const volumeValue = volumeArray[volumeIndex];
-    let volume = Math.max(0, Math.min(15, volumeValue));
+      // Update tone frequency using shift (in semitones) and pitch envelope as
+      // a direct delta on the frequency divider (period).
+      if (toneActive) {
+        const baseFreq = NOTE_FREQUENCIES[noteData.note];
+        if (baseFreq) {
+          // Start from plain note frequency
+          let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
 
-    if (volumeModifier !== undefined && volumeModifier !== null) {
-      const mod = Math.max(0, Math.min(15, volumeModifier | 0));
-      // Treat modifier as an attenuation factor: 15 = no attenuation, 0 = silence.
-      volume = Math.floor((volume * mod) / 15);
-    }
+          // Apply shift as semitone offsets on top of the note
+          let shiftSemitones = 0;
+          if (instrument.shift && instrument.shift.length > 0) {
+            const shiftIndex = Math.min(safeTick, instrument.shift.length - 1);
+            const shiftValue = instrument.shift[shiftIndex];
+            if (typeof shiftValue === 'number') {
+              shiftSemitones = shiftValue | 0;
+            }
+          }
 
-    this.writeRegister(volumeRegister, volume);
+          if (shiftSemitones !== 0) {
+            frequency = frequency * Math.pow(2, shiftSemitones / 12);
+          }
 
-    // Noise envelope whenever noise is active
-    if (noiseActive) {
-      this.applyNoiseEnvelopeValue(instrument, safeTick);
-    }
+          // Convert to a base divider period using the YM clock
+          let period = Math.floor(this.clock / (16 * frequency));
+
+          // Apply pitch envelope as an integer delta on the period:
+          // positive values decrease the divider, negative values increase it.
+          let pitchDelta = 0;
+          if (instrument.pitch && instrument.pitch.length > 0) {
+            const pitchIndex = Math.min(safeTick, instrument.pitch.length - 1);
+            const pitchValue = instrument.pitch[pitchIndex];
+            if (typeof pitchValue === 'number') {
+              pitchDelta = pitchValue | 0;
+            }
+          }
+
+          if (pitchDelta !== 0) {
+            period -= pitchDelta;
+          }
+
+          // Clamp to valid 12-bit divider range (1..4095). Period 0 is treated as silence.
+          if (period <= 0 || period >= 4096) {
+            // Out of range: silence this tone by writing a large period
+            period = 4095;
+          }
+
+          this.writeRegister(fineRegister, period & 0xff);
+          this.writeRegister(coarseRegister, (period >> 8) & 0x0f);
+        }
+      }
+
+      // Volume envelope with optional per-step modifier.
+      const volumeArray =
+        Array.isArray(instrument.volume) && instrument.volume.length > 0 ? instrument.volume : [0];
+      const volumeIndex = Math.min(safeTick, volumeArray.length - 1);
+      const volumeValue = volumeArray[volumeIndex];
+      let volume = Math.max(0, Math.min(15, volumeValue));
+
+      if (volumeModifier !== undefined && volumeModifier !== null) {
+        const mod = Math.max(0, Math.min(15, volumeModifier | 0));
+        // Treat modifier as an attenuation factor: 15 = no attenuation, 0 = silence.
+        volume = Math.floor((volume * mod) / 15);
+      }
+
+      this.writeRegister(volumeRegister, volume);
+
+      // Noise envelope whenever noise is active
+      if (noiseActive) {
+        this.applyNoiseEnvelopeValue(instrument, safeTick);
+      }
     } finally {
       this.endBatch();
     }
   };
 
   dispose(): void {
-    this.oscillators.forEach(osc => osc.stop());
+    this.oscillators.forEach((osc) => osc.stop());
     if (this.noiseNode) {
       this.noiseNode.stop();
     }

@@ -1,19 +1,23 @@
 import { useState, useEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import { logger } from '../utils/logger';
-import type { MidiConfiguration, MidiMonitorEntry, MidiNoteEvent, MidiDeviceInfo } from '../utils/midiUtils';
+import type {
+  MidiConfiguration,
+  MidiMonitorEntry,
+  MidiNoteEvent,
+  MidiDeviceInfo,
+} from '../utils/midiUtils';
 import { resolveDeviceName, formatTime, MAX_MONITOR_ENTRIES } from '../utils/midiUtils';
 import { StorageKeys } from '../utils/storageKeys';
 
 const isElectronEnv =
-  typeof window !== 'undefined' &&
-  !!(window as unknown as { electronAPI?: unknown }).electronAPI;
+  typeof window !== 'undefined' && !!(window as unknown as { electronAPI?: unknown }).electronAPI;
 
 export function useMidiMessageProcessing(
   midiAccessRef: MutableRefObject<MIDIAccess | null>,
   devices: { inputs: MidiDeviceInfo[]; outputs: MidiDeviceInfo[] },
   configuration: MidiConfiguration,
   enableMonitors: boolean,
-  onNoteEvent: (event: MidiNoteEvent) => void
+  onNoteEvent: (event: MidiNoteEvent) => void,
 ) {
   const [inMonitor, setInMonitor] = useState<MidiMonitorEntry[]>([]);
   const [outMonitor, setOutMonitor] = useState<MidiMonitorEntry[]>([]);
@@ -26,7 +30,7 @@ export function useMidiMessageProcessing(
   const addInMonitorEntry = useCallback((entry: Omit<MidiMonitorEntry, 'id' | 'time'>) => {
     const id = nextEntryIdRef.current++;
     const time = formatTime();
-    setInMonitor(prev => {
+    setInMonitor((prev) => {
       const next = [...prev, { ...entry, id, time }];
       if (next.length > MAX_MONITOR_ENTRIES) {
         return next.slice(next.length - MAX_MONITOR_ENTRIES);
@@ -38,7 +42,7 @@ export function useMidiMessageProcessing(
   const addOutMonitorEntry = useCallback((entry: Omit<MidiMonitorEntry, 'id' | 'time'>) => {
     const id = nextEntryIdRef.current++;
     const time = formatTime();
-    setOutMonitor(prev => {
+    setOutMonitor((prev) => {
       const next = [...prev, { ...entry, id, time }];
       if (next.length > MAX_MONITOR_ENTRIES) {
         return next.slice(next.length - MAX_MONITOR_ENTRIES);
@@ -52,201 +56,193 @@ export function useMidiMessageProcessing(
     setOutMonitor([]);
   }, []);
 
-  const handleMidiMessage = useCallback((event: MIDIMessageEvent) => {
-    if (!event || !event.data || !(event.data instanceof Uint8Array)) {
-      return;
-    }
-
-    const data = event.data;
-    if (data.length === 0) return;
-
-    const status = data[0] | 0;
-    const data1 = data.length >= 2 ? data[1] | 0 : 0;
-    const data2 = data.length >= 3 ? data[2] | 0 : 0;
-
-    const command = status & 0xf0;
-    const channel = (status & 0x0f) + 1; // 1-16
-
-    let dataHex = '';
-    for (let i = 0; i < data.length; i += 1) {
-      if (i > 0) dataHex += ' ';
-      dataHex += (data[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
-    }
-
-    const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
-
-    const time = formatTime();
-
-    let debugOn = false;
-    try {
-      debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
-    } catch {
-      debugOn = false;
-    }
-
-    let type = 'Unknown';
-    let noteLabel = '';
-    let value: number | null = null;
-
-    let deviceId: string = configuration.inputId || '';
-    const target = event.target as MIDIInput | null;
-    if (target && typeof target.id === 'string') {
-      deviceId = target.id;
-    }
-    const deviceName = resolveDeviceName(deviceId || null, devices.inputs, 'MIDI In');
-
-    if (command === 0x80 || (command === 0x90 && data2 === 0)) {
-      type = 'Note Off';
-      const noteNumber = data1;
-      const midiOctave = Math.floor(noteNumber / 12) - 1;
-      const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-      const noteName = noteNames[noteNumber % 12] || 'C';
-      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-      noteLabel = `${noteBase}${midiOctave}`;
-      value = data2;
-
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
-
-      if (debugOn && enableMonitors) {
-        logger.debug('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          velocity: data2,
-          type,
-          status,
-          data: dataHex,
-          device: deviceName,
-        });
+  const handleMidiMessage = useCallback(
+    (event: MIDIMessageEvent) => {
+      if (!event || !event.data || !(event.data instanceof Uint8Array)) {
+        return;
       }
 
-      onNoteEvent({
-        type: 'noteOff',
-        noteNumber,
-        noteName,
-        octave: midiOctave,
-        velocity: data2,
-        channel,
-        deviceId,
-        deviceName,
-      });
-    } else if (command === 0x90) {
-      type = 'Note On';
-      const noteNumber = data1;
-      const midiOctave = Math.floor(noteNumber / 12) - 1;
-      const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-      const noteName = noteNames[noteNumber % 12] || 'C';
-      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-      noteLabel = `${noteBase}${midiOctave}`;
-      value = data2;
+      const data = event.data;
+      if (data.length === 0) return;
 
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
+      const status = data[0] | 0;
+      const data1 = data.length >= 2 ? data[1] | 0 : 0;
+      const data2 = data.length >= 3 ? data[2] | 0 : 0;
 
-      if (debugOn && enableMonitors) {
-        logger.debug('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          velocity: data2,
-          type,
-          status,
-          data: dataHex,
-          device: deviceName,
-        });
+      const command = status & 0xf0;
+      const channel = (status & 0x0f) + 1; // 1-16
+
+      let dataHex = '';
+      for (let i = 0; i < data.length; i += 1) {
+        if (i > 0) dataHex += ' ';
+        dataHex += (data[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
       }
 
-      onNoteEvent({
-        type: 'noteOn',
-        noteNumber,
-        noteName,
-        octave: midiOctave,
-        velocity: data2,
-        channel,
-        deviceId,
-        deviceName,
-      });
-    } else if (command === 0xb0) {
-      type = 'Control Change';
-      noteLabel = `CC ${data1}`;
-      value = data2;
+      const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
 
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
+      const time = formatTime();
 
-      if (debugOn && enableMonitors) {
-        logger.debug('MIDI IN', {
-          time,
-          note: noteLabel,
-          channel,
-          value,
-          type,
-          status,
-          data: dataHex,
-          device: deviceName,
-        });
+      let debugOn = false;
+      try {
+        debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
+      } catch {
+        debugOn = false;
       }
-    } else {
-      type = 'Other';
-      noteLabel = '';
-      value = null;
 
-      addInMonitorEntry({
-        data: dataHex,
-        device: deviceName,
-        channel: channelHex,
-        type,
-        note: noteLabel,
-        value,
-      });
+      let type = 'Unknown';
+      let noteLabel = '';
+      let value: number | null = null;
 
-      if (debugOn && enableMonitors) {
-        logger.debug('MIDI IN', {
-          time,
-          type,
+      let deviceId: string = configuration.inputId || '';
+      const target = event.target as MIDIInput | null;
+      if (target && typeof target.id === 'string') {
+        deviceId = target.id;
+      }
+      const deviceName = resolveDeviceName(deviceId || null, devices.inputs, 'MIDI In');
+
+      if (command === 0x80 || (command === 0x90 && data2 === 0)) {
+        type = 'Note Off';
+        const noteNumber = data1;
+        const midiOctave = Math.floor(noteNumber / 12) - 1;
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const noteName = noteNames[noteNumber % 12] || 'C';
+        const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
+        noteLabel = `${noteBase}${midiOctave}`;
+        value = data2;
+
+        addInMonitorEntry({
           data: dataHex,
-          channel,
           device: deviceName,
+          channel: channelHex,
+          type,
           note: noteLabel,
           value,
-          status,
         });
+
+        if (debugOn && enableMonitors) {
+          logger.debug('MIDI IN', {
+            time,
+            note: noteLabel,
+            channel,
+            velocity: data2,
+            type,
+            status,
+            data: dataHex,
+            device: deviceName,
+          });
+        }
+
+        onNoteEvent({
+          type: 'noteOff',
+          noteNumber,
+          noteName,
+          octave: midiOctave,
+          velocity: data2,
+          channel,
+          deviceId,
+          deviceName,
+        });
+      } else if (command === 0x90) {
+        type = 'Note On';
+        const noteNumber = data1;
+        const midiOctave = Math.floor(noteNumber / 12) - 1;
+        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+        const noteName = noteNames[noteNumber % 12] || 'C';
+        const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
+        noteLabel = `${noteBase}${midiOctave}`;
+        value = data2;
+
+        addInMonitorEntry({
+          data: dataHex,
+          device: deviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value,
+        });
+
+        if (debugOn && enableMonitors) {
+          logger.debug('MIDI IN', {
+            time,
+            note: noteLabel,
+            channel,
+            velocity: data2,
+            type,
+            status,
+            data: dataHex,
+            device: deviceName,
+          });
+        }
+
+        onNoteEvent({
+          type: 'noteOn',
+          noteNumber,
+          noteName,
+          octave: midiOctave,
+          velocity: data2,
+          channel,
+          deviceId,
+          deviceName,
+        });
+      } else if (command === 0xb0) {
+        type = 'Control Change';
+        noteLabel = `CC ${data1}`;
+        value = data2;
+
+        addInMonitorEntry({
+          data: dataHex,
+          device: deviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value,
+        });
+
+        if (debugOn && enableMonitors) {
+          logger.debug('MIDI IN', {
+            time,
+            note: noteLabel,
+            channel,
+            value,
+            type,
+            status,
+            data: dataHex,
+            device: deviceName,
+          });
+        }
+      } else {
+        type = 'Other';
+        noteLabel = '';
+        value = null;
+
+        addInMonitorEntry({
+          data: dataHex,
+          device: deviceName,
+          channel: channelHex,
+          type,
+          note: noteLabel,
+          value,
+        });
+
+        if (debugOn && enableMonitors) {
+          logger.debug('MIDI IN', {
+            time,
+            type,
+            data: dataHex,
+            channel,
+            device: deviceName,
+            note: noteLabel,
+            value,
+            status,
+          });
+        }
       }
-    }
-  }, [
-    addInMonitorEntry,
-    configuration.inputId,
-    devices.inputs,
-    enableMonitors,
-    onNoteEvent,
-  ]);
+    },
+    [addInMonitorEntry, configuration.inputId, devices.inputs, enableMonitors, onNoteEvent],
+  );
 
   const sendNoteMessage = useCallback(
-    (
-      kind: 'noteOn' | 'noteOff',
-      channel: number,
-      noteNumber: number,
-      velocity: number = 0x40
-    ) => {
+    (kind: 'noteOn' | 'noteOff', channel: number, noteNumber: number, velocity: number = 0x40) => {
       if (!configuration.outputEnabled) {
         return;
       }
@@ -271,7 +267,11 @@ export function useMidiMessageProcessing(
       }
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
-      const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');
+      const outputDeviceName = resolveDeviceName(
+        configuration.outputId ?? null,
+        devices.outputs,
+        'MIDI Out',
+      );
 
       const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
       const midiOctave = Math.floor(clampedNote / 12) - 1;
@@ -322,27 +322,29 @@ export function useMidiMessageProcessing(
       } catch {
         // Ignore send errors
       }
-    }, [
+    },
+    [
       addOutMonitorEntry,
       configuration.ignoreOutputVolume,
       configuration.outputEnabled,
       configuration.outputId,
       devices.outputs,
       enableMonitors,
-    ]);
+    ],
+  );
 
   const sendNoteOn = useCallback(
     (channel: number, noteNumber: number, velocity: number) => {
       sendNoteMessage('noteOn', channel, noteNumber, velocity);
     },
-    [sendNoteMessage]
+    [sendNoteMessage],
   );
 
   const sendNoteOff = useCallback(
     (channel: number, noteNumber: number, velocity: number = 0x40) => {
       sendNoteMessage('noteOff', channel, noteNumber, velocity);
     },
-    [sendNoteMessage]
+    [sendNoteMessage],
   );
 
   const sendProgramChange = useCallback(
@@ -354,15 +356,19 @@ export function useMidiMessageProcessing(
       const safeChannel = Math.max(1, Math.min(16, channel | 0));
       const clampedProgram = Math.max(0, Math.min(127, program | 0));
 
-      const status = 0xC0 | ((safeChannel - 1) & 0x0f);
+      const status = 0xc0 | ((safeChannel - 1) & 0x0f);
       const bytes = [status, clampedProgram];
 
       const dataHex = bytes
-        .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
+        .map((byte) => byte.toString(16).toUpperCase().padStart(2, '0'))
         .join(' ');
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
-      const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');
+      const outputDeviceName = resolveDeviceName(
+        configuration.outputId ?? null,
+        devices.outputs,
+        'MIDI Out',
+      );
 
       const type = 'Program Change';
       const noteLabel = `PC ${clampedProgram}`;
@@ -408,13 +414,15 @@ export function useMidiMessageProcessing(
       } catch {
         // Ignore send errors
       }
-    }, [
+    },
+    [
       addOutMonitorEntry,
       configuration.outputEnabled,
       configuration.outputId,
       devices.outputs,
       enableMonitors,
-    ]);
+    ],
+  );
 
   const sendSystemReset = useCallback(() => {
     if (!configuration.outputEnabled) {
@@ -429,11 +437,13 @@ export function useMidiMessageProcessing(
     const status = 0xff;
     const bytes = [status];
 
-    const dataHex = bytes
-      .map(byte => byte.toString(16).toUpperCase().padStart(2, '0'))
-      .join(' ');
+    const dataHex = bytes.map((byte) => byte.toString(16).toUpperCase().padStart(2, '0')).join(' ');
 
-    const outputDeviceName = resolveDeviceName(configuration.outputId ?? null, devices.outputs, 'MIDI Out');
+    const outputDeviceName = resolveDeviceName(
+      configuration.outputId ?? null,
+      devices.outputs,
+      'MIDI Out',
+    );
 
     addOutMonitorEntry({
       data: dataHex,
@@ -486,9 +496,10 @@ export function useMidiMessageProcessing(
     let nextInput: MIDIInput | null = null;
     if (configuration.inputEnabled && configuration.inputId) {
       try {
-        const rawInput = access.inputs && typeof access.inputs.get === 'function'
-          ? access.inputs.get(configuration.inputId)
-          : null;
+        const rawInput =
+          access.inputs && typeof access.inputs.get === 'function'
+            ? access.inputs.get(configuration.inputId)
+            : null;
         nextInput = rawInput ?? null;
       } catch {
         nextInput = null;
@@ -575,9 +586,10 @@ export function useMidiMessageProcessing(
     let nextOutput: MIDIOutput | null = null;
     if (configuration.outputEnabled && configuration.outputId) {
       try {
-        const rawOutput = access.outputs && typeof access.outputs.get === 'function'
-          ? access.outputs.get(configuration.outputId)
-          : null;
+        const rawOutput =
+          access.outputs && typeof access.outputs.get === 'function'
+            ? access.outputs.get(configuration.outputId)
+            : null;
         nextOutput = rawOutput ?? null;
       } catch {
         nextOutput = null;
@@ -612,7 +624,12 @@ export function useMidiMessageProcessing(
 
     currentOutputRef.current = nextOutput;
 
-    if (!isElectronEnv && nextOutput && configuration.outputEnabled && nextOutput !== previousOutput) {
+    if (
+      !isElectronEnv &&
+      nextOutput &&
+      configuration.outputEnabled &&
+      nextOutput !== previousOutput
+    ) {
       sendSystemReset();
     }
   }, [configuration.outputEnabled, configuration.outputId, sendSystemReset, midiAccessRef]);

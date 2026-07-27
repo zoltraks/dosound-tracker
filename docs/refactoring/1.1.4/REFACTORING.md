@@ -5,6 +5,7 @@
 This comprehensive refactoring proposal addresses critical performance bottlenecks in the DOSOUND Tracker while maintaining the requirement for frequent sequencer callbacks (20ms cycle times) and enhanced debug logging capabilities. The current implementation suffers from excessive CPU usage, unnecessary UI re-renders, and inefficient data structures that collectively threaten the application's core functionality as a real-time music sequencer.
 
 **Primary Goals:**
+
 - Optimize sequencer callback execution time from 50-100ms to under 5ms while maintaining 20ms callback frequency
 - Implement enhanced debug logging system for development and troubleshooting
 - Eliminate unnecessary UI re-renders during playback (50Hz → 10-15Hz for non-critical updates)
@@ -17,8 +18,10 @@ This comprehensive refactoring proposal addresses critical performance bottlenec
 ### Critical Performance Bottlenecks
 
 #### 1. Massive Sequencer Callback (CRITICAL - App.tsx:642-1048)
+
 **Impact:** Executes every 20ms during playback, currently taking 50-100ms
 **Problems:**
+
 - 400+ line monolithic callback handling audio, MIDI, debug logging, and UI updates
 - Complex pattern processing and instrument lookups in hot path
 - Multiple `Map.get()` calls for `patternsById` and `instrumentsById` (lines 747-749)
@@ -29,8 +32,10 @@ This comprehensive refactoring proposal addresses critical performance bottlenec
 **Performance Cost:** 250-500% of available CPU time per cycle
 
 #### 2. Excessive UI Re-renders (HIGH - 50Hz updates)
+
 **Impact:** React re-renders entire component tree at playback rate
 **Problems:**
+
 - `setSharedCurrentLine()` called on every sequencer tick (line 653)
 - Complex dependency arrays in `useCallback` causing unnecessary recreations
 - Zustand store updates triggering component re-renders
@@ -39,8 +44,10 @@ This comprehensive refactoring proposal addresses critical performance bottlenec
 **Performance Cost:** 20-30% of CPU time, memory pressure from virtual DOM diffing
 
 #### 3. Inefficient Data Structures (MEDIUM)
+
 **Impact:** Memory allocation and garbage collection pressure
 **Problems:**
+
 - `Array.from()` calls in render functions (TracksSection.tsx:61)
 - `patternsById.get()` and `instrumentsById.get()` in audio callback
 - String operations in hot paths (note formatting, debug output)
@@ -49,8 +56,10 @@ This comprehensive refactoring proposal addresses critical performance bottlenec
 **Performance Cost:** 10-15% CPU time, periodic GC pauses
 
 #### 4. Worker Communication Overhead (MEDIUM)
+
 **Impact:** Message serialization and deserialization
 **Problems:**
+
 - Complex state objects sent via `postMessage` every tick
 - No shared memory or efficient data structures
 - Synchronous message handling blocking main thread
@@ -58,8 +67,10 @@ This comprehensive refactoring proposal addresses critical performance bottlenec
 **Performance Cost:** 5-10% CPU time
 
 #### 5. Debug Logging Performance Impact (MEDIUM)
+
 **Impact:** Debug logging affecting real-time performance
 **Problems:**
+
 - String formatting operations in hot paths
 - No conditional compilation for debug logs
 - No buffering or batching of debug messages
@@ -80,6 +91,7 @@ This comprehensive refactoring proposal addresses critical performance bottlenec
 ### Phase 1: Core Audio Engine Optimization (Weeks 1-2)
 
 #### 1.1 Optimized Sequencer Callback with Enhanced Debug Support
+
 Maintain frequent callbacks while dramatically improving efficiency and debug capabilities.
 
 ```typescript
@@ -88,87 +100,90 @@ class DebugLogger {
   private logBuffer: string[] = [];
   private isDebugEnabled: boolean = false;
   private batchSize: number = 10;
-  
+
   enableDebug(enabled: boolean): void {
     this.isDebugEnabled = enabled;
   }
-  
+
   logSequencerEvent(event: SequencerEvent): void {
     if (!this.isDebugEnabled) return;
-    
+
     const timestamp = performance.now();
     const message = `[${timestamp.toFixed(2)}ms] Sequencer: ${event.type} - Pattern: ${event.patternIndex}, Line: ${event.lineIndex}`;
-    
+
     this.logBuffer.push(message);
-    
+
     // Batch debug messages to avoid blocking audio thread
     if (this.logBuffer.length >= this.batchSize) {
       this.flushLogs();
     }
   }
-  
+
   private flushLogs(): void {
     if (this.logBuffer.length === 0) return;
-    
+
     // Use setTimeout to move logging off critical path
     setTimeout(() => {
-      this.logBuffer.forEach(message => console.log(message));
+      this.logBuffer.forEach((message) => console.log(message));
       this.logBuffer.length = 0;
     }, 0);
   }
 }
 
 // Optimized sequencer callback
-const optimizedSequencerCallback = useCallback((tickCount: number) => {
-  const debugStart = performance.now();
-  
-  try {
-    // 1. Fast data access (no Map lookups)
-    const currentFrame = playbackEngine.getFrame(currentFrameIndex);
-    
-    // 2. Batch audio processing
-    audioProcessor.processFrame(currentFrame);
-    
-    // 3. Non-blocking debug logging
-    if (debugLogger.isEnabled()) {
-      debugLogger.logSequencerEvent({
-        type: 'TICK',
-        patternIndex: currentFrame.patternIndex,
-        lineIndex: currentFrame.lineIndex,
-        tickIndex: tickCount
+const optimizedSequencerCallback = useCallback(
+  (tickCount: number) => {
+    const debugStart = performance.now();
+
+    try {
+      // 1. Fast data access (no Map lookups)
+      const currentFrame = playbackEngine.getFrame(currentFrameIndex);
+
+      // 2. Batch audio processing
+      audioProcessor.processFrame(currentFrame);
+
+      // 3. Non-blocking debug logging
+      if (debugLogger.isEnabled()) {
+        debugLogger.logSequencerEvent({
+          type: 'TICK',
+          patternIndex: currentFrame.patternIndex,
+          lineIndex: currentFrame.lineIndex,
+          tickIndex: tickCount,
+        });
+      }
+
+      // 4. Update playback state (minimal operations)
+      playbackStateRef.current = {
+        frameIndex: currentFrameIndex,
+        isPlaying: true,
+        lastUpdateTime: performance.now(),
+      };
+
+      // 5. UI updates (debounced, not in hot path)
+      scheduleUiUpdate();
+    } catch (error) {
+      // Enhanced error logging
+      debugLogger.logError('SequencerCallback', error, {
+        tickCount,
+        frameIndex: currentFrameIndex,
+        timestamp: performance.now(),
       });
     }
-    
-    // 4. Update playback state (minimal operations)
-    playbackStateRef.current = {
-      frameIndex: currentFrameIndex,
-      isPlaying: true,
-      lastUpdateTime: performance.now()
-    };
-    
-    // 5. UI updates (debounced, not in hot path)
-    scheduleUiUpdate();
-    
-  } catch (error) {
-    // Enhanced error logging
-    debugLogger.logError('SequencerCallback', error, {
-      tickCount,
-      frameIndex: currentFrameIndex,
-      timestamp: performance.now()
-    });
-  }
-  
-  const debugEnd = performance.now();
-  const executionTime = debugEnd - debugStart;
-  
-  // Performance monitoring (can be enabled/disabled)
-  if (performanceMonitor.isEnabled()) {
-    performanceMonitor.recordCallbackTime(executionTime);
-  }
-}, [playbackEngine, audioProcessor, debugLogger]);
+
+    const debugEnd = performance.now();
+    const executionTime = debugEnd - debugStart;
+
+    // Performance monitoring (can be enabled/disabled)
+    if (performanceMonitor.isEnabled()) {
+      performanceMonitor.recordCallbackTime(executionTime);
+    }
+  },
+  [playbackEngine, audioProcessor, debugLogger],
+);
 ```
 
 #### 1.2 Pre-computed Frame-Based Playback Engine
+
 Replace inefficient per-tick processing with optimized frame arrays.
 
 ```typescript
@@ -203,32 +218,34 @@ class OptimizedPlaybackEngine {
   private frames: PlaybackFrame[] = [];
   private currentFrame = 0;
   private debugMode: boolean = false;
-  
+
   constructor(private debugLogger: DebugLogger) {}
-  
+
   enableDebugMode(enabled: boolean): void {
     this.debugMode = enabled;
   }
-  
+
   precomputeSong(song: Song): void {
     // Flatten all patterns into sequential frames
     for (const pattern of song.patterns) {
       for (let lineIndex = 0; lineIndex < pattern.lines.length; lineIndex++) {
         const line = pattern.lines[lineIndex];
-        
+
         // Pre-compute frame with debug info if enabled
         const frame: PlaybackFrame = {
           frameIndex: this.frames.length,
           channelData: this.precomputeChannelData(line),
           timing: this.calculateTiming(line),
-          debugInfo: this.debugMode ? this.createDebugInfo(pattern.name, line, lineIndex) : undefined
+          debugInfo: this.debugMode
+            ? this.createDebugInfo(pattern.name, line, lineIndex)
+            : undefined,
         };
-        
+
         this.frames.push(frame);
       }
     }
   }
-  
+
   getNextFrame(): PlaybackFrame {
     const frame = this.frames[this.currentFrame++];
     if (this.currentFrame >= this.frames.length) {
@@ -236,17 +253,18 @@ class OptimizedPlaybackEngine {
     }
     return frame;
   }
-  
+
   private createDebugInfo(patternName: string, line: PatternLine, lineIndex: number) {
     return {
       patternName,
-      lineData: JSON.stringify(line, null, 2) // Pre-formatted for quick logging
+      lineData: JSON.stringify(line, null, 2), // Pre-formatted for quick logging
     };
   }
 }
 ```
 
 #### 1.3 Efficient Data Lookup System
+
 Replace Map lookups with indexed arrays and direct references.
 
 ```typescript
@@ -255,16 +273,16 @@ class InstrumentRegistry {
   private instruments: Instrument[] = new Array(256);
   private lookupTable: Uint16Array = new Uint16Array(65536); // ID -> index
   private debugNames: Map<string, string> = new Map(); // ID -> display name
-  
+
   getInstrument(id: string): Instrument | null {
     const index = this.lookupTable[this.hashId(id)];
     return index < this.instruments.length ? this.instruments[index] : null;
   }
-  
+
   getInstrumentDebugName(id: string): string {
     return this.debugNames.get(id) || id;
   }
-  
+
   // Pre-resolve all instrument references during song load
   precomputeReferences(song: Song): void {
     for (const pattern of song.patterns) {
@@ -289,6 +307,7 @@ class InstrumentRegistry {
 ### Phase 2: Enhanced Debug System & UI Performance (Weeks 3-4)
 
 #### 2.1 Comprehensive Debug Logging System
+
 Implement a multi-level debug system that can be enabled/disabled without performance impact.
 
 ```typescript
@@ -299,43 +318,43 @@ enum DebugLevel {
   WARNINGS = 2,
   INFO = 3,
   VERBOSE = 4,
-  AUDIO_TRACE = 5
+  AUDIO_TRACE = 5,
 }
 
 class ComprehensiveDebugSystem {
   private currentLevel: DebugLevel = DebugLevel.NONE;
   private logBuffers: Map<DebugLevel, string[]> = new Map();
   private performanceMetrics: Map<string, number[]> = new Map();
-  
+
   setDebugLevel(level: DebugLevel): void {
     this.currentLevel = level;
   }
-  
+
   logAudioEvent(event: AudioDebugEvent): void {
     if (this.currentLevel >= DebugLevel.AUDIO_TRACE) {
       this.addToBuffer(DebugLevel.AUDIO_TRACE, this.formatAudioEvent(event));
     }
   }
-  
+
   logSequencerTick(tickData: SequencerTickData): void {
     if (this.currentLevel >= DebugLevel.VERBOSE) {
       this.addToBuffer(DebugLevel.VERBOSE, this.formatTickData(tickData));
     }
   }
-  
+
   logPerformanceMetric(name: string, value: number): void {
     if (!this.performanceMetrics.has(name)) {
       this.performanceMetrics.set(name, []);
     }
     this.performanceMetrics.get(name)!.push(value);
-    
+
     // Keep only recent measurements
     const metrics = this.performanceMetrics.get(name)!;
     if (metrics.length > 100) {
       metrics.shift();
     }
   }
-  
+
   getPerformanceReport(): string {
     let report = 'Performance Report:\n';
     for (const [name, values] of this.performanceMetrics) {
@@ -346,11 +365,11 @@ class ComprehensiveDebugSystem {
     }
     return report;
   }
-  
+
   private formatAudioEvent(event: AudioDebugEvent): string {
     return `[${event.timestamp.toFixed(2)}ms] Audio: ${event.type} - ${event.details}`;
   }
-  
+
   private formatTickData(data: SequencerTickData): string {
     return `[${data.timestamp.toFixed(2)}ms] Tick: Frame=${data.frameIndex}, Pattern="${data.patternName}", Line=${data.lineIndex}`;
   }
@@ -358,6 +377,7 @@ class ComprehensiveDebugSystem {
 ```
 
 #### 2.2 Debounced UI Updates with Debug Integration
+
 Separate playback state from UI state while maintaining debug visibility.
 
 ```typescript
@@ -379,60 +399,61 @@ interface UiState {
 // Debug-aware UI state management
 const useDebugUiState = () => {
   const [uiState, setUiState] = useState<UiState>({
-    visiblePattern: 0, 
-    visibleLine: 0, 
-    debugEnabled: false
+    visiblePattern: 0,
+    visibleLine: 0,
+    debugEnabled: false,
   });
   const playbackStateRef = useRef<PlaybackState>({
-    currentFrame: 0, 
+    currentFrame: 0,
     isPlaying: false,
-    lastUpdateTime: 0
+    lastUpdateTime: 0,
   });
   const debugSystem = useRef<ComprehensiveDebugSystem>(new ComprehensiveDebugSystem());
-  
+
   // Debounced UI updates with debug support
   useEffect(() => {
     const interval = setInterval(() => {
       const playback = playbackStateRef.current;
       const debugSystem = debugSystem.current;
-      
-      setUiState(prev => {
+
+      setUiState((prev) => {
         const newPattern = Math.floor(playback.currentFrame / 64);
         const newLine = playback.currentFrame % 64;
-        
+
         if (newPattern !== prev.visiblePattern || newLine !== prev.visibleLine) {
           // Log UI updates in debug mode
           if (prev.debugEnabled) {
             debugSystem.logAudioEvent({
               timestamp: performance.now(),
               type: 'UI_UPDATE',
-              details: `Pattern: ${newPattern}, Line: ${newLine}`
+              details: `Pattern: ${newPattern}, Line: ${newLine}`,
             });
           }
-          
+
           return {
             ...prev,
             visiblePattern: newPattern,
-            visibleLine: newLine
+            visibleLine: newLine,
           };
         }
         return prev;
       });
     }, 66); // ~15Hz updates
-    
+
     return () => clearInterval(interval);
   }, []);
-  
+
   const toggleDebug = useCallback((enabled: boolean) => {
-    setUiState(prev => ({...prev, debugEnabled: enabled}));
+    setUiState((prev) => ({ ...prev, debugEnabled: enabled }));
     debugSystem.current.setDebugLevel(enabled ? DebugLevel.VERBOSE : DebugLevel.NONE);
   }, []);
-  
+
   return { uiState, toggleDebug, debugSystem: debugSystem.current };
 };
 ```
 
 #### 2.3 Optimized Component Rendering with Debug Overlays
+
 Implement virtual scrolling and memoization while supporting debug overlays.
 
 ```typescript
@@ -442,7 +463,7 @@ const DebugTrackPanel = React.memo(({startLine, endLine, pattern, debugEnabled, 
     return Array.from({length: endLine - startLine}, (_, i) => {
       const lineIndex = startLine + i;
       const lineData = pattern?.lines[lineIndex] || null;
-      
+
       return {
         index: lineIndex,
         data: lineData,
@@ -455,22 +476,22 @@ const DebugTrackPanel = React.memo(({startLine, endLine, pattern, debugEnabled, 
       };
     });
   }, [pattern, startLine, endLine, currentLine, debugEnabled]);
-  
+
   return (
     <div className="track-panel">
       {visibleLines.map(line => (
-        <TrackLine 
-          key={line.index} 
-          lineData={line.data} 
+        <TrackLine
+          key={line.index}
+          lineData={line.data}
           isCurrent={line.isCurrent}
           debugInfo={line.debugInfo}
-          {...props} 
+          {...props}
         />
       ))}
-      
+
       {/* Debug overlay */}
       {debugEnabled && (
-        <DebugOverlay 
+        <DebugOverlay
           performanceMetrics={debugSystem.getPerformanceReport()}
           currentFrame={playbackStateRef.current.currentFrame}
         />
@@ -483,6 +504,7 @@ const DebugTrackPanel = React.memo(({startLine, endLine, pattern, debugEnabled, 
 ### Phase 3: Advanced Optimizations (Weeks 5-6)
 
 #### 3.1 Shared Memory Communication with Debug Support
+
 Use SharedArrayBuffer for zero-copy data sharing while maintaining debug visibility.
 
 ```typescript
@@ -510,11 +532,11 @@ const setupSharedMemoryWithDebug = () => {
   const controlBuffer = new SharedArrayBuffer(512); // Increased for debug data
   const frameBuffer = new SharedArrayBuffer(1024 * 1024); // 1MB for frame data
   const debugBuffer = new SharedArrayBuffer(256 * 1024); // 256KB for debug messages
-  
+
   const control = new SharedControlView(controlBuffer);
   const frames = new SharedFrameDataView(frameBuffer);
   const debug = new SharedDebugView(debugBuffer);
-  
+
   return { control, frames, debug };
 };
 
@@ -524,7 +546,7 @@ class SharedDebugView {
   private messages: Float64Array; // Timestamps
   private messageTypes: Uint8Array; // Message type enum
   private messageData: Uint32Array; // Packed message data
-  
+
   constructor(buffer: ArrayBuffer) {
     const view = new DataView(buffer);
     this.messageCount = new Uint32Array(buffer, 0, 1);
@@ -532,7 +554,7 @@ class SharedDebugView {
     this.messageTypes = new Uint8Array(buffer, 8200, 1024);
     this.messageData = new Uint32Array(buffer, 9224, 2048);
   }
-  
+
   logDebugMessage(type: DebugMessageType, data: number): void {
     const index = this.messageCount[0] % 1024;
     this.messages[index] = performance.now();
@@ -544,6 +566,7 @@ class SharedDebugView {
 ```
 
 #### 3.2 Performance Monitoring and Profiling
+
 Implement comprehensive performance monitoring for both development and production.
 
 ```typescript
@@ -552,22 +575,23 @@ class PerformanceMonitor {
   private metrics: Map<string, MetricCollector> = new Map();
   private alerts: PerformanceAlert[] = [];
   private isMonitoring: boolean = false;
-  
+
   startMonitoring(): void {
     this.isMonitoring = true;
-    
+
     // Monitor sequencer callback performance
     this.trackCallback('sequencer', (duration) => {
-      if (duration > 5) { // Alert if over 5ms
+      if (duration > 5) {
+        // Alert if over 5ms
         this.addAlert({
           type: 'PERFORMANCE_WARNING',
           message: `Sequencer callback took ${duration.toFixed(2)}ms`,
           timestamp: performance.now(),
-          severity: duration > 10 ? 'HIGH' : 'MEDIUM'
+          severity: duration > 10 ? 'HIGH' : 'MEDIUM',
         });
       }
     });
-    
+
     // Monitor memory usage
     setInterval(() => {
       if ((performance as any).memory) {
@@ -577,35 +601,37 @@ class PerformanceMonitor {
       }
     }, 1000);
   }
-  
+
   stopMonitoring(): void {
     this.isMonitoring = false;
   }
-  
+
   getReport(): PerformanceReport {
     return {
       summary: this.generateSummary(),
       alerts: this.alerts,
       recommendations: this.generateRecommendations(),
-      timestamp: performance.now()
+      timestamp: performance.now(),
     };
   }
-  
+
   private generateRecommendations(): string[] {
     const recommendations: string[] = [];
-    
+
     // Analyze callback performance
     const sequencerMetrics = this.metrics.get('sequencer_callback');
     if (sequencerMetrics && sequencerMetrics.average > 3) {
-      recommendations.push('Consider optimizing sequencer callback - average execution time is high');
+      recommendations.push(
+        'Consider optimizing sequencer callback - average execution time is high',
+      );
     }
-    
+
     // Analyze memory usage
     const memoryMetrics = this.metrics.get('memory_used');
     if (memoryMetrics && memoryMetrics.trend === 'increasing') {
       recommendations.push('Memory usage is increasing - check for memory leaks');
     }
-    
+
     return recommendations;
   }
 }
@@ -614,6 +640,7 @@ class PerformanceMonitor {
 ## Implementation Strategy
 
 ### Week 1-2: Core Audio Engine & Debug System
+
 1. **Optimized Sequencer Callback**
    - Implement batched debug logging system
    - Add performance monitoring to callback
@@ -627,6 +654,7 @@ class PerformanceMonitor {
    - Debug overlay for UI
 
 ### Week 3-4: UI Performance & Debug Integration
+
 1. **State Separation**
    - Split playback state from UI state
    - Implement debounced UI updates (15Hz max)
@@ -640,6 +668,7 @@ class PerformanceMonitor {
    - Alert system for performance issues
 
 ### Week 5-6: Advanced Features
+
 1. **Shared Memory Communication**
    - Implement SharedArrayBuffer for worker communication
    - Zero-copy data sharing between threads
@@ -653,6 +682,7 @@ class PerformanceMonitor {
    - Automated performance regression detection
 
 ### Week 7-8: Testing and Optimization
+
 1. **Comprehensive Testing**
    - Performance benchmarking suite
    - Debug system functionality testing
@@ -668,6 +698,7 @@ class PerformanceMonitor {
 ## Performance Targets
 
 ### Quantitative Metrics
+
 - **Sequencer Callback Time:** 50-100ms → <5ms (90% reduction) while maintaining 20ms frequency
 - **UI Update Frequency:** 50Hz → 10-15Hz for non-critical updates (70-80% reduction)
 - **Debug System Overhead:** <1% CPU usage when enabled, 0% when disabled
@@ -676,6 +707,7 @@ class PerformanceMonitor {
 - **CPU Usage:** Reduce from 80-90% to <30% during playback
 
 ### Qualitative Improvements
+
 - **Audio Stability:** Eliminate dropouts during complex patterns
 - **Debug Experience:** Comprehensive debug information without performance impact
 - **UI Responsiveness:** Smooth interaction during playback
@@ -686,16 +718,19 @@ class PerformanceMonitor {
 ## Risk Assessment
 
 ### High Risk
+
 - **Debug System Integration:** Ensuring debug features don't impact audio performance
 - **SharedArrayBuffer Requirements:** Requires COOP/COEP headers for cross-origin isolation
 - **Backward Compatibility:** Maintaining existing functionality while adding debug features
 
 ### Medium Risk
+
 - **Performance Regression:** Debug features might inadvertently slow down audio processing
 - **Memory Usage:** Debug data structures might increase memory footprint
 - **Cross-thread Synchronization:** Debug message sharing between threads
 
 ### Low Risk
+
 - **UI Debouncing:** Minimal functionality impact
 - **Component Optimization:** Straightforward performance improvements
 - **Debug Level Management:** Well-tested patterns for conditional compilation
@@ -723,24 +758,28 @@ class PerformanceMonitor {
 ## Testing Strategy
 
 ### Performance Testing
+
 - **Micro-benchmarks:** Individual function performance measurement
 - **Macro-benchmarks:** End-to-end playback performance with debug enabled/disabled
 - **Debug System Testing:** Verify debug features work without performance impact
 - **Memory Profiling:** Heap usage and GC behavior analysis
 
 ### Debug System Testing
+
 - **Log Accuracy:** Verify all debug messages are captured correctly
 - **Performance Impact:** Measure CPU usage with different debug levels
 - **UI Integration:** Test debug overlays and dashboards
 - **Cross-thread Communication:** Verify shared memory debug features
 
 ### Functional Testing
+
 - **Playback Accuracy:** Note timing and envelope precision
 - **Feature Parity:** All existing functionality preserved
 - **Cross-platform:** Desktop and mobile compatibility
 - **Browser Compatibility:** Chrome, Firefox, Safari, Edge
 
 ### Load Testing
+
 - **Extended Sessions:** Multi-hour playback sessions with debug enabled
 - **Memory Leak Detection:** Long-term memory usage monitoring
 - **Debug Buffer Management:** Verify ring buffers don't overflow

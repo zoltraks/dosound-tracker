@@ -8,10 +8,7 @@ interface GlobalWithViteExportName {
 const globalWithViteExportName = globalThis as GlobalWithViteExportName;
 
 if (typeof globalWithViteExportName.__vite_ssr_exportName__ !== 'function') {
-  globalWithViteExportName.__vite_ssr_exportName__ = (
-    _name: string,
-    getter: () => unknown
-  ) => {
+  globalWithViteExportName.__vite_ssr_exportName__ = (_name: string, getter: () => unknown) => {
     try {
       return getter();
     } catch {

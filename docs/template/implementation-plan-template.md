@@ -48,7 +48,6 @@ File to modify: `src/types/[filename].ts`.
 
 ```typescript
 // Define new types or update existing definitions here
-
 ```
 
 **State store modifications**
@@ -59,7 +58,6 @@ File to modify: `src/stores/[filename].ts`.
 
 ```typescript
 // Define store state extensions or action implementations here
-
 ```
 
 ## Step by Step Implementation
@@ -74,7 +72,6 @@ File to modify: `src/[path]/[filename].ts`.
 
 ```typescript
 // Code fragment showing the structural change
-
 ```
 
 **[Step name]**
@@ -85,7 +82,6 @@ File to modify: `src/components/[filename].tsx`.
 
 ```typescript
 // Code fragment showing the structural change
-
 ```
 
 ## Implementation Order
@@ -110,7 +106,6 @@ Test file to create or update: `test/[path]/[filename].test.ts`.
 
 ```typescript
 // Outline specific test cases and expected assertions
-
 ```
 
 **Integration tests**
@@ -121,7 +116,6 @@ Test file to create or update: `test/components/[filename].test.tsx`.
 
 ```typescript
 // Outline specific integration test cases
-
 ```
 
 ## Verification

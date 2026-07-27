@@ -18,9 +18,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     const modeEnv = trimEnvelope(inst.mode);
 
     const number =
-      typeof inst.id === 'string' && inst.id.trim()
-        ? inst.id
-        : formatInstrumentSlotId(index);
+      typeof inst.id === 'string' && inst.id.trim() ? inst.id : formatInstrumentSlotId(index);
 
     const instrumentNode: Record<string, unknown> = {
       number,
@@ -209,14 +207,10 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       runCount = 0;
     };
 
-    const isPureWait = (ln: PatternStep) =>
-      ln && ln.wait === true && Object.keys(ln).length === 1;
+    const isPureWait = (ln: PatternStep) => ln && ln.wait === true && Object.keys(ln).length === 1;
 
     const isVolumeWait = (ln: PatternStep) =>
-      ln &&
-      ln.wait === 1 &&
-      typeof ln.volume === 'number' &&
-      Object.keys(ln).length === 2;
+      ln && ln.wait === 1 && typeof ln.volume === 'number' && Object.keys(ln).length === 2;
 
     for (const ln of trimmedLines) {
       if (isPureWait(ln)) {
@@ -255,8 +249,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     return patternNode;
   });
 
-  const hasLoop =
-    typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop);
+  const hasLoop = typeof currentSong.loop === 'number' && Number.isFinite(currentSong.loop);
 
   const songNode: Record<string, unknown> = {};
 
@@ -303,10 +296,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   const compressInstrumentArray = (key: string, text: string): string => {
     const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const pattern = new RegExp(
-      `^(\\s*)(${escapedKey}:)\\s*\\n((?:\\1  -\\s*[^\\n]+\\n)+)`,
-      'gm',
-    );
+    const pattern = new RegExp(`^(\\s*)(${escapedKey}:)\\s*\\n((?:\\1  -\\s*[^\\n]+\\n)+)`, 'gm');
     return text.replace(pattern, (_match, indent: string, keyText: string, block: string) => {
       const values: string[] = [];
       block.split('\n').forEach((line: string) => {
@@ -341,7 +331,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       let inner = String(value).trim();
       if (
         (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith('\'') && inner.endsWith('\''))
+        (inner.startsWith("'") && inner.endsWith("'"))
       ) {
         inner = inner.slice(1, -1);
       }

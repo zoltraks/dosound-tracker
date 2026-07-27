@@ -1,6 +1,6 @@
 # Music Wizard Book
 
-*Real music is made in HEX.*
+_Real music is made in HEX._
 
 This manual explains how to write music in **DOSOUND Tracker** and how to feed the result to your **68k** **DOSOUND** playback code.
 
@@ -55,7 +55,7 @@ This chapter gets you a bit closer to making music in under 5 minutes.
 
 1. Click **ADD INST** again (slot 01)
 
-2. Name it "My Piano" 
+2. Name it "My Piano"
 
 3. Set volume envelope: `FEDCBA9876543210`
 
@@ -63,7 +63,7 @@ This chapter gets you a bit closer to making music in under 5 minutes.
 
 **For Flute sound:**
 
-1. Click **ADD INST** again (slot 02) 
+1. Click **ADD INST** again (slot 02)
 
 2. Name it "My Flute"
 
@@ -79,6 +79,7 @@ This chapter gets you a bit closer to making music in under 5 minutes.
 4. Click **N** to create a new pattern for Track A
 
 **Pattern Editing:**
+
 - Type note names like `C-3`, `D#4`, `G-2`
 - Use spacebar for rests
 - Press Enter to confirm pattern IDs
@@ -90,7 +91,7 @@ In the pattern editor:
 
 1. First row: Type `C-2` (bass note)
 
-2. Move down and type `E-2` 
+2. Move down and type `E-2`
 
 3. Move down and type `G-2`
 
@@ -116,7 +117,7 @@ In the pattern editor:
 
 3. **Track A**: melody patterns
 
-4. **Track B**: bass patterns  
+4. **Track B**: bass patterns
 
 5. **Track C**: drums/noise patterns
 
@@ -329,7 +330,7 @@ Application supports several export formats. Each format can target the full son
 **DOSOUND Assembly (DATA):**
 
 - Native Atari ST format
-- ``dc.b`` directive stream
+- `dc.b` directive stream
 - XBIOS compatible
 - 68k assembly integration
 - Three strategies: simple, complex, optimized
@@ -714,7 +715,7 @@ Use cases:
 Rule of thumb:
 
 - Small values (±1..±10) = subtle.
-- Large values (±30..±100) = sci‑fi divebomb, intro to a demo, or *"I broke the tune on purpose"*.
+- Large values (±30..±100) = sci‑fi divebomb, intro to a demo, or _"I broke the tune on purpose"_.
 
 ### Noise Envelope (Percussion Texture)
 
@@ -1103,7 +1104,7 @@ DOSOUND Tracker is a love letter to:
 
 - The **YM 2149**,
 - The **Atari ST**,
-- And everyone who ever thought, *"I can do better than this sample pack."*
+- And everyone who ever thought, _"I can do better than this sample pack."_
 
 Use this manual as a **field guide**:
 

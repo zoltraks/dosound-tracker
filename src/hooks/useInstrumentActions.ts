@@ -80,7 +80,7 @@ export function useInstrumentActions({
     (name: string) => {
       updateInstrument({ name });
     },
-    [updateInstrument]
+    [updateInstrument],
   );
 
   const handlePlayInstrument = useCallback(() => {
@@ -121,7 +121,15 @@ export function useInstrumentActions({
         ym2149.writeRegister(0x08 + channel, 0x00);
       }
     }, tickIntervalMsRef.current);
-  }, [activeSection, currentInstrument, lastTrackId, parseBaseKeyString, ym2149Ref, playInstTimerRef, playInstStepRef]);
+  }, [
+    activeSection,
+    currentInstrument,
+    lastTrackId,
+    parseBaseKeyString,
+    ym2149Ref,
+    playInstTimerRef,
+    playInstStepRef,
+  ]);
 
   const handleCloneInstrument = useCallback(() => {
     const result = cloneInstrumentToNextFreeSlot(currentSong.instrument, currentInstrument);
@@ -133,7 +141,14 @@ export function useInstrumentActions({
     updateSong({ instrument: result.instruments });
     setCurrentInstrument(result.clonedInstrument);
     setActiveSection('instrumentList');
-  }, [currentSong.instrument, currentInstrument, updateSong, setCurrentInstrument, setActiveSection, setInstrumentOperationSummary]);
+  }, [
+    currentSong.instrument,
+    currentInstrument,
+    updateSong,
+    setCurrentInstrument,
+    setActiveSection,
+    setInstrumentOperationSummary,
+  ]);
 
   const handleDeleteInstrument = useCallback(() => {
     const instruments = currentSong.instrument;
@@ -146,7 +161,7 @@ export function useInstrumentActions({
       return;
     }
 
-    const index = instruments.findIndex(inst => normalizeInstrumentId(inst?.id) === targetIdNorm);
+    const index = instruments.findIndex((inst) => normalizeInstrumentId(inst?.id) === targetIdNorm);
     if (index === -1) {
       setInstrumentOperationSummary('Current instrument not found in song instruments.');
       return;
@@ -155,7 +170,7 @@ export function useInstrumentActions({
     const { usageCount, patternCount } = countInstrumentUsage(
       currentSong.pattern,
       targetIdNorm,
-      normalizeInstrumentId
+      normalizeInstrumentId,
     );
 
     if (usageCount === 0) {
@@ -203,7 +218,7 @@ export function useInstrumentActions({
         currentSong.instrument,
         currentSong.pattern,
         index,
-        direction
+        direction,
       );
 
       if (!moved) {
@@ -217,7 +232,7 @@ export function useInstrumentActions({
         const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
         const mappedId = moved.instrumentIdMap[currentIdNorm];
         if (mappedId) {
-          const updatedFromList = moved.instruments.find(inst => inst && inst.id === mappedId);
+          const updatedFromList = moved.instruments.find((inst) => inst && inst.id === mappedId);
           if (updatedFromList) {
             nextCurrentInstrument = updatedFromList;
           } else {
@@ -235,7 +250,14 @@ export function useInstrumentActions({
 
       setActiveSection('instrumentList');
     },
-    [currentSong.instrument, currentSong.pattern, currentInstrument, updateSong, setCurrentInstrument, setActiveSection]
+    [
+      currentSong.instrument,
+      currentSong.pattern,
+      currentInstrument,
+      updateSong,
+      setCurrentInstrument,
+      setActiveSection,
+    ],
   );
 
   const handleCancelInstrumentDelete = useCallback(() => {
@@ -257,7 +279,12 @@ export function useInstrumentActions({
     const instruments = currentSong.instrument;
     const patterns = currentSong.pattern;
 
-    const cleared = clearInstrumentAndNotes(instruments, patterns, targetIdNorm, normalizeInstrumentId);
+    const cleared = clearInstrumentAndNotes(
+      instruments,
+      patterns,
+      targetIdNorm,
+      normalizeInstrumentId,
+    );
     if (!cleared) {
       setIsInstrumentDeleteOpen(false);
       setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');

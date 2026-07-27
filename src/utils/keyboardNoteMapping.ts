@@ -8,7 +8,7 @@ export function clampOctave(value: number): number {
 export function getKeyboardMappedNote(
   keyUpper: string,
   currentOctave: number,
-  mapping: KeyboardToNoteMap
+  mapping: KeyboardToNoteMap,
 ): { note: string; octave: number; keyId: string } | null {
   const match = mapping[keyUpper];
   if (!match) {

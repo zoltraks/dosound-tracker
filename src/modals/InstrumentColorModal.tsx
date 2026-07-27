@@ -24,9 +24,8 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
       return;
     }
 
-    const raw = typeof instrument.color === 'string' && instrument.color.trim()
-      ? instrument.color
-      : '#888';
+    const raw =
+      typeof instrument.color === 'string' && instrument.color.trim() ? instrument.color : '#888';
     let cancelled = false;
 
     Promise.resolve().then(() => {
@@ -48,7 +47,7 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
         onCancel();
       }
     },
-    [onCancel]
+    [onCancel],
   );
 
   const handleOk = useCallback(() => {
@@ -65,40 +64,22 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
 
   return (
     <div className="modal-backdrop">
-      <div
-        className="modal-dialog"
-        onKeyDown={handleKeyDown}
-      >
+      <div className="modal-dialog" onKeyDown={handleKeyDown}>
         <div className="modal-title">Instrument Color</div>
         <div className="modal-body">
-          <ColorPicker
-            value={selectedColor}
-            onChange={setSelectedColor}
-          />
+          <ColorPicker value={selectedColor} onChange={setSelectedColor} />
         </div>
         <div className="modal-actions about-actions">
           <div className="about-actions-left">
-            <button
-              type="button"
-              className="command-btn"
-              onClick={handleClearClick}
-            >
+            <button type="button" className="command-btn" onClick={handleClearClick}>
               CLEAR
             </button>
-            <button
-              type="button"
-              className="command-btn"
-              onClick={onCancel}
-            >
+            <button type="button" className="command-btn" onClick={onCancel}>
               CANCEL
             </button>
           </div>
           <div className="about-actions-right">
-            <button
-              type="button"
-              className="command-btn"
-              onClick={handleOk}
-            >
+            <button type="button" className="command-btn" onClick={handleOk}>
               OK
             </button>
           </div>

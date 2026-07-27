@@ -11,7 +11,10 @@ export interface PianoKeyConfig {
   stableKey: string;
 }
 
-export function generatePianoKeys(isCompactLayout: boolean, currentOctave: number): PianoKeyConfig[] {
+export function generatePianoKeys(
+  isCompactLayout: boolean,
+  currentOctave: number,
+): PianoKeyConfig[] {
   const keys: PianoKeyConfig[] = [];
   const octaveSpan = isCompactLayout ? 2 : 5;
   const maxStartOctave = MAX_OCTAVE - (octaveSpan - 1);

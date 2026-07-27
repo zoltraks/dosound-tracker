@@ -7,7 +7,9 @@ const MESSAGES_URL = 'MESSAGES.md';
 
 const originalFetch = global.fetch;
 
-const MessageSystemHarness: React.FC<{ onReady: (value: ReturnType<typeof useMessageSystem>) => void }> = ({ onReady }) => {
+const MessageSystemHarness: React.FC<{
+  onReady: (value: ReturnType<typeof useMessageSystem>) => void;
+}> = ({ onReady }) => {
   const value = useMessageSystem();
 
   React.useEffect(() => {
@@ -32,7 +34,13 @@ describe('useMessageSystem', () => {
 
     let hook: ReturnType<typeof useMessageSystem> | null = null;
 
-    render(<MessageSystemHarness onReady={value => { hook = value; }} />);
+    render(
+      <MessageSystemHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -54,7 +62,13 @@ describe('useMessageSystem', () => {
 
     let hook: ReturnType<typeof useMessageSystem> | null = null;
 
-    render(<MessageSystemHarness onReady={value => { hook = value; }} />);
+    render(
+      <MessageSystemHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -69,7 +83,7 @@ describe('useMessageSystem', () => {
 
     // Wait for the fade timeout (800ms) to complete
     await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 900));
+      await new Promise((resolve) => setTimeout(resolve, 900));
     });
 
     await waitFor(() => {

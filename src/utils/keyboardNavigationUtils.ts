@@ -5,7 +5,7 @@ export type TrackNavigationSection = 'trackA' | 'trackB' | 'trackC';
 export function getNextNavigationSection(
   activeSection: NavigationSection,
   lastTrackSection: TrackNavigationSection,
-  navigationOrder: readonly NavigationSection[]
+  navigationOrder: readonly NavigationSection[],
 ): NavigationSection {
   if (activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC') {
     return 'mode';
@@ -23,7 +23,7 @@ export function getNextNavigationSection(
 export function getPreviousNavigationSection(
   activeSection: NavigationSection,
   lastTrackSection: TrackNavigationSection,
-  navigationOrder: readonly NavigationSection[]
+  navigationOrder: readonly NavigationSection[],
 ): NavigationSection {
   if (activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC') {
     return 'commands';

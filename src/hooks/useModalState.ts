@@ -18,10 +18,10 @@ export interface UseModalStateResult {
   setIsChangelogOpen: (open: boolean) => void;
   changelogContent: string;
   setChangelogContent: (value: string) => void;
-   isManualOpen: boolean;
-   setIsManualOpen: (open: boolean) => void;
-   manualContent: string;
-   setManualContent: (value: string) => void;
+  isManualOpen: boolean;
+  setIsManualOpen: (open: boolean) => void;
+  manualContent: string;
+  setManualContent: (value: string) => void;
   isOptimizeConfirmOpen: boolean;
   setIsOptimizeConfirmOpen: (open: boolean) => void;
   isRenumberConfirmOpen: boolean;

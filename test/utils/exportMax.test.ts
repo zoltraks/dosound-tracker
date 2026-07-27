@@ -12,7 +12,10 @@ function loadSongYaml(name: string) {
   return parseSongFromYaml(yamlContent);
 }
 
-function findChunk(bytes: Uint8Array, typeCode: number): { offset: number; size: number; dataOffset: number; isLong: boolean } | null {
+function findChunk(
+  bytes: Uint8Array,
+  typeCode: number,
+): { offset: number; size: number; dataOffset: number; isLong: boolean } | null {
   let pos = 4; // skip "MAX " magic
   while (pos < bytes.length) {
     const type = bytes[pos];
@@ -73,7 +76,11 @@ describe('exportSongToMax', () => {
     expect(bytes[dataStart + 3]).toBe(VBLANK_RATE & 0xff);
 
     // YM_CLOCK = 2000000 = 0x001E8480
-    const clock = (bytes[dataStart + 4] << 24) | (bytes[dataStart + 5] << 16) | (bytes[dataStart + 6] << 8) | bytes[dataStart + 7];
+    const clock =
+      (bytes[dataStart + 4] << 24) |
+      (bytes[dataStart + 5] << 16) |
+      (bytes[dataStart + 6] << 8) |
+      bytes[dataStart + 7];
     expect(clock >>> 0).toBe(YM_CLOCK);
   });
 
@@ -315,7 +322,11 @@ describe('exportSongToMax', () => {
     if (!chip) return;
 
     const dataStart = chip.dataOffset;
-    const clock = (bytes[dataStart + 4] << 24) | (bytes[dataStart + 5] << 16) | (bytes[dataStart + 6] << 8) | bytes[dataStart + 7];
+    const clock =
+      (bytes[dataStart + 4] << 24) |
+      (bytes[dataStart + 5] << 16) |
+      (bytes[dataStart + 6] << 8) |
+      bytes[dataStart + 7];
     expect(clock >>> 0).toBe(1000000);
   });
 });

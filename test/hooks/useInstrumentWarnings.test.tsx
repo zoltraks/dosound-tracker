@@ -7,7 +7,9 @@ const STORAGE_KEY = 'dosound-tracker-ignore-inst-type-warning';
 
 type HookResult = ReturnType<typeof useInstrumentWarnings>;
 
-const InstrumentWarningsHarness: React.FC<{ onReady: (value: HookResult) => void }> = ({ onReady }) => {
+const InstrumentWarningsHarness: React.FC<{ onReady: (value: HookResult) => void }> = ({
+  onReady,
+}) => {
   const value = useInstrumentWarnings();
 
   React.useEffect(() => {
@@ -27,7 +29,13 @@ describe('useInstrumentWarnings', () => {
 
     let hook: HookResult | null = null;
 
-    render(<InstrumentWarningsHarness onReady={value => { hook = value; }} />);
+    render(
+      <InstrumentWarningsHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -42,7 +50,13 @@ describe('useInstrumentWarnings', () => {
   it('opens the warning and populates type info when openInstrumentTypeWarning is called', async () => {
     let hook: HookResult | null = null;
 
-    render(<InstrumentWarningsHarness onReady={value => { hook = value; }} />);
+    render(
+      <InstrumentWarningsHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -66,14 +80,23 @@ describe('useInstrumentWarnings', () => {
   it('confirmInstrumentTypeWarning returns content and can persist ignore flag', async () => {
     let hook: HookResult | null = null;
 
-    render(<InstrumentWarningsHarness onReady={value => { hook = value; }} />);
+    render(
+      <InstrumentWarningsHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
     });
 
     await act(async () => {
-      hook!.openInstrumentTypeWarning('instrument-yaml', { hasTypeField: false, detectedType: null });
+      hook!.openInstrumentTypeWarning('instrument-yaml', {
+        hasTypeField: false,
+        detectedType: null,
+      });
     });
 
     await waitFor(() => {
@@ -105,7 +128,13 @@ describe('useInstrumentWarnings', () => {
 
     let hook: HookResult | null = null;
 
-    render(<InstrumentWarningsHarness onReady={value => { hook = value; }} />);
+    render(
+      <InstrumentWarningsHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -114,7 +143,10 @@ describe('useInstrumentWarnings', () => {
     expect(hook!.ignoreInstrumentTypeWarning).toBe(false);
 
     await act(async () => {
-      hook!.openInstrumentTypeWarning('instrument-yaml', { hasTypeField: true, detectedType: 'other' });
+      hook!.openInstrumentTypeWarning('instrument-yaml', {
+        hasTypeField: true,
+        detectedType: 'other',
+      });
     });
 
     await waitFor(() => {

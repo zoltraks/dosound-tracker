@@ -4,11 +4,10 @@ import { formatInstrumentSlotId } from './instrumentSelection';
 
 export function createEmptyInstrument(
   slotIndexOrId: number | InstrumentId,
-  envelopeLength: number
+  envelopeLength: number,
 ): Instrument {
-  const slotId = typeof slotIndexOrId === 'number'
-    ? formatInstrumentSlotId(slotIndexOrId)
-    : slotIndexOrId;
+  const slotId =
+    typeof slotIndexOrId === 'number' ? formatInstrumentSlotId(slotIndexOrId) : slotIndexOrId;
 
   return {
     id: slotId,
@@ -24,7 +23,7 @@ export function createEmptyInstrument(
 export function getInstrumentForSlot(
   instruments: Instrument[],
   slotIndex: number,
-  envelopeLength: number
+  envelopeLength: number,
 ): Instrument {
   const existing = instruments[slotIndex];
   if (existing) {
@@ -38,7 +37,7 @@ export function computeVisibleSlotCount(
   instruments: Instrument[],
   currentIndex: number,
   maxInstruments: number,
-  isInstrumentEmpty: (instrument: Instrument) => boolean
+  isInstrumentEmpty: (instrument: Instrument) => boolean,
 ): number {
   let lastIndex = -1;
 
@@ -68,7 +67,7 @@ export function computeVisibleSlotCount(
 export function getMovedInstrumentIndex(
   currentIndex: number,
   direction: 'up' | 'down',
-  visibleSlotCount: number
+  visibleSlotCount: number,
 ): number {
   if (direction === 'up') {
     return Math.max(0, currentIndex - 1);
@@ -79,7 +78,9 @@ export function getMovedInstrumentIndex(
 
 export function isMidiEnabled(instrument: Instrument | undefined): boolean {
   const midi = instrument && instrument.midi;
-  const hasMidiChannel = !!midi && typeof midi.channel === 'number' && Number.isFinite(midi.channel);
-  const hasMidiProgram = !!midi && typeof midi.program === 'number' && Number.isFinite(midi.program);
+  const hasMidiChannel =
+    !!midi && typeof midi.channel === 'number' && Number.isFinite(midi.channel);
+  const hasMidiProgram =
+    !!midi && typeof midi.program === 'number' && Number.isFinite(midi.program);
   return hasMidiChannel || hasMidiProgram;
 }

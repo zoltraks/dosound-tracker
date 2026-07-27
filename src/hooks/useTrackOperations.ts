@@ -3,16 +3,16 @@ import { logger } from '../utils/logger';
 import type { Song, Pattern } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
 import { PATTERN_LENGTH } from '../constants/music';
-import { 
-  generateClipboardData, 
-  parseClipboardData, 
-  applyClipboardToLines, 
-  type TrackPasteMode 
+import {
+  generateClipboardData,
+  parseClipboardData,
+  applyClipboardToLines,
+  type TrackPasteMode,
 } from '../utils/trackClipboard';
-import { 
-  performTranspose, 
-  type TransposeOptions, 
-  type TransposeResult 
+import {
+  performTranspose,
+  type TransposeOptions,
+  type TransposeResult,
 } from '../utils/transposeUtils';
 import { insertPatternStep, deletePatternStep } from '../utils/patternUtils';
 import { mapSongLineToPlaylistEntries } from '../types/playlist';
@@ -70,7 +70,11 @@ export function useTrackOperations({
 
   const handleCopyTrack = useCallback(async () => {
     try {
-      if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.writeText) {
+      if (
+        typeof navigator === 'undefined' ||
+        !navigator.clipboard ||
+        !navigator.clipboard.writeText
+      ) {
         setTrackClipboardError('Clipboard API is not available in this browser.');
         return;
       }
@@ -85,7 +89,7 @@ export function useTrackOperations({
       const yamlContent = generateClipboardData(
         pattern,
         song.length || PATTERN_LENGTH,
-        formatNoteKey
+        formatNoteKey,
       );
 
       await navigator.clipboard.writeText(yamlContent);
@@ -98,7 +102,11 @@ export function useTrackOperations({
 
   const handlePasteTrack = useCallback(async () => {
     try {
-      if (typeof navigator === 'undefined' || !navigator.clipboard || !navigator.clipboard.readText) {
+      if (
+        typeof navigator === 'undefined' ||
+        !navigator.clipboard ||
+        !navigator.clipboard.readText
+      ) {
         setTrackClipboardError('Clipboard API is not available in this browser.');
         return;
       }
@@ -157,13 +165,11 @@ export function useTrackOperations({
         expandedSteps,
         mode,
         targetLength,
-        parseBaseKeyString
+        parseBaseKeyString,
       );
 
       const updatedPattern = { ...pattern, step: newLines };
-      const updatedPatterns = song.pattern.map(p =>
-        p.id === pattern.id ? updatedPattern : p
-      );
+      const updatedPatterns = song.pattern.map((p) => (p.id === pattern.id ? updatedPattern : p));
       updateSong({ pattern: updatedPatterns });
     } catch (error) {
       logger.error('Failed to paste track', error);
@@ -198,7 +204,7 @@ export function useTrackOperations({
     }
 
     const patterns = [...song.pattern];
-    const patternIndex = patterns.findIndex(p => p.id === patternId);
+    const patternIndex = patterns.findIndex((p) => p.id === patternId);
     if (patternIndex === -1) {
       return;
     }
@@ -207,7 +213,7 @@ export function useTrackOperations({
     const newLines = insertPatternStep(
       pattern.step || [],
       sharedCurrentLine,
-      song.length || PATTERN_LENGTH
+      song.length || PATTERN_LENGTH,
     );
 
     pattern.step = newLines;
@@ -217,7 +223,7 @@ export function useTrackOperations({
 
     const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
     setActiveSection(section);
-    setTrackFocusRevision(prev => prev + 1);
+    setTrackFocusRevision((prev) => prev + 1);
   }, [
     playlistEntries,
     song.pattern,
@@ -248,7 +254,7 @@ export function useTrackOperations({
     }
 
     const patterns = [...song.pattern];
-    const patternIndex = patterns.findIndex(p => p.id === patternId);
+    const patternIndex = patterns.findIndex((p) => p.id === patternId);
     if (patternIndex === -1) {
       return;
     }
@@ -257,7 +263,7 @@ export function useTrackOperations({
     const newLines = deletePatternStep(
       pattern.step || [],
       sharedCurrentLine,
-      song.length || PATTERN_LENGTH
+      song.length || PATTERN_LENGTH,
     );
 
     pattern.step = newLines;
@@ -282,7 +288,7 @@ export function useTrackOperations({
     (options: TransposeOptions): TransposeResult | null => {
       return performTranspose(song, options, updateSong);
     },
-    [song, updateSong]
+    [song, updateSong],
   );
 
   return {

@@ -7,6 +7,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Current State Analysis
 
 ### Project Structure
+
 - Current version: 1.1.8
 - Primary language: TypeScript
 - Architecture: React-based UI with Web Audio API for sound synthesis
@@ -14,6 +15,7 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 - Performance requirements: 20ms or 40ms cycle times for playback and sequencer
 
 ### Large Files Identified
+
 1. `src/utils/songParser.ts` - 575 lines
 2. `src/utils/songIO.ts` - 462 lines
 3. `src/modals/MidiModal.tsx` - 593 lines
@@ -35,11 +37,13 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `songParser.ts` contains both YAML parsing logic and utility functions like `parseBaseKey`, `formatBaseKey`, and `normalizeInstrumentColor` that are used throughout the codebase.
 
 **Proposed Solution**:
+
 - Create `src/utils/yamlUtils.ts` for YAML-specific parsing functions
 - Create `src/utils/musicUtils.ts` for music-related utility functions
 - Move color normalization to a dedicated `src/utils/colorUtils.ts`
 
 **Expected Benefits**:
+
 - Reduce `songParser.ts` by ~150 lines
 - Improve reusability of utility functions
 - Better separation of concerns
@@ -49,11 +53,13 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `songIO.ts` handles both song and instrument serialization/deserialization in a single large file.
 
 **Proposed Solution**:
+
 - Create `src/utils/instrumentIO.ts` for instrument-specific IO operations
 - Keep song-related operations in `songIO.ts`
 - Extract common YAML processing utilities to `yamlUtils.ts`
 
 **Expected Benefits**:
+
 - Reduce `songIO.ts` by ~200 lines
 - Clearer separation between song and instrument operations
 - Better maintainability
@@ -63,11 +69,13 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `MidiModal.tsx` is overly large at 593 lines, handling device selection, configuration, and monitoring.
 
 **Proposed Solution**:
+
 - Extract MIDI device selection into `MidiDeviceSelector.tsx`
 - Create `MidiMonitorPanel.tsx` for monitoring functionality
 - Move configuration export/import to separate utility functions
 
 **Expected Benefits**:
+
 - Reduce `MidiModal.tsx` by ~300 lines
 - Improved component reusability
 - Better separation of UI concerns
@@ -77,11 +85,13 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 **Current Issue**: `SoundDriver.ts` contains event processing, optimization, and assembly export logic.
 
 **Proposed Solution**:
+
 - Create `src/synth/EventOptimizer.ts` for event optimization logic
 - Extract assembly export to `src/synth/AssemblyExporter.ts`
 - Keep core sound driver functionality in `SoundDriver.ts`
 
 **Expected Benefits**:
+
 - Reduce `SoundDriver.ts` by ~100 lines
 - Better separation of export vs. playback concerns
 - Improved testability
@@ -89,21 +99,25 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Implementation Plan
 
 ### Phase 1: Utility Extraction (Days 1-3)
+
 1. Create `yamlUtils.ts`, `musicUtils.ts`, and `colorUtils.ts`
 2. Refactor `songParser.ts` to use new utilities
 3. Update imports throughout the codebase
 
 ### Phase 2: IO Operations Split (Days 4-5)
+
 1. Create `instrumentIO.ts`
 2. Refactor `songIO.ts` to focus on song operations
 3. Update all references to use appropriate IO modules
 
 ### Phase 3: MIDI Modal Refactoring (Days 6-8)
+
 1. Extract `MidiDeviceSelector.tsx`
 2. Create `MidiMonitorPanel.tsx`
 3. Refactor `MidiModal.tsx` to use new components
 
 ### Phase 4: Sound Driver Modularization (Days 9-10)
+
 1. Create `EventOptimizer.ts`
 2. Extract `AssemblyExporter.ts`
 3. Refactor `SoundDriver.ts`
@@ -118,15 +132,18 @@ This document outlines the proposed refactoring changes for DOSOUND Tracker vers
 ## Risk Assessment
 
 ### Low Risk Changes
+
 - Utility function extraction (yamlUtils, musicUtils, colorUtils)
 - IO operations split (instrumentIO.ts)
 - Event optimizer extraction
 
 ### Medium Risk Changes
+
 - MIDI modal component splitting (requires careful state management)
 - Assembly exporter extraction (must maintain exact output format)
 
 ### High Risk Changes (Avoided)
+
 - Any modifications to YM2149 emulation code
 - Changes to core playback timing logic
 - Alterations to existing YAML file formats

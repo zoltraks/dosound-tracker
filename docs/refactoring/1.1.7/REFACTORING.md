@@ -13,11 +13,13 @@ This document proposes refactoring changes to reduce the size of source code fil
 **Proposal:** Extract MIDI note event handling logic into a new custom hook `useMidiActions`.
 
 **Benefits:**
+
 - Reduces App.tsx size by approximately 400-500 lines
 - Improves separation of concerns
 - Makes MIDI logic reusable and testable
 
 **Implementation:**
+
 - Create `src/hooks/useMidiActions.ts`
 - Move `handleMidiNoteEvent` and related MIDI handling code
 - Ensure no impact on sound generation or sequencer timing
@@ -29,11 +31,13 @@ This document proposes refactoring changes to reduce the size of source code fil
 **Proposal:** Extract instrument operation handlers (clone, delete, move, rename) into a new custom hook `useInstrumentActions`.
 
 **Benefits:**
+
 - Further reduces App.tsx size by 300-400 lines
 - Groups related instrument logic
 - Enhances maintainability
 
 **Implementation:**
+
 - Create `src/hooks/useInstrumentActions.ts`
 - Move handlers like `handleCloneInstrument`, `handleDeleteInstrument`, `handleMoveInstrument`
 - Preserve all existing behavior and error handling
@@ -45,11 +49,13 @@ This document proposes refactoring changes to reduce the size of source code fil
 **Proposal:** Extract song and instrument save/load logic into utility functions.
 
 **Benefits:**
+
 - Reduces useDataManagement.ts size by 600-700 lines
 - Separates I/O concerns from state management
 - Allows for better testing of I/O operations
 
 **Implementation:**
+
 - Create `src/utils/songIO.ts`
 - Move `saveSong`, `loadSong`, `saveInstrument`, `loadInstrument` functions
 - Ensure compatibility with existing YAML format and error handling

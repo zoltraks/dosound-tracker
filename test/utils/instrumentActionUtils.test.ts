@@ -42,7 +42,7 @@ describe('instrumentActionUtils', () => {
         '',
         'Patterns changed in this operation: 0',
         'Notes cleared in this operation: 0',
-      ].join('\n')
+      ].join('\n'),
     );
   });
 

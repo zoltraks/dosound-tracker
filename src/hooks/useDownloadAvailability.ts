@@ -13,7 +13,7 @@ export function useDownloadAvailability(): boolean {
       try {
         const url = `download/LIST.txt?ts=${Date.now()}`;
         const response = await fetch(url, { cache: 'no-store' });
-        
+
         // If LIST.txt doesn't exist or can't be fetched, no downloads available
         if (!response.ok) {
           setHasFiles(false);
@@ -29,11 +29,11 @@ export function useDownloadAvailability(): boolean {
 
         const text = await response.text();
         const lines = text.split(/\r?\n/u);
-        const trimmed = lines.map(line => line.trim());
-        const nonEmpty = trimmed.filter(line => line.length > 0);
-        
+        const trimmed = lines.map((line) => line.trim());
+        const nonEmpty = trimmed.filter((line) => line.length > 0);
+
         // Filter out .gitkeep and list.txt itself
-        const validFiles = nonEmpty.filter(line => {
+        const validFiles = nonEmpty.filter((line) => {
           const base = (line.split(/[\\/]/u).pop() || '').toLowerCase();
           return base !== '.gitkeep' && base !== 'list.txt';
         });

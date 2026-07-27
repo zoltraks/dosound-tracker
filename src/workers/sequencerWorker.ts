@@ -51,10 +51,7 @@ interface WorkerStopMessage {
 }
 
 type WorkerIncomingMessage =
-  | WorkerStartMessage
-  | WorkerUpdateMessage
-  | WorkerSetParamsMessage
-  | WorkerStopMessage;
+  WorkerStartMessage | WorkerUpdateMessage | WorkerSetParamsMessage | WorkerStopMessage;
 
 function scheduleTick() {
   if (!isPlaying) return;
@@ -105,8 +102,8 @@ function scheduleTick() {
       isPlaying: true,
       currentPattern,
       currentLine,
-      currentTick
-    }
+      currentTick,
+    },
   });
 }
 
@@ -135,7 +132,7 @@ function startSequencer() {
   if (intervalId !== null) {
     clearTimeout(intervalId);
   }
-  
+
   isPlaying = true;
   nextTickTime = 0;
   intervalId = setTimeout(tickLoop, tickInterval);
@@ -166,19 +163,27 @@ function updatePosition(pattern: number, line: number, tick: number) {
   currentPattern = pattern;
   currentLine = line;
   currentTick = tick;
-  
+
   self.postMessage({
     type: 'update',
     data: {
       isPlaying,
       currentPattern,
       currentLine,
-      currentTick
-    }
+      currentTick,
+    },
   });
 }
 
-function setParams(params: { ticksPerRow?: number; patternLength?: number; tickInterval?: number; playlistLength?: number; loopIndex?: number; hasLoop?: boolean; patternLoop?: boolean }) {
+function setParams(params: {
+  ticksPerRow?: number;
+  patternLength?: number;
+  tickInterval?: number;
+  playlistLength?: number;
+  loopIndex?: number;
+  hasLoop?: boolean;
+  patternLoop?: boolean;
+}) {
   if (params.ticksPerRow !== undefined) {
     ticksPerRow = params.ticksPerRow;
   }
@@ -217,7 +222,7 @@ function setParams(params: { ticksPerRow?: number; patternLength?: number; tickI
 // Handle messages from main thread
 self.addEventListener('message', (event: MessageEvent<WorkerIncomingMessage>) => {
   const { type, data } = event.data;
-  
+
   switch (type) {
     case 'start':
       if (data) {
@@ -229,17 +234,17 @@ self.addEventListener('message', (event: MessageEvent<WorkerIncomingMessage>) =>
       }
       startSequencer();
       break;
-      
+
     case 'stop':
       stopSequencer();
       break;
-      
+
     case 'update':
       if (data) {
         updatePosition(data.pattern, data.line, data.tick);
       }
       break;
-      
+
     case 'setParams':
       if (data) {
         setParams(data);

@@ -9,7 +9,9 @@ import {
 
 export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) => {
   const [activeSection, setActiveSectionInternal] = useState<NavigationSection>('octave');
-  const [lastTrackSection, setLastTrackSection] = useState<'trackA' | 'trackB' | 'trackC'>('trackA');
+  const [lastTrackSection, setLastTrackSection] = useState<'trackA' | 'trackB' | 'trackC'>(
+    'trackA',
+  );
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const navigationSuspendedRef = useRef<boolean>(isNavigationSuspended);
@@ -39,85 +41,98 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
   }, [activeSection, lastTrackSection, setActiveSection]);
 
   const navigateToPrevious = useCallback(() => {
-    const previous = getPreviousNavigationSection(activeSection, lastTrackSection, NAVIGATION_ORDER);
+    const previous = getPreviousNavigationSection(
+      activeSection,
+      lastTrackSection,
+      NAVIGATION_ORDER,
+    );
     setActiveSection(previous);
   }, [activeSection, lastTrackSection, setActiveSection]);
 
-  const executeShortcut = useCallback((shortcut: KeyboardShortcut) => {
-    const action = KEYBOARD_SHORTCUTS[shortcut];
+  const executeShortcut = useCallback(
+    (shortcut: KeyboardShortcut) => {
+      const action = KEYBOARD_SHORTCUTS[shortcut];
 
-    if (!action) return;
+      if (!action) return;
 
-    const globalCallback = globalCallbacksRef.current[action];
-    if (globalCallback) {
-      globalCallback();
-      return;
-    }
-
-    switch (action) {
-      case 'nextSection':
-        navigateToNext();
-        break;
-      case 'previousSection':
-        navigateToPrevious();
-        break;
-      default: {
-        // Try to execute callback for active section
-        const callback = callbacksRef.current[activeSection];
-        if (callback) {
-          callback();
-        }
-        break;
+      const globalCallback = globalCallbacksRef.current[action];
+      if (globalCallback) {
+        globalCallback();
+        return;
       }
-    }
-  }, [activeSection, navigateToNext, navigateToPrevious]);
 
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    const key = event.key.toUpperCase();
-    const target = event.target as HTMLElement | null;
-    const tagName = target?.tagName;
-    const isInPianoKeyboard = target?.closest('.piano-keyboard') != null;
-    const isInOctaveSelection = target?.closest('.octave-selection') != null;
-    const isEditable =
-      tagName === 'INPUT' ||
-      tagName === 'TEXTAREA' ||
-      tagName === 'SELECT' ||
-      (target != null && target.isContentEditable);
+      switch (action) {
+        case 'nextSection':
+          navigateToNext();
+          break;
+        case 'previousSection':
+          navigateToPrevious();
+          break;
+        default: {
+          // Try to execute callback for active section
+          const callback = callbacksRef.current[activeSection];
+          if (callback) {
+            callback();
+          }
+          break;
+        }
+      }
+    },
+    [activeSection, navigateToNext, navigateToPrevious],
+  );
 
-    const isTabKey = key === 'TAB';
+  const handleKeyDown = useCallback(
+    (event: KeyboardEvent) => {
+      const key = event.key.toUpperCase();
+      const target = event.target as HTMLElement | null;
+      const tagName = target?.tagName;
+      const isInPianoKeyboard = target?.closest('.piano-keyboard') != null;
+      const isInOctaveSelection = target?.closest('.octave-selection') != null;
+      const isEditable =
+        tagName === 'INPUT' ||
+        tagName === 'TEXTAREA' ||
+        tagName === 'SELECT' ||
+        (target != null && target.isContentEditable);
 
-    if (navigationSuspendedRef.current && isTabKey) {
-      return;
-    }
+      const isTabKey = key === 'TAB';
 
-    if (isEditable && !isTabKey) {
-      return;
-    }
+      if (navigationSuspendedRef.current && isTabKey) {
+        return;
+      }
 
-    const ctrl = event.ctrlKey || event.metaKey;
-    const shift = event.shiftKey;
+      if (isEditable && !isTabKey) {
+        return;
+      }
 
-    // Let PianoKeyboard handle plain Space when it is active/focused
-    if (
-      !ctrl &&
-      !shift &&
-      key === ' ' &&
-      (activeSection === 'piano' || activeSection === 'octave' || isInPianoKeyboard || isInOctaveSelection)
-    ) {
-      return;
-    }
+      const ctrl = event.ctrlKey || event.metaKey;
+      const shift = event.shiftKey;
 
-    const match = matchKeyboardShortcut(key, ctrl, shift);
-    if (!match) {
-      return;
-    }
+      // Let PianoKeyboard handle plain Space when it is active/focused
+      if (
+        !ctrl &&
+        !shift &&
+        key === ' ' &&
+        (activeSection === 'piano' ||
+          activeSection === 'octave' ||
+          isInPianoKeyboard ||
+          isInOctaveSelection)
+      ) {
+        return;
+      }
 
-    if (match.preventDefault) {
-      event.preventDefault();
-    }
+      const match = matchKeyboardShortcut(key, ctrl, shift);
+      if (!match) {
+        return;
+      }
 
-    executeShortcut(match.shortcut as KeyboardShortcut);
-  }, [executeShortcut, activeSection]);
+      if (match.preventDefault) {
+        event.preventDefault();
+      }
+
+      executeShortcut(match.shortcut as KeyboardShortcut);
+    },
+    [executeShortcut, activeSection],
+  );
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyDown);
@@ -132,6 +147,6 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
     setCallback,
     setGlobalShortcut,
     navigateToNext,
-    navigateToPrevious
+    navigateToPrevious,
   };
 };

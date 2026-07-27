@@ -58,11 +58,7 @@ function optimize(input: Uint8Array, skip: number, offsetLimit: number): Block {
     const maxOffset = offsetCeiling(index, offsetLimit);
 
     for (let offset = 1; offset <= maxOffset; offset++) {
-      if (
-        index !== skip &&
-        index >= offset &&
-        input[index] === input[index - offset]
-      ) {
+      if (index !== skip && index >= offset && input[index] === input[index - offset]) {
         const ll = lastLiteral[offset];
         if (ll) {
           const length = index - ll.index;
@@ -82,8 +78,7 @@ function optimize(input: Uint8Array, skip: number, offsetLimit: number): Block {
             do {
               bestLengthSize++;
               const bits2 =
-                optimal[index - bestLengthSize]!.bits +
-                eliasGammaBits(bestLengthSize - 1);
+                optimal[index - bestLengthSize]!.bits + eliasGammaBits(bestLengthSize - 1);
               if (bits2 <= bits) {
                 bestLength[bestLengthSize] = bestLengthSize;
                 bits = bits2;
@@ -134,7 +129,7 @@ function compress(
   input: Uint8Array,
   skip: number,
   backwardsMode: boolean,
-  invertMode: boolean
+  invertMode: boolean,
 ): Uint8Array {
   const outputSize = Math.floor((optimal.bits + 25) / 8);
   const output = new Uint8Array(outputSize);
@@ -174,11 +169,7 @@ function compress(
     bitMask >>>= 1;
   }
 
-  function writeInterlacedEliasGamma(
-    value: number,
-    bwd: boolean,
-    inv: boolean
-  ): void {
+  function writeInterlacedEliasGamma(value: number, bwd: boolean, inv: boolean): void {
     let i = 2;
     while (i <= value) i <<= 1;
     i >>>= 1;
@@ -208,7 +199,7 @@ function compress(
       writeInterlacedEliasGamma(
         Math.floor((block.offset - 1) / 128) + 1,
         backwardsMode,
-        invertMode
+        invertMode,
       );
       if (backwardsMode) {
         writeByte(((block.offset - 1) % 128) << 1);
@@ -239,10 +230,7 @@ function compress(
  *   Defaults to MAX_OFFSET_ZX0 (32640). Set to 1023 for ring-buffer output
  *   where the decompressor's sliding window is limited to 1024 bytes.
  */
-export function compressZX0(
-  input: Uint8Array,
-  options?: { maxOffset?: number }
-): Uint8Array {
+export function compressZX0(input: Uint8Array, options?: { maxOffset?: number }): Uint8Array {
   if (input.length === 0) {
     throw new Error('ZX0 cannot compress an empty input');
   }

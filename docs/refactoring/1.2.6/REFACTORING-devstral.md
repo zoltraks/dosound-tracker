@@ -60,6 +60,7 @@ void channel; // Line 138 - Unused parameter
 #### 1. Instrument ID Normalization
 
 **Location**: Duplicate logic exists between:
+
 - `src/utils/playbackUtils.ts`: `normalizeInstrumentId()` function
 - `src/utils/instrumentSelection.ts`: Similar normalization logic
 
@@ -72,6 +73,7 @@ void channel; // Line 138 - Unused parameter
 #### 2. Debug State Management
 
 **Location**: Multiple files contain identical debug state variables:
+
 - `src/hooks/useSequencerIntegration.ts`: `debugTickCounterRef`, `debugLastRowRef`, `debugLastTimeRef`
 - `src/hooks/usePlaybackSimulation.ts`: Same variables with identical initialization
 
@@ -90,6 +92,7 @@ void channel; // Line 138 - Unused parameter
 - `src/hooks/useStorage.ts`: Storage value types
 
 **Proposed Changes**:
+
 - Replace `any` with specific TypeScript types
 - Add explicit return type annotations
 - Use branded types for critical identifiers (e.g., `InstrumentId`)
@@ -107,6 +110,7 @@ void channel; // Line 138 - Unused parameter
 - No clear grouping pattern
 
 **Proposed Changes**:
+
 - Group related utilities by domain (e.g., `instrumentUtils.ts`, `playbackUtils.ts`)
 - Standardize export patterns
 - Add clear module documentation
@@ -120,12 +124,14 @@ void channel; // Line 138 - Unused parameter
 **Objective**: Remove all identified unused code and imports
 
 **Tasks**:
+
 1. Remove unused imports from utility files
 2. Eliminate dead code statements (e.g., `void channel`)
 3. Clean up commented-out code
 4. Remove unused type definitions
 
-**Verification**: 
+**Verification**:
+
 - All existing tests must pass
 - No new TypeScript errors introduced
 - Build process completes successfully
@@ -135,11 +141,13 @@ void channel; // Line 138 - Unused parameter
 **Objective**: Centralize duplicate logic where safe
 
 **Tasks**:
+
 1. Replace duplicate instrument ID normalization with centralized function
 2. Consolidate similar utility functions
 3. Standardize error handling patterns
 
 **Verification**:
+
 - Unit tests prove identical behavior
 - Performance measurements show no regression
 - Audio timing remains unaffected
@@ -149,12 +157,14 @@ void channel; // Line 138 - Unused parameter
 **Objective**: Enhance type safety throughout codebase
 
 **Tasks**:
+
 1. Replace `any` types with specific interfaces
 2. Add missing return type annotations
 3. Implement branded types for critical identifiers
 4. Add type guards for runtime validation
 
 **Verification**:
+
 - TypeScript compilation with strict mode
 - All type-related linting rules pass
 - No runtime type errors
@@ -164,12 +174,14 @@ void channel; // Line 138 - Unused parameter
 **Objective**: Improve code structure and readability
 
 **Tasks**:
+
 1. Reorganize utility files by functional domain
 2. Standardize export patterns
 3. Add comprehensive module documentation
 4. Improve function naming consistency
 
 **Verification**:
+
 - No functional changes detected
 - Import paths remain stable
 - Documentation is complete and accurate
@@ -227,7 +239,7 @@ void channel; // Line 138 - Unused parameter
 
 ## Success Criteria
 
-1. **Code Quality**: 
+1. **Code Quality**:
    - All unused code removed
    - Harmful duplication eliminated
    - Type safety improved
@@ -257,7 +269,7 @@ void channel; // Line 138 - Unused parameter
 The following files and functions are **explicitly excluded** from refactoring:
 
 - `src/synth/YM2149.ts` - Complete file
-- `src/synth/SoundDriver.ts` - Complete file  
+- `src/synth/SoundDriver.ts` - Complete file
 - `src/synth/SequencerEngine.ts` - Complete file
 - `src/workers/sequencerWorker.ts` - Complete file
 - All `logger.debug()` calls and DEBUG mode infrastructure

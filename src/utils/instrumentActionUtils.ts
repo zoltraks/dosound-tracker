@@ -2,7 +2,7 @@ import type { NavigationSection } from '../constants/navigation';
 
 export function getInstrumentPlaybackChannel(
   activeSection: NavigationSection,
-  lastTrackId: 'A' | 'B' | 'C'
+  lastTrackId: 'A' | 'B' | 'C',
 ): 0 | 1 | 2 {
   if (activeSection === 'trackA') return 0;
   if (activeSection === 'trackB') return 1;

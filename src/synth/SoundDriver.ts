@@ -1,7 +1,7 @@
 import { YM2149 } from './YM2149';
 import { optimizeEvents } from './EventOptimizer';
 
-export const DOSOUND_REGISTER_WRITE = 0xFF;
+export const DOSOUND_REGISTER_WRITE = 0xff;
 export const DOSOUND_END_MARKER = 0x00;
 export const VBLANK_RATE = 50; // Hz
 export const MIN_DELAY_CYCLES = 2; // Minimum delay in DOSOUND mode
@@ -97,19 +97,19 @@ export class SoundDriver {
 
   convertSongToSoundEvents(song: Song): SoundEvent[] {
     const events: SoundEvent[] = [];
-    
+
     for (let lineIndex = 0; lineIndex < song.line.length; lineIndex++) {
       const playlistEntry = song.line[lineIndex];
       // Process each track
       const tracks = [
         { patternId: playlistEntry.A, channel: 0 },
         { patternId: playlistEntry.B, channel: 1 },
-        { patternId: playlistEntry.C, channel: 2 }
+        { patternId: playlistEntry.C, channel: 2 },
       ];
 
       for (const track of tracks) {
         if (track.patternId !== '--') {
-          const pattern = song.pattern.find(p => p.id === track.patternId);
+          const pattern = song.pattern.find((p) => p.id === track.patternId);
           if (pattern) {
             this.processPattern(pattern, track.channel, events);
           }
@@ -119,14 +119,14 @@ export class SoundDriver {
       // Add delay between lines
       events.push({
         type: 'delay',
-        delay: this.playbackSpeed
+        delay: this.playbackSpeed,
       });
     }
 
     // End of song - silence all channels
     events.push({ type: 'register', register: 0x08, value: 0x00 }); // Channel A volume
     events.push({ type: 'register', register: 0x09, value: 0x00 }); // Channel B volume
-    events.push({ type: 'register', register: 0x0A, value: 0x00 }); // Channel C volume
+    events.push({ type: 'register', register: 0x0a, value: 0x00 }); // Channel C volume
     events.push({ type: 'delay', delay: DOSOUND_END_MARKER });
 
     return optimizeEvents<SoundEvent>(events);
@@ -151,7 +151,11 @@ export class SoundDriver {
         const period = this.getNotePeriod(note.note, note.octave);
         if (period > 0) {
           events.push({ type: 'register', register: toneFineRegister, value: period & 0xff });
-          events.push({ type: 'register', register: toneCoarseRegister, value: (period >> 8) & 0x0f });
+          events.push({
+            type: 'register',
+            register: toneCoarseRegister,
+            value: (period >> 8) & 0x0f,
+          });
         }
         events.push({ type: 'register', register: volumeRegister, value: volumeValue });
       } else {
@@ -178,7 +182,8 @@ export class SoundDriver {
       return 0;
     }
 
-    const semitoneFromC0 = (Math.max(0, Math.min(9, Number.isFinite(octave) ? Math.floor(octave) : 0)) * 12) + index;
+    const semitoneFromC0 =
+      Math.max(0, Math.min(9, Number.isFinite(octave) ? Math.floor(octave) : 0)) * 12 + index;
     const a4Index = 4 * 12 + noteOrder.indexOf('A');
     const semitoneFromA4 = semitoneFromC0 - a4Index;
     const frequency = 440 * Math.pow(2, semitoneFromA4 / 12);
@@ -213,10 +218,10 @@ export class SoundDriver {
         this.isPlaying = false;
         return;
       }
-      
+
       this.currentDelay = event.delay;
       const delayMs = (this.currentDelay * 1000) / VBLANK_RATE;
-      
+
       setTimeout(() => {
         this.eventIndex++;
         this.processEvents();
@@ -229,17 +234,17 @@ export class SoundDriver {
     // Silence all channels
     this.ym2149.writeRegister(0x08, 0x00);
     this.ym2149.writeRegister(0x09, 0x00);
-    this.ym2149.writeRegister(0x0A, 0x00);
+    this.ym2149.writeRegister(0x0a, 0x00);
   }
 
   exportToAssembly(events: SoundEvent[]): string {
     let assembly = 'music:\n\n';
     let lineCount = 0;
-    
+
     for (const event of events) {
       if (event.type === 'register' && event.register !== undefined && event.value !== undefined) {
         assembly += `    dc.b $${event.register.toString(16).padStart(2, '0')},$${event.value.toString(16).padStart(2, '0')}`;
-        
+
         // Add comment for common registers
         const registerNames = ['TA', 'TB', 'TC', 'NA', 'NB', 'NC', 'NF', 'MX', 'VA', 'VB', 'VC'];
         if (event.register < registerNames.length) {
@@ -249,13 +254,13 @@ export class SoundDriver {
       } else if (event.type === 'delay' && event.delay !== undefined) {
         assembly += `    dc.b $ff,${event.delay}       ; DL ${event.delay * 2}\n`;
       }
-      
+
       lineCount++;
       if (lineCount % 8 === 0) {
         assembly += '\n';
       }
     }
-    
+
     return assembly;
   }
 

@@ -26,7 +26,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
   className = '',
   inputRef,
   onInputKeyDown,
-  onInputFocus
+  onInputFocus,
 }) => {
   const [inputValue, setInputValue] = useState<string>('');
 
@@ -54,7 +54,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
       if (typeof max === 'number' && next > max) next = max;
       return next;
     },
-    [min, max]
+    [min, max],
   );
 
   const commitValue = useCallback(
@@ -68,7 +68,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
       setInputValue(String(clamped));
       onChange(clamped);
     },
-    [clampValue, onChange, parseValue]
+    [clampValue, onChange, parseValue],
   );
 
   const handleInputChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +102,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
       const next = base + delta;
       commitValue(String(next));
     },
-    [commitValue, getBaseForDelta, inputValue, min, parseValue, value]
+    [commitValue, getBaseForDelta, inputValue, min, parseValue, value],
   );
 
   const handleBlur = useCallback(() => {
@@ -129,7 +129,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         onInputKeyDown(event);
       }
     },
-    [adjustBy, commitValue, inputValue, onInputKeyDown, step]
+    [adjustBy, commitValue, inputValue, onInputKeyDown, step],
   );
 
   const currentParsed = parseValue(inputValue);
@@ -171,6 +171,6 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
       </button>
     </span>
   );
-}
+};
 
 export default NumberSpinner;

@@ -253,19 +253,30 @@ Add the Rate button to the Title row and the Clock button to the Author row, bot
 File to modify: `src/components/InformationPanel.tsx`.
 
 ```typescript
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK, SUPPORTED_SONG_FRAMES, SUPPORTED_SONG_CLOCKS } from '../constants/song';
+import {
+  DEFAULT_SONG_FRAME,
+  DEFAULT_SONG_CLOCK,
+  SUPPORTED_SONG_FRAMES,
+  SUPPORTED_SONG_CLOCKS,
+} from '../constants/song';
 import { ToggleValueButton } from './ToggleValueButton';
 
 const formatFrame = (frame: number) => `${frame} Hz`;
 const formatClock = (clock: number) => `${clock / 1000000} MHz`;
 
-const handleFrameToggle = useCallback((next: number) => {
-  handleFieldChange('frame', next);
-}, [handleFieldChange]);
+const handleFrameToggle = useCallback(
+  (next: number) => {
+    handleFieldChange('frame', next);
+  },
+  [handleFieldChange],
+);
 
-const handleClockToggle = useCallback((next: number) => {
-  handleFieldChange('clock', next);
-}, [handleFieldChange]);
+const handleClockToggle = useCallback(
+  (next: number) => {
+    handleFieldChange('clock', next);
+  },
+  [handleFieldChange],
+);
 ```
 
 The Title row becomes a flex row with the existing label and input on the left and the Rate button on the right. The Author row follows the same pattern with the Clock button.

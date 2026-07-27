@@ -8,7 +8,7 @@ export interface KeyboardShortcutMatch {
 export function matchKeyboardShortcut(
   keyUpper: string,
   ctrl: boolean,
-  shift: boolean
+  shift: boolean,
 ): KeyboardShortcutMatch | null {
   let shortcut: KeyboardShortcut | null = null;
   let preventDefault = false;

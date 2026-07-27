@@ -37,6 +37,9 @@ export function getMovedModePosition(currentPosition: number, direction: 'left' 
   return getMovedEnvelopePosition(currentPosition, direction, MODE_ENVELOPE_LENGTH);
 }
 
-export function getNextModePosition(currentPosition: number, length: number = MODE_ENVELOPE_LENGTH): number {
+export function getNextModePosition(
+  currentPosition: number,
+  length: number = MODE_ENVELOPE_LENGTH,
+): number {
   return (currentPosition + 1) % length;
 }

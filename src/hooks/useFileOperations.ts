@@ -18,10 +18,7 @@ import { exportToBinary, parseAssemblyToBinary, downloadBinaryFile } from '../ex
 import { exportSongToVgm, exportInstrumentToVgm, downloadVgmFile } from '../exports/vgm';
 import { exportSongToWav, exportInstrumentToWav, downloadWavFile } from '../exports/wav';
 import { exportSongToMax, exportInstrumentToMax, downloadMaxFile } from '../exports/max';
-import {
-  mapSongLineToPlaylistEntries,
-  mapPlaylistEntriesToSongLine,
-} from '../types/playlist';
+import { mapSongLineToPlaylistEntries, mapPlaylistEntriesToSongLine } from '../types/playlist';
 
 interface ExportContext {
   type: ExportType;
@@ -52,7 +49,10 @@ interface UseFileOperationsResult {
   handleCloseDumpExportSummary: () => void;
 }
 
-export function useFileOperations({ song, exportStrategy }: UseFileOperationsArgs): UseFileOperationsResult {
+export function useFileOperations({
+  song,
+  exportStrategy,
+}: UseFileOperationsArgs): UseFileOperationsResult {
   const [soundExportSummary, setSoundExportSummary] = useState('');
   const [dumpExportSummary, setDumpExportSummary] = useState('');
   const playlistEntries = useMemo(() => mapSongLineToPlaylistEntries(song.line), [song.line]);
@@ -66,7 +66,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
       const rawIndex = playlistIndex;
       const index = Math.max(
         0,
-        Math.min(entriesLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0)
+        Math.min(entriesLength - 1, Number.isFinite(rawIndex) ? Math.floor(rawIndex) : 0),
       );
       const entry = playlistEntries[index];
       const serializedLine = mapPlaylistEntriesToSongLine([entry]);
@@ -76,7 +76,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         loop: null,
       };
     },
-    [playlistEntries, song]
+    [playlistEntries, song],
   );
 
   const handleExportVgm = useCallback(() => {
@@ -222,7 +222,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song, getScopedSongForPattern]
+    [song, getScopedSongForPattern],
   );
 
   const exportMaxWithContext = useCallback(
@@ -285,7 +285,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song, getScopedSongForPattern]
+    [song, getScopedSongForPattern],
   );
 
   const exportBinWithContext = useCallback(
@@ -346,7 +346,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song, getScopedSongForPattern]
+    [song, getScopedSongForPattern],
   );
 
   const exportVgmWithContext = useCallback(
@@ -408,7 +408,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song, getScopedSongForPattern]
+    [song, getScopedSongForPattern],
   );
 
   const exportWavWithContext = useCallback(
@@ -488,7 +488,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
         setSoundExportSummary(lines.join('\n'));
       }
     },
-    [song, getScopedSongForPattern]
+    [song, getScopedSongForPattern],
   );
 
   const exportDumpWithContext = useCallback(
@@ -496,7 +496,7 @@ export function useFileOperations({ song, exportStrategy }: UseFileOperationsArg
       void ctx;
       handleExportDump();
     },
-    [handleExportDump]
+    [handleExportDump],
   );
 
   const handleCloseSoundExportSummary = useCallback(() => {

@@ -27,7 +27,12 @@ interface TrackerSectionProps {
   currentTrackColumn: 'note' | 'volume';
   setCurrentTrackColumn: (column: 'note' | 'volume') => void;
   trackFocusRevision: number;
-  onPreviewMidiNoteOn: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
+  onPreviewMidiNoteOn: (
+    ymChannel: number,
+    instrument: Instrument,
+    note: string,
+    octave: number,
+  ) => void;
   onPreviewMidiNoteOff: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
   onRegisterTrackStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
@@ -78,12 +83,21 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
               className={`track-bg-toggle ${trackBackgroundEnabled ? 'enabled' : 'disabled'}`}
               onClick={onToggleTrackBackground}
               onMouseDown={(event) => event.preventDefault()}
-              title={trackBackgroundEnabled ? 'Disable track background colors' : 'Enable track background colors'}
+              title={
+                trackBackgroundEnabled
+                  ? 'Disable track background colors'
+                  : 'Enable track background colors'
+              }
             >
               <img
-                src={trackBackgroundEnabled
-                  ? (isDarkMode ? RainbowModeDarkColorless : RainbowModeLightColorless)
-                  : (isDarkMode ? RainbowModeDark : RainbowModeLight)
+                src={
+                  trackBackgroundEnabled
+                    ? isDarkMode
+                      ? RainbowModeDarkColorless
+                      : RainbowModeLightColorless
+                    : isDarkMode
+                      ? RainbowModeDark
+                      : RainbowModeLight
                 }
                 alt=""
                 className="track-bg-toggle-icon"
@@ -91,7 +105,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
             </button>
           </div>
           <div className="position-content" onScroll={onPositionScroll}>
-            {positionIndices.map(i => (
+            {positionIndices.map((i) => (
               <div
                 key={i}
                 className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
@@ -105,7 +119,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
 
         <div className="track-container">
           <div className="tracks-row">
-            {(['A', 'B', 'C'] as const).map(trackId => (
+            {(['A', 'B', 'C'] as const).map((trackId) => (
               <TrackPanel
                 key={trackId}
                 trackId={trackId}

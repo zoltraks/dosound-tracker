@@ -33,7 +33,7 @@ export const MidiDeviceSelect: React.FC<MidiDeviceSelectProps> = ({
         id={id}
         className="midi-select"
         value={selectedId || ''}
-        onChange={event => {
+        onChange={(event) => {
           const nextId = event.target.value || null;
           onChange(nextId);
         }}
@@ -41,7 +41,7 @@ export const MidiDeviceSelect: React.FC<MidiDeviceSelectProps> = ({
       >
         {!hasDevices && <option value="">{emptyLabel}</option>}
         {hasDevices && <option value="">{noneLabel}</option>}
-        {devices.map(device => (
+        {devices.map((device) => (
           <option key={device.id} value={device.id}>
             {device.name}
           </option>

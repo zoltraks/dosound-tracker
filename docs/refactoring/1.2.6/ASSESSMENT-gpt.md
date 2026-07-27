@@ -132,7 +132,7 @@
 - **Verification details (evidence):**
   - `src/utils/yamlUtils.ts` exists and exports `quoteYamlValues()`.
   - `src/utils/instrumentIO.ts` uses `quoteYamlValues()` via small wrappers for `base`, `name`, `color`.
-  - `src/utils/songIO.ts` uses `quoteYamlValues()` for multiple keys (`[ABC]`, `note`, `base`, `number`, `color`), **but** still contains specialized quoting logic for titles (`quoteTitleValues()` + `shouldQuoteTitle()`), which was *not* part of the generic helper in the proposal.
+  - `src/utils/songIO.ts` uses `quoteYamlValues()` for multiple keys (`[ABC]`, `note`, `base`, `number`, `color`), **but** still contains specialized quoting logic for titles (`quoteTitleValues()` + `shouldQuoteTitle()`), which was _not_ part of the generic helper in the proposal.
 
 - **Safety validation:** ✅ (YAML formatting only)
 
@@ -243,9 +243,11 @@
 - The proposal includes specific test suggestions for envelope utilities and SoundDriver conversion.
 
 **Observed tests added/updated (from `main..HEAD`):**
+
 - `test/utils/instrumentIO.test.ts` exists and validates YAML quoting for `instrument.name` and round-trips parse/serialize through `parseInstrumentFromText()`.
 
 **Gaps vs proposal:**
+
 - No dedicated tests were found for:
   - `expandEnvelope` / `expandLoopingEnvelope` edge cases as listed in proposal
   - `trimEnvelope` / `isEnvelopeZeroDefault` edge cases
@@ -291,6 +293,7 @@
 **Risk:** High
 
 **Recommended corrective action:**
+
 - Revert `src/synth/SoundDriver.ts` to match `main` (or strictly limit edits to only the proposal-approved removals, but the proposal explicitly disallows any modifications, so the safest compliance path is revert).
 
 ---
@@ -304,6 +307,7 @@ Changes present in `main..HEAD` that are **not proposed** in `docs/refactoring/1
 - **Potential changes to UI hooks and app wiring:** multiple hooks changed (`useDataManagement`, `usePlaybackControls`, `useSequencerIntegration`, etc.).
 
 These may be beneficial, but they are **out of scope** for the 1.2.6 proposal as written and should be either:
+
 - documented as additional refactor scope, or
 - reverted to maintain proposal compliance.
 

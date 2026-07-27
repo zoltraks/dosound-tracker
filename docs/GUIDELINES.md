@@ -73,24 +73,24 @@ Examples:
 
 The active documentation set is composed of the following files. Each file is the authoritative source for the topic listed.
 
-| File                                       | Purpose                                                          |
-| ------------------------------------------ | ---------------------------------------------------------------- |
-| `GUIDELINES.md`                            | Central source of truth for AI-assisted development rules (this file) |
+| File                                       | Purpose                                                                  |
+| ------------------------------------------ | ------------------------------------------------------------------------ |
+| `GUIDELINES.md`                            | Central source of truth for AI-assisted development rules (this file)    |
 | `PROJECT.md`                               | Project description, scope, requirements, use cases, and quality targets |
-| `ARCHITECTURE.md`                          | System architecture, module boundaries, state domains, and patterns |
-| `SPECIFICATION.md`                         | Project-specific implementation details, stack, schemas, and constants |
-| `COPYRIGHTS.md`                            | Copyright and licensing rules                                    |
-| `WORKFLOW.md`                              | Day-to-day development workflow                                  |
-| `REFACTORING.md`                           | Refactoring proposal and assessment process                      |
-| `TESTING.md`                               | Testing strategy, test types, fixtures, and CI                   |
-| `DEPLOYMENT.md`                            | Deployment targets and hosting                                   |
-| `VERSIONING.md`                            | Version numbering scheme, bumping rules, and CHANGELOG format    |
-| `FORMAT.md`                                | Project file format specification for song and instrument files  |
-| `MAX.md`                                   | MAX audio file format specification                              |
-| `FUTURE.md`                                | Candidate future enhancements (not committed work)              |
-| `standard/ts-react-development.md`         | TypeScript and React engineering standard                        |
-| `template/change-request-template.md`      | Template for change request specification documents              |
-| `template/implementation-plan-template.md` | Template for implementation plan documents                       |
+| `ARCHITECTURE.md`                          | System architecture, module boundaries, state domains, and patterns      |
+| `SPECIFICATION.md`                         | Project-specific implementation details, stack, schemas, and constants   |
+| `COPYRIGHTS.md`                            | Copyright and licensing rules                                            |
+| `WORKFLOW.md`                              | Day-to-day development workflow                                          |
+| `REFACTORING.md`                           | Refactoring proposal and assessment process                              |
+| `TESTING.md`                               | Testing strategy, test types, fixtures, and CI                           |
+| `DEPLOYMENT.md`                            | Deployment targets and hosting                                           |
+| `VERSIONING.md`                            | Version numbering scheme, bumping rules, and CHANGELOG format            |
+| `FORMAT.md`                                | Project file format specification for song and instrument files          |
+| `MAX.md`                                   | MAX audio file format specification                                      |
+| `FUTURE.md`                                | Candidate future enhancements (not committed work)                       |
+| `standard/ts-react-development.md`         | TypeScript and React engineering standard                                |
+| `template/change-request-template.md`      | Template for change request specification documents                      |
+| `template/implementation-plan-template.md` | Template for implementation plan documents                               |
 
 ## General Workflow
 
@@ -174,7 +174,7 @@ Implementation plans must strictly follow the Documentation Style section of thi
 
 Example of correct step formatting:
 
-```
+````
 **Fix track panel instrument display**
 
 TrackPanel shows instrument ID from local state. Use currentInstrument from props instead.
@@ -183,7 +183,8 @@ File to modify: `src/components/TrackPanel.tsx`.
 
 ```typescript
 // Import currentInstrument
-```
+````
+
 ```
 
 **Change Request and Plan Directory Access**
@@ -502,3 +503,4 @@ In real-time audio applications, performance trumps purity. The "wrong" way that
 - **Debug logging cleanup**: when debug logging such as `console.log` is added to trace bugs, it must be removed after the bug is fixed.
 - **AI interaction patterns**: when explaining what actions will be taken for a request type, describe the process generally without asking for task-specific details. Only ask for specifics when the user actually initiates that type of request. This applies to refactoring proposals, feature implementations, and any multi-step workflows.
 - **Refactoring proposals**: when asked to create a refactoring proposal, do not ask the user what to refactor. Instead, autonomously analyse recent changes, the current implementation, existing guidelines and standards, and good practices to determine the most valuable refactoring focus. Present the proposal for review before implementing.
+```

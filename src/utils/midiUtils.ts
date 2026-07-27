@@ -49,9 +49,9 @@ export function formatTime(): string {
 export function resolveDeviceName(
   id: string | null,
   devices: MidiDeviceInfo[],
-  fallback: string
+  fallback: string,
 ): string {
   if (!id) return fallback;
-  const found = devices.find(d => d.id === id);
+  const found = devices.find((d) => d.id === id);
   return found?.name || fallback;
 }

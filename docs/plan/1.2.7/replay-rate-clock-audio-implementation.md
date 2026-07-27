@@ -103,7 +103,7 @@ File to modify: `src/hooks/useSequencer.ts`.
 export const useSequencer = (
   songSpeed: number = 6,
   patternLength: number = 64,
-  frameRate: number = DEFAULT_SONG_FRAME
+  frameRate: number = DEFAULT_SONG_FRAME,
 ) => {
   const frameRateRef = useRef(frameRate);
   // ...
@@ -137,15 +137,18 @@ Add a function that updates the frame rate ref and re-posts the tick interval to
 File to modify: `src/hooks/useSequencer.ts`.
 
 ```typescript
-const updateFrameRate = useCallback((rate: number) => {
-  frameRateRef.current = rate;
-  if (workerRef.current) {
-    workerRef.current.postMessage({
-      type: 'setParams',
-      data: { tickInterval: calculateTickInterval() }
-    });
-  }
-}, [calculateTickInterval]);
+const updateFrameRate = useCallback(
+  (rate: number) => {
+    frameRateRef.current = rate;
+    if (workerRef.current) {
+      workerRef.current.postMessage({
+        type: 'setParams',
+        data: { tickInterval: calculateTickInterval() },
+      });
+    }
+  },
+  [calculateTickInterval],
+);
 ```
 
 **Wire frameRate update from usePlaybackControls**
@@ -195,9 +198,7 @@ public setClock(clock: number): void {
 File to modify: `src/App.tsx`.
 
 ```typescript
-const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(
-  currentSong.clock ?? DEFAULT_SONG_CLOCK
-);
+const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(currentSong.clock ?? DEFAULT_SONG_CLOCK);
 ```
 
 **Update useAudioSetup test tone to use the passed clock**
@@ -237,7 +238,11 @@ export interface SimulationOptions {
   clock?: number;
 }
 
-export function simulateSong(song: Song, callback: PlaybackCallback, options: SimulationOptions = {}): void {
+export function simulateSong(
+  song: Song,
+  callback: PlaybackCallback,
+  options: SimulationOptions = {},
+): void {
   const { retriggerBehavior = 'always', clock = YM_CLOCK } = options;
   // Pass clock to applyInstrumentToRegisters calls
 }
@@ -250,10 +255,10 @@ export function applyInstrumentToRegisters(
   envelopeStep: number,
   isNewNote: boolean,
   volumeModifier?: number | null,
-  clock: number = YM_CLOCK
+  clock: number = YM_CLOCK,
 ): void {
   // ...
-  let period = Math.floor(clock / (16 * frequency)) & 0x0FFF;
+  let period = Math.floor(clock / (16 * frequency)) & 0x0fff;
   // ...
 }
 ```
@@ -351,7 +356,12 @@ const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
 const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
 // ...
 chipData.push((frameRate >>> 8) & 0xff, frameRate & 0xff);
-chipData.push((chipClock >>> 24) & 0xff, (chipClock >>> 16) & 0xff, (chipClock >>> 8) & 0xff, chipClock & 0xff);
+chipData.push(
+  (chipClock >>> 24) & 0xff,
+  (chipClock >>> 16) & 0xff,
+  (chipClock >>> 8) & 0xff,
+  chipClock & 0xff,
+);
 ```
 
 Also pass the clock to `simulateSong` in `captureMaxFrames`.
@@ -404,7 +414,7 @@ export class SoundDriver {
     this.clock = clock;
   }
   // In getNotePeriod:
-  const divider = Math.max(1, Math.round(this.clock / (16 * frequency)));
+  divider = Math.max(1, Math.round(this.clock / (16 * frequency)));
 }
 ```
 

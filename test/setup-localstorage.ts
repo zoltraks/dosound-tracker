@@ -41,11 +41,13 @@ beforeEach(() => {
   const windowWithLocalStorage = globalWindow.window as { localStorage?: Storage };
   const existing = windowWithLocalStorage.localStorage;
 
-  if (!existing ||
-      typeof existing.getItem !== 'function' ||
-      typeof existing.setItem !== 'function' ||
-      typeof existing.removeItem !== 'function' ||
-      typeof existing.clear !== 'function') {
+  if (
+    !existing ||
+    typeof existing.getItem !== 'function' ||
+    typeof existing.setItem !== 'function' ||
+    typeof existing.removeItem !== 'function' ||
+    typeof existing.clear !== 'function'
+  ) {
     const mock = createLocalStorageMock();
     const globalWithLocalStorage = globalThis as typeof globalThis & { localStorage?: Storage };
     globalWithLocalStorage.localStorage = mock;

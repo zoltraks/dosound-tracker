@@ -11,7 +11,8 @@ export const useAudioContext = () => {
     const initAudioContext = () => {
       try {
         const AudioContextClass =
-          window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+          window.AudioContext ||
+          (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
 
         if (!AudioContextClass) {
           throw new Error('Web Audio API not supported');

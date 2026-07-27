@@ -51,18 +51,10 @@ export const InstrumentDeleteModal: React.FC<InstrumentDeleteModalProps> = ({
               gap: '4px',
             }}
           >
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onDeleteNotesAndInstrument}
-            >
+            <button className="command-btn" type="button" onClick={onDeleteNotesAndInstrument}>
               Delete notes using this instrument and clear slot
             </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onDeleteInstrumentOnly}
-            >
+            <button className="command-btn" type="button" onClick={onDeleteInstrumentOnly}>
               Clear instrument only (keep notes)
             </button>
             <button className="command-btn" type="button" onClick={onCancel}>

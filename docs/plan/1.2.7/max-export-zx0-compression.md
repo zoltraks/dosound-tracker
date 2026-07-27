@@ -77,10 +77,7 @@ const MAX_OFFSET_ZX0 = 32640;
 The public API is identical to `pet-lab`:
 
 ```typescript
-export function compressZX0(
-  input: Uint8Array,
-  options?: { maxOffset?: number }
-): Uint8Array;
+export function compressZX0(input: Uint8Array, options?: { maxOffset?: number }): Uint8Array;
 
 export function decompressZX0(input: Uint8Array): Uint8Array;
 ```
@@ -219,7 +216,7 @@ function buildStreamDefinition(
   streamFormat: number,
   compression: number,
   uncompressedSize: number,
-  frameSize: number | null
+  frameSize: number | null,
 ): number[] {
   const data: number[] = [streamFormat & 0xff, compression & 0xff];
 
@@ -227,7 +224,7 @@ function buildStreamDefinition(
   data.push(
     (uncompressedSize >>> 16) & 0xff,
     (uncompressedSize >>> 8) & 0xff,
-    uncompressedSize & 0xff
+    uncompressedSize & 0xff,
   );
 
   if (frameSize !== null) {
@@ -287,7 +284,7 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
     streamFormat,
     ZX0_COMPRESSION,
     uncompressed.length,
-    frameSize
+    frameSize,
   );
   fileBytes.push(...buildMaxShortChunk('S', streamDefData));
 
@@ -353,15 +350,33 @@ function roundTrip(input: Uint8Array): void {
 }
 
 describe('ZX0 compression', () => {
-  it('round-trips a single byte', () => { /* ... */ });
-  it('round-trips two bytes', () => { /* ... */ });
-  it('round-trips a run of zeros', () => { /* ... */ });
-  it('round-trips a repeating two-byte pattern', () => { /* ... */ });
-  it('round-trips an ascending byte sequence', () => { /* ... */ });
-  it('round-trips a pseudo-random buffer deterministically', () => { /* ... */ });
-  it('round-trips a structured-repetition payload', () => { /* ... */ });
-  it('compresses repetitive data to substantially fewer bytes', () => { /* ... */ });
-  it('respects maxOffset: 1023 by never back-referencing beyond 1024 bytes', () => { /* ... */ });
+  it('round-trips a single byte', () => {
+    /* ... */
+  });
+  it('round-trips two bytes', () => {
+    /* ... */
+  });
+  it('round-trips a run of zeros', () => {
+    /* ... */
+  });
+  it('round-trips a repeating two-byte pattern', () => {
+    /* ... */
+  });
+  it('round-trips an ascending byte sequence', () => {
+    /* ... */
+  });
+  it('round-trips a pseudo-random buffer deterministically', () => {
+    /* ... */
+  });
+  it('round-trips a structured-repetition payload', () => {
+    /* ... */
+  });
+  it('compresses repetitive data to substantially fewer bytes', () => {
+    /* ... */
+  });
+  it('respects maxOffset: 1023 by never back-referencing beyond 1024 bytes', () => {
+    /* ... */
+  });
 });
 ```
 
@@ -380,16 +395,36 @@ import { decompressZX0 } from '../../src/utils/zx0';
 import { parseSongFromYaml } from '../../src/utils/songParser';
 
 describe('exportSongToMax', () => {
-  it('writes the MAX magic number and version chunk', () => { /* ... */ });
-  it('writes the chip setup chunk with YM2149 and 50 Hz VBLANK', () => { /* ... */ });
-  it('writes ZX0 compression (0x08) in the stream definition for simple strategy', () => { /* ... */ });
-  it('writes the uncompressed stream size as a 3-byte big-endian integer', () => { /* ... */ });
-  it('produces a REG7 stream (0x07) for the complex strategy', () => { /* ... */ });
-  it('produces a REG7 stream with optimized delays for the optimized strategy', () => { /* ... */ });
-  it('uses single-byte REG7 delimiters (0x80 = 1 frame, not 0x80 0x80)', () => { /* ... */ });
-  it('includes all 14 registers (R0–R13) in the first REG7 frame', () => { /* ... */ });
-  it('round-trips the compressed stream through decompressZX0', () => { /* ... */ });
-  it('captures one frame per VBLANK tick, not every second tick', () => { /* ... */ });
+  it('writes the MAX magic number and version chunk', () => {
+    /* ... */
+  });
+  it('writes the chip setup chunk with YM2149 and 50 Hz VBLANK', () => {
+    /* ... */
+  });
+  it('writes ZX0 compression (0x08) in the stream definition for simple strategy', () => {
+    /* ... */
+  });
+  it('writes the uncompressed stream size as a 3-byte big-endian integer', () => {
+    /* ... */
+  });
+  it('produces a REG7 stream (0x07) for the complex strategy', () => {
+    /* ... */
+  });
+  it('produces a REG7 stream with optimized delays for the optimized strategy', () => {
+    /* ... */
+  });
+  it('uses single-byte REG7 delimiters (0x80 = 1 frame, not 0x80 0x80)', () => {
+    /* ... */
+  });
+  it('includes all 14 registers (R0–R13) in the first REG7 frame', () => {
+    /* ... */
+  });
+  it('round-trips the compressed stream through decompressZX0', () => {
+    /* ... */
+  });
+  it('captures one frame per VBLANK tick, not every second tick', () => {
+    /* ... */
+  });
 });
 ```
 

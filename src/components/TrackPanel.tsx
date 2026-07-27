@@ -52,7 +52,12 @@ interface TrackPanelProps {
   currentColumn: 'note' | 'volume';
   setCurrentColumn: (column: 'note' | 'volume') => void;
   focusRevision: number;
-  onPreviewMidiNoteOn?: (ymChannel: number, instrument: Instrument, note: string, octave: number) => void;
+  onPreviewMidiNoteOn?: (
+    ymChannel: number,
+    instrument: Instrument,
+    note: string,
+    octave: number,
+  ) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
   onRegisterStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
@@ -83,7 +88,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onPreviewMidiNoteOff,
     onHardStopLivePreview,
     onRegisterStopPreview,
-    tickIntervalMs = 1000 / DEFAULT_SONG_FRAME
+    tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
   } = props;
 
   const [currentInstrument, setCurrentInstrument] = useState('00');
@@ -115,7 +120,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   const effectiveVolume = useMemo(
     () => computeEffectiveVolume(pattern, currentLine),
-    [pattern, currentLine]
+    [pattern, currentLine],
   );
 
   // Hard stop of any current preview on this track/channel
@@ -180,9 +185,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
       // Initialize sustain state for this preview note
       const rawSustain =
-        instrument && typeof instrument.sustain === 'number'
-          ? instrument.sustain
-          : null;
+        instrument && typeof instrument.sustain === 'number' ? instrument.sustain : null;
       const sustainIndex =
         typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
           ? Math.floor(rawSustain)
@@ -267,7 +270,17 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           }
         }
       }, tickIntervalMs);
-    }, [ym2149, trackId, currentInstrumentData, tickIntervalMs, onPreviewMidiNoteOn, onPreviewMidiNoteOff, stopPreview]);
+    },
+    [
+      ym2149,
+      trackId,
+      currentInstrumentData,
+      tickIntervalMs,
+      onPreviewMidiNoteOn,
+      onPreviewMidiNoteOff,
+      stopPreview,
+    ],
+  );
 
   // Get notes for this track from the pattern
   const computeTrackNotes = useCallback(() => {
@@ -293,185 +306,191 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     };
   }, [isActive]);
 
-  const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-    if (!isActive) return;
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent) => {
+      if (!isActive) return;
 
-    const key = event.key.toUpperCase();
+      const key = event.key.toUpperCase();
 
-    const isNavKey = isNavigationKey(key);
+      const isNavKey = isNavigationKey(key);
 
-    if (event.repeat && !isNavKey) {
-      event.preventDefault();
-      return;
-    }
-
-    // Navigation
-    if (key === 'ARROWUP') {
-      event.preventDefault();
-      onLineChange(stepLineIndex(currentLine, patternLength, -1));
-    } else if (key === 'ARROWDOWN') {
-      event.preventDefault();
-      onLineChange(stepLineIndex(currentLine, patternLength, 1));
-    } else if (key === 'PAGEUP') {
-      event.preventDefault();
-      const step = 16;
-      onLineChange(stepLineIndex(currentLine, patternLength, -step));
-    } else if (key === 'PAGEDOWN') {
-      event.preventDefault();
-      const step = 16;
-      onLineChange(stepLineIndex(currentLine, patternLength, step));
-    } else if (key === 'HOME') {
-      event.preventDefault();
-      onLineChange(0);
-    } else if (key === 'END') {
-      event.preventDefault();
-      const length = Math.max(1, patternLength || 1);
-      onLineChange(length - 1);
-    } else if (key === 'ARROWLEFT') {
-      event.preventDefault();
-      if (currentColumn === 'volume') {
-        // Move from volume to note within the same track
-        setCurrentColumn('note');
-      } else {
-        // Move to previous track and select its volume column
-        const targetTrack: NavigationSection = getPreviousTrackSection(trackId);
-        setActiveSection(targetTrack);
-        setCurrentColumn('volume');
+      if (event.repeat && !isNavKey) {
+        event.preventDefault();
+        return;
       }
-    } else if (key === 'ARROWRIGHT') {
-      event.preventDefault();
-      if (currentColumn === 'note') {
-        // Move from note to volume within the same track
-        setCurrentColumn('volume');
-      } else {
-        // Move to next track and select its note column
-        const targetTrack: NavigationSection = getNextTrackSection(trackId);
-        setActiveSection(targetTrack);
-        setCurrentColumn('note');
-      }
-    } else if (key === 'ENTER') {
-      event.preventDefault();
-      onToggleLineFromCursor(currentLine);
-    } else if (event.key === 'Delete' || event.key === 'Backspace') {
-      event.preventDefault();
-      if (!pattern) return;
 
-      const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+      // Navigation
+      if (key === 'ARROWUP') {
+        event.preventDefault();
+        onLineChange(stepLineIndex(currentLine, patternLength, -1));
+      } else if (key === 'ARROWDOWN') {
+        event.preventDefault();
+        onLineChange(stepLineIndex(currentLine, patternLength, 1));
+      } else if (key === 'PAGEUP') {
+        event.preventDefault();
+        const step = 16;
+        onLineChange(stepLineIndex(currentLine, patternLength, -step));
+      } else if (key === 'PAGEDOWN') {
+        event.preventDefault();
+        const step = 16;
+        onLineChange(stepLineIndex(currentLine, patternLength, step));
+      } else if (key === 'HOME') {
+        event.preventDefault();
+        onLineChange(0);
+      } else if (key === 'END') {
+        event.preventDefault();
+        const length = Math.max(1, patternLength || 1);
+        onLineChange(length - 1);
+      } else if (key === 'ARROWLEFT') {
+        event.preventDefault();
         if (currentColumn === 'volume') {
-          // Clear only the per-line volume modifier
-          return { ...step, volume: undefined };
+          // Move from volume to note within the same track
+          setCurrentColumn('note');
+        } else {
+          // Move to previous track and select its volume column
+          const targetTrack: NavigationSection = getPreviousTrackSection(trackId);
+          setActiveSection(targetTrack);
+          setCurrentColumn('volume');
         }
+      } else if (key === 'ARROWRIGHT') {
+        event.preventDefault();
+        if (currentColumn === 'note') {
+          // Move from note to volume within the same track
+          setCurrentColumn('volume');
+        } else {
+          // Move to next track and select its note column
+          const targetTrack: NavigationSection = getNextTrackSection(trackId);
+          setActiveSection(targetTrack);
+          setCurrentColumn('note');
+        }
+      } else if (key === 'ENTER') {
+        event.preventDefault();
+        onToggleLineFromCursor(currentLine);
+      } else if (event.key === 'Delete' || event.key === 'Backspace') {
+        event.preventDefault();
+        if (!pattern) return;
 
-        // Clear the note (and implicitly any volume) for shared pattern (trackA)
-        return { ...step, note: null, volume: undefined };
-      });
-
-      onPatternChange(newPattern);
-    } else if (event.ctrlKey && key === ' ') {
-      event.preventDefault();
-      // Note off (set to rest)
-      if (pattern) {
-        const noteOff: Note = createNoteOff();
-        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
-          // Set note off for shared pattern (always use trackA)
-          return { ...step, note: noteOff };
-        });
-        onPatternChange(newPattern);
-      }
-    } else if (key === ' ') {
-      event.preventDefault();
-      // Clear current position in the active column and move to next line
-      if (pattern) {
         const newPattern = updatePatternStep(pattern, currentLine, (step) => {
           if (currentColumn === 'volume') {
+            // Clear only the per-line volume modifier
             return { ...step, volume: undefined };
           }
+
+          // Clear the note (and implicitly any volume) for shared pattern (trackA)
           return { ...step, note: null, volume: undefined };
         });
+
         onPatternChange(newPattern);
-        // Move to next line (wrap around pattern length)
-        onLineChange(stepLineIndex(currentLine, patternLength, 1));
+      } else if (event.ctrlKey && key === ' ') {
+        event.preventDefault();
+        // Note off (set to rest)
+        if (pattern) {
+          const noteOff: Note = createNoteOff();
+          const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+            // Set note off for shared pattern (always use trackA)
+            return { ...step, note: noteOff };
+          });
+          onPatternChange(newPattern);
+        }
+      } else if (key === ' ') {
+        event.preventDefault();
+        // Clear current position in the active column and move to next line
+        if (pattern) {
+          const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+            if (currentColumn === 'volume') {
+              return { ...step, volume: undefined };
+            }
+            return { ...step, note: null, volume: undefined };
+          });
+          onPatternChange(newPattern);
+          // Move to next line (wrap around pattern length)
+          onLineChange(stepLineIndex(currentLine, patternLength, 1));
+        }
+      } else if (!event.ctrlKey && key === '-') {
+        event.preventDefault();
+        // Insert explicit key-release step (note-off) and move to next line
+        if (pattern) {
+          const noteOff: Note = createNoteOff();
+          const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+            return { ...step, note: noteOff };
+          });
+          onPatternChange(newPattern);
+          onLineChange(stepLineIndex(currentLine, patternLength, 1));
+        }
+      } else if (event.ctrlKey && key === '-') {
+        event.preventDefault();
+        // Previous instrument
+        setCurrentInstrument((prev) => stepInstrumentId(prev, -1));
+      } else if (event.ctrlKey && (key === '+' || key === '=')) {
+        event.preventDefault();
+        // Next instrument
+        setCurrentInstrument((prev) => stepInstrumentId(prev, 1));
+      } else if (!event.ctrlKey && currentColumn === 'volume' && parseVolumeNibble(key) !== null) {
+        const nibble = parseVolumeNibble(key) as number;
+
+        event.preventDefault();
+        // Hex input for per-line volume modifier
+        if (pattern) {
+          const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+            return { ...step, volume: nibble };
+          });
+          onPatternChange(newPattern);
+          // Move to next line after entering a volume nibble (wrap around pattern length)
+          onLineChange(stepLineIndex(currentLine, patternLength, 1));
+        }
+      } else {
+        const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
+        if (!mapped) {
+          return;
+        }
+
+        event.preventDefault();
+
+        // Note keys are inert in the volume column; only the note column enters notes.
+        if (currentColumn !== 'note') {
+          return;
+        }
+
+        const { note, octave: finalOctave, keyId } = mapped;
+
+        if (pressedNoteKeysRef.current.has(keyId)) {
+          return;
+        }
+        pressedNoteKeysRef.current.add(keyId);
+
+        playPreviewNote(note, finalOctave);
+
+        // Insert note
+        if (pattern) {
+          const newNote: Note = { note, octave: finalOctave, instrument: currentInstrumentData.id };
+
+          const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+            // Set the note for shared pattern (always use trackA)
+            return { ...step, note: newNote };
+          });
+          onPatternChange(newPattern);
+          // Move to next line (wrap around pattern length)
+          onLineChange(stepLineIndex(currentLine, patternLength, 1));
+        }
       }
-    } else if (!event.ctrlKey && key === '-') {
-      event.preventDefault();
-      // Insert explicit key-release step (note-off) and move to next line
-      if (pattern) {
-        const noteOff: Note = createNoteOff();
-        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
-          return { ...step, note: noteOff };
-        });
-        onPatternChange(newPattern);
-        onLineChange(stepLineIndex(currentLine, patternLength, 1));
-      }
-    } else if (event.ctrlKey && key === '-') {
-      event.preventDefault();
-      // Previous instrument
-      setCurrentInstrument((prev) => stepInstrumentId(prev, -1));
-    } else if (event.ctrlKey && (key === '+' || key === '=')) {
-      event.preventDefault();
-      // Next instrument
-      setCurrentInstrument((prev) => stepInstrumentId(prev, 1));
-
-    } else if (!event.ctrlKey && currentColumn === 'volume' && parseVolumeNibble(key) !== null) {
-      const nibble = parseVolumeNibble(key) as number;
-
-      event.preventDefault();
-      // Hex input for per-line volume modifier
-      if (pattern) {
-        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
-          return { ...step, volume: nibble };
-        });
-        onPatternChange(newPattern);
-        // Move to next line after entering a volume nibble (wrap around pattern length)
-        onLineChange(stepLineIndex(currentLine, patternLength, 1));
-      }
-
-    } else {
-      const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
-      if (!mapped) {
-        return;
-      }
-
-      event.preventDefault();
-
-      const { note, octave: finalOctave, keyId } = mapped;
-
-      if (pressedNoteKeysRef.current.has(keyId)) {
-        return;
-      }
-      pressedNoteKeysRef.current.add(keyId);
-
-      playPreviewNote(note, finalOctave);
-
-      // Insert note
-      if (pattern) {
-        const newNote: Note = { note, octave: finalOctave, instrument: currentInstrumentData.id };
-
-        const newPattern = updatePatternStep(pattern, currentLine, (step) => {
-          // Set the note for shared pattern (always use trackA)
-          return { ...step, note: newNote };
-        });
-        onPatternChange(newPattern);
-        // Move to next line (wrap around pattern length)
-        onLineChange(stepLineIndex(currentLine, patternLength, 1));
-      }
-    }
-  }, [
-    isActive,
-    currentLine,
-    currentOctave,
-    currentInstrument,
-    onLineChange,
-    patternLength,
-    playPreviewNote,
-    pattern,
-    trackId,
-    onPatternChange,
-    onToggleLineFromCursor,
-    currentColumn,
-    setCurrentColumn,
-    setActiveSection
-  ]);
+    },
+    [
+      isActive,
+      currentLine,
+      currentOctave,
+      currentInstrument,
+      onLineChange,
+      patternLength,
+      playPreviewNote,
+      pattern,
+      trackId,
+      onPatternChange,
+      onToggleLineFromCursor,
+      currentColumn,
+      setCurrentColumn,
+      setActiveSection,
+    ],
+  );
 
   const handleKeyUp = useCallback(
     (event: React.KeyboardEvent) => {
@@ -508,7 +527,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         stopPreview();
       }
     },
-    [isActive, currentOctave, stopPreview]
+    [isActive, currentOctave, stopPreview],
   );
 
   const handleLineClick = useCallback(
@@ -517,16 +536,19 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       setActiveSection(sectionName);
       setCurrentColumn(column);
     },
-    [setActiveSection, sectionName, onLineChange, setCurrentColumn]
+    [setActiveSection, sectionName, onLineChange, setCurrentColumn],
   );
 
   const formatNoteDisplay = useCallback((noteData: Note | null) => {
     return formatTrackNoteDisplay(noteData);
   }, []);
 
-  const getLineClass = useCallback((lineIndex: number) => {
-    return getTrackLineClass(lineIndex, currentLine);
-  }, [currentLine]);
+  const getLineClass = useCallback(
+    (lineIndex: number) => {
+      return getTrackLineClass(lineIndex, currentLine);
+    },
+    [currentLine],
+  );
 
   return (
     <div
@@ -556,7 +578,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             let instrumentColor: string | null = null;
             instrumentColor = getInstrumentColorForNote(noteData, instrumentColorMap);
 
-            const lineClassName = `${getLineClass(lineIndex)}${instrumentColor ? ' track-line-colored' : ''}`.trim();
+            const lineClassName =
+              `${getLineClass(lineIndex)}${instrumentColor ? ' track-line-colored' : ''}`.trim();
             const lineStyle = instrumentColor
               ? ({ ['--track-line-color' as string]: instrumentColor } as React.CSSProperties)
               : undefined;

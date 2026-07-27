@@ -94,7 +94,7 @@ describe('useMidiActions velocity handling', () => {
     let hook: HookResult | null = null;
     const renderResult = render(
       <UseMidiActionsHarness
-        onReady={value => {
+        onReady={(value) => {
           hook = value;
         }}
         args={{
@@ -111,7 +111,7 @@ describe('useMidiActions velocity handling', () => {
           midiConfigurationRef,
           parseBaseKeyString: vi.fn(() => ({ note: 'C', octave: 4 })),
         }}
-      />
+      />,
     );
 
     await waitFor(() => expect(hook).not.toBeNull());
@@ -152,7 +152,7 @@ describe('useMidiActions velocity handling', () => {
     let hook: HookResult | null = null;
     const renderResult = render(
       <UseMidiActionsHarness
-        onReady={value => {
+        onReady={(value) => {
           hook = value;
         }}
         args={{
@@ -169,7 +169,7 @@ describe('useMidiActions velocity handling', () => {
           midiConfigurationRef,
           parseBaseKeyString: vi.fn(() => ({ note: 'C', octave: 4 })),
         }}
-      />
+      />,
     );
 
     await waitFor(() => expect(hook).not.toBeNull());
@@ -209,7 +209,7 @@ describe('useMidiActions velocity handling', () => {
     let hook: HookResult | null = null;
     const renderResult = render(
       <UseMidiActionsHarness
-        onReady={value => {
+        onReady={(value) => {
           hook = value;
         }}
         args={{
@@ -226,7 +226,7 @@ describe('useMidiActions velocity handling', () => {
           midiConfigurationRef,
           parseBaseKeyString: vi.fn(() => ({ note: 'C', octave: 4 })),
         }}
-      />
+      />,
     );
 
     await waitFor(() => expect(hook).not.toBeNull());
@@ -243,7 +243,7 @@ describe('useMidiActions velocity handling', () => {
       expect.any(String),
       expect.any(Number),
       null,
-      38
+      38,
     );
 
     renderResult.unmount();

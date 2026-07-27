@@ -5,6 +5,7 @@
 This document presents a comprehensive proposal for enhancing the current logging system in DOSOUND Tracker. The analysis of the existing implementation reveals a solid foundation with a singleton Logger class, but identifies opportunities for significant improvements in structured logging, context management, error handling integration, and developer experience.
 
 **Key Recommendations:**
+
 - Implement structured logging with context categories
 - Add log filtering and source-based routing
 - Integrate with existing error handling patterns
@@ -22,22 +23,36 @@ export const LogLevel = {
   ERROR: 0,
   WARN: 1,
   INFO: 2,
-  DEBUG: 3
+  DEBUG: 3,
 } as const;
 
 export class Logger {
   private static instance: Logger;
   private level: LogLevel = LogLevel.INFO;
   private debugMode: boolean = false;
-  
-  static getInstance(): Logger { /* singleton pattern */ }
-  setLogLevel(level: LogLevel): void { /* level configuration */ }
-  setDebugMode(enabled: boolean): void { /* debug toggle */ }
-  
-  error(message: string, ...args: unknown[]): void { /* error logging */ }
-  warn(message: string, ...args: unknown[]): void { /* warning logging */ }
-  info(message: string, ...args: unknown[]): void { /* info logging */ }
-  debug(message: string, ...args: unknown[]): void { /* debug logging */ }
+
+  static getInstance(): Logger {
+    /* singleton pattern */
+  }
+  setLogLevel(level: LogLevel): void {
+    /* level configuration */
+  }
+  setDebugMode(enabled: boolean): void {
+    /* debug toggle */
+  }
+
+  error(message: string, ...args: unknown[]): void {
+    /* error logging */
+  }
+  warn(message: string, ...args: unknown[]): void {
+    /* warning logging */
+  }
+  info(message: string, ...args: unknown[]): void {
+    /* info logging */
+  }
+  debug(message: string, ...args: unknown[]): void {
+    /* debug logging */
+  }
 }
 
 export const logger = Logger.getInstance();
@@ -48,7 +63,7 @@ export const logger = Logger.getInstance();
 Analysis of 15+ import locations reveals these usage patterns:
 
 1. **Error Handling**: `logger.error('Failed to load', error)` - 40% of usage
-2. **State Management**: `logger.info('State changed', newState)` - 25% of usage  
+2. **State Management**: `logger.info('State changed', newState)` - 25% of usage
 3. **Debug Operations**: `logger.debug('Processing', data)` - 20% of usage
 4. **Initialization**: `logger.info('AudioContext created', rate)` - 15% of usage
 
@@ -78,21 +93,21 @@ Analysis of 15+ import locations reveals these usage patterns:
 ```typescript
 export enum LogCategory {
   AUDIO = 'audio',
-  MIDI = 'midi', 
+  MIDI = 'midi',
   UI = 'ui',
   STORAGE = 'storage',
   EXPORT = 'export',
   SEQUENCER = 'sequencer',
   SYSTEM = 'system',
-  DEBUG = 'debug'
+  DEBUG = 'debug',
 }
 
 export enum LogLevel {
   ERROR = 0,
-  WARN = 1, 
+  WARN = 1,
   INFO = 2,
   DEBUG = 3,
-  TRACE = 4
+  TRACE = 4,
 }
 
 export interface LogEntry {
@@ -119,23 +134,23 @@ export class EnhancedLogger {
   private config: LoggerConfig;
   private memoryLogs: LogEntry[] = [];
   private performanceMarks = new Map<string, number>();
-  
+
   // Core logging methods
   error(category: LogCategory, message: string, context?: unknown): void;
   warn(category: LogCategory, message: string, context?: unknown): void;
   info(category: LogCategory, message: string, context?: unknown): void;
   debug(category: LogCategory, message: string, context?: unknown): void;
   trace(category: LogCategory, message: string, context?: unknown): void;
-  
+
   // Performance monitoring
   startTimer(label: string): void;
   endTimer(label: string): string; // returns formatted duration
-  
+
   // Log management
   getLogs(filter?: LogFilter): LogEntry[];
   clearLogs(): void;
   exportLogs(format: 'json' | 'csv'): string;
-  
+
   // Configuration
   configure(config: Partial<LoggerConfig>): void;
 }
@@ -149,12 +164,12 @@ export class EnhancedLogger {
 // Before: Basic logging
 logger.error('Failed to load song', error);
 
-// After: Context-aware logging  
+// After: Context-aware logging
 logger.error(LogCategory.STORAGE, 'Failed to load song', {
   error: error.message,
   fileName: file?.name,
   fileSize: file?.size,
-  timestamp: new Date().toISOString()
+  timestamp: new Date().toISOString(),
 });
 ```
 
@@ -165,21 +180,21 @@ logger.error(LogCategory.STORAGE, 'Failed to load song', {
 ```typescript
 class PerformanceLogger {
   private marks = new Map<string, number>();
-  
+
   startMeasure(operation: string): void {
     this.marks.set(operation, performance.now());
   }
-  
+
   endMeasure(operation: string): number {
     const start = this.marks.get(operation);
     if (!start) return 0;
-    
+
     const duration = performance.now() - start;
     logger.info(LogCategory.SYSTEM, `Performance: ${operation}`, {
       duration: `${duration.toFixed(2)}ms`,
-      operation
+      operation,
     });
-    
+
     return duration;
   }
 }
@@ -204,11 +219,11 @@ class ErrorHandler {
       context,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
-      url: window.location.href
+      url: window.location.href,
     };
-    
+
     logger.error(category, `Error in ${context}`, errorContext);
-    
+
     // Integration with existing error handling
     if (this.userNotificationCallback) {
       this.userNotificationCallback(error, context);
@@ -233,7 +248,7 @@ export interface LogFilter {
 
 class LogManager {
   filterLogs(filter: LogFilter): LogEntry[] {
-    return this.memoryLogs.filter(entry => {
+    return this.memoryLogs.filter((entry) => {
       if (filter.level && !filter.level.includes(entry.level)) return false;
       if (filter.category && !filter.category.includes(entry.category)) return false;
       if (filter.source && !filter.source.includes(entry.source || '')) return false;
@@ -243,7 +258,7 @@ class LogManager {
       return true;
     });
   }
-  
+
   exportLogs(format: 'json' | 'csv'): string {
     const logs = this.filterLogs({});
     switch (format) {
@@ -269,19 +284,19 @@ export class BackwardCompatibleLogger extends EnhancedLogger {
   error(message: string, ...args: unknown[]): void {
     this.error(LogCategory.SYSTEM, message, { legacy: true, args });
   }
-  
+
   warn(message: string, ...args: unknown[]): void {
     this.warn(LogCategory.SYSTEM, message, { legacy: true, args });
   }
-  
+
   info(message: string, ...args: unknown[]): void {
     this.info(LogCategory.SYSTEM, message, { legacy: true, args });
   }
-  
+
   debug(message: string, ...args: unknown[]): void {
     this.debug(LogCategory.DEBUG, message, { legacy: true, args });
   }
-  
+
   // New enhanced methods
   error(category: LogCategory, message: string, context?: unknown): void {
     // Implementation with full enhancement
@@ -309,13 +324,21 @@ function migrateLogCall(
   level: 'error' | 'warn' | 'info' | 'debug',
   category: LogCategory,
   message: string,
-  context?: unknown
+  context?: unknown,
 ): void {
   switch (level) {
-    case 'error': logger.error(category, message, context); break;
-    case 'warn': logger.warn(category, message, context); break;
-    case 'info': logger.info(category, message, context); break;
-    case 'debug': logger.debug(category, message, context); break;
+    case 'error':
+      logger.error(category, message, context);
+      break;
+    case 'warn':
+      logger.warn(category, message, context);
+      break;
+    case 'info':
+      logger.info(category, message, context);
+      break;
+    case 'debug':
+      logger.debug(category, message, context);
+      break;
   }
 }
 
@@ -332,7 +355,7 @@ function migrateLogCall(
 // Automatic performance tracking for critical operations
 class AutoPerfTracker {
   constructor(private logger: EnhancedLogger) {}
-  
+
   trackOperation<T>(operation: string, fn: () => T): T {
     this.logger.startTimer(operation);
     try {
@@ -344,7 +367,7 @@ class AutoPerfTracker {
       throw error;
     }
   }
-  
+
   async trackAsyncOperation<T>(operation: string, fn: () => Promise<T>): Promise<T> {
     this.logger.startTimer(operation);
     try {
@@ -379,11 +402,11 @@ const result = perfTracker.trackOperation('sequencerCallback', () => {
 // Enhanced debug console with log viewing
 class DebugConsole {
   private logViewer: HTMLElement;
-  
+
   constructor(private logger: EnhancedLogger) {
     this.createLogViewer();
   }
-  
+
   private createLogViewer(): void {
     this.logViewer = document.createElement('div');
     this.logViewer.className = 'debug-log-viewer';
@@ -404,18 +427,18 @@ class DebugConsole {
     `;
     document.body.appendChild(this.logViewer);
   }
-  
+
   updateDisplay(): void {
-    const logs = this.logger.getLogs({ 
-      level: [LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO] 
+    const logs = this.logger.getLogs({
+      level: [LogLevel.ERROR, LogLevel.WARN, LogLevel.INFO],
     });
-    
+
     this.logViewer.innerHTML = logs
       .slice(-50) // Show last 50 logs
-      .map(log => this.formatLogEntry(log))
+      .map((log) => this.formatLogEntry(log))
       .join('\n');
   }
-  
+
   private formatLogEntry(entry: LogEntry): string {
     const time = entry.timestamp.toLocaleTimeString();
     const level = entry.level.toString().padEnd(5);
@@ -437,14 +460,14 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
       error: {
         name: error.name,
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       },
       componentStack: errorInfo.componentStack,
       timestamp: new Date().toISOString(),
       url: window.location.href,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     });
-    
+
     // Call original error handling
     super.componentDidCatch(error, errorInfo);
   }
@@ -457,41 +480,44 @@ export class EnhancedErrorBoundary extends Component<ErrorBoundaryProps, ErrorBo
 // Enhanced sequencer with performance logging
 export function useEnhancedSequencer() {
   const logger = useMemo(() => new EnhancedLogger(), []);
-  
-  const sequencerCallback = useCallback((tickCount: number) => {
-    const perfLabel = `sequencerTick_${tickCount}`;
-    logger.startTimer(perfLabel);
-    
-    try {
-      logger.debug(LogCategory.SEQUENCER, 'Processing sequencer tick', {
-        tickCount,
-        timestamp: performance.now()
-      });
-      
-      // Original sequencer logic
-      processTick(tickCount);
-      
-      const duration = logger.endTimer(perfLabel);
-      
-      // Log performance warnings
-      if (duration > 5) { // 5ms threshold
-        logger.warn(LogCategory.SEQUENCER, 'Slow sequencer tick detected', {
-          duration: `${duration.toFixed(2)}ms`,
+
+  const sequencerCallback = useCallback(
+    (tickCount: number) => {
+      const perfLabel = `sequencerTick_${tickCount}`;
+      logger.startTimer(perfLabel);
+
+      try {
+        logger.debug(LogCategory.SEQUENCER, 'Processing sequencer tick', {
           tickCount,
-          threshold: '5ms'
+          timestamp: performance.now(),
         });
+
+        // Original sequencer logic
+        processTick(tickCount);
+
+        const duration = logger.endTimer(perfLabel);
+
+        // Log performance warnings
+        if (duration > 5) {
+          // 5ms threshold
+          logger.warn(LogCategory.SEQUENCER, 'Slow sequencer tick detected', {
+            duration: `${duration.toFixed(2)}ms`,
+            tickCount,
+            threshold: '5ms',
+          });
+        }
+      } catch (error) {
+        logger.error(LogCategory.SEQUENCER, 'Sequencer tick failed', {
+          tickCount,
+          error: error.message,
+          stack: error.stack,
+        });
+        throw error;
       }
-      
-    } catch (error) {
-      logger.error(LogCategory.SEQUENCER, 'Sequencer tick failed', {
-        tickCount,
-        error: error.message,
-        stack: error.stack
-      });
-      throw error;
-    }
-  }, [logger]);
-  
+    },
+    [logger],
+  );
+
   return { sequencerCallback, logger };
 }
 ```
@@ -501,27 +527,27 @@ export function useEnhancedSequencer() {
 ```typescript
 // Enhanced audio setup with context logging
 export function useEnhancedAudioSetup() {
-  const logger = useMemo(() => 
-    new EnhancedLogger({ categories: { [LogCategory.AUDIO]: true } }), []
+  const logger = useMemo(
+    () => new EnhancedLogger({ categories: { [LogCategory.AUDIO]: true } }),
+    [],
   );
-  
+
   useEffect(() => {
     logger.info(LogCategory.AUDIO, 'Initializing audio system', {
       sampleRate: audioContext.sampleRate,
       state: audioContext.state,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
-    
+
     // Monitor audio context state changes
     audioContext.addEventListener('statechange', () => {
       logger.info(LogCategory.AUDIO, 'Audio context state changed', {
         newState: audioContext.state,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     });
-    
   }, [audioContext, logger]);
-  
+
   return { audioContext, logger };
 }
 ```
@@ -549,12 +575,12 @@ const ENV_CONFIGS: LoggerEnvironmentConfig = {
       [LogCategory.EXPORT]: true,
       [LogCategory.SEQUENCER]: true,
       [LogCategory.SYSTEM]: true,
-      [LogCategory.DEBUG]: true
+      [LogCategory.DEBUG]: true,
     },
     outputTargets: ['console', 'memory'],
-    persistence: true
+    persistence: true,
   },
-  
+
   production: {
     level: LogLevel.WARN,
     debugMode: false,
@@ -566,12 +592,12 @@ const ENV_CONFIGS: LoggerEnvironmentConfig = {
       [LogCategory.EXPORT]: false,
       [LogCategory.SEQUENCER]: false,
       [LogCategory.SYSTEM]: true,
-      [LogCategory.DEBUG]: false
+      [LogCategory.DEBUG]: false,
     },
     outputTargets: ['console'],
-    persistence: false
+    persistence: false,
   },
-  
+
   testing: {
     level: LogLevel.ERROR,
     debugMode: false,
@@ -583,11 +609,11 @@ const ENV_CONFIGS: LoggerEnvironmentConfig = {
       [LogCategory.EXPORT]: false,
       [LogCategory.SEQUENCER]: false,
       [LogCategory.SYSTEM]: true,
-      [LogCategory.DEBUG]: false
+      [LogCategory.DEBUG]: false,
     },
     outputTargets: ['memory'],
-    persistence: true
-  }
+    persistence: true,
+  },
 };
 
 export function createLoggerForEnvironment(env: keyof LoggerEnvironmentConfig): EnhancedLogger {
@@ -608,25 +634,28 @@ export function useLoggerPreferences() {
       return getDefaultPreferences();
     }
   });
-  
-  const updatePreferences = useCallback((newPrefs: Partial<LoggerPreferences>) => {
-    const updated = { ...preferences, ...newPrefs };
-    setPreferences(updated);
-    
-    try {
-      localStorage.setItem('dosound-tracker-logger-preferences', JSON.stringify(updated));
-    } catch {
-      // Handle storage errors gracefully
-    }
-    
-    // Apply to active logger
-    logger.configure({
-      level: updated.logLevel,
-      debugMode: updated.debugMode,
-      categories: updated.categories
-    });
-  }, [preferences]);
-  
+
+  const updatePreferences = useCallback(
+    (newPrefs: Partial<LoggerPreferences>) => {
+      const updated = { ...preferences, ...newPrefs };
+      setPreferences(updated);
+
+      try {
+        localStorage.setItem('dosound-tracker-logger-preferences', JSON.stringify(updated));
+      } catch {
+        // Handle storage errors gracefully
+      }
+
+      // Apply to active logger
+      logger.configure({
+        level: updated.logLevel,
+        debugMode: updated.debugMode,
+        categories: updated.categories,
+      });
+    },
+    [preferences],
+  );
+
   return { preferences, updatePreferences };
 }
 ```
@@ -639,21 +668,21 @@ export function useLoggerPreferences() {
 // Logger unit tests
 describe('EnhancedLogger', () => {
   let logger: EnhancedLogger;
-  
+
   beforeEach(() => {
     logger = new EnhancedLogger({
       level: LogLevel.DEBUG,
       debugMode: true,
       categories: { [LogCategory.SYSTEM]: true },
       outputTargets: ['memory'],
-      persistence: true
+      persistence: true,
     });
   });
-  
+
   describe('Basic Logging', () => {
     it('should log error messages', () => {
       logger.error(LogCategory.SYSTEM, 'Test error', { test: true });
-      
+
       const logs = logger.getLogs();
       expect(logs).toHaveLength(1);
       expect(logs[0].level).toBe(LogLevel.ERROR);
@@ -662,25 +691,25 @@ describe('EnhancedLogger', () => {
       expect(logs[0].context).toEqual({ test: true });
     });
   });
-  
+
   describe('Performance Monitoring', () => {
     it('should measure operation duration', () => {
       logger.startTimer('testOperation');
-      
+
       // Simulate work
       const start = Date.now();
       while (Date.now() - start < 10) {}
-      
+
       const duration = logger.endTimer('testOperation');
       expect(duration).toBeGreaterThanOrEqual(10);
     });
   });
-  
+
   describe('Log Filtering', () => {
     it('should filter logs by category', () => {
       logger.error(LogCategory.SYSTEM, 'System error');
       logger.warn(LogCategory.UI, 'UI warning');
-      
+
       const systemLogs = logger.getLogs({ category: [LogCategory.SYSTEM] });
       expect(systemLogs).toHaveLength(1);
       expect(systemLogs[0].category).toBe(LogCategory.SYSTEM);
@@ -697,23 +726,23 @@ describe('Logger Integration', () => {
   it('should integrate with ErrorBoundary', () => {
     const logger = new EnhancedLogger();
     const errorSpy = vi.spyOn(logger, 'error');
-    
+
     const boundary = new EnhancedErrorBoundary({ children: null });
     const testError = new Error('Test error');
     const errorInfo = { componentStack: 'Test stack' };
-    
+
     boundary.componentDidCatch(testError, errorInfo);
-    
+
     expect(errorSpy).toHaveBeenCalledWith(
       LogCategory.SYSTEM,
       'React Error Boundary triggered',
       expect.objectContaining({
         error: expect.objectContaining({
           name: 'Error',
-          message: 'Test error'
+          message: 'Test error',
         }),
-        componentStack: 'Test stack'
-      })
+        componentStack: 'Test stack',
+      }),
     );
   });
 });
@@ -728,20 +757,20 @@ describe('Logger Performance', () => {
     const logger = new EnhancedLogger({
       level: LogLevel.DEBUG,
       debugMode: true,
-      outputTargets: ['memory']
+      outputTargets: ['memory'],
     });
-    
+
     const iterations = 10000;
     const start = performance.now();
-    
+
     for (let i = 0; i < iterations; i++) {
       logger.debug(LogCategory.DEBUG, `Test message ${i}`, { iteration: i });
     }
-    
+
     const end = performance.now();
     const totalTime = end - start;
     const averageTime = totalTime / iterations;
-    
+
     // Logger should average less than 0.1ms per call
     expect(averageTime).toBeLessThan(0.1);
   });
@@ -819,6 +848,7 @@ describe('Logger Performance', () => {
 The proposed enhanced logging system for DOSOUND Tracker addresses the current implementation's limitations while building upon its solid foundation. The backward-compatible approach ensures smooth adoption, while the enhanced features provide significant improvements in debugging capability, performance monitoring, and developer experience.
 
 **Key Benefits:**
+
 - ✅ Structured logging with context and categories
 - ✅ Performance monitoring integration
 - ✅ Enhanced error handling and debugging

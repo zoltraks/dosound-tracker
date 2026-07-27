@@ -20,7 +20,7 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
     const updateInterval = window.setInterval(() => {
       const currentYm2149 = ym2149Ref.current;
       if (!currentYm2149) {
-        setVolumes(prev => {
+        setVolumes((prev) => {
           if (prev[0] === 0 && prev[1] === 0 && prev[2] === 0) {
             return prev;
           }
@@ -30,8 +30,8 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
       }
 
       const state = currentYm2149.getState();
-      const next = state.channels.map(channel => channel.volume);
-      setVolumes(prev => {
+      const next = state.channels.map((channel) => channel.volume);
+      setVolumes((prev) => {
         if (prev[0] === next[0] && prev[1] === next[1] && prev[2] === next[2]) {
           return prev;
         }
@@ -57,10 +57,7 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
                 className={`volume-bar ${channelMutes[index] ? 'muted' : ''}`}
                 onClick={() => onToggleChannelMute(index)}
               >
-                <div 
-                  className="volume-fill"
-                  style={{ height: `${getBarHeight(volume)}%` }}
-                />
+                <div className="volume-fill" style={{ height: `${getBarHeight(volume)}%` }} />
               </div>
               <span className={`channel-label ${channelMutes[index] ? 'muted' : ''}`}>
                 {String.fromCharCode(65 + index)} {/* A, B, C */}

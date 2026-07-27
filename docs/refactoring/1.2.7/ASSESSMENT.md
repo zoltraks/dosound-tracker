@@ -21,22 +21,22 @@ The v1.2.7 refactoring achieved full completion of all proposed structural chang
 
 ### Quantitative Summary
 
-| Metric | Proposed | Achieved | Status |
-|--------|----------|----------|--------|
-| Deduplication patterns eliminated | 5 | 5 | Complete |
-| Thin wrapper files deleted | 2 | 2 | Complete |
-| Obvious comments removed | 46 | 25 | Partial (see deviations) |
-| Efficiency optimizations applied | 5 | 3 | Partial (see deviations) |
-| New unit tests added | 4+ | 11 | Exceeded |
-| Files modified (source) | ~30 | 28 | Complete |
-| Files deleted (source) | 2 | 2 | Complete |
-| Files created (source) | 2 | 2 | Complete |
-| Tests passing (before) | 207 | 207 | Verified |
-| Tests passing (after) | 207+ | 218 | Exceeded |
-| Typecheck errors | 0 | 0 | Clean |
-| Lint errors/warnings | 0 | 0 | Clean |
-| Build | success | success | Clean |
-| Synth/worker files modified | 0 | 0 | Verified |
+| Metric                            | Proposed | Achieved | Status                   |
+| --------------------------------- | -------- | -------- | ------------------------ |
+| Deduplication patterns eliminated | 5        | 5        | Complete                 |
+| Thin wrapper files deleted        | 2        | 2        | Complete                 |
+| Obvious comments removed          | 46       | 25       | Partial (see deviations) |
+| Efficiency optimizations applied  | 5        | 3        | Partial (see deviations) |
+| New unit tests added              | 4+       | 11       | Exceeded                 |
+| Files modified (source)           | ~30      | 28       | Complete                 |
+| Files deleted (source)            | 2        | 2        | Complete                 |
+| Files created (source)            | 2        | 2        | Complete                 |
+| Tests passing (before)            | 207      | 207      | Verified                 |
+| Tests passing (after)             | 207+     | 218      | Exceeded                 |
+| Typecheck errors                  | 0        | 0        | Clean                    |
+| Lint errors/warnings              | 0        | 0        | Clean                    |
+| Build                             | success  | success  | Clean                    |
+| Synth/worker files modified       | 0        | 0        | Verified                 |
 
 ## Proposal vs Implementation
 

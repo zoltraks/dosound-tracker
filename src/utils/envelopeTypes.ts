@@ -51,7 +51,7 @@ export function clampEnvelopeValue(type: EnvelopePanelType, value: number): numb
 export function applyEnvelopeDelta(
   type: EnvelopePanelType,
   currentValue: number,
-  delta: number
+  delta: number,
 ): number {
   return clampEnvelopeValue(type, currentValue + delta);
 }

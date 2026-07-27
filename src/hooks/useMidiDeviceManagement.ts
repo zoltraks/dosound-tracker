@@ -8,10 +8,11 @@ type NavigatorWithMidi = Navigator & {
 export function useMidiDeviceManagement() {
   const [isSupported, setIsSupported] = useState<boolean>(false);
   const [accessError, setAccessError] = useState<string | null>(null);
-  const [devices, setDevices] = useState<{ inputs: MidiDeviceInfo[]; outputs: MidiDeviceInfo[] }>(
-    { inputs: [], outputs: [] }
-  );
-  
+  const [devices, setDevices] = useState<{ inputs: MidiDeviceInfo[]; outputs: MidiDeviceInfo[] }>({
+    inputs: [],
+    outputs: [],
+  });
+
   // We keep the MIDIAccess object in a ref so we can access it without triggering re-renders,
   // but we also need to expose it to other hooks.
   const midiAccessRef = useRef<MIDIAccess | null>(null);
@@ -28,9 +29,7 @@ export function useMidiDeviceManagement() {
 
     try {
       const inputIterator: IterableIterator<MIDIInput> | null =
-        access.inputs && typeof access.inputs.values === 'function'
-          ? access.inputs.values()
-          : null;
+        access.inputs && typeof access.inputs.values === 'function' ? access.inputs.values() : null;
       if (inputIterator) {
         while (true) {
           const result = inputIterator.next();
@@ -39,9 +38,10 @@ export function useMidiDeviceManagement() {
           if (input && typeof input.id === 'string') {
             inputs.push({
               id: input.id,
-              name: typeof input.name === 'string' && input.name.trim().length > 0
-                ? input.name
-                : `Input ${inputs.length + 1}`,
+              name:
+                typeof input.name === 'string' && input.name.trim().length > 0
+                  ? input.name
+                  : `Input ${inputs.length + 1}`,
             });
           }
         }
@@ -59,9 +59,10 @@ export function useMidiDeviceManagement() {
           if (output && typeof output.id === 'string') {
             outputs.push({
               id: output.id,
-              name: typeof output.name === 'string' && output.name.trim().length > 0
-                ? output.name
-                : `Output ${outputs.length + 1}`,
+              name:
+                typeof output.name === 'string' && output.name.trim().length > 0
+                  ? output.name
+                  : `Output ${outputs.length + 1}`,
             });
           }
         }
@@ -89,8 +90,9 @@ export function useMidiDeviceManagement() {
       return;
     }
 
-    nav.requestMIDIAccess({ sysex: false })
-      .then(newAccess => {
+    nav
+      .requestMIDIAccess({ sysex: false })
+      .then((newAccess) => {
         midiAccessRef.current = newAccess;
         setIsSupported(true);
         setAccessError(null);
@@ -141,8 +143,9 @@ export function useMidiDeviceManagement() {
       };
     }
 
-    nav.requestMIDIAccess({ sysex: false })
-      .then(access => {
+    nav
+      .requestMIDIAccess({ sysex: false })
+      .then((access) => {
         if (cancelled) return;
         midiAccessRef.current = access;
         setIsSupported(true);

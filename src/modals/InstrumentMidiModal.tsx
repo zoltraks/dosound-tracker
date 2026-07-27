@@ -13,7 +13,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
   isOpen,
   instrument,
   onSave,
-  onCancel
+  onCancel,
 }) => {
   const [channel, setChannel] = useState<number | null>(null);
   const [program, setProgram] = useState<number | null>(null);
@@ -31,12 +31,14 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
 
     const midi = instrument.midi;
 
-    const rawChannel = midi && typeof midi.channel === 'number' && Number.isFinite(midi.channel)
-      ? midi.channel
-      : null;
-    const rawProgram = midi && typeof midi.program === 'number' && Number.isFinite(midi.program)
-      ? midi.program
-      : null;
+    const rawChannel =
+      midi && typeof midi.channel === 'number' && Number.isFinite(midi.channel)
+        ? midi.channel
+        : null;
+    const rawProgram =
+      midi && typeof midi.program === 'number' && Number.isFinite(midi.program)
+        ? midi.program
+        : null;
     let cancelled = false;
 
     Promise.resolve().then(() => {
@@ -114,42 +116,34 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
         }
       }
     },
-    [handleSave, onCancel]
+    [handleSave, onCancel],
   );
 
-  const handleActionButtonKeyDown = useCallback(
-    (event: React.KeyboardEvent<HTMLButtonElement>) => {
-      const key = event.key;
-      if (
-        key !== 'ArrowLeft' &&
-        key !== 'ArrowRight' &&
-        key !== 'ArrowUp' &&
-        key !== 'ArrowDown'
-      ) {
-        return;
-      }
+  const handleActionButtonKeyDown = useCallback((event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const key = event.key;
+    if (key !== 'ArrowLeft' && key !== 'ArrowRight' && key !== 'ArrowUp' && key !== 'ArrowDown') {
+      return;
+    }
 
-      event.preventDefault();
-      event.stopPropagation();
+    event.preventDefault();
+    event.stopPropagation();
 
-      const order = [clearButtonRef, cancelButtonRef, saveButtonRef];
-      const currentIndex = order.findIndex(ref => ref.current === event.currentTarget);
-      if (currentIndex === -1) {
-        return;
-      }
+    const order = [clearButtonRef, cancelButtonRef, saveButtonRef];
+    const currentIndex = order.findIndex((ref) => ref.current === event.currentTarget);
+    if (currentIndex === -1) {
+      return;
+    }
 
-      const isNext = key === 'ArrowRight' || key === 'ArrowDown';
-      const nextIndex = isNext
-        ? (currentIndex + 1) % order.length
-        : (currentIndex - 1 + order.length) % order.length;
+    const isNext = key === 'ArrowRight' || key === 'ArrowDown';
+    const nextIndex = isNext
+      ? (currentIndex + 1) % order.length
+      : (currentIndex - 1 + order.length) % order.length;
 
-      const nextRef = order[nextIndex];
-      if (nextRef.current) {
-        nextRef.current.focus();
-      }
-    },
-    []
-  );
+    const nextRef = order[nextIndex];
+    if (nextRef.current) {
+      nextRef.current.focus();
+    }
+  }, []);
 
   if (!isOpen || !instrument) {
     return null;
@@ -189,7 +183,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
                 min={1}
                 max={16}
                 ariaLabel="MIDI channel (1-16)"
-                inputRef={el => {
+                inputRef={(el) => {
                   channelInputRef.current = el;
                 }}
                 onInputKeyDown={(event) => handleInputKeyDown('channel', event)}
@@ -204,7 +198,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
                 min={0}
                 max={127}
                 ariaLabel="MIDI program (0-127)"
-                inputRef={el => {
+                inputRef={(el) => {
                   programInputRef.current = el;
                 }}
                 onInputKeyDown={(event) => handleInputKeyDown('program', event)}

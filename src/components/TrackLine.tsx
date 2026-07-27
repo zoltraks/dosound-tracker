@@ -42,19 +42,14 @@ export const TrackLine: React.FC<TrackLineProps> = ({
   const displayVolume =
     volume === undefined || volume === null
       ? '.'
-      : (Math.max(0, Math.min(0x0f, volume | 0))).toString(16).toUpperCase();
+      : Math.max(0, Math.min(0x0f, volume | 0))
+          .toString(16)
+          .toUpperCase();
 
   return (
-    <div
-      className={lineClassName}
-      style={lineStyle}
-      onClick={handleRowClick}
-    >
+    <div className={lineClassName} style={lineStyle} onClick={handleRowClick}>
       <span className="note-data">
-        <span
-          className={`note-text ${noteIsActive ? 'active' : ''}`}
-          onClick={handleNoteClick}
-        >
+        <span className={`note-text ${noteIsActive ? 'active' : ''}`} onClick={handleNoteClick}>
           {formatNoteDisplay(noteData)}
         </span>
         <span

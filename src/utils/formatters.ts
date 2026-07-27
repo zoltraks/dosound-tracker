@@ -46,10 +46,14 @@ export class Formatter {
    */
   static mode(value: number): string {
     switch (value) {
-      case 0: return 'TONE';
-      case 1: return 'NOISE';
-      case 2: return 'BOTH';
-      default: return 'UNKNOWN';
+      case 0:
+        return 'TONE';
+      case 1:
+        return 'NOISE';
+      case 2:
+        return 'BOTH';
+      default:
+        return 'UNKNOWN';
     }
   }
 

@@ -47,7 +47,7 @@ function ensureStep(step: Step | null | undefined): Step {
 export function updatePatternStep(
   pattern: Pattern,
   lineIndex: number,
-  updater: (step: Step) => Step
+  updater: (step: Step) => Step,
 ): Pattern {
   const newPattern = { ...pattern };
   newPattern.step = [...newPattern.step];

@@ -13,7 +13,7 @@ export interface BaseKey {
 export function transposeMidiNoteToInstrumentBase(
   noteName: string,
   octave: number,
-  baseKey: BaseKey
+  baseKey: BaseKey,
 ): { note: string; octave: number } | null {
   const normalizedNote = noteName.toUpperCase();
   const noteIndex = NOTES.indexOf(normalizedNote);

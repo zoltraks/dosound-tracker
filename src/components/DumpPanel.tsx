@@ -38,7 +38,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     const updateInterval = window.setInterval(() => {
       const currentYm2149 = ym2149Ref.current;
       if (!currentYm2149) {
-        setDerived(prev => {
+        setDerived((prev) => {
           if (
             prev.toneA === 0 &&
             prev.toneB === 0 &&
@@ -103,7 +103,11 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     }
 
     try {
-      if (typeof navigator !== 'undefined' && navigator.clipboard && navigator.clipboard.writeText) {
+      if (
+        typeof navigator !== 'undefined' &&
+        navigator.clipboard &&
+        navigator.clipboard.writeText
+      ) {
         void navigator.clipboard.writeText(text).catch((error) => {
           logger.error('Failed to copy to clipboard', error);
         });
@@ -178,27 +182,23 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
 
   return (
     <div className="dump-panel">
-      <div className="dump-header" onClick={handleCopyDump}>Dump</div>
+      <div className="dump-header" onClick={handleCopyDump}>
+        Dump
+      </div>
       <div className="dump-content">
         <div className="register-grid">
           {rows.map((row, index) => (
             <React.Fragment key={index}>
               <div className="register-item">
                 <span className="register-name">{row.leftLabel}</span>
-                <span
-                  className="register-value"
-                  onClick={() => copyToClipboard(row.leftValue)}
-                >
+                <span className="register-value" onClick={() => copyToClipboard(row.leftValue)}>
                   {row.leftValue}
                 </span>
               </div>
               {row.rightLabel && (
                 <div className="register-item">
                   <span className="register-name">{row.rightLabel}</span>
-                  <span
-                    className="register-value"
-                    onClick={() => copyToClipboard(row.rightValue)}
-                  >
+                  <span className="register-value" onClick={() => copyToClipboard(row.rightValue)}>
                     {row.rightValue}
                   </span>
                 </div>

@@ -2,10 +2,10 @@ export const LogLevel = {
   ERROR: 0,
   WARN: 1,
   INFO: 2,
-  DEBUG: 3
+  DEBUG: 3,
 } as const;
 
-export type LogLevel = typeof LogLevel[keyof typeof LogLevel];
+export type LogLevel = (typeof LogLevel)[keyof typeof LogLevel];
 
 export const LogCategory = {
   AUDIO: 'audio',
@@ -15,10 +15,10 @@ export const LogCategory = {
   EXPORT: 'export',
   SEQUENCER: 'sequencer',
   SYSTEM: 'system',
-  DEBUG: 'debug'
+  DEBUG: 'debug',
 } as const;
 
-export type LogCategory = typeof LogCategory[keyof typeof LogCategory];
+export type LogCategory = (typeof LogCategory)[keyof typeof LogCategory];
 
 export interface LogEntry {
   time: Date;

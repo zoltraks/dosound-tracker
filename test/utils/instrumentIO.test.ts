@@ -1,6 +1,9 @@
 import { describe, it, expect } from 'vitest';
 import type { Instrument } from '../../src/synth/SoundDriver';
-import { buildInstrumentYamlForExport, parseInstrumentFromText } from '../../src/utils/instrumentIO';
+import {
+  buildInstrumentYamlForExport,
+  parseInstrumentFromText,
+} from '../../src/utils/instrumentIO';
 import { asInstrumentId } from '../../src/types/branded';
 
 describe('instrument YAML IO', () => {

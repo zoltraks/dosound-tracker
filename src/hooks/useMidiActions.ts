@@ -6,7 +6,10 @@ import type { MidiConfiguration, MidiNoteEvent } from './useMidi';
 import type { NavigationSection } from '../constants/navigation';
 import { NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
 import { DEFAULT_SONG_FRAME } from '../constants/song';
-import { advancePreviewEnvelopeTick, getPreviewEnvelopeApplyStep } from '../utils/previewEnvelopeTiming';
+import {
+  advancePreviewEnvelopeTick,
+  getPreviewEnvelopeApplyStep,
+} from '../utils/previewEnvelopeTiming';
 import {
   transposeMidiNoteToInstrumentBase,
   velocityToVolumeNibble,
@@ -20,7 +23,7 @@ interface MidiHelpersRef {
     note: string,
     octave: number,
     volumeFromStep?: number | null,
-    velocityOverride?: number | null
+    velocityOverride?: number | null,
   ) => void;
   sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
 }
@@ -86,19 +89,17 @@ export function useMidiActions({
     A: (() => void) | null;
     B: (() => void) | null;
     C: (() => void) | null;
-  }>(
-    {
-      A: null,
-      B: null,
-      C: null,
-    }
-  );
+  }>({
+    A: null,
+    B: null,
+    C: null,
+  });
 
   const handleRegisterTrackStopPreview = useCallback(
     (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => {
       trackStopPreviewRef.current[trackId] = stopPreview;
     },
-    []
+    [],
   );
 
   const handleHardStopLivePreview = useCallback(
@@ -131,7 +132,7 @@ export function useMidiActions({
         ym2149.writeRegister(volumeRegister, 0x00);
       }
     },
-    [ym2149Ref, midiHelpersRef]
+    [ym2149Ref, midiHelpersRef],
   );
 
   const handleMidiNoteEvent = useCallback(
@@ -140,11 +141,19 @@ export function useMidiActions({
         return;
       }
 
-      const { type, noteNumber, noteName, octave, channel: midiChannel, velocity: midiVelocity } = event;
+      const {
+        type,
+        noteNumber,
+        noteName,
+        octave,
+        channel: midiChannel,
+        velocity: midiVelocity,
+      } = event;
 
-      const baseKey =
-        parseBaseKeyString(currentInstrument.base || 'C-4') ||
-        { note: 'C', octave: NOTE_BASE_OCTAVE };
+      const baseKey = parseBaseKeyString(currentInstrument.base || 'C-4') || {
+        note: 'C',
+        octave: NOTE_BASE_OCTAVE,
+      };
 
       const transposed = transposeMidiNoteToInstrumentBase(noteName, octave, baseKey);
       if (!transposed) {
@@ -155,9 +164,7 @@ export function useMidiActions({
       const transposedNoteName = transposed.note;
 
       const isTrackFocused =
-        activeSection === 'trackA' ||
-        activeSection === 'trackB' ||
-        activeSection === 'trackC';
+        activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
 
       const ym2149 = ym2149Ref.current;
 
@@ -187,7 +194,7 @@ export function useMidiActions({
 
         const newPattern: Pattern = {
           ...pattern,
-          step: [...pattern.step]
+          step: [...pattern.step],
         };
 
         while (newPattern.step.length < totalLines) {
@@ -203,7 +210,7 @@ export function useMidiActions({
         const note: Note = {
           note: transposedNoteName,
           octave: clampedOctave,
-          instrument: instrumentId
+          instrument: instrumentId,
         };
 
         line.note = note;
@@ -222,9 +229,8 @@ export function useMidiActions({
 
         midiLiveReleasedRef.current = false;
 
-        const rawSustain = instrument && typeof instrument.sustain === 'number'
-          ? instrument.sustain
-          : null;
+        const rawSustain =
+          instrument && typeof instrument.sustain === 'number' ? instrument.sustain : null;
         const sustainIndex =
           typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
             ? Math.floor(rawSustain)
@@ -259,14 +265,14 @@ export function useMidiActions({
             transposedNoteName,
             clampedOctave,
             null,
-            midiOutVelocity
+            midiOutVelocity,
           );
         }
 
         lastMidiPreviewRef.current = {
           noteNumber,
           midiChannel,
-          ymChannel
+          ymChannel,
         };
 
         const TICK_INTERVAL_MS = tickIntervalMsRef.current;
@@ -295,7 +301,13 @@ export function useMidiActions({
           const effectiveRawStep = advanced.rawStep;
           const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
 
-          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
+          ym2149.updateChannelWithInstrument(
+            ymChannel,
+            instrument,
+            noteData,
+            stepForApply,
+            liveVolumeModifier,
+          );
 
           const tailIndex = midiLiveLastVolumeIndexRef.current;
           const tailValue = midiLiveLastVolumeValueRef.current;
@@ -371,17 +383,14 @@ export function useMidiActions({
 
       // When no track panel is focused, use MIDI to preview the current instrument
       if (!isTrackFocused) {
-        const ymChannel =
-          lastTrackId === 'B'
-            ? 1
-            : lastTrackId === 'C'
-            ? 2
-            : 0;
+        const ymChannel = lastTrackId === 'B' ? 1 : lastTrackId === 'C' ? 2 : 0;
 
         if (type === 'noteOn') {
           const ignoreInputVolume = midiConfigurationRef.current?.ignoreInputVolume ?? true;
           const ignoreOutputVolume = midiConfigurationRef.current?.ignoreOutputVolume ?? true;
-          const liveVolumeModifier = ignoreInputVolume ? 0x0f : velocityToVolumeNibble(midiVelocity);
+          const liveVolumeModifier = ignoreInputVolume
+            ? 0x0f
+            : velocityToVolumeNibble(midiVelocity);
           const midiOutVelocity = ignoreOutputVolume ? null : midiVelocity;
 
           const noteData = { note: transposedNoteName, octave: clampedOctave };
@@ -391,9 +400,8 @@ export function useMidiActions({
 
           midiLiveReleasedRef.current = false;
 
-          const rawSustain = instrument && typeof instrument.sustain === 'number'
-            ? instrument.sustain
-            : null;
+          const rawSustain =
+            instrument && typeof instrument.sustain === 'number' ? instrument.sustain : null;
           const sustainIndex =
             typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
               ? Math.floor(rawSustain)
@@ -418,7 +426,13 @@ export function useMidiActions({
           midiLiveLastVolumeIndexRef.current = lastVolumeIndex;
           midiLiveLastVolumeValueRef.current = lastVolumeValue;
 
-          ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, 0, liveVolumeModifier);
+          ym2149.updateChannelWithInstrument(
+            ymChannel,
+            instrument,
+            noteData,
+            0,
+            liveVolumeModifier,
+          );
 
           // Also send MIDI OUT for live preview using the instrument's MIDI settings.
           const helpers = midiHelpersRef.current;
@@ -429,14 +443,14 @@ export function useMidiActions({
               transposedNoteName,
               clampedOctave,
               null,
-              midiOutVelocity
+              midiOutVelocity,
             );
           }
 
           lastMidiPreviewRef.current = {
             noteNumber,
             midiChannel,
-            ymChannel
+            ymChannel,
           };
 
           const TICK_INTERVAL_MS = tickIntervalMsRef.current;
@@ -491,7 +505,13 @@ export function useMidiActions({
               stepForApply = sustain;
             }
 
-            ym2149.updateChannelWithInstrument(ymChannel, instrument, noteData, stepForApply, liveVolumeModifier);
+            ym2149.updateChannelWithInstrument(
+              ymChannel,
+              instrument,
+              noteData,
+              stepForApply,
+              liveVolumeModifier,
+            );
 
             const tailIndex = midiLiveLastVolumeIndexRef.current;
             const tailValue = midiLiveLastVolumeValueRef.current;
@@ -578,8 +598,8 @@ export function useMidiActions({
       midiHelpersRef,
       midiConfigurationRef,
       ym2149Ref,
-      parseBaseKeyString
-    ]
+      parseBaseKeyString,
+    ],
   );
 
   return {

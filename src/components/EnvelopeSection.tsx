@@ -27,11 +27,7 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
   onNotesClick,
 }) => {
   const currentMessageHtml = useMemo(() => {
-    if (
-      messages.length > 0 &&
-      currentMessageIndex >= 0 &&
-      currentMessageIndex < messages.length
-    ) {
+    if (messages.length > 0 && currentMessageIndex >= 0 && currentMessageIndex < messages.length) {
       return renderMarkdown(messages[currentMessageIndex]);
     }
     return '';
@@ -61,7 +57,7 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
             ? Math.floor(currentInstrument.sustain)
             : null
         }
-        onSustainChange={index => {
+        onSustainChange={(index) => {
           updateInstrument({ sustain: index });
         }}
       />

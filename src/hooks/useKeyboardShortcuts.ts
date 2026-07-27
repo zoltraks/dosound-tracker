@@ -1,10 +1,6 @@
 import { useEffect } from 'react';
 
-export type GlobalShortcutName =
-  | 'playSong'
-  | 'playLineFromStart'
-  | 'playLine'
-  | 'stopPlayback';
+export type GlobalShortcutName = 'playSong' | 'playLineFromStart' | 'playLine' | 'stopPlayback';
 
 interface UseKeyboardShortcutsArgs {
   setGlobalShortcut: (name: GlobalShortcutName, handler: () => void) => void;
@@ -26,5 +22,11 @@ export function useKeyboardShortcuts({
     setGlobalShortcut('playLineFromStart', handleStartLineFromBeginning);
     setGlobalShortcut('playLine', handleStartLine);
     setGlobalShortcut('stopPlayback', handleStop);
-  }, [setGlobalShortcut, handleStartSong, handleStartLineFromBeginning, handleStartLine, handleStop]);
+  }, [
+    setGlobalShortcut,
+    handleStartSong,
+    handleStartLineFromBeginning,
+    handleStartLine,
+    handleStop,
+  ]);
 }

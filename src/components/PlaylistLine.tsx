@@ -87,9 +87,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
           type="text"
           className="pattern-input"
           value={editingPattern}
-          onChange={(event) =>
-            onEditingPatternChange(event.target.value.toUpperCase().slice(0, 2))
-          }
+          onChange={(event) => onEditingPatternChange(event.target.value.toUpperCase().slice(0, 2))}
           onBlur={() => onFinishEditingPattern()}
           onKeyDown={(event) => handleInputKeyDown(event, track)}
           autoFocus
@@ -123,18 +121,13 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
         onTrackHeaderClick(currentTrack);
       }}
     >
-      <span className="line-number">
-        {Formatter.hex(index, { padWidth: 2, uppercase: true })}
-      </span>
+      <span className="line-number">{Formatter.hex(index, { padWidth: 2, uppercase: true })}</span>
 
       {renderPatternCell('A')}
       {renderPatternCell('B')}
       {renderPatternCell('C')}
 
-      <div
-        className="playlist-move-buttons"
-        onClick={(event) => event.stopPropagation()}
-      >
+      <div className="playlist-move-buttons" onClick={(event) => event.stopPropagation()}>
         <button
           type="button"
           onClick={() => onMoveLine(index, 'down')}

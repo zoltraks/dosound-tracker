@@ -19,7 +19,13 @@ describe('useDataManagement (hook behavior)', () => {
   it('exposes isSongDirty and marks song as dirty when updateSong is called', async () => {
     let hook: HookResult | null = null;
 
-    render(<DataManagementHarness onReady={value => { hook = value; }} />);
+    render(
+      <DataManagementHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -39,7 +45,13 @@ describe('useDataManagement (hook behavior)', () => {
   it('resets isSongDirty to false when createNewSong is called', async () => {
     let hook: HookResult | null = null;
 
-    render(<DataManagementHarness onReady={value => { hook = value; }} />);
+    render(
+      <DataManagementHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -65,7 +77,13 @@ describe('useDataManagement (hook behavior)', () => {
   it('optimizeSong returns a human-readable summary and marks song as dirty', async () => {
     let hook: HookResult | null = null;
 
-    render(<DataManagementHarness onReady={value => { hook = value; }} />);
+    render(
+      <DataManagementHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -84,7 +102,13 @@ describe('useDataManagement (hook behavior)', () => {
   it('renumberSong returns a human-readable summary and marks song as dirty', async () => {
     let hook: HookResult | null = null;
 
-    render(<DataManagementHarness onReady={value => { hook = value; }} />);
+    render(
+      <DataManagementHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();

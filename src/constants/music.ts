@@ -1,16 +1,16 @@
 export const NOTE_FREQUENCIES: { [key: string]: number } = {
-  'C': 261.63,
+  C: 261.63,
   'C#': 277.18,
-  'D': 293.66,
+  D: 293.66,
   'D#': 311.13,
-  'E': 329.63,
-  'F': 349.23,
+  E: 329.63,
+  F: 349.23,
   'F#': 369.99,
-  'G': 392.00,
-  'G#': 415.30,
-  'A': 440.00,
+  G: 392.0,
+  'G#': 415.3,
+  A: 440.0,
   'A#': 466.16,
-  'B': 493.88
+  B: 493.88,
 };
 
 // Reference octave for NOTE_FREQUENCIES (A-4 = 440 Hz, C-4 = 261.63, etc.)
@@ -32,8 +32,8 @@ export const PIANO_SHOW_EXTRA_TOP_C = false;
 export const PATTERN_LENGTH = 64;
 export const MAX_INSTRUMENTS = 256;
 
-export const VOLUME_MAX = 0x0F;
-export const NOISE_MAX = 0x1F;
+export const VOLUME_MAX = 0x0f;
+export const NOISE_MAX = 0x1f;
 export const SHIFT_MIN = -24;
 export const SHIFT_MAX = 24;
 export const ARPEGGIO_MIN = SHIFT_MIN;

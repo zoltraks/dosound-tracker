@@ -7,7 +7,7 @@ export type RotateDirection = 'left' | 'right';
 export function rotateEnvelopeData(
   envelopeData: number[],
   direction: RotateDirection,
-  length: number = ENVELOPE_LENGTH
+  length: number = ENVELOPE_LENGTH,
 ): number[] {
   const source = getFullEnvelope(envelopeData, length);
 
@@ -22,16 +22,16 @@ export function shiftEnvelopeDataValues(
   type: EnvelopePanelType,
   envelopeData: number[],
   delta: number,
-  length: number = ENVELOPE_LENGTH
+  length: number = ENVELOPE_LENGTH,
 ): number[] {
   const source = getFullEnvelope(envelopeData, length);
-  return source.map(value => clampEnvelopeValue(type, value + delta));
+  return source.map((value) => clampEnvelopeValue(type, value + delta));
 }
 
 export function repeatEnvelopePatternToLength(
   envelopeData: number[],
   endIndexInclusive: number,
-  length: number = ENVELOPE_LENGTH
+  length: number = ENVELOPE_LENGTH,
 ): number[] {
   const source = getFullEnvelope(envelopeData, length);
   const pattern = source.slice(0, Math.min(length, endIndexInclusive + 1));
@@ -41,14 +41,17 @@ export function repeatEnvelopePatternToLength(
   });
 }
 
-export function getNextEnvelopePosition(currentPosition: number, length: number = ENVELOPE_LENGTH): number {
+export function getNextEnvelopePosition(
+  currentPosition: number,
+  length: number = ENVELOPE_LENGTH,
+): number {
   return (currentPosition + 1) % length;
 }
 
 export function getMovedEnvelopePosition(
   currentPosition: number,
   direction: 'left' | 'right',
-  length: number = ENVELOPE_LENGTH
+  length: number = ENVELOPE_LENGTH,
 ): number {
   if (direction === 'left') {
     return Math.max(0, currentPosition - 1);
@@ -61,7 +64,7 @@ export function parseEnvelopeHexValue(
   type: EnvelopePanelType,
   hexKey: string,
   shiftKey: boolean,
-  noiseMax: number = NOISE_MAX
+  noiseMax: number = NOISE_MAX,
 ): number | null {
   if (!/^[0-9A-F]$/.test(hexKey)) {
     return null;
@@ -101,7 +104,7 @@ export function copyEnvelopeValueFromLastPosition(
   envelopeData: number[],
   targetPosition: number,
   sourcePosition: number,
-  length: number = ENVELOPE_LENGTH
+  length: number = ENVELOPE_LENGTH,
 ): number[] {
   const source = getFullEnvelope(envelopeData, length);
   const next = [...source];
@@ -111,7 +114,7 @@ export function copyEnvelopeValueFromLastPosition(
 
 export function toggleSustainIndex(
   currentPosition: number,
-  sustainIndex: number | null | undefined
+  sustainIndex: number | null | undefined,
 ): number | null {
   const current = typeof sustainIndex === 'number' && sustainIndex >= 0 ? sustainIndex : null;
   return current === currentPosition ? null : currentPosition;

@@ -28,12 +28,12 @@ song:
 `;
 
 function extractVaFromRegisterDump(content: string): number[] {
-  const lines = content.split('\n').filter(line => line.startsWith('\tdc.b '));
+  const lines = content.split('\n').filter((line) => line.startsWith('\tdc.b '));
 
-  return lines.map(line => {
+  return lines.map((line) => {
     const [, bytePart] = line.split('dc.b ');
     const parts = bytePart.split(',');
-    const bytes = parts.map(part => {
+    const bytes = parts.map((part) => {
       const hex = part.trim().replace('$', '');
       return parseInt(hex, 16) || 0;
     });
@@ -54,7 +54,7 @@ function extractVaFramesFromVgm(buffer: ArrayBuffer): number[] {
   const frames: number[] = [];
   let currentVa = 0;
 
-  for (let i = dataStart; i < bytes.length; ) {
+  for (let i = dataStart; i < bytes.length;) {
     const cmd = bytes[i];
 
     if (cmd === 0xa0 && i + 2 < bytes.length) {
@@ -101,10 +101,10 @@ describe('sustain and note-off handling', () => {
     // Our test pattern has two rows before the OFF line, so 3 * 2 = 6 ticks.
     const dumpPreOffTicks = 6;
     const vaDumpPreOff = vaDump.slice(0, dumpPreOffTicks);
-    expect(vaDumpPreOff.every(v => v === firstVa)).toBe(true);
+    expect(vaDumpPreOff.every((v) => v === firstVa)).toBe(true);
 
     const vaDumpPostOff = vaDump.slice(dumpPreOffTicks);
-    expect(vaDumpPostOff.some(v => v < firstVa)).toBe(true);
+    expect(vaDumpPostOff.some((v) => v < firstVa)).toBe(true);
 
     const vaFrames = extractVaFramesFromVgm(buffer);
     expect(vaFrames.length).toBeGreaterThan(0);
@@ -114,9 +114,9 @@ describe('sustain and note-off handling', () => {
     const vgmPreOffFrames = 12;
     const vaVgmPreOff = vaFrames.slice(0, vgmPreOffFrames);
     expect(vaVgmPreOff.length).toBe(vgmPreOffFrames);
-    expect(vaVgmPreOff.every(v => v === firstVa)).toBe(true);
+    expect(vaVgmPreOff.every((v) => v === firstVa)).toBe(true);
 
     const vaVgmPostOff = vaFrames.slice(vgmPreOffFrames);
-    expect(vaVgmPostOff.some(v => v < firstVa)).toBe(true);
+    expect(vaVgmPostOff.some((v) => v < firstVa)).toBe(true);
   });
 });

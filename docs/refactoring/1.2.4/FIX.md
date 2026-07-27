@@ -7,22 +7,27 @@ After analyzing the project structure, codebase, and the failed refactoring bran
 ## Key Findings
 
 ### 1. Core Audio Components Remain Intact
+
 The critical audio components identified in the refactoring proposal were **not modified**:
+
 - ✅ `src/synth/SoundDriver.ts` - Core audio generation (unchanged)
-- ✅ `src/synth/YM2149.ts` - Sound chip interface (unchanged) 
+- ✅ `src/synth/YM2149.ts` - Sound chip interface (unchanged)
 - ✅ `src/workers/sequencerWorker.ts` - Audio timing critical (unchanged)
 
 This confirms that the audio failure is not due to direct modifications to the audio engine.
 
 ### 2. Major Architectural Disruption
+
 The refactoring introduced **fundamental architectural changes**:
 
 **Before (Working Main Branch):**
+
 - TrackPanel.tsx: 585-line monolithic component with embedded audio timing logic
 - Direct envelope timing integration within component lifecycle
 - Optimized React dependency patterns for audio timing
 
 **After (Failed Branch):**
+
 - TrackPanel.tsx: Fragmented into 5+ custom hooks (`useTrackPreview`, `useTrackKeyboard`, `useTrackFocus`, `useTrackRendering`, `useTrackInstrumentState`)
 - Envelope timing moved to external utility (`src/utils/envelopeOperations.ts`)
 - Complex hook dependency chains for audio-critical operations
@@ -68,6 +73,7 @@ The "GPT 5.1 Codex" model attempted a **structural refactoring** that violated t
 ### Envelope Timing System Changes
 
 **Original System (`previewEnvelopeTiming.ts`):**
+
 ```typescript
 // Direct, inline envelope advancement with minimal overhead
 while (now >= nextTickTime) {
@@ -81,11 +87,14 @@ while (now >= nextTickTime) {
 ```
 
 **New System (`envelopeOperations.ts`):**
+
 ```typescript
 // Function call overhead and additional abstraction layers
-export function advanceEnvelopeTick({
-  // ... complex parameter handling
-}): EnvelopeAdvanceResult {
+export function advanceEnvelopeTick(
+  {
+    // ... complex parameter handling
+  },
+): EnvelopeAdvanceResult {
   // Additional function call stack
   while (now >= next) {
     st = (st + 1) % 2;
@@ -97,11 +106,13 @@ export function advanceEnvelopeTick({
 ### Hook Architecture Impact
 
 **Before:**
+
 - Single component with direct audio context access
 - Audio timing tied directly to component lifecycle
 - Minimal React re-render impact on audio operations
 
 **After:**
+
 - Multiple hooks with complex dependencies
 - Audio timing mediated through hook chains
 - Increased susceptibility to React's batching and timing
@@ -109,22 +120,26 @@ export function advanceEnvelopeTick({
 ## Recommendations
 
 ### Immediate Actions
+
 1. **Revert to Main Branch**: The current main branch represents a stable, working state
 2. **Preserve Working Components**: Keep the successful aspects of the refactoring that don't affect audio timing
 
 ### Future Refactoring Guidelines
+
 1. **Incremental Approach**: Focus on non-audio components first
 2. **Timing Preservation**: Maintain existing React dependency patterns in audio-critical code
 3. **Performance Testing**: Include precise timing validation for any audio-related changes
 4. **Component Isolation**: Keep audio-critical logic separate from UI refactoring efforts
 
 ### Safe Refactoring Areas
+
 - Code duplication removal (non-audio functions)
 - UI component simplification (non-interactive elements)
 - Utility function consolidation (non-timing critical)
 - Type safety improvements (non-audio interfaces)
 
 ### Unsafe Refactoring Areas
+
 - Audio timing logic extraction
 - Envelope processing modification
 - MIDI handling changes

@@ -28,7 +28,7 @@ const getInitialChannelMutes = (): [boolean, boolean, boolean] => {
     if (
       Array.isArray(parsed) &&
       parsed.length === 3 &&
-      parsed.every(v => typeof v === 'boolean')
+      parsed.every((v) => typeof v === 'boolean')
     ) {
       return [parsed[0], parsed[1], parsed[2]] as [boolean, boolean, boolean];
     }
@@ -41,7 +41,7 @@ const getInitialChannelMutes = (): [boolean, boolean, boolean] => {
 
 type UiStoreSetFn = (
   partial: Partial<UiStore> | ((state: UiStore) => Partial<UiStore>),
-  replace?: boolean
+  replace?: boolean,
 ) => void;
 
 export const useUiStore = create<UiStore>((set: UiStoreSetFn) => ({

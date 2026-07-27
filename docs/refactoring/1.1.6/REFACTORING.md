@@ -2,7 +2,7 @@
 
 **Date:** 2025-12-08  
 **Version:** 1.1.6
-**Author:** Kilo Code Assistant  
+**Author:** Kilo Code Assistant
 
 ## Executive Summary
 
@@ -14,7 +14,7 @@ This refactoring proposal addresses the primary maintainability issue in the DOS
 
 1. **Monolithic App Component**: `src/App.tsx` contains 3,688 lines with mixed responsibilities
 2. **Complex State Management**: 20+ useState hooks managing different concerns
-3. **Embedded Sequencer Logic**: Large sequencer callback function (400+ lines) 
+3. **Embedded Sequencer Logic**: Large sequencer callback function (400+ lines)
 4. **Scattered Event Handlers**: MIDI, playback, and instrument management logic distributed throughout
 5. **Performance Risk**: Large re-renders due to component size and state complexity
 
@@ -32,12 +32,14 @@ This refactoring proposal addresses the primary maintainability issue in the DOS
 **Target**: Extract state management into dedicated hooks
 
 **New Files**:
+
 - `src/hooks/useAppLifecycle.ts` - App initialization, reset, and lifecycle
-- `src/hooks/useModalState.ts` - All modal and dialog state management  
+- `src/hooks/useModalState.ts` - All modal and dialog state management
 - `src/hooks/useMessageSystem.ts` - Message display and rotation system
 - `src/hooks/useInstrumentWarnings.ts` - Instrument type warnings and validation
 
 **Changes**:
+
 - Move 20+ useState hooks to focused custom hooks
 - Reduce App.tsx state management to 5-7 essential state variables
 - Improve state cohesion and reduce re-render frequency
@@ -47,12 +49,14 @@ This refactoring proposal addresses the primary maintainability issue in the DOS
 **Target**: Extract complex event handlers into dedicated modules
 
 **New Files**:
+
 - `src/handlers/useInstrumentHandlers.ts` - Instrument CRUD operations
 - `src/handlers/useMidiHandlers.ts` - MIDI input/output event processing
 - `src/handlers/usePlaybackHandlers.ts` - Play/Stop/Sequencer control
 - `src/handlers/usePatternHandlers.ts` - Pattern editing and manipulation
 
 **Changes**:
+
 - Extract 50+ callback functions from App.tsx
 - Group related functionality by domain
 - Improve testability and reusability
@@ -62,11 +66,13 @@ This refactoring proposal addresses the primary maintainability issue in the DOS
 **Target**: Extract sequencer callback into dedicated module
 
 **New Files**:
+
 - `src/synth/AppSequencerCallback.ts` - Main sequencer processing logic
 - `src/synth/ChannelProcessor.ts` - Per-channel audio processing
 - `src/synth/MidiLiveProcessor.ts` - MIDI live preview system
 
 **Changes**:
+
 - Extract 400+ line sequencerCallback function
 - Separate audio processing from UI concerns
 - Maintain 20ms/40ms timing requirements
@@ -77,12 +83,14 @@ This refactoring proposal addresses the primary maintainability issue in the DOS
 **Target**: Reduce App.tsx to essential coordination logic
 
 **New Structure**:
+
 - Import custom hooks and handlers
 - Minimal JSX with proper prop passing
 - Focus on component composition
 - Clear separation between UI and business logic
 
 **Expected Result**:
+
 - App.tsx reduced to ~300 lines
 - Clear, readable component structure
 - Improved maintainability
@@ -99,7 +107,7 @@ export function useAppLifecycle() {
   // Theme persistence
 }
 
-// src/hooks/useModalState.ts  
+// src/hooks/useModalState.ts
 export function useModalState() {
   // All modal open/close state
   // Form validation states
@@ -120,7 +128,7 @@ export function useMessageSystem() {
 // src/handlers/useInstrumentHandlers.ts
 export function useInstrumentHandlers() {
   // handleCloneInstrument
-  // handleDeleteInstrument  
+  // handleDeleteInstrument
   // handleMoveInstrument
   // handleInstrumentFileContent
   // All instrument CRUD operations
@@ -154,12 +162,12 @@ const App: React.FC = () => {
   // Essential state only
   const { currentSong, currentInstrument } = useDataManagement();
   const { isDarkMode, toggleTheme } = useTheme();
-  
+
   // Custom hooks for complex logic
   const modalState = useModalState();
   const instrumentHandlers = useInstrumentHandlers();
   const sequencerCallback = useAppSequencerCallback();
-  
+
   // Minimal JSX
   return (
     <ErrorBoundary>
@@ -230,21 +238,25 @@ const App: React.FC = () => {
 ## Implementation Timeline
 
 ### Sprint 1 (Week 1)
+
 - Create state management hooks
 - Extract modal and message state
 - Reduce App.tsx to ~2,500 lines
 
-### Sprint 2 (Week 2) 
+### Sprint 2 (Week 2)
+
 - Extract instrument handlers
 - Modularize MIDI event processing
 - Reduce App.tsx to ~1,500 lines
 
 ### Sprint 3 (Week 3)
+
 - Extract sequencer logic
 - Create ChannelProcessor module
 - Reduce App.tsx to ~800 lines
 
 ### Sprint 4 (Week 4)
+
 - Final App.tsx simplification
 - Integration testing
 - Performance validation
@@ -253,16 +265,19 @@ const App: React.FC = () => {
 ## Testing Strategy
 
 ### Unit Tests
+
 - Each extracted module needs comprehensive unit tests
 - Focus on edge cases and error handling
 - Mock external dependencies appropriately
 
-### Integration Tests  
+### Integration Tests
+
 - Playback timing validation
 - MIDI input/output verification
 - UI interaction testing
 
 ### Performance Tests
+
 - Sequencer timing benchmarks
 - Memory usage profiling
 - UI responsiveness measurement
@@ -270,11 +285,13 @@ const App: React.FC = () => {
 ## Backwards Compatibility
 
 ### Preserved Functionality
+
 - All existing features work identically
 - No changes to data formats
 - No API changes for external integrations
 
 ### UI/UX Consistency
+
 - Identical user interface
 - Same keyboard shortcuts
 - Preserved workflow patterns

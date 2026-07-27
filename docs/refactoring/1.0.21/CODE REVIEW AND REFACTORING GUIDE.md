@@ -40,6 +40,7 @@ Refactor into smaller, focused components:
 **Impact:** Maintainability nightmare, potential inconsistencies
 
 **Current Duplication:**
+
 - `App.tsx` lines 493-765: Live sequencer callback
 - `assemblyExport.ts` lines 89-233: Export sequencer simulation
 - `assemblyExport.ts` lines 1032-1277: Register dump simulation
@@ -51,10 +52,9 @@ Create shared core engine
 
 ```typescript
 class SequencerEngine {
-  processSong(song: Song, options: SequencerOptions): FrameState[]
-  exportToFrames(song: Song): Generator<FrameState>
+  processSong(song: Song, options: SequencerOptions): FrameState[];
+  exportToFrames(song: Song): Generator<FrameState>;
 }
-
 ```
 
 Reuse it for live playback, export, and offline rendering.
@@ -66,6 +66,7 @@ Reuse it for live playback, export, and offline rendering.
 **Impact:** Runtime errors, poor IDE support, maintenance burden
 
 **Critical Issues:**
+
 ```typescript
 // Widespread 'any' usage in:
 - App.tsx: 47+ 'any' types
@@ -80,6 +81,7 @@ Reuse it for live playback, export, and offline rendering.
 ```
 
 **Recommended Actions:**
+
 ```typescript
 // Define strict interfaces
 interface NoteData {
@@ -99,14 +101,17 @@ const validateNote = (data: unknown): data is NoteData => {
   // Implementation
 };
 ```
+
 **Priority:** 🔴 **CRITICAL** - Implement over 2-3 sprints
 
 ## 🟡 Performance Optimization Opportunities
 
 ### 4. **Unnecessary Re-renders and Memory Leaks**
+
 **Impact:** Poor performance, battery drain, UI lag
 
 **Issues Identified:**
+
 ```typescript
 // App.tsx line 339: forceYmRender causing full app re-render
 const [, forceYmRender] = useState(0);
@@ -116,9 +121,12 @@ const notesIntervalRef = useRef<number | null>(null);
 const envelopeTimerRef = useRef<number | null>(null);
 
 // Complex useCallback dependencies creating stale closures
-const sequencerCallback = useCallback((state: any) => {
-  // 200+ lines of complex logic
-}, [/* 15+ dependencies */]);
+const sequencerCallback = useCallback(
+  (state: any) => {
+    // 200+ lines of complex logic
+  },
+  [/* 15+ dependencies */],
+);
 ```
 
 **Recommended Solutions:**
@@ -137,18 +145,20 @@ useEffect(() => {
 }, []);
 
 // Memoize expensive calculations
-const processedFrames = useMemo(() => 
-  processSequencerFrames(rawFrames, songConfig),
-  [rawFrames, songConfig]
+const processedFrames = useMemo(
+  () => processSequencerFrames(rawFrames, songConfig),
+  [rawFrames, songConfig],
 );
 ```
 
 **Priority:** 🟡 **HIGH** - Implement within 1-2 sprints
 
 ### 5. **Memory Management Issues**
+
 **Impact:** Potential memory leaks, especially in audio contexts
 
 **Current Issues:**
+
 ```typescript
 // Audio context cleanup in App.tsx lines 421-429
 // Multiple audio nodes created without proper disposal
@@ -156,18 +166,19 @@ const processedFrames = useMemo(() =>
 ```
 
 **Recommended Actions:**
+
 ```typescript
 // Implement proper resource management
 class AudioResourceManager {
   private resources = new Set<Disposable>();
-  
+
   register<T extends Disposable>(resource: T): T {
     this.resources.add(resource);
     return resource;
   }
-  
+
   dispose(): void {
-    this.resources.forEach(resource => resource.dispose());
+    this.resources.forEach((resource) => resource.dispose());
     this.resources.clear();
   }
 }
@@ -178,15 +189,18 @@ class AudioResourceManager {
 ## 🟢 Architecture & Design Improvements
 
 ### 6. **Component Architecture Issues**
+
 **Impact:** Poor reusability, tight coupling
 
 **Current Problems:**
+
 - Large components with mixed responsibilities
 - Props drilling through multiple layers
 - Inline event handlers in large components
 - Poor separation of UI and business logic
 
 **Recommended Structure:**
+
 ```
 src/
 ├── components/
@@ -203,30 +217,45 @@ src/
 **Priority:** 🟢 **MEDIUM** - Implement gradually over 2-3 sprints
 
 ### 7. **Hook Dependency Management**
+
 **Impact:** Complex dependency arrays, potential bugs
 
 **Current Issues:**
+
 ```typescript
 // Complex dependency arrays (App.tsx lines 366-381)
-const handleKeyDown = useCallback((event: React.KeyboardEvent) => {
-  // 190+ lines of logic
-}, [
-  isActive, currentLine, currentOctave, currentInstrument, 
-  onLineChange, patternLength, playPreviewNote, pattern,
-  // ... 10+ more dependencies
-]);
+const handleKeyDown = useCallback(
+  (event: React.KeyboardEvent) => {
+    // 190+ lines of logic
+  },
+  [
+    isActive,
+    currentLine,
+    currentOctave,
+    currentInstrument,
+    onLineChange,
+    patternLength,
+    playPreviewNote,
+    pattern,
+    // ... 10+ more dependencies
+  ],
+);
 ```
 
 **Recommended Solutions:**
+
 ```typescript
 // Break into smaller, focused hooks
 const useKeyboardHandler = () => {
   const { isActive, currentLine } = useAppState();
   const { updateLine } = useNavigation();
-  
-  return useCallback((event: KeyboardEvent) => {
-    // Focused logic
-  }, [isActive, currentLine, updateLine]);
+
+  return useCallback(
+    (event: KeyboardEvent) => {
+      // Focused logic
+    },
+    [isActive, currentLine, updateLine],
+  );
 };
 ```
 
@@ -235,7 +264,9 @@ const useKeyboardHandler = () => {
 ## 🟢 Testing & Quality Assurance
 
 ### 8. **Insufficient Testing Coverage**
+
 **Current State:**
+
 - Only basic test setup exists
 - No component tests
 - No integration tests
@@ -243,6 +274,7 @@ const useKeyboardHandler = () => {
 - No export functionality tests
 
 **Recommended Testing Strategy:**
+
 ```typescript
 // Unit tests for core logic
 describe('SequencerEngine', () => {
@@ -272,12 +304,14 @@ describe('TrackPanel', () => {
 **Impact:** Poor user experience, potential crashes
 
 **Current Issues:**
+
 - Limited error boundaries
 - Unhandled promise rejections
 - Missing validation
 - No graceful degradation
 
 **Recommended Solutions:**
+
 ```typescript
 // Error boundary component
 class AppErrorBoundary extends React.Component {
@@ -285,16 +319,16 @@ class AppErrorBoundary extends React.Component {
     super(props);
     this.state = { hasError: false, error: null };
   }
-  
+
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
-  
+
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     // Log to monitoring service
     console.error('App Error:', error, errorInfo);
   }
-  
+
   render() {
     if (this.state.hasError) {
       return <ErrorFallback error={this.state.error} />;
@@ -317,24 +351,28 @@ const validateSongData = (data: unknown): Song => {
 ## 📋 Prioritized Refactoring Roadmap
 
 ### **Phase 1: Critical Stabilization (2-3 sprints)**
+
 1. ✅ Split App.tsx into focused components
 2. ✅ Eliminate code duplication in export logic
 3. ✅ Add proper TypeScript types
 4. ✅ Fix memory leaks and cleanup
 
 ### **Phase 2: Performance & Architecture (2-3 sprints)**
+
 1. ✅ Implement proper state management
 2. ✅ Optimize re-renders and memoization
 3. ✅ Create proper component architecture
 4. ✅ Add error boundaries
 
 ### **Phase 3: Quality & Testing (2-3 sprints)**
+
 1. ✅ Build comprehensive test suite
 2. ✅ Add input validation
 3. ✅ Implement logging and monitoring
 4. ✅ Performance optimization
 
 ### **Phase 4: Enhancement (1-2 sprints)**
+
 1. ✅ Advanced error handling
 2. ✅ Accessibility improvements
 3. ✅ Documentation

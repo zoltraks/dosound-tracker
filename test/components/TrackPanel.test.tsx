@@ -60,7 +60,7 @@ describe('TrackPanel', () => {
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
-      />
+      />,
     );
 
     // Header shows track id and volume
@@ -71,7 +71,7 @@ describe('TrackPanel', () => {
     expect(screen.getByText('C-4 00')).toBeTruthy();
   });
 
-  it('inserts note input even when volume column is active', () => {
+  it('ignores note keys when volume column is active', () => {
     const pattern = createTestPattern();
     const instrument = createTestInstrument();
 
@@ -101,16 +101,14 @@ describe('TrackPanel', () => {
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
-      />
+      />,
     );
 
     const panel = container.querySelector('.track-panel') as HTMLElement;
     fireEvent.keyDown(panel, { key: 'z' });
 
-    expect(handlePatternChange).toHaveBeenCalledTimes(1);
-    const updatedPattern = handlePatternChange.mock.calls[0]?.[0] as Pattern;
-    expect(updatedPattern.step[0]?.note).toEqual({ note: 'C', octave: 4, instrument: '00' });
-    expect(handleLineChange).toHaveBeenCalledWith(1);
+    expect(handlePatternChange).not.toHaveBeenCalled();
+    expect(handleLineChange).not.toHaveBeenCalled();
   });
 
   it('sets volume nibble when volume column is active', () => {
@@ -143,7 +141,7 @@ describe('TrackPanel', () => {
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
-      />
+      />,
     );
 
     const panel = container.querySelector('.track-panel') as HTMLElement;
@@ -152,6 +150,91 @@ describe('TrackPanel', () => {
     expect(handlePatternChange).toHaveBeenCalledTimes(1);
     const updatedPattern = handlePatternChange.mock.calls[0]?.[0] as Pattern;
     expect(updatedPattern.step[0]?.volume).toBe(10);
+    expect(handleLineChange).toHaveBeenCalledWith(1);
+  });
+
+  it('treats a hex letter key as volume in the volume column', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+
+    const handleLineChange = vi.fn();
+    const handlePatternChange = vi.fn();
+    const handleToggleLineFromCursor = vi.fn();
+    const setActiveSection = vi.fn();
+    const setCurrentColumn = vi.fn();
+
+    const { container } = render(
+      <TrackPanel
+        trackId="A"
+        activeSection={'trackA' as NavigationSection}
+        setActiveSection={setActiveSection}
+        currentOctave={4}
+        currentLine={1}
+        patternLength={pattern.step.length}
+        onLineChange={handleLineChange}
+        pattern={pattern}
+        onPatternChange={handlePatternChange}
+        ym2149={null}
+        currentInstrumentData={instrument}
+        instruments={[instrument]}
+        trackBackgroundEnabled={true}
+        isTargetTrack={true}
+        onToggleLineFromCursor={handleToggleLineFromCursor}
+        currentColumn="volume"
+        setCurrentColumn={setCurrentColumn}
+        focusRevision={0}
+      />,
+    );
+
+    const panel = container.querySelector('.track-panel') as HTMLElement;
+    // 'C' is both a note key and the hex value 0x0C; in the volume column it sets volume.
+    fireEvent.keyDown(panel, { key: 'c' });
+
+    expect(handlePatternChange).toHaveBeenCalledTimes(1);
+    const updatedPattern = handlePatternChange.mock.calls[0]?.[0] as Pattern;
+    expect(updatedPattern.step[1]?.volume).toBe(12);
+    expect(updatedPattern.step[1]?.note).toBeFalsy();
+  });
+
+  it('enters a note when the note column is active', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+
+    const handleLineChange = vi.fn();
+    const handlePatternChange = vi.fn();
+    const handleToggleLineFromCursor = vi.fn();
+    const setActiveSection = vi.fn();
+    const setCurrentColumn = vi.fn();
+
+    const { container } = render(
+      <TrackPanel
+        trackId="A"
+        activeSection={'trackA' as NavigationSection}
+        setActiveSection={setActiveSection}
+        currentOctave={4}
+        currentLine={0}
+        patternLength={pattern.step.length}
+        onLineChange={handleLineChange}
+        pattern={pattern}
+        onPatternChange={handlePatternChange}
+        ym2149={null}
+        currentInstrumentData={instrument}
+        instruments={[instrument]}
+        trackBackgroundEnabled={true}
+        isTargetTrack={true}
+        onToggleLineFromCursor={handleToggleLineFromCursor}
+        currentColumn="note"
+        setCurrentColumn={setCurrentColumn}
+        focusRevision={0}
+      />,
+    );
+
+    const panel = container.querySelector('.track-panel') as HTMLElement;
+    fireEvent.keyDown(panel, { key: 'z' });
+
+    expect(handlePatternChange).toHaveBeenCalledTimes(1);
+    const updatedPattern = handlePatternChange.mock.calls[0]?.[0] as Pattern;
+    expect(updatedPattern.step[0]?.note).toEqual({ note: 'C', octave: 4, instrument: '00' });
     expect(handleLineChange).toHaveBeenCalledWith(1);
   });
 
@@ -185,7 +268,7 @@ describe('TrackPanel', () => {
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
-      />
+      />,
     );
 
     const lineElements = container.querySelectorAll('.track-line');

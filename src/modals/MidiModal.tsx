@@ -3,7 +3,11 @@ import { logger } from '../utils/logger';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
 import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
 import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
-import { buildMidiConfigurationYaml, parseMidiConfigurationFromYaml, MidiConfigurationFormatError } from '../utils/midiConfiguration';
+import {
+  buildMidiConfigurationYaml,
+  parseMidiConfigurationFromYaml,
+  MidiConfigurationFormatError,
+} from '../utils/midiConfiguration';
 import { downloadFile } from '../utils/fileOperations';
 
 interface MidiModalProps {
@@ -96,7 +100,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     fileInputRef.current?.click();
   };
 
-  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = event => {
+  const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const input = event.target;
     const file = input.files && input.files[0];
     if (!file) {
@@ -104,7 +108,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     }
 
     const reader = new FileReader();
-    reader.onload = e => {
+    reader.onload = (e) => {
       try {
         const text = (e.target?.result ?? '') as string;
         const nextConfig = parseMidiConfigurationFromYaml(text, localConfig);
@@ -174,7 +178,7 @@ export const MidiModal: React.FC<MidiModalProps> = ({
       `${padRight('Note', 4)}  ` +
       `${padRight('Value', 5)}`;
 
-    const lines = entries.map(entry => {
+    const lines = entries.map((entry) => {
       const device = entry.device ? entry.device.slice(0, 20) : '';
       const valueText = entry.value == null ? '' : String(entry.value);
 
@@ -204,19 +208,15 @@ export const MidiModal: React.FC<MidiModalProps> = ({
   const supportMessage = !isSupported
     ? 'Web MIDI API is not supported in this environment.'
     : accessError
-    ? `Could not access MIDI devices: ${accessError}`
-    : '';
+      ? `Could not access MIDI devices: ${accessError}`
+      : '';
 
   return (
     <div className="modal-backdrop">
       <div className="modal-dialog midi-modal">
         <div className="modal-title">MIDI</div>
         <div className="modal-body midi-modal-body">
-          {supportMessage && (
-            <div className="midi-warning">
-              {supportMessage}
-            </div>
-          )}
+          {supportMessage && <div className="midi-warning">{supportMessage}</div>}
 
           <div className="midi-io-columns">
             <div className="midi-io-column">
@@ -226,9 +226,12 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                     type="checkbox"
                     checked={localConfig.inputEnabled}
                     disabled={!isSupported || !hasInputs}
-                    onChange={event => {
+                    onChange={(event) => {
                       const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({ ...prev, inputEnabled: checked }));
+                      setLocalConfig((prev: MidiConfiguration) => ({
+                        ...prev,
+                        inputEnabled: checked,
+                      }));
                       onChangeConfig({ inputEnabled: checked });
                     }}
                   />
@@ -238,9 +241,12 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                   <input
                     type="checkbox"
                     checked={localConfig.ignoreInputVolume}
-                    onChange={event => {
+                    onChange={(event) => {
                       const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({ ...prev, ignoreInputVolume: checked }));
+                      setLocalConfig((prev: MidiConfiguration) => ({
+                        ...prev,
+                        ignoreInputVolume: checked,
+                      }));
                       onChangeConfig({ ignoreInputVolume: checked });
                     }}
                   />
@@ -256,17 +262,13 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                 selectedId={effectiveInputId}
                 emptyLabel="No input devices"
                 noneLabel="(none)"
-                onChange={nextId => {
-                  setLocalConfig(prev => ({ ...prev, inputId: nextId }));
+                onChange={(nextId) => {
+                  setLocalConfig((prev) => ({ ...prev, inputId: nextId }));
                   onChangeConfig({ inputId: nextId });
                 }}
               />
 
-              <MidiMonitorPanel
-                title="MIDI IN"
-                entries={inMonitor}
-                onCopy={handleCopyMonitor}
-              />
+              <MidiMonitorPanel title="MIDI IN" entries={inMonitor} onCopy={handleCopyMonitor} />
             </div>
 
             <div className="midi-io-column">
@@ -276,9 +278,12 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                     type="checkbox"
                     checked={localConfig.outputEnabled}
                     disabled={!isSupported || !hasOutputs}
-                    onChange={event => {
+                    onChange={(event) => {
                       const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({ ...prev, outputEnabled: checked }));
+                      setLocalConfig((prev: MidiConfiguration) => ({
+                        ...prev,
+                        outputEnabled: checked,
+                      }));
                       onChangeConfig({ outputEnabled: checked });
                     }}
                   />
@@ -288,9 +293,12 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                   <input
                     type="checkbox"
                     checked={localConfig.ignoreOutputVolume}
-                    onChange={event => {
+                    onChange={(event) => {
                       const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({ ...prev, ignoreOutputVolume: checked }));
+                      setLocalConfig((prev: MidiConfiguration) => ({
+                        ...prev,
+                        ignoreOutputVolume: checked,
+                      }));
                       onChangeConfig({ ignoreOutputVolume: checked });
                     }}
                   />
@@ -306,42 +314,26 @@ export const MidiModal: React.FC<MidiModalProps> = ({
                 selectedId={effectiveOutputId}
                 emptyLabel="No output devices"
                 noneLabel="(none)"
-                onChange={nextId => {
-                  setLocalConfig(prev => ({ ...prev, outputId: nextId }));
+                onChange={(nextId) => {
+                  setLocalConfig((prev) => ({ ...prev, outputId: nextId }));
                   onChangeConfig({ outputId: nextId });
                 }}
               />
 
-              <MidiMonitorPanel
-                title="MIDI OUT"
-                entries={outMonitor}
-                onCopy={handleCopyMonitor}
-              />
+              <MidiMonitorPanel title="MIDI OUT" entries={outMonitor} onCopy={handleCopyMonitor} />
             </div>
           </div>
         </div>
 
         <div className="modal-actions midi-actions">
           <div className="midi-actions-left">
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onCancel}
-            >
+            <button className="command-btn" type="button" onClick={onCancel}>
               CANCEL
             </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onClear}
-            >
+            <button className="command-btn" type="button" onClick={onClear}>
               CLEAR
             </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onRescan}
-            >
+            <button className="command-btn" type="button" onClick={onRescan}>
               RESCAN
             </button>
             <button
@@ -354,25 +346,13 @@ export const MidiModal: React.FC<MidiModalProps> = ({
             </button>
           </div>
           <div className="midi-actions-right">
-            <button
-              className="command-btn"
-              type="button"
-              onClick={handleLoadClick}
-            >
+            <button className="command-btn" type="button" onClick={handleLoadClick}>
               LOAD
             </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={handleExportConfig}
-            >
+            <button className="command-btn" type="button" onClick={handleExportConfig}>
               SAVE
             </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={handleSave}
-            >
+            <button className="command-btn" type="button" onClick={handleSave}>
               OK
             </button>
           </div>

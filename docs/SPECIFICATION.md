@@ -4,24 +4,22 @@ DOSOUND Tracker is a chiptune music creation tool targeting the AY/YM sound chip
 
 The project is built as a desktop application using Electron, with the audio engine running in the browser via the Web Audio API. Songs are authored in a tracker-style interface and can be exported to formats suitable for retro hardware playback.
 
-
 ## Technology Stack
 
 See `package.json` for exact version numbers. The project uses the following technologies:
 
-| Technology | Purpose |
-|---|---|
-| React | UI component library and rendering |
-| TypeScript | Static typing and compile-time safety |
+| Technology    | Purpose                                                      |
+| ------------- | ------------------------------------------------------------ |
+| React         | UI component library and rendering                           |
+| TypeScript    | Static typing and compile-time safety                        |
 | rolldown-vite | Build tool and dev server (Vite-compatible, Rolldown-backed) |
-| Zustand | Lightweight state management |
-| Web Audio API | Real-time YM2149 sound synthesis in the browser |
-| Electron | Desktop application packaging for Windows, macOS, and Linux |
-| Vitest | Unit and component test runner |
-| ESLint | Linting and code style enforcement |
+| Zustand       | Lightweight state management                                 |
+| Web Audio API | Real-time YM2149 sound synthesis in the browser              |
+| Electron      | Desktop application packaging for Windows, macOS, and Linux  |
+| Vitest        | Unit and component test runner                               |
+| ESLint        | Linting and code style enforcement                           |
 
 Additional libraries include js-yaml for song file parsing, lucide-react for icons, and electron-builder for cross-platform packaging.
-
 
 ## Audio-Critical Development
 
@@ -38,23 +36,21 @@ The `setState` in `useEffect` prohibition from the general standard does not app
 
 Consult `GUIDELINES.md` before applying any linting fixes or React optimisations to audio-related code.
 
-
 ## Source Directory Structure
 
-| Directory | File Count | Responsibility |
-|---|---|---|
-| src/assets | 9 | Static assets, icons, and image resources |
-| src/components | 27 | React UI components for the tracker interface |
-| src/constants | 6 | Application constants for music, keyboard, song, export, and navigation |
-| src/exports | 6 | Export modules for assembly, binary, MAX, VGM, and WAV formats |
-| src/hooks | 30 | Custom React hooks for state, playback, and UI behavior |
-| src/modals | 15 | Modal dialog components for file operations and settings |
-| src/stores | 1 | Zustand store definitions for global application state |
-| src/synth | 4 | YM2149 hardware emulator and sound driver engine |
-| src/types | 2 | Branded type definitions and playlist type helpers |
-| src/utils | 43 | Utility functions for parsing, formatting, validation, and simulation |
-| src/workers | 1 | Web Worker for background audio or export processing |
-
+| Directory      | File Count | Responsibility                                                          |
+| -------------- | ---------- | ----------------------------------------------------------------------- |
+| src/assets     | 9          | Static assets, icons, and image resources                               |
+| src/components | 27         | React UI components for the tracker interface                           |
+| src/constants  | 6          | Application constants for music, keyboard, song, export, and navigation |
+| src/exports    | 6          | Export modules for assembly, binary, MAX, VGM, and WAV formats          |
+| src/hooks      | 30         | Custom React hooks for state, playback, and UI behavior                 |
+| src/modals     | 15         | Modal dialog components for file operations and settings                |
+| src/stores     | 1          | Zustand store definitions for global application state                  |
+| src/synth      | 4          | YM2149 hardware emulator and sound driver engine                        |
+| src/types      | 2          | Branded type definitions and playlist type helpers                      |
+| src/utils      | 43         | Utility functions for parsing, formatting, validation, and simulation   |
+| src/workers    | 1          | Web Worker for background audio or export processing                    |
 
 ## Data Models
 
@@ -76,27 +72,26 @@ The core data models represent the musical content of a song. See src/synth/Soun
 
 Branded identifier types (InstrumentId, PatternId, TrackId, PlaylistPatternId) prevent accidental mixing of string IDs at compile time. See src/types/branded.ts for the brand definitions and constructor functions.
 
-
 ## YM2149 Register Mapping
 
 The YM2149 PSG exposes 14 programmable registers (R0-R13). The chip runs at a configurable clock frequency (default 2 MHz, YM_CLOCK = 2000000, defined in src/synth/YM2149.ts). The clock is set per song via the `clock` field on the Song interface. Supported clocks are 2000000 (2 MHz) and 1000000 (1 MHz). At 1 MHz, tone period values are half of the 2 MHz values for the same note.
 
-| Register | Function |
-|---|---|
-| R0 | Channel A tone period, fine (8 bits) |
-| R1 | Channel A tone period, coarse (4 bits) |
-| R2 | Channel B tone period, fine (8 bits) |
-| R3 | Channel B tone period, coarse (4 bits) |
-| R4 | Channel C tone period, fine (8 bits) |
-| R5 | Channel C tone period, coarse (4 bits) |
-| R6 | Noise period (5 bits) |
-| R7 | Mixer and envelope enable control (tone/noise on/off for all channels) |
-| R8 | Channel A amplitude (4 bits volume, bit 4 envelope enable) |
-| R9 | Channel B amplitude (4 bits volume, bit 4 envelope enable) |
-| R10 | Channel C amplitude (4 bits volume, bit 4 envelope enable) |
-| R11 | Envelope period, fine (8 bits) |
-| R12 | Envelope period, coarse (8 bits) |
-| R13 | Envelope shape (4 bits) and envelope enable (bit 4) |
+| Register | Function                                                               |
+| -------- | ---------------------------------------------------------------------- |
+| R0       | Channel A tone period, fine (8 bits)                                   |
+| R1       | Channel A tone period, coarse (4 bits)                                 |
+| R2       | Channel B tone period, fine (8 bits)                                   |
+| R3       | Channel B tone period, coarse (4 bits)                                 |
+| R4       | Channel C tone period, fine (8 bits)                                   |
+| R5       | Channel C tone period, coarse (4 bits)                                 |
+| R6       | Noise period (5 bits)                                                  |
+| R7       | Mixer and envelope enable control (tone/noise on/off for all channels) |
+| R8       | Channel A amplitude (4 bits volume, bit 4 envelope enable)             |
+| R9       | Channel B amplitude (4 bits volume, bit 4 envelope enable)             |
+| R10      | Channel C amplitude (4 bits volume, bit 4 envelope enable)             |
+| R11      | Envelope period, fine (8 bits)                                         |
+| R12      | Envelope period, coarse (8 bits)                                       |
+| R13      | Envelope shape (4 bits) and envelope enable (bit 4)                    |
 
 The tone period for each channel is a 12-bit value assembled from the coarse (high nibble) and fine (low byte) registers. The output frequency is calculated as:
 
@@ -112,7 +107,6 @@ Volume uses a 16-level logarithmic scale defined by YM_LOG_VOLUME_TABLE in src/s
 
 The register write path supports batch updates via beginBatch and endBatch to avoid redundant audio node recalculations when multiple registers change in a single frame.
 
-
 ## Sequencer Timing
 
 Playback is driven by the song's frame rate (default 50 Hz, VBLANK_RATE = 50, defined in src/synth/SoundDriver.ts). The frame rate is configurable per song via the `frame` field. Each tick corresponds to 1000 / frameRate milliseconds (20 ms at 50 Hz, 16.66 ms at 60 Hz).
@@ -124,7 +118,6 @@ Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in 
 The playback speed parameter controls how many delay cycles elapse between sequencer steps. The minimum speed is 2 (MIN_DELAY_CYCLES = 2). In DOSOUND mode, only even values are accepted: if an odd value is provided, it is rounded up to the next even number. This constraint is enforced in SoundDriver.setPlaybackSpeed.
 
 The song speed field on the Song object determines the global tempo. The frame rate field (default 50), chip field (default "YM"), and chip clock field (default 2000000) are defined in src/constants/song.ts. Supported frame rates are 50 and 60 Hz. Supported chip clocks are 2000000 (2 MHz) and 1000000 (1 MHz).
-
 
 ## Export Formats
 
@@ -142,7 +135,6 @@ DOSOUND Tracker supports five export formats. Each format produces a downloadabl
 
 Export scope can target the full song, a single pattern, or a single instrument. Export strategies (simple, complex, optimized) and formats (dump, data, bin, vgm, max, wav) are typed in src/constants/export.ts.
 
-
 ## Constants
 
 Application constants are organized in src/constants/. Each file covers a specific domain.
@@ -152,7 +144,6 @@ Application constants are organized in src/constants/. Each file covers a specif
 - **song.ts** defines default song chip ("YM"), default frame rate (50), default chip clock (2000000), and arrays of supported chips, frame rates, and chip clocks.
 - **export.ts** defines ExportType (song, pattern, instrument), ExportStrategy (simple, complex, optimized), and ExportFormat (dump, data, bin, vgm, max, wav) union types.
 - **navigation.ts** defines NAVIGATION_ORDER for UI section focus cycling and KEYBOARD_SHORTCUTS mapping key combinations to application actions.
-
 
 ## Keyboard Shortcuts and Input Bindings
 
@@ -164,6 +155,10 @@ The computer keyboard doubles as a piano input device. The mapping is defined in
 - Comma = C (octave +1), L = C# (octave +1), Period = D (octave +1), Semicolon = D# (octave +1), Slash = E (octave +1)
 - Q = C (octave +1), 2 = C# (octave +1), W = D (octave +1), 3 = D# (octave +1), E = E (octave +1), R = F (octave +1), 5 = F# (octave +1), T = G (octave +1), 6 = G# (octave +1), Y = A (octave +1), 7 = A# (octave +1), U = B (octave +1)
 - I = C (octave +2), 9 = C# (octave +2), O = D (octave +2), 0 = D# (octave +2), P = E (octave +2), LeftBracket = F (octave +2), Plus = F# (octave +2), RightBracket = G (octave +2)
+
+**Column-specific input**
+
+Piano note keys enter notes only when the note column of a track is focused. When the volume column is focused, only hexadecimal nibbles 0 to F are accepted, and note keys are inert.
 
 **Navigation shortcuts** (defined in src/constants/navigation.ts):
 
@@ -196,7 +191,6 @@ The computer keyboard doubles as a piano input device. The mapping is defined in
 
 The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
 
-
 ## Project-Specific Conventions
 
 These conventions override or extend the general standards in `standard/ts-react-development.md` with rules specific to the DOSOUND Tracker codebase.
@@ -225,7 +219,6 @@ The YM2149 register simulation, volume table, and noise generation algorithm in 
 ### MIDI Message Processing
 
 MIDI message handling in `src/hooks/useMidiMessageProcessing.ts` is a hot path that executes on every incoming MIDI message. Avoid per-event allocations: use direct `Uint8Array` indexed access instead of `Array.from()`, and use string concatenation loops instead of `array.map().join()` for hex formatting.
-
 
 ## Known Limitations
 

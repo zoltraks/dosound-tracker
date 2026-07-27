@@ -18,14 +18,12 @@ describe('parseSongFromYaml', () => {
     expect(song.instrument.length).toBeGreaterThan(0);
     expect(song.line.length).toBeGreaterThan(0);
 
-    const patternWithNote = song.pattern.find(p =>
-      p.step.some(step => step.note !== null)
-    );
+    const patternWithNote = song.pattern.find((p) => p.step.some((step) => step.note !== null));
     expect(patternWithNote).toBeDefined();
 
     if (!patternWithNote) return;
 
-    const stepWithNote = patternWithNote.step.find(step => step.note !== null);
+    const stepWithNote = patternWithNote.step.find((step) => step.note !== null);
     expect(stepWithNote?.note).toBeDefined();
     expect(stepWithNote?.note?.note).toBeTypeOf('string');
     expect(stepWithNote?.note?.octave).toBeTypeOf('number');

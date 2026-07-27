@@ -20,13 +20,13 @@ export function useMessageSystem(): UseMessageSystemResult {
     let isCancelled = false;
 
     fetch('MESSAGES.md')
-      .then(response => {
+      .then((response) => {
         if (!response.ok) {
           throw new Error('Failed to load messages.');
         }
         return response.text();
       })
-      .then(text => {
+      .then((text) => {
         if (isCancelled) {
           return;
         }
@@ -86,7 +86,7 @@ export function useMessageSystem(): UseMessageSystemResult {
     }
 
     notesFadeTimeoutRef.current = window.setTimeout(() => {
-      setCurrentMessageIndex(prevIndex => {
+      setCurrentMessageIndex((prevIndex) => {
         const length = messages.length;
         if (length <= 1) {
           return prevIndex;

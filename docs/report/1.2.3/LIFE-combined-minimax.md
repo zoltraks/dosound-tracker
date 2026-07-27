@@ -5,6 +5,7 @@
 This comprehensive report analyzes the development lifecycle of DOSOUND Tracker from version 1.0.14 through 1.2.3, encompassing 250+ commits across 20+ versions over a 30-day development period (November 17 - December 17, 2025). The analysis categorizes changes into three primary types: Feature Development, Bug Fixes, and Refactoring, providing insights into the project's evolution, development patterns, and effort distribution.
 
 **Project Overview:**
+
 - **Product**: DOSOUND Tracker - A web-based music tracker for YM2149 chip emulation
 - **Technology Stack**: React, TypeScript, Electron, Vite, Web Audio API
 - **Development Period**: November 17, 2025 - December 17, 2025 (30 days)
@@ -22,9 +23,11 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 ## Development Lifecycle Phases
 
 ### Phase 1: Foundation & Core Features (v1.0.14 - v1.0.20)
+
 **Primary Focus**: Core tracker functionality and basic export capabilities
 
 #### Major Milestones:
+
 - **v1.0.14**: Initial version release with basic tracker functionality
 - **v1.0.15**: Fixed sequencer timing and DOSOUND cycle conversion
 - **v1.0.16**: Added description field and build process improvements
@@ -34,6 +37,7 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 - **v1.0.20**: Introduced volume column feature and real-time volume display
 
 #### Key Features Delivered:
+
 - Basic pattern editing and playback
 - Playlist management with looping
 - Assembly export functionality
@@ -43,9 +47,11 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 - Basic UI polish and navigation
 
 ### Phase 2: Advanced Features & Export Enhancement (v1.0.21 - v1.1.2)
+
 **Primary Focus**: Advanced audio features and export format expansion
 
 #### Major Milestones:
+
 - **v1.0.21**: Full envelope sustain and key-release support
 - **v1.0.22**: VGM export and binary export capabilities
 - **v1.1.0**: UI state management with Zustand
@@ -53,6 +59,7 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 - **v1.1.2**: Performance improvements and Electron stability
 
 #### Key Features Delivered:
+
 - Sustain and release envelope functionality
 - Multiple export formats (VGM, BIN, DATA)
 - MIDI input/output support
@@ -61,9 +68,11 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 - Electron desktop application
 
 ### Phase 3: Professional Polish & Modernization (v1.1.3 - v1.2.3)
+
 **Primary Focus**: Professional features, documentation, and code quality
 
 #### Major Milestones:
+
 - **v1.1.3**: MIDI output and live recording
 - **v1.1.4**: Keyboard refinements and UX improvements
 - **v1.1.5**: Export options and context-aware exports
@@ -77,6 +86,7 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 - **v1.2.3**: MIDI velocity and envelope editing shortcuts
 
 #### Key Features Delivered:
+
 - Advanced MIDI configuration
 - Mobile responsive design
 - Professional export options
@@ -89,71 +99,74 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 
 ### Version-by-Version Effort Summary
 
-| Version Range | Feature Dev | Bug Fixes | Refactoring | Total Commits |
-|---------------|-------------|-----------|-------------|---------------|
-| 1.0.14-1.0.20 | 60-77% | 10-30% | 10-13% | ~45-83 commits |
-| 1.0.21-1.0.22 | 50-60% | 20-30% | 20-25% | ~35-120 commits |
-| 1.1.0-1.1.2 | 55% | 20% | 25% | ~40-50 commits |
-| 1.1.3-1.1.9 | 60% | 25% | 15% | ~60-80 commits |
-| 1.2.0-1.2.3 | 45% | 30% | 25% | ~70-100 commits |
+| Version Range | Feature Dev | Bug Fixes | Refactoring | Total Commits   |
+| ------------- | ----------- | --------- | ----------- | --------------- |
+| 1.0.14-1.0.20 | 60-77%      | 10-30%    | 10-13%      | ~45-83 commits  |
+| 1.0.21-1.0.22 | 50-60%      | 20-30%    | 20-25%      | ~35-120 commits |
+| 1.1.0-1.1.2   | 55%         | 20%       | 25%         | ~40-50 commits  |
+| 1.1.3-1.1.9   | 60%         | 25%       | 15%         | ~60-80 commits  |
+| 1.2.0-1.2.3   | 45%         | 30%       | 25%         | ~70-100 commits |
 
 ### Week-by-Week Effort Summary
 
-| Week Range | Feature Dev | Bug Fixes | Refactoring | Total Commits |
-|------------|-------------|-----------|-------------|---------------|
-| 2025-11-17 to 2025-11-23 | 70-71% | 4-20% | 10-25% | ~50-140 commits |
-| 2025-11-24 to 2025-11-30 | 55-65% | 15-30% | 15-20% | ~40-110 commits |
-| 2025-12-01 to 2025-12-07 | 50-55% | 20-25% | 20-25% | ~35-90 commits |
-| 2025-12-08 to 2025-12-14 | 40-50% | 30-35% | 20-25% | ~45-80 commits |
-| 2025-12-15 to 2025-12-17 | 35-40% | 30-35% | 25-35% | ~30-60 commits |
+| Week Range               | Feature Dev | Bug Fixes | Refactoring | Total Commits   |
+| ------------------------ | ----------- | --------- | ----------- | --------------- |
+| 2025-11-17 to 2025-11-23 | 70-71%      | 4-20%     | 10-25%      | ~50-140 commits |
+| 2025-11-24 to 2025-11-30 | 55-65%      | 15-30%    | 15-20%      | ~40-110 commits |
+| 2025-12-01 to 2025-12-07 | 50-55%      | 20-25%    | 20-25%      | ~35-90 commits  |
+| 2025-12-08 to 2025-12-14 | 40-50%      | 30-35%    | 20-25%      | ~45-80 commits  |
+| 2025-12-15 to 2025-12-17 | 35-40%      | 30-35%    | 25-35%      | ~30-60 commits  |
 
 ## Change Type Analysis
 
 ### Feature Development (55% of total commits)
+
 **Characteristics**: New functionality, UI enhancements, export formats, major user-facing improvements
 
 #### High-Impact Features by Version:
 
-| Version | Major Features | Effort Level |
-|---------|----------------|--------------|
-| 1.0.20 | Volume column, real-time display | High |
-| 1.0.21 | Sustain/release system | Very High |
-| 1.0.22 | VGM/BIN export, download modal | High |
-| 1.1.0 | Zustand state management | Medium |
-| 1.1.1 | MIDI support | Very High |
-| 1.1.3 | MIDI output, live recording | High |
-| 1.1.5 | Export options modal | High |
-| 1.1.8 | Mobile layout, manual integration | Very High |
-| 1.1.9 | Color picker, track tinting | Medium |
-| 1.2.0 | Runtime diagnostics | Medium |
-| 1.2.2 | Playback smoothing | Medium |
-| 1.2.3 | MIDI velocity, envelope shortcuts | High |
+| Version | Major Features                    | Effort Level |
+| ------- | --------------------------------- | ------------ |
+| 1.0.20  | Volume column, real-time display  | High         |
+| 1.0.21  | Sustain/release system            | Very High    |
+| 1.0.22  | VGM/BIN export, download modal    | High         |
+| 1.1.0   | Zustand state management          | Medium       |
+| 1.1.1   | MIDI support                      | Very High    |
+| 1.1.3   | MIDI output, live recording       | High         |
+| 1.1.5   | Export options modal              | High         |
+| 1.1.8   | Mobile layout, manual integration | Very High    |
+| 1.1.9   | Color picker, track tinting       | Medium       |
+| 1.2.0   | Runtime diagnostics               | Medium       |
+| 1.2.2   | Playback smoothing                | Medium       |
+| 1.2.3   | MIDI velocity, envelope shortcuts | High         |
 
 ### Bug Fixes (25% of total commits)
+
 **Characteristics**: Performance issues, timing bugs, UI glitches, export accuracy
 
 #### Critical Bug Fixes by Impact:
 
-| Bug Type | Frequency | Severity | Notable Fixes |
-|----------|-----------|----------|---------------|
-| Audio Timing | 15+ | Critical | Sequencer drift, envelope timing, playback gaps |
-| Export Accuracy | 12+ | High | VGM timing, WAV synthesis, assembly output |
-| UI/UX Issues | 20+ | Medium | Navigation, mobile layout, focus management |
-| Performance | 10+ | High | Electron throttling, scroll sync, render optimization |
-| Data Integrity | 8+ | High | YAML parsing, instrument validation, state sync |
+| Bug Type        | Frequency | Severity | Notable Fixes                                         |
+| --------------- | --------- | -------- | ----------------------------------------------------- |
+| Audio Timing    | 15+       | Critical | Sequencer drift, envelope timing, playback gaps       |
+| Export Accuracy | 12+       | High     | VGM timing, WAV synthesis, assembly output            |
+| UI/UX Issues    | 20+       | Medium   | Navigation, mobile layout, focus management           |
+| Performance     | 10+       | High     | Electron throttling, scroll sync, render optimization |
+| Data Integrity  | 8+        | High     | YAML parsing, instrument validation, state sync       |
 
 ### Refactoring (20% of total commits)
+
 **Characteristics**: Code organization, type safety, performance optimization, architectural improvements
 
 #### Major Refactoring Efforts:
 
-| Area | Versions | Impact | Description |
-|------|----------|--------|-------------|
-| State Management | 1.1.0, 1.1.3 | High | Zustand integration, hook extraction |
-| Audio Engine | 1.0.19, 1.1.2 | High | YM2149 optimization, timing fixes |
-| Export System | 1.1.5, 1.1.6 | Medium | Modular export pipeline |
-| UI Components | 1.1.3, 1.1.8 | Medium | Modal system, responsive layout |
-| Type Safety | 1.1.3, 1.2.3 | Medium | TypeScript improvements, interface updates |
+| Area             | Versions      | Impact | Description                                |
+| ---------------- | ------------- | ------ | ------------------------------------------ |
+| State Management | 1.1.0, 1.1.3  | High   | Zustand integration, hook extraction       |
+| Audio Engine     | 1.0.19, 1.1.2 | High   | YM2149 optimization, timing fixes          |
+| Export System    | 1.1.5, 1.1.6  | Medium | Modular export pipeline                    |
+| UI Components    | 1.1.3, 1.1.8  | Medium | Modal system, responsive layout            |
+| Type Safety      | 1.1.3, 1.2.3  | Medium | TypeScript improvements, interface updates |
 
 ## Development Patterns & Trends
 
@@ -182,16 +195,21 @@ This comprehensive report analyzes the development lifecycle of DOSOUND Tracker 
 ### Development Trends Analysis
 
 #### Feature Development Distribution
+
 The project shows a clear evolution from core functionality (1.0.x) to advanced features (1.1.x) and finally polish and refinement (1.2.x). Feature development was most intense in early versions (65-77%) and gradually decreased as the product matured (35-45%).
 
 #### Bug Fix Patterns
+
 Bug fix activity increased as the product matured:
+
 - Early versions: 10-30% (basic stabilization)
 - Middle versions: 20-30% (feature integration issues)
 - Late versions: 30-35% (edge cases and polish)
 
 #### Refactoring Evolution
+
 Refactoring effort shows a steady increase:
+
 - Early versions: 10-15% (minimal cleanup)
 - Middle versions: 20-25% (architecture improvements)
 - Late versions: 25-35% (code quality focus)
@@ -207,11 +225,13 @@ Refactoring effort shows a steady increase:
 ### Development Intensity Patterns
 
 **Burst Development Pattern:**
+
 - Single-day intensive bursts (20-35 commits) for major features
 - Sustained daily activity (5-15 commits) during release cycles
 - Focused sprint periods for specific functionality areas
 
 **Change Type Distribution by Day:**
+
 - **Feature Days**: 60-70% new functionality, 20-25% bug fixes, 10-15% refactoring
 - **Polish Days**: 30-40% bug fixes, 30-40% UI improvements, 20-30% refactoring
 - **Release Days**: 50% version bumps/documentation, 30% bug fixes, 20% features
@@ -219,16 +239,19 @@ Refactoring effort shows a steady increase:
 ## Technology Evolution
 
 ### Audio Engine Maturity
+
 - **v1.0.x**: Basic YM2149 emulation
 - **v1.1.x**: Advanced envelope handling, MIDI integration
 - **v1.2.x**: Performance optimization, real-time diagnostics
 
 ### Export Capability Growth
+
 - **v1.0.x**: Assembly, basic WAV
 - **v1.1.x**: VGM, BIN, MAX formats
 - **v1.2.x**: Context-aware exports, optimization strategies
 
 ### User Interface Development
+
 - **v1.0.x**: Desktop-focused tracker interface
 - **v1.1.x**: Modal systems, MIDI integration
 - **v1.2.x**: Mobile responsive, enhanced documentation
@@ -243,29 +266,37 @@ Refactoring effort shows a steady increase:
 ## Recommendations
 
 ### 1. Maintenance Strategy
+
 The increasing bug fix and refactoring percentages in later versions suggest the product is reaching maturity. Future development should focus on:
+
 - Comprehensive test coverage
 - Documentation completion
 - Performance optimization
 
 ### 2. Development Process
+
 The balanced distribution across categories indicates a healthy development process. Consider:
+
 - Formalizing code review processes
 - Implementing automated testing for regression prevention
 - Establishing clear refactoring guidelines
 
 ### 3. Feature Planning
+
 As feature development decreases, focus on:
+
 - User experience refinements
 - Accessibility improvements
 - Community-driven feature requests
 
 ### 4. Testing Infrastructure
+
 - Add automated testing for audio timing
 - Implement export format validation
 - Monitor audio timing across different environments
 
 ### 5. Documentation Strategy
+
 - Continue comprehensive changelog maintenance
 - Expand API documentation for export formats
 

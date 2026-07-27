@@ -38,9 +38,10 @@ export const InstrumentTypeWarningModal: React.FC<InstrumentTypeWarningModalProp
   const normalizedMessage = message.replace(/\\n/g, '\n');
   const messageLines = normalizedMessage.split('\n');
 
-  const typeLabel = detectedType != null && String(detectedType).trim().length > 0
-    ? String(detectedType)
-    : '(missing or empty)';
+  const typeLabel =
+    detectedType != null && String(detectedType).trim().length > 0
+      ? String(detectedType)
+      : '(missing or empty)';
 
   return (
     <div className="modal-backdrop">
@@ -69,7 +70,7 @@ export const InstrumentTypeWarningModal: React.FC<InstrumentTypeWarningModalProp
             <input
               type="checkbox"
               checked={ignoreFuture}
-              onChange={event => onIgnoreChange(event.target.checked)}
+              onChange={(event) => onIgnoreChange(event.target.checked)}
             />
             <span>Don't show this warning again (until RESET)</span>
           </label>
@@ -85,4 +86,4 @@ export const InstrumentTypeWarningModal: React.FC<InstrumentTypeWarningModalProp
       </div>
     </div>
   );
-}
+};

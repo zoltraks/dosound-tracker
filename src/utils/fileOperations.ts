@@ -3,7 +3,7 @@ export type DownloadFileContent = string | ArrayBuffer | ArrayBufferView<ArrayBu
 export function downloadFile(
   content: DownloadFileContent,
   filename: string,
-  mimeType: string
+  mimeType: string,
 ): void {
   const blob = new Blob([content as unknown as BlobPart], { type: mimeType });
   const url = URL.createObjectURL(blob);

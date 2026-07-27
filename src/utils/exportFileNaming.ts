@@ -23,7 +23,10 @@ export function buildPatternExportBaseName(songTitle: string): string {
   return `${getSafeSongTitleForExport(songTitle)}_pattern`;
 }
 
-export function buildInstrumentExportBaseName(songTitle: string, instrumentId?: string | null): string {
+export function buildInstrumentExportBaseName(
+  songTitle: string,
+  instrumentId?: string | null,
+): string {
   return `${getSafeSongTitleForExport(songTitle)}_inst_${getSafeInstrumentIdForExport(instrumentId)}`;
 }
 

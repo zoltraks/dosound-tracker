@@ -19,7 +19,9 @@ interface UsePlaybackControlsResult {
   setPatternLoopMode: (patternLoop: boolean) => void;
 }
 
-export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): UsePlaybackControlsResult {
+export function usePlaybackControls({
+  currentSong,
+}: UsePlaybackControlsArgs): UsePlaybackControlsResult {
   const {
     sequencerState,
     stop,
@@ -35,11 +37,11 @@ export function usePlaybackControls({ currentSong }: UsePlaybackControlsArgs): U
   } = useSequencer(
     currentSong.speed,
     currentSong.length || PATTERN_LENGTH,
-    currentSong.frame ?? DEFAULT_SONG_FRAME
+    currentSong.frame ?? DEFAULT_SONG_FRAME,
   );
   const playlistEntries = useMemo(
     () => mapSongLineToPlaylistEntries(currentSong.line),
-    [currentSong.line]
+    [currentSong.line],
   );
 
   useEffect(() => {

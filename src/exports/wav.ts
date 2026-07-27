@@ -57,7 +57,7 @@ function synthTickSamples(
   phases: number[],
   samplesPerTick: number,
   noiseState: YmNoiseState,
-  clock: number
+  clock: number,
 ): void {
   const mixer = regs[0x07] !== undefined ? regs[0x07] : 0x38;
 
@@ -155,9 +155,13 @@ export function exportSongToWav(song: Song): WavExportResult {
   };
   const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / frameRate));
 
-  simulateSong(normalizedSong, (frame) => {
-    synthTickSamples(samples, frame.registers, phases, samplesPerTick, noiseState, chipClock);
-  }, { clock: chipClock });
+  simulateSong(
+    normalizedSong,
+    (frame) => {
+      synthTickSamples(samples, frame.registers, phases, samplesPerTick, noiseState, chipClock);
+    },
+    { clock: chipClock },
+  );
 
   const totalSamples = samples.length;
   const buffer = encodePcm16Wav(samples, WAV_SAMPLE_RATE);

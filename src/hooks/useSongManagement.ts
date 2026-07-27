@@ -48,16 +48,14 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
     const stepSource = Array.isArray(rawSteps) ? rawSteps : [];
     const step = stepSource.map((rawStep) => {
       const s = (rawStep || {}) as Record<string, unknown>;
-      const legacyNote = (
-        (s.note ??
-          s.A ??
-          s.trackA ??
-          s.B ??
-          s.trackB ??
-          s.C ??
-          s.trackC ??
-          null) as Note | null
-      );
+      const legacyNote = (s.note ??
+        s.A ??
+        s.trackA ??
+        s.B ??
+        s.trackB ??
+        s.C ??
+        s.trackC ??
+        null) as Note | null;
       return {
         note: legacyNote,
         volume: (s.volume as number | null | undefined) ?? undefined,
@@ -114,9 +112,13 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
   const rawChip = typeof song.chip === 'string' ? song.chip.trim().toUpperCase() : '';
   const normalizedChip = rawChip || DEFAULT_SONG_CHIP;
   const frameCandidate = Number(song.frame);
-  const normalizedFrame = Number.isFinite(frameCandidate) ? Math.floor(frameCandidate) : DEFAULT_SONG_FRAME;
+  const normalizedFrame = Number.isFinite(frameCandidate)
+    ? Math.floor(frameCandidate)
+    : DEFAULT_SONG_FRAME;
   const clockCandidate = Number(song.clock);
-  const normalizedClock = Number.isFinite(clockCandidate) ? Math.floor(clockCandidate) : DEFAULT_SONG_CLOCK;
+  const normalizedClock = Number.isFinite(clockCandidate)
+    ? Math.floor(clockCandidate)
+    : DEFAULT_SONG_CLOCK;
 
   return {
     ...(song as unknown as Song),
@@ -190,8 +192,31 @@ export const createDefaultSong = (): Song => {
         name: 'Default Instrument',
         volume: Array(32).fill(0x0f),
         shift: [
-          0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20,
-          -16, -12, -8, -4, ...Array(8).fill(0),
+          0,
+          4,
+          8,
+          12,
+          16,
+          20,
+          24,
+          20,
+          16,
+          12,
+          8,
+          4,
+          0,
+          -4,
+          -8,
+          -12,
+          -16,
+          -20,
+          -24,
+          -20,
+          -16,
+          -12,
+          -8,
+          -4,
+          ...Array(8).fill(0),
         ],
         pitch: Array(32).fill(0),
         noise: Array(32).fill(0),
@@ -203,9 +228,7 @@ export const createDefaultSong = (): Song => {
         id: '01',
         name: 'Bass Instrument',
         volume: [15, 15, 12, 8, 4, 0, ...Array(26).fill(0)],
-        shift: [
-          12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0),
-        ],
+        shift: [12, 8, 4, 0, -4, -8, -12, -8, -4, 0, 4, 8, 12, ...Array(19).fill(0)],
         pitch: Array(32).fill(0),
         noise: Array(32).fill(0),
         mode: Array(32).fill(0),
@@ -216,9 +239,7 @@ export const createDefaultSong = (): Song => {
         id: '02',
         name: 'Lead Instrument',
         volume: [8, 12, 15, 12, 8, 4, ...Array(26).fill(0)],
-        shift: [
-          24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0),
-        ],
+        shift: [24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, ...Array(19).fill(0)],
         pitch: Array(32).fill(0),
         noise: Array(32).fill(0),
         mode: Array(32).fill(0),
@@ -230,7 +251,7 @@ export const createDefaultSong = (): Song => {
     frame: DEFAULT_SONG_FRAME,
     clock: DEFAULT_SONG_CLOCK,
   };
-}
+};
 
 export function loadInitialSong(): Song {
   try {
@@ -370,8 +391,7 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
 
   if (hasRemovedPatterns) {
     summaryLines.push(
-      `Removed patterns: ${removedPatternIds.length}` +
-        ` (${removedPatternIds.join(', ')})`,
+      `Removed patterns: ${removedPatternIds.length}` + ` (${removedPatternIds.join(', ')})`,
     );
   }
 
@@ -410,7 +430,10 @@ export interface RenumberSongResult {
   summary: string;
 }
 
-export function renumberSongData(song: Song, currentInstrument: Instrument | null): RenumberSongResult {
+export function renumberSongData(
+  song: Song,
+  currentInstrument: Instrument | null,
+): RenumberSongResult {
   const patternById = new Map<string, Pattern>();
   song.pattern.forEach((pattern) => {
     if (pattern && typeof pattern.id === 'string') {

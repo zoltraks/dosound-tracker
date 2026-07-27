@@ -97,7 +97,9 @@ describe('midiConfig YAML helpers', () => {
     const yaml = 'root: {}';
     const current = makeConfig();
 
-    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(MidiConfigurationFormatError);
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      MidiConfigurationFormatError,
+    );
     expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
       /Invalid MIDI configuration file: missing "midi" root key\./,
     );
@@ -107,7 +109,9 @@ describe('midiConfig YAML helpers', () => {
     const yaml = 'midi: 123';
     const current = makeConfig();
 
-    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(MidiConfigurationFormatError);
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      MidiConfigurationFormatError,
+    );
     expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
       /Invalid MIDI configuration file: "midi" section is not an object\./,
     );

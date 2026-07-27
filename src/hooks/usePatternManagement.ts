@@ -1,9 +1,6 @@
 import type { Song, Pattern, Step } from '../synth/SoundDriver';
 import { PATTERN_LENGTH } from '../constants/music';
-import {
-  asPlaylistPatternId,
-  type PatternId,
-} from '../types/branded';
+import { asPlaylistPatternId, type PatternId } from '../types/branded';
 import type { PlaylistEntry } from '../types/playlist';
 
 export interface CreatePatternResult {
@@ -17,7 +14,7 @@ export function createPatternForSong(song: Song, patternId: PatternId): CreatePa
   const newPattern: Pattern = {
     id: patternId,
     name: `Pattern ${patternId}`,
-    step: Array.from({ length: targetLength }, () => ({ note: null } as Step)),
+    step: Array.from({ length: targetLength }, () => ({ note: null }) as Step),
   };
 
   const updatedSong: Song = {
@@ -28,10 +25,7 @@ export function createPatternForSong(song: Song, patternId: PatternId): CreatePa
   return { updatedSong, newPattern };
 }
 
-export function addPlaylistEntryToSong(
-  song: Song,
-  entry: PlaylistEntry,
-): Song {
+export function addPlaylistEntryToSong(song: Song, entry: PlaylistEntry): Song {
   const normalizedEntry: Song['line'][number] = {
     A: entry.A === '--' ? entry.A : asPlaylistPatternId(entry.A),
     B: entry.B === '--' ? entry.B : asPlaylistPatternId(entry.B),

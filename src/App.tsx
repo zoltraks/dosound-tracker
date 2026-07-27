@@ -22,7 +22,12 @@ import { usePlaybackSimulation } from './hooks/usePlaybackSimulation';
 import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
 import { clearIntervalRef } from './utils/timerUtils';
-import { SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song';
+import {
+  SUPPORTED_SONG_CHIPS,
+  SUPPORTED_SONG_FRAMES,
+  DEFAULT_SONG_CLOCK,
+  DEFAULT_SONG_FRAME,
+} from './constants/song';
 import type { Instrument, Pattern } from './synth/SoundDriver';
 import type { MidiConfiguration } from './hooks/useMidi';
 import { PATTERN_LENGTH, MIN_OCTAVE, MAX_OCTAVE, DEFAULT_OCTAVE } from './constants/music';
@@ -66,7 +71,6 @@ type ExtendedWindow = Window & {
 };
 
 const App: React.FC = () => {
-  
   const currentOctave = useUiStore((state: UiStore) => state.currentOctave);
   const sharedCurrentLine = useUiStore((state: UiStore) => state.sharedCurrentLine);
   const channelMutes = useUiStore((state: UiStore) => state.channelMutes);
@@ -159,12 +163,13 @@ const App: React.FC = () => {
     transposeAmountInput,
     setTransposeAmountInput,
   } = useAppState();
-  
+
   // Check if download files are available
   const hasDownloads = useDownloadAvailability();
 
   const [pendingExportType, setPendingExportType] = useState<ExportType>(exportType);
-  const [pendingExportStrategy, setPendingExportStrategy] = useState<ExportStrategy>(exportStrategy);
+  const [pendingExportStrategy, setPendingExportStrategy] =
+    useState<ExportStrategy>(exportStrategy);
 
   const [instrumentOctaves, setInstrumentOctaves] = useState<Record<string, number>>(() => {
     try {
@@ -183,11 +188,7 @@ const App: React.FC = () => {
   const [pasteTrackMode, setPasteTrackMode] = useState<TrackPasteMode>(() => {
     try {
       const stored = localStorage.getItem('dosound-tracker-paste-track-mode');
-      if (
-        stored === 'replace' ||
-        stored === 'overwriteAll' ||
-        stored === 'overwriteEmpty'
-      ) {
+      if (stored === 'replace' || stored === 'overwriteAll' || stored === 'overwriteEmpty') {
         return stored as TrackPasteMode;
       }
     } catch {
@@ -195,7 +196,8 @@ const App: React.FC = () => {
     }
     return 'replace';
   });
-  const [pasteTrackPendingMode, setPasteTrackPendingMode] = useState<TrackPasteMode>(pasteTrackMode);
+  const [pasteTrackPendingMode, setPasteTrackPendingMode] =
+    useState<TrackPasteMode>(pasteTrackMode);
   const [isPasteTrackModalOpen, setIsPasteTrackModalOpen] = useState(false);
   const pasteTrackModalResolveRef = useRef<((mode: TrackPasteMode | null) => void) | null>(null);
 
@@ -224,15 +226,15 @@ const App: React.FC = () => {
   }, [pasteTrackMode]);
 
   const { isDarkMode, toggleTheme } = useTheme();
-  const { 
-    currentSong, 
+  const {
+    currentSong,
     currentInstrument,
     setCurrentInstrument,
     updateSong,
     updateInstrument,
-    createNewSong, 
-    saveSong, 
-    createNewInstrument, 
+    createNewSong,
+    saveSong,
+    createNewInstrument,
     saveInstrument,
     createNewPattern,
     fileInputRef,
@@ -333,7 +335,8 @@ const App: React.FC = () => {
     isPasteTrackModalOpen ||
     !!pendingSongImport;
 
-  const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(isNavigationSuspended);
+  const { activeSection, setActiveSection, setGlobalShortcut } =
+    useKeyboardNavigation(isNavigationSuspended);
 
   const patternsById = useMemo(() => {
     const map = new Map<string, Pattern>();
@@ -386,7 +389,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-track-background-enabled', trackBackgroundEnabled ? '1' : '0');
+      localStorage.setItem(
+        'dosound-tracker-track-background-enabled',
+        trackBackgroundEnabled ? '1' : '0',
+      );
     } catch {
       // ignore
     }
@@ -485,7 +491,9 @@ const App: React.FC = () => {
 
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
-  const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(currentSong.clock ?? DEFAULT_SONG_CLOCK);
+  const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(
+    currentSong.clock ?? DEFAULT_SONG_CLOCK,
+  );
   const previewTickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
   const instrumentFileInputRef = useRef<HTMLInputElement | null>(null);
   const playInstTimerRef = useRef<number | null>(null);
@@ -551,7 +559,7 @@ const App: React.FC = () => {
     try {
       localStorage.setItem(
         'dosound-tracker-command-panel-mobile',
-        isCommandPanelMobileCollapsed ? 'collapsed' : 'expanded'
+        isCommandPanelMobileCollapsed ? 'collapsed' : 'expanded',
       );
     } catch {
       // ignore
@@ -607,7 +615,7 @@ const App: React.FC = () => {
       note: string,
       octave: number,
       volumeFromStep?: number | null,
-      velocityOverride?: number | null
+      velocityOverride?: number | null,
     ) => void;
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   } | null>(null);
@@ -615,10 +623,7 @@ const App: React.FC = () => {
   const midiConfigurationRef = useRef<MidiConfiguration | null>(null);
 
   const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
-  const {
-    resetPlaybackState: handleStopPlayback,
-    lastSequencerPositionRef,
-  } = playbackState;
+  const { resetPlaybackState: handleStopPlayback, lastSequencerPositionRef } = playbackState;
 
   const { sequencerCallback } = useSequencerIntegration({
     currentSong,
@@ -646,25 +651,27 @@ const App: React.FC = () => {
   // Removed updateChannelWithInstrument as it's moved to utils/playbackUtils
 
   // Handle stop playback with silence
-  const handlePatternChange = useCallback((newPattern: Pattern) => {
-    if (!newPattern || !newPattern.id) {
-      logger.error('No pattern ID provided to handlePatternChange');
-      return;
-    }
-    
-    // Find and update the pattern by ID
-    const updatedPatterns = [...currentSong.pattern];
-    const patternIndex = updatedPatterns.findIndex(p => p.id === newPattern.id);
-    
-    if (patternIndex === -1) {
-      logger.error('Pattern not found with ID', newPattern.id);
-      return;
-    }
-    
-    updatedPatterns[patternIndex] = newPattern;
-    updateSong({ pattern: updatedPatterns });
-  }, [currentSong.pattern, updateSong]);
+  const handlePatternChange = useCallback(
+    (newPattern: Pattern) => {
+      if (!newPattern || !newPattern.id) {
+        logger.error('No pattern ID provided to handlePatternChange');
+        return;
+      }
 
+      // Find and update the pattern by ID
+      const updatedPatterns = [...currentSong.pattern];
+      const patternIndex = updatedPatterns.findIndex((p) => p.id === newPattern.id);
+
+      if (patternIndex === -1) {
+        logger.error('Pattern not found with ID', newPattern.id);
+        return;
+      }
+
+      updatedPatterns[patternIndex] = newPattern;
+      updateSong({ pattern: updatedPatterns });
+    },
+    [currentSong.pattern, updateSong],
+  );
 
   const {
     handlePlaylistChange,
@@ -688,7 +695,9 @@ const App: React.FC = () => {
     setPosition,
   });
 
-  const [pendingNewSongAction, setPendingNewSongAction] = useState<'new-song' | 'demo-song'>('new-song');
+  const [pendingNewSongAction, setPendingNewSongAction] = useState<'new-song' | 'demo-song'>(
+    'new-song',
+  );
 
   const [isRepositoryInstrumentOpen, setIsRepositoryInstrumentOpen] = useState(false);
   const [isDemoSongPickerOpen, setIsDemoSongPickerOpen] = useState(false);
@@ -723,13 +732,7 @@ const App: React.FC = () => {
 
     setIsNewSongConfirmOpen(false);
     setPendingNewSongAction('new-song');
-  }, [
-    pendingNewSongAction,
-    createNewSong,
-    setPosition,
-    setActiveSection,
-    openDemoSongPicker,
-  ]);
+  }, [pendingNewSongAction, createNewSong, setPosition, setActiveSection, openDemoSongPicker]);
 
   const handleCancelNewSong = useCallback(() => {
     setIsNewSongConfirmOpen(false);
@@ -864,9 +867,12 @@ const App: React.FC = () => {
     setIsManualOpen(false);
   }, []);
 
-  const handleToggleChannelMute = useCallback((channelIndex: number) => {
-    toggleChannelMute(channelIndex);
-  }, [toggleChannelMute]);
+  const handleToggleChannelMute = useCallback(
+    (channelIndex: number) => {
+      toggleChannelMute(channelIndex);
+    },
+    [toggleChannelMute],
+  );
 
   const handleLoadInstrumentClick = useCallback(() => {
     if (instrumentFileInputRef.current) {
@@ -879,69 +885,72 @@ const App: React.FC = () => {
     setIsRepositoryInstrumentOpen(true);
   }, []);
 
-  const handleInstrumentFileContent = useCallback((content: string) => {
-    if (!content) {
-      return;
-    }
+  const handleInstrumentFileContent = useCallback(
+    (content: string) => {
+      if (!content) {
+        return;
+      }
 
-    let parsed: unknown;
-    try {
-      parsed = yaml.load(content) as unknown;
-    } catch (error) {
-      logger.error('Error loading instrument', error);
-      setInstrumentError('Error loading instrument file.');
-      return;
-    }
+      let parsed: unknown;
+      try {
+        parsed = yaml.load(content) as unknown;
+      } catch (error) {
+        logger.error('Error loading instrument', error);
+        setInstrumentError('Error loading instrument file.');
+        return;
+      }
 
-    if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {
-      loadInstrument(content);
-      setActiveSection('instrumentList');
-      return;
-    }
-
-    const root = parsed as { instrument?: unknown };
-    const node = root.instrument;
-
-    if (!node || typeof node !== 'object') {
-      loadInstrument(content);
-      setActiveSection('instrumentList');
-      return;
-    }
-
-    const instNode = node as { [key: string]: unknown; type?: unknown };
-    const hasTypeField = Object.prototype.hasOwnProperty.call(instNode, 'type');
-    const rawType = instNode.type;
-
-    let detectedType: string | null = null;
-    if (typeof rawType === 'string') {
-      detectedType = rawType;
-    } else if (rawType != null) {
-      detectedType = String(rawType);
-    }
-
-    const normalizedType = detectedType ? detectedType.trim().toLowerCase() : '';
-    const isDosoundType = normalizedType === 'dosound';
-
-    if (!hasTypeField || !isDosoundType) {
-      if (ignoreInstrumentTypeWarning) {
+      if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {
         loadInstrument(content);
         setActiveSection('instrumentList');
         return;
       }
 
-      openInstrumentTypeWarning(content, { hasTypeField, detectedType });
-      return;
-    }
+      const root = parsed as { instrument?: unknown };
+      const node = root.instrument;
 
-    loadInstrument(content);
-    setActiveSection('instrumentList');
-  }, [
-    ignoreInstrumentTypeWarning,
-    loadInstrument,
-    setActiveSection,
-    setInstrumentError,
-    openInstrumentTypeWarning,
-  ]);
+      if (!node || typeof node !== 'object') {
+        loadInstrument(content);
+        setActiveSection('instrumentList');
+        return;
+      }
+
+      const instNode = node as { [key: string]: unknown; type?: unknown };
+      const hasTypeField = Object.prototype.hasOwnProperty.call(instNode, 'type');
+      const rawType = instNode.type;
+
+      let detectedType: string | null = null;
+      if (typeof rawType === 'string') {
+        detectedType = rawType;
+      } else if (rawType != null) {
+        detectedType = String(rawType);
+      }
+
+      const normalizedType = detectedType ? detectedType.trim().toLowerCase() : '';
+      const isDosoundType = normalizedType === 'dosound';
+
+      if (!hasTypeField || !isDosoundType) {
+        if (ignoreInstrumentTypeWarning) {
+          loadInstrument(content);
+          setActiveSection('instrumentList');
+          return;
+        }
+
+        openInstrumentTypeWarning(content, { hasTypeField, detectedType });
+        return;
+      }
+
+      loadInstrument(content);
+      setActiveSection('instrumentList');
+    },
+    [
+      ignoreInstrumentTypeWarning,
+      loadInstrument,
+      setActiveSection,
+      setInstrumentError,
+      openInstrumentTypeWarning,
+    ],
+  );
 
   const handleConfirmInstrumentTypeWarning = useCallback(() => {
     const content = confirmInstrumentTypeWarning();
@@ -960,7 +969,7 @@ const App: React.FC = () => {
   const handlePickRepositoryInstrument = useCallback(
     (fileUrl: string) => {
       fetch(fileUrl)
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             throw new Error('Failed to load instrument file.');
           }
@@ -972,10 +981,10 @@ const App: React.FC = () => {
 
           return response.text();
         })
-        .then(text => {
+        .then((text) => {
           handleInstrumentFileContent(text);
         })
-        .catch(error => {
+        .catch((error) => {
           logger.error('Error loading repository instrument', error);
           setInstrumentError('Error loading instrument file.');
         })
@@ -983,7 +992,7 @@ const App: React.FC = () => {
           setIsRepositoryInstrumentOpen(false);
         });
     },
-    [handleInstrumentFileContent, setInstrumentError]
+    [handleInstrumentFileContent, setInstrumentError],
   );
 
   const handleDemoSongClick = useCallback(() => {
@@ -998,7 +1007,7 @@ const App: React.FC = () => {
   const handlePickDemoSong = useCallback(
     (fileUrl: string) => {
       fetch(fileUrl)
-        .then(response => {
+        .then((response) => {
           if (!response.ok) {
             throw new Error('Failed to load song file.');
           }
@@ -1010,14 +1019,14 @@ const App: React.FC = () => {
 
           return response.text();
         })
-        .then(text => {
+        .then((text) => {
           loadSongFromText(text);
           setPosition(0, 0, 0);
           setSharedCurrentLine(0);
           setActiveSection('commands');
           setChannelMutes([false, false, false]);
         })
-        .catch(error => {
+        .catch((error) => {
           logger.error('Error loading demo song', error);
           setSongError('Error loading song file.');
         })
@@ -1032,96 +1041,102 @@ const App: React.FC = () => {
       setActiveSection,
       setChannelMutes,
       setSongError,
-    ]
+    ],
   );
 
-  const getCurrentPatternForTrack = useCallback((trackId: 'A' | 'B' | 'C') => {
-    // Get current playlist row based on sequencer state
-    const playlistLength = currentSong.line.length;
-    if (playlistLength === 0) {
-      return null;
-    }
+  const getCurrentPatternForTrack = useCallback(
+    (trackId: 'A' | 'B' | 'C') => {
+      // Get current playlist row based on sequencer state
+      const playlistLength = currentSong.line.length;
+      if (playlistLength === 0) {
+        return null;
+      }
 
-    const currentPatternIndex = Math.max(
-      0,
-      Math.min(playlistLength - 1, sequencerState.currentPattern),
-    );
-    const currentPlaylistEntry = currentSong.line[currentPatternIndex];
+      const currentPatternIndex = Math.max(
+        0,
+        Math.min(playlistLength - 1, sequencerState.currentPattern),
+      );
+      const currentPlaylistEntry = currentSong.line[currentPatternIndex];
 
-    if (!currentPlaylistEntry) {
-      return null;
-    }
+      if (!currentPlaylistEntry) {
+        return null;
+      }
 
-    // Return pattern based on which track is asking
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentPlaylistEntry.A;
-        break;
-      case 'B':
-        patternId = currentPlaylistEntry.B;
-        break;
-      case 'C':
-        patternId = currentPlaylistEntry.C;
-        break;
-    }
+      // Return pattern based on which track is asking
+      let patternId = '--';
+      switch (trackId) {
+        case 'A':
+          patternId = currentPlaylistEntry.A;
+          break;
+        case 'B':
+          patternId = currentPlaylistEntry.B;
+          break;
+        case 'C':
+          patternId = currentPlaylistEntry.C;
+          break;
+      }
 
-    if (patternId === '--') {
-      return null; // No pattern set for this track
-    }
+      if (patternId === '--') {
+        return null; // No pattern set for this track
+      }
 
-    let foundPattern = currentSong.pattern.find(p => p.id === patternId);
+      let foundPattern = currentSong.pattern.find((p) => p.id === patternId);
 
-    // If pattern doesn't exist, create it with current pattern length
-    if (!foundPattern) {
-      const targetLength = currentSong.length || PATTERN_LENGTH;
-      const newPattern = {
-        id: patternId,
-        name: `Pattern ${patternId}`,
-        step: Array(targetLength)
-          .fill(null)
-          .map(() => ({
-            note: null,
-          })),
-      };
+      // If pattern doesn't exist, create it with current pattern length
+      if (!foundPattern) {
+        const targetLength = currentSong.length || PATTERN_LENGTH;
+        const newPattern = {
+          id: patternId,
+          name: `Pattern ${patternId}`,
+          step: Array(targetLength)
+            .fill(null)
+            .map(() => ({
+              note: null,
+            })),
+        };
 
-      // Add the new pattern to the song
-      const updatedPatterns = [...currentSong.pattern, newPattern];
-      updateSong({ pattern: updatedPatterns });
+        // Add the new pattern to the song
+        const updatedPatterns = [...currentSong.pattern, newPattern];
+        updateSong({ pattern: updatedPatterns });
 
-      foundPattern = newPattern;
-    }
+        foundPattern = newPattern;
+      }
 
-    return foundPattern;
-  }, [currentSong, sequencerState.currentPattern, updateSong]);
+      return foundPattern;
+    },
+    [currentSong, sequencerState.currentPattern, updateSong],
+  );
 
   const formatNoteKey = useCallback((note: string, octave: number): string => {
     const upper = note.toUpperCase();
     return upper.endsWith('#') ? `${upper}${octave}` : `${upper}-${octave}`;
   }, []);
 
-  const parseBaseKeyString = useCallback((value?: string): { note: string; octave: number } | null => {
-    if (!value) return null;
-    const raw = value.trim().toUpperCase();
-    if (!raw) return null;
+  const parseBaseKeyString = useCallback(
+    (value?: string): { note: string; octave: number } | null => {
+      if (!value) return null;
+      const raw = value.trim().toUpperCase();
+      if (!raw) return null;
 
-    let notePart = raw.charAt(0);
-    let rest = raw.slice(1);
+      let notePart = raw.charAt(0);
+      let rest = raw.slice(1);
 
-    if (rest.startsWith('#')) {
-      notePart += '#';
-      rest = rest.slice(1);
-    }
+      if (rest.startsWith('#')) {
+        notePart += '#';
+        rest = rest.slice(1);
+      }
 
-    if (rest.startsWith('-')) {
-      rest = rest.slice(1);
-    }
+      if (rest.startsWith('-')) {
+        rest = rest.slice(1);
+      }
 
-    const octave = parseInt(rest, 10);
-    if (!Number.isFinite(octave)) return null;
+      const octave = parseInt(rest, 10);
+      if (!Number.isFinite(octave)) return null;
 
-    return { note: notePart, octave };
-  }, []);
+      return { note: notePart, octave };
+    },
+    [],
+  );
 
   const getPasteTrackMode = useCallback(
     (_options: { hasExistingData: boolean }): Promise<TrackPasteMode | null> => {
@@ -1129,13 +1144,13 @@ const App: React.FC = () => {
       // though the current implementation does not depend on its value.
       void _options;
 
-      return new Promise(resolve => {
+      return new Promise((resolve) => {
         pasteTrackModalResolveRef.current = resolve;
         setPasteTrackPendingMode(pasteTrackMode);
         setIsPasteTrackModalOpen(true);
       });
     },
-    [pasteTrackMode]
+    [pasteTrackMode],
   );
 
   const handleConfirmPasteTrackModal = useCallback(() => {
@@ -1223,7 +1238,7 @@ const App: React.FC = () => {
     setIsInstrumentMidiOpen(false);
     setInstrumentMidiTarget(null);
     setActiveSection('instrumentList');
-    setInstrumentPanelFocusRevision(prev => prev + 1);
+    setInstrumentPanelFocusRevision((prev) => prev + 1);
   }, [setActiveSection, setInstrumentPanelFocusRevision]);
 
   const handleSaveInstrumentMidi = useCallback(
@@ -1231,7 +1246,7 @@ const App: React.FC = () => {
       if (!instrumentMidiTarget) {
         setIsInstrumentMidiOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentPanelFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision((prev) => prev + 1);
         return;
       }
 
@@ -1249,7 +1264,7 @@ const App: React.FC = () => {
         if (hasChannel || hasProgram) {
           nextMidi = {
             channel: hasChannel ? midi.channel : null,
-            program: hasProgram ? midi.program : null
+            program: hasProgram ? midi.program : null,
           };
         } else {
           nextMidi = undefined;
@@ -1257,7 +1272,7 @@ const App: React.FC = () => {
 
         return {
           ...inst,
-          midi: nextMidi
+          midi: nextMidi,
         };
       });
 
@@ -1273,7 +1288,7 @@ const App: React.FC = () => {
       setIsInstrumentMidiOpen(false);
       setInstrumentMidiTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentPanelFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision((prev) => prev + 1);
     },
     [
       instrumentMidiTarget,
@@ -1282,8 +1297,8 @@ const App: React.FC = () => {
       currentInstrument,
       setCurrentInstrument,
       setActiveSection,
-      setInstrumentPanelFocusRevision
-    ]
+      setInstrumentPanelFocusRevision,
+    ],
   );
 
   const handleOpenInstrumentColor = useCallback((instrument: Instrument) => {
@@ -1295,7 +1310,7 @@ const App: React.FC = () => {
     setIsInstrumentColorOpen(false);
     setInstrumentColorTarget(null);
     setActiveSection('instrumentList');
-    setInstrumentPanelFocusRevision(prev => prev + 1);
+    setInstrumentPanelFocusRevision((prev) => prev + 1);
   }, [setActiveSection, setInstrumentPanelFocusRevision]);
 
   const handleSaveInstrumentColor = useCallback(
@@ -1303,7 +1318,7 @@ const App: React.FC = () => {
       if (!instrumentColorTarget) {
         setIsInstrumentColorOpen(false);
         setActiveSection('instrumentList');
-        setInstrumentPanelFocusRevision(prev => prev + 1);
+        setInstrumentPanelFocusRevision((prev) => prev + 1);
         return;
       }
 
@@ -1334,7 +1349,7 @@ const App: React.FC = () => {
       setIsInstrumentColorOpen(false);
       setInstrumentColorTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentPanelFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision((prev) => prev + 1);
     },
     [
       instrumentColorTarget,
@@ -1344,64 +1359,61 @@ const App: React.FC = () => {
       setCurrentInstrument,
       setActiveSection,
       setInstrumentPanelFocusRevision,
-    ]
+    ],
   );
 
-  const handleClearInstrumentColor = useCallback(
-    () => {
-      if (!instrumentColorTarget) {
-        setIsInstrumentColorOpen(false);
-        setActiveSection('instrumentList');
-        setInstrumentPanelFocusRevision(prev => prev + 1);
-        return;
-      }
-
-      const targetId = instrumentColorTarget.id;
-
-      const nextInstruments = currentSong.instrument.map((inst) => {
-        if (!inst || inst.id !== targetId) {
-          return inst;
-        }
-
-        return {
-          ...inst,
-          color: null,
-        };
-      });
-
-      updateSong({ instrument: nextInstruments });
-
-      if (currentInstrument && currentInstrument.id === targetId) {
-        const updated = nextInstruments.find((inst) => inst && inst.id === targetId);
-        if (updated) {
-          setCurrentInstrument(updated);
-        }
-      }
-
+  const handleClearInstrumentColor = useCallback(() => {
+    if (!instrumentColorTarget) {
       setIsInstrumentColorOpen(false);
-      setInstrumentColorTarget(null);
       setActiveSection('instrumentList');
-      setInstrumentPanelFocusRevision(prev => prev + 1);
+      setInstrumentPanelFocusRevision((prev) => prev + 1);
+      return;
+    }
+
+    const targetId = instrumentColorTarget.id;
+
+    const nextInstruments = currentSong.instrument.map((inst) => {
+      if (!inst || inst.id !== targetId) {
+        return inst;
+      }
+
+      return {
+        ...inst,
+        color: null,
+      };
+    });
+
+    updateSong({ instrument: nextInstruments });
+
+    if (currentInstrument && currentInstrument.id === targetId) {
+      const updated = nextInstruments.find((inst) => inst && inst.id === targetId);
+      if (updated) {
+        setCurrentInstrument(updated);
+      }
+    }
+
+    setIsInstrumentColorOpen(false);
+    setInstrumentColorTarget(null);
+    setActiveSection('instrumentList');
+    setInstrumentPanelFocusRevision((prev) => prev + 1);
+  }, [
+    instrumentColorTarget,
+    currentSong.instrument,
+    updateSong,
+    currentInstrument,
+    setCurrentInstrument,
+    setActiveSection,
+    setInstrumentPanelFocusRevision,
+  ]);
+
+  const handleChangeBaseKey = useCallback(
+    (note: string, octave: number) => {
+      const upper = note.toUpperCase();
+      const formatted = upper.endsWith('#') ? `${upper}${octave}` : `${upper}-${octave}`;
+      updateInstrument({ base: formatted });
     },
-    [
-      instrumentColorTarget,
-      currentSong.instrument,
-      updateSong,
-      currentInstrument,
-      setCurrentInstrument,
-      setActiveSection,
-      setInstrumentPanelFocusRevision,
-    ]
+    [updateInstrument],
   );
-
-  const handleChangeBaseKey = useCallback((note: string, octave: number) => {
-    const upper = note.toUpperCase();
-    const formatted = upper.endsWith('#')
-      ? `${upper}${octave}`
-      : `${upper}-${octave}`;
-    updateInstrument({ base: formatted });
-  }, [updateInstrument]);
-
 
   // Handle stop playback with silence
   const handleStop = useCallback(() => {
@@ -1410,7 +1422,7 @@ const App: React.FC = () => {
 
     // Ensure line play state is cleared so buttons show PLAY again
     setIsLinePlaying(false);
-    
+
     // Stop any instrument preview playback
     clearIntervalRef(playInstTimerRef);
 
@@ -1422,13 +1434,13 @@ const App: React.FC = () => {
   const handleStopLinePlayback = useCallback(() => {
     // Stop the sequencer
     stop();
-    
+
     // Update line playing state
     setIsLinePlaying(false);
-    
+
     // Stop any instrument preview playback
     clearIntervalRef(playInstTimerRef);
-    
+
     // Reset cycle counters and silence all channels
     handleStopPlayback();
     const returnPos = patternReturnPositionRef.current;
@@ -1447,7 +1459,7 @@ const App: React.FC = () => {
 
     const clampedIndex = Math.max(
       0,
-      Math.min(sequencerState.currentPattern, currentSong.line.length - 1)
+      Math.min(sequencerState.currentPattern, currentSong.line.length - 1),
     );
 
     // If we are currently in line-loop mode and playback is running, switch
@@ -1465,7 +1477,7 @@ const App: React.FC = () => {
     // Otherwise start song from the beginning (line 0) of the current pattern.
     patternReturnPositionRef.current = {
       pattern: clampedIndex,
-      line: sharedCurrentLine
+      line: sharedCurrentLine,
     };
 
     // Clear position ref to ensure first tick detection works
@@ -1480,7 +1492,7 @@ const App: React.FC = () => {
     sequencerState.isPlaying,
     currentSong.line,
     sharedCurrentLine,
-    setPatternLoopMode
+    setPatternLoopMode,
   ]);
 
   // Handle start line playback (line-loop mode for the current playlist line)
@@ -1491,7 +1503,7 @@ const App: React.FC = () => {
 
     const clampedIndex = Math.max(
       0,
-      Math.min(sequencerState.currentPattern, currentSong.line.length - 1)
+      Math.min(sequencerState.currentPattern, currentSong.line.length - 1),
     );
     const currentEntry = currentSong.line[clampedIndex];
 
@@ -1531,15 +1543,12 @@ const App: React.FC = () => {
     if (sequencerState.isPlaying && !isLinePlaying) {
       const effectiveLine = Math.max(
         0,
-        Math.min(
-          sequencerState.currentLine,
-          (currentSong.length || PATTERN_LENGTH) - 1
-        )
+        Math.min(sequencerState.currentLine, (currentSong.length || PATTERN_LENGTH) - 1),
       );
 
       patternReturnPositionRef.current = {
         pattern: clampedIndex,
-        line: effectiveLine
+        line: effectiveLine,
       };
 
       setIsLinePlaying(true);
@@ -1570,7 +1579,7 @@ const App: React.FC = () => {
     activeSection,
     lastTrackId,
     isLinePlaying,
-    setPatternLoopMode
+    setPatternLoopMode,
   ]);
 
   const handleStartLineFromBeginning = useCallback(() => {
@@ -1578,7 +1587,10 @@ const App: React.FC = () => {
       return;
     }
 
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, currentSong.line.length - 1));
+    const clampedIndex = Math.max(
+      0,
+      Math.min(sequencerState.currentPattern, currentSong.line.length - 1),
+    );
     const currentEntry = currentSong.line[clampedIndex];
 
     if (!currentEntry) {
@@ -1623,77 +1635,111 @@ const App: React.FC = () => {
     setPosition(clampedIndex, 0, 0);
 
     startSong();
-  }, [stop, startSong, sequencerState.isPlaying, sequencerState.currentPattern, setPosition, isLinePlaying, currentSong.line, activeSection, lastTrackId]);
+  }, [
+    stop,
+    startSong,
+    sequencerState.isPlaying,
+    sequencerState.currentPattern,
+    setPosition,
+    isLinePlaying,
+    currentSong.line,
+    activeSection,
+    lastTrackId,
+  ]);
 
-  const handleStartLineFromCurrentLine = useCallback((overrideLine?: number) => {
-    if (currentSong.line.length === 0) {
-      return;
-    }
+  const handleStartLineFromCurrentLine = useCallback(
+    (overrideLine?: number) => {
+      if (currentSong.line.length === 0) {
+        return;
+      }
 
-    const playlistLength = currentSong.line.length;
-    const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-    const currentEntry = currentSong.line[clampedIndex];
+      const playlistLength = currentSong.line.length;
+      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+      const currentEntry = currentSong.line[clampedIndex];
 
-    if (!currentEntry) {
-      return;
-    }
+      if (!currentEntry) {
+        return;
+      }
 
-    let trackId: 'A' | 'B' | 'C' = lastTrackId;
-    if (activeSection === 'trackA') {
-      trackId = 'A';
-    } else if (activeSection === 'trackB') {
-      trackId = 'B';
-    } else if (activeSection === 'trackC') {
-      trackId = 'C';
-    }
+      let trackId: 'A' | 'B' | 'C' = lastTrackId;
+      if (activeSection === 'trackA') {
+        trackId = 'A';
+      } else if (activeSection === 'trackB') {
+        trackId = 'B';
+      } else if (activeSection === 'trackC') {
+        trackId = 'C';
+      }
 
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentEntry.A;
-        break;
-      case 'B':
-        patternId = currentEntry.B;
-        break;
-      case 'C':
-        patternId = currentEntry.C;
-        break;
-    }
+      let patternId = '--';
+      switch (trackId) {
+        case 'A':
+          patternId = currentEntry.A;
+          break;
+        case 'B':
+          patternId = currentEntry.B;
+          break;
+        case 'C':
+          patternId = currentEntry.C;
+          break;
+      }
 
-    if (patternId === '--') {
-      return;
-    }
+      if (patternId === '--') {
+        return;
+      }
 
-    const effectiveLine = overrideLine != null ? overrideLine : sharedCurrentLine;
+      const effectiveLine = overrideLine != null ? overrideLine : sharedCurrentLine;
 
-    // Save return position (playlist row and line where cursor currently is)
-    patternReturnPositionRef.current = {
-      pattern: clampedIndex,
-      line: effectiveLine
-    };
+      // Save return position (playlist row and line where cursor currently is)
+      patternReturnPositionRef.current = {
+        pattern: clampedIndex,
+        line: effectiveLine,
+      };
 
-    if (sequencerState.isPlaying) {
-      stop();
-    }
+      if (sequencerState.isPlaying) {
+        stop();
+      }
 
-    // Clear position ref to ensure first tick detection works
-    lastSequencerPositionRef.current = null;
+      // Clear position ref to ensure first tick detection works
+      lastSequencerPositionRef.current = null;
 
-    setIsLinePlaying(true);
+      setIsLinePlaying(true);
 
-    // Start pattern loop from the current cursor line
-    const startLine = Math.max(0, Math.min(effectiveLine, (currentSong.length || PATTERN_LENGTH) - 1));
-    startPatternLoop(clampedIndex, startLine);
-  }, [currentSong.line, currentSong.length, sharedCurrentLine, sequencerState.currentPattern, sequencerState.isPlaying, activeSection, lastTrackId, stop, startPatternLoop]);
+      // Start pattern loop from the current cursor line
+      const startLine = Math.max(
+        0,
+        Math.min(effectiveLine, (currentSong.length || PATTERN_LENGTH) - 1),
+      );
+      startPatternLoop(clampedIndex, startLine);
+    },
+    [
+      currentSong.line,
+      currentSong.length,
+      sharedCurrentLine,
+      sequencerState.currentPattern,
+      sequencerState.isPlaying,
+      activeSection,
+      lastTrackId,
+      stop,
+      startPatternLoop,
+    ],
+  );
 
-  const handleToggleLineFromCursor = useCallback((lineIndex: number) => {
-    if (isLinePlaying && sequencerState.isPlaying) {
-      handleStopLinePlayback();
-      return;
-    }
+  const handleToggleLineFromCursor = useCallback(
+    (lineIndex: number) => {
+      if (isLinePlaying && sequencerState.isPlaying) {
+        handleStopLinePlayback();
+        return;
+      }
 
-    handleStartLineFromCurrentLine(lineIndex);
-  }, [isLinePlaying, sequencerState.isPlaying, handleStopLinePlayback, handleStartLineFromCurrentLine]);
+      handleStartLineFromCurrentLine(lineIndex);
+    },
+    [
+      isLinePlaying,
+      sequencerState.isPlaying,
+      handleStopLinePlayback,
+      handleStartLineFromCurrentLine,
+    ],
+  );
 
   useKeyboardShortcuts({
     setGlobalShortcut,
@@ -1720,10 +1766,7 @@ const App: React.FC = () => {
       return;
     }
 
-    if (
-      sequencerState.currentPattern < 0 ||
-      sequencerState.currentPattern >= playlistLength
-    ) {
+    if (sequencerState.currentPattern < 0 || sequencerState.currentPattern >= playlistLength) {
       const rawLoop = currentSong.loop;
       const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
 
@@ -1746,40 +1789,40 @@ const App: React.FC = () => {
     currentSong.loop,
     stop,
     handleStopPlayback,
-    setPosition
+    setPosition,
   ]);
 
-  const handleOctaveChange = useCallback((octave: number) => {
-    setCurrentOctave(octave);
-    const id = currentInstrument?.id;
-    if (!id) return;
-    setInstrumentOctaves(prev => ({ ...prev, [id]: octave }));
-    updateInstrument({ octave });
-  }, [currentInstrument?.id, updateInstrument]);
+  const handleOctaveChange = useCallback(
+    (octave: number) => {
+      setCurrentOctave(octave);
+      const id = currentInstrument?.id;
+      if (!id) return;
+      setInstrumentOctaves((prev) => ({ ...prev, [id]: octave }));
+      updateInstrument({ octave });
+    },
+    [currentInstrument?.id, updateInstrument],
+  );
   const handleLineChange = useCallback((lineIndex: number) => {
     setSharedCurrentLine(lineIndex);
   }, []);
-  const {
-    handleMidiNoteEvent,
-    handleHardStopLivePreview,
-    handleRegisterTrackStopPreview,
-  } = useMidiActions({
-    activeSection,
-    lastTrackId,
-    currentInstrument,
-    currentSong,
-    sharedCurrentLine,
-    setSharedCurrentLine,
-    getCurrentPatternForTrack,
-    handlePatternChange,
-    ym2149Ref,
-    midiHelpersRef,
-    midiConfigurationRef,
-    parseBaseKeyString,
-  });
+  const { handleMidiNoteEvent, handleHardStopLivePreview, handleRegisterTrackStopPreview } =
+    useMidiActions({
+      activeSection,
+      lastTrackId,
+      currentInstrument,
+      currentSong,
+      sharedCurrentLine,
+      setSharedCurrentLine,
+      getCurrentPatternForTrack,
+      handlePatternChange,
+      ym2149Ref,
+      midiHelpersRef,
+      midiConfigurationRef,
+      parseBaseKeyString,
+    });
 
   const handleToggleDebugMode = useCallback(() => {
-    setIsDebugMode(prev => {
+    setIsDebugMode((prev) => {
       const next = !prev;
 
       if (!prev && next) {
@@ -1872,7 +1915,13 @@ const App: React.FC = () => {
       currentLine: sharedCurrentLine,
       instrument: currentInstrument ?? null,
     }),
-    [pendingExportType, pendingExportStrategy, clampedPlaybackPosition, sharedCurrentLine, currentInstrument]
+    [
+      pendingExportType,
+      pendingExportStrategy,
+      clampedPlaybackPosition,
+      sharedCurrentLine,
+      currentInstrument,
+    ],
   );
 
   const handleExportDumpFromModal = useCallback(() => {
@@ -2045,7 +2094,10 @@ const App: React.FC = () => {
     midiOutputEnabled,
     resetMidiProgramCache,
     sendSystemReset,
-  } = useMidiHandling({ onNoteEvent: handleMidiNoteEvent, monitorsEnabled: isDebugMode || isMidiModalOpen });
+  } = useMidiHandling({
+    onNoteEvent: handleMidiNoteEvent,
+    monitorsEnabled: isDebugMode || isMidiModalOpen,
+  });
 
   // Keep MIDI helper ref in sync with the latest MIDI send functions from the
   // useMidiHandling hook so callbacks defined earlier can use them safely.
@@ -2064,7 +2116,7 @@ const App: React.FC = () => {
     (patch: Partial<MidiConfiguration>) => {
       setMidiConfiguration({ ...midiConfiguration, ...patch });
     },
-    [midiConfiguration, setMidiConfiguration]
+    [midiConfiguration, setMidiConfiguration],
   );
 
   const handleShowMidi = useCallback(() => {
@@ -2082,7 +2134,7 @@ const App: React.FC = () => {
       resetMidiProgramCache();
       setIsMidiModalOpen(false);
     },
-    [resetMidiProgramCache, setMidiConfiguration]
+    [resetMidiProgramCache, setMidiConfiguration],
   );
 
   const handleClearMidiMonitors = useCallback(() => {
@@ -2099,21 +2151,21 @@ const App: React.FC = () => {
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
   const handleToggleTrackBackground = useCallback(() => {
-    setTrackBackgroundEnabled(prev => !prev);
+    setTrackBackgroundEnabled((prev) => !prev);
   }, []);
 
   const previewChannel =
     activeSection === 'trackA'
       ? 0
       : activeSection === 'trackB'
-      ? 1
-      : activeSection === 'trackC'
-      ? 2
-      : lastTrackId === 'B'
-      ? 1
-      : lastTrackId === 'C'
-      ? 2
-      : 0;
+        ? 1
+        : activeSection === 'trackC'
+          ? 2
+          : lastTrackId === 'B'
+            ? 1
+            : lastTrackId === 'C'
+              ? 2
+              : 0;
   useModalManager({
     songError,
     setSongError,
@@ -2206,7 +2258,7 @@ const App: React.FC = () => {
               if (!isMobileViewport) {
                 return;
               }
-              setIsCommandPanelMobileCollapsed(prev => !prev);
+              setIsCommandPanelMobileCollapsed((prev) => !prev);
             }}
           />
         }

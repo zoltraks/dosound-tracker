@@ -39,20 +39,20 @@ The application's core feature is its ability to export music data directly into
 
 ## Glossary
 
-| Term      | Definition                                                              |
-| --------- | ----------------------------------------------------------------------- |
-| YM2149    | Yamaha YM2149 Programmable Sound Generator (PSG) used in the Atari ST   |
-| PSG       | Programmable Sound Generator                                            |
-| DOSOUND   | XBIOS function on Atari ST TOS for playing music data                   |
-| XBIOS     | Extended BIOS of the Atari ST operating system                          |
-| VBLANK    | Vertical blanking interrupt, 50Hz on PAL Atari ST                       |
-| Chiptune  | Music written for sound chips from old computers and consoles           |
-| Pattern   | A 64-step sequence of notes for a single track                          |
-| Playlist  | A sequence of pattern references defining the song arrangement          |
-| Track     | One of three independent audio channels (A, B, C)                       |
-| Instrument| A set of parameters defining the sound of a note                        |
-| Envelope  | A sequence of volume or pitch values over time                          |
-| LFSR      | Linear Feedback Shift Register, used for noise generation               |
+| Term       | Definition                                                            |
+| ---------- | --------------------------------------------------------------------- |
+| YM2149     | Yamaha YM2149 Programmable Sound Generator (PSG) used in the Atari ST |
+| PSG        | Programmable Sound Generator                                          |
+| DOSOUND    | XBIOS function on Atari ST TOS for playing music data                 |
+| XBIOS      | Extended BIOS of the Atari ST operating system                        |
+| VBLANK     | Vertical blanking interrupt, 50Hz on PAL Atari ST                     |
+| Chiptune   | Music written for sound chips from old computers and consoles         |
+| Pattern    | A 64-step sequence of notes for a single track                        |
+| Playlist   | A sequence of pattern references defining the song arrangement        |
+| Track      | One of three independent audio channels (A, B, C)                     |
+| Instrument | A set of parameters defining the sound of a note                      |
+| Envelope   | A sequence of volume or pitch values over time                        |
+| LFSR       | Linear Feedback Shift Register, used for noise generation             |
 
 ## Functional Requirements
 

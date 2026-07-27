@@ -28,7 +28,7 @@ export function createClearedInstrument(slotId: InstrumentId): Instrument {
 export function countInstrumentUsage(
   patterns: Pattern[],
   targetInstrumentIdNorm: InstrumentId,
-  normalizeInstrumentId: (value?: string | number | null) => InstrumentId
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId,
 ): InstrumentUsageCounts {
   let usageCount = 0;
   let patternCount = 0;
@@ -67,7 +67,7 @@ export function countInstrumentUsage(
 
 export function cloneInstrumentToNextFreeSlot(
   instruments: Instrument[],
-  currentInstrument: Instrument
+  currentInstrument: Instrument,
 ): CloneInstrumentResult | FailureResult {
   if (instruments.length >= MAX_INSTRUMENTS) {
     return { ok: false, message: 'No free instrument slots available.' };
@@ -136,7 +136,7 @@ export function moveInstrumentAndRemapPatterns(
   instruments: Instrument[],
   patterns: Pattern[],
   index: number,
-  direction: 'up' | 'down'
+  direction: 'up' | 'down',
 ): MoveInstrumentResult | null {
   const length = instruments.length;
 
@@ -225,9 +225,11 @@ export function clearInstrumentAndNotes(
   instruments: Instrument[],
   patterns: Pattern[],
   targetInstrumentIdNorm: InstrumentId,
-  normalizeInstrumentId: (value?: string | number | null) => InstrumentId
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId,
 ): ClearInstrumentAndNotesResult | null {
-  const index = instruments.findIndex((inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm);
+  const index = instruments.findIndex(
+    (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm,
+  );
   if (index === -1) {
     return null;
   }
@@ -303,9 +305,11 @@ export interface ClearInstrumentOnlyResult {
 export function clearInstrumentOnly(
   instruments: Instrument[],
   targetInstrumentIdNorm: InstrumentId,
-  normalizeInstrumentId: (value?: string | number | null) => InstrumentId
+  normalizeInstrumentId: (value?: string | number | null) => InstrumentId,
 ): ClearInstrumentOnlyResult | null {
-  const index = instruments.findIndex((inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm);
+  const index = instruments.findIndex(
+    (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm,
+  );
   if (index === -1) {
     return null;
   }

@@ -7,11 +7,7 @@ interface MidiMonitorPanelProps {
   onCopy: (entries: MidiMonitorEntry[], label: string) => void;
 }
 
-export const MidiMonitorPanel: React.FC<MidiMonitorPanelProps> = ({
-  title,
-  entries,
-  onCopy,
-}) => {
+export const MidiMonitorPanel: React.FC<MidiMonitorPanelProps> = ({ title, entries, onCopy }) => {
   const count = entries.length;
 
   const bodyRef = useRef<HTMLDivElement | null>(null);
@@ -50,7 +46,7 @@ export const MidiMonitorPanel: React.FC<MidiMonitorPanelProps> = ({
         <span className="midi-col value">Value</span>
       </div>
       <div className="midi-monitor-body" ref={bodyRef}>
-        {entries.map(entry => (
+        {entries.map((entry) => (
           <div key={entry.id} className="midi-monitor-row">
             <span className="midi-col time">{entry.time}</span>
             <span className="midi-col data">{entry.data}</span>

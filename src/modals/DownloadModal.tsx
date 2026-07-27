@@ -6,10 +6,7 @@ interface DownloadModalProps {
   onClose: () => void;
 }
 
-export const DownloadModal: React.FC<DownloadModalProps> = ({
-  isOpen,
-  onClose,
-}) => {
+export const DownloadModal: React.FC<DownloadModalProps> = ({ isOpen, onClose }) => {
   return (
     <FilePickerModal
       isOpen={isOpen}

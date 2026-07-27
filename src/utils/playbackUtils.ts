@@ -30,7 +30,7 @@ export function updateChannelWithInstrument(
   currentInstrument: Instrument | null,
   firstInstrument: Instrument | undefined,
   envelopeStep: number = 0,
-  volumeModifier?: number | null
+  volumeModifier?: number | null,
 ): void {
   const normalizedNoteInstrumentId = noteData ? normalizeInstrumentId(noteData.instrument) : '';
 
@@ -40,15 +40,13 @@ export function updateChannelWithInstrument(
     resolvedInstrumentId = normalizeInstrumentId(fallbackSourceId);
   }
 
-  // We need to look up by normalized ID. 
+  // We need to look up by normalized ID.
   // Ideally instrumentsById should be keyed by normalized ID, or we assume it is?
   // In App.tsx `instrumentLookupByNormalizedId` was used.
   // We will assume the map passed in is keyed by normalized ID or we iterate?
   // For performance, the caller should provide a map keyed by normalized ID.
-  
-  const instrument = resolvedInstrumentId
-    ? instrumentsById.get(resolvedInstrumentId)
-    : undefined;
+
+  const instrument = resolvedInstrumentId ? instrumentsById.get(resolvedInstrumentId) : undefined;
 
   if (!instrument || !noteData || noteData.note === '===') {
     // No instrument or no active note - silence channel
@@ -63,6 +61,6 @@ export function updateChannelWithInstrument(
     instrument,
     { note: noteData.note, octave: noteData.octave },
     envelopeStep,
-    volumeModifier
+    volumeModifier,
   );
 }

@@ -3,7 +3,7 @@
 **Version:** 1.2.5  
 **Date:** December 21, 2025  
 **Project:** DOSOUND Tracker  
-**Type:** Refactoring Proposal  
+**Type:** Refactoring Proposal
 
 ## Executive Summary
 
@@ -39,12 +39,14 @@ src/
 ### Current Naming Conventions
 
 **File Naming:**
+
 - Components: PascalCase (e.g., `App.tsx`, `HeaderPanel.tsx`)
 - Hooks: camelCase with `use` prefix (e.g., `useAppState.ts`)
 - Utilities: camelCase (e.g., `hexFormatting.ts`)
 - Constants: PascalCase (e.g., `music.ts`)
 
 **Code Patterns:**
+
 - TypeScript interfaces for data structures
 - Custom hooks for state management
 - Utility functions for business logic
@@ -57,6 +59,7 @@ src/
 **Pattern:** Multiple similar utility functions across different modules
 
 **Examples:**
+
 - `formatInstrumentSlotId()` in `instrumentSelection.ts` and similar functions in other utilities
 - `normalizeInstrumentId()` duplicated logic in multiple files
 - Similar envelope processing logic scattered across components
@@ -68,6 +71,7 @@ src/
 **Pattern:** Dead utility functions and unused imports
 
 **Examples:**
+
 - `instrumentWarnings.ts` file exists but is not imported anywhere
 - Unused utility functions in `utils/` directory
 - Dead code paths in component lifecycle methods
@@ -79,6 +83,7 @@ src/
 **Pattern:** Mixed error handling approaches across the application
 
 **Examples:**
+
 - Some functions throw errors, others return error objects
 - Inconsistent error message formatting
 - Missing error boundaries in some components
@@ -90,6 +95,7 @@ src/
 **Pattern:** Overuse of `any` types and insufficient type definitions
 
 **Examples:**
+
 - `Record<string, unknown>` used where specific types could be defined
 - Missing type guards for runtime data validation
 - Inconsistent typing in utility functions
@@ -101,6 +107,7 @@ src/
 **Pattern:** Inefficient rendering and state updates
 
 **Examples:**
+
 - Missing memoization in expensive calculations
 - Unnecessary re-renders in track components
 - Inefficient data processing in export functions
@@ -114,18 +121,21 @@ src/
 **Objective:** Establish solid foundation for subsequent refactoring
 
 #### 1.1 Type System Enhancement
+
 - **Action:** Replace `any` types with proper TypeScript types
 - **Files:** All TypeScript files with type issues
 - **Testing:** Unit tests for type guards and validation functions
 - **Risk:** Low - Type changes are compile-time only
 
 #### 1.2 Error Handling Standardization
+
 - **Action:** Create unified error handling system
 - **Files:** `utils/validation.ts`, component error boundaries
 - **Testing:** Integration tests for error scenarios
 - **Risk:** Medium - Changes error propagation behavior
 
 #### 1.3 Code Organization
+
 - **Action:** Reorganize utils directory by functionality
 - **Files:** `src/utils/` directory structure
 - **Testing:** No functional changes, only structural
@@ -136,6 +146,7 @@ src/
 **Objective:** Remove code duplication and establish shared utilities
 
 #### 2.1 Utility Function Consolidation
+
 - **Action:** Create shared utility modules
 - **Target:** Instrument formatting, ID normalization, envelope processing
 - **Files:** `utils/instrumentSelection.ts`, `utils/playbackUtils.ts`, related utilities
@@ -143,6 +154,7 @@ src/
 - **Risk:** Medium - Need to ensure all callers work with new APIs
 
 #### 2.2 Component Refactoring
+
 - **Action:** Extract common patterns into reusable components
 - **Target:** Track components, modal components
 - **Files:** `components/TrackPanel.tsx`, `components/ModalContainer.tsx`
@@ -150,6 +162,7 @@ src/
 - **Risk:** Medium - Component interface changes
 
 #### 2.3 Hook Optimization
+
 - **Action:** Optimize custom hooks for performance
 - **Target:** `useTrackOperations`, `usePlaybackControls`
 - **Files:** `hooks/useTrackOperations.ts`, `hooks/usePlaybackControls.ts`
@@ -161,6 +174,7 @@ src/
 **Objective:** Improve application performance and responsiveness
 
 #### 3.1 Rendering Optimization
+
 - **Action:** Implement memoization and virtualization
 - **Target:** Track rendering, pattern display
 - **Files:** `components/TrackPanel.tsx`, `components/PatternLine.tsx`
@@ -168,6 +182,7 @@ src/
 - **Risk:** Low - Performance improvements only
 
 #### 3.2 State Management Optimization
+
 - **Action:** Optimize Zustand store updates
 - **Target:** Frequent state updates, unnecessary re-renders
 - **Files:** `stores/uiStore.ts`, related components
@@ -175,6 +190,7 @@ src/
 - **Risk:** Medium - State management changes
 
 #### 3.3 Data Processing Optimization
+
 - **Action:** Optimize export and import operations
 - **Target:** Large file handling, YAML processing
 - **Files:** `exports/`, `utils/songParser.ts`, `utils/songIO.ts`
@@ -186,6 +202,7 @@ src/
 **Objective:** Improve code quality and maintainability
 
 #### 4.1 Code Style Standardization
+
 - **Action:** Enforce consistent code style
 - **Target:** ESLint configuration, formatting rules
 - **Files:** `.eslintrc.js`, all source files
@@ -193,6 +210,7 @@ src/
 - **Risk:** Low - Style changes only
 
 #### 4.2 Documentation Enhancement
+
 - **Action:** Improve code documentation
 - **Target:** JSDoc comments, README updates
 - **Files:** All source files, documentation
@@ -200,6 +218,7 @@ src/
 - **Risk:** Low - Documentation only
 
 #### 4.3 Testing Infrastructure
+
 - **Action:** Enhance test coverage and quality
 - **Target:** Missing test coverage, test utilities
 - **Files:** `__tests__/`, test utilities
@@ -229,24 +248,28 @@ The following components MUST NOT be modified as they are critical for audio per
 ## Testing Requirements
 
 ### Unit Tests
+
 - All utility functions must have comprehensive unit tests
 - Type guard functions must be thoroughly tested
 - Error handling scenarios must be covered
 - Performance-critical functions need benchmark tests
 
 ### Integration Tests
+
 - Component interaction tests for refactored components
 - State management flow tests
 - Export/import functionality tests
 - Audio system integration tests (read-only)
 
 ### Performance Tests
+
 - Track rendering performance benchmarks
 - Large file import/export performance
 - Memory usage monitoring
 - Audio timing consistency verification
 
 ### Regression Tests
+
 - All existing functionality must continue to work
 - Audio output must remain identical
 - User interface behavior must be preserved
@@ -255,6 +278,7 @@ The following components MUST NOT be modified as they are critical for audio per
 ## Implementation Plan
 
 ### Week 1: Foundation (December 23-27, 2025)
+
 - [ ] Day 1: Type system enhancement
 - [ ] Day 2: Error handling standardization
 - [ ] Day 3: Code organization
@@ -262,6 +286,7 @@ The following components MUST NOT be modified as they are critical for audio per
 - [ ] Day 5: Review and validation
 
 ### Week 2: Duplication Elimination (December 30, 2025 - January 3, 2026)
+
 - [ ] Day 1: Utility function consolidation
 - [ ] Day 2: Component refactoring
 - [ ] Day 3: Hook optimization
@@ -269,6 +294,7 @@ The following components MUST NOT be modified as they are critical for audio per
 - [ ] Day 5: Integration testing
 
 ### Week 3: Performance Optimization (January 6-10, 2026)
+
 - [ ] Day 1: Rendering optimization
 - [ ] Day 2: State management optimization
 - [ ] Day 3: Data processing optimization
@@ -276,6 +302,7 @@ The following components MUST NOT be modified as they are critical for audio per
 - [ ] Day 5: Performance validation
 
 ### Week 4: Code Quality (January 13-17, 2026)
+
 - [ ] Day 1: Code style standardization
 - [ ] Day 2: Documentation enhancement
 - [ ] Day 3: Testing infrastructure enhancement
@@ -285,18 +312,21 @@ The following components MUST NOT be modified as they are critical for audio per
 ## Risk Assessment
 
 ### Low Risk
+
 - Type system improvements
 - Code organization changes
 - Documentation enhancements
 - Performance optimizations (non-audio)
 
 ### Medium Risk
+
 - Error handling standardization
 - Utility function consolidation
 - Component refactoring
 - State management optimization
 
 ### High Risk (NOT RECOMMENDED)
+
 - Audio engine modifications
 - Real-time processing changes
 - Audio timing loop modifications
@@ -305,6 +335,7 @@ The following components MUST NOT be modified as they are critical for audio per
 ## Success Criteria
 
 ### Functional Requirements
+
 - [ ] All existing functionality preserved
 - [ ] Audio output remains identical
 - [ ] Performance improvements measurable
@@ -312,12 +343,14 @@ The following components MUST NOT be modified as they are critical for audio per
 - [ ] Test coverage increased to 80%
 
 ### Non-Functional Requirements
+
 - [ ] Build time reduced by 20%
 - [ ] Bundle size reduced by 15%
 - [ ] Track rendering performance improved by 30%
 - [ ] Memory usage optimized for large projects
 
 ### Quality Metrics
+
 - [ ] Zero TypeScript compilation errors
 - [ ] ESLint passes with no warnings
 - [ ] All tests pass consistently

@@ -3,9 +3,7 @@ import type { Instrument, Song } from '../synth/SoundDriver';
 import { StorageKeys } from '../utils/storageKeys';
 import { logger } from '../utils/logger';
 
-export type ScheduledSaveHandle =
-  | { kind: 'timeout'; id: number }
-  | { kind: 'idle'; id: number };
+export type ScheduledSaveHandle = { kind: 'timeout'; id: number } | { kind: 'idle'; id: number };
 
 type SongStorageKey = typeof StorageKeys.SONG;
 type InstrumentStorageKey = typeof StorageKeys.INSTRUMENT;
@@ -24,7 +22,10 @@ export function scheduleJsonSave<K extends JsonStorageKey>(
   timeoutRef: MutableRefObject<ScheduledSaveHandle | null>,
   delayMs: number = 300,
 ): void {
-  const win = window as unknown as { requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number; cancelIdleCallback?: (handle: number) => void; };
+  const win = window as unknown as {
+    requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
+    cancelIdleCallback?: (handle: number) => void;
+  };
 
   if (timeoutRef.current !== null) {
     // Clear any previously scheduled save before scheduling a new one.

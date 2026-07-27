@@ -4,11 +4,11 @@ import { PATTERN_LENGTH } from '../constants/music';
 export function insertPatternStep(
   lines: Step[],
   insertIndex: number,
-  patternLength: number
+  patternLength: number,
 ): Step[] {
   const totalLines = patternLength || PATTERN_LENGTH;
   const safeIndex = Math.max(0, Math.min(insertIndex, totalLines - 1));
-  
+
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
@@ -20,7 +20,7 @@ export function insertPatternStep(
   for (let i = totalLines - 1; i > safeIndex; i--) {
     const from = newLines[i - 1] || { note: null };
     const base = newLines[i] || { note: null };
-    
+
     newLines[i] = {
       ...base,
       note: from.note,
@@ -39,11 +39,11 @@ export function insertPatternStep(
 export function deletePatternStep(
   lines: Step[],
   deleteIndex: number,
-  patternLength: number
+  patternLength: number,
 ): Step[] {
   const totalLines = patternLength || PATTERN_LENGTH;
   const safeIndex = Math.max(0, Math.min(deleteIndex, totalLines - 1));
-  
+
   const newLines = [...lines];
   while (newLines.length < totalLines) {
     newLines.push({
@@ -55,7 +55,7 @@ export function deletePatternStep(
   for (let i = safeIndex; i < totalLines - 1; i++) {
     const from = newLines[i + 1] || { note: null };
     const base = newLines[i] || { note: null };
-    
+
     newLines[i] = {
       ...base,
       note: from.note,

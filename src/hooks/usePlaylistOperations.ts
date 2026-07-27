@@ -2,16 +2,9 @@ import { useCallback } from 'react';
 import type { Song } from '../synth/SoundDriver';
 import type { NavigationSection } from '../constants/navigation';
 import { Formatter } from '../utils/formatters';
-import {
-  asPatternId,
-  asPlaylistPatternId,
-  type PatternId,
-} from '../types/branded';
+import { asPatternId, asPlaylistPatternId, type PatternId } from '../types/branded';
 import type { PlaylistEntry } from '../types/playlist';
-import {
-  mapSongLineToPlaylistEntries,
-  mapPlaylistEntriesToSongLine,
-} from '../types/playlist';
+import { mapSongLineToPlaylistEntries, mapPlaylistEntriesToSongLine } from '../types/playlist';
 
 interface UsePlaylistOperationsArgs {
   song: Song;
@@ -52,16 +45,17 @@ export function usePlaylistOperations({
 }: UsePlaylistOperationsArgs): UsePlaylistOperationsResult {
   const playlistLength = song.line.length;
   const clampedPlaybackPosition =
-    playlistLength === 0
-      ? 0
-      : Math.max(0, Math.min(currentPatternIndex, playlistLength - 1));
+    playlistLength === 0 ? 0 : Math.max(0, Math.min(currentPatternIndex, playlistLength - 1));
 
-  const handlePlaylistChange = useCallback((newPlaylist: PlaylistEntry[]) => {
-    updateSong({ line: mapPlaylistEntriesToSongLine(newPlaylist) });
-  }, [updateSong]);
+  const handlePlaylistChange = useCallback(
+    (newPlaylist: PlaylistEntry[]) => {
+      updateSong({ line: mapPlaylistEntriesToSongLine(newPlaylist) });
+    },
+    [updateSong],
+  );
 
   const generateUniquePatternId = useCallback((): PatternId => {
-    const existingIds = song.pattern.map(p => p.id);
+    const existingIds = song.pattern.map((p) => p.id);
     let index = song.pattern.length;
     let candidate: PatternId;
     do {
@@ -71,37 +65,41 @@ export function usePlaylistOperations({
     return candidate;
   }, [song.pattern]);
 
-  const handleCreatePatternAt = useCallback((lineIndex: number, track: 'A' | 'B' | 'C') => {
-    if (lineIndex < 0 || lineIndex >= song.line.length) {
-      return;
-    }
+  const handleCreatePatternAt = useCallback(
+    (lineIndex: number, track: 'A' | 'B' | 'C') => {
+      if (lineIndex < 0 || lineIndex >= song.line.length) {
+        return;
+      }
 
-    const patternId = generateUniquePatternId();
-    createNewPattern(patternId);
+      const patternId = generateUniquePatternId();
+      createNewPattern(patternId);
 
-    const newPlaylist = mapSongLineToPlaylistEntries(song.line);
-    const entry = { ...newPlaylist[lineIndex] };
+      const newPlaylist = mapSongLineToPlaylistEntries(song.line);
+      const entry = { ...newPlaylist[lineIndex] };
 
-    switch (track) {
-      case 'A':
-        entry.A = asPlaylistPatternId(patternId);
-        break;
-      case 'B':
-        entry.B = asPlaylistPatternId(patternId);
-        break;
-      case 'C':
-        entry.C = asPlaylistPatternId(patternId);
-        break;
-    }
+      switch (track) {
+        case 'A':
+          entry.A = asPlaylistPatternId(patternId);
+          break;
+        case 'B':
+          entry.B = asPlaylistPatternId(patternId);
+          break;
+        case 'C':
+          entry.C = asPlaylistPatternId(patternId);
+          break;
+      }
 
-    newPlaylist[lineIndex] = entry;
-    updateSong({ line: mapPlaylistEntriesToSongLine(newPlaylist) });
-  }, [song.line, createNewPattern, updateSong, generateUniquePatternId]);
+      newPlaylist[lineIndex] = entry;
+      updateSong({ line: mapPlaylistEntriesToSongLine(newPlaylist) });
+    },
+    [song.line, createNewPattern, updateSong, generateUniquePatternId],
+  );
 
   const handleCreateNewTrack = useCallback(() => {
-    const playlist: PlaylistEntry[] = song.line.length > 0
-      ? mapSongLineToPlaylistEntries(song.line)
-      : [{ A: '--', B: '--', C: '--' }];
+    const playlist: PlaylistEntry[] =
+      song.line.length > 0
+        ? mapSongLineToPlaylistEntries(song.line)
+        : [{ A: '--', B: '--', C: '--' }];
 
     const targetLine = Math.max(0, Math.min(currentPatternIndex, playlist.length - 1));
     const patternId = generateUniquePatternId();
@@ -127,7 +125,17 @@ export function usePlaylistOperations({
     setActiveSection(section);
     setSharedCurrentLine(0);
     setPosition(targetLine, 0, 0);
-  }, [song.line, currentPatternIndex, targetTrackId, generateUniquePatternId, createNewPattern, updateSong, setActiveSection, setSharedCurrentLine, setPosition]);
+  }, [
+    song.line,
+    currentPatternIndex,
+    targetTrackId,
+    generateUniquePatternId,
+    createNewPattern,
+    updateSong,
+    setActiveSection,
+    setSharedCurrentLine,
+    setPosition,
+  ]);
 
   const handleAddLine = useCallback(() => {
     const playlistEntries = mapSongLineToPlaylistEntries(song.line);
@@ -195,7 +203,7 @@ export function usePlaylistOperations({
     const newEntry: PlaylistEntry = { ...sourceEntry };
     const newPatterns = [...patterns];
 
-    const existingIds = new Set(patterns.map(p => p.id));
+    const existingIds = new Set(patterns.map((p) => p.id));
     let nextIndex = patterns.length;
 
     const allocatePatternId = () => {
@@ -218,14 +226,14 @@ export function usePlaylistOperations({
         return;
       }
 
-      const original = patterns.find(p => p.id === patternId);
+      const original = patterns.find((p) => p.id === patternId);
       if (!original) {
         newEntry[key] = patternId;
         return;
       }
 
       const newId = allocatePatternId();
-      const newSteps = original.step.map(step => ({
+      const newSteps = original.step.map((step) => ({
         note: step.note ? { ...step.note } : null,
         ...(step.volume !== undefined ? { volume: step.volume } : {}),
       }));

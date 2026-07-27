@@ -21,7 +21,7 @@ export function usePlaybackSimulation(
   ym2149Ref: React.MutableRefObject<YM2149 | null>,
   midiHelpersRef: React.MutableRefObject<{
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
-  } | null>
+  } | null>,
 ) {
   const channelSubTickRef = useRef([0, 0, 0]);
   const channelEnvelopeStepRef = useRef([0, 0, 0]);
@@ -54,7 +54,7 @@ export function usePlaybackSimulation(
         helpers.sendInstrumentMidiNoteOffForChannel(ch);
       }
     }
-    
+
     // Silence all channels
     if (ym2149Ref.current) {
       ym2149Ref.current.silenceAll();

@@ -45,6 +45,7 @@ private findInstrument(instrumentId: string): Instrument | null {
 ```
 
 **Evidence:**
+
 - Call graph analysis shows `findInstrument()` is never referenced
 - The `processNote()` method receives instrument via parameter, not via this lookup
 - This appears to be legacy code from an incomplete refactoring
@@ -53,6 +54,7 @@ private findInstrument(instrumentId: string): Instrument | null {
 Remove the `findInstrument()` method entirely. Update `processNote()` signature to accept the instrument directly (which it already does).
 
 **Testing Requirements:**
+
 - Verify `convertSongToSoundEvents()` still produces correct output
 - Test instrument note processing with various instrument configurations
 - Validate export functionality produces correct register values
@@ -67,6 +69,7 @@ Remove the `findInstrument()` method entirely. Update `processNote()` signature 
 This method duplicates the frequency calculation logic already present in [`YM2149.updateChannelWithInstrument()`](src/synth/YM2149.ts:408-425). The `SoundDriver` class is used for static export (WAV, VGM, ASM) while `YM2149` handles real-time playback. Both perform identical note-to-frequency conversion.
 
 **Evidence:**
+
 - `calculateNoteFrequency()` in SoundDriver matches frequency calculation in YM2149
 - Both use `NOTE_FREQUENCIES` constant and apply octave shift
 - The duplication is intentional for separation of concerns (static export vs real-time)
@@ -75,6 +78,7 @@ This method duplicates the frequency calculation logic already present in [`YM21
 Mark as intentionally duplicated. This is a case where code duplication serves architectural purposes - keeping export logic independent of real-time audio code. Do not unify.
 
 **Testing Requirements:**
+
 - N/A - no changes proposed
 
 ---
@@ -106,6 +110,7 @@ processFrame(
 ```
 
 **Evidence:**
+
 - Comment explicitly states this is incomplete
 - Current implementation only clones input state
 - No calls to this method exist in codebase
@@ -114,6 +119,7 @@ processFrame(
 Mark as intentionally incomplete placeholder. Do not remove as it may be needed for future feature development.
 
 **Testing Requirements:**
+
 - N/A - no changes proposed
 
 ---
@@ -123,6 +129,7 @@ Mark as intentionally incomplete placeholder. Do not remove as it may be needed 
 ### 2.1 Envelope Expansion Functions - Functional Duplication
 
 **Locations:**
+
 - [`src/utils/instrumentIO.ts:166-183`](src/utils/instrumentIO.ts:166) - `expandEnvelope()`
 - [`src/utils/instrumentIO.ts:185-198`](src/utils/instrumentIO.ts:185) - `expandLoopingEnvelope()`
 - [`src/utils/songParser.ts:344-363`](src/utils/songParser.ts:344) - `expandEnvelope()` (identical implementation)
@@ -130,6 +137,7 @@ Mark as intentionally incomplete placeholder. Do not remove as it may be needed 
 
 **Analysis:**
 Both files implement identical envelope expansion functions. These functions:
+
 - Take a raw array of values
 - Expand to a fixed envelope length (ENVELOPE_LENGTH = 32)
 - Handle edge cases (empty input, insufficient length)
@@ -141,15 +149,9 @@ Create a shared utility function in `src/utils/envelopeUtils.ts`:
 
 ```typescript
 // src/utils/envelopeUtils.ts
-export function expandEnvelope(
-  values: unknown,
-  length: number,
-  defaultValue: number
-): number[] {
+export function expandEnvelope(values: unknown, length: number, defaultValue: number): number[] {
   const rawArray = Array.isArray(values) ? values : [];
-  const numericValues = rawArray
-    .map(v => Number(v))
-    .filter(v => Number.isFinite(v));
+  const numericValues = rawArray.map((v) => Number(v)).filter((v) => Number.isFinite(v));
 
   if (numericValues.length === 0) {
     return Array(length).fill(defaultValue);
@@ -169,12 +171,10 @@ export function expandEnvelope(
 export function expandLoopingEnvelope(
   values: unknown,
   length: number,
-  defaultValue: number
+  defaultValue: number,
 ): number[] {
   const rawArray = Array.isArray(values) ? values : [];
-  const numericValues = rawArray
-    .map(v => Number(v))
-    .filter(v => Number.isFinite(v));
+  const numericValues = rawArray.map((v) => Number(v)).filter((v) => Number.isFinite(v));
 
   if (numericValues.length === 0) {
     return Array(length).fill(defaultValue);
@@ -191,11 +191,13 @@ export function expandLoopingEnvelope(
 Update `instrumentIO.ts` and `songParser.ts` to import from the new module.
 
 **Why Safe:**
+
 - No changes to function signatures or behavior
 - Only refactoring location of implementation
 - Both callers have identical requirements
 
 **Testing Requirements:**
+
 - Add unit tests for `expandEnvelope()` and `expandLoopingEnvelope()`
 - Test cases: empty input, single value, multiple values, boundary conditions
 - Verify export/import produces identical results before and after refactoring
@@ -205,6 +207,7 @@ Update `instrumentIO.ts` and `songParser.ts` to import from the new module.
 ### 2.2 Trim Envelope Functions - Identical Duplication
 
 **Locations:**
+
 - [`src/utils/instrumentIO.ts:7-15`](src/utils/instrumentIO.ts:7) - `trimEnvelopeLocal()`
 - [`src/utils/songIO.ts:9-17`](src/utils/songIO.ts:9) - `trimEnvelope()`
 
@@ -228,10 +231,12 @@ const trimEnvelope = (values: number[]): number[] => {
 Move to `src/utils/envelopeUtils.ts` (same file as Phase 2.1) and update both callers.
 
 **Why Safe:**
+
 - Pure refactoring with no behavioral change
 - Functions are side-effect free
 
 **Testing Requirements:**
+
 - Test cases: empty array, all same values, mixed values, single element
 - Verify YAML export produces identical output before and after
 
@@ -240,6 +245,7 @@ Move to `src/utils/envelopeUtils.ts` (same file as Phase 2.1) and update both ca
 ### 2.3 Is-Zero-Default Functions - Identical Duplication
 
 **Locations:**
+
 - [`src/utils/instrumentIO.ts:23-24`](src/utils/instrumentIO.ts:23) - `isZeroDefaultLocal()`
 - [`src/utils/songIO.ts:19-20`](src/utils/songIO.ts:19) - `isZeroDefault()`
 
@@ -260,6 +266,7 @@ const isZeroDefault = (values: number[]): boolean =>
 Move to `src/utils/envelopeUtils.ts` and rename to `isEnvelopeZeroDefault()` for clarity.
 
 **Testing Requirements:**
+
 - Test cases: empty, single zero, single non-zero, multiple values
 
 ---
@@ -269,6 +276,7 @@ Move to `src/utils/envelopeUtils.ts` and rename to `isEnvelopeZeroDefault()` for
 ### 3.1 Instrument Color Normalization - Duplicate Locations
 
 **Locations:**
+
 - [`src/utils/songFormat.ts:41-85`](src/utils/songFormat.ts:41) - `normalizeInstrumentColor()`
 - [`src/utils/instrumentIO.ts:238`](src/utils/instrumentIO.ts:238) - imports from songFormat
 - [`src/utils/songParser.ts:502`](src/utils/songParser.ts:502) - imports from songFormat
@@ -282,6 +290,7 @@ The `normalizeInstrumentColor()` function is already centralized in `songFormat.
 ### 3.2 Base Key Parsing - Correctly Centralized
 
 **Locations:**
+
 - [`src/utils/songFormat.ts:3-31`](src/utils/songFormat.ts:3) - `formatBaseKey()`, `parseBaseKey()`
 - Re-exported in [`src/utils/songParser.ts:110`](src/utils/songParser.ts:110)
 - Used throughout codebase
@@ -294,12 +303,14 @@ Base key parsing is correctly centralized. The re-export in `songParser.ts` prov
 ### 3.3 Instrument ID Formatting - Multiple Implementations
 
 **Locations:**
+
 - [`src/utils/playbackUtils.ts:4-21`](src/utils/playbackUtils.ts:4) - `normalizeInstrumentId()`
 - [`src/utils/instrumentSelection.ts:3-6`](src/utils/instrumentSelection.ts:3) - `formatInstrumentSlotId()`
 - [`src/utils/instrumentSelection.ts:8-13`](src/utils/instrumentSelection.ts:8) - `stepInstrumentId()`
 - [`src/utils/hexFormatting.ts:3-5`](src/utils/hexFormatting.ts:3) - `formatHexId()`
 
 **Analysis:**
+
 - `normalizeInstrumentId()` - handles multiple input types (string, number, null), normalizes to 2-digit hex
 - `formatInstrumentSlotId()` - wraps `normalizeInstrumentId()` for slot indices
 - `formatHexId()` - generic hex formatting using `Formatter.hex()`
@@ -317,11 +328,13 @@ No changes. Current organization is appropriate.
 
 **Analysis:**
 Four nearly identical quote functions exist:
+
 - `quoteBaseValues()`
 - `quoteColorValues()`
 - `quoteNameValues()`
 
 All follow the same pattern:
+
 ```typescript
 const quoteXValues = (text: string): string => {
   const regex = /^(\s*-\s+|\s+)(X):\s*(.+)$/gm;
@@ -339,10 +352,7 @@ Create a generic quote helper:
 
 ```typescript
 // src/utils/yamlUtils.ts
-export function quoteYamlValues(
-  text: string,
-  keyPattern: string
-): string {
+export function quoteYamlValues(text: string, keyPattern: string): string {
   const regex = new RegExp(`^(\\s*-\\s+|\\s+)(${keyPattern}):\\s*(.+)$`, 'gm');
   return text.replace(regex, (_match: string, indent: string, key: string, value: string) => {
     let inner = String(value).trim();
@@ -361,10 +371,12 @@ export function quoteYamlValues(
 Update `instrumentIO.ts` to use the generic helper.
 
 **Why Safe:**
+
 - Only affects YAML formatting, not data structures
 - Output format remains identical
 
 **Testing Requirements:**
+
 - Test YAML export produces identical output
 - Verify special characters are properly escaped
 
@@ -376,6 +388,7 @@ Update `instrumentIO.ts` to use the generic helper.
 
 **Analysis:**
 Similar quote functions exist in `songIO.ts`:
+
 - `quoteLineValues()` - for playlist lines (A, B, C)
 - `quoteNoteValues()` - for note values
 - `quoteBaseValues()` - for base keys
@@ -389,6 +402,7 @@ These could also use the generic helper from Phase 3.4.
 Update `songIO.ts` to use the generic helper from Phase 3.4.
 
 **Testing Requirements:**
+
 - Verify all export formats produce identical output
 - Test edge cases with special characters in titles, names
 
@@ -399,6 +413,7 @@ Update `songIO.ts` to use the generic helper from Phase 3.4.
 ### 4.1 Consistent Export Function Naming
 
 **Current Pattern Analysis:**
+
 - `src/utils/instrumentIO.ts` - `buildInstrumentYamlForExport()`, `parseInstrumentFromText()`
 - `src/utils/songIO.ts` - `buildSongYamlForExport()`
 - `src/utils/songParser.ts` - `parseSongFromYaml()`
@@ -410,16 +425,19 @@ Mix of `buildXForExport`, `parseX`, and `parseXFromY` patterns. All serve the sa
 Adopt consistent naming pattern: `serializeX()` for export, `deserializeX()` for import.
 
 New names:
+
 - `buildInstrumentYamlForExport()` -> `serializeInstrument()`
 - `parseInstrumentFromText()` -> `deserializeInstrument()`
 - `buildSongYamlForExport()` -> `serializeSong()`
 - `parseSongFromYaml()` -> `deserializeSong()`
 
 **Why Safe:**
+
 - Update all import statements accordingly
 - No behavioral change
 
 **Testing Requirements:**
+
 - All existing tests must pass
 - Add tests for new function names (alias exports for backward compatibility during transition)
 
@@ -428,6 +446,7 @@ New names:
 ### 4.2 Consistent Hook Naming
 
 **Current Pattern:**
+
 - `useAppState` - manages debug mode, export settings, transpose settings
 - `useDataManagement` - manages song/instrument CRUD
 - `useFileOperations` - manages file I/O
@@ -441,6 +460,7 @@ Some overlap in naming. `useInstrumentActions` and `useInstrumentManagement` cou
 Rename `useInstrumentActions` to `useInstrumentOperations` for consistency with `usePlaylistOperations`, `useTrackOperations`.
 
 **Testing Requirements:**
+
 - Verify all imports are updated
 - Test instrument operations (play, clone, delete) still work correctly
 
@@ -449,6 +469,7 @@ Rename `useInstrumentActions` to `useInstrumentOperations` for consistency with 
 ### 4.3 Utility Function Naming
 
 **Current Pattern:**
+
 - `formatBaseKey`, `parseBaseKey` - consistent
 - `normalizeInstrumentId` - uses "normalize"
 - `countInstrumentUsage` - uses verb-noun
@@ -456,6 +477,7 @@ Rename `useInstrumentActions` to `useInstrumentOperations` for consistency with 
 
 **Proposed Action:**
 Adopt consistent verb-noun pattern for utility functions:
+
 - `normalizeInstrumentId` -> `normalizeId` (or keep as-is)
 - `countInstrumentUsage` -> `countUsage` (keep as-is)
 - `createClearedInstrument` -> `createClearedInstrument` (keep as-is)
@@ -469,16 +491,19 @@ Current naming is acceptable. Focus on consistency in new code rather than renam
 ### 5.1 Unused Imports Identified
 
 **File:** [`src/utils/instrument.ts`](src/utils/instrument.ts)
+
 - Only imports `Instrument` type from SoundDriver
 - Uses `isInstrumentEmpty()` function
 - No unused imports found
 
 **File:** [`src/utils/trackUtils.ts`](src/utils/trackUtils.ts)
+
 - Imports `Pattern` type from SoundDriver
 - Uses `computeEffectiveVolume()` function
 - No unused imports found
 
 **File:** [`src/hooks/useAppState.ts`](src/hooks/useAppState.ts)
+
 - Imports `StorageKeys` from `../utils/storageKeys`
 - Uses `StorageKeys.DEBUG_MODE`, `StorageKeys.EXPORT_TYPE`, `StorageKeys.DUMP_MODE`, `StorageKeys.TRANSPOSE_SETTINGS`
 - All imports are used
@@ -496,6 +521,7 @@ No unused imports were identified during analysis. The codebase appears well-mai
 `exportToAssembly()` method generates assembly code from sound events. This may be used for DOSOUND assembly export feature.
 
 **Evidence:**
+
 - Called by export functionality
 - No evidence of removal needed
 
@@ -509,6 +535,7 @@ Keep as-is. Not dead code.
 ### 6.1 Inconsistent Storage Key Usage
 
 **Current State:**
+
 - [`src/utils/storageKeys.ts`](src/utils/storageKeys.ts) defines centralized constants
 - `useAppState.ts` uses these constants correctly
 - `useDataManagement.ts` defines `INSTRUMENT_STORAGE_KEY` inline (line 31)
@@ -533,6 +560,7 @@ No changes needed. Storage key usage is already centralized.
 For each refactored function, add comprehensive unit tests:
 
 **Phase 2.1 - Envelope Expansion Functions:**
+
 ```typescript
 describe('expandEnvelope', () => {
   it('handles empty input', () => {
@@ -557,6 +585,7 @@ describe('expandLoopingEnvelope', () => {
 ```
 
 **Phase 2.2 - Trim Envelope Functions:**
+
 ```typescript
 describe('trimEnvelope', () => {
   it('trims trailing duplicates', () => {
@@ -572,6 +601,7 @@ describe('trimEnvelope', () => {
 ```
 
 **Phase 3.4 - YAML Quote Helper:**
+
 ```typescript
 describe('quoteYamlValues', () => {
   it('quotes values correctly', () => {
@@ -586,6 +616,7 @@ describe('quoteYamlValues', () => {
 ```
 
 **Phase 4.1 - Serialization Functions:**
+
 ```typescript
 describe('serializeInstrument', () => {
   it('produces valid YAML', () => {
@@ -614,14 +645,14 @@ describe('serializeInstrument', () => {
 
 ### Current Conventions (to maintain)
 
-| Pattern | Example | Location |
-|---------|---------|----------|
-| Hooks | `useX` | `src/hooks/` |
-| Components | `XComponent` | `src/components/` |
-| Utilities | `camelCase` | `src/utils/` |
-| Classes | `PascalCase` | `src/synth/` |
-| Constants | `UPPER_SNAKE_CASE` | `src/constants/` |
-| Types | `PascalCase` | All TypeScript files |
+| Pattern    | Example            | Location             |
+| ---------- | ------------------ | -------------------- |
+| Hooks      | `useX`             | `src/hooks/`         |
+| Components | `XComponent`       | `src/components/`    |
+| Utilities  | `camelCase`        | `src/utils/`         |
+| Classes    | `PascalCase`       | `src/synth/`         |
+| Constants  | `UPPER_SNAKE_CASE` | `src/constants/`     |
+| Types      | `PascalCase`       | All TypeScript files |
 
 ### Proposed Improvements
 
@@ -685,6 +716,7 @@ Flat structure is appropriate for this project size. No structural changes recom
 - `src/stores/` - 1 file
 
 The utils directory could benefit from subdirectories:
+
 - `src/utils/io/` - file I/O utilities
 - `src/utils/format/` - formatting utilities
 - `src/utils/data/` - data manipulation utilities

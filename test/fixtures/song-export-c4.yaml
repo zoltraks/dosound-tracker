@@ -5,31 +5,31 @@ song:
   length: 16
   loop: 0
   line:
-    - A: "01"
-      B: "02"
-      C: "03"
+    - A: '01'
+      B: '02'
+      C: '03'
   pattern:
-    - number: "01"
+    - number: '01'
       step:
-        - note: "C-4"
-          instrument: "00"
+        - note: 'C-4'
+          instrument: '00'
         - wait: 3
-        - note: "OFF"
-    - number: "02"
+        - note: 'OFF'
+    - number: '02'
       step:
         - wait: 4
-        - note: "C-4"
-          instrument: "00"
+        - note: 'C-4'
+          instrument: '00'
         - wait: 3
-        - note: "OFF"
-    - number: "03"
+        - note: 'OFF'
+    - number: '03'
       step:
         - wait: 8
-        - note: "C-4"
-          instrument: "00"
+        - note: 'C-4'
+          instrument: '00'
         - wait: 3
-        - note: "OFF"
+        - note: 'OFF'
   instrument:
-    - number: "00"
+    - number: '00'
       volume: [15, 0]
       sustain: 0

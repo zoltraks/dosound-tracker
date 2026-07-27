@@ -41,8 +41,8 @@ const BASE_PALETTE: PaletteTone[] = [
   { name: 'yellow', shades: ['#990', '#bb3', '#dd5', '#ee6', '#ff7', '#ff9', '#ffb', '#ffd'] },
 ];
 
-const PALETTE_ENTRIES: PaletteEntry[] = BASE_PALETTE.flatMap(tone =>
-  tone.shades.map((color, shadeIndex) => ({ tone: tone.name, shadeIndex, color }))
+const PALETTE_ENTRIES: PaletteEntry[] = BASE_PALETTE.flatMap((tone) =>
+  tone.shades.map((color, shadeIndex) => ({ tone: tone.name, shadeIndex, color })),
 );
 
 const normalizeColor = (raw: string | undefined): string => {
@@ -90,11 +90,7 @@ const getTextColorForBackground = (color: string): string => {
   return brightness < 128 ? '#ffffff' : '#000000';
 };
 
-export const ColorPicker: React.FC<ColorPickerProps> = ({
-  value,
-  onChange,
-  className,
-}) => {
+export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, className }) => {
   const [selectedColor, setSelectedColor] = useState<string>(() => normalizeColor(value));
   const [customValue, setCustomValue] = useState<string>('');
   const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
@@ -111,7 +107,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
         onChange(normalized);
       }
     },
-    [onChange]
+    [onChange],
   );
 
   const handleColorSelect = useCallback(
@@ -120,7 +116,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
       setShowCustomInput(false);
       setCustomValue('');
     },
-    [emitChange]
+    [emitChange],
   );
 
   const handleCustomInputChange = useCallback(
@@ -138,7 +134,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
         emitChange(`#${next}`);
       }
     },
-    [emitChange]
+    [emitChange],
   );
 
   const handleCustomSubmit = useCallback(() => {
@@ -162,7 +158,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 
   const previewTextColor = useMemo(
     () => getTextColorForBackground(effectivePreviewColor),
-    [effectivePreviewColor]
+    [effectivePreviewColor],
   );
 
   const rootClassName = useMemo(() => {
@@ -175,20 +171,14 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
 
   return (
     <div className={rootClassName}>
-      <div
-        className="color-preview-bar"
-        style={{ backgroundColor: effectivePreviewColor }}
-      >
-        <span
-          className="color-preview-label"
-          style={{ color: previewTextColor }}
-        >
+      <div className="color-preview-bar" style={{ backgroundColor: effectivePreviewColor }}>
+        <span className="color-preview-label" style={{ color: previewTextColor }}>
           {effectivePreviewColor}
         </span>
       </div>
 
       <div className="color-picker-grid">
-        {PALETTE_ENTRIES.map(entry => {
+        {PALETTE_ENTRIES.map((entry) => {
           const { tone, shadeIndex, color } = entry;
           const isSelected = selectedColor === color;
           const key = `${tone}-${shadeIndex}`;
@@ -208,13 +198,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
               aria-label={color}
             >
               <span className="color-grid-cell-inner">
-                {isSelected && (
-                  <Check
-                    size={14}
-                    style={{ color: checkColor }}
-                    aria-hidden="true"
-                  />
-                )}
+                {isSelected && <Check size={14} style={{ color: checkColor }} aria-hidden="true" />}
               </span>
             </button>
           );
@@ -266,9 +250,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({
                 className="color-picker-custom-swatch"
                 style={{ backgroundColor: `#${customValue}` }}
               />
-              <span className="color-picker-custom-preview-label">
-                Preview: #{customValue}
-              </span>
+              <span className="color-picker-custom-preview-label">Preview: #{customValue}</span>
             </div>
           )}
         </div>

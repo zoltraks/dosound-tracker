@@ -15,12 +15,7 @@ import { downloadFile } from '../utils/fileOperations';
 import { logger } from '../utils/logger';
 import { StorageKeys } from '../utils/storageKeys';
 import { normalizeInstrumentId } from '../utils/playbackUtils';
-import {
-  asInstrumentId,
-  asPatternId,
-  asPlaylistPatternId,
-  type PatternId,
-} from '../types/branded';
+import { asInstrumentId, asPatternId, asPlaylistPatternId, type PatternId } from '../types/branded';
 import {
   SONG_STORAGE_KEY,
   loadInitialSong,
@@ -62,13 +57,39 @@ export const useDataManagement = () => {
     return {
       id: asInstrumentId('00'),
       name: 'Default Instrument',
-      volume: Array(32).fill(0x0F),
-      shift: [0, 4, 8, 12, 16, 20, 24, 20, 16, 12, 8, 4, 0, -4, -8, -12, -16, -20, -24, -20, -16, -12, -8, -4, ...Array(8).fill(0)],
+      volume: Array(32).fill(0x0f),
+      shift: [
+        0,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        20,
+        16,
+        12,
+        8,
+        4,
+        0,
+        -4,
+        -8,
+        -12,
+        -16,
+        -20,
+        -24,
+        -20,
+        -16,
+        -12,
+        -8,
+        -4,
+        ...Array(8).fill(0),
+      ],
       pitch: Array(32).fill(0),
       noise: Array(32).fill(0),
       mode: Array(32).fill(0),
       base: DEFAULT_BASE_KEY,
-      sustain: null
+      sustain: null,
     };
   });
 
@@ -84,7 +105,7 @@ export const useDataManagement = () => {
   useEffect(() => {
     const currentId = normalizeInstrumentId(currentInstrument.id);
     const songInstrument = currentSong.instrument.find(
-      inst => normalizeInstrumentId(inst?.id) === currentId
+      (inst) => normalizeInstrumentId(inst?.id) === currentId,
     );
     if (!songInstrument || songInstrument === currentInstrument) {
       return;
@@ -138,13 +159,13 @@ export const useDataManagement = () => {
     const patterns: Pattern[] = [
       createBlankPattern('01'),
       createBlankPattern('02'),
-      createBlankPattern('03')
+      createBlankPattern('03'),
     ];
 
     const newCurrentInstrument: Instrument = {
       ...createEmptyInstrument(asInstrumentId('00'), ENVELOPE_LENGTH),
       base: DEFAULT_BASE_KEY,
-      sustain: null
+      sustain: null,
     };
 
     const newSong: Song = {
@@ -155,11 +176,13 @@ export const useDataManagement = () => {
       length: targetLength,
       loop: null,
       pattern: patterns,
-      line: [{
-        A: asPlaylistPatternId('01'),
-        B: asPlaylistPatternId('02'),
-        C: asPlaylistPatternId('03'),
-      }],
+      line: [
+        {
+          A: asPlaylistPatternId('01'),
+          B: asPlaylistPatternId('02'),
+          C: asPlaylistPatternId('03'),
+        },
+      ],
       instrument: [newCurrentInstrument],
       chip: DEFAULT_SONG_CHIP,
       frame: DEFAULT_SONG_FRAME,
@@ -200,14 +223,14 @@ export const useDataManagement = () => {
       setCurrentSong(newSong);
 
       const firstInstrument = newSong.instrument.find(
-        inst => inst && inst.name && inst.name.trim()
+        (inst) => inst && inst.name && inst.name.trim(),
       );
       if (firstInstrument) {
         setCurrentInstrument(firstInstrument);
       }
       setIsSongDirty(false);
     },
-    [setCurrentInstrument]
+    [setCurrentInstrument],
   );
 
   const loadSongFromText = useCallback(
@@ -215,7 +238,7 @@ export const useDataManagement = () => {
       try {
         let metadata: SongParseMetadata | null = null;
         const newSong = parseSongFromYaml(content, {
-          onMetadata: data => {
+          onMetadata: (data) => {
             metadata = data;
           },
         });
@@ -231,7 +254,7 @@ export const useDataManagement = () => {
         setSongError('Error loading song file.');
       }
     },
-    [applyParsedSong, setSongError]
+    [applyParsedSong, setSongError],
   );
 
   const confirmPendingSongImport = useCallback(() => {
@@ -248,13 +271,13 @@ export const useDataManagement = () => {
   const loadSong = useCallback(
     (file: File) => {
       const reader = new FileReader();
-      reader.onload = e => {
+      reader.onload = (e) => {
         const content = (e.target?.result ?? '') as string;
         loadSongFromText(content);
       };
       reader.readAsText(file);
     },
-    [loadSongFromText]
+    [loadSongFromText],
   );
 
   const saveInstrument = useCallback(() => {
@@ -287,7 +310,13 @@ export const useDataManagement = () => {
         setInstrumentError('Error loading instrument file.');
       }
     },
-    [currentInstrument.id, setCurrentInstrument, setCurrentSong, setIsSongDirty, setInstrumentError],
+    [
+      currentInstrument.id,
+      setCurrentInstrument,
+      setCurrentSong,
+      setIsSongDirty,
+      setInstrumentError,
+    ],
   );
 
   const updateSong = useCallback(

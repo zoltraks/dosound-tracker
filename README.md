@@ -33,7 +33,7 @@ Adjust the file name if you downloaded a different version.
 
 After this, open the `.dmg` and install as usual.
 
-## Makers & Takers 
+## Makers & Takers
 
 Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 
@@ -217,53 +217,53 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 
 **Core Guidelines**
 
-| File                                | Purpose                                                          |
-| ----------------------------------- | ---------------------------------------------------------------- |
-| [GUIDELINES.md](docs/GUIDELINES.md) | Central source of truth for development rules and audio-critical principles |
-| [PROJECT.md](docs/PROJECT.md)       | Project description, scope, requirements, use cases, and quality targets |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | System architecture, module boundaries, state domains, and patterns |
-| [SPECIFICATION.md](docs/SPECIFICATION.md) | Project-specific implementation details, stack, schemas, and constants |
-| [COPYRIGHTS.md](docs/COPYRIGHTS.md) | Copyright and licensing rules                                    |
-| [WORKFLOW.md](docs/WORKFLOW.md)     | Day-to-day development workflow                                  |
-| [REFACTORING.md](docs/REFACTORING.md) | Refactoring proposal and assessment process                      |
-| [TESTING.md](docs/TESTING.md)       | Testing strategy, test types, fixtures, and CI                   |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deployment targets and hosting                                   |
-| [VERSIONING.md](docs/VERSIONING.md) | Version numbering scheme, bumping rules, and CHANGELOG format    |
-| [FORMAT.md](docs/FORMAT.md)         | Project file format specification for song and instrument files  |
-| [MAX.md](docs/MAX.md)               | MAX audio file format specification                              |
-| [FUTURE.md](docs/FUTURE.md)         | Candidate future enhancements (not committed work)              |
+| File                                      | Purpose                                                                     |
+| ----------------------------------------- | --------------------------------------------------------------------------- |
+| [GUIDELINES.md](docs/GUIDELINES.md)       | Central source of truth for development rules and audio-critical principles |
+| [PROJECT.md](docs/PROJECT.md)             | Project description, scope, requirements, use cases, and quality targets    |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md)   | System architecture, module boundaries, state domains, and patterns         |
+| [SPECIFICATION.md](docs/SPECIFICATION.md) | Project-specific implementation details, stack, schemas, and constants      |
+| [COPYRIGHTS.md](docs/COPYRIGHTS.md)       | Copyright and licensing rules                                               |
+| [WORKFLOW.md](docs/WORKFLOW.md)           | Day-to-day development workflow                                             |
+| [REFACTORING.md](docs/REFACTORING.md)     | Refactoring proposal and assessment process                                 |
+| [TESTING.md](docs/TESTING.md)             | Testing strategy, test types, fixtures, and CI                              |
+| [DEPLOYMENT.md](docs/DEPLOYMENT.md)       | Deployment targets and hosting                                              |
+| [VERSIONING.md](docs/VERSIONING.md)       | Version numbering scheme, bumping rules, and CHANGELOG format               |
+| [FORMAT.md](docs/FORMAT.md)               | Project file format specification for song and instrument files             |
+| [MAX.md](docs/MAX.md)                     | MAX audio file format specification                                         |
+| [FUTURE.md](docs/FUTURE.md)               | Candidate future enhancements (not committed work)                          |
 
 **Engineering Standards**
 
-| File                                                  | Purpose                                              |
-| ----------------------------------------------------- | ---------------------------------------------------- |
+| File                                                                      | Purpose                                   |
+| ------------------------------------------------------------------------- | ----------------------------------------- |
 | [standard/ts-react-development.md](docs/standard/ts-react-development.md) | TypeScript and React engineering standard |
 
 **Document Templates**
 
-| File                                                          | Purpose                                    |
-| ------------------------------------------------------------- | ------------------------------------------ |
-| [template/change-request-template.md](docs/template/change-request-template.md) | Template for change request documents |
+| File                                                                                      | Purpose                                    |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------ |
+| [template/change-request-template.md](docs/template/change-request-template.md)           | Template for change request documents      |
 | [template/implementation-plan-template.md](docs/template/implementation-plan-template.md) | Template for implementation plan documents |
 
 **ASE Directory Structure**
 
-| Directory                     | Purpose                                                        |
-| ----------------------------- | -------------------------------------------------------------- |
-| `docs/change/<version>/`      | Change request descriptions: features, bug fixes, enhancements |
-| `docs/plan/<version>/`        | Implementation plans created from change requests              |
-| `docs/refactoring/<version>/` | Refactoring proposals and assessments after implementation     |
-| `docs/archive/`               | Historical documents                                           |
-| `docs/feature/`               | Feature proposals (historical, not part of active workflow)    |
+| Directory                     | Purpose                                                             |
+| ----------------------------- | ------------------------------------------------------------------- |
+| `docs/change/<version>/`      | Change request descriptions: features, bug fixes, enhancements      |
+| `docs/plan/<version>/`        | Implementation plans created from change requests                   |
+| `docs/refactoring/<version>/` | Refactoring proposals and assessments after implementation          |
+| `docs/archive/`               | Historical documents                                                |
+| `docs/feature/`               | Feature proposals (historical, not part of active workflow)         |
 | `docs/prompt/`                | Historical AI prompt logs (historical, not part of active workflow) |
-| `docs/report/`                | Generated analysis reports                                     |
-| `docs/media/`                 | Images and media files for documentation                       |
+| `docs/report/`                | Generated analysis reports                                          |
+| `docs/media/`                 | Images and media files for documentation                            |
 
 See [GUIDELINES.md](docs/GUIDELINES.md) for the complete rule set, including the new feature implementation workflow, audio-critical development principles, and sources of truth.
 
 ---
 
-*Built with dedication to authentic retro computing and the timeless appeal of 8-bit chiptune music. Every envelope, every register write, every frequency calculation aims to capture the pure essence of what made the YM2149 chip a cornerstone of computer music history.*
+_Built with dedication to authentic retro computing and the timeless appeal of 8-bit chiptune music. Every envelope, every register write, every frequency calculation aims to capture the pure essence of what made the YM2149 chip a cornerstone of computer music history._
 
 ## License
 

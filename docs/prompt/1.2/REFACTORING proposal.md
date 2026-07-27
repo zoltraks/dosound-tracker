@@ -3,6 +3,7 @@
 ## Project Analysis Requirements
 
 **MANDATORY DEEP SOURCE CODE ANALYSIS:**
+
 - Read and analyze EVERY source file in the project completely
 - Trace the execution flow from entry points through all code paths
 - Map all function calls, including indirect calls and callbacks
@@ -15,6 +16,7 @@
 - Map out error handling and edge case management
 
 **Analysis must thoroughly cover:**
+
 - Complete source code structure and organization
 - All function and variable naming patterns currently in use
 - Every module dependency, import, and coupling point
@@ -27,6 +29,7 @@
 - All callback mechanisms and event handlers
 
 **Identify code duplication carefully:**
+
 - Exact duplicates (copy-paste code)
 - Functional duplicates (same logic, different implementation)
 - Intentional duplicates (safety-critical, performance-optimized)
@@ -34,6 +37,7 @@
 - Document WHY duplication exists before proposing removal
 
 **Identify unused code thoroughly:**
+
 - Truly dead code (never called, never referenced)
 - Incomplete refactoring artifacts (partially removed features)
 - Commented-out code that should be removed
@@ -75,6 +79,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 ## Refactoring Focus Areas
 
 **PRIMARY FOCUS - Unused and Duplicated Code:**
+
 - Identify all unused code and analyze why it exists
 - Determine if unused code is from incomplete previous refactorings
 - Find all duplicated code and assess whether duplication is intentional
@@ -84,6 +89,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 - Prioritize maintainability improvements through code simplification
 
 **Maintainability Enhancement:**
+
 - Simplify complex functions without changing behavior
 - Reduce coupling between modules where safe
 - Improve code organization for better readability
@@ -92,6 +98,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 - Enhance code documentation where needed
 
 **Safety-First Approach:**
+
 - Every proposed change must be proven safe before inclusion
 - Verify that changes cannot affect audio generation or sequencer timing
 - Test critical code paths remain untouched
@@ -102,6 +109,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 ## Naming Conventions
 
 **Apply naming conventions consistently:**
+
 - Use existing naming patterns found in the project (document these in the proposal)
 - If current naming is inconsistent or unclear, propose better conventions
 - Ensure all new names follow the established or proposed patterns
@@ -112,6 +120,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 ## Critical Safety Constraints
 
 **ABSOLUTE RESTRICTIONS - MUST NOT BE MODIFIED OR BROKEN:**
+
 - All sound generation functions (YM2149 chip emulation)
 - All sequencer functions and playback logic
 - Any code that directly manipulates audio output or timing
@@ -126,12 +135,14 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 **These components are working correctly and ANY modification risks breaking audio functionality or diagnostics. Mark these clearly as off-limits in the proposal.**
 
 **Before proposing ANY change near audio or sequencer code:**
+
 - Trace all call paths to ensure no audio/sequencer functions are affected
 - Verify no timing dependencies will be altered
 - Confirm no performance characteristics will change
 - Document why the change is safe despite proximity to critical code
 
 **DEBUG MODE REQUIREMENTS:**
+
 - The project has a DEBUG mode for diagnostic purposes
 - Debug mode console output is INTENTIONAL and MUST be preserved
 - Distinguish between:
@@ -144,6 +155,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 ## Testing Requirements
 
 **MANDATORY for every refactored function:**
+
 - Add unit tests that verify the function's behavior before and after refactoring
 - Tests must cover all code paths and edge cases
 - For functions that were refactored or touched in any way, existing tests must pass AND new comprehensive tests must be added
@@ -152,6 +164,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 - For timing-sensitive code near audio/sequencer, add performance tests
 
 **Test specifications must include:**
+
 - Function signature and expected behavior
 - Test cases with specific inputs and expected outputs
 - Assertions that verify correctness
@@ -160,6 +173,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 - Regression tests for each refactored component
 
 **Special testing for code removal:**
+
 - Document why removed code was unused (call graph analysis)
 - Verify no indirect references exist
 - Confirm no future code paths would use it
@@ -168,6 +182,7 @@ Preserve all debug mode logging statements as they are essential for troubleshoo
 ## Document Focus
 
 Focus the document on:
+
 - Technical specifications and executable requirements
 - Detailed analysis of unused and duplicated code
 - Justification for each proposed change (why it's safe)
@@ -182,6 +197,7 @@ Focus the document on:
 ## Proposal Quality Requirements
 
 **Each proposed change must include:**
+
 - What code is being changed (exact location and scope)
 - Why the change is needed (unused, duplicated, or maintainability)
 - Why the change is safe (analysis proving no breakage)
@@ -189,12 +205,14 @@ Focus the document on:
 - What must NOT be changed in proximity to the modification
 
 **For code removal proposals:**
+
 - Proof that code is genuinely unused (call graph, reference analysis)
 - Explanation of why it exists (incomplete refactoring, legacy, etc.)
 - Confirmation that DEBUG mode doesn't use it
 - Verification that no future features depend on it
 
 **For code deduplication proposals:**
+
 - Identification of all duplicate instances
 - Analysis of whether duplication is intentional
 - If intentional, document why and DO NOT propose changes
@@ -207,10 +225,11 @@ Focus the document on:
 
 Analyse all refactoring proposals.
 These come from different models:
- - `REFACTORING-minimax.md` from MiniMax M2.1
- - `REFACTORING-devstral.md` from Devstral 2 2512
- - `REFACTORING-kat.md` from KAT-Coder-Pro V1
- - `REFACTORING-grok.md` from Grok Code Fast 1
+
+- `REFACTORING-minimax.md` from MiniMax M2.1
+- `REFACTORING-devstral.md` from Devstral 2 2512
+- `REFACTORING-kat.md` from KAT-Coder-Pro V1
+- `REFACTORING-grok.md` from Grok Code Fast 1
 
 Make comparison of all of them in `PROPOSAL COMPARISATION.md`.
 Find weak and strong points and decide which one is the best.

@@ -24,7 +24,13 @@ describe('useMidi', () => {
     window.localStorage.removeItem(STORAGE_KEY);
 
     let hook: HookResult | null = null;
-    render(<MidiHookHarness onReady={value => { hook = value; }} />);
+    render(
+      <MidiHookHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -53,7 +59,13 @@ describe('useMidi', () => {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
 
     let hook: HookResult | null = null;
-    render(<MidiHookHarness onReady={value => { hook = value; }} />);
+    render(
+      <MidiHookHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();
@@ -73,7 +85,13 @@ describe('useMidi', () => {
     window.localStorage.removeItem(STORAGE_KEY);
 
     let hook: HookResult | null = null;
-    render(<MidiHookHarness onReady={value => { hook = value; }} />);
+    render(
+      <MidiHookHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
 
     await waitFor(() => {
       expect(hook).not.toBeNull();

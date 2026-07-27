@@ -8,482 +8,516 @@ song:
   length: 32
   loop: 0
   line:
-    - A: "00"
-      B: "01"
-      C: "02"
-    - A: "03"
-      B: "01"
-      C: "02"
-    - A: "00"
-      B: "01"
-      C: "04"
-    - A: "03"
-      B: "01"
-      C: "05"
-    - A: "00"
-      B: "06"
-      C: "07"
-    - A: "03"
-      B: "06"
-      C: "08"
-    - A: "00"
-      B: "09"
-      C: "07"
-    - A: "03"
-      B: "09"
-      C: "08"
-    - A: "00"
-      B: "06"
-      C: "07"
-    - A: "03"
-      B: "06"
-      C: "08"
-    - A: "00"
-      B: "01"
-      C: "04"
-    - A: "03"
-      B: "01"
-      C: "0A"
-    - A: "00"
-      B: "01"
-      C: "02"
-    - A: "03"
-      B: "01"
-      C: "02"
-    - A: "00"
-      B: "01"
-      C: "04"
-    - A: "03"
-      B: "01"
-      C: "05"
-    - A: "00"
-      B: "06"
-      C: "07"
-    - A: "03"
-      B: "06"
-      C: "08"
-    - A: "00"
-      B: "09"
-      C: "07"
-    - A: "03"
-      B: "09"
-      C: "08"
-    - A: "00"
-      B: "06"
-      C: "07"
-    - A: "03"
-      B: "06"
-      C: "08"
-    - A: "00"
-      B: "01"
-      C: "04"
-    - A: "03"
-      B: "01"
-      C: "0A"
+    - A: '00'
+      B: '01'
+      C: '02'
+    - A: '03'
+      B: '01'
+      C: '02'
+    - A: '00'
+      B: '01'
+      C: '04'
+    - A: '03'
+      B: '01'
+      C: '05'
+    - A: '00'
+      B: '06'
+      C: '07'
+    - A: '03'
+      B: '06'
+      C: '08'
+    - A: '00'
+      B: '09'
+      C: '07'
+    - A: '03'
+      B: '09'
+      C: '08'
+    - A: '00'
+      B: '06'
+      C: '07'
+    - A: '03'
+      B: '06'
+      C: '08'
+    - A: '00'
+      B: '01'
+      C: '04'
+    - A: '03'
+      B: '01'
+      C: '0A'
+    - A: '00'
+      B: '01'
+      C: '02'
+    - A: '03'
+      B: '01'
+      C: '02'
+    - A: '00'
+      B: '01'
+      C: '04'
+    - A: '03'
+      B: '01'
+      C: '05'
+    - A: '00'
+      B: '06'
+      C: '07'
+    - A: '03'
+      B: '06'
+      C: '08'
+    - A: '00'
+      B: '09'
+      C: '07'
+    - A: '03'
+      B: '09'
+      C: '08'
+    - A: '00'
+      B: '06'
+      C: '07'
+    - A: '03'
+      B: '06'
+      C: '08'
+    - A: '00'
+      B: '01'
+      C: '04'
+    - A: '03'
+      B: '01'
+      C: '0A'
   pattern:
-    - number: "00"
+    - number: '00'
       step:
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "F-3"
-          instrument: "00"
+        - note: 'F-3'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 3
-        - note: "G-2"
-          instrument: "00"
+        - note: 'G-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 1
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "F-3"
-          instrument: "00"
+        - note: 'F-3'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 5
-        - note: "A-1"
-          instrument: "00"
+        - note: 'A-1'
+          instrument: '00'
         - wait: 1
-        - note: "C-2"
-          instrument: "00"
-    - number: "01"
+        - note: 'C-2'
+          instrument: '00'
+    - number: '01'
       step:
         - wait: 2
-        - note: "D-2"
-          instrument: "01"
+        - note: 'D-2'
+          instrument: '01'
         - wait: 9
-        - note: "D-2"
-          instrument: "01"
+        - note: 'D-2'
+          instrument: '01'
         - wait: 5
-        - note: "D-2"
-          instrument: "01"
+        - note: 'D-2'
+          instrument: '01'
         - wait: 9
-        - note: "D-2"
-          instrument: "01"
-    - number: "02"
-    - number: "03"
+        - note: 'D-2'
+          instrument: '01'
+    - number: '02'
+    - number: '03'
       step:
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "F-3"
-          instrument: "00"
+        - note: 'F-3'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 3
-        - note: "G-2"
-          instrument: "00"
+        - note: 'G-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 1
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "F-3"
-          instrument: "00"
+        - note: 'F-3'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 3
-        - note: "A-2"
-          instrument: "00"
+        - note: 'A-2'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "00"
+        - note: 'C-3'
+          instrument: '00'
         - wait: 1
-        - note: "F-3"
-          instrument: "00"
-    - number: "04"
+        - note: 'F-3'
+          instrument: '00'
+    - number: '04'
       step:
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 3
-        - note: "D-2"
-          instrument: "02"
+        - note: 'D-2'
+          instrument: '02'
         - wait: 5
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 3
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 5
-        - note: "D-2"
-          instrument: "02"
+        - note: 'D-2'
+          instrument: '02'
         - wait: 5
-        - note: "D-3"
-          instrument: "02"
+        - note: 'D-3'
+          instrument: '02'
         - wait: 3
-        - note: "D-2"
-          instrument: "03"
-    - number: "05"
+        - note: 'D-2'
+          instrument: '03'
+    - number: '05'
       step:
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 3
-        - note: "D-2"
-          instrument: "02"
+        - note: 'D-2'
+          instrument: '02'
         - wait: 5
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 3
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 5
-        - note: "D-2"
-          instrument: "02"
+        - note: 'D-2'
+          instrument: '02'
         - wait: 5
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "D-3"
-          instrument: "06"
-    - number: "06"
+        - note: 'D-3'
+          instrument: '06'
+    - number: '06'
       step:
-        - note: "D-6"
-          instrument: "05"
+        - note: 'D-6'
+          instrument: '05'
         - wait: 1
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "01"
+        - note: 'C-3'
+          instrument: '01'
         - wait: 1
-        - note: "D-3"
-          instrument: "01"
+        - note: 'D-3'
+          instrument: '01'
         - wait: 3
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "A-4"
-          instrument: "04"
-        - note: "D-4"
-          instrument: "05"
-        - note: "C-5"
-          instrument: "04"
-        - note: "A-4"
-          instrument: "05"
-        - note: "G-5"
-          instrument: "04"
-        - note: "C-5"
-          instrument: "05"
-        - note: "D-2"
-          instrument: "00"
+        - note: 'A-4'
+          instrument: '04'
+        - note: 'D-4'
+          instrument: '05'
+        - note: 'C-5'
+          instrument: '04'
+        - note: 'A-4'
+          instrument: '05'
+        - note: 'G-5'
+          instrument: '04'
+        - note: 'C-5'
+          instrument: '05'
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "G-5"
-          instrument: "05"
-        - note: "A-5"
-          instrument: "05"
+        - note: 'G-5'
+          instrument: '05'
+        - note: 'A-5'
+          instrument: '05'
         - wait: 2
-        - note: "A-5"
-          instrument: "04"
+        - note: 'A-5'
+          instrument: '04'
         - wait: 1
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "C-6"
-          instrument: "04"
-        - note: "A-5"
-          instrument: "05"
-        - note: "D-6"
-          instrument: "04"
-        - note: "C-6"
-          instrument: "05"
-    - number: "07"
+        - note: 'C-6'
+          instrument: '04'
+        - note: 'A-5'
+          instrument: '05'
+        - note: 'D-6'
+          instrument: '04'
+        - note: 'C-6'
+          instrument: '05'
+    - number: '07'
       step:
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "D-3"
-          instrument: "02"
+        - note: 'D-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "D-3"
-          instrument: "02"
+        - note: 'D-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "D-3"
-          instrument: "02"
-        - note: "D-3"
-          instrument: "02"
-    - number: "08"
+        - note: 'D-3'
+          instrument: '02'
+        - note: 'D-3'
+          instrument: '02'
+    - number: '08'
       step:
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "D-3"
-          instrument: "02"
+        - note: 'D-3'
+          instrument: '02'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 1
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 1
-        - note: "A-2"
-          instrument: "06"
+        - note: 'A-2'
+          instrument: '06'
         - wait: 1
-        - note: "D-3"
-          instrument: "02"
-        - note: "D-3"
-          instrument: "02"
-    - number: "09"
+        - note: 'D-3'
+          instrument: '02'
+        - note: 'D-3'
+          instrument: '02'
+    - number: '09'
       step:
-        - note: "D-6"
-          instrument: "05"
+        - note: 'D-6'
+          instrument: '05'
         - wait: 1
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "C-3"
-          instrument: "01"
+        - note: 'C-3'
+          instrument: '01'
         - wait: 1
-        - note: "D-3"
-          instrument: "01"
+        - note: 'D-3'
+          instrument: '01'
         - wait: 3
-        - note: "D-2"
-          instrument: "00"
+        - note: 'D-2'
+          instrument: '00'
         - wait: 1
-        - note: "D-5"
-          instrument: "04"
-        - note: "A-3"
-          instrument: "05"
-        - note: "F-5"
-          instrument: "04"
-        - note: "D-5"
-          instrument: "05"
-        - note: "C-5"
-          instrument: "04"
-        - note: "F-5"
-          instrument: "05"
-        - note: "D-2"
-          instrument: "00"
-        - note: "C-5"
-          instrument: "05"
-        - note: "G-5"
-          instrument: "05"
-        - note: "A-5"
-          instrument: "05"
-        - note: "C-5"
-          instrument: "05"
-        - note: "D-5"
-          instrument: "05"
-        - note: "A-5"
-          instrument: "04"
-        - note: "D-5"
-          instrument: "05"
-        - note: "D-2"
-          instrument: "00"
-        - note: "A-5"
-          instrument: "05"
-        - note: "A-4"
-          instrument: "04"
-        - note: "E-5"
-          instrument: "05"
-        - note: "C-5"
-          instrument: "04"
-        - note: "A-4"
-          instrument: "05"
-    - number: "0A"
+        - note: 'D-5'
+          instrument: '04'
+        - note: 'A-3'
+          instrument: '05'
+        - note: 'F-5'
+          instrument: '04'
+        - note: 'D-5'
+          instrument: '05'
+        - note: 'C-5'
+          instrument: '04'
+        - note: 'F-5'
+          instrument: '05'
+        - note: 'D-2'
+          instrument: '00'
+        - note: 'C-5'
+          instrument: '05'
+        - note: 'G-5'
+          instrument: '05'
+        - note: 'A-5'
+          instrument: '05'
+        - note: 'C-5'
+          instrument: '05'
+        - note: 'D-5'
+          instrument: '05'
+        - note: 'A-5'
+          instrument: '04'
+        - note: 'D-5'
+          instrument: '05'
+        - note: 'D-2'
+          instrument: '00'
+        - note: 'A-5'
+          instrument: '05'
+        - note: 'A-4'
+          instrument: '04'
+        - note: 'E-5'
+          instrument: '05'
+        - note: 'C-5'
+          instrument: '04'
+        - note: 'A-4'
+          instrument: '05'
+    - number: '0A'
       step:
-        - note: "D-2"
-          instrument: "03"
+        - note: 'D-2'
+          instrument: '03'
         - wait: 3
-        - note: "D-2"
-          instrument: "02"
+        - note: 'D-2'
+          instrument: '02'
         - wait: 5
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 3
-        - note: "C-3"
-          instrument: "02"
+        - note: 'C-3'
+          instrument: '02'
         - wait: 5
-        - note: "D-2"
-          instrument: "02"
+        - note: 'D-2'
+          instrument: '02'
   instrument:
-    - number: "00"
+    - number: '00'
       name: Bass 4
-      base: "C-3"
+      base: 'C-3'
       octave: 1
       volume: [14, 14, 12, 12, 0]
-    - number: "01"
+    - number: '01'
       name: Bass 5
-      base: "C-2"
+      base: 'C-2'
       volume: [11, 11, 11, 11, 7, 0]
-    - number: "02"
+    - number: '02'
       name: Hihat
-      base: "C-4"
+      base: 'C-4'
       volume: [10, 2, 0]
       noise: [2, 1, 0]
       mode: [1, 1, 1, 0]
-    - number: "03"
+    - number: '03'
       name: Kick
-      base: "D-2"
+      base: 'D-2'
       octave: 2
       volume: [11, 15, 11, 7, 4, 2, 0]
       noise: [9, 0, 0, 6, 5, 4, 0]
       mode: [1, 0, 0, 1, 1, 1, 0]
-    - number: "04"
+    - number: '04'
       name: Pim 1
-      base: "C-4"
+      base: 'C-4'
       volume: [12, 14, 10, 4, 0]
-      shift: [12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0, 12, 0]
-    - number: "05"
+      shift:
+        [
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+          12,
+          0,
+        ]
+    - number: '05'
       name: Pim 2
-      base: "C-4"
+      base: 'C-4'
       volume: [10, 6, 0]
-    - number: "06"
+    - number: '06'
       name: Snare
-      base: "A-2"
+      base: 'A-2'
       octave: 2
       volume: [11, 15, 13, 10, 9, 8, 6, 5, 0]
       noise: [9, 0, 0, 8, 6, 4, 3, 2, 0]

@@ -13,7 +13,7 @@ function optimizeVgmDelays(
   commands: number[],
   loopCommandOffset: number,
   waitCommand: number,
-  samplesPerTick: number
+  samplesPerTick: number,
 ): { commands: number[]; loopCommandOffset: number } {
   if (commands.length === 0) {
     return { commands, loopCommandOffset };
@@ -43,7 +43,7 @@ function optimizeVgmDelays(
 function mergeVgmDelaySequence(
   commands: number[],
   waitCommand: number,
-  samplesPerTick: number
+  samplesPerTick: number,
 ): number[] {
   const out: number[] = [];
   const len = commands.length;
@@ -129,19 +129,7 @@ function buildGd3Tag(song: Song): Uint8Array | null {
   const yearValue = typeof song.year === 'number' && Number.isFinite(song.year) ? song.year : null;
   const release = yearValue !== null ? String(yearValue) : '';
 
-  const fields: string[] = [
-    title,
-    '',
-    'DOSOUND Tracker',
-    '',
-    '',
-    '',
-    author,
-    '',
-    release,
-    '',
-    '',
-  ];
+  const fields: string[] = [title, '', 'DOSOUND Tracker', '', '', '', author, '', release, '', ''];
 
   if (!title && !author && !release) {
     return null;
@@ -192,38 +180,42 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
     commands.push(0xa0, register & 0xff, value & 0xff);
   };
 
-  simulateSong(normalizedSong, (frame) => {
-    const { registers, isFirstFrame, playlistIndex, patternLineIndex, tick } = frame;
+  simulateSong(
+    normalizedSong,
+    (frame) => {
+      const { registers, isFirstFrame, playlistIndex, patternLineIndex, tick } = frame;
 
-    if (
-      loopCommandOffset < 0 &&
-      loopPlaylistIndex !== null &&
-      playlistIndex === loopPlaylistIndex &&
-      patternLineIndex === 0 &&
-      tick === 0
-    ) {
-      loopCommandOffset = commands.length;
-      loopSampleOffset = totalSamples;
-    }
-
-    for (let i = 0; i < relevantRegs.length; i++) {
-      const reg = relevantRegs[i];
-      const defaultValue = reg === 0x07 ? 0x38 : 0x00;
-      const current = registers[reg] !== undefined ? registers[reg] : defaultValue;
-      const previous = lastRegs[reg];
-      if (isFirstFrame || previous !== current) {
-        writeAyRegister(reg, current);
-        lastRegs[reg] = current;
+      if (
+        loopCommandOffset < 0 &&
+        loopPlaylistIndex !== null &&
+        playlistIndex === loopPlaylistIndex &&
+        patternLineIndex === 0 &&
+        tick === 0
+      ) {
+        loopCommandOffset = commands.length;
+        loopSampleOffset = totalSamples;
       }
-    }
 
-    if (waitCommand === 0x61) {
-      commands.push(0x61, SAMPLES_PER_TICK & 0xff, (SAMPLES_PER_TICK >>> 8) & 0xff);
-    } else {
-      commands.push(waitCommand);
-    }
-    totalSamples += SAMPLES_PER_TICK;
-  }, { clock: chipClock });
+      for (let i = 0; i < relevantRegs.length; i++) {
+        const reg = relevantRegs[i];
+        const defaultValue = reg === 0x07 ? 0x38 : 0x00;
+        const current = registers[reg] !== undefined ? registers[reg] : defaultValue;
+        const previous = lastRegs[reg];
+        if (isFirstFrame || previous !== current) {
+          writeAyRegister(reg, current);
+          lastRegs[reg] = current;
+        }
+      }
+
+      if (waitCommand === 0x61) {
+        commands.push(0x61, SAMPLES_PER_TICK & 0xff, (SAMPLES_PER_TICK >>> 8) & 0xff);
+      } else {
+        commands.push(waitCommand);
+      }
+      totalSamples += SAMPLES_PER_TICK;
+    },
+    { clock: chipClock },
+  );
 
   commands.push(0x66);
 

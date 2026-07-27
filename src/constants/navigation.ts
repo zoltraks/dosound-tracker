@@ -3,7 +3,7 @@ export const NAVIGATION_ORDER = [
   'octave',
   'commands',
   'trackA',
-  'trackB', 
+  'trackB',
   'trackC',
   'mode',
   'volume',
@@ -12,33 +12,33 @@ export const NAVIGATION_ORDER = [
   'noise',
   'songInfo',
   'playlist',
-  'instrumentList'
+  'instrumentList',
 ] as const;
 
-export type NavigationSection = typeof NAVIGATION_ORDER[number];
+export type NavigationSection = (typeof NAVIGATION_ORDER)[number];
 
 export const KEYBOARD_SHORTCUTS = {
   // Navigation
-  'TAB': 'nextSection',
+  TAB: 'nextSection',
   'SHIFT+TAB': 'previousSection',
-  'ARROW_UP': 'previousLine',
-  'ARROW_DOWN': 'nextLine',
-  'ARROW_LEFT': 'previousColumn',
-  'ARROW_RIGHT': 'nextColumn',
-  
+  ARROW_UP: 'previousLine',
+  ARROW_DOWN: 'nextLine',
+  ARROW_LEFT: 'previousColumn',
+  ARROW_RIGHT: 'nextColumn',
+
   // Editing
-  'SPACE': 'clearPosition',
+  SPACE: 'clearPosition',
   'CTRL+SPACE': 'noteOff',
   'CTRL+-': 'previousInstrument',
   'CTRL+PLUS': 'nextInstrument',
-  
+
   // Playback
-  'F2': 'playLine',
+  F2: 'playLine',
   'CTRL+5': 'playLineFromStart',
   'CTRL+6': 'playLine',
   'CTRL+8': 'stopPlayback',
-  'ESC': 'stopPlayback',
-  
+  ESC: 'stopPlayback',
+
   // File operations
   'CTRL+N': 'newSong',
   'CTRL+O': 'loadSong',

@@ -1,5 +1,10 @@
 import { useCallback, useState } from 'react';
-import type { MidiConfiguration, MidiMonitorEntry, MidiNoteEvent, MidiDeviceInfo } from '../utils/midiUtils';
+import type {
+  MidiConfiguration,
+  MidiMonitorEntry,
+  MidiNoteEvent,
+  MidiDeviceInfo,
+} from '../utils/midiUtils';
 import { STORAGE_KEY } from '../utils/midiUtils';
 import { useMidiDeviceManagement } from './useMidiDeviceManagement';
 import { useMidiMessageProcessing } from './useMidiMessageProcessing';
@@ -36,17 +41,12 @@ interface RawMidiConfiguration {
 
 export function useMidi(
   onNoteEvent: (event: MidiNoteEvent) => void,
-  options?: { enableMonitors?: boolean }
+  options?: { enableMonitors?: boolean },
 ): UseMidiResult {
   const enableMonitors = options?.enableMonitors ?? true;
 
-  const {
-    isSupported,
-    accessError,
-    devices,
-    refreshDevices,
-    midiAccessRef
-  } = useMidiDeviceManagement();
+  const { isSupported, accessError, devices, refreshDevices, midiAccessRef } =
+    useMidiDeviceManagement();
 
   const OLD_STORAGE_KEY = 'dosound-tracker-midi-config';
 
@@ -119,14 +119,8 @@ export function useMidi(
     sendNoteOn,
     sendNoteOff,
     sendProgramChange,
-    sendSystemReset
-  } = useMidiMessageProcessing(
-    midiAccessRef,
-    devices,
-    configuration,
-    enableMonitors,
-    onNoteEvent
-  );
+    sendSystemReset,
+  } = useMidiMessageProcessing(midiAccessRef, devices, configuration, enableMonitors, onNoteEvent);
 
   return {
     isSupported,

@@ -64,7 +64,7 @@ export function useAudioSetup(chipClock: number = DEFAULT_SONG_CLOCK): UseAudioS
             .then(() => {
               logger.info('AudioContext resumed by user interaction');
             })
-            .catch(err => {
+            .catch((err) => {
               logger.error('AudioContext resume failed', err);
             });
         }
@@ -76,13 +76,13 @@ export function useAudioSetup(chipClock: number = DEFAULT_SONG_CLOCK): UseAudioS
         'pointerdown',
         'touchstart',
       ];
-      userEvents.forEach(eventType => {
+      userEvents.forEach((eventType) => {
         document.addEventListener(eventType, handleUserInteraction);
       });
 
       return () => {
         window.clearTimeout(stopToneTimeout);
-        userEvents.forEach(eventType => {
+        userEvents.forEach((eventType) => {
           document.removeEventListener(eventType, handleUserInteraction);
         });
         if (ym2149Ref.current) {

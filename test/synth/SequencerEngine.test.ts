@@ -21,9 +21,7 @@ const createTestSong = (): Song => ({
       ],
     },
   ],
-  line: [
-    { A: '00', B: '--', C: '--' },
-  ],
+  line: [{ A: '00', B: '--', C: '--' }],
   instrument: [
     {
       id: '00',

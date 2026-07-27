@@ -55,7 +55,7 @@ export function getTrackLineClass(lineIndex: number, currentLine: number): strin
 
 export function getInstrumentColorForNote(
   noteData: Note | null,
-  instrumentColorMap: Map<string, string>
+  instrumentColorMap: Map<string, string>,
 ): string | null {
   if (!noteData || noteData.note === '===' || typeof noteData.instrument !== 'string') {
     return null;

@@ -3,6 +3,7 @@
 Overview of all assessments and proposals stored in this folder.
 
 ## Documents
+
 - [ASSESSMENT.md.md](./ASSESSMENT.md.md) — Consolidated refactoring assessment summary.
 - [ASSESSMENT-claude.md](./ASSESSMENT-claude.md) — Claude-generated assessment of the v1.2.6 refactor.
 - [ASSESSMENT-deepseek.md](./ASSESSMENT-deepseek.md) — DeepSeek-generated assessment of the v1.2.6 refactor.

@@ -17,6 +17,7 @@ This refactoring proposal targets code quality improvements through systematic r
 The following components are **strictly off-limits** for refactoring:
 
 **Core Audio System:**
+
 - `src/synth/YM2149.ts` - Complete YM2149 chip emulation and register manipulation
 - `src/synth/SoundDriver.ts` - Audio event processing (except unused methods identified below)
 - `src/synth/SequencerEngine.ts` - Pattern processing and timing logic
@@ -24,6 +25,7 @@ The following components are **strictly off-limits** for refactoring:
 - `src/workers/sequencerWorker.ts` - Real-time 20ms/40ms timing cycles
 
 **Protected Functionality:**
+
 - All sound generation procedures and waveform generation
 - Audio buffer management and real-time audio processing loops
 - Sequencer timing and playback logic
@@ -32,6 +34,7 @@ The following components are **strictly off-limits** for refactoring:
 - Any code executing within the 50Hz VBLANK cycle
 
 **Debugging Infrastructure:**
+
 - All `logger.debug()`, `logger.info()`, and diagnostic output
 - Debug mode conditional logging statements
 - Timing diagnostics and performance monitoring
@@ -49,6 +52,7 @@ The following components are **strictly off-limits** for refactoring:
 An entire unused playback system exists in SoundDriver that was superseded by the current sequencer-based architecture. The following methods form an interconnected unused chain:
 
 **Complete Unused Method List:**
+
 1. `playEvents()` (lines 221-227) - Entry point, never called
 2. `processEvents()` (lines 229-255) - Only called by playEvents()
 3. `exportToAssembly()` (lines 265-290) - Superseded by exports/asm.ts
@@ -61,12 +65,14 @@ An entire unused playback system exists in SoundDriver that was superseded by th
 10. `processPattern()` (lines 135-145) - Only used by convertSongToSoundEvents()
 
 **Evidence:**
+
 - Call graph analysis shows no external references to these methods
 - The current playback system uses SequencerEngine directly
 - Export functionality uses the exports/* modules, not these methods
 - `convertSongToSoundEvents()` is the only method actually used (for exports)
 
 **Why Safe:**
+
 - These methods are completely isolated from the active codebase
 - Removal cannot affect the sequencer-based playback system
 - Export functionality uses dedicated export modules
@@ -76,6 +82,7 @@ An entire unused playback system exists in SoundDriver that was superseded by th
 Remove all 10 methods from SoundDriver. The `convertSongToSoundEvents()` method that is actually used by exports does not depend on any of these.
 
 **Testing Requirements:**
+
 ```typescript
 describe('SoundDriver after unused method removal', () => {
   it('converts song to sound events correctly', () => {
@@ -109,6 +116,7 @@ Various utility files contain unused imports that should be removed:
 - `src/utils/trackPanelUtils.ts` - `import type { NavigationSection }` (unused)
 
 **Why Safe:**
+
 - These are type-only imports with no runtime behavior
 - Removal has zero functional impact
 - Reduces bundle size and improves build times
@@ -117,6 +125,7 @@ Various utility files contain unused imports that should be removed:
 Remove all unused import statements. Configure ESLint to prevent future unused imports.
 
 **Testing Requirements:**
+
 ```typescript
 describe('Unused import removal', () => {
   it('compiles without errors', () => {
@@ -136,6 +145,7 @@ describe('Unused import removal', () => {
 **Location:** `src/synth/SoundDriver.ts:138`
 
 **Analysis:**
+
 ```typescript
 void channel; // Unused parameter marker
 ```
@@ -143,6 +153,7 @@ void channel; // Unused parameter marker
 This is a no-op statement that can be removed.
 
 **Why Safe:**
+
 - No functional purpose
 - Not referenced anywhere
 - Removal has zero impact
@@ -158,6 +169,7 @@ Verify SoundDriver instantiation and usage remains unchanged.
 ### 2.1 Envelope Expansion Functions
 
 **Locations:**
+
 - `src/utils/instrumentIO.ts:166-183` - `expandEnvelope()`
 - `src/utils/instrumentIO.ts:185-198` - `expandLoopingEnvelope()`
 - `src/utils/songParser.ts:344-363` - `expandEnvelope()` (identical)
@@ -174,15 +186,9 @@ Create shared utility module `src/utils/envelopeUtils.ts`:
  * Expands an envelope to fixed length by repeating the last value.
  * Used for volume, shift, pitch, and noise envelopes.
  */
-export function expandEnvelope(
-  values: unknown,
-  length: number,
-  defaultValue: number
-): number[] {
+export function expandEnvelope(values: unknown, length: number, defaultValue: number): number[] {
   const rawArray = Array.isArray(values) ? values : [];
-  const numericValues = rawArray
-    .map(v => Number(v))
-    .filter(v => Number.isFinite(v));
+  const numericValues = rawArray.map((v) => Number(v)).filter((v) => Number.isFinite(v));
 
   if (numericValues.length === 0) {
     return Array(length).fill(defaultValue);
@@ -206,12 +212,10 @@ export function expandEnvelope(
 export function expandLoopingEnvelope(
   values: unknown,
   length: number,
-  defaultValue: number
+  defaultValue: number,
 ): number[] {
   const rawArray = Array.isArray(values) ? values : [];
-  const numericValues = rawArray
-    .map(v => Number(v))
-    .filter(v => Number.isFinite(v));
+  const numericValues = rawArray.map((v) => Number(v)).filter((v) => Number.isFinite(v));
 
   if (numericValues.length === 0) {
     return Array(length).fill(defaultValue);
@@ -228,12 +232,14 @@ export function expandLoopingEnvelope(
 Update both `instrumentIO.ts` and `songParser.ts` to import from the new module.
 
 **Why Safe:**
+
 - Pure refactoring with no behavioral changes
 - Both implementations are identical
 - No side effects or state dependencies
 - No audio or timing impact
 
 **Testing Requirements:**
+
 ```typescript
 describe('expandEnvelope', () => {
   it('handles empty input with default value', () => {
@@ -251,13 +257,14 @@ describe('expandEnvelope', () => {
   });
 
   it('handles exact length input', () => {
-    const input = Array(32).fill(0).map((_, i) => i);
+    const input = Array(32)
+      .fill(0)
+      .map((_, i) => i);
     expect(expandEnvelope(input, 32, 0)).toEqual(input);
   });
 
   it('filters non-numeric values', () => {
-    expect(expandEnvelope([1, 'invalid', 2, null, 3], 5, 0))
-      .toEqual([1, 2, 3, 3, 3]);
+    expect(expandEnvelope([1, 'invalid', 2, null, 3], 5, 0)).toEqual([1, 2, 3, 3, 3]);
   });
 });
 
@@ -289,6 +296,7 @@ describe('envelope expansion integration', () => {
 ### 2.2 Trim Envelope Functions
 
 **Locations:**
+
 - `src/utils/instrumentIO.ts:7-15` - `trimEnvelopeLocal()`
 - `src/utils/songIO.ts:9-17` - `trimEnvelope()`
 
@@ -305,14 +313,14 @@ Add to `src/utils/envelopeUtils.ts`:
  */
 export function trimEnvelope(values: number[]): number[] {
   if (!values || values.length === 0) return [];
-  
+
   const last = values[values.length - 1];
   let i = values.length - 2;
-  
+
   while (i >= 0 && values[i] === last) {
     i -= 1;
   }
-  
+
   return values.slice(0, i + 1).concat(last);
 }
 ```
@@ -320,11 +328,13 @@ export function trimEnvelope(values: number[]): number[] {
 Update both `instrumentIO.ts` and `songIO.ts` to import from shared module.
 
 **Why Safe:**
+
 - Pure function with no side effects
 - Identical implementations
 - Only affects export formatting, not data structures
 
 **Testing Requirements:**
+
 ```typescript
 describe('trimEnvelope', () => {
   it('trims trailing duplicates', () => {
@@ -360,6 +370,7 @@ describe('trimEnvelope', () => {
 ### 2.3 Zero-Default Detection Functions
 
 **Locations:**
+
 - `src/utils/instrumentIO.ts:23-24` - `isZeroDefaultLocal()`
 - `src/utils/songIO.ts:19-20` - `isZeroDefault()`
 
@@ -380,11 +391,13 @@ export function isEnvelopeZeroDefault(values: number[]): boolean {
 ```
 
 **Why Safe:**
+
 - Pure function with no side effects
 - Identical implementations
 - Only affects export logic
 
 **Testing Requirements:**
+
 ```typescript
 describe('isEnvelopeZeroDefault', () => {
   it('detects empty array as zero default', () => {
@@ -408,6 +421,7 @@ describe('isEnvelopeZeroDefault', () => {
 ### 2.4 YAML Quote Helper Functions
 
 **Locations:**
+
 - `src/utils/instrumentIO.ts:81-127` - `quoteBaseValues()`, `quoteColorValues()`, `quoteNameValues()`
 - `src/utils/songIO.ts:315-444` - `quoteLineValues()`, `quoteNoteValues()`, `quoteBaseValues()`, `quoteNumberValues()`, `quoteTitleValues()`, `quoteColorValues()`
 
@@ -421,43 +435,35 @@ Create `src/utils/yamlUtils.ts`:
 /**
  * Generic YAML value quoting function.
  * Wraps matching key values in quotes with proper escaping.
- * 
+ *
  * @param text - YAML text to process
  * @param keyPattern - Key name or regex pattern to match (e.g., 'name' or 'name|title')
  * @returns YAML text with quoted values
  */
-export function quoteYamlValues(
-  text: string,
-  keyPattern: string
-): string {
-  const regex = new RegExp(
-    `^(\\s*-\\s+|\\s+)(${keyPattern}):\\s*(.+)$`,
-    'gm'
-  );
-  
-  return text.replace(
-    regex,
-    (_match: string, indent: string, key: string, value: string) => {
-      let inner = String(value).trim();
-      
-      // Remove existing quotes
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith("'") && inner.endsWith("'"))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      
-      // Escape special characters
-      inner = inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-      
-      return `${indent}${key}: "${inner}"`;
+export function quoteYamlValues(text: string, keyPattern: string): string {
+  const regex = new RegExp(`^(\\s*-\\s+|\\s+)(${keyPattern}):\\s*(.+)$`, 'gm');
+
+  return text.replace(regex, (_match: string, indent: string, key: string, value: string) => {
+    let inner = String(value).trim();
+
+    // Remove existing quotes
+    if (
+      (inner.startsWith('"') && inner.endsWith('"')) ||
+      (inner.startsWith("'") && inner.endsWith("'"))
+    ) {
+      inner = inner.slice(1, -1);
     }
-  );
+
+    // Escape special characters
+    inner = inner.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+
+    return `${indent}${key}: "${inner}"`;
+  });
 }
 ```
 
 Update `instrumentIO.ts`:
+
 ```typescript
 import { quoteYamlValues } from './yamlUtils';
 
@@ -470,11 +476,13 @@ const quoteNameValues = (text: string) => quoteYamlValues(text, 'name');
 Update `songIO.ts` similarly for all quote functions.
 
 **Why Safe:**
+
 - Only affects YAML formatting
 - Output format remains identical
 - No impact on data structures or audio
 
 **Testing Requirements:**
+
 ```typescript
 describe('quoteYamlValues', () => {
   it('quotes simple values', () => {
@@ -499,8 +507,7 @@ describe('quoteYamlValues', () => {
 
   it('handles multiple keys with pattern', () => {
     const input = '  name: Test\n  title: Song';
-    expect(quoteYamlValues(input, 'name|title'))
-      .toBe('  name: "Test"\n  title: "Song"');
+    expect(quoteYamlValues(input, 'name|title')).toBe('  name: "Test"\n  title: "Song"');
   });
 
   it('preserves YAML export output', () => {
@@ -516,6 +523,7 @@ describe('quoteYamlValues', () => {
 ### 2.5 Frequency-to-Period Conversion
 
 **Locations:**
+
 - `src/synth/SoundDriver.ts:194-197` - `frequencyToPeriod()` (private, uses magic number)
 - `src/exports/core.ts:64-67` - `frequencyToPeriod()` (exported, uses YM_CLOCK constant)
 
@@ -535,6 +543,7 @@ After Phase 1, verify that only `exports/core.ts` version remains and is used by
 **Locations:** Various utility files
 
 **Current Issues:**
+
 - Use of `any` types in some utility functions
 - Missing return type annotations
 - Weak type definitions for storage values
@@ -542,6 +551,7 @@ After Phase 1, verify that only `exports/core.ts` version remains and is used by
 **Proposed Changes:**
 
 **File: `src/utils/formatters.ts`**
+
 ```typescript
 // Before
 export function formatValue(value: any): string {
@@ -555,6 +565,7 @@ export function formatValue(value: string | number | boolean | null | undefined)
 ```
 
 **File: `src/hooks/useStorage.ts`**
+
 ```typescript
 // Before
 const [value, setValue] = useState<any>(defaultValue);
@@ -565,11 +576,13 @@ const [value, setValue] = useState<T>(defaultValue);
 ```
 
 **Why Safe:**
+
 - Type changes are compile-time only
 - No runtime behavioral changes
 - Improves type checking and IDE support
 
 **Testing Requirements:**
+
 ```typescript
 describe('Type safety improvements', () => {
   it('compiles with strict TypeScript settings', () => {
@@ -612,6 +625,7 @@ export function asTrackId(id: string): TrackId {
 ```
 
 **Usage Example:**
+
 ```typescript
 // Before
 function getInstrument(id: string): Instrument | null {
@@ -625,6 +639,7 @@ function getInstrument(id: InstrumentId): Instrument | null {
 ```
 
 **Why Safe:**
+
 - Zero runtime overhead (types erased at compilation)
 - Compile-time safety only
 - Prevents ID confusion bugs
@@ -637,6 +652,7 @@ Verify TypeScript compilation succeeds and type checking catches incorrect ID us
 ### 4.1 Consistent Function Naming
 
 **Current Patterns:**
+
 - `buildInstrumentYamlForExport()` - verbose descriptive name
 - `parseInstrumentFromText()` - verb-source pattern
 - `buildSongYamlForExport()` - matches instrument pattern
@@ -651,17 +667,20 @@ Adopt serialize/deserialize pattern for clarity:
 - `parseSongFromYaml()` → `deserializeSong()`
 
 **Implementation Strategy:**
+
 1. Add new functions with new names
 2. Keep old functions as deprecated aliases (temporary)
 3. Update all call sites
 4. Remove old functions after verification
 
 **Why Safe:**
+
 - Gradual migration approach
 - No functional changes
 - Improves code clarity
 
 **Testing Requirements:**
+
 ```typescript
 describe('Serialization naming consistency', () => {
   it('serializeInstrument produces valid YAML', () => {
@@ -689,15 +708,18 @@ describe('Serialization naming consistency', () => {
 ### 4.2 Hook Naming Consistency
 
 **Current Pattern:**
+
 - `useInstrumentActions` - operations like play, clone, delete
 - `useInstrumentManagement` - state updates
 
 **Proposed Improvement:**
 Rename `useInstrumentActions` to `useInstrumentOperations` for consistency with:
+
 - `usePlaylistOperations`
 - `useTrackOperations`
 
 **Why Safe:**
+
 - Simple rename with no functional changes
 - Improves naming consistency
 - Update all import statements
@@ -718,6 +740,7 @@ Before implementing any phase:
 ### Implementation Order
 
 Execute phases in sequence:
+
 1. **Phase 1** (Unused Code) - Highest impact, lowest risk
 2. **Phase 2** (Deduplication) - Medium impact, requires testing
 3. **Phase 3** (Type Safety) - Compile-time only, low risk
@@ -735,22 +758,26 @@ After each phase:
 ### Testing Strategy
 
 **Unit Testing:**
+
 - Test every refactored function with comprehensive cases
 - Include edge cases, boundary conditions, error handling
 - Verify input/output contracts
 
 **Integration Testing:**
+
 - Test component interactions after refactoring
 - Verify data flow between refactored modules
 - Test export functionality end-to-end
 
 **Regression Testing:**
+
 - Full audio playback testing with various songs
 - MIDI input/output verification
 - All export formats (WAV, VGM, ASM, BIN, MAX)
 - Storage persistence across reloads
 
 **Performance Testing:**
+
 - Measure bundle size before and after
 - Verify audio timing accuracy (20ms/40ms cycles)
 - Confirm no performance degradation in critical paths
