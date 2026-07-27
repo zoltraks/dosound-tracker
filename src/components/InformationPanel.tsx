@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation';
 import type { Song } from '../synth/SoundDriver';
 import {
@@ -9,6 +9,9 @@ import {
 } from '../constants/song';
 import NumberSpinner from './NumberSpinner';
 import ToggleValueButton from './ToggleValueButton';
+import { useLocalStorageState } from '../hooks/useLocalStorageState';
+import { StorageKeys } from '../utils/storageKeys';
+import { readSongInfoField, type SongInfoField } from '../utils/panelCursorFields';
 
 interface InformationPanelProps {
   song: Song;
@@ -30,9 +33,11 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
   const lengthRef = useRef<HTMLInputElement>(null);
   const loopRef = useRef<HTMLInputElement>(null);
   const isActive = activeSection === 'songInfo';
-  const [lastFocusedField, setLastFocusedField] = useState<
-    'title' | 'author' | 'year' | 'speed' | 'length' | 'loop'
-  >('title');
+  const [lastFocusedField, setLastFocusedField] = useLocalStorageState<SongInfoField>(
+    StorageKeys.SONG_INFO_FIELD,
+    'title',
+    { read: readSongInfoField },
+  );
 
   useEffect(() => {
     if (!isActive) return;

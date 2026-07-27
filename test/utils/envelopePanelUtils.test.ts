@@ -5,11 +5,37 @@ import {
   getNextEnvelopePosition,
   parseEnvelopeHexValue,
   parseEnvelopeModeValue,
+  readEnvelopeCursor,
   repeatEnvelopePatternToLength,
   rotateEnvelopeData,
   shiftEnvelopeDataValues,
   toggleSustainIndex,
 } from '../../src/utils/envelopePanelUtils';
+import { ENVELOPE_LENGTH } from '../../src/constants/music';
+
+describe('readEnvelopeCursor', () => {
+  it('parses a valid stored position', () => {
+    expect(readEnvelopeCursor('12')).toBe(12);
+  });
+
+  it('floors a non-integer position', () => {
+    expect(readEnvelopeCursor('5.9')).toBe(5);
+  });
+
+  it('clamps a position above the envelope length', () => {
+    expect(readEnvelopeCursor('999')).toBe(ENVELOPE_LENGTH - 1);
+  });
+
+  it('clamps a negative position to 0', () => {
+    expect(readEnvelopeCursor('-4')).toBe(0);
+  });
+
+  it('returns 0 for null or non-numeric input', () => {
+    expect(readEnvelopeCursor(null)).toBe(0);
+    expect(readEnvelopeCursor('')).toBe(0);
+    expect(readEnvelopeCursor('abc')).toBe(0);
+  });
+});
 
 describe('envelopePanelUtils', () => {
   it('rotateEnvelopeData rotates left and right with a custom length', () => {

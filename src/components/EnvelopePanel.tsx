@@ -15,11 +15,13 @@ import {
   getNextEnvelopePosition,
   parseEnvelopeHexValue,
   parseEnvelopeModeValue,
+  readEnvelopeCursor,
   repeatEnvelopePatternToLength,
   rotateEnvelopeData,
   shiftEnvelopeDataValues,
   toggleSustainIndex,
 } from '../utils/envelopePanelUtils';
+import { StorageKeys } from '../utils/storageKeys';
 
 interface EnvelopePanelProps {
   type: EnvelopePanelType;
@@ -40,7 +42,16 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
   sustainIndex,
   onSustainChange,
 }) => {
-  const [currentPosition, setCurrentPosition] = useState(0);
+  // REASON: plain useState with a lazy initializer keeps the setter a stable
+  // dispatch for the React Compiler inside memoized callbacks; persisted below.
+  // The cursor is per panel type and independent of the selected instrument.
+  const [currentPosition, setCurrentPosition] = useState<number>(() => {
+    try {
+      return readEnvelopeCursor(localStorage.getItem(StorageKeys.ENVELOPE_CURSOR_PREFIX + type));
+    } catch {
+      return 0;
+    }
+  });
   const [envelopeData, setEnvelopeData] = useState<number[]>(
     data || Array(ENVELOPE_LENGTH).fill(0),
   );
@@ -49,6 +60,14 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
 
   const sectionName = getEnvelopeSectionName(type);
   const isActive = activeSection === sectionName;
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(StorageKeys.ENVELOPE_CURSOR_PREFIX + type, String(currentPosition));
+    } catch {
+      // ignore
+    }
+  }, [currentPosition, type]);
 
   useEffect(() => {
     if (isActive && envelopeRef.current) {

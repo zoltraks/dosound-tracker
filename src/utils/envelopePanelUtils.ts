@@ -2,6 +2,15 @@ import { ENVELOPE_LENGTH, NOISE_MAX } from '../constants/music';
 import type { EnvelopePanelType } from './envelopeTypes';
 import { clampEnvelopeValue, getFullEnvelope } from './envelopeTypes';
 
+// Read a persisted envelope step cursor, clamped to the envelope length.
+export function readEnvelopeCursor(raw: string | null): number {
+  const value = Number(raw);
+  if (raw === null || raw === '' || !Number.isFinite(value)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(ENVELOPE_LENGTH - 1, Math.floor(value)));
+}
+
 export type RotateDirection = 'left' | 'right';
 
 export function rotateEnvelopeData(

@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest';
 
 const STORAGE_KEY = 'dosound-tracker-eq-mutes';
+const OCTAVE_KEY = 'dosound-tracker-octave';
+const DEFAULT_OCTAVE = 3;
 
 // We import the store inside each test after resetting modules so that
 // the initial channelMutes state is derived from the current localStorage
@@ -78,5 +80,42 @@ describe('useUiStore', () => {
 
     store.setSharedCurrentLine(10);
     expect(useUiStore.getState().sharedCurrentLine).toBe(10);
+  });
+
+  it('initializes currentOctave to the default when no stored value is present', async () => {
+    vi.resetModules();
+    window.localStorage.removeItem(OCTAVE_KEY);
+
+    const { useUiStore } = await import('../../src/stores/uiStore');
+
+    expect(useUiStore.getState().currentOctave).toBe(DEFAULT_OCTAVE);
+  });
+
+  it('initializes currentOctave from a valid stored value', async () => {
+    vi.resetModules();
+    window.localStorage.setItem(OCTAVE_KEY, '5');
+
+    const { useUiStore } = await import('../../src/stores/uiStore');
+
+    expect(useUiStore.getState().currentOctave).toBe(5);
+  });
+
+  it('clamps an out-of-range stored octave', async () => {
+    vi.resetModules();
+    window.localStorage.setItem(OCTAVE_KEY, '99');
+
+    const { useUiStore } = await import('../../src/stores/uiStore');
+
+    expect(useUiStore.getState().currentOctave).toBe(7);
+  });
+
+  it('persists the octave through setCurrentOctave', async () => {
+    vi.resetModules();
+    window.localStorage.removeItem(OCTAVE_KEY);
+
+    const { useUiStore } = await import('../../src/stores/uiStore');
+
+    useUiStore.getState().setCurrentOctave(6);
+    expect(window.localStorage.getItem(OCTAVE_KEY)).toBe('6');
   });
 });

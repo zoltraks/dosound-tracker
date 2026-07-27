@@ -151,6 +151,10 @@ The selected replay rate drives the sequencer worker tick interval (20 ms at 50 
 
 All export formats (VGM, MAX, WAV, ASM, BIN) read the configured frame rate and chip clock from the song. VGM uses the appropriate wait command (0x63 for 50 Hz, 0x62 for 60 Hz) and writes the clock and rate to the header. MAX writes the frame rate and clock to the chip setup chunk. WAV renders at the correct samples-per-tick for the frame rate. ASM and BIN use the configured clock for period calculations.
 
+**F-15: Editor Cursor Persistence**
+
+The system must remember the editor cursor across application reloads. This includes the focused section, the selected track, the playlist line, the track row, the track column, the selected instrument, the song information field, the playlist track column, the octave, and each envelope panel step cursor. Restored values are clamped to the current song. The envelope step cursor is remembered per panel and does not change when the selected instrument changes. The editor cursor is session state stored in local storage and is not part of the saved or exported song file formats.
+
 ## Non-Functional Requirements
 
 **N-01: Audio Performance**

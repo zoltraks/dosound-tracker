@@ -14,6 +14,12 @@ export class StorageKeys {
   // UI preferences
   static readonly THEME = 'dosound-tracker-theme' as const;
   static readonly TRANSPOSE_SETTINGS = 'dosound-tracker-transpose-settings' as const;
+  static readonly EDITOR_CURSOR = 'dosound-tracker-editor-cursor' as const;
+  static readonly CURRENT_INSTRUMENT = 'dosound-tracker-current-instrument' as const;
+  static readonly SONG_INFO_FIELD = 'dosound-tracker-song-info-field' as const;
+  static readonly PLAYLIST_TRACK = 'dosound-tracker-playlist-track' as const;
+  static readonly OCTAVE = 'dosound-tracker-octave' as const;
+  static readonly ENVELOPE_CURSOR_PREFIX = 'dosound-tracker-envelope-cursor-' as const;
 
   // Data persistence
   static readonly SONG = 'dosound-tracker-song' as const;

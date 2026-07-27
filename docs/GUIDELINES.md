@@ -271,6 +271,10 @@ Do not run the verification loop for documentation-only changes. See the "Docume
 - If the change spans multiple components, repeat the implement and verify steps for each one.
 - Do not consider the task complete until all components pass and documentation is consistent with the final implementation.
 
+**Propose a commit message**
+
+After the change is complete and the verification loop passes, propose a commit message for review. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules above. Do not commit; the user commits manually.
+
 ## Memorisation Convention
 
 When the user says "memorise" or "remember", update the most relevant guideline file with the new rule.

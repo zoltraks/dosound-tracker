@@ -1,5 +1,12 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import { StorageKeys } from './utils/storageKeys';
+import {
+  parseEditorCursor,
+  clampEditorCursor,
+  serializeEditorCursor,
+  type EditorCursor,
+} from './utils/editorCursor';
 import { useKeyboardNavigation } from './hooks/useKeyboardNavigation';
 import { useTheme } from './hooks/useTheme';
 import { useDataManagement } from './hooks/useDataManagement';
@@ -601,6 +608,67 @@ const App: React.FC = () => {
     if (activeSection === 'trackC') return 'C';
     return lastTrackId;
   }, [activeSection, lastTrackId]);
+
+  // Restore the persisted editor cursor once on mount, clamped to the loaded song.
+  const hasRestoredCursorRef = useRef(false);
+
+  useEffect(() => {
+    const stored = parseEditorCursor(localStorage.getItem(StorageKeys.EDITOR_CURSOR));
+    if (stored) {
+      const clamped = clampEditorCursor(stored, currentSong.line.length, currentSong.length);
+      setLastTrackId(clamped.track);
+      setActiveSection(clamped.section);
+      setPosition(clamped.playlistLine, 0, 0);
+      setSharedCurrentLine(clamped.trackRow);
+      setCurrentTrackColumn(clamped.column);
+    }
+
+    const storedInstrumentId = localStorage.getItem(StorageKeys.CURRENT_INSTRUMENT);
+    if (storedInstrumentId) {
+      const match = currentSong.instrument.find((inst) => inst.id === storedInstrumentId);
+      if (match) {
+        setCurrentInstrument(match);
+      }
+    }
+
+    hasRestoredCursorRef.current = true;
+  }, []);
+
+  // Persist the selected instrument so it is restored on the next launch.
+  useEffect(() => {
+    if (!hasRestoredCursorRef.current) return;
+    try {
+      localStorage.setItem(StorageKeys.CURRENT_INSTRUMENT, currentInstrument.id);
+    } catch {
+      // ignore
+    }
+  }, [currentInstrument]);
+
+  // Persist the editor cursor whenever it changes while playback is not running,
+  // so no local storage writes occur on the audio path.
+  useEffect(() => {
+    if (!hasRestoredCursorRef.current) return;
+    if (sequencerState.isPlaying) return;
+    const cursor: EditorCursor = {
+      section: activeSection,
+      track: targetTrackId,
+      playlistLine: sequencerState.currentPattern,
+      trackRow: sharedCurrentLine,
+      column: currentTrackColumn,
+    };
+    try {
+      localStorage.setItem(StorageKeys.EDITOR_CURSOR, serializeEditorCursor(cursor));
+    } catch {
+      // ignore
+    }
+  }, [
+    activeSection,
+    targetTrackId,
+    sequencerState.currentPattern,
+    sequencerState.isPlaying,
+    sharedCurrentLine,
+    currentTrackColumn,
+  ]);
 
   // Track line playback loop state (previously pattern playback state)
   const [isLinePlaying, setIsLinePlaying] = useState(false);

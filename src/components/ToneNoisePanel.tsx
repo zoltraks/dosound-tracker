@@ -10,6 +10,8 @@ import {
   rotateModeEnvelopeData,
   shiftModeEnvelopeDataValues,
 } from '../utils/toneNoisePanelUtils';
+import { readEnvelopeCursor } from '../utils/envelopePanelUtils';
+import { StorageKeys } from '../utils/storageKeys';
 
 interface ToneNoisePanelProps {
   activeSection: NavigationSection;
@@ -24,10 +26,26 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   data,
   onChange,
 }) => {
-  const [currentPosition, setCurrentPosition] = useState(0);
+  // REASON: plain useState with a lazy initializer keeps the setter a stable
+  // dispatch for the React Compiler inside memoized callbacks; persisted below.
+  const [currentPosition, setCurrentPosition] = useState<number>(() => {
+    try {
+      return readEnvelopeCursor(localStorage.getItem(StorageKeys.ENVELOPE_CURSOR_PREFIX + 'mode'));
+    } catch {
+      return 0;
+    }
+  });
   const panelRef = useRef<HTMLDivElement>(null);
 
   const sectionName = 'mode';
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(StorageKeys.ENVELOPE_CURSOR_PREFIX + 'mode', String(currentPosition));
+    } catch {
+      // ignore
+    }
+  }, [currentPosition]);
   const isActive = activeSection === sectionName;
 
   const defaultToneNoiseData: number[] = [

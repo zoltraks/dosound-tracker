@@ -191,6 +191,16 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 
 The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
 
+## Session Persistence
+
+The editor cursor is remembered across reloads through local storage. Local storage keys are centralised in `src/utils/storageKeys.ts`.
+
+The top-level cursor is stored under `EDITOR_CURSOR` as a JSON object with the focused section, the selected track, the playlist line, the track row, and the track column. On mount it is parsed, clamped to the restored song, and applied through the existing setters. The playlist line is clamped to the playlist length, the track row to the pattern length. An invalid section falls back to the selected track's section. It is written when playback is not running, so no local storage writes occur on the audio path.
+
+Additional cursor state is persisted at its source of truth to avoid duplicate state. The selected instrument id is stored under `CURRENT_INSTRUMENT`; the instrument list highlight follows it. The playlist row cursor inside the playlist panel follows the top-level playlist line and is not stored separately.
+
+Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, and each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
+
 ## Project-Specific Conventions
 
 These conventions override or extend the general standards in `standard/ts-react-development.md` with rules specific to the DOSOUND Tracker codebase.

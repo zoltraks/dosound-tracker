@@ -91,6 +91,10 @@ After a successful build:
 
 If inconsistencies are found between implementation and documentation, update either the implementation or the documentation to resolve the mismatch, then return to the verification loop. Continue iterating until full consistency is achieved.
 
+**Propose a commit message**
+
+Once the implementation is complete and consistent, propose a commit message for the change. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules in `GUIDELINES.md`. The assistant proposes only; the user commits manually.
+
 ## Adding a New Feature
 
 **Follow the new feature implementation workflow**

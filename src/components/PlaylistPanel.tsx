@@ -4,6 +4,8 @@ import { PlaylistHeader } from './PlaylistHeader';
 import { PlaylistLine } from './PlaylistLine';
 import type { PlaylistEntry } from '../types/playlist';
 import { asPlaylistPatternId } from '../types/branded';
+import { StorageKeys } from '../utils/storageKeys';
+import { readPlaylistTrack } from '../utils/panelCursorFields';
 
 interface PlaylistPanelProps {
   playlist: PlaylistEntry[];
@@ -27,12 +29,29 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   targetTrack,
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
-  const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>('A');
+  // REASON: kept as a plain useState so the setter stays a stable dispatch that
+  // the React Compiler can track inside memoized callbacks; persisted manually below.
+  const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>(() => {
+    try {
+      return readPlaylistTrack(localStorage.getItem(StorageKeys.PLAYLIST_TRACK));
+    } catch {
+      return 'A';
+    }
+  });
   const [editingPattern, setEditingPattern] = useState<string>('');
   const playlistRef = useRef<HTMLDivElement>(null);
   const linesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = activeSection === 'playlist';
+
+  // Persist the selected playlist track column across reloads.
+  useEffect(() => {
+    try {
+      localStorage.setItem(StorageKeys.PLAYLIST_TRACK, currentTrack);
+    } catch {
+      // ignore
+    }
+  }, [currentTrack]);
 
   const moveLine = useCallback(
     (lineIndex: number, direction: 'up' | 'down') => {
