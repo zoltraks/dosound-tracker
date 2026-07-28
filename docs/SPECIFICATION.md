@@ -6,20 +6,7 @@ The project is built as a desktop application using Electron, with the audio eng
 
 ## Technology Stack
 
-See `package.json` for exact version numbers. The project uses the following technologies:
-
-| Technology    | Purpose                                                      |
-| ------------- | ------------------------------------------------------------ |
-| React         | UI component library and rendering                           |
-| TypeScript    | Static typing and compile-time safety                        |
-| rolldown-vite | Build tool and dev server (Vite-compatible, Rolldown-backed) |
-| Zustand       | Lightweight state management                                 |
-| Web Audio API | Real-time YM2149 sound synthesis in the browser              |
-| Electron      | Desktop application packaging for Windows, macOS, and Linux  |
-| Vitest        | Unit and component test runner                               |
-| ESLint        | Linting and code style enforcement                           |
-
-Additional libraries include js-yaml for song file parsing, lucide-react for icons, and electron-builder for cross-platform packaging.
+See `package.json` for the dependency list and exact versions. The application is a React and TypeScript single-page app built with rolldown-vite, using Zustand for state and the Web Audio API for real-time YM2149 synthesis, packaged for the desktop with Electron. Tests run on Vitest and linting on ESLint. Song files are parsed with js-yaml, icons come from lucide-react, and desktop installers are produced by electron-builder.
 
 ## Audio-Critical Development
 
@@ -38,19 +25,7 @@ Consult `GUIDELINES.md` before applying any linting fixes or React optimisations
 
 ## Source Directory Structure
 
-| Directory      | File Count | Responsibility                                                          |
-| -------------- | ---------- | ----------------------------------------------------------------------- |
-| src/assets     | 9          | Static assets, icons, and image resources                               |
-| src/components | 27         | React UI components for the tracker interface                           |
-| src/constants  | 6          | Application constants for music, keyboard, song, export, and navigation |
-| src/exports    | 6          | Export modules for assembly, binary, MAX, VGM, and WAV formats          |
-| src/hooks      | 30         | Custom React hooks for state, playback, and UI behavior                 |
-| src/modals     | 15         | Modal dialog components for file operations and settings                |
-| src/stores     | 1          | Zustand store definitions for global application state                  |
-| src/synth      | 4          | YM2149 hardware emulator and sound driver engine                        |
-| src/types      | 2          | Branded type definitions and playlist type helpers                      |
-| src/utils      | 43         | Utility functions for parsing, formatting, validation, and simulation   |
-| src/workers    | 1          | Web Worker for background audio or export processing                    |
+Source is organised by responsibility under `src/`, with folders for components, hooks, utilities, constants, stores, types, and workers, the `synth/` audio engine (YM2149 emulator and sound driver), and the `exports/` format modules. See ARCHITECTURE.md for the module boundaries and the responsibility of each folder.
 
 ## Data Models
 
@@ -137,24 +112,21 @@ Export scope can target the full song, a single pattern, or a single instrument.
 
 ## Constants
 
-Application constants are organized in src/constants/. Each file covers a specific domain.
+Application constants live in `src/constants/`, one file per domain. See those files for the actual values.
 
-- **music.ts** defines note frequencies (NOTE_FREQUENCIES with C4 = 261.63 Hz through B4), the base octave (NOTE_BASE_OCTAVE = 4), the chromatic note list, octave bounds (0-7), pattern length (64), max instruments (256), volume and noise limits, pitch and shift ranges, and envelope length (32).
-- **keyboard.ts** defines the KEYBOARD_TO_NOTE map linking computer keyboard keys to musical notes with octave offsets.
-- **song.ts** defines default song chip ("YM"), default frame rate (50), default chip clock (2000000), and arrays of supported chips, frame rates, and chip clocks.
-- **export.ts** defines ExportType (song, pattern, instrument), ExportStrategy (simple, complex, optimized), and ExportFormat (dump, data, bin, vgm, max, wav) union types.
-- **navigation.ts** defines NAVIGATION_ORDER for UI section focus cycling and KEYBOARD_SHORTCUTS mapping key combinations to application actions.
+- **music.ts** — note frequencies, octave bounds, pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits.
+- **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
+- **song.ts** — chip, frame rate, and clock defaults and their supported values.
+- **export.ts** — the ExportType, ExportStrategy, and ExportFormat union types.
+- **navigation.ts** — NAVIGATION_ORDER and the KEYBOARD_SHORTCUTS map.
 
 ## Keyboard Shortcuts and Input Bindings
 
 The computer keyboard doubles as a piano input device. The mapping is defined in src/constants/keyboard.ts and re-exported through src/constants/music.ts.
 
-**Piano keyboard mapping** (lower row maps to the base octave, upper row maps to one or two octaves above):
+**Piano keyboard mapping**
 
-- Z = C, S = C#, X = D, D = D#, C = E, V = F, G = F#, B = G, H = G#, N = A, J = A#, M = B
-- Comma = C (octave +1), L = C# (octave +1), Period = D (octave +1), Semicolon = D# (octave +1), Slash = E (octave +1)
-- Q = C (octave +1), 2 = C# (octave +1), W = D (octave +1), 3 = D# (octave +1), E = E (octave +1), R = F (octave +1), 5 = F# (octave +1), T = G (octave +1), 6 = G# (octave +1), Y = A (octave +1), 7 = A# (octave +1), U = B (octave +1)
-- I = C (octave +2), 9 = C# (octave +2), O = D (octave +2), 0 = D# (octave +2), P = E (octave +2), LeftBracket = F (octave +2), Plus = F# (octave +2), RightBracket = G (octave +2)
+The lower letter row maps to the base octave, and the upper letter and number rows map one or two octaves above. See `src/constants/keyboard.ts` for the exact key-to-note map.
 
 **Column-specific input**
 
