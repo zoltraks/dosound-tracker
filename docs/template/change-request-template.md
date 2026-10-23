@@ -2,6 +2,8 @@
 
 **Type:** Feature | Fix | Refactor | Chore
 
+**Source:** [Audit finding or recommendation identifier, for example AUDIT-1.1 EVD-011 — omit when the request did not originate from an audit]
+
 ## Summary
 
 One to three sentences describing what this change is and why it matters.

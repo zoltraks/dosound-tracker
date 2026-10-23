@@ -179,6 +179,12 @@ This completes the implementation cycle for that version.
 | `docs/change/<version>/`      | Change request descriptions: features, bug fixes, enhancements |
 | `docs/plan/<version>/`        | Implementation plans created from change requests              |
 | `docs/refactoring/<version>/` | Refactoring proposals and assessments after implementation     |
+| `docs/review/<version>/`      | Version-window reviews feeding the version bump decision       |
+| `docs/discard/<version>/`     | Abandoned change records and optional plans                    |
+
+**Abandoned Change Records**
+
+A change record that is abandoned moves to `docs/discard/<version>/`, with an explicit abandonment reason recorded in the record. The directory holds non-active history only.
 
 **Historical Directories**
 
@@ -189,6 +195,75 @@ The following directories are preserved from the previous workflow and are not p
 - `docs/report/<version>/` — generated analysis reports
 
 Do not modify these directories unless explicitly instructed.
+
+## Version Window SDLC
+
+The repository adopts the `version-window` extension and the `audit-driven-development` convention. A named window request - "run the SDLC for `<version>`" or "process the `<version>` window" - executes the whole window as one operation instead of one change request at a time.
+
+The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline; `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result. An unspecified mode follows the recorded default: `human-in-the-loop`.
+
+**Intake**
+
+- Catalogue every active change record in `docs/change/<version>/`. All of them are in scope and none may be skipped.
+- Order the requests from their recorded dependencies.
+- The named window request is the explicit authorization to read that window's `docs/change/` and `docs/plan/` groups.
+- An empty window reports zero active records; the refactoring phase may still run on the current state and no bump is forced.
+
+**Request Iteration**
+
+For each change record in the window:
+
+- Analyze the current implementation and the project documentation deeply.
+- Write the implementation plan into `docs/plan/<version>/` before touching code.
+- Follow the Documentation-First Approach: update the named specification sections before implementing.
+- Work in verifiable increments and run the verification loop until typecheck, lint, format, build, and test all pass. A failure returns to fix and re-verify until clean.
+- A request is fulfilled only when its acceptance criteria hold and verification is clean.
+- The plan names unit tests for utility-level functions and considers adding or adjusting existing tests.
+
+**Refactoring Phase**
+
+- After every request in the window is fulfilled, analyze the project and write a refactoring proposal into `docs/refactoring/<version>/`.
+- The proposal may include distillation: removing documentation that merely restates the implementation, retiring legacy or unused tests, and stripping useless comments, alongside ordinary restructuring concerns such as DRY and SOLID.
+- Refactoring executes in autonomous mode under either gate mode - recommended options, no questions - while the verification loop still applies in full.
+- Close the phase with an assessment document per `REFACTORING.md`.
+
+**Deferral**
+
+- A need discovered in any phase, including refactoring, becomes a change record under a later window's group. Discovered work is never silently implemented inside the current window.
+
+**Window Review**
+
+- With the tree clean and production-ready after refactoring, review the window's delivered work against its change records and plans.
+- Record the review in `docs/review/<version>/` using `docs/template/change-review-template.md`. The review reconciles recorded work against the version-control log and reports confirmed, unconfirmed, undocumented, and deviated work with a readiness verdict.
+- The bump decision recorded in the review is the project owner's - never the agent's.
+
+**Window Close**
+
+- Close the window with the version bump per `VERSIONING.md` (the verification loop, `npm audit`, `npm run bump`, and the `public/CHANGELOG.md` entry). The named window request is the explicit instruction that authorizes this bump.
+- The cycle never commits on its own - commits stay manual under every mode.
+
+**Run State**
+
+- Under the `run-resume` extension, a window run records each completed stage in `docs/plan/<version>/window-run.md` as it proceeds. This file is a run-state record, not an implementation plan.
+- A restarted window re-reads the record, verifies that artifacts claimed by completed stages actually exist - demoting any stage whose artifacts are missing - and continues from the first incomplete stage.
+
+**Audit-Driven Ring**
+
+- An external audit produces prioritized findings and recommendations in `docs/report/<version>/`.
+- Adopted recommendations are triaged into change records under one or more version windows; each audit-derived record carries its source finding or recommendation identifier in the record's `Source` field.
+- Every recommendation resolves before its window completes: it becomes a change record, or it is declined with the reason recorded.
+- A recommendation never bypasses the change-record gate - audit output is never implemented directly.
+- The next audit re-verifies the register and seeds the following window; the window's review is the evidence of what the window delivered.
+
+## Tooling Notes
+
+**Stopping the development server**
+
+Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F`. Verify the port is free before restarting.
+
+**Table formatting and Prettier**
+
+When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate; `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
 
 ## Working With AI Coding Agents
 

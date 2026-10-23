@@ -10,6 +10,8 @@ A clean build means **zero errors and zero warnings** across all verification st
 - **Build** (`npm run build`) must complete successfully with no errors.
 - **Tests** (`npm test`) must all pass.
 
+`npm run format` rewrites every file Prettier recognises across the whole tree, including restricted directories such as `docs/report/` and `docs/refactoring/`. Formatting changes it makes in restricted directories are an accepted side effect of the loop and must not be reverted. When a restricted file must stay byte-identical, run `npx prettier --write` on explicit paths instead of `npm run format`.
+
 Any warning from linting, including React Hook dependency warnings, must be resolved before the build is considered clean.
 
 **Audio-Critical Linting Exception**

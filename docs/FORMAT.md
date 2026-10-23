@@ -15,7 +15,6 @@ This document describes the data formats produced by the following commands:
 
 Examples of the YAML formats can be found under:
 
-- `docs/example/song/*.yaml`
 - `src/assets/song.yaml`
 
 ---

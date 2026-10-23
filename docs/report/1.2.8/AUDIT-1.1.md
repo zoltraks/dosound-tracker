@@ -3,7 +3,7 @@
 ## Document Information
 
 | Field              | Value                                                                                              |
-|--------------------|----------------------------------------------------------------------------------------------------|
+| ------------------ | -------------------------------------------------------------------------------------------------- |
 | Report Revision    | 1.1                                                                                                |
 | Report Date        | 2026-10-21                                                                                         |
 | Report Style       | audit                                                                                              |
@@ -22,7 +22,7 @@
 ## Audit Type Coverage
 
 | Report type                                       | Status    | Rationale                                                                                                            |
-|---------------------------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------- |
 | Software Architecture Review                      | Covered   | Structure, layering, state domains, and data flow were inspected from source and architecture documents              |
 | Code Quality Audit                                | Covered   | Source files, configuration, tests, and documented standards were inspected                                          |
 | Security Vulnerability Assessment                 | Covered   | Electron boundary, [HTML](#glossary) rendering sinks, file parsing, and permission handling assessed at source level |
@@ -38,7 +38,7 @@
 ## Glossary
 
 | Term    | Definition                                                                |
-|---------|---------------------------------------------------------------------------|
+| ------- | ------------------------------------------------------------------------- |
 | ADR     | Architecture Decision Record, a recorded design decision                  |
 | AI      | Artificial Intelligence                                                   |
 | API     | Application Programming Interface                                         |
@@ -111,7 +111,7 @@
 **Identifier triplets**
 
 | Triplet | Scope            | Description                              |
-|---------|------------------|------------------------------------------|
+| ------- | ---------------- | ---------------------------------------- |
 | `FND`   | This report      | Finding identifier                       |
 | `EVD`   | This report      | Evidence ledger identifier               |
 | `TDR`   | This report      | Technical Debt Register entry identifier |
@@ -137,7 +137,7 @@
 `1-10` scale: `1-3 Poor · 4-6 Average · 7-8 Good · 9-10 Excellent`
 
 | Field          | Value                                                                                       |
-|----------------|---------------------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------------------------------------- |
 | System type    | codebase                                                                                    |
 | Scope          | Full source tree, configuration, documentation, tests, git history of dosound-tracker 1.2.8 |
 | Source basis   | inspected code, configuration, documentation, and Git history                               |
@@ -205,7 +205,7 @@ continuous-integration gate ([REC-002](#rec-002-add-a-ci-workflow-for-the-docume
 ## Changes Since Previous Audit
 
 | Field            | Previous Report                                                                        | Current Report                   |
-|------------------|----------------------------------------------------------------------------------------|----------------------------------|
+| ---------------- | -------------------------------------------------------------------------------------- | -------------------------------- |
 | File             | `docs/report/1.2.8/AUDIT-1.0.md`                                                       | `docs/report/1.2.8/AUDIT-1.1.md` |
 | Revision         | 1.0                                                                                    | 1.1                              |
 | Date             | 2026-09-30                                                                             | 2026-10-21                       |
@@ -226,7 +226,7 @@ The 5.3 figure was an arithmetic error in the previous report, not a subject pro
 **Finding transitions**
 
 | Finding                                                                                           | Previous | Current | Note                                                                                                                        |
-|---------------------------------------------------------------------------------------------------|----------|---------|-----------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------------------------------------------------------- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
 | [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)    | OPEN     | OPEN    | still reproduces, subject revision unchanged                                                                                |
 | [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)                       | OPEN     | OPEN    | still reproduces, subject revision unchanged                                                                                |
 | [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)        | OPEN     | OPEN    | still reproduces, subject revision unchanged                                                                                |
@@ -250,7 +250,7 @@ The 5.3 figure was an arithmetic error in the previous report, not a subject pro
 **Score delta**
 
 | Dimension               | Previous         | Current          | Direction |
-|-------------------------|------------------|------------------|-----------|
+| ----------------------- | ---------------- | ---------------- | --------- |
 | Testability             | 4/10             | 4/10             | UNCHANGED |
 | Design Soundness        | 6/10             | 6/10             | UNCHANGED |
 | Code Quality            | 7/10             | 7/10             | UNCHANGED |
@@ -280,7 +280,7 @@ The overall moved from the corrected 5.7 to 6.2/10 entirely because the scorecar
 ## System Context
 
 | Aspect                 | Detail                                                                                                                                                                                          |
-|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Functional description | Tracker-style composition tool for the Yamaha YM2149 sound chip, with live playback and multi-format export for Atari ST target code                                                            |
 | Architecture overview  | React SPA front end plus optional Electron desktop shell, Web Worker sequencer, in-process [YM2149](#glossary) emulator, localStorage persistence, static-file song repository                  |
 | Key components         | `src/App.tsx` orchestrator, `src/synth/` emulator and driver, `src/exports/` five-format export pipeline, `src/workers/sequencerWorker.ts`, `src/hooks/` 31 hooks, `electron/` main and preload |
@@ -290,7 +290,7 @@ The overall moved from the corrected 5.7 to 6.2/10 entirely because the scorecar
 ### Technology Stack
 
 | Layer            | Technology                                                                                                                         |
-|------------------|------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
 | Languages        | TypeScript ~5.9.3 strict mode, CommonJS for Electron main and preload                                                              |
 | Frameworks       | React 19.2, Zustand 4.5, Electron 42.6, Vite via rolldown-vite 7.2.2                                                               |
 | Runtime/Platform | Browser (Chromium-family Web Audio and Web MIDI), Electron desktop shell, Node.js v22.18.0 documented in README                    |
@@ -345,7 +345,7 @@ repository directory, and the download directory listing consumed by `FilePicker
 **Operational Objectives**
 
 | Metric                | Target                                  | Measured | Window           | Source                  | Owner         |
-|-----------------------|-----------------------------------------|----------|------------------|-------------------------|---------------|
+| --------------------- | --------------------------------------- | -------- | ---------------- | ----------------------- | ------------- |
 | Frame timing accuracy | 50 Hz and 60 Hz replay rates documented | UNKNOWN  | [N/A](#glossary) | `docs/SPECIFICATION.md` | NOT SPECIFIED |
 | Availability          | NOT SPECIFIED                           | UNKNOWN  | [N/A](#glossary) | none committed          | NOT SPECIFIED |
 
@@ -355,7 +355,7 @@ This is a manifest-derived component inventory at the audited revision, not a sh
 [SBOM](#glossary) and not a claim of [SPDX](#glossary) or CycloneDX conformance.
 
 | Component                        | Version | Ecosystem | Relationship               | License          | License Risk | Advisory Checked | Source File                     |
-|----------------------------------|---------|-----------|----------------------------|------------------|--------------|------------------|---------------------------------|
+| -------------------------------- | ------- | --------- | -------------------------- | ---------------- | ------------ | ---------------- | ------------------------------- |
 | js-yaml                          | 4.3.0   | npm       | direct                     | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
 | lucide-react                     | 0.460.0 | npm       | direct                     | Unknown          | Unknown      | N                | package.json, package-lock.json |
 | react                            | 19.2.1  | npm       | direct                     | Unknown          | Unknown      | N                | package.json, package-lock.json |
@@ -427,7 +427,7 @@ without a per-package declaration check, also covered by [FND-CPR-001](#fnd-cpr-
 ## Health Dashboard
 
 | Severity | Count | Identifiers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-|----------|-------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------- | ----- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | HIGH     | 0     | none on the residual scale                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | MEDIUM   | 6     | [RSK-001](#rsk-001-regressions-merge-undetected-without-ci-enforcement), [RSK-002](#rsk-002-redeploys-serve-stale-or-skewed-web-assets), [RSK-003](#rsk-003-maintainer-unavailability-halts-all-delivery), [RSK-004](#rsk-004-orchestrator-growth-compounds-change-defects), [RSK-005](#rsk-005-injected-markup-renders-through-the-markdown-sink), [RSK-006](#rsk-006-ui-regressions-reach-releases-without-e2e-checks)                                                                                                    |
 | LOW      | 7     | [RSK-007](#rsk-007-license-policy-non-conformance-surfaces-late), [RSK-008](#rsk-008-dead-test-file-implies-coverage-that-does-not-run), [RSK-009](#rsk-009-tampered-or-mismatched-binaries-reach-users-unverified), [RSK-010](#rsk-010-stale-documented-figures-mislead-change-planning), [RSK-011](#rsk-011-device-permission-granted-beyond-the-intended-origin), [RSK-012](#rsk-012-undisclosed-generated-code-lands-without-trace), [RSK-013](#rsk-013-misplaced-test-file-masks-thin-coverage-of-the-claimed-subject) |
@@ -437,7 +437,7 @@ without a per-package declaration check, also covered by [FND-CPR-001](#fnd-cpr-
 This residual-scale presentation corrects the previous report's dashboard, which listed [RSK-005](#rsk-005-injected-markup-renders-through-the-markdown-sink) as `HIGH` without noting that [RSK-003](#rsk-003-maintainer-unavailability-halts-all-delivery) shares the same impact-likelihood pair.
 
 | Area                   | Rating   | Key evidence                                                                                                     |
-|------------------------|----------|------------------------------------------------------------------------------------------------------------------|
+| ---------------------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
 | Documentation          | Strong   | 11-file source-of-truth corpus plus per-version change, plan, and refactoring records                            |
 | Test suite             | Weak     | 44 test files and ~218 cases, coverage gate documented failing, [E2E](#glossary) directory empty                 |
 | Security posture       | Adequate | Electron isolation flags set, narrow permission grants, two escaped [HTML](#glossary) sinks, no [CSP](#glossary) |
@@ -469,7 +469,7 @@ knowledge and availability).
 Ten commits carry `Co-Authored-By` or equivalent tool trailers in 705 commits ([EVD-032](#verification-and-evidence-ledger)).
 
 | Continuity element    | State                                                                   |
-|-----------------------|-------------------------------------------------------------------------|
+| --------------------- | ----------------------------------------------------------------------- |
 | Contributor diversity | 100 percent single author, `High` concentration                         |
 | Release anchoring     | No git tags, changelog and version script exist                         |
 | Knowledge records     | Strong `docs/` corpus including per-version change and plan directories |
@@ -533,7 +533,7 @@ recorded in the evidence ledger below.
 **Criteria table**
 
 | Criterion      | Family | Applicability | Criticality | Method                                          | Sufficiency                                                 |
-|----------------|--------|---------------|-------------|-------------------------------------------------|-------------------------------------------------------------|
+| -------------- | ------ | ------------- | ----------- | ----------------------------------------------- | ----------------------------------------------------------- |
 | `ARC-COHESION` | `ARC`  | applicable    | material    | file-size and wiring census                     | change blast radius is bounded by file responsibility       |
 | `DLY-CONT`     | `DLY`  | applicable    | low         | git author census plus continuity-doc check     | delivery does not hinge on one person                       |
 | `TST-COV`      | `TST`  | applicable    | material    | threshold config plus documented-gap inspection | declared coverage gate passes on the risky paths            |
@@ -559,7 +559,7 @@ No post-freeze applicability changes occurred.
 **Reference standards**
 
 | Standard or guide                       | Applied to                                            |
-|-----------------------------------------|-------------------------------------------------------|
+| --------------------------------------- | ----------------------------------------------------- |
 | [ISO/IEC](#glossary) 25010:2023         | Scorecard characteristic crosswalk in Scoring Rubrics |
 | OWASP Top 10:2025                       | Category coverage statement in Scope Exclusions       |
 | NIST SP 800-30                          | Unified Risk Register ratings                         |
@@ -575,7 +575,7 @@ Re-derivable evidence rows, generated or re-verified at this audit's working dat
 Every row is re-derivable from the named command or file range.
 
 | ID      | Method                                                                      | Result                                                                                                                                                                                                                            | Tag         | Source                                                                                              |
-|---------|-----------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|-----------------------------------------------------------------------------------------------------|
+| ------- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------- |
 | EVD-001 | `git ls-files` census plus per-directory counts                             | 454 tracked files, 149 under `src/` at 29573 lines, 56 under `test/` at 5072 lines including fixtures and setup files                                                                                                             | Observation | file inventory                                                                                      |
 | EVD-002 | `git rev-list --count HEAD` and `--no-merges`                               | 705 total commits, 679 non-merge                                                                                                                                                                                                  | Observation | revision `f898dce`                                                                                  |
 | EVD-003 | `git log --no-merges --format=%an` census and fix-subject scan              | 679 of 679 commits by one author (100 percent), 88 fix or revert subjects                                                                                                                                                         | Observation | commit history                                                                                      |
@@ -636,7 +636,7 @@ Every row is re-derivable from the named command or file range.
 Scale: `1-10` integers, selected at parameter configuration.
 
 | Band      | Score Range | Definition                                                   |
-|-----------|-------------|--------------------------------------------------------------|
+| --------- | ----------- | ------------------------------------------------------------ |
 | Excellent | 9-10        | Capability is comprehensive and verified by strong evidence  |
 | Good      | 7-8         | Capability is solid overall, minor or noticeable gaps exist  |
 | Average   | 4-6         | Capability is present but uneven, limited, or inconsistent   |
@@ -705,7 +705,7 @@ several hooks exceed 500 lines (`useMidiMessageProcessing` 671, `useSongManageme
 ### Design Principles
 
 | Principle             | Status  | Evidence                                                                                                                                                                                          |
-|-----------------------|---------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Single Responsibility | PARTIAL | file-level cohesion is good, but `App.tsx` and the largest hooks carry several responsibilities each ([EVD-018](#verification-and-evidence-ledger), [EVD-019](#verification-and-evidence-ledger)) |
 | Open/Closed           | PARTIAL | export formats and panels extend by new modules, but song-shape changes ripple through many hooks ([EVD-019](#verification-and-evidence-ledger))                                                  |
 | Interface Segregation | PASS    | hooks expose narrow surfaces and the preload bridge is minimal ([EVD-008](#verification-and-evidence-ledger))                                                                                     |
@@ -743,7 +743,7 @@ several hooks exceed 500 lines (`useMidiMessageProcessing` 671, `useSongManageme
 ### Design Patterns
 
 | Pattern            | Location                           | Assessment | Note                                                                                                                                                                                                            |
-|--------------------|------------------------------------|------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ---------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Composition root   | `src/App.tsx`                      | PARTIAL    | deliberate single wiring point, but grown past manageable size ([FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk))                                                 |
 | Hook encapsulation | `src/hooks/`                       | PASS       | 31 hooks each own a concern. The project's standard documents reusable patterns                                                                                                                                 |
 | Strategy           | `src/exports/` format modules      | PASS       | five formats share `core.ts` normalization and diverge only at output                                                                                                                                           |
@@ -776,7 +776,7 @@ source split into role folders, `test/` mirroring the source domains, `electron/
 untracked and out of the audited surface.
 
 | Level | Directory        | Contents                                                            | Role               |
-|-------|------------------|---------------------------------------------------------------------|--------------------|
+| ----- | ---------------- | ------------------------------------------------------------------- | ------------------ |
 | `1`   | `src/`           | application source, 149 files                                       | application core   |
 | `2`   | `src/components` | 28 React UI components                                              | presentation       |
 | `2`   | `src/hooks`      | 31 hooks holding the bulk of application logic                      | presentation logic |
@@ -797,7 +797,7 @@ untracked and out of the audited surface.
 | `1`   | `docs/`          | standards, specification, per-version change/plan/refactoring trees | documentation      |
 
 | Area                       | Verdict | Basis                                                                                                                                                                                     |
-|----------------------------|---------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Directory organization     | PASS    | Established tier: role-based `src/` split matches the declared standard's `components/hooks/utils/types/stores/constants` list plus documented project-specific folders                   |
 | Naming conventions         | PARTIAL | File naming is consistent within roles, but `test/` carries a misplaced file and a dead stray ([FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects))     |
 | Component placement        | PASS    | Domain artifacts sit under their role directories, `electron/` isolates the shell, `modals/` separates dialog wiring as the architecture document prescribes                              |
@@ -820,7 +820,7 @@ level only per `docs/GUIDELINES.md`.
 ## Trade-off Analysis
 
 | Trade-off                                    | Context                                                           | Option A: gain / cost                                                           | Option B: gain / cost                                            | Evidence                                                                                   | Implication                                                                                                                                                           |
-|----------------------------------------------|-------------------------------------------------------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------|--------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------------------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Central orchestrator vs distributed state    | Keep song model close to wiring                                   | `App.tsx` owns model and wiring / file grows to 2488 lines                      | Domain stores and mediators / more indirection                   | [EVD-018](#verification-and-evidence-ledger), `docs/ARCHITECTURE.md`                       | Current choice keeps data flow visible but concentrates change risk ([FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk))  |
 | Audio timing fidelity vs lint purity         | Re-created callbacks at 50 Hz cause audible glitches              | Sparse dependency arrays and ref mirroring / intentional `react-hooks` warnings | Full hook conformance / timing drift risk                        | [EVD-027](#verification-and-evidence-ledger), `docs/GUIDELINES.md`                         | Documented choice fits the constraint and is not a defect                                                                                                             |
 | setTimeout worker vs audio-clock scheduling  | Browser has no hard-real-time primitive                           | Worker `setTimeout` with `performance.now()` catch-up / approximate scheduling  | AudioContext-driven scheduling / tighter coupling to audio graph | [EVD-029](#verification-and-evidence-ledger), [EVD-045](#verification-and-evidence-ledger) | Acceptable for a tracker preview, diverges from hardware timing                                                                                                       |
@@ -840,7 +840,7 @@ content files (markdown documentation, song [YAML](#glossary)), the Electron ren
 bridge, device permission grants, and cached web assets.
 
 | Boundary       | [STRIDE](#glossary)    | Threat Description                                                                                          | Control                                                                                       | Finding                                                                                  |
-|----------------|------------------------|-------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------|
+| -------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | File import    | Tampering              | Crafted YAML song file produces malformed state or load crashes                                             | js-yaml safe load, structural validation, numeric clamping                                    | none (bounded)                                                                           |
 | Host content   | Tampering              | Compromised static files (MESSAGES.md, MANUAL.md, repository [YAML](#glossary)) reach the markdown renderer | [HTML](#glossary) escaping in `renderMarkdown`, `http(s)`-only links                          | [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)         |
 | Host content   | Information Disclosure | Stale cached content persists past redeploys                                                                | Cache name is static, no versioned invalidation                                               | [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)        |
@@ -866,7 +866,7 @@ documentation style, audio-critical exceptions), `docs/standard/ts-react-develop
 Conformance was measured against those authored rules plus ecosystem baselines.
 
 | Dimension               | Project rule                                                                        | Status    | Evidence                                                                                                                                                                                                                                                                                           |
-|-------------------------|-------------------------------------------------------------------------------------|-----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------------------- | ----------------------------------------------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Type safety             | `strict` TypeScript, `any` disallowed                                               | Conforms  | `tsconfig.app.json` strict set, zero `any` in `src/`, `no-explicit-any` error rule ([EVD-021](#verification-and-evidence-ledger))                                                                                                                                                                  |
 | Lint hygiene            | `npm run lint` zero errors, documented warning exemptions only                      | Partially | exemptions documented and narrowly scoped, but lint state unverified ([EVD-036](#verification-and-evidence-ledger))                                                                                                                                                                                |
 | Testing                 | 80 percent coverage thresholds                                                      | Deviates  | `docs/TESTING.md:231` documents the coverage command as failing ([FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin))                                                                                                                                       |
@@ -881,7 +881,7 @@ Conformance was measured against those authored rules plus ecosystem baselines.
 | Forbidden patterns      | No `any`, no bare `console.log`, no `@ts-ignore` without reason                     | Partially | zero `any`, zero `@ts-ignore`. One debug-gated `console.log` bypasses the `logger` module ([EVD-049](#verification-and-evidence-ledger))                                                                                                                                                           |
 
 | Policy area    | Declared rule                                          | Actual state                           | Status                                                                                                                                                       |
-|----------------|--------------------------------------------------------|----------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------ | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | License policy | Whitelist permissive licenses, [GPL](#glossary) barred | [SPDX](#glossary)-class permissive set | Partially - actual lockfile classes exceed the whitelist ([FND-CPR-001](#fnd-cpr-001-license-policy-whitelist-is-narrower-than-the-resolved-dependency-set)) |
 
 ## Skill Definition Conformance
@@ -893,13 +893,13 @@ The spec baseline used is the Agent Skills specification snapshot in the Lens sk
 **Skills inventory**
 
 | Item | Status           | Basis                                                 |
-|------|------------------|-------------------------------------------------------|
+| ---- | ---------------- | ----------------------------------------------------- |
 | none | [N/A](#glossary) | The subject ships no `SKILL.md` and no skill packages |
 
 **Agent artifacts**
 
 | Artifact                                                            | Status           | Basis                                                                                                |
-|---------------------------------------------------------------------|------------------|------------------------------------------------------------------------------------------------------|
+| ------------------------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------------------- |
 | `docs/GUIDELINES.md`                                                | Included, PASS   | Authored agent-facing rule corpus: hard rules, sources of truth, workflow, audio-critical exceptions |
 | `docs/standard/ts-react-development.md`                             | Included, PASS   | Authored engineering standard with naming, structure, and forbidden-pattern rules                    |
 | `docs/WORKFLOW.md`, `TESTING.md`, `REFACTORING.md`, `VERSIONING.md` | Included, PASS   | Authored process documents the guidelines designate as sources of truth                              |
@@ -920,7 +920,7 @@ The bundled stack digests `references/stacks/typescript.md`, `references/stacks/
 partitions, so their shared floor was evaluated.
 
 | Baseline                   | Status           | Evidence                                                                                                                                                                                                                    |
-|----------------------------|------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Runtime/toolchain pinning  | PARTIAL          | README names Node.js v22.18.0, no `.nvmrc` and no `engines.node` field ([EVD-006](#verification-and-evidence-ledger))                                                                                                       |
 | Dependency reproducibility | PASS             | `package-lock.json` v3 committed with pinned resolved versions ([EVD-006](#verification-and-evidence-ledger))                                                                                                               |
 | Lint/format gate           | PASS             | `eslint.config.js` flat config and `.prettierrc` committed and scoped to `src/`/`test/`. No [CI](#glossary) exists to run them ([EVD-020](#verification-and-evidence-ledger), [EVD-025](#verification-and-evidence-ledger)) |
@@ -940,7 +940,7 @@ The subject carries a TypeScript/React application tree (`src/`), a mirrored Vit
 **Directory and file naming**
 
 | Component   | Surface         | Convention                                                                                       | Observed                                                                                                                                                                | Status  | Evidence                                                                                                                                                                          |
-|-------------|-----------------|--------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ----------- | --------------- | ------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/`      | Directories     | Full lowercase role nouns per T1 and the architecture document                                   | 11 role directories, all full words, no catch-alls beyond a scoped `utils`                                                                                              | PASS    | [EVD-001](#verification-and-evidence-ledger)                                                                                                                                      |
 | `src/`      | Component files | `PascalCase.tsx` per T1                                                                          | 43 PascalCase components + `main.tsx` (Vite entry-point convention)                                                                                                     | PASS    | [EVD-047](#verification-and-evidence-ledger)                                                                                                                                      |
 | `src/`      | Module files    | `camelCase.ts` for non-component modules per T1                                                  | 90 camelCase + 4 PascalCase class modules (`SoundDriver`, `SequencerEngine`, `EventOptimizer`, `YM2149`) named after their principal exported class                     | PARTIAL | [EVD-047](#verification-and-evidence-ledger) - coherent type-name rule diverges from the literal T1 text                                                                          |
@@ -954,7 +954,7 @@ The subject carries a TypeScript/React application tree (`src/`), a mirrored Vit
 **Code division**
 
 | Component | Division Rule                               | Observed                                                                                                  | Status  | Evidence                                                                                   |
-|-----------|---------------------------------------------|-----------------------------------------------------------------------------------------------------------|---------|--------------------------------------------------------------------------------------------|
+| --------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------ |
 | `src/`    | One primary exported unit per file          | Component files carry their same-named component. `main.tsx` is the entry shim                            | PASS    | [EVD-047](#verification-and-evidence-ledger)                                               |
 | `src/`    | Domain separation by responsibility         | Role folders hold. `App.tsx` and several hooks exceed 500 lines, concentrating multiple concerns per file | PARTIAL | [EVD-018](#verification-and-evidence-ledger), [EVD-019](#verification-and-evidence-ledger) |
 | `test/`   | Test files mirror the source domain         | Mirrors hold except `useDataManagement.test.ts`, which tests `src/utils/songParser.ts` from `test/hooks/` | PARTIAL | [EVD-052](#verification-and-evidence-ledger)                                               |
@@ -973,7 +973,7 @@ the CommonJS, service-worker, and script surfaces (T3 Ecosystem).
 **Convention Profile**
 
 | Partition   | Language   | Tier         | Dominant shapes                                                    | Idiomatic | Forced exclusions                                              |
-|-------------|------------|--------------|--------------------------------------------------------------------|-----------|----------------------------------------------------------------|
+| ----------- | ---------- | ------------ | ------------------------------------------------------------------ | --------- | -------------------------------------------------------------- |
 | `src/`      | TypeScript | T1 Declared  | function camelCase, type PascalCase, variable camelCase            | Yes       | `main.tsx` entry name (Vite convention)                        |
 | `test/`     | TypeScript | T1 Declared  | variable camelCase, type PascalCase, harness components PascalCase | Yes       | `*Harness` components, vitest `describe`/`it` [API](#glossary) |
 | `electron/` | JavaScript | T3 Ecosystem | camelCase throughout                                               | Yes       | `__dirname` (Node.js built-in)                                 |
@@ -984,7 +984,7 @@ the CommonJS, service-worker, and script surfaces (T3 Ecosystem).
 **Consistency Census**
 
 | Partition   | Kind     | Dominant   | Share             | Outliers | Trend | Evidence                                     |
-|-------------|----------|------------|-------------------|----------|-------|----------------------------------------------|
+| ----------- | -------- | ---------- | ----------------- | -------- | ----- | -------------------------------------------- |
 | `src/`      | function | camelCase  | 187/187 (100%)    | 0        | n/a   | [EVD-046](#verification-and-evidence-ledger) |
 | `src/`      | type     | PascalCase | 212/213 (99.5%)   | 1        | n/a   | [EVD-046](#verification-and-evidence-ledger) |
 | `src/`      | variable | camelCase  | 2981/3099 (96.2%) | 118      | n/a   | [EVD-046](#verification-and-evidence-ledger) |
@@ -1031,7 +1031,7 @@ were sampled on the scanned surface.
 **Structure, Comprehension And Cognitive Load**
 
 | Lens                      | Status  | Evidence                                                                                                                                                                                                                                                                                                              |
-|---------------------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Structure and granularity | PARTIAL | Role-based split is clean, but `App.tsx` (2488) and five hooks above 500 lines concentrate logic against a ~197-line file mean ([EVD-018](#verification-and-evidence-ledger), [EVD-019](#verification-and-evidence-ledger))                                                                                           |
 | Comprehension aids        | PARTIAL | `SPECIFICATION.md` documents domain constants and register semantics thoroughly, 36 `// ignore` markers explain empty catches, zero `TODO`. 3 uncommented non-null assertions and one duplicated numbered comment remain ([EVD-049](#verification-and-evidence-ledger), [EVD-050](#verification-and-evidence-ledger)) |
 | Cognitive load            | PARTIAL | Inline comment density is low (~2.6 percent) by T1's self-documenting rule. Hot paths carry terse domain shorthand (`instText`, `volText`) that the docs decode. Per-function length census not run                                                                                                                   |
@@ -1056,7 +1056,7 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
 **Style Sub-Scores**
 
 | Lens | Status  | Justification                                                                                                                  |
-|------|---------|--------------------------------------------------------------------------------------------------------------------------------|
+| ---- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
 | SL-1 | PASS    | T1 standards declared and dominant identifier shapes match them in every TypeScript partition                                  |
 | SL-2 | PASS    | Dominance above 96 percent on raw shares and effectively total once role-aware shapes are counted                              |
 | SL-3 | PASS    | Sampled outliers are rule-named violations or idiomatic domain constants, no noise or misleading names                         |
@@ -1108,7 +1108,7 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
 ## Detailed Technical Findings
 
 | Finding                                                                                           | Pillar                              | Severity | Title                                                                             | Result           | Status | Change    | Verification |
-|---------------------------------------------------------------------------------------------------|-------------------------------------|----------|-----------------------------------------------------------------------------------|------------------|--------|-----------|--------------|
+| ------------------------------------------------------------------------------------------------- | ----------------------------------- | -------- | --------------------------------------------------------------------------------- | ---------------- | ------ | --------- | ------------ |
 | [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)    | Architecture & Design               | Medium   | 2488-line central orchestrator concentrates wiring and change risk                | PARTIAL          | Open   | Unchanged | Verified     |
 | [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)                       | Architecture & Design               | Low      | Single-author contributor concentration is High                                   | [N/A](#glossary) | Open   | Unchanged | Verified     |
 | [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)        | Code Quality                        | Medium   | Coverage gate is documented as failing and core paths are thin                    | FAIL             | Open   | Unchanged | Verified     |
@@ -1131,543 +1131,543 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
 
 ### FND-ARC-001: 2488-line central orchestrator concentrates wiring and change risk
 
-* **Pillar:** Architecture & Design
-* **Severity:** Medium
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `src/App.tsx`, `src/hooks/useMidiMessageProcessing.ts`, `src/hooks/useSongManagement.ts`
-* **Basis:** `docs/ARCHITECTURE.md` itself names the orchestrator the largest maintenance risk. Role-based file division is the declared structure rule
-* **Absence:** Deliberate - recorded decision in `docs/ARCHITECTURE.md`
-* **Criterion:** ARC-COHESION - file-level responsibility boundaries should bound change blast radius
-* **Description:** `src/App.tsx` is 2488 lines and instantiates roughly twenty hooks with their
+- **Pillar:** Architecture & Design
+- **Severity:** Medium
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `src/App.tsx`, `src/hooks/useMidiMessageProcessing.ts`, `src/hooks/useSongManagement.ts`
+- **Basis:** `docs/ARCHITECTURE.md` itself names the orchestrator the largest maintenance risk. Role-based file division is the declared structure rule
+- **Absence:** Deliberate - recorded decision in `docs/ARCHITECTURE.md`
+- **Criterion:** ARC-COHESION - file-level responsibility boundaries should bound change blast radius
+- **Description:** `src/App.tsx` is 2488 lines and instantiates roughly twenty hooks with their
   wiring inline.
   Five hooks individually exceed 500 lines (`useMidiMessageProcessing` 671,
   `useSongManagement` 619, `useMidiActions` 590, `useSequencerIntegration` 543,
   `useFileOperations` 525), so orchestration and domain logic co-reside.
-* **Impact:** Feature changes concentrate in one oversized file and a few oversized hooks,
+- **Impact:** Feature changes concentrate in one oversized file and a few oversized hooks,
   raising navigation cost, merge surface, and the chance a localized change disturbs audio paths.
-* **Recommendation:** Stage the decomposition per the project's documented refactoring method:
+- **Recommendation:** Stage the decomposition per the project's documented refactoring method:
   extract hook clusters into domain coordinators, then split `App.tsx` along the
   `ARCHITECTURE.md` module boundaries.
-* **Method:** After each extraction step, verify typecheck/lint/tests stay green and export
+- **Method:** After each extraction step, verify typecheck/lint/tests stay green and export
   output stays byte-identical per the documented contract.
-* **Verified:** yes - file sizes and hook wiring are mechanically countable
-* **Runtime confirmed:** no - source-only audit, the application was never executed
-* **Confidence:** HIGH - measured directly from the file tree
-* **Mitigating factors:** The choice is documented and deliberate. Per-file cohesion inside
+- **Verified:** yes - file sizes and hook wiring are mechanically countable
+- **Runtime confirmed:** no - source-only audit, the application was never executed
+- **Confidence:** HIGH - measured directly from the file tree
+- **Mitigating factors:** The choice is documented and deliberate. Per-file cohesion inside
   `src/components/`, `src/utils/`, and `src/exports/` is otherwise strong.
-* **Breaking change:** None
-* **Evidence:** [EVD-016](#verification-and-evidence-ledger), [EVD-018](#verification-and-evidence-ledger), [EVD-019](#verification-and-evidence-ledger), all `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-016](#verification-and-evidence-ledger), [EVD-018](#verification-and-evidence-ledger), [EVD-019](#verification-and-evidence-ledger), all `Inspected`
 
 ### FND-ARC-002: Single-author contributor concentration is High
 
-* **Pillar:** Architecture & Design
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** git history, `docs/` governance corpus
-* **Basis:** Delivery-continuity practice. No project rule addresses continuity
-* **Absence:** No documented rationale - the governance set names no backup maintainer
-* **Criterion:** DLY-CONT - delivery must not depend on a single point of human failure
-* **Description:** All 679 non-merge commits over the repository's entire span belong to one
+- **Pillar:** Architecture & Design
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** git history, `docs/` governance corpus
+- **Basis:** Delivery-continuity practice. No project rule addresses continuity
+- **Absence:** No documented rationale - the governance set names no backup maintainer
+- **Criterion:** DLY-CONT - delivery must not depend on a single point of human failure
+- **Description:** All 679 non-merge commits over the repository's entire span belong to one
   author.
   No continuity owner, delegation record, or fork arrangement is documented.
-* **Impact:** Maintainer unavailability halts delivery and institutional knowledge transfer.
-* **Recommendation:** Name a backup maintainer or document a fork path in the governance docs.
-* **Method:** A named continuity owner exists in `docs/GUIDELINES.md` or `README.md`.
-* **Verified:** yes - commit census is complete
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - the census is unambiguous
-* **Mitigating factors:** The deep `docs/` corpus and prompt logs make the project's reasoning
+- **Impact:** Maintainer unavailability halts delivery and institutional knowledge transfer.
+- **Recommendation:** Name a backup maintainer or document a fork path in the governance docs.
+- **Method:** A named continuity owner exists in `docs/GUIDELINES.md` or `README.md`.
+- **Verified:** yes - commit census is complete
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - the census is unambiguous
+- **Mitigating factors:** The deep `docs/` corpus and prompt logs make the project's reasoning
   recoverable by a successor.
-* **Breaking change:** None
-* **Evidence:** [EVD-002](#verification-and-evidence-ledger), [EVD-003](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-002](#verification-and-evidence-ledger), [EVD-003](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-001: Coverage gate is documented as failing and core paths are thin
 
-* **Pillar:** Code Quality
-* **Severity:** Medium
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `vitest.config.ts:13-20`, `docs/TESTING.md:218-231`, `src/synth/`, `src/exports/`, `src/modals/`, `src/workers/`
-* **Basis:** `docs/TESTING.md` mandates the 80 percent thresholds and documents the gap itself
-* **Absence:** Deliberate - recorded decision - the gap list is committed in `TESTING.md`
-* **Criterion:** TST-COV - declared coverage gates must pass and cover high-risk paths
-* **Description:** `vitest.config.ts` enforces 80 percent line/function/branch/statement
+- **Pillar:** Code Quality
+- **Severity:** Medium
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `vitest.config.ts:13-20`, `docs/TESTING.md:218-231`, `src/synth/`, `src/exports/`, `src/modals/`, `src/workers/`
+- **Basis:** `docs/TESTING.md` mandates the 80 percent thresholds and documents the gap itself
+- **Absence:** Deliberate - recorded decision - the gap list is committed in `TESTING.md`
+- **Criterion:** TST-COV - declared coverage gates must pass and cover high-risk paths
+- **Description:** `vitest.config.ts` enforces 80 percent line/function/branch/statement
   thresholds, while `TESTING.md` records that `npm run test:coverage` currently fails.
   The 44-file suite concentrates in `test/utils/` (30 files).
   `test/synth/` has one file,
   modals and workers have none, and only a minority of hooks are covered.
-* **Impact:** The highest-risk paths (emulator, export formats, worker timing) ship with the
+- **Impact:** The highest-risk paths (emulator, export formats, worker timing) ship with the
   weakest behavioral net, and the declared quality gate cannot pass as configured.
-* **Recommendation:** Close the gap on synth and export paths or ratchet the threshold to the
+- **Recommendation:** Close the gap on synth and export paths or ratchet the threshold to the
   measured value until coverage catches up.
-* **Method:** `npm run test:coverage` exits 0 on a recorded run.
-* **Verified:** yes - thresholds and the documented gap are directly citable
-* **Runtime confirmed:** no - coverage was not executed under this audit
-* **Confidence:** HIGH - config and documentation state the condition plainly
-* **Mitigating factors:** The suite that exists is real (218 cases), and the gap is honestly
+- **Method:** `npm run test:coverage` exits 0 on a recorded run.
+- **Verified:** yes - thresholds and the documented gap are directly citable
+- **Runtime confirmed:** no - coverage was not executed under this audit
+- **Confidence:** HIGH - config and documentation state the condition plainly
+- **Mitigating factors:** The suite that exists is real (218 cases), and the gap is honestly
   documented rather than hidden.
-* **Breaking change:** None
-* **Evidence:** [EVD-013](#verification-and-evidence-ledger), [EVD-014](#verification-and-evidence-ledger), `Inspected` plus `Reported` gap list in `docs/TESTING.md`
+- **Breaking change:** None
+- **Evidence:** [EVD-013](#verification-and-evidence-ledger), [EVD-014](#verification-and-evidence-ledger), `Inspected` plus `Reported` gap list in `docs/TESTING.md`
 
 ### FND-CQY-002: Tracked duplicate test file never executes
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `test/utils/exportMax.test`
-* **Basis:** Vitest include pattern `test/**/*.{test,spec}.{ts,tsx}`. T1 requires every test file to execute
-* **Absence:** No documented rationale - nothing records why the stray file exists
-* **Criterion:** TST-DEAD - committed test artifacts must be collectible and current
-* **Description:** `test/utils/exportMax.test` (277 lines, 12 cases) is a tracked file whose
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `test/utils/exportMax.test`
+- **Basis:** Vitest include pattern `test/**/*.{test,spec}.{ts,tsx}`. T1 requires every test file to execute
+- **Absence:** No documented rationale - nothing records why the stray file exists
+- **Criterion:** TST-DEAD - committed test artifacts must be collectible and current
+- **Description:** `test/utils/exportMax.test` (277 lines, 12 cases) is a tracked file whose
   extension the Vitest include glob never matches, so it never runs.
   It is a stale divergent
   copy of `exportMax.test.ts` (321 lines).
-* **Impact:** A file that looks like test coverage contributes none, and its drifted content can
+- **Impact:** A file that looks like test coverage contributes none, and its drifted content can
   mislead future edits.
-* **Recommendation:** Delete the stray file or merge any unique cases into `exportMax.test.ts`.
-* **Method:** `git ls-files` no longer lists `test/utils/exportMax.test`, or the content runs
+- **Recommendation:** Delete the stray file or merge any unique cases into `exportMax.test.ts`.
+- **Method:** `git ls-files` no longer lists `test/utils/exportMax.test`, or the content runs
   under a `.ts` name.
-* **Verified:** yes - glob matching is mechanical
-* **Runtime confirmed:** no - the suite was not executed
-* **Confidence:** HIGH - the include pattern and filename are directly citable
-* **Mitigating factors:** The live `exportMax.test.ts` covers the same surface.
-* **Breaking change:** None
-* **Evidence:** [EVD-015](#verification-and-evidence-ledger), `Inspected`
+- **Verified:** yes - glob matching is mechanical
+- **Runtime confirmed:** no - the suite was not executed
+- **Confidence:** HIGH - the include pattern and filename are directly citable
+- **Mitigating factors:** The live `exportMax.test.ts` covers the same surface.
+- **Breaking change:** None
+- **Evidence:** [EVD-015](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-003: No end-to-end specs exist despite configured Playwright
 
-* **Pillar:** Code Quality
-* **Severity:** Medium
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `e2e/`, `playwright.config.ts`, `docs/TESTING.md:162-171`
-* **Basis:** `npm run test:e2e` is a declared script and `TESTING.md` lists six [E2E](#glossary) flows
-* **Absence:** No documented rationale - the harness exists with no specs
-* **Criterion:** TST-E2E - declared test surfaces must exist and execute
-* **Description:** `playwright.config.ts` points `testDir` at `./e2e` with three browser
+- **Pillar:** Code Quality
+- **Severity:** Medium
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `e2e/`, `playwright.config.ts`, `docs/TESTING.md:162-171`
+- **Basis:** `npm run test:e2e` is a declared script and `TESTING.md` lists six [E2E](#glossary) flows
+- **Absence:** No documented rationale - the harness exists with no specs
+- **Criterion:** TST-E2E - declared test surfaces must exist and execute
+- **Description:** `playwright.config.ts` points `testDir` at `./e2e` with three browser
   projects and a preview-server block, and `TESTING.md` documents six end-to-end flows.
   `e2e/` contains only `.gitkeep`.
-* **Impact:** The outermost verification layer is entirely absent: load, playback, file save,
+- **Impact:** The outermost verification layer is entirely absent: load, playback, file save,
   and export flows have no automated check.
-* **Recommendation:** Add a Playwright smoke suite for the six documented flows, starting with
+- **Recommendation:** Add a Playwright smoke suite for the six documented flows, starting with
   load and one export.
   It can live behind the [CI](#glossary) workflow from [REC-002](#rec-002-add-a-ci-workflow-for-the-documented-loop).
-* **Method:** `npx playwright test --project=chromium` passes against the preview build.
-* **Verified:** yes - directory listing is mechanical
-* **Runtime confirmed:** no - nothing exists to execute
-* **Confidence:** HIGH - the empty directory and configured harness are directly citable
-* **Mitigating factors:** The unit suite partially covers component behavior through Testing
+- **Method:** `npx playwright test --project=chromium` passes against the preview build.
+- **Verified:** yes - directory listing is mechanical
+- **Runtime confirmed:** no - nothing exists to execute
+- **Confidence:** HIGH - the empty directory and configured harness are directly citable
+- **Mitigating factors:** The unit suite partially covers component behavior through Testing
   Library.
-* **Breaking change:** None
-* **Evidence:** [EVD-012](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-012](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-004: Documentation figures have drifted from the code
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged (one additional stale figure found this revision)
-* **Targets:** `docs/ARCHITECTURE.md:5,124`, `docs/TESTING.md:222-228`, `docs/SPECIFICATION.md:55`
-* **Basis:** `docs/GUIDELINES.md` designates these files as sources of truth
-* **Absence:** No documented rationale - drift accumulated across releases
-* **Criterion:** MNT-DOC - source-of-truth figures must match measured reality
-* **Description:** `ARCHITECTURE.md` states Electron 39 and an `App.tsx` of 2194 lines. The
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged (one additional stale figure found this revision)
+- **Targets:** `docs/ARCHITECTURE.md:5,124`, `docs/TESTING.md:222-228`, `docs/SPECIFICATION.md:55`
+- **Basis:** `docs/GUIDELINES.md` designates these files as sources of truth
+- **Absence:** No documented rationale - drift accumulated across releases
+- **Criterion:** MNT-DOC - source-of-truth figures must match measured reality
+- **Description:** `ARCHITECTURE.md` states Electron 39 and an `App.tsx` of 2194 lines. The
   manifest resolves Electron 42.6 and the file measures 2488 lines. `TESTING.md`'s gap list
   predates the modal and export tests that now exist and says 30 hooks where 31 exist.
   `SPECIFICATION.md` additionally states `src/utils` holds 43 files where 42 exist.
-* **Impact:** Implementers and tooling that trust the documented figures plan against stale
+- **Impact:** Implementers and tooling that trust the documented figures plan against stale
   numbers.
   The source-of-truth claim is weakened.
-* **Recommendation:** Refresh the figures and add a per-release documentation check to the bump
+- **Recommendation:** Refresh the figures and add a per-release documentation check to the bump
   procedure.
-* **Method:** Documented counts match `wc -l`/`git ls-files` measurements.
-* **Verified:** yes - each figure is mechanically checkable
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - the mismatches are directly citable
-* **Mitigating factors:** Drift is numeric, not structural. The prose descriptions remain
+- **Method:** Documented counts match `wc -l`/`git ls-files` measurements.
+- **Verified:** yes - each figure is mechanically checkable
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - the mismatches are directly citable
+- **Mitigating factors:** Drift is numeric, not structural. The prose descriptions remain
   accurate.
-* **Breaking change:** None
-* **Evidence:** [EVD-016](#verification-and-evidence-ledger), [EVD-017](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-016](#verification-and-evidence-ledger), [EVD-017](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-005: Abbreviated identifiers violate the declared naming standard
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** New
-* **Targets:** `src/utils/playbackSimulation.ts` (24 sites), `src/exports/asm.ts:399-413` (6 sites)
-* **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:75-84` names `Idx` and
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** New
+- **Targets:** `src/utils/playbackSimulation.ts` (24 sites), `src/exports/asm.ts:399-413` (6 sites)
+- **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:75-84` names `Idx` and
   `Num` explicitly under the abbreviation rule
-* **Absence:** No documented rationale - the abbreviations predate or escaped the standard
-* **Criterion:** STY-ABBR - declared abbreviation rules apply to authored identifiers
-* **Description:** 30 occurrences of `Idx`-suffixed locals (`playlistIdx`, `lineIdx`,
+- **Absence:** No documented rationale - the abbreviations predate or escaped the standard
+- **Criterion:** STY-ABBR - declared abbreviation rules apply to authored identifiers
+- **Description:** 30 occurrences of `Idx`-suffixed locals (`playlistIdx`, `lineIdx`,
   `pitchIdx`, `volIdx`, `shiftIdx`, `modeIdx`, `noiseIdx`) plus `pIdx`/`pVal` shorthands appear
   in two files.
   Everywhere else the codebase uses full words.
-* **Impact:** Localized inconsistency against a rule the project chose to write down. Readable
+- **Impact:** Localized inconsistency against a rule the project chose to write down. Readable
   in context but objectively non-conformant.
-* **Recommendation:** Rename `*Idx` to `*Index` (and `pIdx`/`pVal` to `pitchIndex`/`pitchValue`)
+- **Recommendation:** Rename `*Idx` to `*Index` (and `pIdx`/`pVal` to `pitchIndex`/`pitchValue`)
   in the two files.
-* **Method:** `grep -rE '[a-z]Idx\b' src` returns empty after the rename.
-* **Verified:** yes - the occurrences are enumerable
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - the standard names the exact abbreviation
-* **Mitigating factors:** Confined to two files. The abbreviation is uniform within them.
-* **Breaking change:** None - locals only
-* **Evidence:** [EVD-048](#verification-and-evidence-ledger), `Inspected`
+- **Method:** `grep -rE '[a-z]Idx\b' src` returns empty after the rename.
+- **Verified:** yes - the occurrences are enumerable
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - the standard names the exact abbreviation
+- **Mitigating factors:** Confined to two files. The abbreviation is uniform within them.
+- **Breaking change:** None - locals only
+- **Evidence:** [EVD-048](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-006: Non-null assertions lack the required `REASON:` comments
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** New
-* **Targets:** `src/utils/zx0.ts:85,97,129`
-* **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:170` requires a
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** New
+- **Targets:** `src/utils/zx0.ts:85,97,129`
+- **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:170` requires a
   `// REASON:` comment on every non-null assertion
-* **Absence:** No documented rationale - the ported algorithm file carries none
-* **Criterion:** STY-REASON - escape hatches must carry the documented justification comment
-* **Description:** Three non-null assertions (`optimal[...]!.bits`, `optimal[inputSize - 1]!`)
+- **Absence:** No documented rationale - the ported algorithm file carries none
+- **Criterion:** STY-REASON - escape hatches must carry the documented justification comment
+- **Description:** Three non-null assertions (`optimal[...]!.bits`, `optimal[inputSize - 1]!`)
   sit inside the [ZX0](#glossary) port's inner loop.
   Zero `REASON:` comments exist anywhere in
   `src/` or `test/`.
-* **Impact:** Escape hatches are invisible to the convention the project defined for auditing
+- **Impact:** Escape hatches are invisible to the convention the project defined for auditing
   them.
   In a ported hot loop they likely hold, but the check is undocumented.
-* **Recommendation:** Add `// REASON:` comments explaining the bounds invariant, or restructure
+- **Recommendation:** Add `// REASON:` comments explaining the bounds invariant, or restructure
   the indexing to remove the assertions.
-* **Method:** `grep -nE '[)\]]!\.' src/utils/zx0.ts` returns only commented sites.
-* **Verified:** yes - sites are enumerable
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - three directly citable lines
-* **Mitigating factors:** The file is a verbatim-ported algorithm with in-file attribution,
+- **Method:** `grep -nE '[)\]]!\.' src/utils/zx0.ts` returns only commented sites.
+- **Verified:** yes - sites are enumerable
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - three directly citable lines
+- **Mitigating factors:** The file is a verbatim-ported algorithm with in-file attribution,
   assertions index a fully allocated table.
-* **Breaking change:** None
-* **Evidence:** [EVD-050](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-050](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-007: Numbered and duplicated section comment in `useMidi.ts`
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** New
-* **Targets:** `src/hooks/useMidi.ts:53-54`
-* **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:291` forbids numbered
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** New
+- **Targets:** `src/hooks/useMidi.ts:53-54`
+- **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:291` forbids numbered
   comments and section-marker comments
-* **Absence:** No documented rationale - the duplication looks like a merge or edit artifact
-* **Criterion:** STY-COMMENT - comment rules apply uniformly across source
-* **Description:** Two identical `// 2. Configuration Management` lines sit back to back, both
+- **Absence:** No documented rationale - the duplication looks like a merge or edit artifact
+- **Criterion:** STY-COMMENT - comment rules apply uniformly across source
+- **Description:** Two identical `// 2. Configuration Management` lines sit back to back, both
   violating the numbered-comment ban and the section-marker ban, and the duplication itself is a
   copy artifact.
   The file also lost its `// 1.` sibling, so the surviving marker refers to a
   numbering that no longer exists.
-* **Impact:** Cosmetic, but it is residue of an editing pattern the project explicitly forbids
+- **Impact:** Cosmetic, but it is residue of an editing pattern the project explicitly forbids
   and signals the file was not re-linted for comment rules.
-* **Recommendation:** Delete both lines. The following `useState` block is self-describing.
-* **Method:** `grep -n '// 2\.' src` returns empty.
-* **Verified:** yes - two directly citable lines
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - verbatim rule violation
-* **Mitigating factors:** Sole instance found in the tree.
-* **Breaking change:** None
-* **Evidence:** [EVD-049](#verification-and-evidence-ledger), `Inspected`
+- **Recommendation:** Delete both lines. The following `useState` block is self-describing.
+- **Method:** `grep -n '// 2\.' src` returns empty.
+- **Verified:** yes - two directly citable lines
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - verbatim rule violation
+- **Mitigating factors:** Sole instance found in the tree.
+- **Breaking change:** None
+- **Evidence:** [EVD-049](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CQY-008: Configured `@/` import alias is unused
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** New
-* **Targets:** `vite.config.ts:46-49`, `tsconfig.app.json:21-23`, `src/`
-* **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:97-101` prefers the `@/`
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** New
+- **Targets:** `vite.config.ts:46-49`, `tsconfig.app.json:21-23`, `src/`
+- **Basis:** Tier T1 Declared: `docs/standard/ts-react-development.md:97-101` prefers the `@/`
   alias for cross-module imports and discourages deep relative chains
-* **Absence:** No documented rationale - the alias was configured but never adopted
-* **Criterion:** STY-ALIAS - declared import-style convention must be followed or amended
-* **Description:** The `@` alias to `src/` is configured in both the bundler and the compiler,
+- **Absence:** No documented rationale - the alias was configured but never adopted
+- **Criterion:** STY-ALIAS - declared import-style convention must be followed or amended
+- **Description:** The `@` alias to `src/` is configured in both the bundler and the compiler,
   yet zero of 430 relative imports in `src/` use it.
   All cross-directory imports are
   single-level `../` (298 sites) or same-directory `./` - no `../../` deep chain exists, so the
   harm the rule guards against is absent.
-* **Impact:** The configured alias is dead weight and the declared preference diverges from
+- **Impact:** The configured alias is dead weight and the declared preference diverges from
   observed practice.
   Brittleness risk stays low because relatives never cross more than one level.
-* **Recommendation:** Either adopt `@/` for cross-module imports or amend the standard to record
+- **Recommendation:** Either adopt `@/` for cross-module imports or amend the standard to record
   shallow relative imports as the accepted convention and remove the unused configuration.
-* **Method:** `grep -r "from '@/" src` returns the adopted set after migration.
-* **Verified:** yes - counts are mechanical over `src/`
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - the counts are directly reproducible
-* **Mitigating factors:** Imports resolve correctly. This is convention drift, not a defect in
+- **Method:** `grep -r "from '@/" src` returns the adopted set after migration.
+- **Verified:** yes - counts are mechanical over `src/`
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - the counts are directly reproducible
+- **Mitigating factors:** Imports resolve correctly. This is convention drift, not a defect in
   behavior.
-* **Breaking change:** None
-* **Evidence:** [EVD-051](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-051](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-SEC-001: Custom HTML rendering surface lacks defense in depth
 
-* **Pillar:** Security & Compliance
-* **Severity:** Medium
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `src/utils/markdown.ts`, `src/modals/MarkdownModal.tsx:29`, `src/components/EnvelopeSection.tsx:102`, `index.html`, `electron/main.cjs`
-* **Basis:** Electron security guidance expects [CSP](#glossary) plus sanitized rendering.
+- **Pillar:** Security & Compliance
+- **Severity:** Medium
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `src/utils/markdown.ts`, `src/modals/MarkdownModal.tsx:29`, `src/components/EnvelopeSection.tsx:102`, `index.html`, `electron/main.cjs`
+- **Basis:** Electron security guidance expects [CSP](#glossary) plus sanitized rendering.
   [CWE](#glossary)-79-adjacent injection surface
-* **Absence:** No documented rationale for the absent [CSP](#glossary)
-* **Criterion:** SEC-INJ - rendering sinks must escape content and carry layered mitigations
-* **Description:** Two `dangerouslySetInnerHTML` sinks consume output of the hand-rolled
+- **Absence:** No documented rationale for the absent [CSP](#glossary)
+- **Criterion:** SEC-INJ - rendering sinks must escape content and carry layered mitigations
+- **Description:** Two `dangerouslySetInnerHTML` sinks consume output of the hand-rolled
   `renderMarkdown`, which escapes [HTML](#glossary) entities before applying `http(s)`-only
   linkification and `rel="noreferrer"`.
   The escaping is real, but it is the only layer: no
   [CSP](#glossary) meta tag or session header exists, and the parser is bespoke code on an
   injection-relevant path.
-* **Impact:** A regression or edge case in the bespoke parser becomes exploitable markup
+- **Impact:** A regression or edge case in the bespoke parser becomes exploitable markup
   injection inside a privileged [DOM](#glossary).
   The feed stock is first-party bundled content,
   so the exposure is bounded but unmitigated.
-* **Recommendation:** Add a restrictive [CSP](#glossary), hostile-fixture tests for
+- **Recommendation:** Add a restrictive [CSP](#glossary), hostile-fixture tests for
   `renderMarkdown`, and evaluate a vetted sanitizer as a second layer.
-* **Method:** Injection fixtures escape correctly and a [CSP](#glossary) is present in the built
+- **Method:** Injection fixtures escape correctly and a [CSP](#glossary) is present in the built
   [HTML](#glossary).
-* **Verified:** yes - sink count and controls are directly citable
-* **Runtime confirmed:** no - source-only audit, no dynamic exploitation
-* **Confidence:** MEDIUM - sink is verified. Exploitability is Theoretical-tier
-* **Mitigating factors:** Content is first-party and bundled, escaping exists before formatting,
+- **Verified:** yes - sink count and controls are directly citable
+- **Runtime confirmed:** no - source-only audit, no dynamic exploitation
+- **Confidence:** MEDIUM - sink is verified. Exploitability is Theoretical-tier
+- **Mitigating factors:** Content is first-party and bundled, escaping exists before formatting,
   links are scheme-limited.
-* **Breaking change:** None
-* **Evidence:** [EVD-009](#verification-and-evidence-ledger), [EVD-010](#verification-and-evidence-ledger), [EVD-030](#verification-and-evidence-ledger), [EVD-034](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-009](#verification-and-evidence-ledger), [EVD-010](#verification-and-evidence-ledger), [EVD-030](#verification-and-evidence-ledger), [EVD-034](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-SEC-002: MIDI permission grant is not scoped to the requesting origin
 
-* **Pillar:** Security & Compliance
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `electron/main.cjs:24-41`
-* **Basis:** Electron permission handlers should scope grants to expected origins
-* **Absence:** No documented rationale
-* **Criterion:** SEC-PERM - device permission grants must scope to the intended origin
-* **Description:** Both `setPermissionRequestHandler` and `setPermissionCheckHandler` grant
+- **Pillar:** Security & Compliance
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `electron/main.cjs:24-41`
+- **Basis:** Electron permission handlers should scope grants to expected origins
+- **Absence:** No documented rationale
+- **Criterion:** SEC-PERM - device permission grants must scope to the intended origin
+- **Description:** Both `setPermissionRequestHandler` and `setPermissionCheckHandler` grant
   `midi`/`midiSysex` to any requesting frame regardless of origin.
   The app only loads its own
   packaged file or the localhost dev server, so the surface is narrow, but the grant itself is
   unscoped.
-* **Impact:** If a future injection sink ([FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)) ever executes, device access is
+- **Impact:** If a future injection sink ([FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)) ever executes, device access is
   pre-granted.
   Today the vector requires compromised first-party content.
-* **Recommendation:** Check `webContents` origin/URL before granting [MIDI](#glossary)
+- **Recommendation:** Check `webContents` origin/URL before granting [MIDI](#glossary)
   permissions.
-* **Method:** A non-matching origin request is denied by inspection or a packaged smoke check.
-* **Verified:** yes - handler bodies are directly citable
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - the missing origin check is mechanically verifiable
-* **Mitigating factors:** Only first-party content loads today. No remote navigation surface
+- **Method:** A non-matching origin request is denied by inspection or a packaged smoke check.
+- **Verified:** yes - handler bodies are directly citable
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - the missing origin check is mechanically verifiable
+- **Mitigating factors:** Only first-party content loads today. No remote navigation surface
   exists.
-* **Breaking change:** None
-* **Evidence:** [EVD-008](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-008](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-INF-001: No automated CI gate exists for the documented verification loop
 
-* **Pillar:** Infrastructure & [CI/CD](#glossary)
-* **Severity:** Medium
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** repository root (no `.github/`), `package.json` scripts, `docs/TESTING.md`
-* **Basis:** `docs/TESTING.md` requires the six-step loop. Nothing executes it automatically
-* **Absence:** No documented rationale - the workflow is manual-only
-* **Criterion:** DEP-CI - declared quality gates must run automatically on change
-* **Description:** No `.github/` directory or any pipeline definition exists. The documented
+- **Pillar:** Infrastructure & [CI/CD](#glossary)
+- **Severity:** Medium
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** repository root (no `.github/`), `package.json` scripts, `docs/TESTING.md`
+- **Basis:** `docs/TESTING.md` requires the six-step loop. Nothing executes it automatically
+- **Absence:** No documented rationale - the workflow is manual-only
+- **Criterion:** DEP-CI - declared quality gates must run automatically on change
+- **Description:** No `.github/` directory or any pipeline definition exists. The documented
   typecheck, lint, format, build, and test steps run only when a human runs them.
-* **Impact:** Regressions, including the documented coverage failure, can merge and ship
+- **Impact:** Regressions, including the documented coverage failure, can merge and ship
   undetected.
   The entire quality gate rests on individual discipline.
-* **Recommendation:** Add a [CI](#glossary) workflow running typecheck, lint, format check,
+- **Recommendation:** Add a [CI](#glossary) workflow running typecheck, lint, format check,
   unit tests, and build on push.
   Allow the coverage command to fail only until [REC-001](#rec-001-close-the-coverage-gap-on-the-highest-risk-paths)
   closes.
-* **Method:** A pushed change produces a green run.
-* **Verified:** yes - absence of CI files is mechanically verifiable
-* **Runtime confirmed:** no - no pipeline exists to execute
-* **Confidence:** HIGH
-* **Mitigating factors:** The documented loop is real and the standard requires running it
+- **Method:** A pushed change produces a green run.
+- **Verified:** yes - absence of CI files is mechanically verifiable
+- **Runtime confirmed:** no - no pipeline exists to execute
+- **Confidence:** HIGH
+- **Mitigating factors:** The documented loop is real and the standard requires running it
   before changes.
   Discipline partially substitutes.
-* **Breaking change:** None
-* **Evidence:** [EVD-025](#verification-and-evidence-ledger), [EVD-031](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-025](#verification-and-evidence-ledger), [EVD-031](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-INF-002: Service worker can serve stale assets after redeploys
 
-* **Pillar:** Infrastructure & [CI/CD](#glossary)
-* **Severity:** Medium
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `public/js/sw.js:1,52-63`, `vite.config.ts:22-44`
-* **Basis:** Cache freshness requires versioned cache names or hashed asset [URLs](#glossary)
-* **Absence:** No documented rationale - hashless names are documented as a `file://` constraint, but the staleness interaction is not
-* **Criterion:** DEP-CACHE - cache invalidation must track deployed versions
-* **Description:** `CACHE_NAME` is fixed at `dosound-tracker-cache-v1`, non-navigation GET
+- **Pillar:** Infrastructure & [CI/CD](#glossary)
+- **Severity:** Medium
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `public/js/sw.js:1,52-63`, `vite.config.ts:22-44`
+- **Basis:** Cache freshness requires versioned cache names or hashed asset [URLs](#glossary)
+- **Absence:** No documented rationale - hashless names are documented as a `file://` constraint, but the staleness interaction is not
+- **Criterion:** DEP-CACHE - cache invalidation must track deployed versions
+- **Description:** `CACHE_NAME` is fixed at `dosound-tracker-cache-v1`, non-navigation GET
   requests are served cache-first, and the build emits deterministic hashless `assets/[name].js`
   filenames.
   A redeploy writes the same filenames, so warm clients can keep serving the previous
   bundle indefinitely.
-* **Impact:** Returning web users can run a stale application after a release with no signal to
+- **Impact:** Returning web users can run a stale application after a release with no signal to
   reload.
-* **Recommendation:** Derive the cache name from the app version (already injected as
+- **Recommendation:** Derive the cache name from the app version (already injected as
   `__APP_VERSION__`) and serve assets network-first or stale-while-revalidate.
-* **Method:** A redeploy ships the new bundle to a warm client.
-* **Verified:** yes - cache strategy and filename config are directly citable
-* **Runtime confirmed:** no - redeploy behavior was not exercised
-* **Confidence:** MEDIUM - the defect is structural. The browser-specific cache behavior is
+- **Method:** A redeploy ships the new bundle to a warm client.
+- **Verified:** yes - cache strategy and filename config are directly citable
+- **Runtime confirmed:** no - redeploy behavior was not exercised
+- **Confidence:** MEDIUM - the defect is structural. The browser-specific cache behavior is
   inferred not observed
-* **Mitigating factors:** Electron builds bypass the service worker. Only the hosted web build
+- **Mitigating factors:** Electron builds bypass the service worker. Only the hosted web build
   is exposed.
-* **Breaking change:** None
-* **Evidence:** [EVD-011](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-011](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-INF-003: Desktop artifacts are distributed unsigned
 
-* **Pillar:** Infrastructure & [CI/CD](#glossary)
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `package.json` build block, `README.md`
-* **Basis:** Distribution integrity practice. README documents the unsigned state itself
-* **Absence:** Deliberate - recorded decision - the README documents the unsigned state and the workaround
-* **Criterion:** DEP-SIGN - released binaries should carry tamper evidence at declared scale
-* **Description:** electron-builder targets macOS, Windows, and Linux with no signing identity
+- **Pillar:** Infrastructure & [CI/CD](#glossary)
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `package.json` build block, `README.md`
+- **Basis:** Distribution integrity practice. README documents the unsigned state itself
+- **Absence:** Deliberate - recorded decision - the README documents the unsigned state and the workaround
+- **Criterion:** DEP-SIGN - released binaries should carry tamper evidence at declared scale
+- **Description:** electron-builder targets macOS, Windows, and Linux with no signing identity
   configured.
   The README documents the unsigned state and the `xattr` workaround.
-* **Impact:** Users get platform warnings and downloads carry no tamper evidence. Acceptable at
+- **Impact:** Users get platform warnings and downloads carry no tamper evidence. Acceptable at
   hobbyist scale, wrong if distribution grows.
-* **Recommendation:** Publish per-release checksums now. Evaluate signing and notarization when
+- **Recommendation:** Publish per-release checksums now. Evaluate signing and notarization when
   distribution justifies the cost.
-* **Method:** Published checksums verify downloads.
-* **Verified:** yes - config and documentation are directly citable
-* **Runtime confirmed:** no - packaging was not executed
-* **Confidence:** HIGH
-* **Mitigating factors:** Documented and user-visible. `README.md` is honest about the state.
-* **Breaking change:** None
-* **Evidence:** [EVD-033](#verification-and-evidence-ledger), [EVD-004](#verification-and-evidence-ledger), `Inspected`
+- **Method:** Published checksums verify downloads.
+- **Verified:** yes - config and documentation are directly citable
+- **Runtime confirmed:** no - packaging was not executed
+- **Confidence:** HIGH
+- **Mitigating factors:** Documented and user-visible. `README.md` is honest about the state.
+- **Breaking change:** None
+- **Evidence:** [EVD-033](#verification-and-evidence-ledger), [EVD-004](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-AIP-001: AI provenance is disclosed but per-change compliance is unmeasurable
 
-* **Pillar:** AI Provenance & Code Origin
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `README.md`, `docs/prompt/`, git trailers
-* **Basis:** `docs/COPYRIGHTS.md` requires verifying [AI](#glossary)-generated code originality,
+- **Pillar:** AI Provenance & Code Origin
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `README.md`, `docs/prompt/`, git trailers
+- **Basis:** `docs/COPYRIGHTS.md` requires verifying [AI](#glossary)-generated code originality,
   no marking convention exists to measure it
-* **Absence:** No documented rationale - no per-change convention is recorded
-* **Criterion:** AIP-TRACE - generated-artifact provenance must be attributable per change
-* **Provenance basis:** Declared - the README names the authoring tools and the prompt archive exists
-* **Description:** The README names Windsurf and GPT 5.1 as authoring tools and `docs/prompt/`
+- **Absence:** No documented rationale - no per-change convention is recorded
+- **Criterion:** AIP-TRACE - generated-artifact provenance must be attributable per change
+- **Provenance basis:** Declared - the README names the authoring tools and the prompt archive exists
+- **Description:** The README names Windsurf and GPT 5.1 as authoring tools and `docs/prompt/`
   archives task prompts - strong disclosure in aggregate.
   Ten of 705 commits carry tool
   trailers.
   But nothing marks which individual files or changes were [AI](#glossary)-authored, so
   the originality-verification rule cannot be measured per artifact.
-* **Impact:** Provenance claims exist at project level but cannot be audited per change.
-* **Recommendation:** Adopt a per-change disclosure convention (commit trailer or plan-doc field)
+- **Impact:** Provenance claims exist at project level but cannot be audited per change.
+- **Recommendation:** Adopt a per-change disclosure convention (commit trailer or plan-doc field)
   recording [AI](#glossary) assistance.
-* **Method:** Generated changes carry disclosure markers.
-* **Verified:** yes - disclosure surfaces were enumerated
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** MEDIUM - absence of a convention is verifiable. Compliance would still need
+- **Method:** Generated changes carry disclosure markers.
+- **Verified:** yes - disclosure surfaces were enumerated
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** MEDIUM - absence of a convention is verifiable. Compliance would still need
   author cooperation
-* **Mitigating factors:** Disclosure is already better than typical: tools named, prompts
+- **Mitigating factors:** Disclosure is already better than typical: tools named, prompts
   archived, some trailers present.
-* **Breaking change:** None
-* **Evidence:** [EVD-003](#verification-and-evidence-ledger), [EVD-032](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-003](#verification-and-evidence-ledger), [EVD-032](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CPR-001: License policy whitelist is narrower than the resolved dependency set
 
-* **Pillar:** Copyrights & Originality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `docs/COPYRIGHTS.md`, `package-lock.json`
-* **Basis:** The policy permits [MIT](#glossary), Apache-2.0, [BSD](#glossary), [ISC](#glossary), Boost only
-* **Absence:** No documented rationale - resolved classes grew past the list
-* **Criterion:** CPR-LIC - resolved dependency licenses must stay inside the declared policy
-* **Description:** The lockfile resolves BlueOak-1.0.0 (9), CC-BY-4.0 (1), [WTFPL](#glossary)
+- **Pillar:** Copyrights & Originality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `docs/COPYRIGHTS.md`, `package-lock.json`
+- **Basis:** The policy permits [MIT](#glossary), Apache-2.0, [BSD](#glossary), [ISC](#glossary), Boost only
+- **Absence:** No documented rationale - resolved classes grew past the list
+- **Criterion:** CPR-LIC - resolved dependency licenses must stay inside the declared policy
+- **Description:** The lockfile resolves BlueOak-1.0.0 (9), CC-BY-4.0 (1), [WTFPL](#glossary)
   variants (3), [MIT](#glossary)-0 (2), and CC0-1.0 (1) - all permissive-class, none on the
   permitted list. 222 packages declare no license at all.
-* **Impact:** The project cannot demonstrate its own license policy holds without a case-by-case
+- **Impact:** The project cannot demonstrate its own license policy holds without a case-by-case
   review.
   Redistribution relies on the lockfile alone.
-* **Recommendation:** Generate a third-party notices inventory covering every resolved class, or
+- **Recommendation:** Generate a third-party notices inventory covering every resolved class, or
   extend the permitted-license list with the resolved permissive classes.
-* **Method:** The inventory enumerates every resolved license class.
-* **Verified:** yes - license fields were extracted mechanically
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH - the class census is complete
-* **Mitigating factors:** No copyleft class is present, so the substantive [GPL](#glossary) bar holds.
-* **Breaking change:** None
-* **Evidence:** [EVD-006](#verification-and-evidence-ledger), [EVD-007](#verification-and-evidence-ledger), [EVD-024](#verification-and-evidence-ledger), `Inspected`
+- **Method:** The inventory enumerates every resolved license class.
+- **Verified:** yes - license fields were extracted mechanically
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH - the class census is complete
+- **Mitigating factors:** No copyleft class is present, so the substantive [GPL](#glossary) bar holds.
+- **Breaking change:** None
+- **Evidence:** [EVD-006](#verification-and-evidence-ledger), [EVD-007](#verification-and-evidence-ledger), [EVD-024](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-CPR-002: ZX0 third-party attribution is absent from the central notice file
 
-* **Pillar:** Copyrights & Originality
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** Unchanged
-* **Targets:** `src/utils/zx0.ts:1-12`, `docs/COPYRIGHTS.md`
-* **Basis:** `docs/COPYRIGHTS.md` requires documenting third-party code in `COPYRIGHTS.md` or
+- **Pillar:** Copyrights & Originality
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** Unchanged
+- **Targets:** `src/utils/zx0.ts:1-12`, `docs/COPYRIGHTS.md`
+- **Basis:** `docs/COPYRIGHTS.md` requires documenting third-party code in `COPYRIGHTS.md` or
   `ATTRIBUTIONS.md`
-* **Absence:** No documented rationale - in-file attribution exists, central record does not
-* **Criterion:** CPR-ATTR - third-party attribution must appear where the policy names it
-* **Description:** The [ZX0](#glossary) compressor is a ported algorithm carrying proper in-file
+- **Absence:** No documented rationale - in-file attribution exists, central record does not
+- **Criterion:** CPR-ATTR - third-party attribution must appear where the policy names it
+- **Description:** The [ZX0](#glossary) compressor is a ported algorithm carrying proper in-file
   [BSD](#glossary)-3-Clause attribution to Einar Saukas, but `COPYRIGHTS.md` - the file the
   project designates for third-party attribution - does not list it.
-* **Impact:** Trivial compliance gap. Attribution exists but not where the project's own policy
+- **Impact:** Trivial compliance gap. Attribution exists but not where the project's own policy
   requires it.
-* **Recommendation:** Add the [ZX0](#glossary) entry (author, license, source) to
+- **Recommendation:** Add the [ZX0](#glossary) entry (author, license, source) to
   `COPYRIGHTS.md`.
-* **Method:** `COPYRIGHTS.md` lists the component.
-* **Verified:** yes - both files are directly citable
-* **Runtime confirmed:** no - source-only audit
-* **Confidence:** HIGH
-* **Mitigating factors:** In-file attribution already satisfies the license's notice clause. The
+- **Method:** `COPYRIGHTS.md` lists the component.
+- **Verified:** yes - both files are directly citable
+- **Runtime confirmed:** no - source-only audit
+- **Confidence:** HIGH
+- **Mitigating factors:** In-file attribution already satisfies the license's notice clause. The
   gap is against the project's own stricter rule.
-* **Breaking change:** None
-* **Evidence:** [EVD-023](#verification-and-evidence-ledger), `Inspected`
+- **Breaking change:** None
+- **Evidence:** [EVD-023](#verification-and-evidence-ledger), `Inspected`
 
 ### FND-STR-001: Test file names and placement diverge from their subjects
 
-* **Pillar:** Structure & Organization
-* **Severity:** Low
-* **Type:** Concern
-* **Status:** Open
-* **Change:** New
-* **Targets:** `test/hooks/useDataManagement.test.ts`, `test/hooks/useDataManagement.hook.test.tsx`, `test/utils/exportMax.test`
-* **Basis:** Tier T1/T2: `docs/standard/ts-react-development.md` requires one test file per
+- **Pillar:** Structure & Organization
+- **Severity:** Low
+- **Type:** Concern
+- **Status:** Open
+- **Change:** New
+- **Targets:** `test/hooks/useDataManagement.test.ts`, `test/hooks/useDataManagement.hook.test.tsx`, `test/utils/exportMax.test`
+- **Basis:** Tier T1/T2: `docs/standard/ts-react-development.md` requires one test file per
   module kept close to its subject.
   `TESTING.md` prescribes domain-mirrored `test/` layout.
   The
   observed convention is `<subject-file-name>.test.<ext>`
-* **Absence:** No documented rationale for the divergence
-* **Criterion:** STR-TEST - test file names and locations must identify the module they exercise
-* **Description:** `test/hooks/useDataManagement.test.ts` contains only `parseSongFromYaml`
+- **Absence:** No documented rationale for the divergence
+- **Criterion:** STR-TEST - test file names and locations must identify the module they exercise
+- **Description:** `test/hooks/useDataManagement.test.ts` contains only `parseSongFromYaml`
   tests - the subject's real suite is `test/utils/songParser.test.ts` - so the filename claims a
   hook it never imports.
   Its sibling `useDataManagement.hook.test.tsx` (which does test the hook)
@@ -1675,24 +1675,24 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
   Together with the uncollectable
   `exportMax.test` ([FND-CQY-002](#fnd-cqy-002-tracked-duplicate-test-file-never-executes)), three of 44 test files diverge
   from the mirror convention.
-* **Impact:** A reader mapping tests to modules is misled. The hook appears covered at a glance
+- **Impact:** A reader mapping tests to modules is misled. The hook appears covered at a glance
   in a way it partly is not, and naming is inconsistent within the suite.
-* **Recommendation:** Rename `useDataManagement.test.ts` to reflect `songParser` coverage (or
+- **Recommendation:** Rename `useDataManagement.test.ts` to reflect `songParser` coverage (or
   merge it into `test/utils/songParser.test.ts`), rename the harness file to
   `useDataManagement.test.tsx`, and delete or merge `exportMax.test`.
-* **Method:** `find test -name '*.test.*'` shows only subject-mirroring names that the Vitest
+- **Method:** `find test -name '*.test.*'` shows only subject-mirroring names that the Vitest
   glob collects.
-* **Verified:** yes - file contents and names are directly citable
-* **Runtime confirmed:** no - suite membership was verified by glob, not execution
-* **Confidence:** HIGH - the misplaced file's only `describe` block targets `parseSongFromYaml`
-* **Mitigating factors:** 41 of 44 test files follow the mirror convention cleanly.
-* **Breaking change:** None - test-file moves only
-* **Evidence:** [EVD-014](#verification-and-evidence-ledger), [EVD-015](#verification-and-evidence-ledger), [EVD-052](#verification-and-evidence-ledger), `Inspected`
+- **Verified:** yes - file contents and names are directly citable
+- **Runtime confirmed:** no - suite membership was verified by glob, not execution
+- **Confidence:** HIGH - the misplaced file's only `describe` block targets `parseSongFromYaml`
+- **Mitigating factors:** 41 of 44 test files follow the mirror convention cleanly.
+- **Breaking change:** None - test-file moves only
+- **Evidence:** [EVD-014](#verification-and-evidence-ledger), [EVD-015](#verification-and-evidence-ledger), [EVD-052](#verification-and-evidence-ledger), `Inspected`
 
 ## Technical Debt Register
 
 | ID                                                                    | Item                                                                  | Category        | Source                                                                                                                                                                                                                                                                                                                        | Estimated Remediation                                   | Cost of Delay                                                   | Status |
-|-----------------------------------------------------------------------|-----------------------------------------------------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------|-----------------------------------------------------------------|--------|
+| --------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------- | ------ |
 | [TDR-001](#tdr-001-central-orchestrator-decomposition)                | Central orchestrator decomposition                                    | Maintainability | [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)                                                                                                                                                                                                                                | High effort, staged extraction across releases          | Each feature change pays navigation and merge cost in `App.tsx` | Open   |
 | [TDR-002](#tdr-002-core-path-test-backlog)                            | Core-path test backlog (synth, exports breadth, worker, modals)       | Reliability     | [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)                                                                                                                                                                                                                                    | High effort, characterization tests across five areas   | Every audio or export change ships with weak behavioral net     | Open   |
 | [TDR-003](#tdr-003-hand-rolled-markdown-renderer-and-absent-csp)      | Hand-rolled markdown renderer and sanitizer                           | Security        | [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)                                                                                                                                                                                                                                              | Medium effort, sanitizer tests plus [CSP](#glossary)    | Each new markdown feature must re-derive escaping safety        | Open   |
@@ -1703,71 +1703,71 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
 
 ### TDR-001: Central orchestrator decomposition
 
-* **Category:** Maintainability
-* **Source:** [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)
-* **Description:** `src/App.tsx` is 2488 lines with ~20 hook wirings and inline render sections. Five hooks individually exceed 500 lines.
-* **Cost:** High - staged extraction across releases, each keeping the byte-identical export contract green.
-* **Delay:** Every playback, [MIDI](#glossary), or song-management change pays navigation and merge cost in the monolith.
-* **Status:** Open
+- **Category:** Maintainability
+- **Source:** [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)
+- **Description:** `src/App.tsx` is 2488 lines with ~20 hook wirings and inline render sections. Five hooks individually exceed 500 lines.
+- **Cost:** High - staged extraction across releases, each keeping the byte-identical export contract green.
+- **Delay:** Every playback, [MIDI](#glossary), or song-management change pays navigation and merge cost in the monolith.
+- **Status:** Open
 
 ### TDR-002: Core-path test backlog
 
-* **Category:** Reliability
-* **Source:** [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)
-* **Description:** Synth, exports breadth, worker, and modal paths carry the weakest behavioral coverage while the configured gate documents itself failing.
-* **Cost:** High - characterization tests across five areas, including golden-output export tests.
-* **Delay:** Every audio or export change ships with a thin regression net, and the failing gate normalizes failure.
-* **Status:** Open
+- **Category:** Reliability
+- **Source:** [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)
+- **Description:** Synth, exports breadth, worker, and modal paths carry the weakest behavioral coverage while the configured gate documents itself failing.
+- **Cost:** High - characterization tests across five areas, including golden-output export tests.
+- **Delay:** Every audio or export change ships with a thin regression net, and the failing gate normalizes failure.
+- **Status:** Open
 
 ### TDR-003: Hand-rolled markdown renderer and absent CSP
 
-* **Category:** Security
-* **Source:** [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)
-* **Description:** A bespoke markdown parser feeds two `dangerouslySetInnerHTML` sinks with no [CSP](#glossary) second layer.
-* **Cost:** Medium - sanitizer tests, [CSP](#glossary) rollout, and a possible library swap.
-* **Delay:** Each new markdown feature must re-derive escaping safety from scratch.
-* **Status:** Open
+- **Category:** Security
+- **Source:** [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)
+- **Description:** A bespoke markdown parser feeds two `dangerouslySetInnerHTML` sinks with no [CSP](#glossary) second layer.
+- **Cost:** Medium - sanitizer tests, [CSP](#glossary) rollout, and a possible library swap.
+- **Delay:** Each new markdown feature must re-derive escaping safety from scratch.
+- **Status:** Open
 
 ### TDR-004: Documentation figure drift and dead test artifact
 
-* **Category:** Maintainability
-* **Source:** [FND-CQY-004](#fnd-cqy-004-documentation-figures-have-drifted-from-the-code)
-* **Description:** Three source-of-truth documents carry measured-wrong figures and one tracked test file never executes.
-* **Cost:** Low - a refresh pass plus one file deletion.
-* **Delay:** Stale figures compound into misleading change plans.
-* **Status:** Open
+- **Category:** Maintainability
+- **Source:** [FND-CQY-004](#fnd-cqy-004-documentation-figures-have-drifted-from-the-code)
+- **Description:** Three source-of-truth documents carry measured-wrong figures and one tracked test file never executes.
+- **Cost:** Low - a refresh pass plus one file deletion.
+- **Delay:** Stale figures compound into misleading change plans.
+- **Status:** Open
 
 ### TDR-005: Verification-loop automation debt
 
-* **Category:** Reliability
-* **Source:** [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)
-* **Description:** The documented six-step verification loop is manual-only. No pipeline executes it.
-* **Cost:** Medium - one [CI](#glossary) workflow plus upkeep.
-* **Delay:** Manual-only gates let every failure class above recur undetected.
-* **Status:** Open
+- **Category:** Reliability
+- **Source:** [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)
+- **Description:** The documented six-step verification loop is manual-only. No pipeline executes it.
+- **Cost:** Medium - one [CI](#glossary) workflow plus upkeep.
+- **Delay:** Manual-only gates let every failure class above recur undetected.
+- **Status:** Open
 
 ### TDR-006: Test-file naming and placement debt
 
-* **Category:** Maintainability
-* **Source:** [FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects)
-* **Description:** One test file names a hook it never imports, one uses a one-off `.hook.test` infix, and one escapes the glob entirely.
-* **Cost:** Low - three file renames or merges.
-* **Delay:** Misleading names silently distort perceived coverage.
-* **Status:** Open
+- **Category:** Maintainability
+- **Source:** [FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects)
+- **Description:** One test file names a hook it never imports, one uses a one-off `.hook.test` infix, and one escapes the glob entirely.
+- **Cost:** Low - three file renames or merges.
+- **Delay:** Misleading names silently distort perceived coverage.
+- **Status:** Open
 
 ### TDR-007: Declared-versus-observed style drift
 
-* **Category:** Maintainability
-* **Source:** [FND-CQY-005](#fnd-cqy-005-abbreviated-identifiers-violate-the-declared-naming-standard), [FND-CQY-006](#fnd-cqy-006-non-null-assertions-lack-the-required-reason-comments), [FND-CQY-007](#fnd-cqy-007-numbered-and-duplicated-section-comment-in-usemidits), [FND-CQY-008](#fnd-cqy-008-configured--import-alias-is-unused)
-* **Description:** Abbreviated identifiers, missing `REASON:` comments, a duplicated numbered comment, and an unused import alias all diverge from declared rules.
-* **Cost:** Low - localized edits plus one standard amendment.
-* **Delay:** Written standards lose authority as violations accumulate.
-* **Status:** Open
+- **Category:** Maintainability
+- **Source:** [FND-CQY-005](#fnd-cqy-005-abbreviated-identifiers-violate-the-declared-naming-standard), [FND-CQY-006](#fnd-cqy-006-non-null-assertions-lack-the-required-reason-comments), [FND-CQY-007](#fnd-cqy-007-numbered-and-duplicated-section-comment-in-usemidits), [FND-CQY-008](#fnd-cqy-008-configured--import-alias-is-unused)
+- **Description:** Abbreviated identifiers, missing `REASON:` comments, a duplicated numbered comment, and an unused import alias all diverge from declared rules.
+- **Cost:** Low - localized edits plus one standard amendment.
+- **Delay:** Written standards lose authority as violations accumulate.
+- **Status:** Open
 
 ## Unified Risk Register
 
 | ID                                                                                 | Title                                                                      | Source                                                                                            | Impact | Likelihood | Rating | Mitigation                                                 |
-|------------------------------------------------------------------------------------|----------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------|--------|------------|--------|------------------------------------------------------------|
+| ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- | ------ | ---------- | ------ | ---------------------------------------------------------- |
 | [RSK-001](#rsk-001-regressions-merge-undetected-without-ci-enforcement)            | Regressions merge undetected without [CI](#glossary) enforcement           | [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)      | MEDIUM | MEDIUM     | MEDIUM | add a [CI](#glossary) workflow running the documented loop |
 | [RSK-002](#rsk-002-redeploys-serve-stale-or-skewed-web-assets)                     | Redeploys serve stale or skewed web assets                                 | [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)                 | MEDIUM | MEDIUM     | MEDIUM | Version the cache name, network-first assets               |
 | [RSK-003](#rsk-003-maintainer-unavailability-halts-all-delivery)                   | Maintainer unavailability halts all delivery                               | [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)                       | HIGH   | LOW        | MEDIUM | Name a backup owner or fork path                           |
@@ -1784,203 +1784,203 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
 
 ### RSK-001: Regressions merge undetected without CI enforcement
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - merges land whenever the single maintainer pushes, and the documented gate already fails
-* **Residual:** MEDIUM
-* **Status:** Open
-* **Description:** No [CI](#glossary) workflow exists, so the documented typecheck/lint/format/test loop executes only when a human runs it.
-* **Impact:** Any defect class the loop would catch can reach the default branch without signal.
-* **Trigger:** Any push that would fail the documented checks.
-* **Controls:** The written verification requirements in `TESTING.md` and `standard/ts-react-development.md`.
-* **Mitigation:** Add a [CI](#glossary) workflow running the documented loop.
-* **Closure:** A pushed change produces a green [CI](#glossary) run.
-* **Source:** [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)
-* **Confidence:** HIGH - the absence of CI files is mechanical
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - merges land whenever the single maintainer pushes, and the documented gate already fails
+- **Residual:** MEDIUM
+- **Status:** Open
+- **Description:** No [CI](#glossary) workflow exists, so the documented typecheck/lint/format/test loop executes only when a human runs it.
+- **Impact:** Any defect class the loop would catch can reach the default branch without signal.
+- **Trigger:** Any push that would fail the documented checks.
+- **Controls:** The written verification requirements in `TESTING.md` and `standard/ts-react-development.md`.
+- **Mitigation:** Add a [CI](#glossary) workflow running the documented loop.
+- **Closure:** A pushed change produces a green [CI](#glossary) run.
+- **Source:** [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)
+- **Confidence:** HIGH - the absence of CI files is mechanical
 
 ### RSK-002: Redeploys serve stale or skewed web assets
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - every redeploy hits warm clients under a fixed cache name and hashless asset names
-* **Residual:** MEDIUM
-* **Status:** Open
-* **Description:** The service worker serves non-navigation GET requests cache-first under a version-fixed cache name while the build emits unversioned filenames.
-* **Impact:** Returning web users can run a stale application after a release with no signal to reload.
-* **Trigger:** A redeploy while a client holds a warm cache.
-* **Controls:** The navigation preload and `activate` cleanup exist. Electron builds bypass the worker.
-* **Mitigation:** Derive the cache name from `__APP_VERSION__` and reorder the fetch strategy.
-* **Closure:** A redeploy serves the new bundle to a warm client.
-* **Source:** [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)
-* **Confidence:** MEDIUM - strategy and filenames are citable, browser cache behavior unobserved
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - every redeploy hits warm clients under a fixed cache name and hashless asset names
+- **Residual:** MEDIUM
+- **Status:** Open
+- **Description:** The service worker serves non-navigation GET requests cache-first under a version-fixed cache name while the build emits unversioned filenames.
+- **Impact:** Returning web users can run a stale application after a release with no signal to reload.
+- **Trigger:** A redeploy while a client holds a warm cache.
+- **Controls:** The navigation preload and `activate` cleanup exist. Electron builds bypass the worker.
+- **Mitigation:** Derive the cache name from `__APP_VERSION__` and reorder the fetch strategy.
+- **Closure:** A redeploy serves the new bundle to a warm client.
+- **Source:** [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)
+- **Confidence:** MEDIUM - strategy and filenames are citable, browser cache behavior unobserved
 
 ### RSK-003: Maintainer unavailability halts all delivery
 
-* **Severity:** HIGH
-* **Likelihood:** LOW - a structural property, not an imminent event
-* **Residual:** MEDIUM
-* **Status:** Open
-* **Description:** All 679 non-merge commits belong to one author and no continuity owner is documented.
-* **Impact:** Maintainer unavailability stops releases, review, and institutional knowledge transfer.
-* **Trigger:** Maintainer departure, absence, or incapacity.
-* **Controls:** The deep `docs/` corpus and prompt archive preserve much of the reasoning.
-* **Mitigation:** Name a backup maintainer or document a fork path.
-* **Closure:** A named continuity owner exists in the governance documents.
-* **Source:** [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)
-* **Confidence:** HIGH - the census is unambiguous
+- **Severity:** HIGH
+- **Likelihood:** LOW - a structural property, not an imminent event
+- **Residual:** MEDIUM
+- **Status:** Open
+- **Description:** All 679 non-merge commits belong to one author and no continuity owner is documented.
+- **Impact:** Maintainer unavailability stops releases, review, and institutional knowledge transfer.
+- **Trigger:** Maintainer departure, absence, or incapacity.
+- **Controls:** The deep `docs/` corpus and prompt archive preserve much of the reasoning.
+- **Mitigation:** Name a backup maintainer or document a fork path.
+- **Closure:** A named continuity owner exists in the governance documents.
+- **Source:** [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)
+- **Confidence:** HIGH - the census is unambiguous
 
 ### RSK-004: Orchestrator growth compounds change defects
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - the file has grown 294 lines since the previous audit and remains the change hotspot
-* **Residual:** MEDIUM
-* **Status:** Open
-* **Description:** `App.tsx` concentrates orchestration, wiring, and render markup for the whole application.
-* **Impact:** Defects concentrate where change is most frequent, and each edit risks touching audio-critical paths.
-* **Trigger:** Any feature change touching playback, [MIDI](#glossary), or song management.
-* **Controls:** Documented module boundaries, a real hook layer, and the audio-critical exception rules.
-* **Mitigation:** Stage the documented decomposition.
-* **Closure:** Extraction steps keep the suite and byte-identical exports green.
-* **Source:** [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)
-* **Confidence:** HIGH - measured directly
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - the file has grown 294 lines since the previous audit and remains the change hotspot
+- **Residual:** MEDIUM
+- **Status:** Open
+- **Description:** `App.tsx` concentrates orchestration, wiring, and render markup for the whole application.
+- **Impact:** Defects concentrate where change is most frequent, and each edit risks touching audio-critical paths.
+- **Trigger:** Any feature change touching playback, [MIDI](#glossary), or song management.
+- **Controls:** Documented module boundaries, a real hook layer, and the audio-critical exception rules.
+- **Mitigation:** Stage the documented decomposition.
+- **Closure:** Extraction steps keep the suite and byte-identical exports green.
+- **Source:** [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)
+- **Confidence:** HIGH - measured directly
 
 ### RSK-005: Injected markup renders through the markdown sink
 
-* **Severity:** HIGH
-* **Likelihood:** LOW - content is first-party bundled files and escaping exists before formatting
-* **Residual:** MEDIUM
-* **Status:** Open
-* **Description:** Two `dangerouslySetInnerHTML` sinks consume a hand-rolled markdown renderer with no [CSP](#glossary) second layer.
-* **Impact:** A parser regression or edge case becomes markup injection inside a privileged [DOM](#glossary).
-* **Trigger:** A change to `renderMarkdown` or its callers that weakens escaping.
-* **Controls:** [HTML](#glossary) entity escaping, scheme-limited linkification, `rel="noreferrer"`, first-party content.
-* **Mitigation:** Add a [CSP](#glossary) and hostile-fixture tests. Evaluate a vetted sanitizer.
-* **Closure:** Injection fixtures escape correctly and a [CSP](#glossary) is present in built [HTML](#glossary).
-* **Source:** [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)
-* **Confidence:** MEDIUM - sink verified, exploitability Theoretical-tier
+- **Severity:** HIGH
+- **Likelihood:** LOW - content is first-party bundled files and escaping exists before formatting
+- **Residual:** MEDIUM
+- **Status:** Open
+- **Description:** Two `dangerouslySetInnerHTML` sinks consume a hand-rolled markdown renderer with no [CSP](#glossary) second layer.
+- **Impact:** A parser regression or edge case becomes markup injection inside a privileged [DOM](#glossary).
+- **Trigger:** A change to `renderMarkdown` or its callers that weakens escaping.
+- **Controls:** [HTML](#glossary) entity escaping, scheme-limited linkification, `rel="noreferrer"`, first-party content.
+- **Mitigation:** Add a [CSP](#glossary) and hostile-fixture tests. Evaluate a vetted sanitizer.
+- **Closure:** Injection fixtures escape correctly and a [CSP](#glossary) is present in built [HTML](#glossary).
+- **Source:** [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)
+- **Confidence:** MEDIUM - sink verified, exploitability Theoretical-tier
 
 ### RSK-006: UI regressions reach releases without E2E checks
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - no outer-layer suite exists at all
-* **Residual:** MEDIUM
-* **Status:** Open
-* **Description:** The configured Playwright harness and documented e2e flows have no specs.
-* **Impact:** Load, playback, file, and export flows can break with no automated check.
-* **Trigger:** Any change breaking a documented e2e flow.
-* **Controls:** The unit suite partially covers component behavior.
-* **Mitigation:** Add a Playwright smoke suite.
-* **Closure:** The smoke suite passes against the preview build.
-* **Source:** [FND-CQY-003](#fnd-cqy-003-no-end-to-end-specs-exist-despite-configured-playwright)
-* **Confidence:** HIGH - the empty directory is mechanical
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - no outer-layer suite exists at all
+- **Residual:** MEDIUM
+- **Status:** Open
+- **Description:** The configured Playwright harness and documented e2e flows have no specs.
+- **Impact:** Load, playback, file, and export flows can break with no automated check.
+- **Trigger:** Any change breaking a documented e2e flow.
+- **Controls:** The unit suite partially covers component behavior.
+- **Mitigation:** Add a Playwright smoke suite.
+- **Closure:** The smoke suite passes against the preview build.
+- **Source:** [FND-CQY-003](#fnd-cqy-003-no-end-to-end-specs-exist-despite-configured-playwright)
+- **Confidence:** HIGH - the empty directory is mechanical
 
 ### RSK-007: License-policy non-conformance surfaces late
 
-* **Severity:** LOW
-* **Likelihood:** MEDIUM - five resolved classes already sit outside the permitted list
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** The lockfile resolves five permissive classes the policy does not list, and 222 packages declare no license.
-* **Impact:** The project cannot demonstrate its own license policy holds.
-* **Trigger:** Redistribution, acquisition, or compliance review.
-* **Controls:** All resolved classes are permissive. No copyleft is present.
-* **Mitigation:** Generate a notices inventory or extend the permitted list.
-* **Closure:** The inventory enumerates every resolved license class.
-* **Source:** [FND-CPR-001](#fnd-cpr-001-license-policy-whitelist-is-narrower-than-the-resolved-dependency-set)
-* **Confidence:** HIGH - the class census is complete
+- **Severity:** LOW
+- **Likelihood:** MEDIUM - five resolved classes already sit outside the permitted list
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** The lockfile resolves five permissive classes the policy does not list, and 222 packages declare no license.
+- **Impact:** The project cannot demonstrate its own license policy holds.
+- **Trigger:** Redistribution, acquisition, or compliance review.
+- **Controls:** All resolved classes are permissive. No copyleft is present.
+- **Mitigation:** Generate a notices inventory or extend the permitted list.
+- **Closure:** The inventory enumerates every resolved license class.
+- **Source:** [FND-CPR-001](#fnd-cpr-001-license-policy-whitelist-is-narrower-than-the-resolved-dependency-set)
+- **Confidence:** HIGH - the class census is complete
 
 ### RSK-008: Dead test file implies coverage that does not run
 
-* **Severity:** LOW
-* **Likelihood:** LOW - the file is inert, not failing
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** A tracked duplicate test file matches no Vitest include pattern and has drifted from its live sibling.
-* **Impact:** A file that looks like coverage contributes none and can mislead edits.
-* **Trigger:** A change that edits the stale file believing it is live.
-* **Controls:** The live `exportMax.test.ts` covers the same surface.
-* **Mitigation:** Delete or merge the stray file.
-* **Closure:** The file is absent or executes under a `.ts` name.
-* **Source:** [FND-CQY-002](#fnd-cqy-002-tracked-duplicate-test-file-never-executes)
-* **Confidence:** HIGH - glob matching is mechanical
+- **Severity:** LOW
+- **Likelihood:** LOW - the file is inert, not failing
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** A tracked duplicate test file matches no Vitest include pattern and has drifted from its live sibling.
+- **Impact:** A file that looks like coverage contributes none and can mislead edits.
+- **Trigger:** A change that edits the stale file believing it is live.
+- **Controls:** The live `exportMax.test.ts` covers the same surface.
+- **Mitigation:** Delete or merge the stray file.
+- **Closure:** The file is absent or executes under a `.ts` name.
+- **Source:** [FND-CQY-002](#fnd-cqy-002-tracked-duplicate-test-file-never-executes)
+- **Confidence:** HIGH - glob matching is mechanical
 
 ### RSK-009: Tampered or mismatched binaries reach users unverified
 
-* **Severity:** MEDIUM
-* **Likelihood:** LOW - distribution is a single documented host today
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** Desktop artifacts ship unsigned with no published checksums.
-* **Impact:** Users cannot detect a corrupted or replaced download.
-* **Trigger:** Distribution growth or a compromised download host.
-* **Controls:** README documents the unsigned state honestly.
-* **Mitigation:** Publish checksums now. Evaluate signing when scale justifies it.
-* **Closure:** Published checksums verify downloads.
-* **Source:** [FND-INF-003](#fnd-inf-003-desktop-artifacts-are-distributed-unsigned)
-* **Confidence:** HIGH - config and documentation are citable
+- **Severity:** MEDIUM
+- **Likelihood:** LOW - distribution is a single documented host today
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** Desktop artifacts ship unsigned with no published checksums.
+- **Impact:** Users cannot detect a corrupted or replaced download.
+- **Trigger:** Distribution growth or a compromised download host.
+- **Controls:** README documents the unsigned state honestly.
+- **Mitigation:** Publish checksums now. Evaluate signing when scale justifies it.
+- **Closure:** Published checksums verify downloads.
+- **Source:** [FND-INF-003](#fnd-inf-003-desktop-artifacts-are-distributed-unsigned)
+- **Confidence:** HIGH - config and documentation are citable
 
 ### RSK-010: Stale documented figures mislead change planning
 
-* **Severity:** LOW
-* **Likelihood:** MEDIUM - three documents already carry drifted figures
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** ARCHITECTURE.md, TESTING.md, and SPECIFICATION.md carry measured-wrong figures.
-* **Impact:** Plans and audits trusting the docs work from wrong numbers.
-* **Trigger:** Any change planned against a documented figure.
-* **Controls:** The drift is numeric. Prose descriptions stay accurate.
-* **Mitigation:** Refresh the figures and add a per-release doc pass.
-* **Closure:** Documented figures match measurement.
-* **Source:** [FND-CQY-004](#fnd-cqy-004-documentation-figures-have-drifted-from-the-code)
-* **Confidence:** HIGH - mismatches are citable
+- **Severity:** LOW
+- **Likelihood:** MEDIUM - three documents already carry drifted figures
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** ARCHITECTURE.md, TESTING.md, and SPECIFICATION.md carry measured-wrong figures.
+- **Impact:** Plans and audits trusting the docs work from wrong numbers.
+- **Trigger:** Any change planned against a documented figure.
+- **Controls:** The drift is numeric. Prose descriptions stay accurate.
+- **Mitigation:** Refresh the figures and add a per-release doc pass.
+- **Closure:** Documented figures match measurement.
+- **Source:** [FND-CQY-004](#fnd-cqy-004-documentation-figures-have-drifted-from-the-code)
+- **Confidence:** HIGH - mismatches are citable
 
 ### RSK-011: Device permission granted beyond the intended origin
 
-* **Severity:** MEDIUM
-* **Likelihood:** LOW - only first-party content loads today
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** [MIDI](#glossary) permission handlers grant any requesting frame without an origin check.
-* **Impact:** A future injection sink would find device access pre-granted.
-* **Trigger:** Introduction of remote or injectable content reaching the renderer.
-* **Controls:** Only the packaged app or localhost dev server loads today.
-* **Mitigation:** Scope grants to the expected origin.
-* **Closure:** A non-matching origin request is denied.
-* **Source:** [FND-SEC-002](#fnd-sec-002-midi-permission-grant-is-not-scoped-to-the-requesting-origin)
-* **Confidence:** HIGH - the missing check is mechanical
+- **Severity:** MEDIUM
+- **Likelihood:** LOW - only first-party content loads today
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** [MIDI](#glossary) permission handlers grant any requesting frame without an origin check.
+- **Impact:** A future injection sink would find device access pre-granted.
+- **Trigger:** Introduction of remote or injectable content reaching the renderer.
+- **Controls:** Only the packaged app or localhost dev server loads today.
+- **Mitigation:** Scope grants to the expected origin.
+- **Closure:** A non-matching origin request is denied.
+- **Source:** [FND-SEC-002](#fnd-sec-002-midi-permission-grant-is-not-scoped-to-the-requesting-origin)
+- **Confidence:** HIGH - the missing check is mechanical
 
 ### RSK-012: Undisclosed generated code lands without trace
 
-* **Severity:** LOW
-* **Likelihood:** LOW - the project already discloses its tooling
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** [AI](#glossary) authorship is disclosed in aggregate but not attributable per change.
-* **Impact:** Provenance claims cannot be audited at the artifact level.
-* **Trigger:** A compliance or provenance review of a specific change.
-* **Controls:** Named tools, a prompt archive, and tool trailers on ten commits.
-* **Mitigation:** Adopt a per-change disclosure convention.
-* **Closure:** Generated changes carry disclosure markers.
-* **Source:** [FND-AIP-001](#fnd-aip-001-ai-provenance-is-disclosed-but-per-change-compliance-is-unmeasurable)
-* **Confidence:** MEDIUM - absence verifiable, compliance needs author cooperation
+- **Severity:** LOW
+- **Likelihood:** LOW - the project already discloses its tooling
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** [AI](#glossary) authorship is disclosed in aggregate but not attributable per change.
+- **Impact:** Provenance claims cannot be audited at the artifact level.
+- **Trigger:** A compliance or provenance review of a specific change.
+- **Controls:** Named tools, a prompt archive, and tool trailers on ten commits.
+- **Mitigation:** Adopt a per-change disclosure convention.
+- **Closure:** Generated changes carry disclosure markers.
+- **Source:** [FND-AIP-001](#fnd-aip-001-ai-provenance-is-disclosed-but-per-change-compliance-is-unmeasurable)
+- **Confidence:** MEDIUM - absence verifiable, compliance needs author cooperation
 
 ### RSK-013: Misplaced test file masks thin coverage of the claimed subject
 
-* **Severity:** LOW
-* **Likelihood:** LOW - the misread matters only when the hook changes
-* **Residual:** LOW
-* **Status:** Open
-* **Description:** `useDataManagement.test.ts` tests `parseSongFromYaml`, not its namesake hook, and a sibling uses a one-off `.hook.test` infix.
-* **Impact:** Filenames overstate the suite shape. The hook looks more covered than it is.
-* **Trigger:** A coverage review or a change trusting the filename.
-* **Controls:** The hook is partially covered by the harness file.
-* **Mitigation:** Rename or merge the mismatched files.
-* **Closure:** Test filenames mirror their subjects.
-* **Source:** [FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects)
-* **Confidence:** HIGH - file contents are directly citable
+- **Severity:** LOW
+- **Likelihood:** LOW - the misread matters only when the hook changes
+- **Residual:** LOW
+- **Status:** Open
+- **Description:** `useDataManagement.test.ts` tests `parseSongFromYaml`, not its namesake hook, and a sibling uses a one-off `.hook.test` infix.
+- **Impact:** Filenames overstate the suite shape. The hook looks more covered than it is.
+- **Trigger:** A coverage review or a change trusting the filename.
+- **Controls:** The hook is partially covered by the harness file.
+- **Mitigation:** Rename or merge the mismatched files.
+- **Closure:** Test filenames mirror their subjects.
+- **Source:** [FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects)
+- **Confidence:** HIGH - file contents are directly citable
 
 ## Actionable Remediation Roadmap
 
 | ID                                                                              | Priority        | Finding                                                                                                                                                             | Action                                                                                                                                                                 | Effort | Impact | Confidence | Verification                                                                             |
-|---------------------------------------------------------------------------------|-----------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------|--------|------------|------------------------------------------------------------------------------------------|
+| ------------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------- |
 | [REC-001](#rec-001-close-the-coverage-gap-on-the-highest-risk-paths)            | [P2](#glossary) | [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)                                                                          | Close the coverage gap on synth, exports, worker, and modal paths, or ratchet the threshold to the measured value                                                      | High   | High   | Medium     | `npm run test:coverage` exits 0                                                          |
 | [REC-002](#rec-002-add-a-ci-workflow-for-the-documented-loop)                   | [P2](#glossary) | [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)                                                                        | Add a [CI](#glossary) workflow running typecheck, lint, format check, unit tests, and build on push and PR                                                             | High   | Medium | Low        | A pushed change produces a green run                                                     |
 | [REC-003](#rec-003-version-the-service-worker-cache-and-reorder-asset-strategy) | [P2](#glossary) | [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)                                                                                   | Derive the service-worker cache name from the app version and serve assets network-first                                                                               | Medium | Low    | Low        | A redeploy ships the new bundle to warm clients                                          |
@@ -2002,206 +2002,206 @@ No configured gate runs in [CI](#glossary), cross-referenced at [FND-INF-001](#f
 
 ### REC-001: Close the coverage gap on the highest-risk paths
 
-* **Priority:** P2
-* **Finding:** [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)
-* **Postcondition:** `npm run test:coverage` exits 0 meeting the configured 80 percent thresholds, or the thresholds are ratcheted to a passing measured value.
-* **Description:** Write characterization tests for `YM2149`, `SoundDriver`, `SequencerEngine`, the five export modules, and the modal and worker surfaces. Alternatively ratchet the thresholds to the measured value as a declared interim state.
-* **Impact:** The declared quality gate passes and the riskiest paths gain a behavioral net.
-* **Effort:** High - characterization coverage across five source areas is real test-authoring work.
-* **Complexity:** Medium - the audio core is timing- and format-sensitive, so tests need fixture or golden-output design.
-* **Verification:** `npm run test:coverage` exits 0.
+- **Priority:** P2
+- **Finding:** [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)
+- **Postcondition:** `npm run test:coverage` exits 0 meeting the configured 80 percent thresholds, or the thresholds are ratcheted to a passing measured value.
+- **Description:** Write characterization tests for `YM2149`, `SoundDriver`, `SequencerEngine`, the five export modules, and the modal and worker surfaces. Alternatively ratchet the thresholds to the measured value as a declared interim state.
+- **Impact:** The declared quality gate passes and the riskiest paths gain a behavioral net.
+- **Effort:** High - characterization coverage across five source areas is real test-authoring work.
+- **Complexity:** Medium - the audio core is timing- and format-sensitive, so tests need fixture or golden-output design.
+- **Verification:** `npm run test:coverage` exits 0.
 
 ### REC-002: Add a CI workflow for the documented loop
 
-* **Priority:** P2
-* **Finding:** [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)
-* **Postcondition:** A [CI](#glossary) workflow runs typecheck, lint, format check, unit tests, and build on every push and pull request.
-* **Description:** Add a GitHub Actions (or equivalent) workflow executing the six documented verification steps. Allow coverage to fail only until [REC-001](#rec-001-close-the-coverage-gap-on-the-highest-risk-paths) lands.
-* **Impact:** Every declared gate runs automatically on change instead of relying on discipline.
-* **Effort:** Medium - one workflow file plus upkeep.
-* **Complexity:** Low - the commands are already documented and scripted.
-* **Verification:** A pushed change produces a green run.
+- **Priority:** P2
+- **Finding:** [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop)
+- **Postcondition:** A [CI](#glossary) workflow runs typecheck, lint, format check, unit tests, and build on every push and pull request.
+- **Description:** Add a GitHub Actions (or equivalent) workflow executing the six documented verification steps. Allow coverage to fail only until [REC-001](#rec-001-close-the-coverage-gap-on-the-highest-risk-paths) lands.
+- **Impact:** Every declared gate runs automatically on change instead of relying on discipline.
+- **Effort:** Medium - one workflow file plus upkeep.
+- **Complexity:** Low - the commands are already documented and scripted.
+- **Verification:** A pushed change produces a green run.
 
 ### REC-003: Version the service-worker cache and reorder asset strategy
 
-* **Priority:** P2
-* **Finding:** [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)
-* **Postcondition:** The service-worker cache name carries the app version and non-navigation assets are served network-first or stale-while-revalidate.
-* **Description:** Derive `CACHE_NAME` from `__APP_VERSION__` (already injected by the Vite `define`) and change the fetch strategy for non-navigation GETs.
-* **Impact:** Redeploys deliver the new bundle to warm clients.
-* **Effort:** Medium - a small worker change plus a redeploy verification pass.
-* **Complexity:** Low - the version constant already exists in the build.
-* **Verification:** A redeploy serves the new bundle to a warm client.
+- **Priority:** P2
+- **Finding:** [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)
+- **Postcondition:** The service-worker cache name carries the app version and non-navigation assets are served network-first or stale-while-revalidate.
+- **Description:** Derive `CACHE_NAME` from `__APP_VERSION__` (already injected by the Vite `define`) and change the fetch strategy for non-navigation GETs.
+- **Impact:** Redeploys deliver the new bundle to warm clients.
+- **Effort:** Medium - a small worker change plus a redeploy verification pass.
+- **Complexity:** Low - the version constant already exists in the build.
+- **Verification:** A redeploy serves the new bundle to a warm client.
 
 ### REC-004: Refresh documented figures and add a per-release pass
 
-* **Priority:** P2
-* **Finding:** [FND-CQY-004](#fnd-cqy-004-documentation-figures-have-drifted-from-the-code)
-* **Postcondition:** Documented figures in `ARCHITECTURE.md`, `TESTING.md`, and `SPECIFICATION.md` match measured values, and the bump procedure includes a doc-refresh step.
-* **Description:** Update the Electron version, `App.tsx` size, hook count, `src/utils` file count, and test-gap list. Add a figures check to `docs/VERSIONING.md`.
-* **Impact:** Sources of truth describe the tree they govern.
-* **Effort:** Low - a handful of edits plus one procedure line.
-* **Complexity:** Low - plain documentation edits.
-* **Verification:** Documented figures match `wc -l` and `git ls-files` measurements.
+- **Priority:** P2
+- **Finding:** [FND-CQY-004](#fnd-cqy-004-documentation-figures-have-drifted-from-the-code)
+- **Postcondition:** Documented figures in `ARCHITECTURE.md`, `TESTING.md`, and `SPECIFICATION.md` match measured values, and the bump procedure includes a doc-refresh step.
+- **Description:** Update the Electron version, `App.tsx` size, hook count, `src/utils` file count, and test-gap list. Add a figures check to `docs/VERSIONING.md`.
+- **Impact:** Sources of truth describe the tree they govern.
+- **Effort:** Low - a handful of edits plus one procedure line.
+- **Complexity:** Low - plain documentation edits.
+- **Verification:** Documented figures match `wc -l` and `git ls-files` measurements.
 
 ### REC-005: Remove the undiscovered duplicate test
 
-* **Priority:** P2
-* **Finding:** [FND-CQY-002](#fnd-cqy-002-tracked-duplicate-test-file-never-executes)
-* **Postcondition:** No tracked test file escapes the Vitest include glob.
-* **Description:** Delete `test/utils/exportMax.test`, merging any unique assertions into `exportMax.test.ts` first.
-* **Impact:** Suite shape matches executed coverage.
-* **Effort:** Low - one deletion and a diff pass.
-* **Complexity:** Low - the live sibling already exists.
-* **Verification:** `git ls-files` no longer lists the stray file.
+- **Priority:** P2
+- **Finding:** [FND-CQY-002](#fnd-cqy-002-tracked-duplicate-test-file-never-executes)
+- **Postcondition:** No tracked test file escapes the Vitest include glob.
+- **Description:** Delete `test/utils/exportMax.test`, merging any unique assertions into `exportMax.test.ts` first.
+- **Impact:** Suite shape matches executed coverage.
+- **Effort:** Low - one deletion and a diff pass.
+- **Complexity:** Low - the live sibling already exists.
+- **Verification:** `git ls-files` no longer lists the stray file.
 
 ### REC-006: Add a Playwright smoke suite
 
-* **Priority:** P3
-* **Finding:** [FND-CQY-003](#fnd-cqy-003-no-end-to-end-specs-exist-despite-configured-playwright)
-* **Postcondition:** The `e2e/` directory holds specs covering the six flows `TESTING.md` documents, at minimum launch, note entry, playback, and one export.
-* **Description:** Author Playwright specs against the preview server for the documented flows. Wire into [CI](#glossary) after [REC-002](#rec-002-add-a-ci-workflow-for-the-documented-loop).
-* **Impact:** The outermost verification layer exists.
-* **Effort:** Medium - browser-flow authoring against a tracker [UI](#glossary).
-* **Complexity:** Medium - audio and worker timing need tolerant assertions.
-* **Verification:** `npx playwright test --project=chromium` passes.
+- **Priority:** P3
+- **Finding:** [FND-CQY-003](#fnd-cqy-003-no-end-to-end-specs-exist-despite-configured-playwright)
+- **Postcondition:** The `e2e/` directory holds specs covering the six flows `TESTING.md` documents, at minimum launch, note entry, playback, and one export.
+- **Description:** Author Playwright specs against the preview server for the documented flows. Wire into [CI](#glossary) after [REC-002](#rec-002-add-a-ci-workflow-for-the-documented-loop).
+- **Impact:** The outermost verification layer exists.
+- **Effort:** Medium - browser-flow authoring against a tracker [UI](#glossary).
+- **Complexity:** Medium - audio and worker timing need tolerant assertions.
+- **Verification:** `npx playwright test --project=chromium` passes.
 
 ### REC-007: Stage the orchestrator decomposition
 
-* **Priority:** P3
-* **Finding:** [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)
-* **Postcondition:** `App.tsx` loses render sections and hook-cluster wiring to coordinators along the documented module boundaries.
-* **Description:** Extract hook clusters ([MIDI](#glossary) processing, file operations, song management) into coordinator hooks, then split render sections, keeping exports byte-identical per the refactoring contract.
-* **Impact:** Change blast radius shrinks in the hottest file.
-* **Effort:** High - staged extraction across releases.
-* **Complexity:** High - twenty hook wirings and audio-critical paths must move without behavior change.
-* **Verification:** Typecheck, lint, tests, and export byte-identity stay green at each step.
+- **Priority:** P3
+- **Finding:** [FND-ARC-001](#fnd-arc-001-2488-line-central-orchestrator-concentrates-wiring-and-change-risk)
+- **Postcondition:** `App.tsx` loses render sections and hook-cluster wiring to coordinators along the documented module boundaries.
+- **Description:** Extract hook clusters ([MIDI](#glossary) processing, file operations, song management) into coordinator hooks, then split render sections, keeping exports byte-identical per the refactoring contract.
+- **Impact:** Change blast radius shrinks in the hottest file.
+- **Effort:** High - staged extraction across releases.
+- **Complexity:** High - twenty hook wirings and audio-critical paths must move without behavior change.
+- **Verification:** Typecheck, lint, tests, and export byte-identity stay green at each step.
 
 ### REC-008: Harden the markdown rendering path
 
-* **Priority:** P3
-* **Finding:** [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)
-* **Postcondition:** A restrictive [CSP](#glossary) is present and hostile markdown fixtures are escaped by tests.
-* **Description:** Add a [CSP](#glossary) meta tag, adversarial fixtures for `renderMarkdown` (attribute injection, scheme smuggling, entity edge cases), and evaluate a vetted sanitizer as a second layer.
-* **Impact:** The injection surface gains depth of defense.
-* **Effort:** Medium - [CSP](#glossary) tuning plus a fixture suite.
-* **Complexity:** Medium - [CSP](#glossary) can break inline behavior. Needs careful rollout.
-* **Verification:** Injection fixtures escape correctly and [CSP](#glossary) is present in built [HTML](#glossary).
+- **Priority:** P3
+- **Finding:** [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth)
+- **Postcondition:** A restrictive [CSP](#glossary) is present and hostile markdown fixtures are escaped by tests.
+- **Description:** Add a [CSP](#glossary) meta tag, adversarial fixtures for `renderMarkdown` (attribute injection, scheme smuggling, entity edge cases), and evaluate a vetted sanitizer as a second layer.
+- **Impact:** The injection surface gains depth of defense.
+- **Effort:** Medium - [CSP](#glossary) tuning plus a fixture suite.
+- **Complexity:** Medium - [CSP](#glossary) can break inline behavior. Needs careful rollout.
+- **Verification:** Injection fixtures escape correctly and [CSP](#glossary) is present in built [HTML](#glossary).
 
 ### REC-009: Scope the MIDI permission grant
 
-* **Priority:** P4
-* **Finding:** [FND-SEC-002](#fnd-sec-002-midi-permission-grant-is-not-scoped-to-the-requesting-origin)
-* **Postcondition:** Permission handlers verify the requesting origin before granting `midi` or `midiSysex`.
-* **Description:** Check `webContents` origin or [URL](#glossary) against the packaged `file://` app and the dev `http://localhost` origin in both handlers.
-* **Impact:** Device access is scoped to the intended origin.
-* **Effort:** Low - a few lines in one file.
-* **Complexity:** Low - the handler already exists.
-* **Verification:** A non-matching origin is denied.
+- **Priority:** P4
+- **Finding:** [FND-SEC-002](#fnd-sec-002-midi-permission-grant-is-not-scoped-to-the-requesting-origin)
+- **Postcondition:** Permission handlers verify the requesting origin before granting `midi` or `midiSysex`.
+- **Description:** Check `webContents` origin or [URL](#glossary) against the packaged `file://` app and the dev `http://localhost` origin in both handlers.
+- **Impact:** Device access is scoped to the intended origin.
+- **Effort:** Low - a few lines in one file.
+- **Complexity:** Low - the handler already exists.
+- **Verification:** A non-matching origin is denied.
 
 ### REC-010: Reconcile the license policy with the resolved set
 
-* **Priority:** P4
-* **Finding:** [FND-CPR-001](#fnd-cpr-001-license-policy-whitelist-is-narrower-than-the-resolved-dependency-set)
-* **Postcondition:** Every resolved license class is either inside the permitted list or recorded in a third-party notices inventory.
-* **Description:** Either extend `docs/COPYRIGHTS.md` with the five resolved permissive classes or generate a `ATTRIBUTIONS.md` inventory covering all resolved classes.
-* **Impact:** The declared policy demonstrably holds.
-* **Effort:** Medium - an inventory across 590 packages needs generation tooling.
-* **Complexity:** Low - permissive classes only need enumeration, not legal review.
-* **Verification:** The inventory or list enumerates every resolved license class.
+- **Priority:** P4
+- **Finding:** [FND-CPR-001](#fnd-cpr-001-license-policy-whitelist-is-narrower-than-the-resolved-dependency-set)
+- **Postcondition:** Every resolved license class is either inside the permitted list or recorded in a third-party notices inventory.
+- **Description:** Either extend `docs/COPYRIGHTS.md` with the five resolved permissive classes or generate a `ATTRIBUTIONS.md` inventory covering all resolved classes.
+- **Impact:** The declared policy demonstrably holds.
+- **Effort:** Medium - an inventory across 590 packages needs generation tooling.
+- **Complexity:** Low - permissive classes only need enumeration, not legal review.
+- **Verification:** The inventory or list enumerates every resolved license class.
 
 ### REC-011: Record the ZX0 attribution centrally
 
-* **Priority:** P4
-* **Finding:** [FND-CPR-002](#fnd-cpr-002-zx0-third-party-attribution-is-absent-from-the-central-notice-file)
-* **Postcondition:** The [ZX0](#glossary) compressor is listed in `docs/COPYRIGHTS.md` with author, license, and source.
-* **Description:** Add the entry for the ported [ZX0](#glossary) decoder (Einar Saukas, BSD-3-Clause).
-* **Impact:** The project's own attribution rule is satisfied.
-* **Effort:** Low - one documentation line.
-* **Complexity:** Low - the in-file header already carries the details.
-* **Verification:** `COPYRIGHTS.md` lists the component.
+- **Priority:** P4
+- **Finding:** [FND-CPR-002](#fnd-cpr-002-zx0-third-party-attribution-is-absent-from-the-central-notice-file)
+- **Postcondition:** The [ZX0](#glossary) compressor is listed in `docs/COPYRIGHTS.md` with author, license, and source.
+- **Description:** Add the entry for the ported [ZX0](#glossary) decoder (Einar Saukas, BSD-3-Clause).
+- **Impact:** The project's own attribution rule is satisfied.
+- **Effort:** Low - one documentation line.
+- **Complexity:** Low - the in-file header already carries the details.
+- **Verification:** `COPYRIGHTS.md` lists the component.
 
 ### REC-012: Name a continuity owner
 
-* **Priority:** P4
-* **Finding:** [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)
-* **Postcondition:** A backup maintainer or fork path is recorded in the governance documents.
-* **Description:** Add a continuity note to `docs/GUIDELINES.md` or `README.md`.
-* **Impact:** Delivery does not depend on a single point of failure.
-* **Effort:** Low - a decision plus one documentation entry.
-* **Complexity:** Low - no code surface.
-* **Verification:** A named continuity owner exists.
+- **Priority:** P4
+- **Finding:** [FND-ARC-002](#fnd-arc-002-single-author-contributor-concentration-is-high)
+- **Postcondition:** A backup maintainer or fork path is recorded in the governance documents.
+- **Description:** Add a continuity note to `docs/GUIDELINES.md` or `README.md`.
+- **Impact:** Delivery does not depend on a single point of failure.
+- **Effort:** Low - a decision plus one documentation entry.
+- **Complexity:** Low - no code surface.
+- **Verification:** A named continuity owner exists.
 
 ### REC-013: Publish release checksums, then evaluate signing
 
-* **Priority:** P4
-* **Finding:** [FND-INF-003](#fnd-inf-003-desktop-artifacts-are-distributed-unsigned)
-* **Postcondition:** Each release publishes SHA-256 checksums for its artifacts.
-* **Description:** Emit checksums in the electron-builder pipeline or a release script. Evaluate platform signing when distribution scale justifies it.
-* **Impact:** Downloads gain tamper evidence.
-* **Effort:** Medium - release tooling plus a documented checksum step.
-* **Complexity:** Medium - signing involves certificates and platform enrolment when pursued.
-* **Verification:** Published checksums verify downloads.
+- **Priority:** P4
+- **Finding:** [FND-INF-003](#fnd-inf-003-desktop-artifacts-are-distributed-unsigned)
+- **Postcondition:** Each release publishes SHA-256 checksums for its artifacts.
+- **Description:** Emit checksums in the electron-builder pipeline or a release script. Evaluate platform signing when distribution scale justifies it.
+- **Impact:** Downloads gain tamper evidence.
+- **Effort:** Medium - release tooling plus a documented checksum step.
+- **Complexity:** Medium - signing involves certificates and platform enrolment when pursued.
+- **Verification:** Published checksums verify downloads.
 
 ### REC-014: Adopt a per-change AI-disclosure convention
 
-* **Priority:** P3
-* **Finding:** [FND-AIP-001](#fnd-aip-001-ai-provenance-is-disclosed-but-per-change-compliance-is-unmeasurable)
-* **Postcondition:** AI-assisted changes carry a disclosure marker in commits or plan documents.
-* **Description:** Record a short trailer or plan-doc field marking [AI](#glossary) assistance. The prompt archive already supplies the material.
-* **Impact:** Per-change provenance becomes auditable.
-* **Effort:** Low - a convention line plus discipline.
-* **Complexity:** Low - process-only change.
-* **Verification:** Generated changes carry disclosure markers.
+- **Priority:** P3
+- **Finding:** [FND-AIP-001](#fnd-aip-001-ai-provenance-is-disclosed-but-per-change-compliance-is-unmeasurable)
+- **Postcondition:** AI-assisted changes carry a disclosure marker in commits or plan documents.
+- **Description:** Record a short trailer or plan-doc field marking [AI](#glossary) assistance. The prompt archive already supplies the material.
+- **Impact:** Per-change provenance becomes auditable.
+- **Effort:** Low - a convention line plus discipline.
+- **Complexity:** Low - process-only change.
+- **Verification:** Generated changes carry disclosure markers.
 
 ### REC-015: Repair test-file names and placement
 
-* **Priority:** P3
-* **Finding:** [FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects)
-* **Postcondition:** Every test filename identifies the module it exercises and matches the Vitest glob.
-* **Description:** Rename `useDataManagement.test.ts` to reflect its `parseSongFromYaml` subject or merge it into `test/utils/songParser.test.ts`. Rename the harness file to `useDataManagement.test.tsx`. Resolve `exportMax.test` under [REC-005](#rec-005-remove-the-undiscovered-duplicate-test).
-* **Impact:** Test names map truthfully to coverage.
-* **Effort:** Low - three file renames or merges.
-* **Complexity:** Low - no test logic changes.
-* **Verification:** `find test -name "*.test.*"` shows only subject-mirroring names that the Vitest glob collects.
+- **Priority:** P3
+- **Finding:** [FND-STR-001](#fnd-str-001-test-file-names-and-placement-diverge-from-their-subjects)
+- **Postcondition:** Every test filename identifies the module it exercises and matches the Vitest glob.
+- **Description:** Rename `useDataManagement.test.ts` to reflect its `parseSongFromYaml` subject or merge it into `test/utils/songParser.test.ts`. Rename the harness file to `useDataManagement.test.tsx`. Resolve `exportMax.test` under [REC-005](#rec-005-remove-the-undiscovered-duplicate-test).
+- **Impact:** Test names map truthfully to coverage.
+- **Effort:** Low - three file renames or merges.
+- **Complexity:** Low - no test logic changes.
+- **Verification:** `find test -name "*.test.*"` shows only subject-mirroring names that the Vitest glob collects.
 
 ### REC-016: Rename abbreviated identifiers
 
-* **Priority:** P4
-* **Finding:** [FND-CQY-005](#fnd-cqy-005-abbreviated-identifiers-violate-the-declared-naming-standard)
-* **Postcondition:** No `Idx`-suffixed or `p`-shorthand locals remain in `src/`.
-* **Description:** Mechanical rename of `*Idx` to `*Index` and `pIdx`/`pVal` to `pitchIndex`/`pitchValue` in `playbackSimulation.ts` and `asm.ts`.
-* **Impact:** The declared abbreviation rule holds.
-* **Effort:** Low - local identifier renames in two files.
-* **Complexity:** Low - compiler-checked renames only.
-* **Verification:** `grep -rE "[a-z]Idx" src` returns empty.
+- **Priority:** P4
+- **Finding:** [FND-CQY-005](#fnd-cqy-005-abbreviated-identifiers-violate-the-declared-naming-standard)
+- **Postcondition:** No `Idx`-suffixed or `p`-shorthand locals remain in `src/`.
+- **Description:** Mechanical rename of `*Idx` to `*Index` and `pIdx`/`pVal` to `pitchIndex`/`pitchValue` in `playbackSimulation.ts` and `asm.ts`.
+- **Impact:** The declared abbreviation rule holds.
+- **Effort:** Low - local identifier renames in two files.
+- **Complexity:** Low - compiler-checked renames only.
+- **Verification:** `grep -rE "[a-z]Idx" src` returns empty.
 
 ### REC-017: Restore comment-rule conformance
 
-* **Priority:** P4
-* **Finding:** [FND-CQY-006](#fnd-cqy-006-non-null-assertions-lack-the-required-reason-comments), [FND-CQY-007](#fnd-cqy-007-numbered-and-duplicated-section-comment-in-usemidits)
-* **Postcondition:** The three `zx0.ts` assertions carry `REASON:` comments and the duplicated numbered comment in `useMidi.ts` is removed.
-* **Description:** Document the bounds invariant on each assertion and delete the `// 2.` section-marker lines.
-* **Impact:** Declared comment rules hold.
-* **Effort:** Low - four comment edits.
-* **Complexity:** Low - comments only.
-* **Verification:** The scans in [EVD-049](#verification-and-evidence-ledger) and [EVD-050](#verification-and-evidence-ledger) return clean.
+- **Priority:** P4
+- **Finding:** [FND-CQY-006](#fnd-cqy-006-non-null-assertions-lack-the-required-reason-comments), [FND-CQY-007](#fnd-cqy-007-numbered-and-duplicated-section-comment-in-usemidits)
+- **Postcondition:** The three `zx0.ts` assertions carry `REASON:` comments and the duplicated numbered comment in `useMidi.ts` is removed.
+- **Description:** Document the bounds invariant on each assertion and delete the `// 2.` section-marker lines.
+- **Impact:** Declared comment rules hold.
+- **Effort:** Low - four comment edits.
+- **Complexity:** Low - comments only.
+- **Verification:** The scans in [EVD-049](#verification-and-evidence-ledger) and [EVD-050](#verification-and-evidence-ledger) return clean.
 
 ### REC-018: Adopt or remove the `@/` alias
 
-* **Priority:** P4
-* **Finding:** [FND-CQY-008](#fnd-cqy-008-configured--import-alias-is-unused)
-* **Postcondition:** Cross-module imports use `@/`, or the standard records shallow relative imports as intended and the alias config is removed.
-* **Description:** Either migrate imports to `@/` or amend `docs/standard/ts-react-development.md` and drop the alias configuration.
-* **Impact:** Declaration and practice agree.
-* **Effort:** Medium - a codemod over 430 imports, or a one-line standard amendment.
-* **Complexity:** Low - either path is mechanical.
-* **Verification:** Alias uses exist, or the standard records the change.
+- **Priority:** P4
+- **Finding:** [FND-CQY-008](#fnd-cqy-008-configured--import-alias-is-unused)
+- **Postcondition:** Cross-module imports use `@/`, or the standard records shallow relative imports as intended and the alias config is removed.
+- **Description:** Either migrate imports to `@/` or amend `docs/standard/ts-react-development.md` and drop the alias configuration.
+- **Impact:** Declaration and practice agree.
+- **Effort:** Medium - a codemod over 430 imports, or a one-line standard amendment.
+- **Complexity:** Low - either path is mechanical.
+- **Verification:** Alias uses exist, or the standard records the change.
 
 ## Recommendation Classification
 
 | ID                                                                              | Title                                                  | Class       | Rationale                                                     |
-|---------------------------------------------------------------------------------|--------------------------------------------------------|-------------|---------------------------------------------------------------|
+| ------------------------------------------------------------------------------- | ------------------------------------------------------ | ----------- | ------------------------------------------------------------- |
 | [REC-001](#rec-001-close-the-coverage-gap-on-the-highest-risk-paths)            | Close the coverage gap on the highest-risk paths       | Recommended | The project itself mandates the gate and documents it failing |
 | [REC-002](#rec-002-add-a-ci-workflow-for-the-documented-loop)                   | Add a [CI](#glossary) workflow for the documented loop | Recommended | Every gate is currently manual-only                           |
 | [REC-003](#rec-003-version-the-service-worker-cache-and-reorder-asset-strategy) | Version the cache and reorder asset strategy           | Recommended | The staleness defect is structural and user-facing            |
@@ -2227,7 +2227,7 @@ Every material claim the audit could not resolve from source, with the exact com
 procedure and its pass criteria.
 
 | Check                  | Command or procedure                                     | Pass criteria                                         | Resolves                                                                                                                                   |
-|------------------------|----------------------------------------------------------|-------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------- | -------------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Typecheck              | `npm run typecheck`                                      | zero errors                                           | [EVD-035](#verification-and-evidence-ledger)                                                                                               |
 | Lint                   | `npm run lint`                                           | zero errors, documented warning exemptions only       | [EVD-036](#verification-and-evidence-ledger), [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop) |
 | Format                 | `npm run format` then `git status`                       | no modified files                                     | [EVD-036](#verification-and-evidence-ledger)                                                                                               |
@@ -2341,7 +2341,7 @@ pillar.
 ## Limitations and Unknowns
 
 | Item                                               | Type        | Reason                                                            | Resolution                                         |
-|----------------------------------------------------|-------------|-------------------------------------------------------------------|----------------------------------------------------|
+| -------------------------------------------------- | ----------- | ----------------------------------------------------------------- | -------------------------------------------------- |
 | `npm run typecheck`                                | Unrun check | Execution is out of audit scope                                   | Run the typecheck for a real pass signal           |
 | `npm run lint`                                     | Unrun check | Execution is out of audit scope                                   | Run lint for a real pass signal                    |
 | `npm run format`                                   | Unrun check | Execution is out of audit scope                                   | Run format and diff the tree                       |
@@ -2363,7 +2363,7 @@ pillar.
 ## Re-audit And Follow-up Plan
 
 | Finding                                                                                      | Priority        | Verification Owner | Closure Evidence                                          | Target Re-audit Trigger            |
-|----------------------------------------------------------------------------------------------|-----------------|--------------------|-----------------------------------------------------------|------------------------------------|
+| -------------------------------------------------------------------------------------------- | --------------- | ------------------ | --------------------------------------------------------- | ---------------------------------- |
 | [FND-CQY-001](#fnd-cqy-001-coverage-gate-is-documented-as-failing-and-core-paths-are-thin)   | [P2](#glossary) | NOT SPECIFIED      | `npm run test:coverage` exits 0 on a recorded run         | After coverage work lands          |
 | [FND-INF-001](#fnd-inf-001-no-automated-ci-gate-exists-for-the-documented-verification-loop) | [P2](#glossary) | NOT SPECIFIED      | A green [CI](#glossary) workflow run on a pushed change   | After the workflow merges          |
 | [FND-INF-002](#fnd-inf-002-service-worker-can-serve-stale-assets-after-redeploys)            | [P2](#glossary) | NOT SPECIFIED      | Redeploy observed serving the new bundle to a warm client | After the worker change ships      |
@@ -2408,7 +2408,7 @@ escalation path.
 ## Validation Record
 
 | Check           | Result           | Evidence / Justification                                                                                                                                                                              |
-|-----------------|------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------- | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PAR-1           | Applied          | Both SEC findings carry weakness context (CWE-79-adjacent injection surface, unscoped device grant). Exploitability is Theoretical-tier                                                               |
 | PAR-2           | Applied          | Severity definitions table present under the methodology. Matrix-not-CVSS stated                                                                                                                      |
 | PAR-3           | Applied          | [ISO/IEC](#glossary) 25010:2023 crosswalk presented as a coverage mapping, not a conformance claim                                                                                                    |
@@ -2441,7 +2441,7 @@ escalation path.
 ## References
 
 | Reference                            | Publisher or Author          | Used In                                                                                                                                                                                              |
-|--------------------------------------|------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OWASP Top 10:2025                    | OWASP Foundation             | Scope Exclusions, security framing                                                                                                                                                                   |
 | Electron security guidance           | OpenJS Foundation (Electron) | [FND-SEC-001](#fnd-sec-001-custom-html-rendering-surface-lacks-defense-in-depth), [FND-SEC-002](#fnd-sec-002-midi-permission-grant-is-not-scoped-to-the-requesting-origin), Architectural Assessment |
 | TypeScript strict-mode documentation | Microsoft                    | Engineering Baseline, tsconfig interpretation                                                                                                                                                        |

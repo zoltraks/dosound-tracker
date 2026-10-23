@@ -3,7 +3,7 @@
 ## Document Information
 
 |                    |                                                                                                    |
-|--------------------|----------------------------------------------------------------------------------------------------|
+| ------------------ | -------------------------------------------------------------------------------------------------- |
 | Report Revision    | 1.0                                                                                                |
 | Report Date        | 2026-09-30                                                                                         |
 | Detail Level       | Detailed                                                                                           |
@@ -18,25 +18,25 @@
 
 ## Audit Type Coverage & Assurance Matrix
 
-|  | Report type                                   | Status         | Rationale                                                                                                                                   |
-|--|-----------------------------------------------|----------------|---------------------------------------------------------------------------------------------------------------------------------------------|
-|  | Software Architecture Review                  | Covered        | Structure, layering, state domains, and data flow were inspected from source and architecture documents                                     |
-|  | Code Quality Audit                            | Covered        | Source files, configuration, tests, and documented standards were inspected                                                                 |
-|  | Security Vulnerability Assessment             | Covered        | Electron boundary, [HTML](#glossary) rendering sinks, file parsing, and permission handling assessed at source level                        |
-|  | Open Source License Compliance Review         | Covered        | License file, policy document, ported-component attribution, and lockfile license fields inspected                                          |
-|  | Penetration Test                              | Not done       | Source-only audit, live exploitation is a separately commissioned engagement                                                                |
-|  | Performance Audit                             | Partially      | Timing design and stated targets inspected, no load or latency measurement performed                                                        |
-|  | Cloud Infrastructure Audit                    | Partially      | Static hosting guidance and packaging configuration inspected, no live environment state available                                          |
-|  | AI Governance Audit                           | Not Applicable | The subject embeds no [AI](#glossary) model or [AI](#glossary) runtime, AI-assisted authorship is assessed in the provenance pillar instead |
-|  | Technical Due Diligence                       | Partially      | Engineering and delivery dimensions covered, business inputs not supplied                                                                   |
-|  | [SBOM](#sbom) / Software Composition Analysis | Covered        | Manifest-derived inventory produced from `package.json` and `package-lock.json`                                                             |
-|  | [ISO/IEC](#glossary) 27001 Certification      | Not done       | The standard is not assessed, no certification claim is made                                                                                |
-|  | [SOC](#glossary) 2 Attestation Examination    | Not done       | The framework is not assessed, no attestation claim is made                                                                                 |
+|     | Report type                                   | Status         | Rationale                                                                                                                                   |
+| --- | --------------------------------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+|     | Software Architecture Review                  | Covered        | Structure, layering, state domains, and data flow were inspected from source and architecture documents                                     |
+|     | Code Quality Audit                            | Covered        | Source files, configuration, tests, and documented standards were inspected                                                                 |
+|     | Security Vulnerability Assessment             | Covered        | Electron boundary, [HTML](#glossary) rendering sinks, file parsing, and permission handling assessed at source level                        |
+|     | Open Source License Compliance Review         | Covered        | License file, policy document, ported-component attribution, and lockfile license fields inspected                                          |
+|     | Penetration Test                              | Not done       | Source-only audit, live exploitation is a separately commissioned engagement                                                                |
+|     | Performance Audit                             | Partially      | Timing design and stated targets inspected, no load or latency measurement performed                                                        |
+|     | Cloud Infrastructure Audit                    | Partially      | Static hosting guidance and packaging configuration inspected, no live environment state available                                          |
+|     | AI Governance Audit                           | Not Applicable | The subject embeds no [AI](#glossary) model or [AI](#glossary) runtime, AI-assisted authorship is assessed in the provenance pillar instead |
+|     | Technical Due Diligence                       | Partially      | Engineering and delivery dimensions covered, business inputs not supplied                                                                   |
+|     | [SBOM](#sbom) / Software Composition Analysis | Covered        | Manifest-derived inventory produced from `package.json` and `package-lock.json`                                                             |
+|     | [ISO/IEC](#glossary) 27001 Certification      | Not done       | The standard is not assessed, no certification claim is made                                                                                |
+|     | [SOC](#glossary) 2 Attestation Examination    | Not done       | The framework is not assessed, no attestation claim is made                                                                                 |
 
 ## Glossary
 
 | Term              | Definition                                                                |
-|-------------------|---------------------------------------------------------------------------|
+| ----------------- | ------------------------------------------------------------------------- |
 | ADR               | Architecture Decision Record, a recorded design decision                  |
 | AI                | Artificial Intelligence                                                   |
 | API               | Application Programming Interface                                         |
@@ -166,7 +166,7 @@ Debt items record accumulated structural cost already present in the codebase.
 `1-3 Poor · 4-6 Average · 7-8 Good · 9-10 Excellent`
 
 | Field          | Value                                                                                       |
-|----------------|---------------------------------------------------------------------------------------------|
+| -------------- | ------------------------------------------------------------------------------------------- |
 | System type    | codebase                                                                                    |
 | Scope          | Full source tree, configuration, documentation, tests, git history of dosound-tracker 1.2.8 |
 | Source basis   | inspected code                                                                              |
@@ -224,7 +224,7 @@ continuous-integration gate (REC-002), and decomposing the 2488-line central orc
 ## System Context
 
 | Aspect                 | Detail                                                                                                                                                                                          |
-|------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Functional description | Tracker-style composition tool for the Yamaha YM2149 sound chip, with live playback and multi-format export for Atari ST target code                                                            |
 | Architecture overview  | React SPA front end plus optional Electron desktop shell, Web Worker sequencer, in-process [YM2149](#glossary) emulator, localStorage persistence, static-file song repository                  |
 | Key components         | `src/App.tsx` orchestrator, `src/synth/` emulator and driver, `src/exports/` five-format export pipeline, `src/workers/sequencerWorker.ts`, `src/hooks/` 31 hooks, `electron/` main and preload |
@@ -234,7 +234,7 @@ continuous-integration gate (REC-002), and decomposing the 2488-line central orc
 ### Technology Stack
 
 | Layer            | Technology                                                                                                                                        |
-|------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Languages        | TypeScript ~5.9.3 strict mode, CommonJS for Electron main and preload                                                                             |
 | Frameworks       | React 19.2, Zustand 4.5, Electron 42.6, Vite via rolldown-vite 7.2.2                                                                              |
 | Runtime/Platform | Browser (Chromium-family Web Audio and Web MIDI), Electron desktop shell, Node.js v22.18.0 documented in README                                   |
@@ -289,7 +289,7 @@ repository directory, and the download directory listing consumed by `FilePicker
 **Operational Objectives**
 
 | Metric                | Target                                  | Measured | Window           | Source                  | Owner         |
-|-----------------------|-----------------------------------------|----------|------------------|-------------------------|---------------|
+| --------------------- | --------------------------------------- | -------- | ---------------- | ----------------------- | ------------- |
 | Frame timing accuracy | 50 Hz and 60 Hz replay rates documented | UNKNOWN  | [N/A](#glossary) | `docs/SPECIFICATION.md` | NOT SPECIFIED |
 | Availability          | NOT SPECIFIED                           | UNKNOWN  | [N/A](#glossary) | none committed          | NOT SPECIFIED |
 
@@ -298,40 +298,40 @@ repository directory, and the download directory listing consumed by `FilePicker
 This is a manifest-derived component inventory at the audited revision, not a shipped-artifact
 [SBOM](#sbom) and not a claim of [SPDX](#glossary) or CycloneDX conformance.
 
-|  | Component                        | Version   | Ecosystem | Relationship                           | License          | License Risk | Advisory Checked | Source File                     |
-|--|----------------------------------|-----------|-----------|----------------------------------------|------------------|--------------|------------------|---------------------------------|
-|  | js-yaml                          | 4.3.0     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | lucide-react                     | 0.460.0   | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | react                            | 19.2.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | react-dom                        | 19.2.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | zustand                          | 4.5.7     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @eslint/js                       | 9.39.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @playwright/test                 | 1.61.1    | npm       | direct                                 | Apache-2.0       | None flagged | N                | package.json, package-lock.json |
-|  | @testing-library/dom             | 10.4.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @testing-library/jest-dom        | 6.9.1     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | @testing-library/react           | 16.3.2    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | @types/js-yaml                   | 4.0.9     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @types/node                      | 24.10.1   | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @types/react                     | 19.2.7    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @types/react-dom                 | 19.2.3    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @vitejs/plugin-react             | 5.1.1     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | @vitest/coverage-v8              | 4.1.10    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | @vitest/ui                       | 4.1.10    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | concurrently                     | 10.0.3    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | electron                         | 42.6.0    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | electron-builder                 | 26.15.3   | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | eslint                           | 9.39.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | eslint-plugin-react-hooks        | 7.0.1     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | eslint-plugin-react-refresh      | 0.4.24    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | globals                          | 16.5.0    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | jsdom                            | 29.1.1    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | prettier                         | 3.9.4     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | typescript                       | 5.9.3     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | typescript-eslint                | 8.48.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | vite (rolldown-vite)             | 7.2.2     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
-|  | vitest                           | 4.1.10    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | wait-on                          | 8.0.5     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
-|  | [ZX0](#glossary) (Salvador port) | v2 format | generic   | direct, vendored in `src/utils/zx0.ts` | BSD-3-Clause     | None flagged | N                | src/utils/zx0.ts header         |
+|     | Component                        | Version   | Ecosystem | Relationship                           | License          | License Risk | Advisory Checked | Source File                     |
+| --- | -------------------------------- | --------- | --------- | -------------------------------------- | ---------------- | ------------ | ---------------- | ------------------------------- |
+|     | js-yaml                          | 4.3.0     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | lucide-react                     | 0.460.0   | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | react                            | 19.2.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | react-dom                        | 19.2.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | zustand                          | 4.5.7     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @eslint/js                       | 9.39.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @playwright/test                 | 1.61.1    | npm       | direct                                 | Apache-2.0       | None flagged | N                | package.json, package-lock.json |
+|     | @testing-library/dom             | 10.4.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @testing-library/jest-dom        | 6.9.1     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | @testing-library/react           | 16.3.2    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | @types/js-yaml                   | 4.0.9     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @types/node                      | 24.10.1   | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @types/react                     | 19.2.7    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @types/react-dom                 | 19.2.3    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @vitejs/plugin-react             | 5.1.1     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | @vitest/coverage-v8              | 4.1.10    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | @vitest/ui                       | 4.1.10    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | concurrently                     | 10.0.3    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | electron                         | 42.6.0    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | electron-builder                 | 26.15.3   | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | eslint                           | 9.39.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | eslint-plugin-react-hooks        | 7.0.1     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | eslint-plugin-react-refresh      | 0.4.24    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | globals                          | 16.5.0    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | jsdom                            | 29.1.1    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | prettier                         | 3.9.4     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | typescript                       | 5.9.3     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | typescript-eslint                | 8.48.1    | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | vite (rolldown-vite)             | 7.2.2     | npm       | direct                                 | Unknown          | Unknown      | N                | package.json, package-lock.json |
+|     | vitest                           | 4.1.10    | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | wait-on                          | 8.0.5     | npm       | direct                                 | [MIT](#glossary) | None flagged | N                | package.json, package-lock.json |
+|     | [ZX0](#glossary) (Salvador port) | v2 format | generic   | direct, vendored in `src/utils/zx0.ts` | BSD-3-Clause     | None flagged | N                | src/utils/zx0.ts header         |
 
 Direct components: 32 (5 runtime dependencies, 26 development dependencies, 1 vendored source
 component).
@@ -352,13 +352,13 @@ bundler is the rolldown-vite package, not upstream Vite.
 
 ## License & IP Compliance Review
 
-|  | License class   | Components | Notes                                                                                                                                                                                            |
-|--|-----------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  | Permissive      | 368        | [MIT](#glossary) 270, ISC 41, BSD-3-Clause 20, Apache-2.0 12, BlueOak-1.0.0 9, BSD-2-Clause 8, MIT-0 2, CC0-1.0 1, WTFPL family 3, dual permissive 2, CC-BY-4.0 1                                |
-|  | Weak-copyleft   | 0          | none declared                                                                                                                                                                                    |
-|  | Strong-copyleft | 0          | none declared                                                                                                                                                                                    |
-|  | Proprietary     | 0          | none declared                                                                                                                                                                                    |
-|  | Unknown         | 222        | 37.6 percent of resolved components carry no license field in the lockfile, including direct components react, react-dom, vite, typescript, zustand, lucide-react, eslint, and typescript-eslint |
+|     | License class   | Components | Notes                                                                                                                                                                                            |
+| --- | --------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+|     | Permissive      | 368        | [MIT](#glossary) 270, ISC 41, BSD-3-Clause 20, Apache-2.0 12, BlueOak-1.0.0 9, BSD-2-Clause 8, MIT-0 2, CC0-1.0 1, WTFPL family 3, dual permissive 2, CC-BY-4.0 1                                |
+|     | Weak-copyleft   | 0          | none declared                                                                                                                                                                                    |
+|     | Strong-copyleft | 0          | none declared                                                                                                                                                                                    |
+|     | Proprietary     | 0          | none declared                                                                                                                                                                                    |
+|     | Unknown         | 222        | 37.6 percent of resolved components carry no license field in the lockfile, including direct components react, react-dom, vite, typescript, zustand, lucide-react, eslint, and typescript-eslint |
 
 No copyleft conflict was found: no strong-copyleft component is linked into the distributed
 work, and the project's own license is [MIT](#glossary) with a committed `LICENSE` file.
@@ -382,7 +382,7 @@ share.
 **Risk Map**
 
 | Impact   | LOW | MEDIUM                                      | HIGH |
-|----------|-----|---------------------------------------------|------|
+| -------- | --- | ------------------------------------------- | ---- |
 | CRITICAL |     |                                             |      |
 | HIGH     |     | RSK-005                                     |      |
 | MEDIUM   |     | RSK-001, RSK-002, RSK-003, RSK-004, RSK-006 |      |
@@ -395,7 +395,7 @@ RSK-008 carries `LOW` impact and `LOW` likelihood.
 Bands: `Excellent` 9-10, `Good` 7-8, `Average` 4-6, `Poor` 1-3.
 
 | Dimension               | Score | Notes                                                                                              |
-|-------------------------|-------|----------------------------------------------------------------------------------------------------|
+| ----------------------- | ----- | -------------------------------------------------------------------------------------------------- |
 | Testability             | 4/10  | Real unit layer, documented failing coverage gate, no [E2E](#glossary) specs, no [CI](#glossary)   |
 | Design Soundness        | 6/10  | Documented architecture and deliberate trade-offs, 2488-line orchestrator                          |
 | Code Quality            | 7/10  | Strict TypeScript and typed lint, documentation drift items remain                                 |
@@ -433,13 +433,13 @@ All 679 non-merge commits share one author, so contributor concentration is `Hig
 
 Concentration is a continuity-risk fact, not a judgment of any person.
 
-|  | [DORA](#dora) metric            | Result          | Basis                                      |
-|--|---------------------------------|-----------------|--------------------------------------------|
-|  | Change lead time                | `NOT SPECIFIED` | Proxy needs tags, commits are not releases |
-|  | Deployment frequency            | `NOT SPECIFIED` | No tags or release markers exist in git    |
-|  | Failed deployment recovery time | `NOT SPECIFIED` | Requires incident and deployment data      |
-|  | Change fail rate                | `NOT SPECIFIED` | Requires incident and rollback data        |
-|  | Deployment rework rate          | `NOT SPECIFIED` | Requires production incident data          |
+|     | [DORA](#dora) metric            | Result          | Basis                                      |
+| --- | ------------------------------- | --------------- | ------------------------------------------ |
+|     | Change lead time                | `NOT SPECIFIED` | Proxy needs tags, commits are not releases |
+|     | Deployment frequency            | `NOT SPECIFIED` | No tags or release markers exist in git    |
+|     | Failed deployment recovery time | `NOT SPECIFIED` | Requires incident and deployment data      |
+|     | Change fail rate                | `NOT SPECIFIED` | Requires incident and rollback data        |
+|     | Deployment rework rate          | `NOT SPECIFIED` | Requires production incident data          |
 
 88 commit subjects mention fix, revert, or bug work, but commit subjects are not a rework metric
 (EVD-003).
@@ -459,7 +459,7 @@ Support, cost, and supplier-obligation evidence is `UNKNOWN` (none supplied).
 ## High-Level Observations
 
 | Observation                                                                         |
-|-------------------------------------------------------------------------------------|
+| ----------------------------------------------------------------------------------- |
 | The documented verification loop is sound on paper but has no automated enforcement |
 | A 2488-line orchestrator concentrates change risk in one file                       |
 | The service worker can serve stale assets after redeploys                           |
@@ -548,7 +548,7 @@ or committed, all findings are based on static inspection.
 **Verification And Evidence Ledger**
 
 | Evidence | Check / Source                                                              | Result                                                                                                                                                                                                                   | Type        | Artifact                                                                    |
-|----------|-----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------|-----------------------------------------------------------------------------|
+| -------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------- | --------------------------------------------------------------------------- |
 | EVD-001  | `git ls-files` census plus per-directory counts                             | 454 tracked files, 149 under `src/` at 29573 lines, 56 under `test/` at 5072 lines including fixtures and setup files                                                                                                    | Observation | file inventory                                                              |
 | EVD-002  | `git rev-list --count HEAD` and `--no-merges`                               | 705 total commits, 679 non-merge                                                                                                                                                                                         | Observation | revision `f898dce`                                                          |
 | EVD-003  | `git log --no-merges --format=%an` census and fix-subject scan              | 679 of 679 commits by one author (100 percent), 88 fix or revert subjects                                                                                                                                                | Observation | commit history                                                              |
@@ -603,7 +603,7 @@ Every row is re-derivable from the named command or file range.
 **Severity definitions**
 
 | Severity | Meaning                  | Readiness Treatment       |
-|----------|--------------------------|---------------------------|
+| -------- | ------------------------ | ------------------------- |
 | CRITICAL | Critical contextual risk | Gate resolution           |
 | HIGH     | Major contextual risk    | Gate resolution           |
 | MEDIUM   | Material contained risk  | Track and plan            |
@@ -616,7 +616,7 @@ Severity derives from the impact/likelihood matrix, not [CVSS](#glossary).
 Scale: `1-10` integers, selected at parameter configuration.
 
 | Band      | Score Range | Definition                                                   |
-|-----------|-------------|--------------------------------------------------------------|
+| --------- | ----------- | ------------------------------------------------------------ |
 | Excellent | 9-10        | Capability is comprehensive and verified by strong evidence  |
 | Good      | 7-8         | Capability is solid overall, minor or noticeable gaps exist  |
 | Average   | 4-6         | Capability is present but uneven, limited, or inconsistent   |
@@ -684,7 +684,7 @@ file itself (FND-ARC-001).
 ### Design Principles
 
 | Principle             | Status  | Evidence                                                                                                                                                         |
-|-----------------------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Single Responsibility | PARTIAL | file-level cohesion is good, but `App.tsx` and the largest hooks carry several responsibilities each (EVD-018, EVD-019)                                          |
 | Open/Closed           | PARTIAL | export formats and panels extend by new modules, but song-shape changes ripple through many hooks (EVD-019)                                                      |
 | Liskov Substitution   | PASS    | shared types such as `Song` and branded identifier types keep substitutable contracts                                                                            |
@@ -750,7 +750,7 @@ fetch('MESSAGES.md'|docs)      FileReader (.yaml/.yml)
 Trust boundaries:
 
 | Boundary          | From                              | To                                   | Crossing Control                                                               |
-|-------------------|-----------------------------------|--------------------------------------|--------------------------------------------------------------------------------|
+| ----------------- | --------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------ |
 | Host content      | Static web host or packaged files | Renderer fetch and markdown renderer | [HTML](#glossary) escaping in `renderMarkdown`, `http(s)`-only link generation |
 | User files        | File picker / clipboard           | `songParser.ts`, `instrumentIO.ts`   | js-yaml safe load, clamping, structural validation                             |
 | Renderer-main     | `electronAPI` preload bridge      | Electron main process                | `contextIsolation`, `nodeIntegration` off, four-method bridge                  |
@@ -762,7 +762,7 @@ Trust boundaries:
 ### Design Patterns
 
 | Pattern            | Location                                                      | Assessment | Description                                                                                                                                |
-|--------------------|---------------------------------------------------------------|------------|--------------------------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | ------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Composition root   | `src/App.tsx`                                                 | PARTIAL    | deliberate single wiring point, but grown past manageable size (FND-ARC-001)                                                               |
 | Store              | `src/stores/uiStore.ts`                                       | PASS       | single Zustand store scoped to cross-component [UI](#glossary) state                                                                       |
 | Worker offload     | `src/workers/sequencerWorker.ts`, `src/hooks/useSequencer.ts` | PASS       | timing loop isolated from [UI](#glossary) thread with typed message protocol                                                               |
@@ -780,7 +780,7 @@ The project is production-bound and carries significant design decisions, record
 [ADR](#glossary) documents.
 
 | Decision                                         | Location                                     | ADR Status |
-|--------------------------------------------------|----------------------------------------------|------------|
+| ------------------------------------------------ | -------------------------------------------- | ---------- |
 | App.tsx as central orchestrator                  | `docs/ARCHITECTURE.md` decisions section     | Recorded   |
 | Single Zustand store vs domain stores            | `docs/ARCHITECTURE.md` decisions section     | Recorded   |
 | Intentional React anti-patterns for audio timing | `docs/ARCHITECTURE.md`, `docs/GUIDELINES.md` | Recorded   |
@@ -810,7 +810,7 @@ subject:
 ## Trade-off Analysis
 
 | Trade-off                                    | Context                                                  | Option A: gain / cost                                                           | Option B: gain / cost                                            | Evidence                        | Implication                                                                                     |
-|----------------------------------------------|----------------------------------------------------------|---------------------------------------------------------------------------------|------------------------------------------------------------------|---------------------------------|-------------------------------------------------------------------------------------------------|
+| -------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------- |
 | Central orchestrator vs distributed state    | Keep song model close to wiring                          | `App.tsx` owns model and wiring / file grows to 2488 lines                      | Domain stores and mediators / more indirection                   | EVD-018, `docs/ARCHITECTURE.md` | Current choice keeps data flow visible but concentrates change risk (FND-ARC-001)               |
 | Audio timing fidelity vs lint purity         | Re-created callbacks at 50 Hz cause audible glitches     | Sparse dependency arrays and ref mirroring / intentional `react-hooks` warnings | Full hook conformance / timing drift risk                        | EVD-027, `docs/GUIDELINES.md`   | Documented choice fits the constraint and is not a defect                                       |
 | setTimeout worker vs audio-clock scheduling  | Browser has no hard-real-time primitive                  | Worker `setTimeout` with `performance.now()` catch-up / approximate scheduling  | AudioContext-driven scheduling / tighter coupling to audio graph | EVD-029, EVD-045                | Acceptable for a tracker preview, diverges from hardware timing                                 |
@@ -829,7 +829,7 @@ content, user-supplied song files, the Electron renderer-to-main bridge, [MIDI](
 local storage, the service-worker cache, and downloaded export artifacts.
 
 | Boundary          | [STRIDE](#stride)      | Threat Description                                                                                                    | Control                                                                                         | Finding     |
-|-------------------|------------------------|-----------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------------------------------------------|-------------|
+| ----------------- | ---------------------- | --------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ----------- |
 | Host content      | Tampering              | Compromised static files (MESSAGES.md, MANUAL.md, repository [YAML](#glossary)) reach the markdown renderer or parser | [HTML](#glossary) escaping in `renderMarkdown`, `http(s)`-only links, js-yaml safe load         | FND-SEC-001 |
 | Host content      | Information Disclosure | Stale cached content persists past redeploys                                                                          | Cache name is static, no versioned invalidation                                                 | FND-INF-002 |
 | User files        | Tampering              | Malformed or hostile [YAML](#glossary) song or instrument files parsed from disk                                      | Safe YAML load plus clamping and validation in `songParser.ts`                                  |             |
@@ -854,7 +854,7 @@ content model.
 The project carries a dense, well-maintained standards corpus.
 
 | Document                 | Path                                    | Stack Coverage                                                   |
-|--------------------------|-----------------------------------------|------------------------------------------------------------------|
+| ------------------------ | --------------------------------------- | ---------------------------------------------------------------- |
 | Engineering standards    | `docs/standard/ts-react-development.md` | TypeScript, React, state, testing, tooling                       |
 | Change and quality rules | `docs/GUIDELINES.md`                    | verification discipline, audio-timing exemptions, refactor rules |
 | Testing gates            | `docs/TESTING.md`                       | verification loop, coverage targets, [E2E](#glossary) commands   |
@@ -867,7 +867,7 @@ The project carries a dense, well-maintained standards corpus.
 **Code conformance**
 
 | Area                    | Standard Rule                                                  | Status    | Evidence                                                                                          |
-|-------------------------|----------------------------------------------------------------|-----------|---------------------------------------------------------------------------------------------------|
+| ----------------------- | -------------------------------------------------------------- | --------- | ------------------------------------------------------------------------------------------------- |
 | Language strictness     | TypeScript strict mode, no plain JS sources                    | Conforms  | `tsconfig.app.json` strict plus additional checks, all `src/` sources are `.ts`/`.tsx`            |
 | Functional components   | Functional components only                                     | Conforms  | no class components found in `src/`                                                               |
 | Lint hygiene            | `npm run lint` zero errors, documented warning exemptions only | Partially | exemptions documented and narrowly scoped, but lint state unverified (EVD-036)                    |
@@ -882,7 +882,7 @@ The project carries a dense, well-maintained standards corpus.
 **Standards quality**
 
 | Area             | Standards Position                                        | External Best Practice                                 | Alignment                                                              |
-|------------------|-----------------------------------------------------------|--------------------------------------------------------|------------------------------------------------------------------------|
+| ---------------- | --------------------------------------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------- |
 | React hooks      | Warn-level rules with documented audio exemptions         | React Rules of Hooks                                   | Partially                                                              |
 | Versioning       | Patch-then-rollover progression regardless of change type | SemVer meaning-laden versions                          | Diverges                                                               |
 | Testing bar      | 80 percent coverage thresholds across all metrics         | Vitest defaults are unthresholded, project is stricter | Aligned in intent, currently unmet                                     |
@@ -925,7 +925,7 @@ The project carries a dense, well-maintained standards corpus.
 ## Detailed Technical Findings
 
 | Finding     | Pillar                              | Severity | Title                                                                             | Result           | Status | Change | Verification |
-|-------------|-------------------------------------|----------|-----------------------------------------------------------------------------------|------------------|--------|--------|--------------|
+| ----------- | ----------------------------------- | -------- | --------------------------------------------------------------------------------- | ---------------- | ------ | ------ | ------------ |
 | FND-ARC-001 | Architecture & Design               | MEDIUM   | 2488-line central orchestrator concentrates wiring and change risk                | PARTIAL          | Open   | New    |              |
 | FND-ARC-002 | Architecture & Design               | LOW      | Single-author contributor concentration is High                                   | [N/A](#glossary) | Open   | New    |              |
 | FND-CQY-001 | Code Quality                        | MEDIUM   | Coverage gate is documented as failing and core paths are thin                    | FAIL             | Open   | New    |              |
@@ -943,434 +943,434 @@ The project carries a dense, well-maintained standards corpus.
 
 ### FND-ARC-001: 2488-line central orchestrator concentrates wiring and change risk
 
-* **Pillar:** Architecture & Design
-* **Severity:** Medium
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - structural finding, not a weakness
-* **Status:** Open
-* **Change:** New
-* **Targets:** `src/App.tsx`, `src/hooks/useMidiMessageProcessing.ts`, `src/hooks/useSongManagement.ts`, `src/hooks/useMidiActions.ts`, `src/hooks/useSequencerIntegration.ts`
-* **Basis:** `docs/ARCHITECTURE.md:124` names `App.tsx` as the single largest maintenance risk, and the file has grown 294 lines past the documented figure
-* **Absence:** Deliberate - recorded decision - `docs/ARCHITECTURE.md` decisions section documents the orchestrator choice and its trade-off
-* **Description:** `src/App.tsx` is 2488 lines and instantiates roughly twenty hooks, declares the
+- **Pillar:** Architecture & Design
+- **Severity:** Medium
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - structural finding, not a weakness
+- **Status:** Open
+- **Change:** New
+- **Targets:** `src/App.tsx`, `src/hooks/useMidiMessageProcessing.ts`, `src/hooks/useSongManagement.ts`, `src/hooks/useMidiActions.ts`, `src/hooks/useSequencerIntegration.ts`
+- **Basis:** `docs/ARCHITECTURE.md:124` names `App.tsx` as the single largest maintenance risk, and the file has grown 294 lines past the documented figure
+- **Absence:** Deliberate - recorded decision - `docs/ARCHITECTURE.md` decisions section documents the orchestrator choice and its trade-off
+- **Description:** `src/App.tsx` is 2488 lines and instantiates roughly twenty hooks, declares the
   song model in `useState`, and wires every cross-hook dependency manually. Supporting hooks
   are themselves large: `useMidiMessageProcessing` 671, `useSongManagement` 619,
   `useMidiActions` 590, `useSequencerIntegration` 543 lines. Cross-hook dependencies are
   implicit and exist only through the wiring in the orchestrator.
-* **Impact:** any change to song shape, playback state, or modal flow must be traced through a
+- **Impact:** any change to song shape, playback state, or modal flow must be traced through a
   very large file and several large hooks, raising the probability of incomplete edits and
   merge-impossible refactors. The architecture document already calls this the top
   maintainability risk.
-* **Recommendation:** extract cohesive domains in stages per the project's own `docs/REFACTORING.md`
+- **Recommendation:** extract cohesive domains in stages per the project's own `docs/REFACTORING.md`
   method: first pull pure wiring groups ([MIDI](#glossary) chain, file operations, modal manager) into
   container components or facade hooks with explicit typed contracts, keep the audio-timing
   exemptions intact, and guard each step with the existing unit and fixture tests plus a
   byte-identical export check.
-* **Method:** after each extraction, `npm run typecheck`, `npm run lint`, and `npm test` stay
+- **Method:** after each extraction, `npm run typecheck`, `npm run lint`, and `npm test` stay
   green and a reference song export is byte-identical to the pre-change output.
-* **Verified:** yes - measured from source, behavior not executed
-* **Confidence:** HIGH - line counts and hook wiring are directly measurable
-* **Mitigating factors:** the choice is documented with its rationale, the store hook split
+- **Verified:** yes - measured from source, behavior not executed
+- **Confidence:** HIGH - line counts and hook wiring are directly measurable
+- **Mitigating factors:** the choice is documented with its rationale, the store hook split
   already exists for [UI](#glossary) state, and `AppLayout` separates rendering from wiring
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-016, EVD-018, EVD-019, all `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-016, EVD-018, EVD-019, all `Inspected`
 
 ### FND-ARC-002: Single-author contributor concentration is High
 
-* **Pillar:** Architecture & Design
-* **Severity:** Low
-* **Type:** Observation
-* **Security:** [N/A](#glossary) - continuity fact, not a weakness
-* **Status:** Open
-* **Change:** New
-* **Targets:** repository history, `docs/` governance set
-* **Basis:** the delivery-practice rubric rates a single-author project `High` concentration
-* **Absence:** Undetermined - no record states whether the single-author setup is a deliberate choice
-* **Description:** all 679 non-merge commits across the 8.3-month history are attributed to one
+- **Pillar:** Architecture & Design
+- **Severity:** Low
+- **Type:** Observation
+- **Security:** [N/A](#glossary) - continuity fact, not a weakness
+- **Status:** Open
+- **Change:** New
+- **Targets:** repository history, `docs/` governance set
+- **Basis:** the delivery-practice rubric rates a single-author project `High` concentration
+- **Absence:** Undetermined - no record states whether the single-author setup is a deliberate choice
+- **Description:** all 679 non-merge commits across the 8.3-month history are attributed to one
   author, and no second contributor, reviewer, or co-maintainer appears in the commit stream.
-* **Impact:** maintainer unavailability halts review, merge, release, and documentation upkeep
+- **Impact:** maintainer unavailability halts review, merge, release, and documentation upkeep
   until a fork or handoff occurs.
-* **Recommendation:** name a backup maintainer or organizational handoff path in the governance
+- **Recommendation:** name a backup maintainer or organizational handoff path in the governance
   documents, and consider enabling GitHub codeowners or review assignment to create a review
   trail that does not live only in commits.
-* **Method:** a named continuity contact or owner appears in `docs/` or repository settings.
-* **Verified:** yes - complete commit-author census
-* **Confidence:** HIGH - direct census of all non-merge commits
-* **Mitigating factors:** the project documents itself thoroughly, which lowers the handoff cost
+- **Method:** a named continuity contact or owner appears in `docs/` or repository settings.
+- **Verified:** yes - complete commit-author census
+- **Confidence:** HIGH - direct census of all non-merge commits
+- **Mitigating factors:** the project documents itself thoroughly, which lowers the handoff cost
   even though it does not lower the concentration
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-002, EVD-003, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-002, EVD-003, `Inspected`
 
 ### FND-CQY-001: Coverage gate is documented as failing and core paths are thin
 
-* **Pillar:** Code Quality
-* **Severity:** Medium
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - quality-gate finding
-* **Status:** Open
-* **Change:** New
-* **Targets:** `vitest.config.ts`, `docs/TESTING.md`, `test/` tree
-* **Basis:** the project sets 80 percent coverage thresholds and documents that the coverage
+- **Pillar:** Code Quality
+- **Severity:** Medium
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - quality-gate finding
+- **Status:** Open
+- **Change:** New
+- **Targets:** `vitest.config.ts`, `docs/TESTING.md`, `test/` tree
+- **Basis:** the project sets 80 percent coverage thresholds and documents that the coverage
   command currently fails
-* **Absence:** Undetermined - the documented gap list records the state but no rationale for it
-* **Description:** `vitest.config.ts` enforces 80 percent thresholds for lines, functions,
+- **Absence:** Undetermined - the documented gap list records the state but no rationale for it
+- **Description:** `vitest.config.ts` enforces 80 percent thresholds for lines, functions,
   branches, and statements, and `docs/TESTING.md:231` states the coverage command will fail
   until coverage reaches them. The 44 test files carry about 218 cases concentrated in
   `test/utils/`, while `test/synth/` holds one file, no `test/modals/` or `test/workers/`
   directory exists, and most of the 31 hooks are untested.
-* **Impact:** the highest-risk code (chip emulation, sequencer timing, export encoders, worker
+- **Impact:** the highest-risk code (chip emulation, sequencer timing, export encoders, worker
   loop) has the thinnest behavioral safety net, and the project's own gate is documented red.
-* **Recommendation:** add characterization tests for `SoundDriver` event generation,
+- **Recommendation:** add characterization tests for `SoundDriver` event generation,
   `sequencerWorker` catch-up math, each export encoder's byte layout, and modal interactions,
   or lower the threshold to the measured value with a ratchet policy documented in
   `TESTING.md`.
-* **Method:** `npm run test:coverage` exits 0 against the committed thresholds.
-* **Verified:** yes - config and documentation inspected, suite not executed
-* **Confidence:** HIGH for the documented failure statement, MEDIUM for the unmeasured actual
+- **Method:** `npm run test:coverage` exits 0 against the committed thresholds.
+- **Verified:** yes - config and documentation inspected, suite not executed
+- **Confidence:** HIGH for the documented failure statement, MEDIUM for the unmeasured actual
   coverage figure
-* **Mitigating factors:** export-focused tests and [VGM](#glossary) golden fixtures already exist, and the
+- **Mitigating factors:** export-focused tests and [VGM](#glossary) golden fixtures already exist, and the
   gap is explicitly documented rather than hidden
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-013, EVD-014, `Inspected` plus `Reported` gap list in `docs/TESTING.md`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-013, EVD-014, `Inspected` plus `Reported` gap list in `docs/TESTING.md`
 
 ### FND-CQY-002: Tracked duplicate test file never executes
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - repository hygiene finding
-* **Status:** Open
-* **Change:** New
-* **Targets:** `test/utils/exportMax.test`
-* **Basis:** the Vitest include pattern is `test/**/*.{test,spec}.{ts,tsx}`, which requires a
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - repository hygiene finding
+- **Status:** Open
+- **Change:** New
+- **Targets:** `test/utils/exportMax.test`
+- **Basis:** the Vitest include pattern is `test/**/*.{test,spec}.{ts,tsx}`, which requires a
   final extension
-* **Absence:** Undetermined - no record explains why the stale copy was committed
-* **Description:** `test/utils/exportMax.test` is a tracked 11 KB file holding 12 test cases
+- **Absence:** Undetermined - no record explains why the stale copy was committed
+- **Description:** `test/utils/exportMax.test` is a tracked 11 KB file holding 12 test cases
   with an older variant of the MAX delimiter assertions than `exportMax.test.ts`. Because the
   filename ends in `.test` rather than `.test.ts`, Vitest never discovers it.
-* **Impact:** the file presents as a test but contributes no signal, and its divergent
+- **Impact:** the file presents as a test but contributes no signal, and its divergent
   assertions can mislead anyone auditing MAX-export coverage.
-* **Recommendation:** delete the stray file or merge any unique assertions into
+- **Recommendation:** delete the stray file or merge any unique assertions into
   `exportMax.test.ts`.
-* **Method:** `git ls-files test/` no longer lists `exportMax.test`, or the file carries a
+- **Method:** `git ls-files test/` no longer lists `exportMax.test`, or the file carries a
   `.ts` extension and runs.
-* **Verified:** yes - filename and include pattern compared directly
-* **Confidence:** HIGH - the include pattern is mechanical
-* **Mitigating factors:** the canonical `.ts` file exists with stronger assertions, so no
+- **Verified:** yes - filename and include pattern compared directly
+- **Confidence:** HIGH - the include pattern is mechanical
+- **Mitigating factors:** the canonical `.ts` file exists with stronger assertions, so no
   coverage is actually lost
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-015, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-015, `Inspected`
 
 ### FND-CQY-003: No end-to-end specs exist despite configured Playwright
 
-* **Pillar:** Code Quality
-* **Severity:** Medium
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - verification-gap finding
-* **Status:** Open
-* **Change:** New
-* **Targets:** `e2e/`, `playwright.config.ts`, `docs/TESTING.md`
-* **Basis:** the project configures Chromium, Firefox, and WebKit projects plus a preview
+- **Pillar:** Code Quality
+- **Severity:** Medium
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - verification-gap finding
+- **Status:** Open
+- **Change:** New
+- **Targets:** `e2e/`, `playwright.config.ts`, `docs/TESTING.md`
+- **Basis:** the project configures Chromium, Firefox, and WebKit projects plus a preview
   server and documents [E2E](#glossary) commands and sample flows
-* **Absence:** No documented rationale - the harness exists but no spec ever landed
-* **Description:** `e2e/` contains only `.gitkeep`. `docs/TESTING.md` documents `npm run
-  test:e2e` and lists flows such as save/load and theme switching, but no spec file exists to
+- **Absence:** No documented rationale - the harness exists but no spec ever landed
+- **Description:** `e2e/` contains only `.gitkeep`. `docs/TESTING.md` documents `npm run
+test:e2e` and lists flows such as save/load and theme switching, but no spec file exists to
   run them.
-* **Impact:** integration defects across the wiring layer (modals, file dialogs, playback
+- **Impact:** integration defects across the wiring layer (modals, file dialogs, playback
   controls, export downloads) have no automated detection path.
-* **Recommendation:** add a minimal smoke suite covering app load, song load from the bundled
+- **Recommendation:** add a minimal smoke suite covering app load, song load from the bundled
   repository, playback start/stop, and one export download, then wire it into the [CI](#glossary) workflow
   from REC-002.
-* **Method:** `npx playwright test --project=chromium` runs at least one spec green.
-* **Verified:** yes - directory listing and config inspected
-* **Confidence:** HIGH - absence verified by census
-* **Mitigating factors:** the manual verification loop exists, and `docs/TESTING.md` lists the
+- **Method:** `npx playwright test --project=chromium` runs at least one spec green.
+- **Verified:** yes - directory listing and config inspected
+- **Confidence:** HIGH - absence verified by census
+- **Mitigating factors:** the manual verification loop exists, and `docs/TESTING.md` lists the
   intended flows, so the harness decision is made and only specs are missing
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-012, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-012, `Inspected`
 
 ### FND-CQY-004: Documentation figures have drifted from the code
 
-* **Pillar:** Code Quality
-* **Severity:** Low
-* **Type:** Observation
-* **Security:** [N/A](#glossary) - documentation-consistency finding
-* **Status:** Open
-* **Change:** New
-* **Targets:** `docs/ARCHITECTURE.md`, `docs/TESTING.md`
-* **Basis:** project documents are treated as sources of truth by `docs/GUIDELINES.md`
-* **Absence:** Undetermined - no record states whether the stale figures are tolerated drift
-* **Description:** `docs/ARCHITECTURE.md:5` states Electron 39 while `package.json` declares
+- **Pillar:** Code Quality
+- **Severity:** Low
+- **Type:** Observation
+- **Security:** [N/A](#glossary) - documentation-consistency finding
+- **Status:** Open
+- **Change:** New
+- **Targets:** `docs/ARCHITECTURE.md`, `docs/TESTING.md`
+- **Basis:** project documents are treated as sources of truth by `docs/GUIDELINES.md`
+- **Absence:** Undetermined - no record states whether the stale figures are tolerated drift
+- **Description:** `docs/ARCHITECTURE.md:5` states Electron 39 while `package.json` declares
   `^42.0.0` and locks 42.6.0, and the same file states `App.tsx` is 2194 lines while it
   measures 2488. `docs/TESTING.md`'s gap list says modals have no tests although
   `FilePickerModal.test.tsx` exists, says exports need tests although ten export test files
   exist, and counts 30 hooks while the directory holds 31.
-* **Impact:** future change work that trusts the documented figures plans against a smaller
+- **Impact:** future change work that trusts the documented figures plans against a smaller
   orchestrator and a different dependency floor than reality.
-* **Recommendation:** refresh the cited figures as part of each release's documentation pass,
+- **Recommendation:** refresh the cited figures as part of each release's documentation pass,
   or drop brittle absolute numbers in favor of approximate ranges.
-* **Method:** the named figures match measured values at the next release.
-* **Verified:** yes - figures compared against manifest and file measurements
-* **Confidence:** HIGH - direct comparisons
-* **Mitigating factors:** the drift is a side effect of an otherwise exemplary documentation
+- **Method:** the named figures match measured values at the next release.
+- **Verified:** yes - figures compared against manifest and file measurements
+- **Confidence:** HIGH - direct comparisons
+- **Mitigating factors:** the drift is a side effect of an otherwise exemplary documentation
   practice, and the substantive claims (the orchestrator is the top risk) remain directionally
   true
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-016, EVD-017, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-016, EVD-017, `Inspected`
 
 ### FND-SEC-001: Custom HTML rendering surface lacks defense in depth
 
-* **Pillar:** Security & Compliance
-* **Severity:** Medium
-* **Type:** Concern
-* **Security:** CWE-79 - improper neutralization of input during web page generation, partially
+- **Pillar:** Security & Compliance
+- **Severity:** Medium
+- **Type:** Concern
+- **Security:** CWE-79 - improper neutralization of input during web page generation, partially
   mitigated by escaping. The equivalent automated checks are `eslint-plugin-no-unsanitized`
   sink rules, not yet enabled
-* **Status:** Open
-* **Change:** New
-* **Targets:** `src/utils/markdown.ts`, `src/modals/MarkdownModal.tsx:29`,
+- **Status:** Open
+- **Change:** New
+- **Targets:** `src/utils/markdown.ts`, `src/modals/MarkdownModal.tsx:29`,
   `src/components/EnvelopeSection.tsx:102`, `index.html`
-* **Basis:** Electron security guidance recommends a [CSP](#glossary), and hand-rolled sanitizers are a
+- **Basis:** Electron security guidance recommends a [CSP](#glossary), and hand-rolled sanitizers are a
   recognized injection surface
-* **Absence:** Undetermined - no record states why a bespoke renderer was chosen over a vetted
+- **Absence:** Undetermined - no record states why a bespoke renderer was chosen over a vetted
   library
-* **Description:** two components inject `renderMarkdown` output via `dangerouslySetInnerHTML`.
+- **Description:** two components inject `renderMarkdown` output via `dangerouslySetInnerHTML`.
   The renderer escapes [HTML](#glossary) characters before applying bold, italic, code, and table
   formatting, and generates links only for `http(s)` [URLs](#glossary) with `rel="noreferrer"`. No
   `Content-Security-Policy` meta tag or header mechanism exists, and the custom escaping has
   no dedicated adversarial test coverage.
-* **Impact:** a malformed document or a subtle escaping gap (for example a table-cell or
+- **Impact:** a malformed document or a subtle escaping gap (for example a table-cell or
   code-span edge case) could inject markup into the [DOM](#glossary). Today the only inputs are bundled
   first-party files, so exploitation requires a content-compromise precondition.
-* **Recommendation:** add a restrictive [CSP](#glossary) (`default-src 'self'` with explicit allowances) to
+- **Recommendation:** add a restrictive [CSP](#glossary) (`default-src 'self'` with explicit allowances) to
   `index.html`, add sanitizer-focused tests with hostile markdown inputs, and consider
   replacing the custom renderer with a vetted sanitizer-plus-parser stack.
-* **Method:** hostile-fixture tests confirm script and attribute injection is escaped, and the
+- **Method:** hostile-fixture tests confirm script and attribute injection is escaped, and the
   [CSP](#glossary) is observable in the built `dist/index.html`.
-* **Verified:** yes - sink census and renderer source inspected
-* **Confidence:** MEDIUM - the escaping logic reads correctly, but no execution exercised
+- **Verified:** yes - sink census and renderer source inspected
+- **Confidence:** MEDIUM - the escaping logic reads correctly, but no execution exercised
   edge cases and content sources could broaden
-* **Mitigating factors:** inputs are bundled first-party files only, escaping runs before all
+- **Mitigating factors:** inputs are bundled first-party files only, escaping runs before all
   formatting, and link generation is scheme-restricted. The equivalent analyzer rules are not
   enabled in the ESLint config
-* **Exploitability:** [N/A](#glossary) - internal rendering path fed by bundled content, not directly
+- **Exploitability:** [N/A](#glossary) - internal rendering path fed by bundled content, not directly
   network-facing
-* **Evidence:** EVD-009, EVD-010, EVD-030, EVD-034, `Inspected`
+- **Evidence:** EVD-009, EVD-010, EVD-030, EVD-034, `Inspected`
 
 ### FND-SEC-002: MIDI permission grant is not scoped to the requesting origin
 
-* **Pillar:** Security & Compliance
-* **Severity:** Low
-* **Type:** Observation
-* **Security:** CWE-862 - the permission decision omits an origin or embedder check, though the
+- **Pillar:** Security & Compliance
+- **Severity:** Low
+- **Type:** Observation
+- **Security:** CWE-862 - the permission decision omits an origin or embedder check, though the
   packaged window only loads first-party content
-* **Status:** Open
-* **Change:** New
-* **Targets:** `electron/main.cjs:24-41`
-* **Basis:** permission handlers are the documented gate for device access in Electron
-* **Absence:** Undetermined - no record states whether origin-scoping the grant was considered
-* **Description:** `setPermissionRequestHandler` and `setPermissionCheckHandler` return `true`
+- **Status:** Open
+- **Change:** New
+- **Targets:** `electron/main.cjs:24-41`
+- **Basis:** permission handlers are the documented gate for device access in Electron
+- **Absence:** Undetermined - no record states whether origin-scoping the grant was considered
+- **Description:** `setPermissionRequestHandler` and `setPermissionCheckHandler` return `true`
   for `midi` and `midiSysex` for any requesting frame, and `false` otherwise. No check of the
   requesting `webContents` origin or [URL](#glossary) is performed.
-* **Impact:** if dev-mode ever loads a non-local [URL](#glossary) or a subframe requests the permission,
+- **Impact:** if dev-mode ever loads a non-local [URL](#glossary) or a subframe requests the permission,
   [MIDI](#glossary) access is granted without scoping. In the packaged `loadFile` path the exposure is
   minimal.
-* **Recommendation:** bind the grant to the expected origin (`file://` packaged root or
+- **Recommendation:** bind the grant to the expected origin (`file://` packaged root or
   `http://localhost:8008` in dev) before allowing the permission.
-* **Method:** a non-matching origin requesting `midi` receives a denial.
-* **Verified:** yes - handler logic inspected directly
-* **Confidence:** HIGH - the decision logic is six lines and unambiguous
-* **Mitigating factors:** packaged mode loads only the bundled file, dev mode loads localhost,
+- **Method:** a non-matching origin requesting `midi` receives a denial.
+- **Verified:** yes - handler logic inspected directly
+- **Confidence:** HIGH - the decision logic is six lines and unambiguous
+- **Mitigating factors:** packaged mode loads only the bundled file, dev mode loads localhost,
   and all other permissions are denied
-* **Exploitability:** [N/A](#glossary) - LOW severity, narrative required only for HIGH/CRITICAL
-* **Evidence:** EVD-008, `Inspected`
+- **Exploitability:** [N/A](#glossary) - LOW severity, narrative required only for HIGH/CRITICAL
+- **Evidence:** EVD-008, `Inspected`
 
 ### FND-INF-001: No automated CI gate exists for the documented verification loop
 
-* **Pillar:** Infrastructure & [CI/CD](#glossary)
-* **Severity:** Medium
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - process gap, not a weakness
-* **Status:** Open
-* **Change:** New
-* **Targets:** repository root, `docs/TESTING.md`, `docs/WORKFLOW.md`, `package.json`
-* **Basis:** `TESTING.md` and `WORKFLOW.md` define a mandatory six-step verification loop with
+- **Pillar:** Infrastructure & [CI/CD](#glossary)
+- **Severity:** Medium
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - process gap, not a weakness
+- **Status:** Open
+- **Change:** New
+- **Targets:** repository root, `docs/TESTING.md`, `docs/WORKFLOW.md`, `package.json`
+- **Basis:** `TESTING.md` and `WORKFLOW.md` define a mandatory six-step verification loop with
   zero-error and zero-warning exit criteria
-* **Absence:** No documented rationale - no decision record explains the absence of automation
-* **Description:** no `.github/` directory, workflow file, or pipeline definition exists. Every
+- **Absence:** No documented rationale - no decision record explains the absence of automation
+- **Description:** no `.github/` directory, workflow file, or pipeline definition exists. Every
   gate (`typecheck`, `lint`, `format`, `build`, `test`, coverage, e2e, packaging) is a manual
   invocation, and the documented-failing coverage command has no automated detector.
-* **Impact:** regressions in any layer land without detection until someone runs the loop
+- **Impact:** regressions in any layer land without detection until someone runs the loop
   locally. The stale-documentation and dead-test findings demonstrate the class.
-* **Recommendation:** add a [CI](#glossary) workflow running `npm run typecheck`, `npm run lint`,
+- **Recommendation:** add a [CI](#glossary) workflow running `npm run typecheck`, `npm run lint`,
   `prettier --check`, `npm test`, and `npm run build` on push and pull request, with the
   coverage command allowed to fail only until REC-001 closes.
-* **Method:** a pushed commit produces a green run for the full loop on the platform.
-* **Verified:** yes - absence verified by full file census
-* **Confidence:** HIGH - no [CI](#glossary) config exists anywhere in the tracked tree
-* **Mitigating factors:** the manual loop is unusually well documented, and the bump script
+- **Method:** a pushed commit produces a green run for the full loop on the platform.
+- **Verified:** yes - absence verified by full file census
+- **Confidence:** HIGH - no [CI](#glossary) config exists anywhere in the tracked tree
+- **Mitigating factors:** the manual loop is unusually well documented, and the bump script
   embeds a build step
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-025, EVD-031, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-025, EVD-031, `Inspected`
 
 ### FND-INF-002: Service worker can serve stale assets after redeploys
 
-* **Pillar:** Infrastructure & [CI/CD](#glossary)
-* **Severity:** Medium
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - deployment-freshness defect
-* **Status:** Open
-* **Change:** New
-* **Targets:** `public/js/sw.js`, `vite.config.ts`, `src/main.tsx:10-17`
-* **Basis:** cache-first asset strategies require content-addressed names or a versioned cache
+- **Pillar:** Infrastructure & [CI/CD](#glossary)
+- **Severity:** Medium
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - deployment-freshness defect
+- **Status:** Open
+- **Change:** New
+- **Targets:** `public/js/sw.js`, `vite.config.ts`, `src/main.tsx:10-17`
+- **Basis:** cache-first asset strategies require content-addressed names or a versioned cache
   to stay coherent
-* **Absence:** No documented rationale - `DEPLOYMENT.md` mentions the [PWA](#glossary) behavior but not the
+- **Absence:** No documented rationale - `DEPLOYMENT.md` mentions the [PWA](#glossary) behavior but not the
   staleness interaction
-* **Description:** the service worker caches navigations network-first but answers all other
+- **Description:** the service worker caches navigations network-first but answers all other
   same-origin GET requests cache-first under the fixed name `dosound-tracker-cache-v1`, while
   the Vite build emits deterministic hashless filenames (`assets/[name].js`). A redeployed
   build produces the same [URLs](#glossary) with new content, but returning clients continue to receive the
   cached previous bundle. The cache name is not derived from `__APP_VERSION__`.
-* **Impact:** web users can run a stale application indefinitely after an update, and an updated
+- **Impact:** web users can run a stale application indefinitely after an update, and an updated
   `index.html` (network-first) can pair with an old `main.js`, producing version skew.
-* **Recommendation:** derive the cache name from the app version or build hash, and switch the
+- **Recommendation:** derive the cache name from the app version or build hash, and switch the
   asset branch to network-first with cache fallback, or emit hashed names for the web build
   only while keeping deterministic names for Electron packaging.
-* **Method:** deploy a rebuilt bundle and observe the client fetch the new `main.js` without
+- **Method:** deploy a rebuilt bundle and observe the client fetch the new `main.js` without
   manual cache clearing.
-* **Verified:** yes - worker logic and build config compared directly, runtime not executed
-* **Confidence:** MEDIUM - the reasoning follows the caching semantics exactly, but service
+- **Verified:** yes - worker logic and build config compared directly, runtime not executed
+- **Confidence:** MEDIUM - the reasoning follows the caching semantics exactly, but service
   worker behavior was not observed live
-* **Mitigating factors:** navigations are network-first so [HTML](#glossary) updates propagate, and Electron
+- **Mitigating factors:** navigations are network-first so [HTML](#glossary) updates propagate, and Electron
   builds bypass the service worker entirely
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-011, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-011, `Inspected`
 
 ### FND-INF-003: Desktop artifacts are distributed unsigned
 
-* **Pillar:** Infrastructure & [CI/CD](#glossary)
-* **Severity:** Low
-* **Type:** Observation
-* **Security:** [N/A](#glossary) - distribution-integrity observation, partially mitigated by [HTTPS](#glossary) hosting
+- **Pillar:** Infrastructure & [CI/CD](#glossary)
+- **Severity:** Low
+- **Type:** Observation
+- **Security:** [N/A](#glossary) - distribution-integrity observation, partially mitigated by [HTTPS](#glossary) hosting
   disclosure
-* **Status:** Open
-* **Change:** New
-* **Targets:** `package.json` electron-builder config, `README.md` downloads section
-* **Basis:** platform conventions expect signed installers for distributed desktop software
-* **Absence:** Deliberate - recorded decision - the README discloses unsigned binaries to users
-* **Description:** no signing identity, certificate, or notarization configuration exists in
+- **Status:** Open
+- **Change:** New
+- **Targets:** `package.json` electron-builder config, `README.md` downloads section
+- **Basis:** platform conventions expect signed installers for distributed desktop software
+- **Absence:** Deliberate - recorded decision - the README discloses unsigned binaries to users
+- **Description:** no signing identity, certificate, or notarization configuration exists in
   the electron-builder block, and the README tells macOS users the binaries are not
   code-signed and how to proceed. No git tag or checksum publication anchors a released
   artifact to a revision.
-* **Impact:** users cannot verify artifact provenance beyond transport trust to the hosting
+- **Impact:** users cannot verify artifact provenance beyond transport trust to the hosting
   site, and Gatekeeper/SmartScreen warnings train users to bypass security prompts.
-* **Recommendation:** when distribution volume justifies it, add macOS signing plus
+- **Recommendation:** when distribution volume justifies it, add macOS signing plus
   notarization and Windows signing. In the interim, publish SHA-256 checksums per release on
   the download page.
-* **Method:** `codesign -dv` or equivalent verifies a signature, or a checksum file matches the
+- **Method:** `codesign -dv` or equivalent verifies a signature, or a checksum file matches the
   downloaded artifact.
-* **Verified:** yes - config and README inspected
-* **Confidence:** HIGH - absence of signing config is verifiable and the README confirms it
-* **Mitigating factors:** distribution is a hobbyist-scale direct-download channel over [HTTPS](#glossary),
+- **Verified:** yes - config and README inspected
+- **Confidence:** HIGH - absence of signing config is verifiable and the README confirms it
+- **Mitigating factors:** distribution is a hobbyist-scale direct-download channel over [HTTPS](#glossary),
   and the unsigned status is honestly disclosed
-* **Exploitability:** [N/A](#glossary) - not network-facing code, distribution integrity observation only
-* **Evidence:** EVD-033, EVD-004, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not network-facing code, distribution integrity observation only
+- **Evidence:** EVD-033, EVD-004, `Inspected`
 
 ### FND-AIP-001: AI provenance is disclosed but per-change compliance is unmeasurable
 
-* **Pillar:** AI Provenance & Code Origin
-* **Severity:** Low
-* **Type:** Observation
-* **Security:** [N/A](#glossary) - provenance fact
-* **Status:** Open
-* **Change:** New
-* **Targets:** `README.md:38`, `docs/prompt/`, `docs/COPYRIGHTS.md`, git history
-* **Basis:** `docs/COPYRIGHTS.md` requires verifying the originality of AI-generated code and
+- **Pillar:** AI Provenance & Code Origin
+- **Severity:** Low
+- **Type:** Observation
+- **Security:** [N/A](#glossary) - provenance fact
+- **Status:** Open
+- **Change:** New
+- **Targets:** `README.md:38`, `docs/prompt/`, `docs/COPYRIGHTS.md`, git history
+- **Basis:** `docs/COPYRIGHTS.md` requires verifying the originality of AI-generated code and
   never accepting output that resembles existing projects
-* **Absence:** No documented rationale - no record explains the absence of per-change disclosure
-* **Description:** the README states the project was made using Windsurf and GPT 5.1,
+- **Absence:** No documented rationale - no record explains the absence of per-change disclosure
+- **Description:** the README states the project was made using Windsurf and GPT 5.1,
   `docs/prompt/1.0-1.2/` retains the per-task prompts, and ten commits carry tool-attribution
   trailers among 705. No artifact maps which specific files or hunks were generated, so the
   originality-verification requirement cannot be checked per change.
-* **Impact:** provenance is knowable at project level but not at file level, and the
+- **Impact:** provenance is knowable at project level but not at file level, and the
   originality rule's enforcement cannot be demonstrated.
-* **Recommendation:** adopt a per-change disclosure convention (commit trailer or plan-doc note
+- **Recommendation:** adopt a per-change disclosure convention (commit trailer or plan-doc note
   naming the tool when substantial generated code lands) so future audits can scope it.
-* **Method:** new commits that introduce generated code carry a disclosure trailer or doc
+- **Method:** new commits that introduce generated code carry a disclosure trailer or doc
   reference.
-* **Verified:** yes - attribution text, prompt logs, and trailer census inspected
-* **Confidence:** MEDIUM - the disclosures are verified. Whether undisclosed assistance exists
+- **Verified:** yes - attribution text, prompt logs, and trailer census inspected
+- **Confidence:** MEDIUM - the disclosures are verified. Whether undisclosed assistance exists
   cannot be determined from source
-* **Mitigating factors:** prompt logs and per-version change and plan documents preserve more
+- **Mitigating factors:** prompt logs and per-version change and plan documents preserve more
   provenance context than most projects keep, and no style-based authorship inference was used
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-003, EVD-032, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-003, EVD-032, `Inspected`
 
 ### FND-CPR-001: License policy whitelist is narrower than the resolved dependency set
 
-* **Pillar:** Copyrights & Originality
-* **Severity:** Low
-* **Type:** Concern
-* **Security:** [N/A](#glossary) - license-policy conformance finding
-* **Status:** Open
-* **Change:** New
-* **Targets:** `docs/COPYRIGHTS.md`, `package-lock.json`
-* **Basis:** the policy permits [MIT](#glossary), Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, and Boost, and
+- **Pillar:** Copyrights & Originality
+- **Severity:** Low
+- **Type:** Concern
+- **Security:** [N/A](#glossary) - license-policy conformance finding
+- **Status:** Open
+- **Change:** New
+- **Targets:** `docs/COPYRIGHTS.md`, `package-lock.json`
+- **Basis:** the policy permits [MIT](#glossary), Apache-2.0, BSD-2-Clause, BSD-3-Clause, ISC, and Boost, and
   requires verifying license compatibility before use
-* **Absence:** No documented rationale - no record explains the whitelist and lockfile mismatch
-* **Description:** the lockfile resolves 590 packages of which 368 declare a license field:
+- **Absence:** No documented rationale - no record explains the whitelist and lockfile mismatch
+- **Description:** the lockfile resolves 590 packages of which 368 declare a license field:
   [MIT](#glossary) 270, ISC 41, BSD-3-Clause 20, Apache-2.0 12, BlueOak-1.0.0 9, BSD-2-Clause 8, MIT-0 2,
   CC0-1.0 1, WTFPL 1, WTFPL OR ISC 1, (MIT OR CC0-1.0) 1, (WTFPL OR MIT) 1, CC-BY-4.0 1.
   BlueOak-1.0.0, CC-BY-4.0, WTFPL, MIT-0, and CC0-1.0 are outside the permitted list, and 222
   components declare no license at all. All are development-time or tooling packages. The five
   runtime dependencies themselves carry [MIT](#glossary) or undetermined declarations.
-* **Impact:** the project cannot demonstrate per-component conformance to its own license
+- **Impact:** the project cannot demonstrate per-component conformance to its own license
   policy, and a reviewer cannot confirm whitelist coverage without repeating this inspection.
-* **Recommendation:** either extend the permitted list with the observed permissive classes or
+- **Recommendation:** either extend the permitted list with the observed permissive classes or
   add a `THIRD-PARTY-NOTICES`-style inventory generated at release time that records each
   resolved license.
-* **Method:** a committed inventory or an updated policy enumerates every resolved license
+- **Method:** a committed inventory or an updated policy enumerates every resolved license
   class.
-* **Verified:** yes - license fields extracted from the lockfile directly
-* **Confidence:** HIGH for declared fields, LOW for the 222 undetermined entries whose licenses
+- **Verified:** yes - license fields extracted from the lockfile directly
+- **Confidence:** HIGH for declared fields, LOW for the 222 undetermined entries whose licenses
   are not recorded in the lockfile
-* **Mitigating factors:** no copyleft class exists anywhere in the resolved set, and all
+- **Mitigating factors:** no copyleft class exists anywhere in the resolved set, and all
   out-of-whitelist classes are permissive or attribution-style licenses in development-time
   dependencies
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-006, EVD-007, EVD-024, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-006, EVD-007, EVD-024, `Inspected`
 
 ### FND-CPR-002: ZX0 third-party attribution is absent from the central notice file
 
-* **Pillar:** Copyrights & Originality
-* **Severity:** Low
-* **Type:** Observation
-* **Security:** [N/A](#glossary) - attribution-consistency finding
-* **Status:** Open
-* **Change:** New
-* **Targets:** `src/utils/zx0.ts:1-12`, `docs/COPYRIGHTS.md`
-* **Basis:** the copyright policy requires attributing third-party assets in `COPYRIGHTS.md` or
+- **Pillar:** Copyrights & Originality
+- **Severity:** Low
+- **Type:** Observation
+- **Security:** [N/A](#glossary) - attribution-consistency finding
+- **Status:** Open
+- **Change:** New
+- **Targets:** `src/utils/zx0.ts:1-12`, `docs/COPYRIGHTS.md`
+- **Basis:** the copyright policy requires attributing third-party assets in `COPYRIGHTS.md` or
   an `ATTRIBUTIONS.md` file
-* **Absence:** Undetermined - whether the central-file omission is deliberate is unrecorded
-* **Description:** `src/utils/zx0.ts` is a TypeScript port of Einar Saukas's Salvador ZX0
+- **Absence:** Undetermined - whether the central-file omission is deliberate is unrecorded
+- **Description:** `src/utils/zx0.ts` is a TypeScript port of Einar Saukas's Salvador ZX0
   implementation under BSD-3-Clause, with copyright notice and source [URL](#glossary) preserved in the
   file header, and the change record documents the license check. `docs/COPYRIGHTS.md` does
   not list the component.
-* **Impact:** the policy's stated attribution location does not enumerate the project's only
+- **Impact:** the policy's stated attribution location does not enumerate the project's only
   vendored component, so a reader consulting the central file gets an incomplete picture.
-* **Recommendation:** add the [ZX0](#glossary) entry (author, license, source [URL](#glossary)) to `docs/COPYRIGHTS.md`.
-* **Method:** the component appears in the attribution file at the next documentation pass.
-* **Verified:** yes - header text and policy file compared directly
-* **Confidence:** HIGH - both documents are directly citable
-* **Mitigating factors:** the in-file notice satisfies the BSD-3-Clause retention requirement
+- **Recommendation:** add the [ZX0](#glossary) entry (author, license, source [URL](#glossary)) to `docs/COPYRIGHTS.md`.
+- **Method:** the component appears in the attribution file at the next documentation pass.
+- **Verified:** yes - header text and policy file compared directly
+- **Confidence:** HIGH - both documents are directly citable
+- **Mitigating factors:** the in-file notice satisfies the BSD-3-Clause retention requirement
   on its own, and the port's provenance is documented in the change record
-* **Exploitability:** [N/A](#glossary) - not a security finding
-* **Evidence:** EVD-023, `Inspected`
+- **Exploitability:** [N/A](#glossary) - not a security finding
+- **Evidence:** EVD-023, `Inspected`
 
 ## Technical Debt Register
 
 | Debt    | Item                                                            | Category        | Source      | Cost                                                    | Delay                                                           | Status |
-|---------|-----------------------------------------------------------------|-----------------|-------------|---------------------------------------------------------|-----------------------------------------------------------------|--------|
+| ------- | --------------------------------------------------------------- | --------------- | ----------- | ------------------------------------------------------- | --------------------------------------------------------------- | ------ |
 | TDR-001 | Central orchestrator decomposition                              | Maintainability | FND-ARC-001 | High effort, staged extraction across releases          | Each feature change pays navigation and merge cost in `App.tsx` | Open   |
 | TDR-002 | Core-path test backlog (synth, exports breadth, worker, modals) | Reliability     | FND-CQY-001 | High effort, characterization tests across five areas   | Every audio or export change ships with weak behavioral net     | Open   |
 | TDR-003 | Hand-rolled markdown renderer and sanitizer                     | Security        | FND-SEC-001 | Medium effort, sanitizer tests plus [CSP](#glossary)    | Each new markdown feature must re-derive escaping safety        | Open   |
@@ -1379,65 +1379,65 @@ The project carries a dense, well-maintained standards corpus.
 
 ### TDR-001: Central orchestrator decomposition
 
-* **Category:** Maintainability
-* **Source:** FND-ARC-001
-* **Description:** `App.tsx` holds wiring for roughly twenty hooks plus the song model in 2488
+- **Category:** Maintainability
+- **Source:** FND-ARC-001
+- **Description:** `App.tsx` holds wiring for roughly twenty hooks plus the song model in 2488
   lines. The file's growth rate (2194 documented to 2488 measured) shows the debt is still
   accruing
-* **Cost:** High - several staged extractions with typed hook contracts, spread across
+- **Cost:** High - several staged extractions with typed hook contracts, spread across
   releases. The effort estimate is `INSUFFICIENT INFORMATION` for precise sizing
-* **Delay:** Medium ongoing - every feature touching song state pays navigation and merge cost
-* **Status:** Open
+- **Delay:** Medium ongoing - every feature touching song state pays navigation and merge cost
+- **Status:** Open
 
 ### TDR-002: Core-path test backlog
 
-* **Category:** Reliability
-* **Source:** FND-CQY-001
-* **Description:** the documented 80 percent gate fails, and the thinnest coverage sits on the
+- **Category:** Reliability
+- **Source:** FND-CQY-001
+- **Description:** the documented 80 percent gate fails, and the thinnest coverage sits on the
   highest-risk paths: [YM2149](#glossary) emulation, `SoundDriver` event generation, worker timing math,
   and modal flows
-* **Cost:** High - characterization tests against current behavior, including byte-level export
+- **Cost:** High - characterization tests against current behavior, including byte-level export
   assertions. The precise estimate is `INSUFFICIENT INFORMATION`
-* **Delay:** Medium ongoing - refactor safety and the byte-identical export contract rest on a
+- **Delay:** Medium ongoing - refactor safety and the byte-identical export contract rest on a
   partial net
-* **Status:** Open
+- **Status:** Open
 
 ### TDR-003: Hand-rolled markdown renderer
 
-* **Category:** Security
-* **Source:** FND-SEC-001
-* **Description:** `renderMarkdown` is a bespoke escape-plus-format pipeline feeding
+- **Category:** Security
+- **Source:** FND-SEC-001
+- **Description:** `renderMarkdown` is a bespoke escape-plus-format pipeline feeding
   `dangerouslySetInnerHTML`. Every added syntax feature must re-derive the escaping contract
-* **Cost:** Medium - hostile-fixture tests and a [CSP](#glossary) are cheap. A vetted sanitizer replacement
+- **Cost:** Medium - hostile-fixture tests and a [CSP](#glossary) are cheap. A vetted sanitizer replacement
   is the larger option
-* **Delay:** Low ongoing - the feature set is stable, but each extension carries injection
+- **Delay:** Low ongoing - the feature set is stable, but each extension carries injection
   review cost
-* **Status:** Open
+- **Status:** Open
 
 ### TDR-004: Documentation drift and dead artifacts
 
-* **Category:** Maintainability
-* **Source:** FND-CQY-004
-* **Description:** absolute figures in `ARCHITECTURE.md` and `TESTING.md` lag the code, and a
+- **Category:** Maintainability
+- **Source:** FND-CQY-004
+- **Description:** absolute figures in `ARCHITECTURE.md` and `TESTING.md` lag the code, and a
   stale duplicate test file sits tracked but unexecuted
-* **Cost:** Low - a refresh pass and one deletion
-* **Delay:** Low ongoing - figures will keep drifting unless the update step is proceduralized
-* **Status:** Open
+- **Cost:** Low - a refresh pass and one deletion
+- **Delay:** Low ongoing - figures will keep drifting unless the update step is proceduralized
+- **Status:** Open
 
 ### TDR-005: Verification automation debt
 
-* **Category:** Reliability
-* **Source:** FND-INF-001
-* **Description:** the documented six-step loop has no [CI](#glossary) runner, so conformance depends on
+- **Category:** Reliability
+- **Source:** FND-INF-001
+- **Description:** the documented six-step loop has no [CI](#glossary) runner, so conformance depends on
   discipline alone
-* **Cost:** Medium - one workflow file plus occasional runner maintenance
-* **Delay:** Medium ongoing - each manual-only release carries regression-escape risk
-* **Status:** Open
+- **Cost:** Medium - one workflow file plus occasional runner maintenance
+- **Delay:** Medium ongoing - each manual-only release carries regression-escape risk
+- **Status:** Open
 
 ## Unified Risk Register
 
 | Risk    | Description                                                                | Source      | Impact | Likelihood | Severity | Mitigation                                   |
-|---------|----------------------------------------------------------------------------|-------------|--------|------------|----------|----------------------------------------------|
+| ------- | -------------------------------------------------------------------------- | ----------- | ------ | ---------- | -------- | -------------------------------------------- |
 | RSK-001 | Regressions merge undetected without [CI](#glossary) enforcement           | FND-INF-001 | MEDIUM | MEDIUM     | MEDIUM   | Add CI running the documented loop           |
 | RSK-002 | Redeploys serve stale or skewed web assets                                 | FND-INF-002 | MEDIUM | MEDIUM     | MEDIUM   | Version the cache name, network-first assets |
 | RSK-003 | Maintainer unavailability halts all delivery                               | FND-ARC-002 | HIGH   | LOW        | MEDIUM   | Name a backup owner or fork path             |
@@ -1453,218 +1453,218 @@ The project carries a dense, well-maintained standards corpus.
 
 ### RSK-001: Regressions merge undetected without CI enforcement
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - plausible under normal operation, the documented failing coverage
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - plausible under normal operation, the documented failing coverage
   command already demonstrates one unenforced gate
-* **Residual:** LOW after a mandatory PR-time workflow
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** every quality gate is manual, so lint errors, type errors, test failures,
+- **Residual:** LOW after a mandatory PR-time workflow
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** every quality gate is manual, so lint errors, type errors, test failures,
   and coverage regressions can land unnoticed between releases
-* **Impact:** contained outages or defect releases discovered only at next manual run
-* **Trigger:** a change lands without the author running the full loop
-* **Controls:** documented zero-warning bar, bump script embeds a build
-* **Mitigation:** REC-002 adds the [CI](#glossary) workflow
-* **Closure:** a green workflow run exists for a pushed change
-* **Source:** FND-INF-001
-* **Confidence:** HIGH - absence verified by census
+- **Impact:** contained outages or defect releases discovered only at next manual run
+- **Trigger:** a change lands without the author running the full loop
+- **Controls:** documented zero-warning bar, bump script embeds a build
+- **Mitigation:** REC-002 adds the [CI](#glossary) workflow
+- **Closure:** a green workflow run exists for a pushed change
+- **Source:** FND-INF-001
+- **Confidence:** HIGH - absence verified by census
 
 ### RSK-002: Redeploys serve stale or skewed web assets
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - occurs on any redeploy for users with a warm cache
-* **Residual:** LOW after versioned cache naming or network-first assets
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** the cache-first asset strategy plus hashless filenames means a returning
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - occurs on any redeploy for users with a warm cache
+- **Residual:** LOW after versioned cache naming or network-first assets
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** the cache-first asset strategy plus hashless filenames means a returning
   client can indefinitely run a previous bundle, and a fresh `index.html` can pair with an old
   script
-* **Impact:** users run outdated or internally skewed application builds
-* **Trigger:** a site redeploy reaches a client that has the asset cached
-* **Controls:** navigations are network-first. No asset-version invalidation exists
-* **Mitigation:** REC-003 versions the cache or reorders the strategy
-* **Closure:** a redeploy observed to ship the new bundle to a warm client
-* **Source:** FND-INF-002
-* **Confidence:** MEDIUM - semantics reasoned statically, no live service-worker run
+- **Impact:** users run outdated or internally skewed application builds
+- **Trigger:** a site redeploy reaches a client that has the asset cached
+- **Controls:** navigations are network-first. No asset-version invalidation exists
+- **Mitigation:** REC-003 versions the cache or reorders the strategy
+- **Closure:** a redeploy observed to ship the new bundle to a warm client
+- **Source:** FND-INF-002
+- **Confidence:** MEDIUM - semantics reasoned statically, no live service-worker run
 
 ### RSK-003: Maintainer unavailability halts all delivery
 
-* **Severity:** MEDIUM
-* **Likelihood:** LOW - requires the single maintainer to become unavailable
-* **Residual:** MEDIUM - a named owner reduces but does not remove the dependency
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** 100 percent of commits come from one author, so review, release, and
+- **Severity:** MEDIUM
+- **Likelihood:** LOW - requires the single maintainer to become unavailable
+- **Residual:** MEDIUM - a named owner reduces but does not remove the dependency
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** 100 percent of commits come from one author, so review, release, and
   incident response have one path
-* **Impact:** major delivery halt until a fork or handoff
-* **Trigger:** maintainer unavailability
-* **Controls:** thorough documentation lowers the handoff threshold
-* **Mitigation:** REC-012 names a continuity owner
-* **Closure:** a documented second owner or fork path exists
-* **Source:** FND-ARC-002
-* **Confidence:** HIGH - complete author census
+- **Impact:** major delivery halt until a fork or handoff
+- **Trigger:** maintainer unavailability
+- **Controls:** thorough documentation lowers the handoff threshold
+- **Mitigation:** REC-012 names a continuity owner
+- **Closure:** a documented second owner or fork path exists
+- **Source:** FND-ARC-002
+- **Confidence:** HIGH - complete author census
 
 ### RSK-004: Orchestrator growth compounds change defects
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - the file grew 294 lines past its documented size in one interval
-* **Residual:** MEDIUM - decomposition reduces blast radius gradually
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** concentrated wiring makes each state-shape change traverse the largest file
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - the file grew 294 lines past its documented size in one interval
+- **Residual:** MEDIUM - decomposition reduces blast radius gradually
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** concentrated wiring makes each state-shape change traverse the largest file
   in the codebase, raising the chance of partial edits
-* **Impact:** contained defects in wiring, playback, or modal flow
-* **Trigger:** any cross-hook change
-* **Controls:** documented trade-off, existing unit tests
-* **Mitigation:** REC-007 stages the extraction
-* **Closure:** wiring groups extracted behind typed contracts
-* **Source:** FND-ARC-001
-* **Confidence:** HIGH - measured directly
+- **Impact:** contained defects in wiring, playback, or modal flow
+- **Trigger:** any cross-hook change
+- **Controls:** documented trade-off, existing unit tests
+- **Mitigation:** REC-007 stages the extraction
+- **Closure:** wiring groups extracted behind typed contracts
+- **Source:** FND-ARC-001
+- **Confidence:** HIGH - measured directly
 
 ### RSK-005: Injected markup renders through the markdown sink
 
-* **Severity:** MEDIUM
-* **Likelihood:** LOW - inputs are bundled first-party files, so a content-compromise
+- **Severity:** MEDIUM
+- **Likelihood:** LOW - inputs are bundled first-party files, so a content-compromise
   precondition applies
-* **Residual:** LOW after [CSP](#glossary) plus tests, absent after a vetted sanitizer
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** a gap in the custom escape pipeline could let crafted markdown emit active
+- **Residual:** LOW after [CSP](#glossary) plus tests, absent after a vetted sanitizer
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** a gap in the custom escape pipeline could let crafted markdown emit active
   markup into `dangerouslySetInnerHTML` sinks
-* **Impact:** markup injection in the renderer, script execution bounded by context isolation
-* **Trigger:** hostile or malformed bundled or future user-supplied markdown
-* **Controls:** [HTML](#glossary) escaping before formatting, `http(s)`-only links, `noreferrer`, context
+- **Impact:** markup injection in the renderer, script execution bounded by context isolation
+- **Trigger:** hostile or malformed bundled or future user-supplied markdown
+- **Controls:** [HTML](#glossary) escaping before formatting, `http(s)`-only links, `noreferrer`, context
   isolation, no `nodeIntegration`
-* **Mitigation:** REC-008 adds [CSP](#glossary) and adversarial tests
-* **Closure:** hostile-fixture tests pass and a [CSP](#glossary) is present
-* **Source:** FND-SEC-001
-* **Confidence:** MEDIUM - static reasoning only, sink inputs could broaden
+- **Mitigation:** REC-008 adds [CSP](#glossary) and adversarial tests
+- **Closure:** hostile-fixture tests pass and a [CSP](#glossary) is present
+- **Source:** FND-SEC-001
+- **Confidence:** MEDIUM - static reasoning only, sink inputs could broaden
 
 ### RSK-006: UI regressions reach releases without E2E checks
 
-* **Severity:** MEDIUM
-* **Likelihood:** MEDIUM - modal and flow changes are untested end to end
-* **Residual:** LOW after a maintained smoke suite
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** configured-but-empty Playwright harness leaves the full wiring path
+- **Severity:** MEDIUM
+- **Likelihood:** MEDIUM - modal and flow changes are untested end to end
+- **Residual:** LOW after a maintained smoke suite
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** configured-but-empty Playwright harness leaves the full wiring path
   (modals, file dialogs, playback, download) unverified
-* **Impact:** user-visible regressions escape between manual checks
-* **Trigger:** a [UI](#glossary) or wiring change between manual verifications
-* **Controls:** component and hook unit tests cover fragments
-* **Mitigation:** REC-006 adds the smoke suite
-* **Closure:** `playwright test` runs specs green in [CI](#glossary)
-* **Source:** FND-CQY-003
-* **Confidence:** HIGH - absence verified by census
+- **Impact:** user-visible regressions escape between manual checks
+- **Trigger:** a [UI](#glossary) or wiring change between manual verifications
+- **Controls:** component and hook unit tests cover fragments
+- **Mitigation:** REC-006 adds the smoke suite
+- **Closure:** `playwright test` runs specs green in [CI](#glossary)
+- **Source:** FND-CQY-003
+- **Confidence:** HIGH - absence verified by census
 
 ### RSK-007: License-policy non-conformance surfaces late
 
-* **Severity:** LOW
-* **Likelihood:** MEDIUM - the deviation already exists in the lockfile
-* **Residual:** LOW after an inventory or policy update
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** resolved licenses include classes outside the permitted whitelist and 222
+- **Severity:** LOW
+- **Likelihood:** MEDIUM - the deviation already exists in the lockfile
+- **Residual:** LOW after an inventory or policy update
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** resolved licenses include classes outside the permitted whitelist and 222
   components are undetermined, so the project cannot currently demonstrate policy conformance
-* **Impact:** limited - all observed classes are permissive and dev-scoped, but undemonstrated
+- **Impact:** limited - all observed classes are permissive and dev-scoped, but undemonstrated
   compliance is a review gap
-* **Trigger:** a compliance review or a new non-whitelisted direct dependency
-* **Controls:** the policy document itself
-* **Mitigation:** REC-010 generates the notices inventory
-* **Closure:** a committed inventory enumerates every resolved license
-* **Source:** FND-CPR-001
-* **Confidence:** HIGH for declared classes, LOW for undetermined entries
+- **Trigger:** a compliance review or a new non-whitelisted direct dependency
+- **Controls:** the policy document itself
+- **Mitigation:** REC-010 generates the notices inventory
+- **Closure:** a committed inventory enumerates every resolved license
+- **Source:** FND-CPR-001
+- **Confidence:** HIGH for declared classes, LOW for undetermined entries
 
 ### RSK-008: Dead test file implies coverage that does not run
 
-* **Severity:** LOW
-* **Likelihood:** LOW - cosmetic unless someone audits MAX coverage by filename
-* **Residual:** NONE after deletion
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** a tracked but undiscovered test file suggests test depth the runner never
+- **Severity:** LOW
+- **Likelihood:** LOW - cosmetic unless someone audits MAX coverage by filename
+- **Residual:** NONE after deletion
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** a tracked but undiscovered test file suggests test depth the runner never
   executes
-* **Impact:** cosmetic and review-confusion cost
-* **Trigger:** a reader counts test files rather than executed tests
-* **Controls:** the canonical `.ts` twin carries stronger assertions
-* **Mitigation:** REC-005 removes or merges it
-* **Closure:** file removed or merged
-* **Source:** FND-CQY-002
-* **Confidence:** HIGH - include pattern is mechanical
+- **Impact:** cosmetic and review-confusion cost
+- **Trigger:** a reader counts test files rather than executed tests
+- **Controls:** the canonical `.ts` twin carries stronger assertions
+- **Mitigation:** REC-005 removes or merges it
+- **Closure:** file removed or merged
+- **Source:** FND-CQY-002
+- **Confidence:** HIGH - include pattern is mechanical
 
 ### RSK-009: Tampered or mismatched binaries reach users unverified
 
-* **Severity:** LOW
-* **Likelihood:** LOW - requires hosting compromise or artifact mix-up
-* **Residual:** LOW after checksum publication, lower after signing
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** unsigned installers with no published checksums give users no independent
+- **Severity:** LOW
+- **Likelihood:** LOW - requires hosting compromise or artifact mix-up
+- **Residual:** LOW after checksum publication, lower after signing
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** unsigned installers with no published checksums give users no independent
   provenance check
-* **Impact:** a compromised artifact is indistinguishable to a downloader
-* **Trigger:** hosting compromise or mistaken artifact publication
-* **Controls:** [HTTPS](#glossary) transport, honest unsigned-status disclosure
-* **Mitigation:** REC-013 publishes checksums, then signing when justified
-* **Closure:** published checksums match downloads
-* **Source:** FND-INF-003
-* **Confidence:** HIGH - absence of signing config is verified
+- **Impact:** a compromised artifact is indistinguishable to a downloader
+- **Trigger:** hosting compromise or mistaken artifact publication
+- **Controls:** [HTTPS](#glossary) transport, honest unsigned-status disclosure
+- **Mitigation:** REC-013 publishes checksums, then signing when justified
+- **Closure:** published checksums match downloads
+- **Source:** FND-INF-003
+- **Confidence:** HIGH - absence of signing config is verified
 
 ### RSK-010: Stale documented figures mislead change planning
 
-* **Severity:** LOW
-* **Likelihood:** MEDIUM - drift already observed and the docs carry absolute figures
-* **Residual:** LOW after a per-release refresh step
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** version numbers, file sizes, and gap lists in governing docs lag the code,
+- **Severity:** LOW
+- **Likelihood:** MEDIUM - drift already observed and the docs carry absolute figures
+- **Residual:** LOW after a per-release refresh step
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** version numbers, file sizes, and gap lists in governing docs lag the code,
   feeding wrong inputs into planning
-* **Impact:** limited planning distortion
-* **Trigger:** any change sized or scoped from the stale figures
-* **Controls:** the docs themselves flag their own drift classes
-* **Mitigation:** REC-004 adds a per-release figure refresh
-* **Closure:** documented figures match measurement
-* **Source:** FND-CQY-004
-* **Confidence:** HIGH - direct comparison
+- **Impact:** limited planning distortion
+- **Trigger:** any change sized or scoped from the stale figures
+- **Controls:** the docs themselves flag their own drift classes
+- **Mitigation:** REC-004 adds a per-release figure refresh
+- **Closure:** documented figures match measurement
+- **Source:** FND-CQY-004
+- **Confidence:** HIGH - direct comparison
 
 ### RSK-011: Device permission granted beyond the intended origin
 
-* **Severity:** LOW
-* **Likelihood:** LOW - packaged content is first-party only, the gap matters in dev or
+- **Severity:** LOW
+- **Likelihood:** LOW - packaged content is first-party only, the gap matters in dev or
   subframe scenarios
-* **Residual:** NONE after origin scoping
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** the permission handler allows [MIDI](#glossary) and Sysex for any requesting frame
+- **Residual:** NONE after origin scoping
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** the permission handler allows [MIDI](#glossary) and Sysex for any requesting frame
   without checking the requester
-* **Impact:** unintended [MIDI](#glossary) access if non-local content ever loads
-* **Trigger:** dev-mode [URL](#glossary) change or a future subframe
-* **Controls:** default-deny for all other permissions, first-party-only content
-* **Mitigation:** REC-009 scopes the grant
-* **Closure:** non-matching origin receives denial
-* **Source:** FND-SEC-002
-* **Confidence:** HIGH - six lines of decision logic
+- **Impact:** unintended [MIDI](#glossary) access if non-local content ever loads
+- **Trigger:** dev-mode [URL](#glossary) change or a future subframe
+- **Controls:** default-deny for all other permissions, first-party-only content
+- **Mitigation:** REC-009 scopes the grant
+- **Closure:** non-matching origin receives denial
+- **Source:** FND-SEC-002
+- **Confidence:** HIGH - six lines of decision logic
 
 ### RSK-012: Undisclosed generated code lands without trace
 
-* **Severity:** LOW
-* **Likelihood:** LOW - cannot be measured, prompt-log practice suggests otherwise
-* **Residual:** LOW after a disclosure convention
-* **Status:** Open
-* **Owner:** NOT SPECIFIED
-* **Description:** project-level [AI](#glossary) disclosure exists, but no per-change provenance marker
+- **Severity:** LOW
+- **Likelihood:** LOW - cannot be measured, prompt-log practice suggests otherwise
+- **Residual:** LOW after a disclosure convention
+- **Status:** Open
+- **Owner:** NOT SPECIFIED
+- **Description:** project-level [AI](#glossary) disclosure exists, but no per-change provenance marker
   lets a later audit scope generated content
-* **Impact:** limited traceability for originality verification
-* **Trigger:** a generated change lands without a trailer or doc note
-* **Controls:** README disclosure, prompt logs, originality policy
-* **Mitigation:** REC-014 adds the convention
-* **Closure:** generated changes carry disclosure markers
-* **Source:** FND-AIP-001
-* **Confidence:** LOW - undisclosed assistance is unmeasurable by definition
+- **Impact:** limited traceability for originality verification
+- **Trigger:** a generated change lands without a trailer or doc note
+- **Controls:** README disclosure, prompt logs, originality policy
+- **Mitigation:** REC-014 adds the convention
+- **Closure:** generated changes carry disclosure markers
+- **Source:** FND-AIP-001
+- **Confidence:** LOW - undisclosed assistance is unmeasurable by definition
 
 ## Actionable Remediation Roadmap
 
 | Rec     | Priority        | Finding     | Recommendation                                                                                                    | Impact | Effort | Complexity | Verification                                                                             |
-|---------|-----------------|-------------|-------------------------------------------------------------------------------------------------------------------|--------|--------|------------|------------------------------------------------------------------------------------------|
+| ------- | --------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- | ------ | ------ | ---------- | ---------------------------------------------------------------------------------------- |
 | REC-001 | [P2](#glossary) | FND-CQY-001 | Close the coverage gap on synth, exports, worker, and modal paths, or ratchet the threshold to the measured value | High   | High   | Medium     | `npm run test:coverage` exits 0                                                          |
 | REC-002 | [P2](#glossary) | FND-INF-001 | Add a [CI](#glossary) workflow running typecheck, lint, format check, unit tests, and build on push and PR        | High   | Medium | Low        | A pushed change produces a green run                                                     |
 | REC-003 | [P2](#glossary) | FND-INF-002 | Derive the service-worker cache name from the app version and serve assets network-first                          | Medium | Low    | Low        | A redeploy ships the new bundle to warm clients                                          |
@@ -1682,177 +1682,177 @@ The project carries a dense, well-maintained standards corpus.
 
 ### REC-001: Close the coverage gap on the highest-risk paths
 
-* **Priority:** [P2](#glossary)
-* **Finding:** FND-CQY-001
-* **Description:** add characterization tests for `SoundDriver` event generation, worker
+- **Priority:** [P2](#glossary)
+- **Finding:** FND-CQY-001
+- **Description:** add characterization tests for `SoundDriver` event generation, worker
   catch-up math, each export encoder's byte layout, and modal flows, or set the thresholds to
   the measured value plus a ratchet so the gate is green now and tightens over time
-* **Impact:** the project's own quality gate becomes honest and the riskiest code gains a net
-* **Effort:** High - five coverage areas, byte-level assertions
-* **Complexity:** Medium - isolated modules, golden fixtures already exist
-* **Verification:** `npm run test:coverage` exits 0
+- **Impact:** the project's own quality gate becomes honest and the riskiest code gains a net
+- **Effort:** High - five coverage areas, byte-level assertions
+- **Complexity:** Medium - isolated modules, golden fixtures already exist
+- **Verification:** `npm run test:coverage` exits 0
 
 ### REC-002: Add a CI workflow for the documented loop
 
-* **Priority:** [P2](#glossary)
-* **Finding:** FND-INF-001
-* **Description:** create a push-and-PR workflow running `npm run typecheck`, `npm run lint`,
+- **Priority:** [P2](#glossary)
+- **Finding:** FND-INF-001
+- **Description:** create a push-and-PR workflow running `npm run typecheck`, `npm run lint`,
   `prettier --check`, `npm test`, and `npm run build`, with coverage allowed to fail until
   REC-001 closes
-* **Impact:** every future change gets an enforced gate instead of relying on discipline
-* **Effort:** Medium - one workflow file plus minor iteration
-* **Complexity:** Low - standard [CI](#glossary) for a Node project
-* **Verification:** a pushed commit produces a green pipeline run
+- **Impact:** every future change gets an enforced gate instead of relying on discipline
+- **Effort:** Medium - one workflow file plus minor iteration
+- **Complexity:** Low - standard [CI](#glossary) for a Node project
+- **Verification:** a pushed commit produces a green pipeline run
 
 ### REC-003: Version the service-worker cache and reorder asset strategy
 
-* **Priority:** [P2](#glossary)
-* **Finding:** FND-INF-002
-* **Description:** bind `CACHE_NAME` to `__APP_VERSION__` or a build hash so `activate` purges
+- **Priority:** [P2](#glossary)
+- **Finding:** FND-INF-002
+- **Description:** bind `CACHE_NAME` to `__APP_VERSION__` or a build hash so `activate` purges
   the old cache, and switch non-navigation requests to network-first with cache fallback, or
   emit hashed asset names for the web build while keeping deterministic names for Electron
-* **Impact:** redeploys reach users reliably instead of serving stale bundles
-* **Effort:** Low - a few lines in `sw.js` or a split build config
-* **Complexity:** Low - self-contained worker change
-* **Verification:** a redeployed build reaches a warm client without manual cache clearing
+- **Impact:** redeploys reach users reliably instead of serving stale bundles
+- **Effort:** Low - a few lines in `sw.js` or a split build config
+- **Complexity:** Low - self-contained worker change
+- **Verification:** a redeployed build reaches a warm client without manual cache clearing
 
 ### REC-004: Refresh documented figures and add a per-release pass
 
-* **Priority:** [P2](#glossary)
-* **Finding:** FND-CQY-004
-* **Description:** correct the Electron version, App.tsx size, hook count, and the stale gap
+- **Priority:** [P2](#glossary)
+- **Finding:** FND-CQY-004
+- **Description:** correct the Electron version, App.tsx size, hook count, and the stale gap
   list in `ARCHITECTURE.md` and `TESTING.md`, and add a doc-figure refresh line to the bump
   procedure
-* **Impact:** planning inputs match reality
-* **Effort:** Low - one editing pass plus a checklist line
-* **Complexity:** Low - documentation only
-* **Verification:** cited figures match measurement at the next release
+- **Impact:** planning inputs match reality
+- **Effort:** Low - one editing pass plus a checklist line
+- **Complexity:** Low - documentation only
+- **Verification:** cited figures match measurement at the next release
 
 ### REC-005: Remove the undiscovered duplicate test file
 
-* **Priority:** [P2](#glossary)
-* **Finding:** FND-CQY-002
-* **Description:** delete `test/utils/exportMax.test` or merge any unique assertions into
+- **Priority:** [P2](#glossary)
+- **Finding:** FND-CQY-002
+- **Description:** delete `test/utils/exportMax.test` or merge any unique assertions into
   `exportMax.test.ts`
-* **Impact:** removes a false coverage signal
-* **Effort:** Low - one deletion
-* **Complexity:** Low - none
-* **Verification:** `git ls-files test/` no longer lists the stray name
+- **Impact:** removes a false coverage signal
+- **Effort:** Low - one deletion
+- **Complexity:** Low - none
+- **Verification:** `git ls-files test/` no longer lists the stray name
 
 ### REC-006: Add a Playwright smoke suite
 
-* **Priority:** [P3](#glossary)
-* **Finding:** FND-CQY-003
-* **Description:** implement the documented flows (load, open a song from the repository,
+- **Priority:** [P3](#glossary)
+- **Finding:** FND-CQY-003
+- **Description:** implement the documented flows (load, open a song from the repository,
   start and stop playback, trigger one export) as specs under `e2e/` and wire them into [CI](#glossary)
   after REC-002
-* **Impact:** integration regressions gain an automated detector
-* **Effort:** Medium - a handful of specs against jsdom-free browser flows
-* **Complexity:** Low - harness is already configured
-* **Verification:** `npx playwright test --project=chromium` runs green
+- **Impact:** integration regressions gain an automated detector
+- **Effort:** Medium - a handful of specs against jsdom-free browser flows
+- **Complexity:** Low - harness is already configured
+- **Verification:** `npx playwright test --project=chromium` runs green
 
 ### REC-007: Stage the orchestrator decomposition
 
-* **Priority:** [P3](#glossary)
-* **Finding:** FND-ARC-001
-* **Description:** extract cohesive wiring groups ([MIDI](#glossary) chain, file operations, modal
+- **Priority:** [P3](#glossary)
+- **Finding:** FND-ARC-001
+- **Description:** extract cohesive wiring groups ([MIDI](#glossary) chain, file operations, modal
   management) into container components or facade hooks with typed contracts, preserving the
   audio-timing exemptions and verifying byte-identical exports at each step, following the
   documented refactoring method
-* **Impact:** the largest maintenance-risk file shrinks and cross-hook contracts become
+- **Impact:** the largest maintenance-risk file shrinks and cross-hook contracts become
   explicit
-* **Effort:** High - multiple staged extractions
-* **Complexity:** High - touches the composition root of the whole app
-* **Verification:** typecheck, lint, unit tests, and a golden export stay green per stage
+- **Effort:** High - multiple staged extractions
+- **Complexity:** High - touches the composition root of the whole app
+- **Verification:** typecheck, lint, unit tests, and a golden export stay green per stage
 
 ### REC-008: Harden the markdown rendering path
 
-* **Priority:** [P3](#glossary)
-* **Finding:** FND-SEC-001
-* **Description:** add a restrictive [CSP](#glossary) meta tag to `index.html`, add hostile-fixture tests
+- **Priority:** [P3](#glossary)
+- **Finding:** FND-SEC-001
+- **Description:** add a restrictive [CSP](#glossary) meta tag to `index.html`, add hostile-fixture tests
   against `renderMarkdown` covering script tags, attribute injection, table cells, and code
   spans, and evaluate replacing the custom renderer with a vetted parser-plus-sanitizer
-* **Impact:** the injection surface gains defense in depth and regression tests
-* **Effort:** Medium - [CSP](#glossary) plus a test matrix, larger if a library swap is chosen
-* **Complexity:** Low - localized to `markdown.ts` and `index.html`
-* **Verification:** hostile fixtures render escaped output and `dist/index.html` carries the
+- **Impact:** the injection surface gains defense in depth and regression tests
+- **Effort:** Medium - [CSP](#glossary) plus a test matrix, larger if a library swap is chosen
+- **Complexity:** Low - localized to `markdown.ts` and `index.html`
+- **Verification:** hostile fixtures render escaped output and `dist/index.html` carries the
   [CSP](#glossary)
 
 ### REC-009: Scope the MIDI permission grant
 
-* **Priority:** [P4](#glossary)
-* **Finding:** FND-SEC-002
-* **Description:** check the requesting origin inside `setPermissionRequestHandler` and
+- **Priority:** [P4](#glossary)
+- **Finding:** FND-SEC-002
+- **Description:** check the requesting origin inside `setPermissionRequestHandler` and
   `setPermissionCheckHandler` so `midi` and `midiSysex` are granted only to the packaged
   `file://` content or the dev localhost [URL](#glossary)
-* **Impact:** device access is bound to intended content
-* **Effort:** Low - a few lines in `electron/main.cjs`
-* **Complexity:** Low - single-handler change
-* **Verification:** a request from a non-matching origin is denied
+- **Impact:** device access is bound to intended content
+- **Effort:** Low - a few lines in `electron/main.cjs`
+- **Complexity:** Low - single-handler change
+- **Verification:** a request from a non-matching origin is denied
 
 ### REC-010: Reconcile the license policy with the resolved set
 
-* **Priority:** [P4](#glossary)
-* **Finding:** FND-CPR-001
-* **Description:** either extend `docs/COPYRIGHTS.md`'s permitted list to cover the observed
+- **Priority:** [P4](#glossary)
+- **Finding:** FND-CPR-001
+- **Description:** either extend `docs/COPYRIGHTS.md`'s permitted list to cover the observed
   permissive classes or generate a third-party notices file at release time that records every
   resolved license
-* **Impact:** license conformance becomes demonstrable rather than assumed
-* **Effort:** Medium - an inventory-generation step or a policy revision plus review
-* **Complexity:** Low - documentation plus one generation step
-* **Verification:** the committed artifact or policy lists every resolved license class
+- **Impact:** license conformance becomes demonstrable rather than assumed
+- **Effort:** Medium - an inventory-generation step or a policy revision plus review
+- **Complexity:** Low - documentation plus one generation step
+- **Verification:** the committed artifact or policy lists every resolved license class
 
 ### REC-011: Record the ZX0 attribution in the central file
 
-* **Priority:** [P4](#glossary)
-* **Finding:** FND-CPR-002
-* **Description:** add the [ZX0](#glossary) component (author Einar Saukas, BSD-3-Clause, source [URL](#glossary)) to
+- **Priority:** [P4](#glossary)
+- **Finding:** FND-CPR-002
+- **Description:** add the [ZX0](#glossary) component (author Einar Saukas, BSD-3-Clause, source [URL](#glossary)) to
   `docs/COPYRIGHTS.md` or a new `ATTRIBUTIONS.md`
-* **Impact:** the policy's named attribution location becomes complete
-* **Effort:** Low - a few lines
-* **Complexity:** Low - documentation only
-* **Verification:** the component appears in the attribution file
+- **Impact:** the policy's named attribution location becomes complete
+- **Effort:** Low - a few lines
+- **Complexity:** Low - documentation only
+- **Verification:** the component appears in the attribution file
 
 ### REC-012: Name a continuity owner
 
-* **Priority:** [P4](#glossary)
-* **Finding:** FND-ARC-002
-* **Description:** record a backup maintainer, organizational owner, or fork path in the
+- **Priority:** [P4](#glossary)
+- **Finding:** FND-ARC-002
+- **Description:** record a backup maintainer, organizational owner, or fork path in the
   governance documents so the single-author concentration has a documented continuation path
-* **Impact:** delivery survives maintainer unavailability
-* **Effort:** Low - a documented decision
-* **Complexity:** Low - governance text only
-* **Verification:** a named owner or path exists in `docs/` or repository settings
+- **Impact:** delivery survives maintainer unavailability
+- **Effort:** Low - a documented decision
+- **Complexity:** Low - governance text only
+- **Verification:** a named owner or path exists in `docs/` or repository settings
 
 ### REC-013: Publish release checksums, then evaluate signing
 
-* **Priority:** [P4](#glossary)
-* **Finding:** FND-INF-003
-* **Description:** publish SHA-256 checksums for each distributed artifact on the download
+- **Priority:** [P4](#glossary)
+- **Finding:** FND-INF-003
+- **Description:** publish SHA-256 checksums for each distributed artifact on the download
   page, and evaluate macOS notarization and Windows signing when distribution volume justifies
   the certificate cost
-* **Impact:** users gain an independent integrity check today and full signing later
-* **Effort:** Medium - checksum publication is small, signing involves certificates and
+- **Impact:** users gain an independent integrity check today and full signing later
+- **Effort:** Medium - checksum publication is small, signing involves certificates and
   notarization plumbing
-* **Complexity:** Medium - release-process change
-* **Verification:** published checksums match downloaded artifacts
+- **Complexity:** Medium - release-process change
+- **Verification:** published checksums match downloaded artifacts
 
 ### REC-014: Adopt a per-change AI-disclosure convention
 
-* **Priority:** [P3](#glossary)
-* **Finding:** FND-AIP-001
-* **Description:** define in `docs/GUIDELINES.md` or `CONTRIBUTING`-equivalent docs that
+- **Priority:** [P3](#glossary)
+- **Finding:** FND-AIP-001
+- **Description:** define in `docs/GUIDELINES.md` or `CONTRIBUTING`-equivalent docs that
   substantial generated code lands with a commit trailer or a plan-doc note naming the tool,
   so later audits can scope provenance per change
-* **Impact:** originality verification becomes demonstrable per change
-* **Effort:** Low - a convention line plus habit
-* **Complexity:** Low - documentation plus discipline
-* **Verification:** new generated changes carry the marker
+- **Impact:** originality verification becomes demonstrable per change
+- **Effort:** Low - a convention line plus habit
+- **Complexity:** Low - documentation plus discipline
+- **Verification:** new generated changes carry the marker
 
 ## Recommendation Classification
 
 | Rec     | Recommendation                                         | Class       | Basis                                                         |
-|---------|--------------------------------------------------------|-------------|---------------------------------------------------------------|
+| ------- | ------------------------------------------------------ | ----------- | ------------------------------------------------------------- |
 | REC-001 | Close the coverage gap on the highest-risk paths       | Recommended | The project itself mandates the gate and documents it failing |
 | REC-002 | Add a [CI](#glossary) workflow for the documented loop | Recommended | Every gate is currently manual-only                           |
 | REC-003 | Version the cache and reorder asset strategy           | Recommended | The staleness defect is structural and user-facing            |
@@ -1941,7 +1941,7 @@ inspected.
 ## Limitations and Unknowns
 
 | Item                                                                       | Type        | Reason                                                  | Resolution                                   |
-|----------------------------------------------------------------------------|-------------|---------------------------------------------------------|----------------------------------------------|
+| -------------------------------------------------------------------------- | ----------- | ------------------------------------------------------- | -------------------------------------------- |
 | `npm run typecheck`                                                        | Unrun check | Requires execution, out of audit scope                  | Run `tsc --noEmit` on the audited revision   |
 | `npm run lint` and `npm run format`                                        | Unrun check | Requires execution, out of audit scope                  | Run ESLint and `prettier --check`            |
 | `npm test`                                                                 | Unrun check | Requires execution, out of audit scope                  | Run the Vitest suite                         |
@@ -1963,7 +1963,7 @@ inspected.
 The roadmap contains [P2](#glossary) items, so a follow-up verification pass is warranted.
 
 | Finding     | Priority        | Verification Owner | Closure Evidence                                          | Target Re-audit Trigger            |
-|-------------|-----------------|--------------------|-----------------------------------------------------------|------------------------------------|
+| ----------- | --------------- | ------------------ | --------------------------------------------------------- | ---------------------------------- |
 | FND-CQY-001 | [P2](#glossary) | NOT SPECIFIED      | `npm run test:coverage` exits 0 on a recorded run         | After coverage work lands          |
 | FND-INF-001 | [P2](#glossary) | NOT SPECIFIED      | A green [CI](#glossary) workflow run on a pushed change   | After the workflow merges          |
 | FND-INF-002 | [P2](#glossary) | NOT SPECIFIED      | Redeploy observed serving the new bundle to a warm client | After the worker change ships      |
@@ -1987,7 +1987,7 @@ A re-audit should also re-derive every risk-matrix placement rather than inherit
 ## Validation Record
 
 | Check                        | Result                                      | Evidence / Justification                                                                                                                                                                                                                                                                                |
-|------------------------------|---------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | PAR-1                        | Applied                                     | Security findings carry CWE-79, CWE-862, or justified `N/A` in the Security field                                                                                                                                                                                                                       |
 | PAR-2                        | Applied                                     | Severity clarification line states severity derives from the impact/likelihood matrix, not [CVSS](#glossary)                                                                                                                                                                                            |
 | PAR-3                        | Applied                                     | [ISO/IEC](#glossary) 25010:2023 crosswalk appears in Scoring Rubrics as a mapping with coverage gaps named                                                                                                                                                                                              |
@@ -2015,7 +2015,7 @@ A re-audit should also re-derive every risk-matrix placement rather than inherit
 ## References
 
 | Reference                                           | Publisher or Author      | Used In                                 |
-|-----------------------------------------------------|--------------------------|-----------------------------------------|
+| --------------------------------------------------- | ------------------------ | --------------------------------------- |
 | TypeScript Handbook and TSConfig reference          | Microsoft                | Standards Conformance, stack assessment |
 | React documentation and Rules of Hooks              | React team               | Stack assessment, Design Principles     |
 | Electron documentation and security guidance        | OpenJS Foundation        | Electron boundary review, Threat Model  |

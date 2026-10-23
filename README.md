@@ -241,10 +241,16 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 
 **Document Templates**
 
-| File                                                                                      | Purpose                                    |
-| ----------------------------------------------------------------------------------------- | ------------------------------------------ |
-| [template/change-request-template.md](docs/template/change-request-template.md)           | Template for change request documents      |
-| [template/implementation-plan-template.md](docs/template/implementation-plan-template.md) | Template for implementation plan documents |
+| File                                                                                            | Purpose                                         |
+| ----------------------------------------------------------------------------------------------- | ----------------------------------------------- |
+| [template/change-request-template.md](docs/template/change-request-template.md)                 | Template for change request documents           |
+| [template/implementation-plan-template.md](docs/template/implementation-plan-template.md)       | Template for implementation plan documents      |
+| [template/refactoring-proposal-template.md](docs/template/refactoring-proposal-template.md)     | Template for refactoring proposal documents     |
+| [template/refactoring-assessment-template.md](docs/template/refactoring-assessment-template.md) | Template for refactoring assessment documents   |
+| [template/preparation-findings.md](docs/template/preparation-findings.md)                       | Template for documentation-set findings reports |
+| [template/change-review-template.md](docs/template/change-review-template.md)                   | Template for version-window review documents    |
+| [template/session-findings.md](docs/template/session-findings.md)                               | Template for session-review lesson entries      |
+| [template/decision-record.md](docs/template/decision-record.md)                                 | Template for durable dated decision records     |
 
 **ASE Directory Structure**
 
@@ -253,6 +259,10 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 | `docs/change/<version>/`      | Change request descriptions: features, bug fixes, enhancements      |
 | `docs/plan/<version>/`        | Implementation plans created from change requests                   |
 | `docs/refactoring/<version>/` | Refactoring proposals and assessments after implementation          |
+| `docs/discard/<version>/`     | Abandoned change records and optional plans                         |
+| `docs/review/<version>/`      | Version-window reviews feeding the version bump decision            |
+| `docs/lesson/`                | Session-review lesson files (restricted, not active rules)          |
+| `docs/decision/`              | Durable dated decision records (restricted)                         |
 | `docs/archive/`               | Historical documents                                                |
 | `docs/feature/`               | Feature proposals (historical, not part of active workflow)         |
 | `docs/prompt/`                | Historical AI prompt logs (historical, not part of active workflow) |

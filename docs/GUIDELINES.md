@@ -73,24 +73,30 @@ Examples:
 
 The active documentation set is composed of the following files. Each file is the authoritative source for the topic listed.
 
-| File                                       | Purpose                                                                  |
-| ------------------------------------------ | ------------------------------------------------------------------------ |
-| `GUIDELINES.md`                            | Central source of truth for AI-assisted development rules (this file)    |
-| `PROJECT.md`                               | Project description, scope, requirements, use cases, and quality targets |
-| `ARCHITECTURE.md`                          | System architecture, module boundaries, state domains, and patterns      |
-| `SPECIFICATION.md`                         | Project-specific implementation details, stack, schemas, and constants   |
-| `COPYRIGHTS.md`                            | Copyright and licensing rules                                            |
-| `WORKFLOW.md`                              | Day-to-day development workflow                                          |
-| `REFACTORING.md`                           | Refactoring proposal and assessment process                              |
-| `TESTING.md`                               | Testing strategy, test types, fixtures, and CI                           |
-| `DEPLOYMENT.md`                            | Deployment targets and hosting                                           |
-| `VERSIONING.md`                            | Version numbering scheme, bumping rules, and CHANGELOG format            |
-| `FORMAT.md`                                | Project file format specification for song and instrument files          |
-| `MAX.md`                                   | MAX audio file format specification                                      |
-| `FUTURE.md`                                | Candidate future enhancements (not committed work)                       |
-| `standard/ts-react-development.md`         | TypeScript and React engineering standard                                |
-| `template/change-request-template.md`      | Template for change request specification documents                      |
-| `template/implementation-plan-template.md` | Template for implementation plan documents                               |
+| File                                          | Purpose                                                                  |
+| --------------------------------------------- | ------------------------------------------------------------------------ |
+| `GUIDELINES.md`                               | Central source of truth for AI-assisted development rules (this file)    |
+| `PROJECT.md`                                  | Project description, scope, requirements, use cases, and quality targets |
+| `ARCHITECTURE.md`                             | System architecture, module boundaries, state domains, and patterns      |
+| `SPECIFICATION.md`                            | Project-specific implementation details, stack, schemas, and constants   |
+| `COPYRIGHTS.md`                               | Copyright and licensing rules                                            |
+| `WORKFLOW.md`                                 | Day-to-day development workflow                                          |
+| `REFACTORING.md`                              | Refactoring proposal and assessment process                              |
+| `TESTING.md`                                  | Testing strategy, test types, fixtures, and CI                           |
+| `DEPLOYMENT.md`                               | Deployment targets and hosting                                           |
+| `VERSIONING.md`                               | Version numbering scheme, bumping rules, and CHANGELOG format            |
+| `FORMAT.md`                                   | Project file format specification for song and instrument files          |
+| `MAX.md`                                      | MAX audio file format specification                                      |
+| `FUTURE.md`                                   | Candidate future enhancements (not committed work)                       |
+| `standard/ts-react-development.md`            | TypeScript and React engineering standard                                |
+| `template/change-request-template.md`         | Template for change request specification documents                      |
+| `template/implementation-plan-template.md`    | Template for implementation plan documents                               |
+| `template/refactoring-proposal-template.md`   | Template for refactoring proposal documents                              |
+| `template/refactoring-assessment-template.md` | Template for refactoring assessment documents                            |
+| `template/preparation-findings.md`            | Template for documentation-set findings reports                          |
+| `template/change-review-template.md`          | Template for version-window review documents                             |
+| `template/session-findings.md`                | Template for session-review lesson entries                               |
+| `template/decision-record.md`                 | Template for durable dated decision records                              |
 
 ### Three Pillars of Technical Documentation
 
@@ -107,6 +113,45 @@ Architectural decisions and top-level assumptions. It answers how the system is 
 **SPECIFICATION.md**
 
 Implementation technical decisions. It answers how the system works internally. It holds data models, algorithms, file formats, constants, input bindings, and known implementation limitations.
+
+## Repository Layout
+
+The resolved role-to-path map for the documentation set and its workflow directories.
+
+| Role                   | Path                                | Notes                                            |
+| ---------------------- | ----------------------------------- | ------------------------------------------------ |
+| Documentation root     | `docs/`                             | All active documents                             |
+| Change requests        | `docs/change/<version>/`            | Versioned per release                            |
+| Implementation plans   | `docs/plan/<version>/`              | Versioned per release                            |
+| Refactoring documents  | `docs/refactoring/<version>/`       | Versioned per release                            |
+| Abandoned records      | `docs/discard/<version>/`           | Abandoned change records and optional plans      |
+| Window reviews         | `docs/review/<version>/`            | Version-window reviews, feeds the bump decision  |
+| Lessons                | `docs/lesson/`                      | Per-session findings files, restricted           |
+| Decision records       | `docs/decision/`                    | Durable dated decisions, restricted              |
+| Window run state       | `docs/plan/<version>/window-run.md` | Run-resume stage record, not a plan              |
+| Reports                | `docs/report/`                      | On-demand generated reports, restricted          |
+| Archive                | `docs/archive/`                     | Retired documents, non-active history            |
+| Historical directories | `docs/feature/`, `docs/prompt/`     | Restricted, not part of the active set           |
+| Templates              | `docs/template/`                    | Document templates                               |
+| Standards              | `docs/standard/`                    | Engineering standards, one per technology stack  |
+| Media                  | `docs/media/`                       | Documentation images                             |
+| Changelog              | `public/CHANGELOG.md`               | Written only at version bump                     |
+| Local workspace        | `work/`                             | Gitignored scratch, shell-access only            |
+| Agent entry            | `README.md`                         | Routes agents to `GUIDELINES.md`; no `AGENTS.md` |
+
+**Recorded conventions**
+
+- Document style owner: `GUIDELINES.md`, Documentation Guidelines section.
+- Testing and verification owner: `TESTING.md`.
+- Workflow owner: `WORKFLOW.md`.
+- Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request; the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
+- Adopted extensions: `version-window`, `run-resume`.
+- Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
+- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md`; `improve dosound-tracker` runs the Session Review recorded below. Trigger phrases are recorded, never implied.
+- Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
+- Abandoned change records move to `docs/discard/<version>/` with an explicit abandonment reason recorded in the record.
+- Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined; none are planned.
+- No dedicated agent entry file: `README.md` is the documented agent route per the File Maintenance rule.
 
 ## General Workflow
 
@@ -205,12 +250,15 @@ File to modify: `src/components/TrackPanel.tsx`.
 
 **Change Request and Plan Directory Access**
 
-- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request. Never automatically scan or gather change requests from this directory; the user will manually request implementation plans for individual changes.
-- Do not read any document from `docs/plan/` unless specifically instructed by the user. Implementation plans are written to this directory only when the user explicitly requests them.
+- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. Otherwise never automatically scan or gather change requests from this directory; the user will manually request implementation plans for individual changes.
+- Do not read any document from `docs/plan/` unless specifically instructed by the user or a named window request authorizes the window's plan group. Implementation plans are written to this directory only when the user explicitly requests them or a window run requires them.
 - Do not read any document from `docs/archive/` or `docs/refactoring/` unless specifically instructed by the user. These directories contain historical documents and refactoring proposals that are not part of the active documentation set.
 - Do not read any document from `docs/report/` unless the user explicitly requests it. This directory is for custom reports generated on demand and is not part of the active documentation set.
 - Do not read any document from `docs/prompt/` unless specifically instructed by the user. This directory contains historical AI prompt logs from versions 1.0, 1.1, and 1.2 and is not part of the active documentation set.
 - Do not read any document from `docs/feature/` unless specifically instructed by the user. This directory contains feature proposals that are not part of the active documentation set.
+- Do not read any document from `docs/discard/` unless specifically instructed by the user. This directory holds abandoned change records and is not part of the active documentation set.
+- Do not read any document from `docs/review/` or `docs/lesson/` unless specifically instructed by the user. These directories hold generated reviews and recorded lessons; they are outputs and records, not active rules.
+- Do not read any document from `docs/decision/` unless specifically instructed by the user or a session review routes a decision there.
 
 **Change Request Document Creation**
 
@@ -290,6 +338,31 @@ Do not run the verification loop for documentation-only changes. See the "Docume
 **Propose a commit message**
 
 After the change is complete and the verification loop passes, propose a commit message for review. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules above. Do not commit; the user commits manually.
+
+## Session Review
+
+The project records a session-review convention. When the user says "improve dosound-tracker", run the session review: collect the wounds the session produced and land each one as a durable rule or record before reporting the review done.
+
+**Trigger**
+
+- `improve dosound-tracker` runs the session review. The trigger phrase is recorded, never implied - ordinary task requests do not invoke it.
+
+**Procedure**
+
+- Gather the session's wounds: failures, surprises, workarounds, and repeated corrections.
+- Verify the real state before recording a lesson - a guessed finding poisons the index.
+- For each wound, check whether an existing rule already covers it. If no rule covers the lesson, add the rule to the owning document's body first, then index it in the lesson file.
+- Record the session's findings in `docs/lesson/lessons-<date>-<theme>.md` using `docs/template/session-findings.md`. Entries use titles, never ordinal numbers.
+
+**Routing**
+
+| Lesson kind              | Owning destination                                                        |
+| ------------------------ | ------------------------------------------------------------------------- |
+| Engineering wound        | The relevant standard's findings, for example `standard/ts-react-development.md` |
+| Workflow wound           | A rule in this file plus a dated record in `docs/decision/` when the decision is durable |
+| Machine or tooling quirk | Environment notes in `DEPLOYMENT.md` or `WORKFLOW.md`                     |
+
+The lesson file indexes rules that live in the owning documents - it does not hold the rules themselves.
 
 ## Memorisation Convention
 
@@ -451,6 +524,7 @@ See `TESTING.md` for the canonical verification loop, test types, fixtures, and 
 - **CHANGELOG.md**: do not modify `public/CHANGELOG.md` outside the version bump procedure described in `VERSIONING.md`. Feature and fix entries accumulate in the codebase and are recorded only when the version is actually bumped. Never delete or truncate older version entries when adding new versions - the complete historical record must be preserved.
 - **Binary output location**: all compiled output must go to a dedicated `dist/` or `build/` directory. Never build to the repository root, source directories, or outside the project. The `dist/` directory must be gitignored.
 - **Temporary files**: always use the `work` directory at the repository root for temporary files, test data, local-only configurations, and generated artifacts. Never create `work/` subdirectories inside component directories. Tests that generate files on disk must write them inside `work/` and must clean them up afterward using `try/finally` so no generated file is left behind inside or outside `work/`.
+- **Agent entry files**: do not create `AGENTS.md` or equivalent agent entry files. `README.md` routes agents to `GUIDELINES.md` as the documented entry point. Do not propose adding such files during documentation evaluations, supplements, or reorganizations.
 
 ## Audio-Critical Development Principles
 

@@ -256,6 +256,8 @@ Keep tests close to the code they exercise. Co-locate unit tests with source fil
 
 Configure the build tool for deterministic output and, when applicable, desktop application compatibility.
 
+In Vite and rolldown-vite, `define` constants are injected as globals through `/@vite/env` in dev mode and statically replaced only in production builds - a served dev module keeps the placeholder literally. Any file whose change must re-evaluate the configuration (for example `package.json` feeding a version define) must be loaded with `import`, not `readFileSync`: only imported files register as watched config dependencies that restart the dev server.
+
 ### Build Scripts
 
 Define build, test, and lint scripts in the project manifest. Every project must be buildable with a single command.

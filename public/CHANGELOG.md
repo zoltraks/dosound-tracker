@@ -1,5 +1,16 @@
 # Changes
 
+## Version 1.2.9
+
+Editor cursor persistence across reloads, safer track column input handling, a new line-play shortcut, and documentation-set reorganization.
+
+- **Editor cursor persistence**: the editor now remembers the focused section, selected track, playlist line, track row and column, selected instrument, song information field, playlist track column, octave, and each envelope panel step cursor across application reloads, clamped to the loaded song on restore.
+- **Ctrl+Enter playback**: pressing Ctrl+Enter in a track plays the current line from its first row and restores the saved cursor position when playback stops, matching the PLAY LINE command behavior.
+- **Volume column input**: note keys now enter notes only in the note column, and the volume column accepts hexadecimal nibbles only, preventing accidental volume changes.
+- **Bundled songs**: added "Billy" to the bundled song repository.
+- **Documentation**: reorganized the ASE documentation set by distilling source-obvious content, recording the repository layout map and abandoned-change convention, adding refactoring and findings templates, and moving CHANGELOG.md to public/.
+- **Security**: updated transitive dependencies via `npm audit fix`; four moderate vitest advisories remain in development tooling only, pending a vitest major upgrade.
+
 ## Version 1.2.8
 
 Configurable replay rate and chip clock support across audio playback and all export formats, MAX export correctness fixes, and sequencer timing stability improvement.
