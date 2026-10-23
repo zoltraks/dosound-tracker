@@ -54,7 +54,7 @@ Group related files together. Use barrel exports only when they meaningfully agg
 - React components: `PascalCase.tsx`
 - Custom hooks: `useCamelCase.ts`
 - Utilities, stores, and non-component modules: `camelCase.ts`
-- Test files: `PascalCase.test.ts` or `PascalCase.test.tsx`
+- Test files: `camelCase.test.ts` or `camelCase.test.tsx`
 
 ### Version Control Exclusions
 
@@ -94,15 +94,12 @@ Use TypeScript project references for better build performance and separation wh
 
 ### Import Paths
 
-Prefer absolute imports with path aliases for cross-module imports. Avoid deep relative imports when a path alias is available.
+Use relative imports for cross-module imports; the project does not configure a path alias.
 
 ```typescript
 // Correct
-import { Button } from '@/components/Button';
-import { useForm } from '@/hooks/useForm';
-
-// Avoid
-import { Button } from '../../components/Button';
+import { Button } from '../components/Button';
+import { useForm } from '../hooks/useForm';
 ```
 
 ### Branded Types

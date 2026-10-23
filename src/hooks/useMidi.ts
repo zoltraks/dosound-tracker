@@ -50,8 +50,6 @@ export function useMidi(
 
   const OLD_STORAGE_KEY = 'dosound-tracker-midi-config';
 
-  // 2. Configuration Management
-  // 2. Configuration Management
   const [configuration, setConfigurationState] = useState<MidiConfiguration>(() => {
     try {
       let raw = localStorage.getItem(STORAGE_KEY);

@@ -1,5 +1,16 @@
 # Changes
 
+## Version 1.3.0
+
+Audit-driven hygiene window: documentation accuracy fixes, license policy reconciliation, test-suite cleanup, and configuration hygiene from the 1.2 audit report.
+
+- **Testing**: the extensionless `exportMax.test` file was merged into the canonical `exportMax.test.ts` suite; analysis confirmed it was a strict subset and it was retired during the refactoring phase.
+- **Code style**: `REASON:` comments added to the three bare non-null assertions, the duplicated numbered comment removed from `useMidi.ts`, and the unused `@/` path alias removed from `tsconfig` and `vitest` configuration.
+- **Licensing**: `COPYRIGHTS.md` now records the ZX0 port attribution (BSD-3-Clause, Einar Saukas) and the permitted-license list covers all resolved permissive classes with a review rule for undeclared packages.
+- **Documentation**: the Electron version figure corrected to 42, the test-file naming rule aligned to the camelCase convention, an AI-disclosure convention added, and a continuity-owner requirement recorded.
+- **Security**: `npm audit` reports 5 advisories in development tooling (4 moderate, 1 high in zod via vitest); remediation is scheduled for the 1.3.0 change window.
+
+
 ## Version 1.2.9
 
 Editor cursor persistence across reloads, safer track column input handling, a new line-play shortcut, and documentation-set reorganization.

@@ -2,7 +2,7 @@
 
 ## System Overview
 
-DOSOUND Tracker is a chiptune music editor for the AY/YM sound chip (YM2149 PSG) used in the Atari ST. It runs as a React 19 single-page application bundled with Vite (rolldown-vite) and ships as a desktop app through Electron 39. The core of the application is a software emulation of the YM2149 chip rendered through the Web Audio API, paired with a tracker-style song editor and a multi-format export pipeline.
+DOSOUND Tracker is a chiptune music editor for the AY/YM sound chip (YM2149 PSG) used in the Atari ST. It runs as a React 19 single-page application bundled with Vite (rolldown-vite) and ships as a desktop app through Electron 42. The core of the application is a software emulation of the YM2149 chip rendered through the Web Audio API, paired with a tracker-style song editor and a multi-format export pipeline.
 
 The application is built around two main data paths. The first path is live audio playback: song data flows from React state through hooks into the SoundDriver, which generates register-write events, feeds them to the YM2149 emulator, and produces sound through the Web Audio API. The second path is file export: the same song data flows through the exports modules into binary, assembly, VGM, WAV, or Max/MSP formats.
 

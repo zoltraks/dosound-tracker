@@ -1,7 +1,7 @@
 {
   "name": "dosound-tracker",
   "private": true,
-  "version": "1.2.9",
+  "version": "1.3.0",
   "type": "module",
   "description": "DOSOUND Tracker",
   "main": "electron/main.cjs",
@@ -84,7 +84,7 @@
   "build": {
     "appId": "com.dosound.tracker",
     "productName": "DOSOUND Tracker",
-    "copyright": "Copyright © 2024 Filip Golewski",
+    "copyright": "Copyright \u00a9 2024 Filip Golewski",
     "files": [
       "dist/**/*",
       "electron/**/*",

@@ -121,6 +121,7 @@ function optimize(input: Uint8Array, skip: number, offsetLimit: number): Block {
     }
   }
 
+  // REASON: optimal is allocated with inputSize entries before this call.
   return optimal[inputSize - 1]!;
 }
 
@@ -181,6 +182,7 @@ function compress(
     writeBit(bwd ? 0 : 1);
   }
 
+  // REASON: prev is assigned a block before reaching the tail walk.
   let prevBlock = prev!;
   let block: Block | null = prevBlock.chain;
   while (block) {

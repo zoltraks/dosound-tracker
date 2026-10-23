@@ -17,7 +17,8 @@ The license file is at the repository root: `LICENSE`.
 
 ## Dependency Licensing
 
-- Permitted open-source licenses: MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost.
+- Permitted open-source licenses: MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost, BlueOak-1.0.0, CC-BY-4.0, CC0-1.0, WTFPL, MIT-0.
+- Packages with no declared license field require a per-package review before adoption.
 - GPL-licensed libraries may **not** be used in this project without explicit written approval.
 - All dependencies are declared in `package.json`.
 
@@ -32,3 +33,9 @@ The license file is at the repository root: `LICENSE`.
 DOSOUND Tracker emulates the Yamaha YM2149 Programmable Sound Generator (PSG) in software.
 No copyrighted firmware or ROM images are embedded in the project.
 The emulation is based on publicly available technical documentation of the YM2149 register set and behaviour.
+
+## ZX0 Compression
+
+The ZX0 compressor implementation in `src/utils/zx0.ts` is a TypeScript port of the Salvador
+compressor by Einar Saukas, distributed under the BSD 3-Clause license.
+The original copyright notice and license terms are retained in the source file header.

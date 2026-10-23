@@ -1,5 +1,4 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
-import { resolve } from 'node:path';
 import viteConfig from './vite.config';
 
 export default mergeConfig(
@@ -29,11 +28,6 @@ export default mergeConfig(
         ) {
           return false;
         }
-      },
-    },
-    resolve: {
-      alias: {
-        '@': resolve(__dirname, './src'),
       },
     },
   }),

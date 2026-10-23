@@ -234,7 +234,7 @@ For each change record in the window:
 **Window Review**
 
 - With the tree clean and production-ready after refactoring, review the window's delivered work against its change records and plans.
-- Record the review in `docs/review/<version>/` using `docs/template/change-review-template.md`. The review reconciles recorded work against the version-control log and reports confirmed, unconfirmed, undocumented, and deviated work with a readiness verdict.
+- Record the review in `docs/review/<version>/review-<version>.md` using `docs/template/change-review-template.md`. The review reconciles recorded work against the version-control log and reports confirmed, unconfirmed, undocumented, and deviated work with a readiness verdict.
 - The bump decision recorded in the review is the project owner's - never the agent's.
 
 **Window Close**
@@ -277,3 +277,9 @@ When delegating implementation to an AI coding agent, provide the following cont
 - The specific source files being modified.
 
 Verify agent output against the build-test-fix loop. Never accept code that breaks audio timing or violates the audio-critical principles in `GUIDELINES.md`.
+
+Mark AI-assisted authorship per change: the commit description or the change-request document records the tool used, for example `AI-assisted: <tool>`.
+
+## Continuity
+
+The project is a single-author project by design; no second maintainer exists and the contributor-concentration risk is accepted by the project owner.
