@@ -1,4 +1,5 @@
 import type { Pattern } from '../synth/SoundDriver';
+import { clampVolumeNibble } from './volumeUtils';
 
 const DEFAULT_VOLUME = 0x0f;
 
@@ -17,8 +18,7 @@ export function computeEffectiveVolume(pattern: Pattern | null, currentLine: num
     const line = lines[i];
     const vol = line?.volume;
     if (vol !== undefined && vol !== null) {
-      const clamped = Math.max(0, Math.min(0x0f, vol | 0));
-      current = clamped;
+      current = clampVolumeNibble(vol);
     }
   }
 

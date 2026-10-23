@@ -26,6 +26,7 @@ import {
   SUPPORTED_SONG_CLOCKS,
 } from '../constants/song';
 import { expandEnvelope, expandLoopingEnvelope } from './envelopeUtils';
+import { clampVolumeNibble } from './volumeUtils';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -90,8 +91,7 @@ export const DEFAULT_SONG_AUTHOR = 'Author Name';
 
 const parseVolumeNibble = (value: unknown): number | null => {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    const n = Math.max(0, Math.min(0x0f, Math.floor(value)));
-    return n;
+    return clampVolumeNibble(value);
   }
 
   if (typeof value === 'string') {
@@ -105,8 +105,7 @@ const parseVolumeNibble = (value: unknown): number | null => {
 
     const n = parseInt(text, 16);
     if (Number.isFinite(n)) {
-      const clamped = Math.max(0, Math.min(0x0f, n));
-      return clamped;
+      return clampVolumeNibble(n);
     }
   }
 

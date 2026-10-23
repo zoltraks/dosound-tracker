@@ -226,7 +226,7 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 | [COPYRIGHTS.md](docs/COPYRIGHTS.md)       | Copyright and licensing rules                                               |
 | [WORKFLOW.md](docs/WORKFLOW.md)           | Day-to-day development workflow                                             |
 | [REFACTORING.md](docs/REFACTORING.md)     | Refactoring proposal and assessment process                                 |
-| [TESTING.md](docs/TESTING.md)             | Testing strategy, test types, fixtures, and CI                              |
+| [TESTING.md](docs/TESTING.md)             | Testing strategy, test types, fixtures, and verification                    |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md)       | Deployment targets and hosting                                              |
 | [VERSIONING.md](docs/VERSIONING.md)       | Version numbering scheme, bumping rules, and CHANGELOG format               |
 | [FORMAT.md](docs/FORMAT.md)               | Project file format specification for song and instrument files             |

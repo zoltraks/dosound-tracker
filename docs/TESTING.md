@@ -211,11 +211,16 @@ npx playwright test --debug
 Tests are organised under `test/` by domain:
 
 - `test/components/` — React component tests
+- `test/electron/` — main-process module tests
 - `test/hooks/` — custom hook tests
 - `test/stores/` — Zustand store tests
 - `test/synth/` — audio synthesis engine tests
 - `test/utils/` — utility function tests
 - `test/fixtures/` — committed test fixtures (song YAML files, VGM files)
+
+**Electron module tests**
+
+Main-process helpers live in standalone `.cjs` modules (for example `electron/permissions.cjs`) so tests can import them without loading Electron - `electron/main.cjs` requires the `electron` runtime and cannot be imported under Vitest. Tests load `.cjs` modules through `createRequire` and assert the module shape with an explicit interface, never `any`.
 
 ## Coverage Targets
 

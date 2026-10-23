@@ -7,9 +7,9 @@ Delivered as proposed. The single proposed refactoring - retiring the superseded
 
 ## Reconciliation
 
-| Proposed                                | Delivered | Evidence                                      |
-| --------------------------------------- | --------- | --------------------------------------------- |
-| Delete the stale duplicate test file    | Done      | `npm test` returns to 45 files / 255 tests    |
+| Proposed                             | Delivered | Evidence                                   |
+| ------------------------------------ | --------- | ------------------------------------------ |
+| Delete the stale duplicate test file | Done      | `npm test` returns to 45 files / 255 tests |
 
 The return to the baseline test count confirms the file carried zero unique assertions - every
 case exists in `exportMax.test.ts` with newer, stronger bodies (stream-parse delimiter checks

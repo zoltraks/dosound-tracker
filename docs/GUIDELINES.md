@@ -82,7 +82,7 @@ The active documentation set is composed of the following files. Each file is th
 | `COPYRIGHTS.md`                               | Copyright and licensing rules                                            |
 | `WORKFLOW.md`                                 | Day-to-day development workflow                                          |
 | `REFACTORING.md`                              | Refactoring proposal and assessment process                              |
-| `TESTING.md`                                  | Testing strategy, test types, fixtures, and CI                           |
+| `TESTING.md`                                  | Testing strategy, test types, fixtures, and verification                 |
 | `DEPLOYMENT.md`                               | Deployment targets and hosting                                           |
 | `VERSIONING.md`                               | Version numbering scheme, bumping rules, and CHANGELOG format            |
 | `FORMAT.md`                                   | Project file format specification for song and instrument files          |
@@ -151,6 +151,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
 - Abandoned change records move to `docs/discard/<version>/` with an explicit abandonment reason recorded in the record.
 - Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined; none are planned.
+- A CI pipeline (`.github/workflows/`) was evaluated and declined; the verification loop is enforced locally and no CI configuration is planned.
 - No dedicated agent entry file: `README.md` is the documented agent route per the File Maintenance rule.
 
 ## General Workflow
@@ -507,7 +508,7 @@ Examples:
 
 ## Testing
 
-See `TESTING.md` for the canonical verification loop, test types, fixtures, and CI configuration.
+See `TESTING.md` for the canonical verification loop, test types, fixtures, and test layout.
 
 ## Development Principles
 

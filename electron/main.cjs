@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
+const { isMidiAllowed } = require('./permissions.cjs');
 
 let mainWindow;
 let isQuitting = false;
@@ -23,20 +24,13 @@ function createWindow() {
 
   if (session && typeof session.setPermissionRequestHandler === 'function') {
     session.setPermissionRequestHandler((webContents, permission, callback) => {
-      if (permission === 'midi' || permission === 'midiSysex') {
-        callback(true);
-      } else {
-        callback(false);
-      }
+      callback(isMidiAllowed(permission, webContents.getURL()));
     });
   }
 
   if (session && typeof session.setPermissionCheckHandler === 'function') {
     session.setPermissionCheckHandler((webContents, permission) => {
-      if (permission === 'midi' || permission === 'midiSysex') {
-        return true;
-      }
-      return false;
+      return Boolean(webContents) && isMidiAllowed(permission, webContents.getURL());
     });
   }
 

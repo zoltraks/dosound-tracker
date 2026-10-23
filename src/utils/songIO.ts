@@ -7,6 +7,7 @@ import { formatInstrumentSlotId } from './instrumentSelection';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { isEnvelopeZeroDefault, trimEnvelope } from './envelopeUtils';
 import { quoteYamlValues } from './yamlUtils';
+import { clampVolumeNibble } from './volumeUtils';
 
 export const buildSongYamlForExport = (currentSong: Song): string => {
   const instrumentSource = currentSong.instrument;
@@ -160,8 +161,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       if (hasVolume) {
         const volNum = Number(volRaw);
         if (Number.isFinite(volNum)) {
-          const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-          step.volume = clamped;
+          step.volume = clampVolumeNibble(volNum);
         }
       }
 

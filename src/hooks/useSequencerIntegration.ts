@@ -6,6 +6,7 @@ import { updateChannelWithInstrument, normalizeInstrumentId } from '../utils/pla
 import { Formatter } from '../utils/formatters';
 import type { PlaybackSimulationState } from './usePlaybackSimulation';
 import { mapSongLineToPlaylistEntries } from '../types/playlist';
+import { clampVolumeNibble } from '../utils/volumeUtils';
 
 interface UseSequencerIntegrationArgs {
   currentSong: Song;
@@ -240,8 +241,9 @@ export function useSequencerIntegration({
                 if (volumeOnRow === undefined || volumeOnRow === null) {
                   volText = '-';
                 } else {
-                  const clampedVol = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-                  volText = clampedVol.toString(16).toUpperCase();
+                  volText = clampVolumeNibble(volumeOnRow as number)
+                    .toString(16)
+                    .toUpperCase();
                 }
 
                 if (!noteOnRow) {
@@ -389,8 +391,7 @@ export function useSequencerIntegration({
 
               // Update per-channel volume modifier when a volume nibble is present on this row.
               if (volumeOnRow !== undefined && volumeOnRow !== null) {
-                const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-                channelVolumeModifierRef.current[ch] = clamped;
+                channelVolumeModifierRef.current[ch] = clampVolumeNibble(volumeOnRow as number);
               }
 
               if (hasExplicitNote) {
@@ -424,7 +425,7 @@ export function useSequencerIntegration({
 
                   let volumeForMidi: number | null = null;
                   if (volumeOnRow !== undefined && volumeOnRow !== null) {
-                    volumeForMidi = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
+                    volumeForMidi = clampVolumeNibble(volumeOnRow as number);
                   }
 
                   if (instrument && activeNote && activeNote.note && activeNote.note !== '===') {

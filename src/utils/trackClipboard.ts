@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
 import type { Pattern, Step } from '../synth/SoundDriver';
+import { clampVolumeNibble } from './volumeUtils';
 import { PATTERN_LENGTH } from '../constants/music';
 
 export type TrackClipboardStep = {
@@ -48,8 +49,7 @@ export function generateClipboardData(
     if (hasVolume) {
       const volNum = Number(volRaw);
       if (Number.isFinite(volNum)) {
-        const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-        step.volume = clamped;
+        step.volume = clampVolumeNibble(volNum);
       }
     }
 
@@ -285,8 +285,7 @@ export function applyClipboardToLines(
     if (volRaw !== undefined && volRaw !== null) {
       const volNum = Number(volRaw);
       if (Number.isFinite(volNum)) {
-        const clamped = Math.max(0, Math.min(0x0f, Math.floor(volNum)));
-        line.volume = clamped;
+        line.volume = clampVolumeNibble(volNum);
       }
     }
 

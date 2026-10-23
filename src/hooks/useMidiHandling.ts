@@ -3,6 +3,7 @@ import { useMidi } from './useMidi';
 import type { MidiConfiguration, MidiNoteEvent, MidiMonitorEntry, MidiDeviceInfo } from './useMidi';
 import type { Instrument } from '../synth/SoundDriver';
 import { NOTES } from '../constants/music';
+import { clampVolumeNibble } from '../utils/volumeUtils';
 
 interface UseMidiHandlingOptions {
   onNoteEvent: (event: MidiNoteEvent) => void;
@@ -131,12 +132,10 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
       velocity = Math.max(1, Math.min(127, raw));
     } else {
       const rawVolume =
-        volumeFromStep !== undefined && volumeFromStep !== null
-          ? (volumeFromStep as number) | 0
-          : null;
+        volumeFromStep !== undefined && volumeFromStep !== null ? volumeFromStep : null;
 
       if (rawVolume !== null) {
-        const volumeNibble = Math.max(0, Math.min(0x0f, rawVolume));
+        const volumeNibble = clampVolumeNibble(rawVolume as number);
         velocity = Math.max(1, Math.min(127, Math.round((volumeNibble / 15) * 127)));
       }
     }

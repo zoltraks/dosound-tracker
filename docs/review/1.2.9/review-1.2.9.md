@@ -6,11 +6,11 @@
 
 ## Document Information
 
-|             |                                                              |
-| ----------- | ------------------------------------------------------------ |
-| Version     | 1.2.9                                                        |
-| Review Date | 2026-10-24                                                   |
-| Commands    | `git status`, `git diff --stat`, `npm test`, `npm audit`     |
+|             |                                                          |
+| ----------- | -------------------------------------------------------- |
+| Version     | 1.2.9                                                    |
+| Review Date | 2026-10-24                                               |
+| Commands    | `git status`, `git diff --stat`, `npm test`, `npm audit` |
 
 ## Verdict
 
@@ -24,20 +24,20 @@ The eleven change records under `docs/change/1.2.9/` plus the refactoring pair u
 
 ## Recorded Work
 
-| Document                                          | Kind        | Status   | Result                                             |
-| ------------------------------------------------- | ----------- | -------- | -------------------------------------------------- |
-| adopt-ai-disclosure-convention                    | Change      | Done     | Convention added to WORKFLOW.md                     |
-| align-test-naming-convention                      | Change      | Done     | Standard amended to camelCase                       |
-| justify-non-null-assertions                       | Change      | Done     | REASON comments at three sites                      |
-| name-continuity-owner                             | Change      | Declined | No second maintainer exists; risk accepted          |
-| reconcile-license-whitelist                       | Change      | Done     | Whitelist extended, review rule added               |
-| record-zx0-attribution                            | Change      | Done     | ZX0 section added to COPYRIGHTS.md                  |
-| refresh-documented-figures                        | Change      | Done     | Electron figure corrected to 42                     |
-| remove-duplicated-numbered-comment                | Change      | Done     | Marker removed from useMidi.ts                      |
-| rename-or-merge-dead-test-file                    | Change      | Done     | Merged into canonical suite; duplicate retired      |
-| resolve-unused-path-alias                         | Change      | Done     | Alias removed from tsconfig and vitest              |
-| untrack-ds-store                                  | Change      | Done     | OS artifact untracked                               |
-| docs/refactoring/1.2.9/                           | Refactoring | Done     | Duplicate test file retired, assessment confirms    |
+| Document                           | Kind        | Status   | Result                                           |
+| ---------------------------------- | ----------- | -------- | ------------------------------------------------ |
+| adopt-ai-disclosure-convention     | Change      | Done     | Convention added to WORKFLOW.md                  |
+| align-test-naming-convention       | Change      | Done     | Standard amended to camelCase                    |
+| justify-non-null-assertions        | Change      | Done     | REASON comments at three sites                   |
+| name-continuity-owner              | Change      | Declined | No second maintainer exists; risk accepted       |
+| reconcile-license-whitelist        | Change      | Done     | Whitelist extended, review rule added            |
+| record-zx0-attribution             | Change      | Done     | ZX0 section added to COPYRIGHTS.md               |
+| refresh-documented-figures         | Change      | Done     | Electron figure corrected to 42                  |
+| remove-duplicated-numbered-comment | Change      | Done     | Marker removed from useMidi.ts                   |
+| rename-or-merge-dead-test-file     | Change      | Done     | Merged into canonical suite; duplicate retired   |
+| resolve-unused-path-alias          | Change      | Done     | Alias removed from tsconfig and vitest           |
+| untrack-ds-store                   | Change      | Done     | OS artifact untracked                            |
+| docs/refactoring/1.2.9/            | Refactoring | Done     | Duplicate test file retired, assessment confirms |
 
 ## Repository Analysis
 
@@ -52,9 +52,9 @@ every mode, so reconciliation runs against `git diff` rather than the log.
 
 ## Findings
 
-| Severity | Finding                                              | Evidence             | Action                          |
-| -------- | ---------------------------------------------------- | -------------------- | ------------------------------- |
-| Low      | `npm audit` reports 5 advisories incl. 1 high (zod)  | `npm audit` output   | Change record for window 1.3.0  |
+| Severity | Finding                                             | Evidence           | Action                         |
+| -------- | --------------------------------------------------- | ------------------ | ------------------------------ |
+| Low      | `npm audit` reports 5 advisories incl. 1 high (zod) | `npm audit` output | Change record for window 1.3.0 |
 
 ## Verification Evidence
 

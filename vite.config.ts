@@ -1,12 +1,24 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import packageJson from './package.json' with { type: 'json' };
 
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
-  plugins: [react()],
+  plugins: [
+    react(),
+    {
+      name: 'version-service-worker-cache',
+      apply: 'build',
+      closeBundle() {
+        const swPath = resolve(__dirname, 'dist', 'sw.js');
+        const source = readFileSync(swPath, 'utf8');
+        writeFileSync(swPath, source.replaceAll('__APP_VERSION__', packageJson.version));
+      },
+    },
+  ],
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },

@@ -12,6 +12,7 @@ import {
   parseBaseKeyForExport,
 } from './core';
 import { Formatter } from '../utils/formatters';
+import { clampVolumeNibble } from '../utils/volumeUtils';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -345,8 +346,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   const modeEnv = instrument.mode || [];
   const noiseEnv = instrument.noise || [];
 
-  const clampVol = (v: number) => Math.max(0, Math.min(0x0f, v | 0));
-  const vols = volumeEnv.map(clampVol);
+  const vols = volumeEnv.map(clampVolumeNibble);
 
   // Number of envelope steps to consider (one step every 2 ticks)
   const stepsCount = Math.max(

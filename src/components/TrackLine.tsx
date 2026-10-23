@@ -1,6 +1,7 @@
 import React from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import type { Note } from '../synth/SoundDriver';
+import { clampVolumeNibble } from '../utils/volumeUtils';
 
 interface TrackLineProps {
   lineIndex: number;
@@ -42,9 +43,7 @@ export const TrackLine: React.FC<TrackLineProps> = ({
   const displayVolume =
     volume === undefined || volume === null
       ? '.'
-      : Math.max(0, Math.min(0x0f, volume | 0))
-          .toString(16)
-          .toUpperCase();
+      : clampVolumeNibble(volume).toString(16).toUpperCase();
 
   return (
     <div className={lineClassName} style={lineStyle} onClick={handleRowClick}>

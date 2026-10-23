@@ -1,5 +1,14 @@
 # Changes
 
+## Version 1.3.1
+
+Infrastructure and security window: continuous integration, release integrity checks, dependency remediation, and desktop permission scoping.
+
+- **Continuous integration**: a GitHub Actions workflow now runs the documented verification loop (typecheck, lint, format check, build, and test) on every push and on pull requests against `main`.
+- **Release integrity**: desktop builds now emit a `SHA256SUMS-<platform>.txt` checksum file beside each artifact, so downloads can be verified with `shasum -a 256 -c`; code signing was evaluated and recorded as a separate procurement decision.
+- **Security**: all `npm audit` advisories resolved - the vitest toolchain updated to 4.1.12 and zod to 4.6.7, leaving zero known vulnerabilities; the Electron permission handlers now grant MIDI access only to the application's own origin and no longer grant `midiSysex` at all.
+- **Offline freshness**: the service worker cache name now carries the application version and fetches network-first, so returning clients always receive the deployed build while the offline fallback is preserved.
+
 ## Version 1.3.0
 
 Audit-driven hygiene window: documentation accuracy fixes, license policy reconciliation, test-suite cleanup, and configuration hygiene from the 1.2 audit report.
@@ -9,7 +18,6 @@ Audit-driven hygiene window: documentation accuracy fixes, license policy reconc
 - **Licensing**: `COPYRIGHTS.md` now records the ZX0 port attribution (BSD-3-Clause, Einar Saukas) and the permitted-license list covers all resolved permissive classes with a review rule for undeclared packages.
 - **Documentation**: the Electron version figure corrected to 42, the test-file naming rule aligned to the camelCase convention, an AI-disclosure convention added, and a continuity-owner requirement recorded.
 - **Security**: `npm audit` reports 5 advisories in development tooling (4 moderate, 1 high in zod via vitest); remediation is scheduled for the 1.3.0 change window.
-
 
 ## Version 1.2.9
 

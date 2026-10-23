@@ -1,5 +1,6 @@
 import { YM2149 } from './YM2149';
 import { optimizeEvents } from './EventOptimizer';
+import { clampVolumeNibble } from '../utils/volumeUtils';
 
 export const DOSOUND_REGISTER_WRITE = 0xff;
 export const DOSOUND_END_MARKER = 0x00;
@@ -170,7 +171,7 @@ export class SoundDriver {
     if (typeof volume !== 'number' || !Number.isFinite(volume)) {
       return 0x0f;
     }
-    return Math.max(0, Math.min(0x0f, Math.floor(volume)));
+    return clampVolumeNibble(volume);
   }
 
   private getNotePeriod(noteName: string, octave: number): number {

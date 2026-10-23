@@ -257,6 +257,18 @@ For each change record in the window:
 
 ## Tooling Notes
 
+**Install the toolchain before the baseline loop**
+
+`node_modules` can drift from the lockfile (for example a partial install), and the verification loop then fails with errors like `prettier: command not found`. Before running the baseline loop, confirm the declared tools exist in `node_modules/.bin/` and run `npm install` when any are missing.
+
+**npm audit fix can no-op on peer-pinned chains**
+
+`npm audit fix` may report a fix as available yet leave the advisory in place when the vulnerable package is pinned by exact-version sibling packages (for example `@vitest/mocker` held by `vitest`, `@vitest/coverage-v8`, and `@vitest/ui`). When the declared range already admits the fixed version, upgrade every member of the chain explicitly with `npm install -D <pkg>@^<fixed-version>` and re-run `npm audit`.
+
+**Re-read files after a format sweep**
+
+`npm run format` rewrites the whole tree, including documents a session may still be editing; an edit staged against the pre-format content fails its exact-match check. Re-read any file before editing it after a format run.
+
 **Stopping the development server**
 
 Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F`. Verify the port is free before restarting.

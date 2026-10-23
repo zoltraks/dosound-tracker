@@ -1,6 +1,7 @@
 import type { Song, Instrument } from '../synth/SoundDriver';
 import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
 import { YM_CLOCK } from '../synth/YM2149';
+import { clampVolumeNibble } from './volumeUtils';
 
 export interface RegisterState {
   [register: number]: number;
@@ -219,8 +220,7 @@ export function simulateSong(
 
             // Update per-channel volume modifier when explicitly present on this row.
             if (volumeOnRow !== undefined && volumeOnRow !== null) {
-              const clamped = Math.max(0, Math.min(0x0f, (volumeOnRow as number) | 0));
-              channelState.volumeModifier = clamped;
+              channelState.volumeModifier = clampVolumeNibble(volumeOnRow as number);
             }
           }
 
@@ -354,7 +354,7 @@ export function applyInstrumentToRegisters(
 
   // Apply optional per-step volume modifier (0-15) as attenuation, 15 = no attenuation.
   if (volumeModifier !== undefined && volumeModifier !== null) {
-    const mod = Math.max(0, Math.min(0x0f, volumeModifier | 0));
+    const mod = clampVolumeNibble(volumeModifier);
     volume = Math.floor((volume * mod) / 15);
   }
 

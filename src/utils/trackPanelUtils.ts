@@ -1,6 +1,8 @@
 import type { NavigationSection } from '../constants/navigation';
 import type { Note, Pattern, Step } from '../synth/SoundDriver';
 
+import { clampVolumeNibble } from './volumeUtils';
+
 export { clampOctave, getKeyboardMappedNote } from './keyboardNoteMapping';
 
 export function isNavigationKey(keyUpper: string): boolean {
@@ -71,5 +73,5 @@ export function parseVolumeNibble(keyUpper: string): number | null {
   if (!Number.isFinite(value)) {
     return null;
   }
-  return Math.max(0, Math.min(0x0f, value));
+  return clampVolumeNibble(value);
 }

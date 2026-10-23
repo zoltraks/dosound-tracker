@@ -204,6 +204,10 @@ The YM2149 register simulation, volume table, and noise generation algorithm in 
 
 MIDI message handling in `src/hooks/useMidiMessageProcessing.ts` is a hot path that executes on every incoming MIDI message. Avoid per-event allocations: use direct `Uint8Array` indexed access instead of `Array.from()`, and use string concatenation loops instead of `array.map().join()` for hex formatting.
 
+### Electron Permission Policy
+
+The desktop main process (`electron/main.cjs`) grants the `midi` permission only when the requesting page is the application's own origin: the packaged `file://` bundle or the development server at `http://localhost:8008`. Requests from any other origin are denied, and `midiSysex` is never granted because the app does not request it. The origin check lives in `electron/permissions.cjs`.
+
 ## Known Limitations
 
 The following constraints reflect the current state of the codebase and are candidates for future improvement.
