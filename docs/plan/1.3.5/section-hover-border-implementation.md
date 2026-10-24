@@ -24,16 +24,18 @@ No TypeScript types, interfaces, or stores change. The fix is CSS only.
 
 **Declare the hover-border token in both themes**
 
-Add `--section-hover-border` to the dark palette in `:root` beside the border tokens, and to `.light` beside its equivalents. Dark theme uses a red-violet `#b84ec8` that sits between the existing violet and pink accents and blends with `--active-border` (`#7aa2f7`). Light theme uses a deeper red-violet `#9a3d95` that stays readable on light surfaces and blends with `--active-border` (`#f59e0b`).
+Add `--section-hover-border` to the dark palette in `:root` beside the border tokens, and to `.light` beside its equivalents. Dark theme uses a red-violet `#b84ec8` that sits between the existing violet and pink accents and blends with `--active-border` (`#7aa2f7`). Light theme uses a saturated metal blue `#2f6fae` that stays readable on light surfaces and blends with `--active-border` (`#f59e0b`); the light `--border-color` shifts to a light gray `#a8b0bb` so the hover color stands apart.
 
 File to modify: `src/App.css`.
 
 ```css
 /* dark :root, after --border-bright */
 --section-hover-border: #b84ec8;
+--section-hover-glow: rgba(226, 139, 240, 0.55);
 
 /* .light, after --border-bright */
---section-hover-border: #9a3d95;
+--section-hover-border: #2f6fae;
+--section-hover-glow: color-mix(in srgb, var(--section-hover-border) 45%, transparent);
 ```
 
 **Point the track-panel hover border at the new token**
@@ -45,7 +47,7 @@ File to modify: `src/App.css`.
 ```css
 .track-panel:hover {
   border-color: var(--section-hover-border);
-  box-shadow: var(--shadow-large), var(--glow-secondary);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 ```
 
@@ -60,24 +62,37 @@ File to modify: `src/App.css`.
 .information-panel:hover,
 .playlist-panel:hover,
 .instrument-panel:hover,
-.piano-keyboard:hover,
 .dump-panel:hover,
 .eq-panel:hover {
   border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .command-panel:hover {
   border-bottom-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .octave-selection:hover {
   border-bottom-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
+}
+```
+
+The piano keyboard keeps its inset shadow and composes it with the hover shadow:
+
+```css
+.piano-keyboard:hover {
+  border-color: var(--section-hover-border);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 6px var(--section-hover-glow);
 }
 ```
 
 **Extend the smooth fade to the other sections**
 
-`.track-panel` already transitions `border-color` over `0.6s`. Add the same `border-color` transition to `.envelope-panel`, `.information-panel`, `.playlist-panel`, `.instrument-panel`, `.piano-keyboard`, `.dump-panel`, `.eq-panel`, `.command-panel`, and `.octave-selection` so every section fades in and out the same way.
+`.track-panel` already transitions `border-color` over `0.6s`. Add a `border-color` and `box-shadow` transition at the same duration to `.envelope-panel`, `.information-panel`, `.playlist-panel`, `.instrument-panel`, `.piano-keyboard`, `.dump-panel`, `.eq-panel`, `.command-panel`, and `.octave-selection`, and extend the `.track-panel` transition with `box-shadow`, so every section fades border and shadow in and out the same way.
 
 File to modify: `src/App.css`.
 

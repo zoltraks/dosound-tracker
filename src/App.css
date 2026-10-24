@@ -16,6 +16,8 @@
   --border-color: #44475a;
   --border-dim: #2a2d3f;
   --border-bright: #7aa2f7;
+  --section-hover-border: #b84ec8;
+  --section-hover-glow: rgba(226, 139, 240, 0.55);
 
   --active-bg: #252d42;
   --active-border: #7aa2f7;
@@ -169,9 +171,11 @@
   --text-dim: #4a5568;
   --text-muted: #718096;
 
-  --border-color: #2d3748;
+  --border-color: #a8b0bb;
   --border-dim: #a0aec0;
   --border-bright: #1a202c;
+  --section-hover-border: #2f6fae;
+  --section-hover-glow: color-mix(in srgb, var(--section-hover-border) 45%, transparent);
 
   --active-bg: #fef3c7;
   --active-border: #f59e0b;
@@ -480,11 +484,20 @@ body {
   margin: 2px;
   background-color: var(--bg-secondary);
   justify-content: center;
+  border-bottom: 2px solid transparent;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .octave-selection.active {
   border-bottom-color: var(--active-border);
   box-shadow: 0 0 6px var(--active-glow);
+}
+
+.octave-selection:hover {
+  border-bottom-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .octave-button {
@@ -525,10 +538,18 @@ body {
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
   border-bottom: 2px solid var(--border-color);
   box-shadow: var(--shadow-small);
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .command-panel.active {
   box-shadow: var(--shadow-medium), var(--glow-primary);
+}
+
+.command-panel:hover {
+  border-bottom-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .command-row {
@@ -1533,7 +1554,8 @@ body {
   min-height: 0;
   transition:
     background-color 0.6s ease,
-    border-color 0.6s ease;
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .track-panel:focus {
@@ -1574,8 +1596,8 @@ body {
 }
 
 .track-panel:hover {
-  border-color: var(--border-bright);
-  box-shadow: var(--shadow-large), var(--glow-secondary);
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .track-panel.disabled {
@@ -1868,6 +1890,9 @@ body {
   cursor: pointer;
   outline: none;
   flex-shrink: 0;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .envelope-panel:focus {
@@ -1877,6 +1902,11 @@ body {
 .envelope-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
+}
+
+.envelope-panel:hover {
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .envelope-header {
@@ -2058,11 +2088,19 @@ body {
   border: 1px solid var(--border-color);
   padding: 4px;
   cursor: pointer;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .information-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
+}
+
+.information-panel:hover {
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .information-header {
@@ -2344,6 +2382,9 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .playlist-panel:focus {
@@ -2353,6 +2394,11 @@ body {
 .playlist-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
+}
+
+.playlist-panel:hover {
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .playlist-header {
@@ -2573,6 +2619,9 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 .instrument-panel:focus {
@@ -2582,6 +2631,11 @@ body {
 .instrument-panel.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
+}
+
+.instrument-panel:hover {
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .instrument-list-header {
@@ -2879,6 +2933,14 @@ body {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   padding: 4px;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+
+.dump-panel:hover {
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .dump-header {
@@ -2924,6 +2986,14 @@ body {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   padding: 4px;
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+
+.eq-panel:hover {
+  border-color: var(--section-hover-border);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .eq-header {
@@ -3048,6 +3118,9 @@ body {
   padding: 7px; /* leave a 1px gap for the focus border */
   border: 1px solid var(--border-color);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+  transition:
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
 }
 
 /* Avoid transient tap highlight flashes on mobile when piano is already focused */
@@ -3061,6 +3134,13 @@ body {
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.5),
     var(--glow-primary);
+}
+
+.piano-keyboard:hover {
+  border-color: var(--section-hover-border);
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.5),
+    0 0 6px var(--section-hover-glow);
 }
 
 .piano-keys {
