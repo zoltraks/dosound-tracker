@@ -350,9 +350,10 @@ The project records a session-review convention. When the user says "improve dos
 
 **Procedure**
 
-- Gather the session's wounds: failures, surprises, workarounds, and repeated corrections.
+- Review the conversation history of the current session and gather its wounds: failures, surprises, workarounds, and repeated corrections.
 - Verify the real state before recording a lesson - a guessed finding poisons the index.
 - For each wound, check whether an existing rule already covers it. If no rule covers the lesson, add the rule to the owning document's body first, then index it in the lesson file.
+- Owning documents are the project guidelines, workflow and process documents, and the engineering standards under `docs/standard/` - the review updates documentation, not source code.
 - Record the session's findings in `docs/lesson/lessons-<date>-<theme>.md` using `docs/template/session-findings.md`. Entries use titles, never ordinal numbers.
 
 **Routing**
@@ -360,6 +361,8 @@ The project records a session-review convention. When the user says "improve dos
 | Lesson kind              | Owning destination                                                        |
 | ------------------------ | ------------------------------------------------------------------------- |
 | Engineering wound        | The relevant standard's findings, for example `standard/ts-react-development.md` |
+| Testing or tooling wound | The owning section of `TESTING.md`                                        |
+| Versioning wound         | The owning section of `VERSIONING.md`                                     |
 | Workflow wound           | A rule in this file plus a dated record in `docs/decision/` when the decision is durable |
 | Machine or tooling quirk | Environment notes in `DEPLOYMENT.md` or `WORKFLOW.md`                     |
 
