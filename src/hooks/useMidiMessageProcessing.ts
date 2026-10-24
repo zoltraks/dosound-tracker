@@ -9,6 +9,23 @@ import type {
 import { resolveDeviceName, formatTime, MAX_MONITOR_ENTRIES } from '../utils/midiUtils';
 import { StorageKeys } from '../utils/storageKeys';
 
+const bytesToHex = (bytes: ArrayLike<number>): string => {
+  let dataHex = '';
+  for (let i = 0; i < bytes.length; i += 1) {
+    if (i > 0) dataHex += ' ';
+    dataHex += (bytes[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
+  }
+  return dataHex;
+};
+
+const isDebugEnabled = (): boolean => {
+  try {
+    return localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
+  } catch {
+    return false;
+  }
+};
+
 const isElectronEnv =
   typeof window !== 'undefined' && !!(window as unknown as { electronAPI?: unknown }).electronAPI;
 
@@ -72,22 +89,13 @@ export function useMidiMessageProcessing(
       const command = status & 0xf0;
       const channel = (status & 0x0f) + 1; // 1-16
 
-      let dataHex = '';
-      for (let i = 0; i < data.length; i += 1) {
-        if (i > 0) dataHex += ' ';
-        dataHex += (data[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
-      }
+      const dataHex = bytesToHex(data);
 
       const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
 
       const time = formatTime();
 
-      let debugOn = false;
-      try {
-        debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
-      } catch {
-        debugOn = false;
-      }
+      const debugOn = isDebugEnabled();
 
       let type = 'Unknown';
       let noteLabel = '';
@@ -260,11 +268,7 @@ export function useMidiMessageProcessing(
 
       const bytes = [status, clampedNote, vel];
 
-      let dataHex = '';
-      for (let i = 0; i < bytes.length; i += 1) {
-        if (i > 0) dataHex += ' ';
-        dataHex += (bytes[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
-      }
+      const dataHex = bytesToHex(bytes);
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
       const outputDeviceName = resolveDeviceName(
@@ -290,12 +294,7 @@ export function useMidiMessageProcessing(
         value: vel,
       });
 
-      let debugOn = false;
-      try {
-        debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
-      } catch {
-        debugOn = false;
-      }
+      const debugOn = isDebugEnabled();
 
       if (debugOn && enableMonitors) {
         const time = formatTime();
@@ -359,9 +358,7 @@ export function useMidiMessageProcessing(
       const status = 0xc0 | ((safeChannel - 1) & 0x0f);
       const bytes = [status, clampedProgram];
 
-      const dataHex = bytes
-        .map((byte) => byte.toString(16).toUpperCase().padStart(2, '0'))
-        .join(' ');
+      const dataHex = bytesToHex(bytes);
 
       const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
       const outputDeviceName = resolveDeviceName(
@@ -382,12 +379,7 @@ export function useMidiMessageProcessing(
         value: clampedProgram,
       });
 
-      let debugOn = false;
-      try {
-        debugOn = localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
-      } catch {
-        debugOn = false;
-      }
+      const debugOn = isDebugEnabled();
 
       if (debugOn && enableMonitors) {
         const time = formatTime();
@@ -454,12 +446,7 @@ export function useMidiMessageProcessing(
       value: null,
     });
 
-    let debugOn = false;
-    try {
-      debugOn = localStorage.getItem('dosound-tracker-debug-mode') === 'on';
-    } catch {
-      debugOn = false;
-    }
+    const debugOn = isDebugEnabled();
 
     if (debugOn && enableMonitors) {
       const time = formatTime();

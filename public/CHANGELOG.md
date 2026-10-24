@@ -1,5 +1,14 @@
 # Changes
 
+## Version 1.3.2
+
+Quality window: end-to-end smoke coverage for the documented flows and a test-suite expansion that closes the coverage gap above the 80% thresholds.
+
+- **End-to-end testing**: a new Playwright smoke suite in `e2e/` covers the six documented flows - first launch state, note entry and song playback, instrument envelope editing and preview, DOSOUND assembly export, song save and load, and theme switching - running deterministically on Chromium and WebKit; Firefox is excluded because its plugin-container cannot launch under the macOS sandbox in this environment, as recorded in `docs/TESTING.md`.
+- **Coverage closure**: the test suite grew from 266 to 525 tests, raising measured coverage from 60.41% statements, 50.23% branches, 67.03% functions, and 60.57% lines to 92.26%, 80.18%, 94.99%, and 92.51% respectively - all above the configured 80% thresholds; new suites cover the YM2149 emulator, `SoundDriver`, event optimization, MIDI message processing and device management, song data management, instrument operations, assembly/binary/VGM export paths, and track-panel editing.
+- **Refactoring**: repeated hex-formatting and debug-flag reads inside `useMidiMessageProcessing` were consolidated into shared helpers with no behavior change.
+- **Security**: `npm audit` reports zero known vulnerabilities.
+
 ## Version 1.3.1
 
 Infrastructure and security window: continuous integration, release integrity checks, dependency remediation, and desktop permission scoping.

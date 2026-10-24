@@ -13,7 +13,8 @@ export default defineConfig({
   },
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    // REASON: firefox excluded - headless launch fails under the macOS sandbox
+    // (plugin-container sandbox_extension denied); re-enable when upstream fixes land.
     { name: 'webkit', use: { ...devices['Desktop Safari'] } },
   ],
   webServer: {

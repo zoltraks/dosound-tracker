@@ -163,14 +163,16 @@ Verify hook and engine interactions.
 
 **End-to-end Tests**
 
-Exercise critical user flows in a real browser.
+Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spec.ts` with shared interactions in `e2e/helpers.ts`. Each of the six documented flows is one independent `test`.
 
-- First launch shows empty song with default instrument.
+- First launch shows the bundled song with the default instrument selected.
 - Enter notes in track A and play the song.
 - Create a new instrument, edit envelope, and preview.
 - Export song to DOSOUND assembly format.
 - Save and load a song file.
 - Switch theme between dark and light.
+
+`npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/`; run `npm run build` first so the preview serves the current code. The suite runs on the chromium and webkit projects; the firefox project is excluded because headless launch fails under the current macOS sandbox.
 
 ## Test Configuration
 
@@ -182,6 +184,16 @@ See `vitest.config.ts` for the Vitest configuration. The configuration includes:
 - Setup files for localStorage and test utilities.
 - Coverage provider v8 with 80% thresholds for lines, functions, branches, and statements.
 - Path alias `@/` resolving to `src/`.
+
+**Type checking**
+
+- `tsconfig.app.json` includes both `src/` and `test/`, so every test file must be type-clean: `tsc -b` (inside `npm run build` and `npm run bump`) typechecks tests even though `vitest` does not.
+- `npm run typecheck` runs `tsc --noEmit` against the solution-style root `tsconfig.json` (`files: []`) and checks nothing on its own. The effective type gate for test code is the build step, not the typecheck script.
+
+**Component test hygiene**
+
+- `@testing-library/react` does not auto-cleanup in this setup. Every component test file must register `afterEach(() => cleanup())` or queries will match elements from earlier tests in the same file.
+- The localStorage mock in `test/setup-localstorage.ts` reinstalls a fresh store in a `beforeEach` hook. Tests cannot rely on values persisting between test cases in the same file.
 
 **Playwright**
 

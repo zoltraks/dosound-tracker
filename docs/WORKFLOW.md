@@ -244,7 +244,7 @@ For each change record in the window:
 
 **Run State**
 
-- Under the `run-resume` extension, a window run records each completed stage in `docs/plan/<version>/window-run.md` as it proceeds. This file is a run-state record, not an implementation plan.
+- Under the `run-resume` extension, a window run records each completed stage in `docs/plan/<version>/window-run.md` as it proceeds. This file is a run-state record, not an implementation plan. Do not create `window-run.md` for ordinary window runs - it exists only for the run-resume extension when resuming is explicitly needed.
 - A restarted window re-reads the record, verifies that artifacts claimed by completed stages actually exist - demoting any stage whose artifacts are missing - and continues from the first incomplete stage.
 
 **Audit-Driven Ring**

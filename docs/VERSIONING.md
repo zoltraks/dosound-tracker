@@ -51,6 +51,8 @@ This script is executed by the `npm run bump` command, which increments the patc
 
 The `npm run build` command builds the application without bumping the version. Use `npm run build` for verification loops and rebuilds. Use `npm run bump` only when a version bump is explicitly requested.
 
+The bump script writes `package.json` before building. If the build then fails, the repository is left with a bumped version and no matching build. Run the full verification loop first, and if a bump fails partway restore the intended version in `package.json` and fix the failure before bumping again — never re-run `npm run bump` blindly, since it increments from whatever version is currently recorded.
+
 The automated script handles only the version number increment. The following steps remain manual:
 
 - Running the security audit (`npm audit`).

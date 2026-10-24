@@ -1,95 +1,122 @@
-import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
-import { render, waitFor, act } from '@testing-library/react';
+import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMessageSystem } from '../../src/hooks/useMessageSystem';
 
-const MESSAGES_URL = 'MESSAGES.md';
-
-const originalFetch = global.fetch;
-
-const MessageSystemHarness: React.FC<{
-  onReady: (value: ReturnType<typeof useMessageSystem>) => void;
-}> = ({ onReady }) => {
-  const value = useMessageSystem();
-
-  React.useEffect(() => {
-    onReady(value);
-  }, [value, onReady]);
-
-  return null;
+const stubFetch = (impl: () => Promise<{ ok: boolean; text: () => Promise<string> }>) => {
+  vi.stubGlobal('fetch', vi.fn(impl));
 };
+
+const MESSAGES = 'First line\ncontinued\n\nSecond block\n\n\nThird block\n';
 
 describe('useMessageSystem', () => {
   afterEach(() => {
-    global.fetch = originalFetch;
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
-  it('loads messages from MESSAGES.md and selects an initial index', async () => {
-    const markdown = ['First block', '', 'Second block line 1', 'Second block line 2'].join('\n');
-
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => markdown,
-    } as Response);
-
-    let hook: ReturnType<typeof useMessageSystem> | null = null;
-
-    render(
-      <MessageSystemHarness
-        onReady={(value) => {
-          hook = value;
-        }}
-      />,
-    );
-
-    await waitFor(() => {
-      expect(hook).not.toBeNull();
-      expect(hook!.messages.length).toBe(2);
-    });
-
-    expect(global.fetch).toHaveBeenCalledWith(MESSAGES_URL);
-    expect(hook!.currentMessageIndex).toBeGreaterThanOrEqual(0);
-    expect(hook!.currentMessageIndex).toBeLessThan(hook!.messages.length);
+  it('fetches MESSAGES.md and splits it into blocks', async () => {
+    stubFetch(() => Promise.resolve({ ok: true, text: () => Promise.resolve(MESSAGES) }));
+    const { result } = renderHook(() => useMessageSystem());
+    try {
+      await waitFor(() => expect(result.current.messages).toHaveLength(3));
+      expect(result.current.messages[0]).toBe('First line continued');
+      expect(result.current.messages[1]).toBe('Second block');
+      expect(result.current.currentMessageIndex).toBeLessThan(3);
+      expect(result.current.isNotesVisible).toBe(true);
+    } catch (error) {
+      console.log('blocks mismatch', result.current.messages);
+      throw error;
+    }
   });
 
-  it('cycles to another message when handleNotesClick is called', async () => {
-    const markdown = ['Block A', '', 'Block B'].join('\n');
+  it('keeps empty state when the fetch fails', async () => {
+    stubFetch(() => Promise.reject(new Error('offline')));
+    const { result } = renderHook(() => useMessageSystem());
+    try {
+      await waitFor(() => expect(result.current.messages).toEqual([]));
+      expect(result.current.currentMessageIndex).toBe(0);
+    } catch (error) {
+      console.log('fetch-fail mismatch');
+      throw error;
+    }
+  });
 
-    global.fetch = vi.fn().mockResolvedValue({
-      ok: true,
-      text: async () => markdown,
-    } as Response);
+  it('handles a non-ok response', async () => {
+    stubFetch(() => Promise.resolve({ ok: false, text: () => Promise.resolve('x') }));
+    const { result } = renderHook(() => useMessageSystem());
+    try {
+      await waitFor(() => expect(result.current.messages).toEqual([]));
+    } catch (error) {
+      console.log('non-ok mismatch');
+      throw error;
+    }
+  });
 
-    let hook: ReturnType<typeof useMessageSystem> | null = null;
+  it('cycleMessages fades out then swaps to a different index', async () => {
+    vi.useFakeTimers();
+    stubFetch(() => Promise.resolve({ ok: true, text: () => Promise.resolve(MESSAGES) }));
+    const { result } = renderHook(() => useMessageSystem());
+    try {
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(result.current.messages).toHaveLength(3);
+      const before = result.current.currentMessageIndex;
 
-    render(
-      <MessageSystemHarness
-        onReady={(value) => {
-          hook = value;
-        }}
-      />,
-    );
+      act(() => result.current.handleNotesClick());
+      expect(result.current.isNotesVisible).toBe(false);
 
-    await waitFor(() => {
-      expect(hook).not.toBeNull();
-      expect(hook!.messages.length).toBe(2);
-    });
+      act(() => {
+        vi.advanceTimersByTime(900);
+      });
+      expect(result.current.isNotesVisible).toBe(true);
+      expect(result.current.currentMessageIndex).not.toBe(before);
+    } catch (error) {
+      console.log('cycle mismatch');
+      throw error;
+    }
+  });
 
-    const initialIndex = hook!.currentMessageIndex;
+  it('does not cycle with a single message', async () => {
+    vi.useFakeTimers();
+    stubFetch(() => Promise.resolve({ ok: true, text: () => Promise.resolve('Only one\n') }));
+    const { result } = renderHook(() => useMessageSystem());
+    try {
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(result.current.messages).toHaveLength(1);
+      act(() => result.current.handleNotesClick());
+      expect(result.current.isNotesVisible).toBe(true);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      expect(result.current.currentMessageIndex).toBe(0);
+    } catch (error) {
+      console.log('single mismatch');
+      throw error;
+    }
+  });
 
-    await act(async () => {
-      hook!.handleNotesClick();
-    });
-
-    // Wait for the fade timeout (800ms) to complete
-    await act(async () => {
-      await new Promise((resolve) => setTimeout(resolve, 900));
-    });
-
-    await waitFor(() => {
-      expect(hook!.currentMessageIndex).not.toBe(initialIndex);
-    });
-
-    expect(hook!.isNotesVisible).toBe(true);
+  it('auto-cycles on the ten-second interval', async () => {
+    vi.useFakeTimers();
+    stubFetch(() => Promise.resolve({ ok: true, text: () => Promise.resolve(MESSAGES) }));
+    const { result } = renderHook(() => useMessageSystem());
+    try {
+      await act(async () => {
+        await Promise.resolve();
+      });
+      act(() => {
+        vi.advanceTimersByTime(10000);
+      });
+      expect(result.current.isNotesVisible).toBe(false);
+      act(() => {
+        vi.advanceTimersByTime(900);
+      });
+      expect(result.current.isNotesVisible).toBe(true);
+    } catch (error) {
+      console.log('interval mismatch');
+      throw error;
+    }
   });
 });
