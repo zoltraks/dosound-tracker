@@ -275,7 +275,15 @@ A mass-move specifier rewrite must cover both directions: specifiers that point 
 
 **Stopping the development server**
 
-Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F`. Verify the port is free before restarting.
+Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F`; on macOS and Linux use `lsof -ti :8008 | xargs kill`. Verify the port is free before restarting.
+
+**Verify visual changes on the dev server**
+
+`vite preview` serves the built `dist/` bundle - source changes appear only after `npm run build` and a page reload. For visual verification of styling work (hover states, colors, layout) run `npm run dev` instead: the dev server hot-reloads CSS and component edits into the open page with no rebuild or reload.
+
+**Check rendered styles headlessly**
+
+A throwaway `@playwright/test` script under `work/` can drive the dev server and assert computed styles - hover an element, wait out the transition, then read `getComputedStyle`. This verifies visual CSS behavior such as border colors, shadows, and background blends without manual screenshots.
 
 **Place an extracted hook before its earliest consumer**
 

@@ -448,7 +448,7 @@ Examples:
 - **Column widths**: calculate the column width as the maximum character width of all cells in that column, including the header cell. Include all Markdown formatting characters in the width measurement.
 - **Cell padding**: pad every cell with trailing spaces so it matches the column width. Empty cells must also be padded. Do not pad beyond the column width. Never truncate cell contents. Content must be aligned left. Do not use `:---` or `---:`.
 - **Delimiters**: use one space after the leading pipe and one space before the trailing pipe. Do not add extra spaces around the pipes beyond the single required space.
-- **Separator row**: place the separator line immediately after the header row. Use `W + 2` contiguous hyphens, where `W` is the calculated column width. Do not add spaces between the pipes and the hyphens.
+- **Separator row**: place the separator line immediately after the header row. Use a run of `W` contiguous hyphens between the usual one-space delimiters, where `W` is the calculated column width - the separator row then spans the same inner width as the cells.
 - **Pipes**: all vertical pipes (`|`) must be vertically aligned.
 - **Visual indicators**: use `✓` for affirmative or available features and `✗` for negative or unavailable features.
 
