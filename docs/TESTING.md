@@ -86,7 +86,7 @@ Run the verification loop only when source code, configuration, or test files ar
 - Before version bumping.
 - When explicitly asked for a production-ready build.
 
-**Test failures are not optional.**
+**Test failures are not optional**
 
 All test failures must be fixed before the work is considered complete. This includes:
 
@@ -227,11 +227,13 @@ Tests are organised under `test/` by domain:
 
 - `test/components/` — React component tests
 - `test/electron/` — main-process module tests
+- `test/exports/` — export format module tests, mirroring `src/exports/`
 - `test/hooks/` — custom hook tests
-- `test/stores/` — Zustand store tests
 - `test/synth/` — audio synthesis engine tests
 - `test/utils/` — utility function tests
 - `test/fixtures/` — committed test fixtures (song YAML files, VGM files)
+
+`test/hooks/` and `test/utils/` mirror the domain subdirectories of `src/hooks/` and `src/utils/`: a test whose subject is one source file lives in the matching domain subdirectory, while a test covering several subjects keeps a flat name in the directory root.
 
 **Electron module tests**
 

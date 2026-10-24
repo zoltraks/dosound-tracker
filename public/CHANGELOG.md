@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.3.6
+
+Visual feedback polish and continued composition-root decomposition: every section now shows a distinct hover border, and markdown headings render fully in modal viewers.
+
+- **Section hover borders**: every navigable section - octave selection, command panel, track panels, tone/noise and envelope panels, song information, playlist, instrument list, Dump, EQ, and the piano keyboard - fades to a dedicated hover border color, red-violet in the dark theme and metal blue in the light theme, which also takes precedence over the active-section border while the pointer is over the section.
+- **Modal headings**: rendered markdown headings in the CHANGES and MANUAL viewers gained a glyph-covering line height, so the top heading is no longer clipped by the scrollable body edge.
+- **Structure**: `src/App.tsx` shrank to ~1110 lines as six more bounded orchestration hooks moved under `src/hooks/`, and the `test/` tree now mirrors the source domain grouping, including a `test/exports/` mirror of `src/exports/` and the dissolution of `test/stores/` into `test/hooks/ui/`.
+- **Standards**: `docs/standard/typescript-react-development.md` was re-vendored to canonical 0.1.4, which now carries the test-hygiene contracts the project conventions previously recorded.
+- **Security**: `npm audit` reports zero known vulnerabilities.
+
 ## Version 1.3.5
 
 The source tree was fully grouped into domain subdirectories and the engineering-standard library was adopted.

@@ -1,4 +1,5 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
+import type { MutableRefObject } from 'react';
 import { useMidi } from './useMidi.ts';
 import type {
   MidiConfiguration,
@@ -10,9 +11,23 @@ import type { Instrument } from '../../synth/SoundDriver.ts';
 import { NOTES } from '../../constants/music.ts';
 import { clampVolumeNibble } from '../../utils/panel/volumeUtils.ts';
 
+interface MidiBridgeHelpers {
+  sendInstrumentMidiNoteOn: (
+    ymChannel: number,
+    instrument: Instrument | undefined,
+    note: string,
+    octave: number,
+    volumeFromStep?: number | null,
+    velocityOverride?: number | null,
+  ) => void;
+  sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
+}
+
 interface UseMidiHandlingOptions {
   onNoteEvent: (event: MidiNoteEvent) => void;
   monitorsEnabled: boolean;
+  midiHelpersRef?: MutableRefObject<MidiBridgeHelpers | null>;
+  midiConfigurationRef?: MutableRefObject<MidiConfiguration | null>;
 }
 
 interface UseMidiHandlingResult {
@@ -51,6 +66,7 @@ interface UseMidiHandlingResult {
 }
 
 export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlingResult {
+  const { midiHelpersRef, midiConfigurationRef } = options;
   const {
     isSupported,
     accessError,
@@ -179,6 +195,24 @@ export function useMidiHandling(options: UseMidiHandlingOptions): UseMidiHandlin
 
   const midiInputEnabled = configuration.inputEnabled && !!configuration.inputId;
   const midiOutputEnabled = configuration.outputEnabled && !!configuration.outputId;
+
+  // Keep MIDI helper ref in sync with the latest MIDI send functions so callbacks
+  // defined earlier can use them safely. The send functions are re-created each
+  // render, so the ref sync intentionally runs every render with no dep array.
+  useEffect(() => {
+    if (midiHelpersRef) {
+      midiHelpersRef.current = {
+        sendInstrumentMidiNoteOn,
+        sendInstrumentMidiNoteOffForChannel,
+      };
+    }
+  });
+
+  useEffect(() => {
+    if (midiConfigurationRef) {
+      midiConfigurationRef.current = configuration;
+    }
+  }, [midiConfigurationRef, configuration]);
 
   return {
     isMidiSupported: isSupported,

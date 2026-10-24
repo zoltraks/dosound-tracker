@@ -9,7 +9,10 @@
 Files are named `<language-or-domain>-<category>-development.md` and are discovered
 by that convention. Each adopted document carries a `Project Conventions` section
 where project-specific deltas are recorded; canonical content is kept unmodified
-so future syncs stay diffable.
+so future syncs stay diffable. The repository-wide format sweep restyles vendored
+files (spaced table separators, code reflows), so a byte-level diff against the
+canonical library is always noisy - sync checks compare content with `diff -w -B`
+or by section, never raw bytes.
 
 - **`accessibility-general-development.md`** - Accessibility, general. Adopted, project deltas.
 - **`typescript-audio-development.md`** - TypeScript, real-time audio. Adopted, project deltas.

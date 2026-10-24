@@ -1,6 +1,6 @@
 # TypeScript and React Engineering Standards
 
-<!-- Version: 0.1.3 | Date: 2026-10-24 -->
+<!-- Version: 0.1.4 | Date: 2026-10-24 -->
 
 ## Purpose
 
@@ -1499,6 +1499,13 @@ shape - a wrapped setter may be `(value) => void`, not `Dispatch<SetStateAction>
 **Empty catch convention.** A deliberately empty catch is written `{ // ignore }`, stays rare, and
 marks an intentional discard rather than forgotten error handling.
 
+**Test-hygiene contracts.** React Testing Library does not auto-clean rendered trees - every
+component test registers `afterEach(() => cleanup())` when no global setup does it. Spies attach
+to the installed object's own surface - `localStorage`, never `Storage.prototype`, because the
+installed mock may be a plain object without the prototype chain. `fetch` stubs return the full
+Response surface the code under test reads (`ok`, `headers.get()`, `text()`), and assertions on
+rendered markup expect escaped entity forms rather than assuming raw characters survive.
+
 **Trusted markup boundary.** Content rendered through `dangerouslySetInnerHTML` is typed as a
 trusted brand produced only by the escaping renderer, and fetch sinks for bundled documents run
 behind an allowlist that rejects unexpected names and non-markup bodies.
@@ -1532,8 +1539,5 @@ Project-specific conventions extend the standard above for the DOSOUND Tracker c
 - `useLocalStorageState` in `src/hooks/storage/` is the shared hook for localStorage-backed
   state; states sharing one JSON key are not split without a schema change.
 - `useUiStore` in `src/hooks/ui/` is the single Zustand store for cross-component UI state.
-- `@testing-library/react` does not auto-cleanup: every component test registers
-  `afterEach(() => cleanup())`. Spy on `localStorage` itself, never `Storage.prototype`.
-  `fetch` stubs return the full Response surface the code reads.
 - `src/assets/song.yaml` is imported with a `?raw` query suffix - query-suffixed specifiers
   are treated as import specifiers in every move refactoring.

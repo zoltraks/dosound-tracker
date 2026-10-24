@@ -17,8 +17,6 @@ Examples of the YAML formats can be found under:
 
 - `src/assets/song.yaml`
 
----
-
 ## SAVE SONG
 
 ### Output file
@@ -183,8 +181,6 @@ Loader (`parseSongFromYaml`) rules:
 - `color` normalized to 3-digit hex format.
 - `midi` channel/program parsed and clamped to valid MIDI ranges.
 
----
-
 ## SAVE INST
 
 ### Output file
@@ -220,8 +216,6 @@ Behaviour:
 - Saver (`saveInstrument`) trims and writes fields with the same rules as `SAVE SONG` instruments, but without `number`.
 - Loader (`loadInstrument`) expects root `instrument` and applies the imported parameters to the **currently selected instrument slot**, using the same parsing rules as above.
 - Includes `type: "dosound"` and `version: 1` fields for format identification.
-
----
 
 ## COPY TRACK
 
@@ -263,8 +257,6 @@ Details:
     - `note: string` → parsed via `parseBaseKeyString` into note + octave; instrument defaults to `"00"` if missing.
     - Optional `volume` nibble 0..15.
   - Overwrites the monotrack data (`trackA`) and per-line `volume` for the selected pattern.
-
----
 
 ## EXPORT DATA
 
@@ -309,8 +301,6 @@ Details:
       dc.b $FF,$00           ; STOP
   ```
 
----
-
 ## EXPORT DUMP
 
 ### Output file
@@ -338,8 +328,6 @@ Details:
 - No optimisation: every logical frame produces one line.
 - The dump is intended for debugging/analysis of the raw register stream rather than for compact inclusion.
 
----
-
 ## EXPORT BIN
 
 ### Output file
@@ -355,8 +343,6 @@ Details:
   - Scans each line for `dc.b`.
   - Extracts each `$XX` token, parses as hex, and appends the low 8 bits as one byte.
 - The resulting `Uint8Array` is exactly the concatenation of all DOSOUND command bytes emitted in the assembly export.
-
----
 
 ## EXPORT MAX
 
@@ -409,8 +395,6 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
 - Creates a preview song with a single pattern containing the instrument's base note.
 - Exports using the same MAX format as song export.
 
----
-
 ## EXPORT VGM
 
 ### Output file
@@ -453,8 +437,6 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
 
 This document does not attempt to fully describe the VGM specification; it documents only how this tracker maps its internal song representation into a VGM file.
 
----
-
 ## EXPORT WAV
 
 ### Output file
@@ -485,8 +467,6 @@ The exporter builds a standard PCM 16‑bit, mono WAV header using:
 - Samples are clamped to [-1, 1] and written as signed 16-bit values.
 
 The resulting WAV file is suitable for direct playback in standard audio players and provides a rendered version of the tracker song.
-
----
 
 ## MIDI CONFIGURATION
 

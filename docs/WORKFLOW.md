@@ -297,6 +297,18 @@ Every moved fragment orphans its imports in the origin file (`yaml`, `js-yaml`, 
 
 `git stash` leaves untracked files in place, so a stash-based "clean tree" lint or build check still sees newly created files. Use `git stash -u` when the check must exclude uncommitted new files, or move them aside explicitly.
 
+**Enumerate moved files explicitly, not by depth**
+
+A specifier rewrite driven by `find <dir> -mindepth 2` silently skips files directly under a start directory, because the depth is counted relative to each start path. After a tree move that places files at different depths, enumerate the moved paths from the move list itself (or glob each destination directory) and rewrite every one - a depth-filtered enumeration can look complete while missing a whole destination folder.
+
+**Lint the destination file right after an extraction**
+
+Verbatim code that was clean in its origin file can warn in its new home: file-level `eslint-disable` headers do not travel with moved code, and React compiler rules judge a custom-hook file differently from the component the code came from (`set-state-in-effect`, `preserve-manual-memoization`, `exhaustive-deps`). Run `npm run lint` immediately after each extraction step and apply the documented suppression (`/* eslint-disable react-hooks/exhaustive-deps */` file header, scoped `set-state-in-effect` block) rather than discovering all warnings in the final loop.
+
+**Check for a canonical implementation before moving a helper**
+
+A module-level helper slated for a move into `src/utils/` may already exist there under a different name - `App.tsx` carried `formatNoteKey` and `parseBaseKeyString`, exact duplicates of `formatBaseKey` and `parseBaseKey` in `src/utils/song/songFormat.ts`. Compare candidate helpers against the target module's exports first; injecting the canonical function avoids writing a duplicate.
+
 **Table formatting and Prettier**
 
 When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate; `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).

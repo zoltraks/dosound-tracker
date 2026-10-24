@@ -14,8 +14,6 @@ Ideally, you are both.
 
 If not, share this file: the musician gets the top half, the coder gets the bottom half, and you meet in the middle over `dc.b`.
 
----
-
 ## Installation & Downloads
 
 - **Electron desktop builds** are available from the project home page: https://dosound.alyx.pl
@@ -28,8 +26,6 @@ xattr -dr com.apple.quarantine dosound-tracker-1.2.0-mac-arm64.dmg
 ```
 
 Adjust the file name if you downloaded a different version, then open the `.dmg` and install as usual.
-
----
 
 ## From Zero to Sound
 
@@ -122,8 +118,6 @@ In the pattern editor:
 5. **Track C**: drums/noise patterns
 
 **Pro tip:** Copy patterns between tracks to build complex arrangements quickly.
-
----
 
 ## Complete Program Features
 
@@ -513,8 +507,6 @@ The following settings persist across sessions via localStorage:
 - Vitest test runner
 - Playwright end-to-end tests
 
----
-
 ## 4. Core Concepts
 
 This section describes core concepts used by this tool for both musicians and coders.
@@ -559,8 +551,6 @@ Example:
 - `speed: 4`, `length: 64`, `frame: 60` → `64 * 4 * 16.66 ms = 4266 ms ≈ 4.27 s` per pattern.
 
 The music will still be faster than your loader.
-
----
 
 ## Anatomy of a Song File
 
@@ -644,8 +634,6 @@ When loading YAML, the loader turns the `step` list into a fixed‑length patter
    - `instrument` missing on a note row → `"00"`.
    - `volume` → parsed to 0..15 if possible.
 3. If `step` has fewer than `length` rows, the remaining rows are treated as empty (`wait`).
-
----
 
 ## Instruments: Your Tiny Synthesizers
 
@@ -761,8 +749,6 @@ Internally, the export logic:
 - Freezes the envelope at `sustain` while not released.
 - Once released, it increments steps on every second tick until the end of the envelope.
 
----
-
 ## Writing Patterns Like a Tracker Person
 
 You can either use the UI or edit the YAML directly. This section focuses on the **musical meaning** rather than every key combo.
@@ -822,8 +808,6 @@ Line (playlist):
 - Row 1: `A: "00", B: "01", C: "02"` (repeat or use other pattern IDs).
 
 You can later swap `02` with a different drum pattern ID to get instant variations without touching the melody.
-
----
 
 ## Composer Workflow: From Idea to Finished Tune
 
@@ -914,8 +898,6 @@ Then:
 
 If it sounds good on tiny PSG, it'll sound legendary everywhere else.
 
----
-
 ## Technical Deep Dive: How Export to DOSOUND Works
 
 This section is especially for **coders** (but musicians can peek to impress their local assembler wizard).
@@ -1004,8 +986,6 @@ Relevant **YM 2149** registers used:
 
 In DOSOUND assembly export, envelopes are emulated in software and only tone, noise, mixer, and volume registers are written. In MAX export, all 14 registers (R0 through R13) are captured per frame.
 
----
-
 ## Have You Played ATARI Today?
 
 This section assumes you already know how to:
@@ -1046,8 +1026,6 @@ Because the export format is human‑readable assembly, you can:
 
 However, be careful when hand‑editing the **`$FF` delay commands** or register sequences, or you'll create mysterious "why is channel B screaming forever?" bugs.
 
----
-
 ## Steal My Instrument
 
 At any time you may hit **RESET** button so default song will appear.
@@ -1060,8 +1038,6 @@ Sniff over instrument list. You may find examples that demonstrate:
 - Slide‑up and slide‑down FX using **pitch envelopes**.
 
 If your own instruments start looking similar, congratulations: you've just reverse‑engineered the sound of the project.
-
----
 
 ## Troubleshooting & FAQ
 
@@ -1095,8 +1071,6 @@ If your own instruments start looking similar, congratulations: you've just reve
 Because music is a story in hexadecimal.
 
 And it looks cooler in screenshots.
-
----
 
 ## Closing Words
 

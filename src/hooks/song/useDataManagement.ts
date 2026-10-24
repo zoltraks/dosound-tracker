@@ -52,7 +52,7 @@ import {
 
 const INSTRUMENT_STORAGE_KEY = StorageKeys.INSTRUMENT;
 
-type PendingSongImport = {
+export type PendingSongImport = {
   song: Song;
   metadata: SongParseMetadata;
 };

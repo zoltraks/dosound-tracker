@@ -220,6 +220,7 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 | File                                      | Purpose                                                                     |
 | ----------------------------------------- | --------------------------------------------------------------------------- |
 | [GUIDELINES.md](docs/GUIDELINES.md)       | Central source of truth for development rules and audio-critical principles |
+| [STYLE.md](docs/STYLE.md)                 | Central source of truth for documentation style rules                       |
 | [PROJECT.md](docs/PROJECT.md)             | Project description, scope, requirements, use cases, and quality targets    |
 | [ARCHITECTURE.md](docs/ARCHITECTURE.md)   | System architecture, module boundaries, state domains, and patterns         |
 | [SPECIFICATION.md](docs/SPECIFICATION.md) | Project-specific implementation details, stack, schemas, and constants      |
@@ -278,8 +279,6 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 | `docs/media/`                 | Images and media files for documentation                            |
 
 See [GUIDELINES.md](docs/GUIDELINES.md) for the complete rule set, including the new feature implementation workflow, audio-critical development principles, and sources of truth.
-
----
 
 _Built with dedication to authentic retro computing and the timeless appeal of 8-bit chiptune music. Every envelope, every register write, every frequency calculation aims to capture the pure essence of what made the YM2149 chip a cornerstone of computer music history._
 
