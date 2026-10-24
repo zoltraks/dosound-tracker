@@ -1,5 +1,5 @@
 import React from 'react';
-import NumberSpinner from '../components/NumberSpinner';
+import NumberSpinner from '../components/NumberSpinner.tsx';
 
 interface TransposeModalProps {
   isOpen: boolean;

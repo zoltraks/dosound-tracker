@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import type { Instrument } from '../synth/SoundDriver';
-import { ColorPicker } from '../components/ColorPicker';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import { ColorPicker } from '../components/ColorPicker.tsx';
 
 interface InstrumentColorModalProps {
   isOpen: boolean;

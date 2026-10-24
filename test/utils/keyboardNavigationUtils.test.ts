@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { NAVIGATION_ORDER } from '../../src/constants/navigation';
+import { NAVIGATION_ORDER } from '../../src/constants/navigation.ts';
 import {
   getNextNavigationSection,
   getPreviousNavigationSection,
-} from '../../src/utils/keyboardNavigationUtils';
+} from '../../src/utils/keyboard/keyboardNavigationUtils.ts';
 
 describe('keyboardNavigationUtils', () => {
   it('next from track section goes to mode', () => {

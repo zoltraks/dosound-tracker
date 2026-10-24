@@ -4,7 +4,7 @@ import {
   clampEditorCursor,
   serializeEditorCursor,
   type EditorCursor,
-} from '../../src/utils/editorCursor';
+} from '../../src/utils/cursor/editorCursor.ts';
 
 const validCursor: EditorCursor = {
   section: 'volume',

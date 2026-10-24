@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen, fireEvent, within, cleanup } from '@testing-library/react';
 
 afterEach(() => cleanup());
-import { FilePickerModal } from '../../src/modals/FilePickerModal';
+import { FilePickerModal } from '../../src/modals/FilePickerModal.tsx';
 
 const SAMPLE_FILES = ['b.txt', 'a.txt'];
 

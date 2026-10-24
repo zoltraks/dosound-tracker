@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { compressZX0, decompressZX0 } from '../../src/utils/zx0';
+import { compressZX0, decompressZX0 } from '../../src/utils/compression/zx0.ts';
 
 function roundTrip(input: Uint8Array): void {
   const compressed = compressZX0(input);

@@ -21,8 +21,8 @@ export const YM_LOG_VOLUME_TABLE: number[] = [
   0.7071, // 14
   1.0, // 15: max
 ];
-import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music';
-import type { Instrument } from './SoundDriver';
+import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music.ts';
+import type { Instrument } from './SoundDriver.ts';
 
 export interface YMChannel {
   tonePeriod: number;

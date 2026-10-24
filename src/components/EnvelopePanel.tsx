@@ -1,14 +1,17 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import { ENVELOPE_LENGTH, NOISE_MAX } from '../constants/music';
+import type { NavigationSection } from '../constants/navigation.ts';
+import { ENVELOPE_LENGTH, NOISE_MAX } from '../constants/music.ts';
 import {
   type EnvelopePanelType,
   applyEnvelopeDelta,
   getEnvelopeSectionName,
   getEnvelopeTitle,
-} from '../utils/envelopeTypes';
-import { getEnvelopeBarHeight, getEnvelopeCenteredBarPosition } from '../utils/barRendering';
-import { Formatter } from '../utils/formatters';
+} from '../utils/envelope/envelopeTypes.ts';
+import {
+  getEnvelopeBarHeight,
+  getEnvelopeCenteredBarPosition,
+} from '../utils/panel/barRendering.ts';
+import { Formatter } from '../utils/format/formatters.ts';
 import {
   copyEnvelopeValueFromLastPosition,
   getMovedEnvelopePosition,
@@ -20,8 +23,8 @@ import {
   rotateEnvelopeData,
   shiftEnvelopeDataValues,
   toggleSustainIndex,
-} from '../utils/envelopePanelUtils';
-import { StorageKeys } from '../utils/storageKeys';
+} from '../utils/envelope/envelopePanelUtils.ts';
+import { StorageKeys } from '../utils/storage/storageKeys.ts';
 
 interface EnvelopePanelProps {
   type: EnvelopePanelType;

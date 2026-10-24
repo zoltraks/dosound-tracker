@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Instrument, Song } from '../../src/synth/SoundDriver';
-import { exportInstrumentToAssembly } from '../../src/exports/asm';
+import type { Instrument, Song } from '../../src/synth/SoundDriver.ts';
+import { exportInstrumentToAssembly } from '../../src/exports/asm.ts';
 
 describe('exportInstrumentToAssembly', () => {
   it('exports correct assembly for noise-only instrument with pattern length 4 and speed 2', () => {

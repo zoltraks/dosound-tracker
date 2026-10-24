@@ -8,7 +8,7 @@ import {
   getSafeSongTitleForExport,
   getUnsafeSongTitleTokenForExport,
   sanitizeFilenameToken,
-} from '../../src/utils/exportFileNaming';
+} from '../../src/utils/export/exportFileNaming.ts';
 
 describe('exportFileNaming', () => {
   it('sanitizeFilenameToken replaces non-alphanumeric characters with underscores', () => {

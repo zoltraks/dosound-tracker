@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { parseBaseKeyForExport, formatNoteLabel } from '../../src/exports/core';
-import { parseAssemblyToBinary, exportToBinary } from '../../src/exports/bin';
-import { validateSongData, ValidationError } from '../../src/utils/validation';
-import { expandLoopingEnvelope, trimEnvelope } from '../../src/utils/envelopeUtils';
-import { parseSongFromYaml } from '../../src/utils/songParser';
-import type { Song } from '../../src/synth/SoundDriver';
+import { parseBaseKeyForExport, formatNoteLabel } from '../../src/exports/core.ts';
+import { parseAssemblyToBinary, exportToBinary } from '../../src/exports/bin.ts';
+import { validateSongData, ValidationError } from '../../src/utils/validation/validation.ts';
+import { expandLoopingEnvelope, trimEnvelope } from '../../src/utils/envelope/envelopeUtils.ts';
+import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
+import type { Song } from '../../src/synth/SoundDriver.ts';
 
 describe('parseBaseKeyForExport', () => {
   it.each([

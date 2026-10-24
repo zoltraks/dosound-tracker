@@ -1,7 +1,7 @@
 import React from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
-import type { Note } from '../synth/SoundDriver';
-import { clampVolumeNibble } from '../utils/volumeUtils';
+import type { Note } from '../synth/SoundDriver.ts';
+import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
 
 interface TrackLineProps {
   lineIndex: number;

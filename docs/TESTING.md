@@ -58,7 +58,7 @@ Run during implementation iterations after each code change. This is the canonic
 6. Fix       -> address every error and warning
 ```
 
-Run only the tests that cover the code being modified. Use a test file path or pattern to limit scope (for example `npm test src/utils/songParser` or `npm test -- test/utils/`).
+Run only the tests that cover the code being modified. Use a test file path or pattern to limit scope (for example `npm test src/utils/song/songParser` or `npm test -- test/utils/`).
 
 **Full verification loop**
 
@@ -246,8 +246,7 @@ Current coverage gaps that must be addressed in future work:
 - `src/synth/` — YM2149 emulator and SoundDriver need comprehensive tests
 - `src/exports/` — all export formatters need tests
 - `src/components/` — most components lack tests
-- `src/modals/` — no modal tests
-- `src/hooks/` — only 1 of 30 hooks has tests
+- `src/hooks/` — many of the 44 hooks lack dedicated tests
 - `src/workers/` — no Web Worker tests
 
 The `npm run test:coverage` command will fail until coverage reaches the 80% thresholds. This is expected and documented as a known gap. Regular `npm test` (without coverage) will pass.

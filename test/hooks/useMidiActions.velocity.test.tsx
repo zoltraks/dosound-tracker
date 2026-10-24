@@ -1,10 +1,10 @@
 import React from 'react';
 import { describe, it, expect, vi } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import type { YM2149 } from '../../src/synth/YM2149';
-import type { Instrument, Pattern, Song } from '../../src/synth/SoundDriver';
-import { useMidiActions } from '../../src/hooks/useMidiActions';
-import type { MidiConfiguration, MidiNoteEvent } from '../../src/hooks/useMidi';
+import type { YM2149 } from '../../src/synth/YM2149.ts';
+import type { Instrument, Pattern, Song } from '../../src/synth/SoundDriver.ts';
+import { useMidiActions } from '../../src/hooks/midi/useMidiActions.ts';
+import type { MidiConfiguration, MidiNoteEvent } from '../../src/hooks/midi/useMidi.ts';
 
 type HookResult = ReturnType<typeof useMidiActions>;
 

@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import type { MutableRefObject } from 'react';
-import { scheduleJsonSave } from '../../src/hooks/useStorage';
-import { mirrorSnapshot } from '../../src/utils/persistenceMirror';
-import { StorageKeys } from '../../src/utils/storageKeys';
-import type { ScheduledSaveHandle } from '../../src/hooks/useStorage';
+import { scheduleJsonSave } from '../../src/hooks/storage/useStorage.ts';
+import { mirrorSnapshot } from '../../src/utils/storage/persistenceMirror.ts';
+import { StorageKeys } from '../../src/utils/storage/storageKeys.ts';
+import type { ScheduledSaveHandle } from '../../src/hooks/storage/useStorage.ts';
 
-vi.mock('../../src/utils/persistenceMirror', () => ({
+vi.mock('../../src/utils/storage/persistenceMirror.ts', () => ({
   mirrorSnapshot: vi.fn(),
   readMirroredSnapshot: vi.fn(),
   removeMirroredSnapshot: vi.fn(),

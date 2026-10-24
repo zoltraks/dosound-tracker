@@ -9,8 +9,8 @@ import {
   stepLineIndex,
   updatePatternStep,
   wrapIndex,
-} from '../../src/utils/trackPanelUtils';
-import type { Pattern } from '../../src/synth/SoundDriver';
+} from '../../src/utils/track/trackPanelUtils.ts';
+import type { Pattern } from '../../src/synth/SoundDriver.ts';
 
 describe('trackPanelUtils', () => {
   it('wrapIndex wraps negative and positive indices', () => {

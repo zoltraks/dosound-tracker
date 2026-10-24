@@ -1,11 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { createPatternForSong, addPlaylistEntryToSong } from '../../src/hooks/usePatternManagement';
-import { downloadFile } from '../../src/utils/fileOperations';
-import { useDataManagement } from '../../src/hooks/useDataManagement';
-import { asPatternId, asPlaylistPatternId } from '../../src/types/branded';
-import { PATTERN_LENGTH } from '../../src/constants/music';
-import type { Song } from '../../src/synth/SoundDriver';
+import {
+  createPatternForSong,
+  addPlaylistEntryToSong,
+} from '../../src/hooks/song/usePatternManagement.ts';
+import { downloadFile } from '../../src/utils/file/fileOperations.ts';
+import { useDataManagement } from '../../src/hooks/song/useDataManagement.ts';
+import { asPatternId, asPlaylistPatternId } from '../../src/types/branded.ts';
+import { PATTERN_LENGTH } from '../../src/constants/music.ts';
+import type { Song } from '../../src/synth/SoundDriver.ts';
 
 const baseSong = (): Song => ({
   title: 'T',

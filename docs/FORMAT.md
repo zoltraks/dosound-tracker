@@ -402,7 +402,7 @@ The low 7 bits encode `delay - 1`. Delays exceeding 128 frames are split across 
 
 ### ZX0 compression
 
-The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Saukas, BSD 3-Clause) ported in `src/utils/zx0.ts`. The `maxOffset` parameter is set to 1023, constraining back-references to the 1024-byte ring-buffer window expected by hardware MAX players. The stream definition chunk records compression byte `0x08` and the uncompressed stream size as a 3-byte big-endian integer.
+The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Saukas, BSD 3-Clause) ported in `src/utils/compression/zx0.ts`. The `maxOffset` parameter is set to 1023, constraining back-references to the 1024-byte ring-buffer window expected by hardware MAX players. The stream definition chunk records compression byte `0x08` and the uncompressed stream size as a 3-byte big-endian integer.
 
 ### Instrument export
 

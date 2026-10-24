@@ -10,8 +10,8 @@ import {
   rotateEnvelopeData,
   shiftEnvelopeDataValues,
   toggleSustainIndex,
-} from '../../src/utils/envelopePanelUtils';
-import { ENVELOPE_LENGTH } from '../../src/constants/music';
+} from '../../src/utils/envelope/envelopePanelUtils.ts';
+import { ENVELOPE_LENGTH } from '../../src/constants/music.ts';
 
 describe('readEnvelopeCursor', () => {
   it('parses a valid stored position', () => {

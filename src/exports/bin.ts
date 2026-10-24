@@ -1,7 +1,7 @@
-import type { Song } from '../synth/SoundDriver';
-import type { ExportStrategy } from '../constants/export';
-import { downloadFile } from './core';
-import { exportToAssembly } from './asm';
+import type { Song } from '../synth/SoundDriver.ts';
+import type { ExportStrategy } from '../constants/export.ts';
+import { downloadFile } from './core.ts';
+import { exportToAssembly } from './asm.ts';
 
 export function parseAssemblyToBinary(assembly: string): Uint8Array {
   const lines = assembly.split(/\r?\n/);

@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import type { NavigationSection } from '../constants/navigation';
+import type { NavigationSection } from '../constants/navigation.ts';
 
 interface CommandPanelProps {
   onNewSong: () => void;

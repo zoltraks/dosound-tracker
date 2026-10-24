@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { MidiConfiguration } from '../../src/hooks/useMidi';
+import type { MidiConfiguration } from '../../src/hooks/midi/useMidi.ts';
 import {
   buildMidiConfigurationYaml,
   parseMidiConfigurationFromYaml,
   MidiConfigurationFormatError,
-} from '../../src/utils/midiConfiguration';
+} from '../../src/utils/midi/midiConfiguration.ts';
 
 const makeConfig = (overrides: Partial<MidiConfiguration> = {}): MidiConfiguration => ({
   inputEnabled: false,

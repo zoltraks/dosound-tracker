@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import type { MidiMonitorEntry } from '../hooks/useMidi';
+import type { MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
 
 interface MidiMonitorPanelProps {
   title: string;

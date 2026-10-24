@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import type { Instrument } from '../../src/synth/SoundDriver';
+import type { Instrument } from '../../src/synth/SoundDriver.ts';
 import {
   buildInstrumentYamlForExport,
   parseInstrumentFromText,
-} from '../../src/utils/instrumentIO';
-import { asInstrumentId } from '../../src/types/branded';
+} from '../../src/utils/instrument/instrumentIO.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
 
 describe('instrument YAML IO', () => {
   it('always double-quotes instrument.name when exporting YAML', () => {

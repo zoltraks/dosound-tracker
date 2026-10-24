@@ -1,5 +1,5 @@
 import React from 'react';
-import type { MidiDeviceInfo } from '../hooks/useMidi';
+import type { MidiDeviceInfo } from '../hooks/midi/useMidi.ts';
 
 interface MidiDeviceSelectProps {
   id: string;

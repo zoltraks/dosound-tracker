@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatPitchDelta } from '../../src/exports/core';
+import { formatPitchDelta } from '../../src/exports/core.ts';
 
 describe('formatPitchDelta', () => {
   it('returns empty string for zero', () => {

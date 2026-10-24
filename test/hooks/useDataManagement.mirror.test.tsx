@@ -1,11 +1,11 @@
 import React from 'react';
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, waitFor } from '@testing-library/react';
-import { useDataManagement } from '../../src/hooks/useDataManagement';
-import { readMirroredSnapshot } from '../../src/utils/persistenceMirror';
-import { StorageKeys } from '../../src/utils/storageKeys';
+import { useDataManagement } from '../../src/hooks/song/useDataManagement.ts';
+import { readMirroredSnapshot } from '../../src/utils/storage/persistenceMirror.ts';
+import { StorageKeys } from '../../src/utils/storage/storageKeys.ts';
 
-vi.mock('../../src/utils/persistenceMirror', () => ({
+vi.mock('../../src/utils/storage/persistenceMirror.ts', () => ({
   mirrorSnapshot: vi.fn(),
   readMirroredSnapshot: vi.fn(),
   removeMirroredSnapshot: vi.fn(),

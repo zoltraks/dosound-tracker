@@ -1,5 +1,5 @@
 import React from 'react';
-import type { ExportType, ExportStrategy } from '../constants/export';
+import type { ExportType, ExportStrategy } from '../constants/export.ts';
 
 interface ExportModalProps {
   isOpen: boolean;

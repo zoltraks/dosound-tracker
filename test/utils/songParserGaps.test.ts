@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { parseSongFromYaml } from '../../src/utils/songParser';
+import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
 
 const base = (extra = '') => `
 song:

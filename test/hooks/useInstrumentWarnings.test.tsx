@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useInstrumentWarnings } from '../../src/hooks/useInstrumentWarnings';
+import { useInstrumentWarnings } from '../../src/hooks/instrument/useInstrumentWarnings.ts';
 
 const STORAGE_KEY = 'dosound-tracker-ignore-inst-type-warning';
 

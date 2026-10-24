@@ -1,8 +1,8 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useModalState } from '../../src/hooks/useModalState';
-import { asInstrumentId } from '../../src/types/branded';
+import { useModalState } from '../../src/hooks/modal/useModalState.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
 
 type HookResult = ReturnType<typeof useModalState>;
 

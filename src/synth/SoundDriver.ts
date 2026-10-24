@@ -1,6 +1,6 @@
-import { YM2149 } from './YM2149';
-import { optimizeEvents } from './EventOptimizer';
-import { clampVolumeNibble } from '../utils/volumeUtils';
+import { YM2149 } from './YM2149.ts';
+import { optimizeEvents } from './EventOptimizer.ts';
+import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
 
 export const DOSOUND_REGISTER_WRITE = 0xff;
 export const DOSOUND_END_MARKER = 0x00;

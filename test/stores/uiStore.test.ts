@@ -13,7 +13,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.removeItem(STORAGE_KEY);
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     expect(useUiStore.getState().channelMutes).toEqual([false, false, false]);
   });
@@ -22,7 +22,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify([true, false, true]));
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     expect(useUiStore.getState().channelMutes).toEqual([true, false, true]);
   });
@@ -31,7 +31,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(['x', 1, null]));
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     expect(useUiStore.getState().channelMutes).toEqual([false, false, false]);
   });
@@ -40,7 +40,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.removeItem(STORAGE_KEY);
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     const { toggleChannelMute } = useUiStore.getState();
 
@@ -59,7 +59,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.removeItem(STORAGE_KEY);
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     const initial = useUiStore.getState().channelMutes;
     useUiStore.getState().toggleChannelMute(-1);
@@ -72,7 +72,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.removeItem(STORAGE_KEY);
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
     const store = useUiStore.getState();
 
     store.setCurrentOctave(5);
@@ -86,7 +86,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.removeItem(OCTAVE_KEY);
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     expect(useUiStore.getState().currentOctave).toBe(DEFAULT_OCTAVE);
   });
@@ -95,7 +95,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.setItem(OCTAVE_KEY, '5');
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     expect(useUiStore.getState().currentOctave).toBe(5);
   });
@@ -104,7 +104,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.setItem(OCTAVE_KEY, '99');
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     expect(useUiStore.getState().currentOctave).toBe(7);
   });
@@ -113,7 +113,7 @@ describe('useUiStore', () => {
     vi.resetModules();
     window.localStorage.removeItem(OCTAVE_KEY);
 
-    const { useUiStore } = await import('../../src/stores/uiStore');
+    const { useUiStore } = await import('../../src/hooks/ui/useUiStore.ts');
 
     useUiStore.getState().setCurrentOctave(6);
     expect(window.localStorage.getItem(OCTAVE_KEY)).toBe('6');

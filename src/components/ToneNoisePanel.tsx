@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import type { NavigationSection } from '../constants/navigation';
+import type { NavigationSection } from '../constants/navigation.ts';
 import {
   clampModeValue,
   cycleModeValue,
@@ -9,9 +9,9 @@ import {
   parseToneNoiseModeKey,
   rotateModeEnvelopeData,
   shiftModeEnvelopeDataValues,
-} from '../utils/toneNoisePanelUtils';
-import { readEnvelopeCursor } from '../utils/envelopePanelUtils';
-import { StorageKeys } from '../utils/storageKeys';
+} from '../utils/panel/toneNoisePanelUtils.ts';
+import { readEnvelopeCursor } from '../utils/envelope/envelopePanelUtils.ts';
+import { StorageKeys } from '../utils/storage/storageKeys.ts';
 
 interface ToneNoisePanelProps {
   activeSection: NavigationSection;

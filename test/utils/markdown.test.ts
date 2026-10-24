@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderMarkdown } from '../../src/utils/markdown';
+import { renderMarkdown } from '../../src/utils/markdown/markdown.ts';
 
 const ALLOWED_TAGS = new Set([
   'p',

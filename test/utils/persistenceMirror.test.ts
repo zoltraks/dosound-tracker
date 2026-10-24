@@ -5,7 +5,7 @@ import {
   removeMirroredSnapshot,
   clearMirroredSnapshots,
   requestPersistentStorage,
-} from '../../src/utils/persistenceMirror';
+} from '../../src/utils/storage/persistenceMirror.ts';
 
 type FakeRequest = {
   result?: unknown;
@@ -124,7 +124,7 @@ describe('persistenceMirror', () => {
   it('round-trips a snapshot through the mirror store', async () => {
     vi.stubGlobal('indexedDB', createFakeIndexedDb());
     vi.resetModules();
-    const mirror = await import('../../src/utils/persistenceMirror');
+    const mirror = await import('../../src/utils/storage/persistenceMirror.ts');
     try {
       mirror.mirrorSnapshot('song', { title: 'Mirrored Song' });
       await flush();

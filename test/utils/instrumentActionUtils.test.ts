@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   buildInstrumentRemovalSummary,
   getInstrumentPlaybackChannel,
-} from '../../src/utils/instrumentActionUtils';
+} from '../../src/utils/instrument/instrumentActionUtils.ts';
 
 describe('instrumentActionUtils', () => {
   it('getInstrumentPlaybackChannel returns channel for active track sections', () => {

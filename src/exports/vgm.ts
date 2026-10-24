@@ -1,8 +1,8 @@
-import type { Instrument, Song } from '../synth/SoundDriver';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
-import type { ExportStrategy } from '../constants/export';
-import { simulateSong } from '../utils/playbackSimulation';
-import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core';
+import type { Instrument, Song } from '../synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
+import type { ExportStrategy } from '../constants/export.ts';
+import { simulateSong } from '../utils/playback/playbackSimulation.ts';
+import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core.ts';
 
 export interface VgmExportResult {
   buffer: ArrayBuffer;

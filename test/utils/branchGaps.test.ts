@@ -1,16 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
-import { scheduleJsonSave, clearScheduledSave } from '../../src/hooks/useStorage';
-import { computeEffectiveVolume } from '../../src/utils/trackUtils';
-import { parseAssemblyToBinary } from '../../src/exports/bin';
+import { scheduleJsonSave, clearScheduledSave } from '../../src/hooks/storage/useStorage.ts';
+import { computeEffectiveVolume } from '../../src/utils/track/trackUtils.ts';
+import { parseAssemblyToBinary } from '../../src/exports/bin.ts';
 import {
   parseMidiConfigurationFromYaml,
   buildMidiConfigurationYaml,
   MidiConfigurationFormatError,
-} from '../../src/utils/midiConfiguration';
-import type { MidiConfiguration } from '../../src/utils/midiUtils';
-import { StorageKeys } from '../../src/utils/storageKeys';
+} from '../../src/utils/midi/midiConfiguration.ts';
+import type { MidiConfiguration } from '../../src/utils/midi/midiUtils.ts';
+import { StorageKeys } from '../../src/utils/storage/storageKeys.ts';
 import type { MutableRefObject } from 'react';
-import type { Pattern } from '../../src/synth/SoundDriver';
+import type { Pattern } from '../../src/synth/SoundDriver.ts';
 import yaml from 'js-yaml';
 
 const ref = (): MutableRefObject<{ kind: 'timeout' | 'idle'; id: number } | null> => ({

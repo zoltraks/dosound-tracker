@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Instrument } from '../../src/synth/SoundDriver';
-import { isInstrumentEmpty } from '../../src/utils/instrument';
+import type { Instrument } from '../../src/synth/SoundDriver.ts';
+import { isInstrumentEmpty } from '../../src/utils/instrument/instrument.ts';
 
 const makeEmptyInstrument = (overrides: Partial<Instrument> = {}): Instrument => ({
   id: '00',

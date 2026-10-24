@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent } from '@testing-library/react';
 import { within } from '@testing-library/dom';
-import ToggleValueButton from '../../src/components/ToggleValueButton';
+import ToggleValueButton from '../../src/components/ToggleValueButton.tsx';
 
 describe('ToggleValueButton', () => {
   const formatHz = (value: number) => `${value} Hz`;

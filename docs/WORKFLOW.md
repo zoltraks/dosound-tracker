@@ -265,6 +265,10 @@ For each change record in the window:
 
 `npm audit fix` may report a fix as available yet leave the advisory in place when the vulnerable package is pinned by exact-version sibling packages (for example `@vitest/mocker` held by `vitest`, `@vitest/coverage-v8`, and `@vitest/ui`). When the declared range already admits the fixed version, upgrade every member of the chain explicitly with `npm install -D <pkg>@^<fixed-version>` and re-run `npm audit`.
 
+**Rewrite every specifier in a moved file, not only inbound ones**
+
+A mass-move specifier rewrite must cover both directions: specifiers that point at moved files and the moved files' own outbound imports to unmoved targets - the latter silently break one directory level deeper. Resolve each specifier against the importer's post-move location, falling back to its pre-move location, and cover `import()`, re-exports, `vi.mock`, query-suffixed specifiers, and `new URL(..., import.meta.url)` alongside `from` clauses. `npx tsc -b` is the gate that catches leftovers - `npm run typecheck` checks nothing on its own.
+
 **Re-read files after a format sweep**
 
 `npm run format` rewrites the whole tree, including documents a session may still be editing; an edit staged against the pre-format content fails its exact-match check. Re-read any file before editing it after a format run.
@@ -296,7 +300,7 @@ When delegating implementation to an AI coding agent, provide the following cont
 - `PROJECT.md` for project requirements and constraints.
 - `ARCHITECTURE.md` for architecture and patterns.
 - `SPECIFICATION.md` for implementation details.
-- `standard/ts-react-development.md` for TypeScript and React coding standards.
+- `standard/typescript-react-development.md` for TypeScript and React coding standards.
 - `GUIDELINES.md` for audio-critical development principles.
 - The specific source files being modified.
 

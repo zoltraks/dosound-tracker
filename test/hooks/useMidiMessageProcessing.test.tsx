@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useMidiMessageProcessing } from '../../src/hooks/useMidiMessageProcessing';
-import type { MidiConfiguration } from '../../src/utils/midiUtils';
+import { useMidiMessageProcessing } from '../../src/hooks/midi/useMidiMessageProcessing.ts';
+import type { MidiConfiguration } from '../../src/utils/midi/midiUtils.ts';
 import type { MutableRefObject } from 'react';
 
 interface FakeInput {

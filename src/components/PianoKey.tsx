@@ -1,5 +1,5 @@
 import React from 'react';
-import type { PianoKeyConfig } from '../utils/pianoUtils';
+import type { PianoKeyConfig } from '../utils/panel/pianoUtils.ts';
 
 interface PianoKeyProps {
   keyData: PianoKeyConfig;

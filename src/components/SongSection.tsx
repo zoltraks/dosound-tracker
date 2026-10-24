@@ -1,14 +1,14 @@
 import React from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import type { Instrument, Song } from '../synth/SoundDriver';
-import type { PlaylistEntry } from '../types/playlist';
-import { mapSongLineToPlaylistEntries } from '../types/playlist';
-import { InformationPanel } from './InformationPanel';
-import { PlaylistPanel } from './PlaylistPanel';
-import { InstrumentPanel } from './InstrumentSection';
-import { DumpPanel } from './DumpPanel';
-import { EQPanel } from './EQPanel';
-import { YM2149 } from '../synth/YM2149';
+import type { NavigationSection } from '../constants/navigation.ts';
+import type { Instrument, Song } from '../synth/SoundDriver.ts';
+import type { PlaylistEntry } from '../types/playlist.ts';
+import { mapSongLineToPlaylistEntries } from '../types/playlist.ts';
+import { InformationPanel } from './InformationPanel.tsx';
+import { PlaylistPanel } from './PlaylistPanel.tsx';
+import { InstrumentPanel } from './InstrumentSection.tsx';
+import { DumpPanel } from './DumpPanel.tsx';
+import { EQPanel } from './EQPanel.tsx';
+import { YM2149 } from '../synth/YM2149.ts';
 
 interface SongSectionProps {
   song: Song;

@@ -1,5 +1,5 @@
 import React, { type RefObject } from 'react';
-import type { NavigationSection } from '../constants/navigation';
+import type { NavigationSection } from '../constants/navigation.ts';
 
 interface FileInputsProps {
   fileInputRef: RefObject<HTMLInputElement | null>;

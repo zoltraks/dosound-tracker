@@ -1,14 +1,14 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { logger } from '../utils/logger';
-import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
-import { MidiMonitorPanel } from '../components/MidiMonitorPanel';
-import { MidiDeviceSelect } from '../components/MidiDeviceSelect';
+import { logger } from '../utils/log/logger.ts';
+import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
+import { MidiMonitorPanel } from '../components/MidiMonitorPanel.tsx';
+import { MidiDeviceSelect } from '../components/MidiDeviceSelect.tsx';
 import {
   buildMidiConfigurationYaml,
   parseMidiConfigurationFromYaml,
   MidiConfigurationFormatError,
-} from '../utils/midiConfiguration';
-import { downloadFile } from '../utils/fileOperations';
+} from '../utils/midi/midiConfiguration.ts';
+import { downloadFile } from '../utils/file/fileOperations.ts';
 
 interface MidiModalProps {
   isOpen: boolean;

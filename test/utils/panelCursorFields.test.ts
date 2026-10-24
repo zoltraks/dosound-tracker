@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { readSongInfoField, readPlaylistTrack } from '../../src/utils/panelCursorFields';
+import { readSongInfoField, readPlaylistTrack } from '../../src/utils/cursor/panelCursorFields.ts';
 
 describe('readSongInfoField', () => {
   it('preserves a valid field', () => {

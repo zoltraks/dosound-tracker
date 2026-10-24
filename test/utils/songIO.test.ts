@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
-import { buildSongYamlForExport } from '../../src/utils/songIO';
+import { buildSongYamlForExport } from '../../src/utils/song/songIO.ts';
 import {
   buildInstrumentYamlForExport,
   parseInstrumentFromText,
-} from '../../src/utils/instrumentIO';
-import { ENVELOPE_LENGTH } from '../../src/constants/music';
-import { asInstrumentId } from '../../src/types/branded';
-import type { Instrument, Song } from '../../src/synth/SoundDriver';
+} from '../../src/utils/instrument/instrumentIO.ts';
+import { ENVELOPE_LENGTH } from '../../src/constants/music.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
+import type { Instrument, Song } from '../../src/synth/SoundDriver.ts';
 import yaml from 'js-yaml';
 
 const inst = (id: string, overrides: Partial<Instrument> = {}): Instrument => ({

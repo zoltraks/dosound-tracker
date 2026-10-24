@@ -1,5 +1,5 @@
-import type { Song } from '../synth/SoundDriver';
-import { asPlaylistPatternId, type PlaylistPatternId } from './branded';
+import type { Song } from '../synth/SoundDriver.ts';
+import { asPlaylistPatternId, type PlaylistPatternId } from './branded.ts';
 
 export type PlaylistEntry = {
   A: PlaylistPatternId | '--';

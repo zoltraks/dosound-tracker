@@ -6,11 +6,11 @@ import {
   moveInstrumentAndRemapPatterns,
   clearInstrumentAndNotes,
   clearInstrumentOnly,
-} from '../../src/utils/instrumentOperations';
-import { normalizeInstrumentId } from '../../src/utils/playbackUtils';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../../src/constants/music';
-import type { Instrument, Pattern } from '../../src/synth/SoundDriver';
-import { asInstrumentId } from '../../src/types/branded';
+} from '../../src/utils/instrument/instrumentOperations.ts';
+import { normalizeInstrumentId } from '../../src/utils/playback/playbackUtils.ts';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../../src/constants/music.ts';
+import type { Instrument, Pattern } from '../../src/synth/SoundDriver.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
 
 const inst = (id: string, name = ''): Instrument => ({
   id,

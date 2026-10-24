@@ -6,7 +6,7 @@ import {
   normalizeDirectory,
   parseListFileText,
   stripExtension,
-} from '../../src/utils/filePickerUtils';
+} from '../../src/utils/file/filePickerUtils.ts';
 
 describe('filePickerUtils', () => {
   it('normalizeDirectory trims and removes trailing slashes', () => {

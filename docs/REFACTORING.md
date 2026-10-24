@@ -38,7 +38,7 @@ Based on the analysis, preliminarily select the most needed refactoring directio
 
 Before creating the proposal, determine the primary focus of the refactoring. The focus areas are tailored to this codebase.
 
-- **App.tsx decomposition**: split the 2194-line `App.tsx` into smaller orchestrator components or extract logic into dedicated hooks. Reduce the number of hooks called directly in `App.tsx`.
+- **App.tsx decomposition**: split the ~1390-line `App.tsx` into smaller orchestrator components or extract logic into dedicated hooks. Reduce the number of hooks called directly in `App.tsx`.
 - **Custom hook extraction**: move cross-component logic from `App.tsx` into named hooks under `src/hooks/`. Hooks must name what they do, not how.
 - **Business logic separation**: extract business logic from `utils/` and `hooks/` into dedicated service or domain modules. Separate pure data transformation from React lifecycle concerns.
 - **Store boundary cleanup**: evaluate whether the single `uiStore` should be split into domain stores (song, instrument, playback, UI). Tighten store responsibilities.

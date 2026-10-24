@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useMidiDeviceManagement } from '../../src/hooks/useMidiDeviceManagement';
+import { useMidiDeviceManagement } from '../../src/hooks/midi/useMidiDeviceManagement.ts';
 
 type NavigatorWithMidi = Navigator & {
   requestMIDIAccess?: (options?: { sysex: boolean }) => Promise<unknown>;

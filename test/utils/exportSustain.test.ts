@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { parseSongFromYaml } from '../../src/utils/songParser';
-import { exportSongRegisterDump } from '../../src/exports/asm';
-import { exportSongToVgm } from '../../src/exports/vgm';
+import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
+import { exportSongRegisterDump } from '../../src/exports/asm.ts';
+import { exportSongToVgm } from '../../src/exports/vgm.ts';
 
 const SUSTAIN_SONG_YAML = `
 song:

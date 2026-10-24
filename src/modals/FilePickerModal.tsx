@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { logger } from '../utils/logger';
+import { logger } from '../utils/log/logger.ts';
 import {
   LIST_FILE_NAME,
   buildHref,
@@ -8,7 +8,7 @@ import {
   normalizeDirectory,
   parseListFileText,
   stripExtension,
-} from '../utils/filePickerUtils';
+} from '../utils/file/filePickerUtils.ts';
 
 export type FilePickerMode = 'download' | 'pick';
 

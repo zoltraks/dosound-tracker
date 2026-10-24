@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { matchKeyboardShortcut } from '../../src/utils/keyboardShortcutUtils';
+import { matchKeyboardShortcut } from '../../src/utils/keyboard/keyboardShortcutUtils.ts';
 
 describe('keyboardShortcutUtils', () => {
   it('matches plain shortcuts', () => {

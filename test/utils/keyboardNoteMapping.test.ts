@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { clampOctave, getKeyboardMappedNote } from '../../src/utils/keyboardNoteMapping';
+import {
+  clampOctave,
+  getKeyboardMappedNote,
+} from '../../src/utils/keyboard/keyboardNoteMapping.ts';
 
 describe('keyboardNoteMapping', () => {
   it('clampOctave clamps into 0..7', () => {

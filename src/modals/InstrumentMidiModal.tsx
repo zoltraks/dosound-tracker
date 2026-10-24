@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import type { Instrument } from '../synth/SoundDriver';
-import NumberSpinner from '../components/NumberSpinner';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import NumberSpinner from '../components/NumberSpinner.tsx';
 
 interface InstrumentMidiModalProps {
   isOpen: boolean;

@@ -1,13 +1,13 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useRef, useEffect } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music';
-import { YM2149 } from '../synth/YM2149';
-import type { Instrument } from '../synth/SoundDriver';
-import { DEFAULT_SONG_FRAME } from '../constants/song';
+import type { NavigationSection } from '../constants/navigation.ts';
+import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music.ts';
+import { YM2149 } from '../synth/YM2149.ts';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import LogoDark from '../assets/svg/logo-dark.svg';
 import LogoLight from '../assets/svg/logo-light.svg';
-import { clearIntervalRef } from '../utils/timerUtils';
+import { clearIntervalRef } from '../utils/timer/timerUtils.ts';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;

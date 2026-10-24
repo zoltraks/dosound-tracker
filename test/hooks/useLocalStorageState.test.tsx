@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useLocalStorageState } from '../../src/hooks/useLocalStorageState';
+import { useLocalStorageState } from '../../src/hooks/storage/useLocalStorageState.ts';
 
 describe('useLocalStorageState', () => {
   beforeEach(() => {

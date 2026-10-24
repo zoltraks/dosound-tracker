@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { Formatter } from '../utils/formatters';
-import type { PlaylistEntry } from '../types/playlist';
+import { Formatter } from '../utils/format/formatters.ts';
+import type { PlaylistEntry } from '../types/playlist.ts';
 
 const formatPatternDisplay = (patternId: string): string => {
   if (patternId === '--') return '--';

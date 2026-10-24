@@ -1,9 +1,9 @@
 import React, { useMemo } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import type { Instrument } from '../synth/SoundDriver';
-import { ToneNoisePanel } from './ToneNoisePanel';
-import { EnvelopePanel } from './EnvelopePanel';
-import { renderMarkdown, type TrustedHtml } from '../utils/markdown';
+import type { NavigationSection } from '../constants/navigation.ts';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import { ToneNoisePanel } from './ToneNoisePanel.tsx';
+import { EnvelopePanel } from './EnvelopePanel.tsx';
+import { renderMarkdown, type TrustedHtml } from '../utils/markdown/markdown.ts';
 
 interface EnvelopeSectionProps {
   activeSection: NavigationSection;

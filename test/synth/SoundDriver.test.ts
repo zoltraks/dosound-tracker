@@ -8,8 +8,8 @@ import {
   type Song,
   type Instrument,
   type Pattern,
-} from '../../src/synth/SoundDriver';
-import type { YM2149 } from '../../src/synth/YM2149';
+} from '../../src/synth/SoundDriver.ts';
+import type { YM2149 } from '../../src/synth/YM2149.ts';
 
 const createYm2149 = (clock = 2_000_000) => {
   return {

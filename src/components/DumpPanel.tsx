@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { logger } from '../utils/logger';
-import { YM2149 } from '../synth/YM2149';
+import { logger } from '../utils/log/logger.ts';
+import { YM2149 } from '../synth/YM2149.ts';
 
 interface DumpPanelProps {
   ym2149: YM2149 | null;

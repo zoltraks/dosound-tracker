@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { YM2149, YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../../src/synth/YM2149';
-import type { Instrument } from '../../src/synth/SoundDriver';
+import { YM2149, YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../../src/synth/YM2149.ts';
+import type { Instrument } from '../../src/synth/SoundDriver.ts';
 
 interface ParamStub {
   value: number;

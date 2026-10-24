@@ -1,5 +1,5 @@
 import React from 'react';
-import { renderMarkdown } from '../utils/markdown';
+import { renderMarkdown } from '../utils/markdown/markdown.ts';
 
 interface MarkdownModalProps {
   isOpen: boolean;

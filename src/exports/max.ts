@@ -1,9 +1,9 @@
-import type { Instrument, Song } from '../synth/SoundDriver';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
-import type { ExportStrategy } from '../constants/export';
-import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core';
-import { simulateSong } from '../utils/playbackSimulation';
-import { compressZX0 } from '../utils/zx0';
+import type { Instrument, Song } from '../synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
+import type { ExportStrategy } from '../constants/export.ts';
+import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core.ts';
+import { simulateSong } from '../utils/playback/playbackSimulation.ts';
+import { compressZX0 } from '../utils/compression/zx0.ts';
 
 // Number of YM2149 registers captured per frame (R0-R13).
 const YM_REGISTER_COUNT = 14;

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import { updateChannelWithInstrument } from '../../src/utils/playbackUtils';
-import type { YM2149 } from '../../src/synth/YM2149';
-import type { Instrument } from '../../src/synth/SoundDriver';
+import { updateChannelWithInstrument } from '../../src/utils/playback/playbackUtils.ts';
+import type { YM2149 } from '../../src/synth/YM2149.ts';
+import type { Instrument } from '../../src/synth/SoundDriver.ts';
 
 const createYm = () =>
   ({

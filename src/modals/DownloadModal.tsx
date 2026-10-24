@@ -1,5 +1,5 @@
 import React from 'react';
-import { FilePickerModal } from './FilePickerModal';
+import { FilePickerModal } from './FilePickerModal.tsx';
 
 interface DownloadModalProps {
   isOpen: boolean;

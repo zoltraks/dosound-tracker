@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { loadInitialSong, SONG_STORAGE_KEY } from '../../src/hooks/useSongManagement';
-import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../src/constants/music';
+import { loadInitialSong, SONG_STORAGE_KEY } from '../../src/hooks/song/useSongManagement.ts';
+import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../src/constants/music.ts';
 
 const storedSong = (overrides: Record<string, unknown> = {}) => ({
   title: 'Stored',

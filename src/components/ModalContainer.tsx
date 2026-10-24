@@ -1,22 +1,20 @@
 import React from 'react';
-import {
-  InformationModal,
-  ConfirmationModal,
-  TransposeModal,
-  AboutModal,
-  MarkdownModal,
-  DownloadModal,
-  InstrumentDeleteModal,
-  InstrumentTypeWarningModal,
-  MidiModal,
-  InstrumentMidiModal,
-  InstrumentColorModal,
-} from '../modals';
-import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
-import type { Instrument } from '../synth/SoundDriver';
-import { CONFIRM_MODAL_TEXT } from '../constants/modal';
-import { buildInfoModals } from '../utils/modalRendering';
-import type { InstrumentDeleteUsage } from '../hooks/useModalState';
+import { AboutModal } from '../modals/AboutModal.tsx';
+import { ConfirmationModal } from '../modals/ConfirmationModal.tsx';
+import { DownloadModal } from '../modals/DownloadModal.tsx';
+import { InformationModal } from '../modals/InformationModal.tsx';
+import { InstrumentColorModal } from '../modals/InstrumentColorModal.tsx';
+import { InstrumentDeleteModal } from '../modals/InstrumentDeleteModal.tsx';
+import { InstrumentMidiModal } from '../modals/InstrumentMidiModal.tsx';
+import { InstrumentTypeWarningModal } from '../modals/InstrumentTypeWarningModal.tsx';
+import { MarkdownModal } from '../modals/MarkdownModal.tsx';
+import { MidiModal } from '../modals/MidiModal.tsx';
+import { TransposeModal } from '../modals/TransposeModal.tsx';
+import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import { CONFIRM_MODAL_TEXT } from '../constants/modal.ts';
+import { buildInfoModals } from '../utils/panel/modalRendering.ts';
+import type { InstrumentDeleteUsage } from '../hooks/modal/useModalState.ts';
 
 type TransposeScope = 'line' | 'song';
 type TransposeTrackScope = 'current' | 'all';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { clampVolumeNibble } from '../../src/utils/volumeUtils';
+import { clampVolumeNibble } from '../../src/utils/panel/volumeUtils.ts';
 
 describe('clampVolumeNibble', () => {
   it('passes integral values in range through unchanged', () => {

@@ -1,8 +1,8 @@
-import type { Instrument, Song } from '../synth/SoundDriver';
-import { YM_LOG_VOLUME_TABLE } from '../synth/YM2149';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
-import { simulateSong } from '../utils/playbackSimulation';
-import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core';
+import type { Instrument, Song } from '../synth/SoundDriver.ts';
+import { YM_LOG_VOLUME_TABLE } from '../synth/YM2149.ts';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
+import { simulateSong } from '../utils/playback/playbackSimulation.ts';
+import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core.ts';
 
 const WAV_SAMPLE_RATE = 44100;
 

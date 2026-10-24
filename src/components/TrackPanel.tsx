@@ -1,21 +1,21 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import { KEYBOARD_TO_NOTE } from '../constants/music';
-import type { Pattern, Note, Instrument, Step } from '../synth/SoundDriver';
-import { YM2149 } from '../synth/YM2149';
-import { DEFAULT_SONG_FRAME } from '../constants/song';
-import { TrackLine } from './TrackLine';
-import { computeEffectiveVolume } from '../utils/trackUtils';
-import { clearIntervalRef } from '../utils/timerUtils';
+import type { NavigationSection } from '../constants/navigation.ts';
+import { KEYBOARD_TO_NOTE } from '../constants/music.ts';
+import type { Pattern, Note, Instrument, Step } from '../synth/SoundDriver.ts';
+import { YM2149 } from '../synth/YM2149.ts';
+import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
+import { TrackLine } from './TrackLine.tsx';
+import { computeEffectiveVolume } from '../utils/track/trackUtils.ts';
+import { clearIntervalRef } from '../utils/timer/timerUtils.ts';
 import {
   buildInstrumentColorMap,
   formatTrackNoteDisplay,
   getInstrumentColorForNote,
   getTrackLineClass,
   getTrackNotes as getTrackNotesForPattern,
-} from '../utils/trackRendering';
-import { stepInstrumentId } from '../utils/instrumentSelection';
+} from '../utils/track/trackRendering.ts';
+import { stepInstrumentId } from '../utils/instrument/instrumentSelection.ts';
 import {
   createNoteOff,
   getKeyboardMappedNote,
@@ -25,11 +25,11 @@ import {
   parseVolumeNibble,
   stepLineIndex,
   updatePatternStep,
-} from '../utils/trackPanelUtils';
+} from '../utils/track/trackPanelUtils.ts';
 import {
   advancePreviewEnvelopeTick,
   getPreviewEnvelopeApplyStep,
-} from '../utils/previewEnvelopeTiming';
+} from '../utils/envelope/previewEnvelopeTiming.ts';
 
 type PreviewInstrument = Instrument;
 

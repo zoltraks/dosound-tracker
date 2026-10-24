@@ -8,7 +8,7 @@ import {
   parseToneNoiseModeKey,
   rotateModeEnvelopeData,
   shiftModeEnvelopeDataValues,
-} from '../../src/utils/toneNoisePanelUtils';
+} from '../../src/utils/panel/toneNoisePanelUtils.ts';
 
 describe('toneNoisePanelUtils', () => {
   it('clampModeValue clamps to 0..2', () => {

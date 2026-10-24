@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { Formatter } from '../../src/utils/formatters';
+import { Formatter } from '../../src/utils/format/formatters.ts';
 
 describe('Formatter', () => {
   describe('hex', () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import type { Song, Step } from '../../src/synth/SoundDriver';
-import { normalizeInstrumentColor, parseSongFromYaml } from '../../src/utils/songParser';
-import { buildSongYamlForExport } from '../../src/utils/songIO';
+import type { Song, Step } from '../../src/synth/SoundDriver.ts';
+import { normalizeInstrumentColor, parseSongFromYaml } from '../../src/utils/song/songParser.ts';
+import { buildSongYamlForExport } from '../../src/utils/song/songIO.ts';
 
 describe('normalizeInstrumentColor', () => {
   it('normalizes 3-digit hex values', () => {

@@ -235,9 +235,17 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 
 **Engineering Standards**
 
-| File                                                                      | Purpose                                   |
-| ------------------------------------------------------------------------- | ----------------------------------------- |
-| [standard/ts-react-development.md](docs/standard/ts-react-development.md) | TypeScript and React engineering standard |
+| File                                                                                                | Purpose                                       |
+| --------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [standard/README.md](docs/standard/README.md)                                                       | Engineering-standard library index            |
+| [standard/typescript-react-development.md](docs/standard/typescript-react-development.md)           | TypeScript and React engineering standard     |
+| [standard/typescript-electron-development.md](docs/standard/typescript-electron-development.md)     | TypeScript and Electron engineering standard  |
+| [standard/typescript-general-development.md](docs/standard/typescript-general-development.md)       | TypeScript engineering standard               |
+| [standard/css-general-development.md](docs/standard/css-general-development.md)                     | CSS engineering standard                      |
+| [standard/html-vanilla-development.md](docs/standard/html-vanilla-development.md)                   | Vanilla HTML engineering standard (reference) |
+| [standard/accessibility-general-development.md](docs/standard/accessibility-general-development.md) | Accessibility engineering standard            |
+| [standard/performance-budgets-development.md](docs/standard/performance-budgets-development.md)     | Performance-budget engineering standard       |
+| [standard/standard-template-development.md](docs/standard/standard-template-development.md)         | Standard-authoring template                   |
 
 **Document Templates**
 

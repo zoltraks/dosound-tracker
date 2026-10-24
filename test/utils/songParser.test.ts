@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { parseSongFromYaml } from '../../src/utils/songParser';
+import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
 
 describe('parseSongFromYaml', () => {
   it('parses song-vgm-tone.yaml into a valid Song structure', () => {

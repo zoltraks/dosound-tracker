@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { generatePianoKeys } from '../../src/utils/pianoUtils';
-import { MIN_OCTAVE, MAX_OCTAVE, PIANO_SHOW_EXTRA_TOP_C } from '../../src/constants/music';
+import { generatePianoKeys } from '../../src/utils/panel/pianoUtils.ts';
+import { MIN_OCTAVE, MAX_OCTAVE, PIANO_SHOW_EXTRA_TOP_C } from '../../src/constants/music.ts';
 
 describe('generatePianoKeys', () => {
   it('spans two octaves in compact layout and five otherwise', () => {

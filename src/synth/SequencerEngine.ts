@@ -1,4 +1,4 @@
-import type { Instrument, Pattern, Song } from './SoundDriver';
+import type { Instrument, Pattern, Song } from './SoundDriver.ts';
 
 export interface RegisterState {
   [register: number]: number;

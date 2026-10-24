@@ -1,10 +1,10 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, cleanup } from '@testing-library/react';
 import { afterEach } from 'vitest';
-import { exportSongToVgm } from '../../src/exports/vgm';
-import { TrackLine } from '../../src/components/TrackLine';
-import { ENVELOPE_LENGTH } from '../../src/constants/music';
-import type { Song, Note } from '../../src/synth/SoundDriver';
+import { exportSongToVgm } from '../../src/exports/vgm.ts';
+import { TrackLine } from '../../src/components/TrackLine.tsx';
+import { ENVELOPE_LENGTH } from '../../src/constants/music.ts';
+import type { Song, Note } from '../../src/synth/SoundDriver.ts';
 
 afterEach(() => cleanup());
 

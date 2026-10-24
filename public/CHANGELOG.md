@@ -1,5 +1,13 @@
 # Changes
 
+## Version 1.3.5
+
+Internal refactoring: the source tree was fully grouped into domain subdirectories and the engineering-standard library was adopted.
+
+- **Structure**: `src/hooks/` and `src/utils/` now hold only domain subdirectories, the `stores/` directory was dissolved into `src/hooks/ui/`, and the lone modals barrel file was removed for uniform direct imports.
+- **Documentation**: `docs/standard/` became a full engineering-standard library (index, authoring template, seven adopted standards with project conventions), and the active documentation set was distilled against the implementation.
+- **Security**: `npm audit` reports zero known vulnerabilities.
+
 ## Version 1.3.4
 
 Internal refactoring: the application composition root was decomposed into bounded orchestration hooks with no user-facing changes.

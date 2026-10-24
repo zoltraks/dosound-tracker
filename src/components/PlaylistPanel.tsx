@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import { PlaylistHeader } from './PlaylistHeader';
-import { PlaylistLine } from './PlaylistLine';
-import type { PlaylistEntry } from '../types/playlist';
-import { asPlaylistPatternId } from '../types/branded';
-import { StorageKeys } from '../utils/storageKeys';
-import { readPlaylistTrack } from '../utils/panelCursorFields';
+import type { NavigationSection } from '../constants/navigation.ts';
+import { PlaylistHeader } from './PlaylistHeader.tsx';
+import { PlaylistLine } from './PlaylistLine.tsx';
+import type { PlaylistEntry } from '../types/playlist.ts';
+import { asPlaylistPatternId } from '../types/branded.ts';
+import { StorageKeys } from '../utils/storage/storageKeys.ts';
+import { readPlaylistTrack } from '../utils/cursor/panelCursorFields.ts';
 
 interface PlaylistPanelProps {
   playlist: PlaylistEntry[];

@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useDataManagement } from '../../src/hooks/useDataManagement';
+import { useDataManagement } from '../../src/hooks/song/useDataManagement.ts';
 
 type HookResult = ReturnType<typeof useDataManagement>;
 

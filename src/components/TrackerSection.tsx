@@ -1,10 +1,10 @@
 import React from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import type { Pattern, Instrument, Song } from '../synth/SoundDriver';
-import { PATTERN_LENGTH } from '../constants/music';
-import { DEFAULT_SONG_FRAME } from '../constants/song';
-import { TrackPanel } from './TrackPanel';
-import { YM2149 } from '../synth/YM2149';
+import type { NavigationSection } from '../constants/navigation.ts';
+import type { Pattern, Instrument, Song } from '../synth/SoundDriver.ts';
+import { PATTERN_LENGTH } from '../constants/music.ts';
+import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
+import { TrackPanel } from './TrackPanel.tsx';
+import { YM2149 } from '../synth/YM2149.ts';
 import RainbowModeLight from '../assets/svg/rainbow-mode-light.svg';
 import RainbowModeDark from '../assets/svg/rainbow-mode-dark.svg';
 import RainbowModeLightColorless from '../assets/svg/rainbow-mode-light-colorless.svg';

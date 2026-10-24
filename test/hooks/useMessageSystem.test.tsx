@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useMessageSystem } from '../../src/hooks/useMessageSystem';
+import { useMessageSystem } from '../../src/hooks/ui/useMessageSystem.ts';
 
 const stubFetch = (impl: () => Promise<{ ok: boolean; text: () => Promise<string> }>) => {
   vi.stubGlobal(

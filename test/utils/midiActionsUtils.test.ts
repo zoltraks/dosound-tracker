@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   transposeMidiNoteToInstrumentBase,
   velocityToVolumeNibble,
-} from '../../src/utils/midiActionsUtils';
+} from '../../src/utils/midi/midiActionsUtils.ts';
 
 describe('midiActionsUtils', () => {
   it('velocityToVolumeNibble clamps and scales 0..127 to 1..15', () => {

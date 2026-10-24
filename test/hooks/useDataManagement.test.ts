@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { parseSongFromYaml } from '../../src/utils/songParser';
+import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
 
 const readFixture = (relativePath: string): string => {
   const fullPath = path.resolve(process.cwd(), relativePath);

@@ -10,22 +10,11 @@ See `package.json` for the dependency list and exact versions. The application i
 
 ## Audio-Critical Development
 
-This project is a real-time audio application where timing is critical. The general TypeScript/React standards in `standard/ts-react-development.md` are overridden for audio-critical code paths as defined in `GUIDELINES.md`.
-
-The following patterns are intentional and must not be "fixed" in audio-critical code paths:
-
-- **Prop mirroring**: local state synced with props for stable timing.
-- **Sparse dependency arrays**: minimal dependencies to prevent unnecessary re-renders.
-- **Direct setState calls**: synchronous state updates for predictable timing.
-- **Manual memoization**: carefully controlled memoization vs React's automatic optimizations.
-
-The `setState` in `useEffect` prohibition from the general standard does not apply to audio-critical code paths. In audio paths, synchronous state updates are intentional for predictable timing.
-
-Consult `GUIDELINES.md` before applying any linting fixes or React optimisations to audio-related code.
+This project is a real-time audio application where timing is critical. The audio-critical development principles - prop mirroring, sparse dependency arrays, direct setState calls, manual memoization, and the accepted linting warnings - are owned by `GUIDELINES.md` and override the general standards on audio-critical code paths. Consult `GUIDELINES.md` before applying any linting fixes or React optimisations to audio-related code.
 
 ## Source Directory Structure
 
-Source is organised by responsibility under `src/`, with folders for components, hooks, utilities, constants, stores, types, and workers, the `synth/` audio engine (YM2149 emulator and sound driver), and the `exports/` format modules. See ARCHITECTURE.md for the module boundaries and the responsibility of each folder.
+Source is organised by responsibility under `src/`, with folders for components, modals, hooks, utilities, constants, types, workers, and assets, the `synth/` audio engine (YM2149 emulator and sound driver), and the `exports/` format modules. `src/hooks/` and `src/utils/` are fully grouped into domain subdirectories - a source directory that contains subdirectories does not hold files directly, and a directory name carries the domain of the files it holds, including single-file directories. The `src/` root itself keeps its entry files (`main.tsx`, `App.tsx`, `index.css`, `App.css`) as the recorded exception. See ARCHITECTURE.md for the module boundaries and the responsibility of each folder.
 
 ## Data Models
 
@@ -102,7 +91,7 @@ DOSOUND Tracker supports five export formats. Each format produces a downloadabl
 
 **Binary** parses the generated assembly output and extracts raw byte data from dc.b directives, producing a compact binary file suitable for direct memory loading. See src/exports/bin.ts.
 
-**MAX** produces a MAX-format binary file (MAX specification v1.6) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The chip setup chunk records the song's frame rate and chip clock. The export captures one register snapshot per tick and writes all 14 YM2149 registers (R0–R13). Three strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/zx0.ts.
+**MAX** produces a MAX-format binary file (MAX specification v1.6) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The chip setup chunk records the song's frame rate and chip clock. The export captures one register snapshot per tick and writes all 14 YM2149 registers (R0–R13). Three strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/compression/zx0.ts.
 
 **VGM** generates a VGM (Video Game Music) file, a standard chiptune logging format. The export converts register writes and delays into VGM command stream with delay optimization and loop point preservation. The VGM header records the song's frame rate (offset 0x24) and chip clock (offset 0x74). Wait commands use 0x63 for 50 Hz, 0x62 for 60 Hz, and 0x61 with explicit sample counts for other rates. See src/exports/vgm.ts.
 
@@ -167,7 +156,7 @@ The navigation order cycles through these sections: piano, octave, commands, tra
 
 ## Session Persistence
 
-The editor cursor is remembered across reloads through local storage. Local storage keys are centralised in `src/utils/storageKeys.ts`.
+The editor cursor is remembered across reloads through local storage. Local storage keys are centralised in `src/utils/storage/storageKeys.ts`.
 
 The top-level cursor is stored under `EDITOR_CURSOR` as a JSON object with the focused section, the selected track, the playlist line, the track row, and the track column. On mount it is parsed, clamped to the restored song, and applied through the existing setters. The playlist line is clamped to the playlist length, the track row to the pattern length. An invalid section falls back to the selected track's section. It is written when playback is not running, so no local storage writes occur on the audio path.
 
@@ -177,7 +166,7 @@ Single-value panel cursors are persisted to local storage. The song information 
 
 **Snapshot mirror**
 
-Every scheduled save also mirrors the song and instrument payloads into an IndexedDB database named `dosound-tracker-backup`, store `snapshots`, through `src/utils/persistenceMirror.ts`. The mirror write happens inside the same idle slot as the local storage write, is fully asynchronous, and degrades to a logged warning when IndexedDB is unavailable, so autosave latency and UX are unchanged.
+Every scheduled save also mirrors the song and instrument payloads into an IndexedDB database named `dosound-tracker-backup`, store `snapshots`, through `src/utils/storage/persistenceMirror.ts`. The mirror write happens inside the same idle slot as the local storage write, is fully asynchronous, and degrades to a logged warning when IndexedDB is unavailable, so autosave latency and UX are unchanged.
 
 **Mirror restore**
 
@@ -193,7 +182,7 @@ Two destructive paths drop the mirror together with local storage: the legacy-sc
 
 ## Markdown Rendering Security
 
-Bundled Markdown documents are rendered into HTML by `src/utils/markdown.ts`. The renderer escapes every source byte and emits tags only from fixed templates, so markup outside the allowed grammar can never reach the DOM unescaped.
+Bundled Markdown documents are rendered into HTML by `src/utils/markdown/markdown.ts`. The renderer escapes every source byte and emits tags only from fixed templates, so markup outside the allowed grammar can never reach the DOM unescaped.
 
 **Trusted output brand**
 
@@ -201,7 +190,7 @@ Bundled Markdown documents are rendered into HTML by `src/utils/markdown.ts`. Th
 
 **Bounded source set**
 
-Only bundled first-party documents may reach a markdown sink: `MESSAGES.md`, `CHANGELOG.md`, and `MANUAL.md`. All fetches go through `fetchBundledMarkdown` in `src/utils/bundledMarkdown.ts`, which rejects names outside the allowlist and bodies that look like HTML (a `text/html` content type or a leading `<!doctype`/`<html` marker), so an SPA fallback page is never rendered as document content.
+Only bundled first-party documents may reach a markdown sink: `MESSAGES.md`, `CHANGELOG.md`, and `MANUAL.md`. All fetches go through `fetchBundledMarkdown` in `src/utils/markdown/bundledMarkdown.ts`, which rejects names outside the allowlist and bodies that look like HTML (a `text/html` content type or a leading `<!doctype`/`<html` marker), so an SPA fallback page is never rendered as document content.
 
 **Content security policy**
 
@@ -209,16 +198,16 @@ Production builds inject a restrictive CSP meta tag into `dist/index.html` throu
 
 ## Project-Specific Conventions
 
-These conventions override or extend the general standards in `standard/ts-react-development.md` with rules specific to the DOSOUND Tracker codebase.
+These conventions override or extend the general standards in `standard/typescript-react-development.md` with rules specific to the DOSOUND Tracker codebase.
 
 ### Shared Utilities
 
 The following utilities were extracted to eliminate duplication and are the canonical implementations for their respective patterns:
 
-- **`src/utils/timerUtils.ts`** — `clearIntervalRef` for clearing interval timer refs. Used across hooks and components that manage interval-based playback or preview timers.
-- **`src/hooks/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
+- **`src/utils/timer/timerUtils.ts`** — `clearIntervalRef` for clearing interval timer refs. Used across hooks and components that manage interval-based playback or preview timers.
+- **`src/hooks/storage/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
 - **`src/exports/core.ts`** — `formatPitchDelta` for formatting signed pitch delta values in assembly export comments. `exportInstrumentWith` generic wrapper for instrument preview exports across VGM, MAX, and WAV formats.
-- **`src/utils/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
+- **`src/utils/instrument/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
 
 ### Branded Types
 
@@ -234,7 +223,7 @@ The YM2149 register simulation, volume table, and noise generation algorithm in 
 
 ### MIDI Message Processing
 
-MIDI message handling in `src/hooks/useMidiMessageProcessing.ts` is a hot path that executes on every incoming MIDI message. Avoid per-event allocations: use direct `Uint8Array` indexed access instead of `Array.from()`, and use string concatenation loops instead of `array.map().join()` for hex formatting.
+MIDI message handling in `src/hooks/midi/useMidiMessageProcessing.ts` is a hot path that executes on every incoming MIDI message. Avoid per-event allocations: use direct `Uint8Array` indexed access instead of `Array.from()`, and use string concatenation loops instead of `array.map().join()` for hex formatting.
 
 ### Electron Permission Policy
 
@@ -244,7 +233,7 @@ The desktop main process (`electron/main.cjs`) grants the `midi` permission only
 
 The following constraints reflect the current state of the codebase and are candidates for future improvement.
 
-- **Single store**: All application state lives in one Zustand store (src/stores/). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
+- **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
 - **No undo/redo**: The application does not implement an undo/redo history. All edits are immediate and irreversible without manual re-entry. No command pattern or state snapshot mechanism is present.
 - **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~1390 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/`; further decomposition remains a candidate for later windows.
 - **Low test coverage for synth and exports**: The YM2149 emulator (src/synth/YM2149.ts), sound driver (src/synth/SoundDriver.ts), and export modules (src/exports/) have minimal automated test coverage. Core audio synthesis and file generation paths are not fully exercised by the test suite.

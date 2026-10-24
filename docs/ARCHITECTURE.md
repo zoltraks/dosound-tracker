@@ -41,12 +41,12 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 - **components** - Presentational React components. Includes layout shells (AppLayout), panels (HeaderPanel, CommandPanel, TrackerSection, EnvelopeSection, SongSection, FileInputs, PianoKeyboard), and the ModalManager. Components receive data and callbacks as props and do not own business logic.
 - **constants** - Static configuration values. Music constants (PATTERN_LENGTH, NOTE_FREQUENCIES, octave limits), song metadata options (SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES), and export type definitions.
 - **exports** - File export pipeline. `core.ts` holds shared helpers (normalizeSongForExport, parseBaseKeyForExport, formatNoteLabel, downloadFile re-export). Format modules `asm.ts`, `bin.ts`, `max.ts`, `vgm.ts`, and `wav.ts` each produce a specific output format from normalized song data.
-- **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
-- **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated.
-- **stores** - Zustand stores. Currently contains a single store, `uiStore.ts`, which holds cross-component UI state.
+- **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. Every hook lives in a domain subdirectory (`midi/`, `instrument/`, `song/`, `playback/`, `keyboard/`, `audio/`, `sequencer/`, `modal/`, `app/`, `storage/`, `file/`, `ui/`) - the folder holds no files directly. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
+- **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated. Modal files are imported directly; the folder carries no barrel file.
+- **hooks/ui** - Holds the single Zustand store, `useUiStore.ts`, beside the UI-domain hooks. The store holds cross-component UI state; `src/stores/` was dissolved when its only member moved here under the directories-only rule.
 - **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip, `SoundDriver.ts` generates register-write events, `SequencerEngine.ts` handles frame timing, and `EventOptimizer.ts` optimizes event streams.
 - **types** - Shared TypeScript type definitions used across modules.
-- **utils** - Pure utility functions. Includes logger, file operations, piano utilities, playback utilities, and other stateless helpers.
+- **utils** - Pure utility functions and stateless helpers. Every utility lives in a domain subdirectory (`instrument/`, `track/`, `song/`, `midi/`, `keyboard/`, `envelope/`, `playback/`, `file/`, `compression/`, `cursor/`, `export/`, `format/`, `log/`, `markdown/`, `panel/`, `pattern/`, `storage/`, `timer/`, `transpose/`, `validation/`, `yaml/`) - the folder holds no files directly, and single-file directories are allowed when a domain has one member.
 - **workers** - Web Workers. `sequencerWorker.ts` runs the 50Hz VBLANK timer in a dedicated thread to keep playback timing isolated from the React render loop.
 - **assets** - Static assets such as icons and images bundled with the app.
 
@@ -54,7 +54,7 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 
 The application uses three distinct state domains, each chosen for a specific reason.
 
-The first domain is the single Zustand store, `uiStore`. It holds cross-component UI state that multiple panels need to read or write without prop drilling: `currentOctave`, `sharedCurrentLine`, and `channelMutes`. The store also persists channel mutes to localStorage. App.tsx subscribes to this store at its top level and passes values down as props.
+The first domain is the single Zustand store, `useUiStore`. It holds cross-component UI state that multiple panels need to read or write without prop drilling: `currentOctave`, `sharedCurrentLine`, and `channelMutes`. The store also persists channel mutes to localStorage. App.tsx subscribes to this store at its top level and passes values down as props.
 
 The second domain is App.tsx local state. Song data, instrument lists, pattern data, and playback flags live in `useState` calls inside the App component. These are passed down to child components and hooks as props. This keeps the song model co-located with the orchestrator and avoids a second store.
 

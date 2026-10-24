@@ -1,17 +1,17 @@
 import React, { useRef, useEffect, useCallback } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import type { Song } from '../synth/SoundDriver';
+import type { NavigationSection } from '../constants/navigation.ts';
+import type { Song } from '../synth/SoundDriver.ts';
 import {
   DEFAULT_SONG_FRAME,
   DEFAULT_SONG_CLOCK,
   SUPPORTED_SONG_FRAMES,
   SUPPORTED_SONG_CLOCKS,
-} from '../constants/song';
-import NumberSpinner from './NumberSpinner';
-import ToggleValueButton from './ToggleValueButton';
-import { useLocalStorageState } from '../hooks/useLocalStorageState';
-import { StorageKeys } from '../utils/storageKeys';
-import { readSongInfoField, type SongInfoField } from '../utils/panelCursorFields';
+} from '../constants/song.ts';
+import NumberSpinner from './NumberSpinner.tsx';
+import ToggleValueButton from './ToggleValueButton.tsx';
+import { useLocalStorageState } from '../hooks/storage/useLocalStorageState.ts';
+import { StorageKeys } from '../utils/storage/storageKeys.ts';
+import { readSongInfoField, type SongInfoField } from '../utils/cursor/panelCursorFields.ts';
 
 interface InformationPanelProps {
   song: Song;

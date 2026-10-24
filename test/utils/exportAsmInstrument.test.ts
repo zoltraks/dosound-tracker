@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { exportInstrumentToAssembly, exportSongRegisterDump } from '../../src/exports/asm';
-import { ENVELOPE_LENGTH } from '../../src/constants/music';
-import type { Instrument, Song } from '../../src/synth/SoundDriver';
+import { exportInstrumentToAssembly, exportSongRegisterDump } from '../../src/exports/asm.ts';
+import { ENVELOPE_LENGTH } from '../../src/constants/music.ts';
+import type { Instrument, Song } from '../../src/synth/SoundDriver.ts';
 
 const inst = (overrides: Partial<Instrument> = {}): Instrument => ({
   id: '00',

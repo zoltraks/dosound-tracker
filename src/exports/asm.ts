@@ -1,8 +1,8 @@
-import type { Song, Instrument } from '../synth/SoundDriver';
-import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music';
-import { YM_CLOCK } from '../synth/YM2149';
-import type { ExportStrategy } from '../constants/export';
-import { simulateSong, type SimulationFrame } from '../utils/playbackSimulation';
+import type { Song, Instrument } from '../synth/SoundDriver.ts';
+import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music.ts';
+import { YM_CLOCK } from '../synth/YM2149.ts';
+import type { ExportStrategy } from '../constants/export.ts';
+import { simulateSong, type SimulationFrame } from '../utils/playback/playbackSimulation.ts';
 import {
   downloadFile,
   formatNoteLabel,
@@ -10,9 +10,9 @@ import {
   frequencyToPeriod,
   normalizeSongForExport,
   parseBaseKeyForExport,
-} from './core';
-import { Formatter } from '../utils/formatters';
-import { clampVolumeNibble } from '../utils/volumeUtils';
+} from './core.ts';
+import { Formatter } from '../utils/format/formatters.ts';
+import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format

@@ -36,6 +36,6 @@ The emulation is based on publicly available technical documentation of the YM21
 
 ## ZX0 Compression
 
-The ZX0 compressor implementation in `src/utils/zx0.ts` is a TypeScript port of the Salvador
+The ZX0 compressor implementation in `src/utils/compression/zx0.ts` is a TypeScript port of the Salvador
 compressor by Einar Saukas, distributed under the BSD 3-Clause license.
 The original copyright notice and license terms are retained in the source file header.

@@ -1,5 +1,5 @@
 import React from 'react';
-import type { InstrumentId } from '../types/branded';
+import type { InstrumentId } from '../types/branded.ts';
 
 interface InstrumentDeleteModalProps {
   isOpen: boolean;

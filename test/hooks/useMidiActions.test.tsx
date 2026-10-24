@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useMidiActions } from '../../src/hooks/useMidiActions';
-import type { MidiConfiguration } from '../../src/utils/midiUtils';
-import type { Instrument, Pattern, Song } from '../../src/synth/SoundDriver';
-import { parseBaseKey } from '../../src/utils/songFormat';
+import { useMidiActions } from '../../src/hooks/midi/useMidiActions.ts';
+import type { MidiConfiguration } from '../../src/utils/midi/midiUtils.ts';
+import type { Instrument, Pattern, Song } from '../../src/synth/SoundDriver.ts';
+import { parseBaseKey } from '../../src/utils/song/songFormat.ts';
 
 const makePattern = (steps = 4): Pattern => ({
   id: '00',

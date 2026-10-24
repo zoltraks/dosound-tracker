@@ -5,10 +5,17 @@ import {
   clampEnvelopeValue,
   applyEnvelopeDelta,
   getFullEnvelope,
-} from '../../src/utils/envelopeTypes';
-import { formatInstrumentSlotId, stepInstrumentId } from '../../src/utils/instrumentSelection';
-import { formatTime, resolveDeviceName, MAX_MONITOR_ENTRIES } from '../../src/utils/midiUtils';
-import { advancePreviewEnvelopeTick } from '../../src/utils/previewEnvelopeTiming';
+} from '../../src/utils/envelope/envelopeTypes.ts';
+import {
+  formatInstrumentSlotId,
+  stepInstrumentId,
+} from '../../src/utils/instrument/instrumentSelection.ts';
+import {
+  formatTime,
+  resolveDeviceName,
+  MAX_MONITOR_ENTRIES,
+} from '../../src/utils/midi/midiUtils.ts';
+import { advancePreviewEnvelopeTick } from '../../src/utils/envelope/previewEnvelopeTiming.ts';
 import {
   VOLUME_MAX,
   NOISE_MAX,
@@ -17,8 +24,8 @@ import {
   PITCH_MAX,
   PITCH_MIN,
   ENVELOPE_LENGTH,
-} from '../../src/constants/music';
-import { asInstrumentId } from '../../src/types/branded';
+} from '../../src/constants/music.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
 
 describe('envelopeTypes', () => {
   it('maps panel types to titles with fallthrough', () => {

@@ -1,17 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import type { NavigationSection } from '../constants/navigation';
+import type { NavigationSection } from '../constants/navigation.ts';
 import { ChevronUp, ChevronDown } from 'lucide-react';
-import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music';
-import type { Instrument } from '../synth/SoundDriver';
-import { isInstrumentEmpty } from '../utils/instrument';
-import { formatInstrumentSlotId } from '../utils/instrumentSelection';
+import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music.ts';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import { isInstrumentEmpty } from '../utils/instrument/instrument.ts';
+import { formatInstrumentSlotId } from '../utils/instrument/instrumentSelection.ts';
 import {
   computeVisibleSlotCount,
   getInstrumentForSlot as getInstrumentForSlotFromUtils,
   getMovedInstrumentIndex,
   isMidiEnabled,
-} from '../utils/instrumentPanelUtils';
+} from '../utils/instrument/instrumentPanelUtils.ts';
 import colorModeDark from '../assets/svg/color-mode-dark.svg';
 import colorModeLight from '../assets/svg/color-mode-light.svg';
 

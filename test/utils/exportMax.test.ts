@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { parseSongFromYaml } from '../../src/utils/songParser';
-import { exportSongToMax, exportInstrumentToMax } from '../../src/exports/max';
-import { decompressZX0 } from '../../src/utils/zx0';
-import { simulateSong } from '../../src/utils/playbackSimulation';
-import { YM_CLOCK } from '../../src/synth/YM2149';
-import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver';
+import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
+import { exportSongToMax, exportInstrumentToMax } from '../../src/exports/max.ts';
+import { decompressZX0 } from '../../src/utils/compression/zx0.ts';
+import { simulateSong } from '../../src/utils/playback/playbackSimulation.ts';
+import { YM_CLOCK } from '../../src/synth/YM2149.ts';
+import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver.ts';
 
 function loadSongYaml(name: string) {
   const yamlContent = readFileSync(`test/fixtures/${name}`, 'utf-8');

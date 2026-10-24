@@ -1,17 +1,17 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
-import type { NavigationSection } from '../constants/navigation';
-import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music';
-import { YM2149 } from '../synth/YM2149';
-import type { Instrument } from '../synth/SoundDriver';
-import { DEFAULT_SONG_FRAME } from '../constants/song';
-import { PianoKey } from './PianoKey';
-import { generatePianoKeys, parseBaseKey } from '../utils/pianoUtils';
-import type { PianoKeyConfig } from '../utils/pianoUtils';
-import { getKeyboardMappedNote } from '../utils/keyboardNoteMapping';
+import type { NavigationSection } from '../constants/navigation.ts';
+import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music.ts';
+import { YM2149 } from '../synth/YM2149.ts';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
+import { PianoKey } from './PianoKey.tsx';
+import { generatePianoKeys, parseBaseKey } from '../utils/panel/pianoUtils.ts';
+import type { PianoKeyConfig } from '../utils/panel/pianoUtils.ts';
+import { getKeyboardMappedNote } from '../utils/keyboard/keyboardNoteMapping.ts';
 import {
   advancePreviewEnvelopeTick,
   getPreviewEnvelopeApplyStep,
-} from '../utils/previewEnvelopeTiming';
+} from '../utils/envelope/previewEnvelopeTiming.ts';
 
 type PreviewInstrument = Instrument;
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { clearIntervalRef } from '../../src/utils/timerUtils';
+import { clearIntervalRef } from '../../src/utils/timer/timerUtils.ts';
 
 describe('clearIntervalRef', () => {
   it('clears the interval and resets ref to null', () => {

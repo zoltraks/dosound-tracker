@@ -1,5 +1,5 @@
 import React from 'react';
-import type { TrackPasteMode } from '../hooks/useTrackOperations';
+import type { TrackPasteMode } from '../hooks/song/useTrackOperations.ts';
 
 interface PasteTrackModalProps {
   isOpen: boolean;

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import type { Song } from '../../src/synth/SoundDriver';
-import { SequencerEngine } from '../../src/synth/SequencerEngine';
+import type { Song } from '../../src/synth/SoundDriver.ts';
+import { SequencerEngine } from '../../src/synth/SequencerEngine.ts';
 
 const createTestSong = (): Song => ({
   title: 'Test Song',

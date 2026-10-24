@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import type { Instrument } from '../../src/synth/SoundDriver';
-import { asInstrumentId } from '../../src/types/branded';
+import type { Instrument } from '../../src/synth/SoundDriver.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
 import {
   computeVisibleSlotCount,
   createEmptyInstrument,
   getInstrumentForSlot,
   getMovedInstrumentIndex,
   isMidiEnabled,
-} from '../../src/utils/instrumentPanelUtils';
+} from '../../src/utils/instrument/instrumentPanelUtils.ts';
 
 describe('instrumentPanelUtils', () => {
   const makeInstrument = (id: string, name: string = 'x'): Instrument => ({

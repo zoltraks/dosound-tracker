@@ -1,13 +1,13 @@
 import React from 'react';
-import { ModalContainer } from './ModalContainer';
-import { FilePickerModal } from '../modals/FilePickerModal';
-import { ExportModal } from '../modals/ExportModal';
-import { PasteTrackModal } from '../modals/PasteTrackModal';
-import type { ExportType, ExportStrategy } from '../constants/export';
-import type { TrackPasteMode } from '../hooks/useTrackOperations';
-import type { Instrument } from '../synth/SoundDriver';
-import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/useMidi';
-import type { InstrumentDeleteUsage } from '../hooks/useModalState';
+import { ModalContainer } from './ModalContainer.tsx';
+import { FilePickerModal } from '../modals/FilePickerModal.tsx';
+import { ExportModal } from '../modals/ExportModal.tsx';
+import { PasteTrackModal } from '../modals/PasteTrackModal.tsx';
+import type { ExportType, ExportStrategy } from '../constants/export.ts';
+import type { TrackPasteMode } from '../hooks/song/useTrackOperations.ts';
+import type { Instrument } from '../synth/SoundDriver.ts';
+import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
+import type { InstrumentDeleteUsage } from '../hooks/modal/useModalState.ts';
 
 interface ModalManagerProps {
   // Error and summary states

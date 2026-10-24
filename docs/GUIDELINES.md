@@ -73,30 +73,39 @@ Examples:
 
 The active documentation set is composed of the following files. Each file is the authoritative source for the topic listed.
 
-| File                                          | Purpose                                                                  |
-| --------------------------------------------- | ------------------------------------------------------------------------ |
-| `GUIDELINES.md`                               | Central source of truth for AI-assisted development rules (this file)    |
-| `PROJECT.md`                                  | Project description, scope, requirements, use cases, and quality targets |
-| `ARCHITECTURE.md`                             | System architecture, module boundaries, state domains, and patterns      |
-| `SPECIFICATION.md`                            | Project-specific implementation details, stack, schemas, and constants   |
-| `COPYRIGHTS.md`                               | Copyright and licensing rules                                            |
-| `WORKFLOW.md`                                 | Day-to-day development workflow                                          |
-| `REFACTORING.md`                              | Refactoring proposal and assessment process                              |
-| `TESTING.md`                                  | Testing strategy, test types, fixtures, and verification                 |
-| `DEPLOYMENT.md`                               | Deployment targets and hosting                                           |
-| `VERSIONING.md`                               | Version numbering scheme, bumping rules, and CHANGELOG format            |
-| `FORMAT.md`                                   | Project file format specification for song and instrument files          |
-| `MAX.md`                                      | MAX audio file format specification                                      |
-| `FUTURE.md`                                   | Candidate future enhancements (not committed work)                       |
-| `standard/ts-react-development.md`            | TypeScript and React engineering standard                                |
-| `template/change-request-template.md`         | Template for change request specification documents                      |
-| `template/implementation-plan-template.md`    | Template for implementation plan documents                               |
-| `template/refactoring-proposal-template.md`   | Template for refactoring proposal documents                              |
-| `template/refactoring-assessment-template.md` | Template for refactoring assessment documents                            |
-| `template/preparation-findings.md`            | Template for documentation-set findings reports                          |
-| `template/change-review-template.md`          | Template for version-window review documents                             |
-| `template/session-findings.md`                | Template for session-review lesson entries                               |
-| `template/decision-record.md`                 | Template for durable dated decision records                              |
+| File                                            | Purpose                                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------------------ |
+| `GUIDELINES.md`                                 | Central source of truth for AI-assisted development rules (this file)    |
+| `PROJECT.md`                                    | Project description, scope, requirements, use cases, and quality targets |
+| `ARCHITECTURE.md`                               | System architecture, module boundaries, state domains, and patterns      |
+| `SPECIFICATION.md`                              | Project-specific implementation details, stack, schemas, and constants   |
+| `COPYRIGHTS.md`                                 | Copyright and licensing rules                                            |
+| `WORKFLOW.md`                                   | Day-to-day development workflow                                          |
+| `REFACTORING.md`                                | Refactoring proposal and assessment process                              |
+| `TESTING.md`                                    | Testing strategy, test types, fixtures, and verification                 |
+| `DEPLOYMENT.md`                                 | Deployment targets and hosting                                           |
+| `VERSIONING.md`                                 | Version numbering scheme, bumping rules, and CHANGELOG format            |
+| `FORMAT.md`                                     | Project file format specification for song and instrument files          |
+| `MAX.md`                                        | MAX audio file format specification                                      |
+| `FUTURE.md`                                     | Candidate future enhancements (not committed work)                       |
+| `standard/README.md`                            | Engineering-standard library index                                       |
+| `standard/typescript-react-development.md`      | TypeScript and React engineering standard                                |
+| `standard/typescript-electron-development.md`   | TypeScript and Electron engineering standard                             |
+| `standard/typescript-audio-development.md`      | TypeScript and real-time audio engineering standard                      |
+| `standard/typescript-general-development.md`    | TypeScript engineering standard                                          |
+| `standard/css-general-development.md`           | CSS engineering standard                                                 |
+| `standard/html-vanilla-development.md`          | Vanilla HTML engineering standard (reference)                            |
+| `standard/accessibility-general-development.md` | Accessibility engineering standard                                       |
+| `standard/performance-budgets-development.md`   | Performance-budget engineering standard                                  |
+| `standard/standard-template-development.md`     | Standard-authoring template                                              |
+| `template/change-request-template.md`           | Template for change request specification documents                      |
+| `template/implementation-plan-template.md`      | Template for implementation plan documents                               |
+| `template/refactoring-proposal-template.md`     | Template for refactoring proposal documents                              |
+| `template/refactoring-assessment-template.md`   | Template for refactoring assessment documents                            |
+| `template/preparation-findings.md`              | Template for documentation-set findings reports                          |
+| `template/change-review-template.md`            | Template for version-window review documents                             |
+| `template/session-findings.md`                  | Template for session-review lesson entries                               |
+| `template/decision-record.md`                   | Template for durable dated decision records                              |
 
 ### Three Pillars of Technical Documentation
 
@@ -172,9 +181,9 @@ This rule is mandatory and unconditional. Before making any change in this codeb
   - `TESTING.md`
   - `DEPLOYMENT.md`
   - `VERSIONING.md`
-  - `standard/ts-react-development.md`
+  - `standard/README.md` (index; consult the matching standard file for the task)
 - Never assume a subset of these files is sufficient.
-- For any implementation task, consult the corresponding standard in `standard/` before writing code. These standards are generalized; project-specific conventions and code organization live in `SPECIFICATION.md`.
+- For any implementation task, consult the corresponding standard in `standard/` before writing code - the index is `standard/README.md`. These standards are generalized; project-specific conventions and code organization live in `SPECIFICATION.md` and in each standard's `Project Conventions` section.
 - Ask for clarification when requirements are missing or ambiguous.
 - When a guideline file is added, removed, or its purpose changes, update this file accordingly.
 
@@ -198,7 +207,7 @@ Do not begin implementation until the user confirms the plan.
 When asked to make an implementation plan:
 
 - Gather all requirements from project documentation (`PROJECT.md`, `ARCHITECTURE.md`, `SPECIFICATION.md`).
-- Review `standard/ts-react-development.md` for general engineering standards and best practices.
+- Review `standard/typescript-react-development.md` for general engineering standards and best practices.
 - Review `SPECIFICATION.md` for project-specific source layout, technology stack, and coding conventions.
 - Use the template at `docs/template/implementation-plan-template.md`.
 - Create a comprehensive implementation plan in `docs/plan/<current_version>/`. Name the plan document to match the change request file (for example `midi-support-implementation.md` for `midi-support.md`), or according to the nature of the change if based on a description.
@@ -210,7 +219,7 @@ When asked to make an implementation plan:
 Every implementation plan must include:
 
 - Best practices applicable to the specific implementation.
-- Reference to engineering standards from `standard/ts-react-development.md`.
+- Reference to engineering standards from `standard/typescript-react-development.md`.
 - Unit tests for all new utility functions.
 - Integration tests for component interactions and user flows.
 - Documentation updates required before code changes (per "Applying a Change" section).
@@ -360,7 +369,7 @@ The project records a session-review convention. When the user says "improve dos
 
 | Lesson kind              | Owning destination                                                        |
 | ------------------------ | ------------------------------------------------------------------------- |
-| Engineering wound        | The relevant standard's findings, for example `standard/ts-react-development.md` |
+| Engineering wound        | The relevant standard's findings, for example `standard/typescript-react-development.md` |
 | Testing or tooling wound | The owning section of `TESTING.md`                                        |
 | Versioning wound         | The owning section of `VERSIONING.md`                                     |
 | Workflow wound           | A rule in this file plus a dated record in `docs/decision/` when the decision is durable |
@@ -629,6 +638,8 @@ In real-time audio applications, performance trumps purity. The "wrong" way that
 ## General Rules
 
 - **Strict rule adherence**: follow the rules at all times unless specifically told to do otherwise.
+- **Default workflow**: every change follows the standard workflow (change request, deep analysis, implementation plan, documentation-first updates, verification loop) unless the request explicitly names an ad-hoc, immediate, or quick path.
+- **Structural proposals carry trees**: every answer or document that proposes a structural change (directory locations, file moves) includes the proposed directory tree as one fenced annotated block.
 - **Copyright compliance**: `COPYRIGHTS.md` contains mandatory copyright and licensing rules that must be obeyed. All code must be original, AI-generated code must be verified for originality, and dependency licensing must be compatible (MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost only; GPL is not allowed).
 - **No legacy checking**: unless specifically told to do so, do not implement additional support for previous behaviour or create legacy checking for deprecated configuration keys or features.
 - **Debug logging cleanup**: when debug logging such as `console.log` is added to trace bugs, it must be removed after the bug is fixed.

@@ -3,17 +3,17 @@ import {
   createNewInstrumentForSong,
   updateInstrumentInSong,
   applyLoadedInstrumentToSong,
-} from '../../src/hooks/useInstrumentManagement';
+} from '../../src/hooks/instrument/useInstrumentManagement.ts';
 import {
   createDefaultSong,
   optimizeSongData,
   renumberSongData,
-} from '../../src/hooks/useSongManagement';
-import { scheduleJsonSave, clearScheduledSave } from '../../src/hooks/useStorage';
-import { StorageKeys } from '../../src/utils/storageKeys';
-import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../src/constants/music';
-import { asInstrumentId } from '../../src/types/branded';
-import type { Instrument, Pattern, Song, Step } from '../../src/synth/SoundDriver';
+} from '../../src/hooks/song/useSongManagement.ts';
+import { scheduleJsonSave, clearScheduledSave } from '../../src/hooks/storage/useStorage.ts';
+import { StorageKeys } from '../../src/utils/storage/storageKeys.ts';
+import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../src/constants/music.ts';
+import { asInstrumentId } from '../../src/types/branded.ts';
+import type { Instrument, Pattern, Song, Step } from '../../src/synth/SoundDriver.ts';
 import type { MutableRefObject } from 'react';
 
 const inst = (id: string, name = ''): Instrument => ({

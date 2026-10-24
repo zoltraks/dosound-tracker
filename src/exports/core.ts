@@ -1,10 +1,10 @@
-import type { Song, Instrument, Pattern, Step } from '../synth/SoundDriver';
-import { NOTES, PATTERN_LENGTH } from '../constants/music';
-import { YM_CLOCK } from '../synth/YM2149';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
-import { parseBaseKey } from '../utils/pianoUtils';
+import type { Song, Instrument, Pattern, Step } from '../synth/SoundDriver.ts';
+import { NOTES, PATTERN_LENGTH } from '../constants/music.ts';
+import { YM_CLOCK } from '../synth/YM2149.ts';
+import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
+import { parseBaseKey } from '../utils/panel/pianoUtils.ts';
 
-export { downloadFile, type DownloadFileContent } from '../utils/fileOperations';
+export { downloadFile, type DownloadFileContent } from '../utils/file/fileOperations.ts';
 
 export function normalizeSongForExport(song: Song): Song {
   return {

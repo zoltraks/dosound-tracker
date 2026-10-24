@@ -1,6 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
-import { ColorPicker } from '../../src/components/ColorPicker';
+import { ColorPicker } from '../../src/components/ColorPicker.tsx';
 
 describe('ColorPicker', () => {
   it('renders preview with provided value', () => {

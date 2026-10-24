@@ -1,7 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useMidi, type MidiConfiguration } from '../../src/hooks/useMidi';
+import { useMidi, type MidiConfiguration } from '../../src/hooks/midi/useMidi.ts';
 
 const STORAGE_KEY = 'dosound-tracker-midi-configuration';
 

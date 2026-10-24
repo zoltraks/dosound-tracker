@@ -1,9 +1,9 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, fireEvent, act } from '@testing-library/react';
 import type { ComponentProps } from 'react';
-import { TrackPanel } from '../../src/components/TrackPanel';
-import type { Pattern, Instrument } from '../../src/synth/SoundDriver';
-import type { NavigationSection } from '../../src/constants/navigation';
+import { TrackPanel } from '../../src/components/TrackPanel.tsx';
+import type { Pattern, Instrument } from '../../src/synth/SoundDriver.ts';
+import type { NavigationSection } from '../../src/constants/navigation.ts';
 
 const pattern = (): Pattern => ({
   id: '00',

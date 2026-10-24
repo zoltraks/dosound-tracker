@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { optimizeEvents, type SoundEventLike } from '../../src/synth/EventOptimizer';
+import { optimizeEvents, type SoundEventLike } from '../../src/synth/EventOptimizer.ts';
 
 const reg = (register: number, value: number): SoundEventLike => ({
   type: 'register',
