@@ -32,10 +32,12 @@ File to modify: `src/App.css`.
 /* dark :root, after --border-bright */
 --section-hover-border: #b84ec8;
 --section-hover-glow: rgba(226, 139, 240, 0.55);
+--section-hover-bg: color-mix(in srgb, var(--bg-secondary) 75%, black 25%);
 
 /* .light, after --border-bright */
 --section-hover-border: #2f6fae;
 --section-hover-glow: color-mix(in srgb, var(--section-hover-border) 45%, transparent);
+--section-hover-bg: color-mix(in srgb, var(--bg-secondary) 78%, #98a1ab 22%);
 ```
 
 **Point the track-panel hover border at the new token**

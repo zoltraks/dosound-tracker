@@ -18,6 +18,8 @@
   --border-bright: #7aa2f7;
   --section-hover-border: #b84ec8;
   --section-hover-glow: rgba(226, 139, 240, 0.55);
+  --section-hover-bg: color-mix(in srgb, var(--bg-secondary) 75%, black 25%);
+  --track-hover-bg: color-mix(in srgb, var(--bg-secondary) 85%, black 15%);
 
   --active-bg: #252d42;
   --active-border: #7aa2f7;
@@ -176,6 +178,8 @@
   --border-bright: #1a202c;
   --section-hover-border: #2f6fae;
   --section-hover-glow: color-mix(in srgb, var(--section-hover-border) 45%, transparent);
+  --section-hover-bg: color-mix(in srgb, var(--bg-secondary) 78%, #98a1ab 22%);
+  --track-hover-bg: color-mix(in srgb, var(--bg-secondary) 55%, #98a1ab 45%);
 
   --active-bg: #fef3c7;
   --active-border: #f59e0b;
@@ -486,6 +490,7 @@ body {
   justify-content: center;
   border-bottom: 2px solid transparent;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -497,6 +502,7 @@ body {
 
 .octave-selection:hover {
   border-bottom-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -539,6 +545,7 @@ body {
   border-bottom: 2px solid var(--border-color);
   box-shadow: var(--shadow-small);
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -549,6 +556,7 @@ body {
 
 .command-panel:hover {
   border-bottom-color: var(--section-hover-border);
+  background-image: linear-gradient(180deg, var(--section-hover-bg) 0%, var(--bg-tertiary) 100%);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -1597,7 +1605,13 @@ body {
 
 .track-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--track-hover-bg);
+  background-image: linear-gradient(180deg, var(--track-hover-bg) 0%, var(--bg-secondary) 100%);
   box-shadow: 0 0 6px var(--section-hover-glow);
+}
+
+.track-panel:hover::before {
+  opacity: 0.3;
 }
 
 .track-panel.disabled {
@@ -1891,6 +1905,7 @@ body {
   outline: none;
   flex-shrink: 0;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -1906,6 +1921,7 @@ body {
 
 .envelope-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -2089,6 +2105,7 @@ body {
   padding: 4px;
   cursor: pointer;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -2100,6 +2117,7 @@ body {
 
 .information-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -2383,6 +2401,7 @@ body {
   flex-direction: column;
   min-height: 0;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -2398,6 +2417,7 @@ body {
 
 .playlist-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -2620,6 +2640,7 @@ body {
   flex-direction: column;
   min-height: 0;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -2635,6 +2656,7 @@ body {
 
 .instrument-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -2934,12 +2956,14 @@ body {
   border: 1px solid var(--border-color);
   padding: 4px;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
 
 .dump-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -2987,12 +3011,14 @@ body {
   border: 1px solid var(--border-color);
   padding: 4px;
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
 
 .eq-panel:hover {
   border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
@@ -3119,6 +3145,7 @@ body {
   border: 1px solid var(--border-color);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
   transition:
+    background-color 0.6s ease,
     border-color 0.6s ease,
     box-shadow 0.6s ease;
 }
@@ -3138,6 +3165,11 @@ body {
 
 .piano-keyboard:hover {
   border-color: var(--section-hover-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--section-hover-bg) 60%, #1a1a1a) 0%,
+    color-mix(in srgb, var(--section-hover-bg) 60%, #2a2a2a) 100%
+  );
   box-shadow:
     inset 0 2px 4px rgba(0, 0, 0, 0.5),
     0 0 6px var(--section-hover-glow);
