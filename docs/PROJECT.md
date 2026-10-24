@@ -155,6 +155,10 @@ All export formats (VGM, MAX, WAV, ASM, BIN) read the configured frame rate and 
 
 The system must remember the editor cursor across application reloads. This includes the focused section, the selected track, the playlist line, the track row, the track column, the selected instrument, the song information field, the playlist track column, the octave, and each envelope panel step cursor. Restored values are clamped to the current song. The envelope step cursor is remembered per panel and does not change when the selected instrument changes. The editor cursor is session state stored in local storage and is not part of the saved or exported song file formats.
 
+**F-16: Redundant Local Persistence**
+
+The system must mirror autosaved song and instrument data into an IndexedDB snapshot store so compositions survive a cleared local storage. On startup, when the local storage song is absent and a snapshot exists, the system must restore the snapshot through the same schema migration used for local storage and mark the song dirty. The system must request persistent storage where the platform supports it, must clear the mirror when the user performs a full reset, and must surface the file-save recommendation unobtrusively through the rotating message panel.
+
 ## Non-Functional Requirements
 
 **N-01: Audio Performance**

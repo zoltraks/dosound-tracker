@@ -194,6 +194,9 @@ See `vitest.config.ts` for the Vitest configuration. The configuration includes:
 
 - `@testing-library/react` does not auto-cleanup in this setup. Every component test file must register `afterEach(() => cleanup())` or queries will match elements from earlier tests in the same file.
 - The localStorage mock in `test/setup-localstorage.ts` reinstalls a fresh store in a `beforeEach` hook. Tests cannot rely on values persisting between test cases in the same file.
+- Spies and stubs for `localStorage` must target the `localStorage` object itself (for example `vi.spyOn(localStorage, 'setItem')`), never `Storage.prototype` - the installed mock is a plain object outside the prototype chain, so a prototype spy silently never intercepts.
+- `fetch` stubs must return the full Response surface the code under test reads - `ok`, `headers.get()`, and `text()` - not only the fields an older consumer used. A stub that omits `headers` turns a new header read into a TypeError that only surfaces as an empty-state test failure.
+- Assertions on rendered or generated HTML must distinguish escaped entities from raw markup - `&quot;` inside an attribute value is safe text, not an attribute breakout. Assert on the unescaped pattern (a real quote followed by an attribute name), not on substring scans that match entity bodies.
 
 **Playwright**
 

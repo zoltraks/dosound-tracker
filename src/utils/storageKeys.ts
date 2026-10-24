@@ -20,6 +20,13 @@ export class StorageKeys {
   static readonly PLAYLIST_TRACK = 'dosound-tracker-playlist-track' as const;
   static readonly OCTAVE = 'dosound-tracker-octave' as const;
   static readonly ENVELOPE_CURSOR_PREFIX = 'dosound-tracker-envelope-cursor-' as const;
+  static readonly INSTRUMENT_OCTAVES = 'dosound-tracker-instrument-octaves' as const;
+  static readonly PASTE_TRACK_MODE = 'dosound-tracker-paste-track-mode' as const;
+  static readonly TRACK_BACKGROUND_ENABLED = 'dosound-tracker-track-background-enabled' as const;
+  static readonly EQ_MUTES = 'dosound-tracker-eq-mutes' as const;
+  static readonly COMMAND_PANEL_MOBILE = 'dosound-tracker-command-panel-mobile' as const;
+  static readonly DEBUG_INFO_SHOWN = 'dosound-tracker-debug-info-shown' as const;
+  static readonly IGNORE_INST_TYPE_WARNING = 'dosound-tracker-ignore-inst-type-warning' as const;
 
   // Data persistence
   static readonly SONG = 'dosound-tracker-song' as const;

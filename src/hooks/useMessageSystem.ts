@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { clearIntervalRef } from '../utils/timerUtils';
+import { fetchBundledMarkdown } from '../utils/bundledMarkdown';
 
 interface UseMessageSystemResult {
   messages: string[];
@@ -19,13 +20,7 @@ export function useMessageSystem(): UseMessageSystemResult {
   useEffect(() => {
     let isCancelled = false;
 
-    fetch('MESSAGES.md')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to load messages.');
-        }
-        return response.text();
-      })
+    fetchBundledMarkdown('MESSAGES.md')
       .then((text) => {
         if (isCancelled) {
           return;

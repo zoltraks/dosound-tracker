@@ -1,3 +1,5 @@
+export type TrustedHtml = string & { readonly __brand: 'TrustedHtml' };
+
 export const escapeHtml = (str: string): string => {
   return str
     .replace(/&/g, '&amp;')
@@ -81,7 +83,7 @@ const isTableSeparatorLine = (line: string): boolean => {
   return cells.every((cell) => /^:?-{3,}:?$/.test(cell.trim()));
 };
 
-export const renderMarkdown = (md: string): string => {
+export const renderMarkdown = (md: string): TrustedHtml => {
   const lines = md.split('\n');
   const html: string[] = [];
   let inList = false;
@@ -229,5 +231,5 @@ export const renderMarkdown = (md: string): string => {
   }
 
   closeList();
-  return html.join('\n');
+  return html.join('\n') as TrustedHtml;
 };

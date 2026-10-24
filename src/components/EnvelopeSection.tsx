@@ -3,7 +3,7 @@ import type { NavigationSection } from '../constants/navigation';
 import type { Instrument } from '../synth/SoundDriver';
 import { ToneNoisePanel } from './ToneNoisePanel';
 import { EnvelopePanel } from './EnvelopePanel';
-import { renderMarkdown } from '../utils/markdown';
+import { renderMarkdown, type TrustedHtml } from '../utils/markdown';
 
 interface EnvelopeSectionProps {
   activeSection: NavigationSection;
@@ -26,11 +26,9 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
   isNotesVisible,
   onNotesClick,
 }) => {
-  const currentMessageHtml = useMemo(() => {
-    if (messages.length > 0 && currentMessageIndex >= 0 && currentMessageIndex < messages.length) {
-      return renderMarkdown(messages[currentMessageIndex]);
-    }
-    return '';
+  const currentMessageHtml: TrustedHtml = useMemo(() => {
+    const inRange = currentMessageIndex >= 0 && currentMessageIndex < messages.length;
+    return renderMarkdown(inRange ? (messages[currentMessageIndex] ?? '') : '');
   }, [messages, currentMessageIndex]);
 
   return (

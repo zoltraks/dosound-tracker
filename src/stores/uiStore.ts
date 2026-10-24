@@ -43,7 +43,7 @@ const getInitialChannelMutes = (): [boolean, boolean, boolean] => {
   }
 
   try {
-    const stored = window.localStorage.getItem('dosound-tracker-eq-mutes');
+    const stored = window.localStorage.getItem(StorageKeys.EQ_MUTES);
     if (!stored) return [false, false, false];
     const parsed = JSON.parse(stored);
     if (

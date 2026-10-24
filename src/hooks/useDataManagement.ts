@@ -19,8 +19,10 @@ import { asInstrumentId, asPatternId, asPlaylistPatternId, type PatternId } from
 import {
   SONG_STORAGE_KEY,
   loadInitialSong,
+  normalizeRestoredSong,
   optimizeSongData,
   renumberSongData,
+  type StoredSongForMigration,
 } from './useSongManagement';
 import {
   createNewInstrumentForSong,
@@ -31,6 +33,7 @@ import { createPatternForSong, addPlaylistEntryToSong } from './usePatternManage
 import { createEmptyInstrument } from '../utils/instrumentPanelUtils';
 import type { PlaylistEntry } from '../types/playlist';
 import { scheduleJsonSave, clearScheduledSave, type ScheduledSaveHandle } from './useStorage';
+import { readMirroredSnapshot, requestPersistentStorage } from '../utils/persistenceMirror';
 
 const INSTRUMENT_STORAGE_KEY = StorageKeys.INSTRUMENT;
 
@@ -97,6 +100,7 @@ export const useDataManagement = () => {
   const [instrumentError, setInstrumentError] = useState('');
   const [isSongDirty, setIsSongDirty] = useState(false);
   const [pendingSongImport, setPendingSongImport] = useState<PendingSongImport | null>(null);
+  const [mirrorRestoreNotice, setMirrorRestoreNotice] = useState<string | null>(null);
 
   const songSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
   const instrumentSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
@@ -137,6 +141,31 @@ export const useDataManagement = () => {
     return () => {
       clearScheduledSave(songSaveTimeoutRef);
       clearScheduledSave(instrumentSaveTimeoutRef);
+    };
+  }, []);
+
+  // Restore the mirrored snapshot when localStorage lost the song: a cleared
+  // store is the eviction case this redundant path exists for.
+  useEffect(() => {
+    requestPersistentStorage();
+    if (localStorage.getItem(SONG_STORAGE_KEY)) {
+      return;
+    }
+    let cancelled = false;
+    void readMirroredSnapshot<StoredSongForMigration>('song')
+      .then((snapshot) => {
+        if (cancelled || !snapshot) {
+          return;
+        }
+        setCurrentSong(normalizeRestoredSong(snapshot));
+        setIsSongDirty(true);
+        setMirrorRestoreNotice(
+          'Previous session restored from a local snapshot. Save the song to a file to keep it safe.',
+        );
+      })
+      .catch((error) => logger.warn('Failed to read mirrored snapshot', error));
+    return () => {
+      cancelled = true;
     };
   }, []);
 
@@ -442,6 +471,7 @@ export const useDataManagement = () => {
     triggerFileLoad,
     isSongDirty,
     loadSongFromText,
+    mirrorRestoreNotice,
     pendingSongImport,
     confirmPendingSongImport,
     cancelPendingSongImport,

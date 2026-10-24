@@ -29,6 +29,8 @@ import { usePlaybackSimulation } from './hooks/usePlaybackSimulation';
 import { useSequencerIntegration } from './hooks/useSequencerIntegration';
 import { normalizeInstrumentId } from './utils/playbackUtils';
 import { clearIntervalRef } from './utils/timerUtils';
+import { fetchBundledMarkdown } from './utils/bundledMarkdown';
+import { clearMirroredSnapshots } from './utils/persistenceMirror';
 import {
   SUPPORTED_SONG_CHIPS,
   SUPPORTED_SONG_FRAMES,
@@ -180,7 +182,7 @@ const App: React.FC = () => {
 
   const [instrumentOctaves, setInstrumentOctaves] = useState<Record<string, number>>(() => {
     try {
-      const stored = localStorage.getItem('dosound-tracker-instrument-octaves');
+      const stored = localStorage.getItem(StorageKeys.INSTRUMENT_OCTAVES);
       if (!stored) return {};
       const parsed = JSON.parse(stored);
       if (parsed && typeof parsed === 'object') {
@@ -194,7 +196,7 @@ const App: React.FC = () => {
 
   const [pasteTrackMode, setPasteTrackMode] = useState<TrackPasteMode>(() => {
     try {
-      const stored = localStorage.getItem('dosound-tracker-paste-track-mode');
+      const stored = localStorage.getItem(StorageKeys.PASTE_TRACK_MODE);
       if (stored === 'replace' || stored === 'overwriteAll' || stored === 'overwriteEmpty') {
         return stored as TrackPasteMode;
       }
@@ -213,7 +215,7 @@ const App: React.FC = () => {
 
   const [trackBackgroundEnabled, setTrackBackgroundEnabled] = useState<boolean>(() => {
     try {
-      const stored = localStorage.getItem('dosound-tracker-track-background-enabled');
+      const stored = localStorage.getItem(StorageKeys.TRACK_BACKGROUND_ENABLED);
       if (stored === '0' || stored === '1') {
         return stored === '1';
       }
@@ -226,7 +228,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-paste-track-mode', pasteTrackMode);
+      localStorage.setItem(StorageKeys.PASTE_TRACK_MODE, pasteTrackMode);
     } catch {
       // ignore
     }
@@ -256,6 +258,7 @@ const App: React.FC = () => {
     renumberSong,
     isSongDirty,
     loadSongFromText,
+    mirrorRestoreNotice,
     pendingSongImport,
     confirmPendingSongImport,
     cancelPendingSongImport,
@@ -380,7 +383,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-eq-mutes', JSON.stringify(channelMutes));
+      localStorage.setItem(StorageKeys.EQ_MUTES, JSON.stringify(channelMutes));
     } catch {
       // ignore
     }
@@ -388,7 +391,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     try {
-      localStorage.setItem('dosound-tracker-instrument-octaves', JSON.stringify(instrumentOctaves));
+      localStorage.setItem(StorageKeys.INSTRUMENT_OCTAVES, JSON.stringify(instrumentOctaves));
     } catch {
       // ignore
     }
@@ -397,7 +400,7 @@ const App: React.FC = () => {
   useEffect(() => {
     try {
       localStorage.setItem(
-        'dosound-tracker-track-background-enabled',
+        StorageKeys.TRACK_BACKGROUND_ENABLED,
         trackBackgroundEnabled ? '1' : '0',
       );
     } catch {
@@ -498,6 +501,11 @@ const App: React.FC = () => {
 
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
+  const envelopeMessages = useMemo(
+    () => (mirrorRestoreNotice ? [mirrorRestoreNotice, ...messages] : messages),
+    [mirrorRestoreNotice, messages],
+  );
+
   const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(
     currentSong.clock ?? DEFAULT_SONG_CLOCK,
   );
@@ -540,7 +548,7 @@ const App: React.FC = () => {
     }
 
     try {
-      const stored = localStorage.getItem('dosound-tracker-command-panel-mobile');
+      const stored = localStorage.getItem(StorageKeys.COMMAND_PANEL_MOBILE);
       if (stored === 'collapsed') {
         setIsCommandPanelMobileCollapsed(true);
         return () => window.removeEventListener('resize', handleResize);
@@ -565,7 +573,7 @@ const App: React.FC = () => {
 
     try {
       localStorage.setItem(
-        'dosound-tracker-command-panel-mobile',
+        StorageKeys.COMMAND_PANEL_MOBILE,
         isCommandPanelMobileCollapsed ? 'collapsed' : 'expanded',
       );
     } catch {
@@ -814,17 +822,18 @@ const App: React.FC = () => {
   const handleConfirmReset = useCallback(() => {
     // Clear all localStorage data
     try {
-      const preservedTheme = localStorage.getItem('dosound-tracker-theme');
-      const preservedDebug = localStorage.getItem('dosound-tracker-debug-mode');
+      const preservedTheme = localStorage.getItem(StorageKeys.THEME);
+      const preservedDebug = localStorage.getItem(StorageKeys.DEBUG_MODE);
 
       localStorage.clear();
+      clearMirroredSnapshots();
 
       if (preservedTheme !== null) {
-        localStorage.setItem('dosound-tracker-theme', preservedTheme);
+        localStorage.setItem(StorageKeys.THEME, preservedTheme);
       }
 
       if (preservedDebug !== null) {
-        localStorage.setItem('dosound-tracker-debug-mode', preservedDebug);
+        localStorage.setItem(StorageKeys.DEBUG_MODE, preservedDebug);
       }
     } catch {
       // ignore
@@ -875,13 +884,7 @@ const App: React.FC = () => {
     setChangelogContent('');
     setIsChangelogOpen(true);
 
-    fetch('CHANGELOG.md')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to load changelog.');
-        }
-        return response.text();
-      })
+    fetchBundledMarkdown('CHANGELOG.md')
       .then((text) => {
         setChangelogContent(text);
       })
@@ -899,31 +902,8 @@ const App: React.FC = () => {
     setManualContent('');
     setIsManualOpen(true);
 
-    fetch('MANUAL.md')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error('Failed to load manual.');
-        }
-        const contentType = response.headers.get('content-type') || '';
-        if (contentType.includes('text/html')) {
-          // Likely SPA fallback (index.html) instead of a real MANUAL.md file.
-          throw new Error('Manual appears to be HTML, treating as missing.');
-        }
-
-        return response.text();
-      })
+    fetchBundledMarkdown('MANUAL.md')
       .then((text) => {
-        const trimmed = text.trimStart().slice(0, 512).toLowerCase();
-
-        if (
-          trimmed.startsWith('<!doctype') ||
-          trimmed.startsWith('<html') ||
-          trimmed.includes('<script type="module" src="/@vite/client"')
-        ) {
-          // Defensive check: HTML content instead of markdown manual.
-          throw new Error('Manual appears to be HTML, treating as missing.');
-        }
-
         setManualContent(text);
       })
       .catch(() => {
@@ -1927,7 +1907,7 @@ const App: React.FC = () => {
       if (!prev && next) {
         let alreadyShown = false;
         try {
-          alreadyShown = localStorage.getItem('dosound-tracker-debug-info-shown') === '1';
+          alreadyShown = localStorage.getItem(StorageKeys.DEBUG_INFO_SHOWN) === '1';
         } catch {
           // ignore
         }
@@ -1935,7 +1915,7 @@ const App: React.FC = () => {
         if (!alreadyShown) {
           setIsDebugInfoOpen(true);
           try {
-            localStorage.setItem('dosound-tracker-debug-info-shown', '1');
+            localStorage.setItem(StorageKeys.DEBUG_INFO_SHOWN, '1');
           } catch {
             // ignore
           }
@@ -2438,7 +2418,7 @@ const App: React.FC = () => {
             setActiveSection={setActiveSection}
             currentInstrument={currentInstrument}
             updateInstrument={updateInstrument}
-            messages={messages}
+            messages={envelopeMessages}
             currentMessageIndex={currentMessageIndex}
             isNotesVisible={isNotesVisible}
             onNotesClick={handleNotesClick}

@@ -1,5 +1,13 @@
 # Changes
 
+## Version 1.3.3
+
+Security and durability window: the markdown rendering path was hardened against hostile markup, and song data gained a redundant persistence mirror so compositions survive a cleared browser store.
+
+- **Markdown security**: all bundled documents (MESSAGES.md, CHANGELOG.md, MANUAL.md) now load through an allowlist fetch that rejects anything outside the set and any body that looks like HTML, and production builds inject a restrictive Content-Security-Policy meta tag into `index.html`, covering both web deploys and the packaged Electron app.
+- **Persistence redundancy**: song and instrument autosaves are mirrored into an IndexedDB snapshot store; when local storage is cleared, the previous session is restored on next launch with a visible notice, and a periodic message reminds composers to keep file copies with CTRL+S.
+- **Security**: `npm audit` reports zero known vulnerabilities.
+
 ## Version 1.3.2
 
 Quality window: end-to-end smoke coverage for the documented flows and a test-suite expansion that closes the coverage gap above the 80% thresholds.

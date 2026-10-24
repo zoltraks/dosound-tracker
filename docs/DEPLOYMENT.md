@@ -32,6 +32,8 @@ The production build registers a service worker at `/sw.js` that keeps the appli
 
 All same-origin requests use a network-first strategy: the worker fetches the deployed asset, updates the cache, and falls back to the cached copy only when the network is unavailable. Returning clients therefore always receive the current build. Navigation requests fall back to `/index.html` when offline.
 
+Every production build also injects a restrictive `Content-Security-Policy` meta tag into `dist/index.html`; the directive list is defined by the `inject-content-security-policy` plugin in `vite.config.ts` and ships to both web deploys and the packaged Electron bundle.
+
 ## Electron Distribution
 
 The desktop build wraps the same bundle in Electron and is packaged with `electron-builder`.

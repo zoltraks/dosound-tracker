@@ -2,6 +2,7 @@ import type { MutableRefObject } from 'react';
 import type { Instrument, Song } from '../synth/SoundDriver';
 import { StorageKeys } from '../utils/storageKeys';
 import { logger } from '../utils/logger';
+import { mirrorSnapshot, type MirrorKey } from '../utils/persistenceMirror';
 
 export type ScheduledSaveHandle = { kind: 'timeout'; id: number } | { kind: 'idle'; id: number };
 
@@ -15,6 +16,11 @@ type JsonStorageValue<K extends JsonStorageKey> = K extends SongStorageKey
   : K extends InstrumentStorageKey
     ? Instrument
     : never;
+
+const MIRROR_KEYS: Record<JsonStorageKey, MirrorKey> = {
+  [StorageKeys.SONG]: 'song',
+  [StorageKeys.INSTRUMENT]: 'instrument',
+};
 
 export function scheduleJsonSave<K extends JsonStorageKey>(
   key: K,
@@ -45,7 +51,9 @@ export function scheduleJsonSave<K extends JsonStorageKey>(
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
       logger.warn(`Failed to save ${key} to localStorage`, error);
+      return;
     }
+    mirrorSnapshot(MIRROR_KEYS[key], value);
   };
 
   // Prefer requestIdleCallback when available so disk writes happen during

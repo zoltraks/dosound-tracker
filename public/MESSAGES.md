@@ -1,3 +1,6 @@
+Browser storage can be cleared.
+Press CTRL+S to keep a file copy of your song.
+
 Practice turns patterns into songs.
 Even the simplest loop can become memorable when you tweak one detail at a time.
 

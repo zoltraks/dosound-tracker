@@ -175,6 +175,38 @@ Additional cursor state is persisted at its source of truth to avoid duplicate s
 
 Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, and each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
 
+**Snapshot mirror**
+
+Every scheduled save also mirrors the song and instrument payloads into an IndexedDB database named `dosound-tracker-backup`, store `snapshots`, through `src/utils/persistenceMirror.ts`. The mirror write happens inside the same idle slot as the local storage write, is fully asynchronous, and degrades to a logged warning when IndexedDB is unavailable, so autosave latency and UX are unchanged.
+
+**Mirror restore**
+
+On startup the application requests persistent storage and checks `StorageKeys.SONG` in local storage. When the key is absent but a `song` snapshot exists in the mirror, the snapshot passes through `normalizeRestoredSong` (the same schema migration and speed clamping `loadInitialSong` applies) and becomes the current song. The restored session is marked dirty and a restore notice joins the notes-panel message rotation, telling the user a local snapshot was restored and a file copy is the durable record.
+
+**Mirror invalidation**
+
+Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action clears the whole snapshot store. Without this, intentionally deleted data would resurrect on the next load.
+
+**Persistence reminder**
+
+`public/MESSAGES.md` carries a rotation entry reminding composers that browser storage can be cleared and that `CTRL+S` keeps a file copy of the song.
+
+## Markdown Rendering Security
+
+Bundled Markdown documents are rendered into HTML by `src/utils/markdown.ts`. The renderer escapes every source byte and emits tags only from fixed templates, so markup outside the allowed grammar can never reach the DOM unescaped.
+
+**Trusted output brand**
+
+`renderMarkdown` returns a `TrustedHtml` branded string. `dangerouslySetInnerHTML` sinks are typed against `TrustedHtml`, so a sink cannot be fed a raw string by accident. The brand is compile-time only and emits no runtime code.
+
+**Bounded source set**
+
+Only bundled first-party documents may reach a markdown sink: `MESSAGES.md`, `CHANGELOG.md`, and `MANUAL.md`. All fetches go through `fetchBundledMarkdown` in `src/utils/bundledMarkdown.ts`, which rejects names outside the allowlist and bodies that look like HTML (a `text/html` content type or a leading `<!doctype`/`<html` marker), so an SPA fallback page is never rendered as document content.
+
+**Content security policy**
+
+Production builds inject a restrictive CSP meta tag into `dist/index.html` through the `inject-content-security-policy` plugin in `vite.config.ts`. The directive list lives in that file. The plugin applies only during build, so `vite dev` is unaffected. The packaged Electron app loads `dist/index.html` over `file://`, which is why `connect-src` lists the `file:` scheme explicitly.
+
 ## Project-Specific Conventions
 
 These conventions override or extend the general standards in `standard/ts-react-development.md` with rules specific to the DOSOUND Tracker codebase.

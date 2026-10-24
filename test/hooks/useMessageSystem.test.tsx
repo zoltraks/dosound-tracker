@@ -3,7 +3,13 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useMessageSystem } from '../../src/hooks/useMessageSystem';
 
 const stubFetch = (impl: () => Promise<{ ok: boolean; text: () => Promise<string> }>) => {
-  vi.stubGlobal('fetch', vi.fn(impl));
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async () => ({
+      headers: { get: () => 'text/markdown' },
+      ...(await impl()),
+    })),
+  );
 };
 
 const MESSAGES = 'First line\ncontinued\n\nSecond block\n\n\nThird block\n';

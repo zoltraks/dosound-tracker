@@ -12,6 +12,7 @@ import {
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song';
 import { logger } from '../utils/logger';
 import { StorageKeys } from '../utils/storageKeys';
+import { removeMirroredSnapshot } from '../utils/persistenceMirror';
 
 export type TrackKey = 'A' | 'B' | 'C';
 
@@ -253,6 +254,19 @@ export const createDefaultSong = (): Song => {
   };
 };
 
+export function normalizeRestoredSong(rawSong: unknown): Song {
+  const parsedSong = (rawSong || {}) as StoredSongForMigration;
+  const rawSpeed = Number(parsedSong.speed);
+  const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
+  const clampedSpeed = Math.max(2, baseSpeed);
+  const evenSpeed = clampedSpeed & ~1;
+  const normalized = normalizeStoredSongToCurrentSchema(parsedSong);
+  return {
+    ...normalized,
+    speed: evenSpeed,
+  };
+}
+
 export function loadInitialSong(): Song {
   try {
     const savedSong = localStorage.getItem(SONG_STORAGE_KEY);
@@ -266,18 +280,11 @@ export function loadInitialSong(): Song {
         );
 
       if (!hasLegacyInstruments) {
-        const rawSpeed = Number(parsedSong.speed);
-        const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
-        const clampedSpeed = Math.max(2, baseSpeed);
-        const evenSpeed = clampedSpeed & ~1;
-        const normalized = normalizeStoredSongToCurrentSchema(parsedSong);
-        return {
-          ...normalized,
-          speed: evenSpeed,
-        };
+        return normalizeRestoredSong(parsedSong);
       }
 
       localStorage.removeItem(SONG_STORAGE_KEY);
+      removeMirroredSnapshot('song');
     }
   } catch (error) {
     logger.warn('Failed to load song from localStorage', error);

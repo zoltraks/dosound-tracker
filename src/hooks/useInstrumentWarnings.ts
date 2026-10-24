@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
 import { useLocalStorageState } from './useLocalStorageState';
+import { StorageKeys } from '../utils/storageKeys';
 
 export interface InstrumentTypeInfo {
   hasTypeField: boolean;
@@ -17,7 +18,7 @@ interface UseInstrumentWarningsResult {
   cancelInstrumentTypeWarning: () => void;
 }
 
-const STORAGE_KEY = 'dosound-tracker-ignore-inst-type-warning';
+const STORAGE_KEY = StorageKeys.IGNORE_INST_TYPE_WARNING;
 
 export function useInstrumentWarnings(): UseInstrumentWarningsResult {
   const [isInstrumentTypeWarningOpen, setIsInstrumentTypeWarningOpen] = useState(false);
