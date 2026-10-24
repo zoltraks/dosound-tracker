@@ -20,7 +20,7 @@ import { exportSongToWav, exportInstrumentToWav, downloadWavFile } from '../expo
 import { exportSongToMax, exportInstrumentToMax, downloadMaxFile } from '../exports/max';
 import { mapSongLineToPlaylistEntries, mapPlaylistEntriesToSongLine } from '../types/playlist';
 
-interface ExportContext {
+export interface ExportContext {
   type: ExportType;
   strategy: ExportStrategy;
   playlistIndex: number;

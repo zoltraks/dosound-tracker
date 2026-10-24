@@ -151,6 +151,11 @@ Zustand selectors only trigger re-renders when the selected value changes. If a 
 - Define domain-specific error classes for domain errors.
 - Never swallow errors silently.
 
+### Hook Extraction
+
+- Read the source hook's return interface before typing an extraction's parameter object. A wrapped setter may be a plain `(value) => void`, not `Dispatch<SetStateAction<T>>` - copying the wrong type produces a `TS2322` assignment error at the call site.
+- Code moved verbatim out of an oversized component can surface `react-hooks` compiler warnings the large file never triggered - the analyzer skips components it cannot fully model. Prefer lazy `useState` initializers over synchronous `setState` in mount effects when the initialization depends only on browser globals or localStorage.
+
 ### Empty Catch Blocks
 
 When a catch block intentionally ignores errors (for example when localStorage access fails in a browser environment), include a `// ignore` comment inside the empty block to satisfy the `no-empty` lint rule and signal intent.

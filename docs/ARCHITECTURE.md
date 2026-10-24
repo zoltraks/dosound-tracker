@@ -41,7 +41,7 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 - **components** - Presentational React components. Includes layout shells (AppLayout), panels (HeaderPanel, CommandPanel, TrackerSection, EnvelopeSection, SongSection, FileInputs, PianoKeyboard), and the ModalManager. Components receive data and callbacks as props and do not own business logic.
 - **constants** - Static configuration values. Music constants (PATTERN_LENGTH, NOTE_FREQUENCIES, octave limits), song metadata options (SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES), and export type definitions.
 - **exports** - File export pipeline. `core.ts` holds shared helpers (normalizeSongForExport, parseBaseKeyForExport, formatNoteLabel, downloadFile re-export). Format modules `asm.ts`, `bin.ts`, `max.ts`, `vgm.ts`, and `wav.ts` each produce a specific output format from normalized song data.
-- **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration.
+- **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
 - **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated.
 - **stores** - Zustand stores. Currently contains a single store, `uiStore.ts`, which holds cross-component UI state.
 - **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip, `SoundDriver.ts` generates register-write events, `SequencerEngine.ts` handles frame timing, and `EventOptimizer.ts` optimizes event streams.
@@ -115,13 +115,13 @@ Several decisions in the codebase are deliberate trade-offs rather than oversigh
 
 **Web Worker for timing.** The 50Hz VBLANK clock runs in `sequencerWorker.ts` rather than on the main thread. This protects playback timing from React renders, garbage collection pauses, and UI event handlers. The worker owns the tick interval and playback position, posting messages back to the hook, which then drives the synth.
 
-**App.tsx as central orchestrator.** App.tsx is the single composition root. It instantiates roughly 20 hooks, wires their inputs and outputs together, and renders the component tree through `AppLayout`. This keeps the data flow visible in one file but makes the file very large (see Known Limitations).
+**App.tsx as central orchestrator.** App.tsx is the single composition root. It instantiates the domain and orchestration hooks, wires their inputs and outputs together, and renders the component tree through `AppLayout`. Dialog, persistence, and playback handler clusters live in dedicated orchestration hooks under `src/hooks/` (`useAppInfoDialogs`, `useSongLifecycleDialogs`, `useInstrumentFileLoading`, `usePasteTrackOptions`, `useInstrumentDialogs`, `useSongToolDialogs`, `useExportModal`, `useTransposeDialog`, `useMidiDialog`, `useResponsivePanels`, `useEditorPersistence`, `usePlaybackHandlers`), so App.tsx keeps the wiring visible in one file without carrying every handler body.
 
 ## Known Limitations
 
 The current architecture has several documented constraints.
 
-- **App.tsx is 2194 lines.** The central orchestrator holds the bulk of hook wiring, state declarations, and effect setup. This makes the file hard to navigate and is the single largest maintenance risk.
+- **App.tsx is ~1390 lines.** The central orchestrator still holds all hook wiring, state declarations, and the JSX prop map. Staged decomposition moved the dialog, persistence, and playback handler bodies into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
 - **Business logic is scattered across hooks and utils.** Song management, MIDI, file operations, instrument actions, and sequencer integration each live in their own hook files, some of which are large (useSequencerIntegration at ~21KB, useMidiActions at ~21KB, useSongManagement at ~19KB). Cross-hook dependencies are implicit and wired in App.tsx.
 - **No undo/redo.** There is no history stack and no snapshot mechanism. All edits apply directly to state. Recovering from a mistake requires manual re-entry or reloading the song.
 - **No Command pattern.** Mutations are free functions and setter calls, not encapsulated command objects. This blocks future undo/redo and makes edit auditing difficult.

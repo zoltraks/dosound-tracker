@@ -1,5 +1,12 @@
 # Changes
 
+## Version 1.3.4
+
+Internal refactoring: the application composition root was decomposed into bounded orchestration hooks with no user-facing changes.
+
+- **Structure**: `src/App.tsx` shrank from 2620 to 1388 lines; dialog, file-loading, persistence, and playback handler clusters moved into twelve dedicated hooks under `src/hooks/`, preserving the documented audio-critical constraints.
+- **Security**: `npm audit` reports zero known vulnerabilities.
+
 ## Version 1.3.3
 
 Security and durability window: the markdown rendering path was hardened against hostile markup, and song data gained a redundant persistence mirror so compositions survive a cleared browser store.

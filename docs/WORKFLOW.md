@@ -273,6 +273,18 @@ For each change record in the window:
 
 Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F`. Verify the port is free before restarting.
 
+**Place an extracted hook before its earliest consumer**
+
+When a block of `App.tsx` moves into a hook, the hook call must precede the earliest consumer of any returned value - aggregate flags such as `isNavigationSuspended` consume modal-open state far earlier than the moved handler block. Scan consumers before choosing the call position; a `TS2448 used before its declaration` error is the symptom of a hook placed too late.
+
+**Check the origin file's imports after each extraction**
+
+Every moved fragment orphans its imports in the origin file (`yaml`, `js-yaml`, utility helpers, type-only imports). Run `npm run lint` after each slice and delete the orphaned imports it reports - each one costs a build cycle if left for `tsc -b` to find.
+
+**Untracked files survive `git stash`**
+
+`git stash` leaves untracked files in place, so a stash-based "clean tree" lint or build check still sees newly created files. Use `git stash -u` when the check must exclude uncommitted new files, or move them aside explicitly.
+
 **Table formatting and Prettier**
 
 When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate; `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
