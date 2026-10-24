@@ -2,7 +2,7 @@
 
 ## Version 1.3.5
 
-Internal refactoring: the source tree was fully grouped into domain subdirectories and the engineering-standard library was adopted.
+The source tree was fully grouped into domain subdirectories and the engineering-standard library was adopted.
 
 - **Structure**: `src/hooks/` and `src/utils/` now hold only domain subdirectories, the `stores/` directory was dissolved into `src/hooks/ui/`, and the lone modals barrel file was removed for uniform direct imports.
 - **Documentation**: `docs/standard/` became a full engineering-standard library (index, authoring template, seven adopted standards with project conventions), and the active documentation set was distilled against the implementation.
@@ -10,7 +10,7 @@ Internal refactoring: the source tree was fully grouped into domain subdirectori
 
 ## Version 1.3.4
 
-Internal refactoring: the application composition root was decomposed into bounded orchestration hooks with no user-facing changes.
+The application composition root was decomposed into bounded orchestration hooks with no user-facing changes.
 
 - **Structure**: `src/App.tsx` shrank from 2620 to 1388 lines; dialog, file-loading, persistence, and playback handler clusters moved into twelve dedicated hooks under `src/hooks/`, preserving the documented audio-critical constraints.
 - **Security**: `npm audit` reports zero known vulnerabilities.
@@ -29,7 +29,7 @@ Quality window: end-to-end smoke coverage for the documented flows and a test-su
 
 - **End-to-end testing**: a new Playwright smoke suite in `e2e/` covers the six documented flows - first launch state, note entry and song playback, instrument envelope editing and preview, DOSOUND assembly export, song save and load, and theme switching - running deterministically on Chromium and WebKit; Firefox is excluded because its plugin-container cannot launch under the macOS sandbox in this environment, as recorded in `docs/TESTING.md`.
 - **Coverage closure**: the test suite grew from 266 to 525 tests, raising measured coverage from 60.41% statements, 50.23% branches, 67.03% functions, and 60.57% lines to 92.26%, 80.18%, 94.99%, and 92.51% respectively - all above the configured 80% thresholds; new suites cover the YM2149 emulator, `SoundDriver`, event optimization, MIDI message processing and device management, song data management, instrument operations, assembly/binary/VGM export paths, and track-panel editing.
-- **Refactoring**: repeated hex-formatting and debug-flag reads inside `useMidiMessageProcessing` were consolidated into shared helpers with no behavior change.
+- **MIDI processing**: repeated hex-formatting and debug-flag reads inside `useMidiMessageProcessing` were consolidated into shared helpers with no behavior change.
 - **Security**: `npm audit` reports zero known vulnerabilities.
 
 ## Version 1.3.1
@@ -88,7 +88,7 @@ Type-safety refinements and naming clarity since 1.2.6.
 
 ## Version 1.2.6
 
-Internal refactoring for maintainability (App split into dedicated components), plus centralized logging/formatting/storage key utilities and new unit tests since 1.2.5.
+The App component was split into dedicated components for maintainability, alongside centralized logging/formatting/storage key utilities and new unit tests since 1.2.5.
 
 - Refactored `App.tsx` by extracting hidden file input elements into `FileInputs` and consolidating modal rendering into a dedicated `ModalsContainer`, reducing top-level component complexity without changing workflows.
 - Introduced a centralized `logger` utility and replaced direct `console.*` calls across the app so errors and debug output are more consistent (with MIDI debug logs routed through the same system).
@@ -126,11 +126,11 @@ MIDI velocity support, faster envelope editing, richer manual markdown rendering
 - Added new **envelope editing shortcuts** for copying, resetting, rotating, and incrementing values (including arpeggio/shift helpers) to speed up instrument programming from the keyboard.
 - Upgraded the in-app **MANUAL** renderer with markdown tables and `###` headings plus themed styling so documentation pages can include richer structured content.
 - Updated **YAML schema naming** so songs export `line` (instead of `playlist`), pattern steps export `wait` (instead of `space`), and instruments export `shift` (UI label: Arpeggio); older YAML keys are still accepted on import.
-- Continued internal **refactoring** by simplifying pattern steps to a single `note` field and further modularizing playback/MIDI utilities without changing core workflows.
+- Simplified pattern steps to a single `note` field and further modularized playback/MIDI utilities without changing core workflows.
 
 ## Version 1.2.2
 
-Playback smoothing, richer documentation viewers, track coloring and mobile UI polish, and ongoing refactors since 1.2.1.
+Playback smoothing, richer documentation viewers, and track coloring and mobile UI polish since 1.2.1.
 
 - Smoothed out switching between **PLAY LINE** and **PLAY SONG** so changing modes no longer introduces audible gaps or delays, keeping playback continuous when you jump between focused line playback and full-song playback.
 - Polished tracker visuals with theme-specific SVG logo icons, eased transitions on track and pattern elements, refined borders and padding for current lines and instrument items, color-mixed hover states for colored instruments, and Safari-safe font smoothing and background transition tweaks that avoid visual artifacts during playback.
@@ -138,13 +138,13 @@ Playback smoothing, richer documentation viewers, track coloring and mobile UI p
 
 ## Version 1.2.1
 
-Seamless playback mode switching, richer markdown and download integration, YAML export polish, and refactor and lint follow-ups.
+Seamless playback mode switching, richer markdown and download integration, and YAML export polish.
 
 - Enhanced in-app **documentation viewers** by adding download buttons to the MANUAL and CHANGES modals, extending the markdown renderer with fenced code blocks and clickable hyperlinks, and fixing escaped HTML closing tags so technical docs and examples render and export cleanly.
 - Improved **YAML export formatting** for instrument metadata by normalizing base note and color fields, keeping human-readable values aligned with the newer instrument color system while retaining compatibility with existing data.
 - Refined the visual theme with eased 0.5s transitions for track and pattern elements, better font color styling for instrument-colored steps in rainbow mode, and a subtle fix to the instrument name input background so focused and hovered states feel more consistent.
 - Hardened download list handling by adding cache-busting query parameters and `no-store` headers when fetching `download/LIST.txt`, reducing the chance of stale file lists in the DOWNLOAD button and related pickers.
-- Continued internal **refactoring and lint cleanup** by extracting TrackLine and playlist/piano utilities into modular components/hooks, restructuring export and data-management code into format-specific modules, and resolving remaining ESLint/state-in-effect warnings with updated guidelines and targeted rule suppressions.
+- Extracted TrackLine and playlist/piano utilities into modular components/hooks, restructured export and data-management code into format-specific modules, and resolved remaining ESLint/state-in-effect warnings with updated guidelines and targeted rule suppressions.
 
 ## Version 1.2.0
 
@@ -177,11 +177,11 @@ Mobile layout and piano support, in-app manual and file picker integration, and 
 - Integrated an in-app **Manual** by moving MANUAL.md into the app as a public asset, exposing it via a MANUAL button in the About dialog, enhancing markdown rendering (italics, horizontal rules) and updating copy for the Assembly Music Wizard book.
 - Refined the command panel and button styling by adding themed gradients to NEW/LOAD/SAVE and other controls, softening hover borders, tweaking MIDI and DEBUG and RESET colors, adjusting logo and header positioning and swapping CLONE and DUPLICATE line buttons to better match shallow vs deep copy semantics.
 - Improved playback and export behavior by fixing a song loop timing bug in the debug and loop logic so looped playback matches the tracker grid, and reordering DATA and DUMP buttons in the Export modal to match the documented specification.
-- Continued internal refactoring by extracting MIDI and instrument action handlers into dedicated hooks, simplifying `useDataManagement` dependencies, adding mobile-focused piano and command layout tweaks and introducing long-pattern song export fixtures and related tests.
+- Extracted MIDI and instrument action handlers into dedicated hooks, simplified `useDataManagement` dependencies, added mobile-focused piano and command layout tweaks and introduced long-pattern song export fixtures and related tests.
 
 ## Version 1.1.7
 
-MAX format refinements for more accurate playback plus internal modal and message state refactors and tests.
+MAX format refinements for more accurate playback plus modal and message state restructuring and tests.
 
 - Updated **MAX export** to track additional stream metadata (including YM2149 clock speed and frame size) and align the stream definition chunk size and register maps with the written specification, improving compatibility with MAX players.
 - Implemented a MAX **REG7 timing optimization** following the updated spec so delay behavior in exported MAX streams better matches the tracker's internal sequencing.
@@ -221,7 +221,7 @@ Keyboard note entry and sustain refinements, smoother audio switching, and safer
 
 ## Version 1.1.3
 
-MIDI output and monitoring upgrades, live recording, YAML format cleanup, richer VGM metadata, and refactoring-focused layout and type-safety improvements.
+MIDI output and monitoring upgrades, live recording, YAML format cleanup, richer VGM metadata, and layout and type-safety improvements.
 
 - Added **per‑instrument MIDI output** with configurable channel and program settings, keyboard shortcuts, and explicit port open and close lifecycle management so instruments can route to multiple external devices without locking MIDI ports.
 - Added track‑focused live MIDI recording that writes note‑on and note‑off events directly into the current pattern, keeping playback and recording in sync with the tracker grid.

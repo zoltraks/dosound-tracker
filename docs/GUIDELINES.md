@@ -187,6 +187,24 @@ This rule is mandatory and unconditional. Before making any change in this codeb
 - Ask for clarification when requirements are missing or ambiguous.
 - When a guideline file is added, removed, or its purpose changes, update this file accordingly.
 
+**Work Intake Table**
+
+When starting work on a request, include a table reporting the guidelines files and directories inspected before acting.
+
+- One row per guidelines file read or re-read for the current request.
+- One row per directory scanned for the current request.
+- List only items actually inspected - a file carried over from earlier in the session is marked `carried over`, not counted as read.
+- Restricted directories kept closed by the Change Request and Plan Directory Access rule are not listed.
+
+Example:
+
+| Item                 | Inspected    |
+| -------------------- | ------------ |
+| `docs/GUIDELINES.md` | read         |
+| `docs/PROJECT.md`    | re-read      |
+| `src/components/`    | scanned      |
+| `docs/WORKFLOW.md`   | carried over |
+
 ## Implementation Planning
 
 **New Feature Implementation Workflow**
@@ -379,7 +397,7 @@ The lesson file indexes rules that live in the owning documents - it does not ho
 
 ## Memorisation Convention
 
-When the user says "memorise" or "remember", update the most relevant guideline file with the new rule.
+When the user says "memorise" or "remember", adjust the relevant guideline file or files in the project with the new rule - memorisation means updating project guidelines. A memorisation request that also names a correction applies the correction in the same task.
 
 | Rule About                          | Goes To            |
 | ----------------------------------- | ------------------ |

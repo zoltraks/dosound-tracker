@@ -1239,6 +1239,7 @@ body {
 .modal-body.text-display-body h2 {
   margin-top: 0;
   margin-bottom: 1.2rem;
+  line-height: 1.2;
 }
 
 .modal-body.text-display-body h1 {
@@ -1252,6 +1253,7 @@ body {
 
 .modal-body.text-display-body h3 {
   color: var(--markdown-h3-color);
+  line-height: 1.2;
   padding-top: 2px;
   padding-bottom: 12px;
 }
