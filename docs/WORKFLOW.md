@@ -4,44 +4,7 @@ This document describes the day-to-day operational steps for delivering changes.
 
 ## Verification Loop
 
-`TESTING.md` defines the canonical step order (`typecheck -> lint -> format -> build -> test -> fix`), the zero-error/zero-warning bar, and the end-to-end test command. The verification loop has two modes documented in `TESTING.md`:
-
-- **Targeted verification loop** — run during implementation iterations, testing only the code being modified.
-- **Full verification loop** — run at milestones (before first code change, after finishing implementation, after refactoring, before version bump, and when asked for a production ready build).
-
-**When the verification loop is required**
-
-Run the verification loop only when source code, configuration, or test files are modified. It is required:
-
-- Before the first code modification, to establish a known-good baseline.
-- After each code change iteration.
-- After finishing implementation or refactoring.
-- Before version bumping.
-- When explicitly asked for a production-ready build.
-
-Do not run the verification loop for documentation-only changes (for example creating or updating change request documents, implementation plans, refactoring proposals, refactoring assessments, or guideline files). These changes do not affect source code, build artefacts, or test results.
-
-**Pre-Change Baseline**
-
-Run the full verification loop before the first code modification to establish a known-good baseline. Do not begin any implementation or refactoring until this baseline passes with zero errors and zero warnings.
-
-**Fix Requirements**
-
-When running the verification loop during the usual workflow (including refactoring process), you must not only build, test, and lint, but also fix all errors and all test failures. The loop is complete only when:
-
-- All typecheck errors are resolved
-- All lint errors are resolved
-- All formatting is applied
-- All build errors are resolved
-- All test failures are resolved
-
-This applies to **every** test failure without exception:
-
-- Failures caused by the current code change — fix the code or update the test.
-- Failures that existed before the change — fix them immediately. Never dismiss them as "pre-existing".
-- Flaky or timing-dependent failures — make them deterministic or remove them.
-
-A test suite with any failing tests is not clean. Do not proceed until every failure is addressed.
+`TESTING.md` is the single owner of the verification loop: the canonical step order (`typecheck -> lint -> format -> build -> test -> fix`), the zero-error/zero-warning bar, the targeted and full modes, the milestone list, and the fix requirements. This section adds no rules of its own - follow `TESTING.md` whenever the workflow reaches a verification point.
 
 ## Standard Implementation Process
 
@@ -108,7 +71,7 @@ When asked to implement a new feature, follow this sequence:
 5. Create implementation plan.
 6. Ask for confirmation to implement.
 
-Do not begin implementation until the user confirms the plan.
+Do not begin implementation until the user confirms the plan. This sequence is owned here - `GUIDELINES.md` references it rather than restating it.
 
 **Update project documentation**
 
@@ -254,6 +217,38 @@ For each change record in the window:
 - Every recommendation resolves before its window completes: it becomes a change record, or it is declined with the reason recorded.
 - A recommendation never bypasses the change-record gate - audit output is never implemented directly.
 - The next audit re-verifies the register and seeds the following window; the window's review is the evidence of what the window delivered.
+
+## Work Modes
+
+The repository records a three-mode scheme governing how a modification request enters the change lifecycle.
+
+**Standard Workflow**
+
+The default mode. Every modification request runs the full change lifecycle: a change record, a deep analysis of the current implementation, an implementation plan, implementation in documentation-first order in verifiable increments, and the verification loop.
+
+**Ad-Hoc**
+
+A quick path that applies the change without producing change artifacts. Ad-hoc is never the default - it applies only when the request explicitly demands it through phrasing such as "ad-hoc", "immediate", or "quick fix". The agent may propose the ad-hoc path when a request looks small enough for it; the user selects the mode, the proposal never selects itself. An ad-hoc change still requires a deep analysis of the current implementation before any edit - the analysis runs inside the session and is summarized in the response without producing a durable document. The recorded verification procedure still applies, and the outcome is reported in the session rather than in change artifacts.
+
+**Planning**
+
+A collection mode that analyzes requests without implementing them. Each request is analyzed quickly and held on the session's changeset - the conversation, not a durable document. When the planning phase is declared complete, the changeset re-enters the Standard Workflow: each item gets its change record, the current implementation is re-analyzed, and the usual cycle proceeds in the recorded order.
+
+## Stage Gates
+
+Under the `stage-gates` extension, each change-lifecycle stage boundary is an approval checkpoint: the agent presents the stage's product and waits for approval before the next stage begins. Checkpoints are workflow checkpoints, not discretionary questions - a session-level instruction to minimize questions or continue without stopping does not waive them. The `autonomous` gate mode of a named version window is the recorded continuous-execution convention that skips per-stage checkpoints inside that window's run.
+
+## Specification Audit
+
+Under the `specification-audit` extension, a plan is audited against the real codebase before implementation begins: every requirement stated in the change record maps to a plan step, ambiguous wording is resolved, and every step's files, interfaces, dependencies, and preconditions check out. Audit failures return to planning. The audit uses `template/specification-audit-template.md` and lands beside the plan in `docs/plan/<version>/` named `<change-name>-specification-audit.md`.
+
+## Artifact Summary
+
+Under the `artifact-summary` extension, every change record and every implementation plan opens with a summary block covering the intent, the key decisions taken, and the open questions or risks. The block precedes the detailed sections and is refreshed when the record's decisions or risks change.
+
+## Preserve Before Reorganize
+
+Under the `preserve-before-reorganize` extension, a documentation reorganization snapshots the existing documentation set before the first structural change - a copy of the affected directories or a version-control checkpoint - so the reorganization remains fully reversible even when individual steps are not.
 
 ## Tooling Notes
 

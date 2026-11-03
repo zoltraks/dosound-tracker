@@ -1,5 +1,16 @@
 # [Short Imperative Title] Implementation Plan
 
+## Summary
+
+| Field         | Value                                |
+| ------------- | ------------------------------------ |
+| Intent        | [what this plan implements and why]  |
+| Key decisions | [decisions taken, or `none`]         |
+| Open risks    | [open questions or risks, or `none`] |
+
+The summary block precedes the detailed sections and is refreshed when the
+record's decisions or risks change.
+
 ## Change Request Reference
 
 This implementation plan is based on the change request at `docs/change/[version]/[filename].md`.

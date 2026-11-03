@@ -1,6 +1,6 @@
 # Engineering Standard Template
 
-<!-- Version: 0.1.4 | Date: 2026-10-17 -->
+<!-- Version: 0.1.7 | Date: 2026-10-31 -->
 
 ## Purpose
 
@@ -11,7 +11,8 @@ Every `*-development.md` file must conform to this structure.
 The file doubles as a copyable skeleton - duplicate it,
 then replace the guidance in each section with real content.
 
-Validation is enforced by `scripts/validate-standards.py`.
+Conformance follows the Validation Rules section below; where the toolchain ships a
+standards-validator script it enforces the same rules mechanically.
 
 ## Scope
 
@@ -30,8 +31,8 @@ Out of scope: improvement plans, templates for other document kinds, and produce
 1. Copy this file to `docs/standard/<language>-<category>-development.md`.
 2. Replace the H1 and the version header values.
 3. Replace each section's guidance text with the real rules.
-4. Keep every skeleton table header unchanged - the validator keys on them.
-5. Run `python scripts/validate-standards.py docs/standard` before delivering.
+4. Keep every skeleton table header unchanged - the validation checklist keys on them.
+5. Check the file against the Validation Rules section and run `git diff --check` before delivering.
 
 ### Precedence
 
@@ -53,7 +54,8 @@ A stacked standard adds its base standard as one extra rank above "This standard
 - **Executable verification** - every row in the Verification table is a runnable command,
   never "Review" or "Manual".
 - **Hermetic content** - no links to sibling standards, so a copied file stays usable alone.
-- **Pinned runtime** - the Language Version section names an exact runtime, never a floating range.
+- **Version floor** - the Language Version section states a minimum recommended version
+  as a floor ("X or later"), never an exact pin and never a floating range like `latest`.
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -78,7 +80,7 @@ extend `<name>` following this template."
 | ----------------------------- | ------------------------------ | ------------------------- |
 | Language or domain identifier | `csharp`, `python`, `openapi`  | Inferred from the request |
 | Application category          | `general`, `cli`, `web`, `mcp` | `general`                 |
-| Runtime version to pin        | Exact semantic version         | Latest stable release     |
+| Runtime floor to state        | Minimum recommended version    | Latest stable release     |
 
 ## Documentation
 
@@ -91,8 +93,15 @@ extend `<name>` following this template."
 
 ## Language Version
 
-This section pins an exact semantic version or normative specification,
-never a floating range such as `LTS` or `latest`.
+This section states a minimum recommended version or normative specification as a floor,
+such as "Rust 1.85 or later" - never an exact pin and never a floating range such as
+`latest`.
+
+A floor is recommended over a pin because a patch release carries security fixes that a
+project should take automatically.
+
+The concrete pin lives in the project's toolchain or manifest file
+(`rust-toolchain.toml`, `.csproj`, `go.mod`, `package.json`), not in the standard.
 
 The version header carries `Version` and `Date` fields only - never `Runtime` or other additions.
 
@@ -102,9 +111,9 @@ On runtime upgrade, re-validate all rules against release notes before writing c
 
 ```
 docs/
---- standard/
-    --- <language>-general-development.md     # Base rules for the identifier
-    --- <language>-<category>-development.md  # Category rules stacked on general
+└── standard/
+    ├── <language>-general-development.md     # Base rules for the identifier
+    └── <language>-<category>-development.md  # Category rules stacked on general
 ```
 
 ## Naming Conventions
@@ -126,15 +135,18 @@ One sentence per paragraph.
 
 Tables are padded to source-text column width.
 
-Prose follows the repository documentation style in `docs/GUIDELINES.md`.
+Prose follows the repository documentation style in the project style guide.
 
 ## Testing
 
 A standard's Testing section names the framework, the placement convention,
 and the exact commands that run the suite.
 
-For this document itself, the test is the validator:
-`python scripts/validate-standards.py docs/standard` must pass.
+For this document itself, the check is the Validation Rules section below - every Error
+rule must pass and `git diff --check` must stay clean.
+
+When a document-quality battery is configured for the repository, it applies to every
+touched standard file.
 
 ## Build
 
@@ -153,18 +165,20 @@ A standard's Dependencies section uses this schema:
 
 ## Verification
 
-| Check                   | Command Or Method                                    | Applies To    |                   |                   |
-| ----------------------- | ---------------------------------------------------- | ------------- | ----------------- | ----------------- |
-| Section conformance     | `python scripts/validate-standards.py docs/standard` | All standards |                   |                   |
-| Filename pattern        | `ls docs/standard/*-development.md`                  | New files     |                   |                   |
-| Version header present  | `findstr /b /c:"<!-- Version:" docs\standard\*.md`   | Changed files |                   |                   |
-| Forbidden check wording | `grep -r -n "                                        | Review        | " docs/standard/` | Verification rows |
+| Check                   | Command Or Method                                     | Applies To    |
+| ----------------------- | ----------------------------------------------------- | ------------- |
+| Section order listing   | `grep -n "^## " docs/standard/<file>.md`              | All standards |
+| Filename pattern        | `ls docs/standard/*-development.md`                   | New files     |
+| Version header present  | `grep -n "^<!-- Version:" docs/standard/*.md`         | Changed files |
+| Forbidden check wording | `grep -rEn -e " Manual" -e " Review" docs/standard/`  | Changed files |
+| Diff whitespace         | `git diff --check`                                    | Every change  |
+| Document battery        | Editorial Markdown battery when the host provides one | Changed files |
 
 ## Definition of Done
 
 ### Correctness
 
-- The standard validates with zero errors under `validate-standards.py`.
+- The standard passes every Error rule in the Validation Rules section.
 - Every command in the Verification table runs as written.
 
 ### Structure
@@ -187,10 +201,24 @@ A standard's Dependencies section uses this schema:
 - Every standard stands alone.
 - Sections are a contract, not a suggestion.
 - Executable checks beat review notes.
-- Pin versions, never float them.
+- State version floors, never pins and never floats.
 - Scrub real names, paths, and identifiers.
 - One purpose per document.
 - A violation is a defect, not a style preference.
+
+## Fed Patterns
+
+Patterns proven in projects that adopted this standard and evolved their own conventions.
+
+**Core Technologies alternative.** For a stack with no single language runtime, the
+`Language Version` section may be named `Core Technologies` instead and lists the technology
+baseline at the same position in the section order.
+
+**Explicit version-header form.** The version header is stated as a concrete example:
+
+```markdown
+<!-- Version: X.Y.Z | Date: YYYY-MM-DD -->
+```
 
 ## Sources
 
@@ -198,16 +226,22 @@ A standard's Dependencies section uses this schema:
 - https://spec.commonmark.org/ - CommonMark specification.
 - https://docs.github.com/en/get-started/writing-on-github - GitHub Flavored Markdown reference.
 
+---
+
 _The sections below govern the template itself and are not part of the copied skeleton._
 
 ## Validation Rules
 
-`validate-standards.py` enforces this contract:
+Conformance is checked against these rules on every standard change - every Error must
+pass before a standard ships.
 
 | Rule                                                          | Severity |
 | ------------------------------------------------------------- | -------- |
 | All 17 required sections present                              | Error    |
-| Section order matches required order                          | Error    |
+| Section order matches required order (extra domain sections   | Error    |
+| may interleave)                                               |          |
+| `Language Version` or `Core Technologies` holds the version-  | Error    |
+| section position                                              |          |
 | Version header present in `Version`/`Date` form               | Error    |
 | Verification table has >= 3 rows with executable commands     | Error    |
 | Sources section has >= 3 authoritative references             | Error    |
@@ -223,5 +257,6 @@ _The sections below govern the template itself and are not part of the copied sk
 
 1. Bump the patch version in the header and refresh the date.
 2. Update the project's changelog when one exists.
-3. Run `python scripts/validate-standards.py docs/standard` - it must pass.
+3. Check the file against the Validation Rules section - every Error rule must pass - and
+   run `git diff --check`.
 4. Propose a one-sentence commit message.

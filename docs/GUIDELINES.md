@@ -73,40 +73,43 @@ Examples:
 
 The active documentation set is composed of the following files. Each file is the authoritative source for the topic listed.
 
-| File                                            | Purpose                                                                  |
-| ----------------------------------------------- | ------------------------------------------------------------------------ |
-| `GUIDELINES.md`                                 | Central source of truth for AI-assisted development rules (this file)    |
-| `STYLE.md`                                      | Central source of truth for documentation style rules                    |
-| `PROJECT.md`                                    | Project description, scope, requirements, use cases, and quality targets |
-| `ARCHITECTURE.md`                               | System architecture, module boundaries, state domains, and patterns      |
-| `SPECIFICATION.md`                              | Project-specific implementation details, stack, schemas, and constants   |
-| `COPYRIGHTS.md`                                 | Copyright and licensing rules                                            |
-| `WORKFLOW.md`                                   | Day-to-day development workflow                                          |
-| `REFACTORING.md`                                | Refactoring proposal and assessment process                              |
-| `TESTING.md`                                    | Testing strategy, test types, fixtures, and verification                 |
-| `DEPLOYMENT.md`                                 | Deployment targets and hosting                                           |
-| `VERSIONING.md`                                 | Version numbering scheme, bumping rules, and CHANGELOG format            |
-| `FORMAT.md`                                     | Project file format specification for song and instrument files          |
-| `MAX.md`                                        | MAX audio file format specification                                      |
-| `FUTURE.md`                                     | Candidate future enhancements (not committed work)                       |
-| `standard/README.md`                            | Engineering-standard library index                                       |
-| `standard/typescript-react-development.md`      | TypeScript and React engineering standard                                |
-| `standard/typescript-electron-development.md`   | TypeScript and Electron engineering standard                             |
-| `standard/typescript-audio-development.md`      | TypeScript and real-time audio engineering standard                      |
-| `standard/typescript-general-development.md`    | TypeScript engineering standard                                          |
-| `standard/css-general-development.md`           | CSS engineering standard                                                 |
-| `standard/html-vanilla-development.md`          | Vanilla HTML engineering standard (reference)                            |
-| `standard/accessibility-general-development.md` | Accessibility engineering standard                                       |
-| `standard/performance-budgets-development.md`   | Performance-budget engineering standard                                  |
-| `standard/standard-template-development.md`     | Standard-authoring template                                              |
-| `template/change-request-template.md`           | Template for change request specification documents                      |
-| `template/implementation-plan-template.md`      | Template for implementation plan documents                               |
-| `template/refactoring-proposal-template.md`     | Template for refactoring proposal documents                              |
-| `template/refactoring-assessment-template.md`   | Template for refactoring assessment documents                            |
-| `template/preparation-findings.md`              | Template for documentation-set findings reports                          |
-| `template/change-review-template.md`            | Template for version-window review documents                             |
-| `template/session-findings.md`                  | Template for session-review lesson entries                               |
-| `template/decision-record.md`                   | Template for durable dated decision records                              |
+| File                                             | Purpose                                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------------------ |
+| `GUIDELINES.md`                                  | Central source of truth for AI-assisted development rules (this file)    |
+| `STYLE.md`                                       | Central source of truth for documentation style rules                    |
+| `PROJECT.md`                                     | Project description, scope, requirements, use cases, and quality targets |
+| `ARCHITECTURE.md`                                | System architecture, module boundaries, state domains, and patterns      |
+| `SPECIFICATION.md`                               | Project-specific implementation details, stack, schemas, and constants   |
+| `COPYRIGHTS.md`                                  | Copyright and licensing rules                                            |
+| `WORKFLOW.md`                                    | Day-to-day development workflow                                          |
+| `REFACTORING.md`                                 | Refactoring proposal and assessment process                              |
+| `TESTING.md`                                     | Testing strategy, test types, fixtures, and verification                 |
+| `DEPLOYMENT.md`                                  | Deployment targets and hosting                                           |
+| `VERSIONING.md`                                  | Version numbering scheme, bumping rules, and CHANGELOG format            |
+| `FORMAT.md`                                      | Project file format specification for song and instrument files          |
+| `MAX.md`                                         | MAX audio file format specification                                      |
+| `FUTURE.md`                                      | Candidate future enhancements (not committed work)                       |
+| `standard/README.md`                             | Engineering-standard library index                                       |
+| `standard/typescript-react-development.md`       | TypeScript and React engineering standard                                |
+| `standard/typescript-refactoring-development.md` | TypeScript refactoring engineering standard                              |
+| `standard/typescript-electron-development.md`    | TypeScript and Electron engineering standard                             |
+| `standard/typescript-audio-development.md`       | TypeScript and real-time audio engineering standard                      |
+| `standard/typescript-general-development.md`     | TypeScript engineering standard                                          |
+| `standard/css-general-development.md`            | CSS engineering standard                                                 |
+| `standard/html-vanilla-development.md`           | Vanilla HTML engineering standard (reference)                            |
+| `standard/accessibility-general-development.md`  | Accessibility engineering standard                                       |
+| `standard/performance-budgets-development.md`    | Performance-budget engineering standard                                  |
+| `standard/standard-template-development.md`      | Standard-authoring template                                              |
+| `template/change-request-template.md`            | Template for change request specification documents                      |
+| `template/implementation-plan-template.md`       | Template for implementation plan documents                               |
+| `template/refactoring-proposal-template.md`      | Template for refactoring proposal documents                              |
+| `template/refactoring-assessment-template.md`    | Template for refactoring assessment documents                            |
+| `template/preparation-findings.md`               | Template for documentation-set findings reports                          |
+| `template/change-review-template.md`             | Template for version-window review documents                             |
+| `template/session-findings.md`                   | Template for session-review lesson entries                               |
+| `template/decision-record.md`                    | Template for durable dated decision records                              |
+| `template/specification-audit-template.md`       | Template for pre-implementation plan audits                              |
+| `template/verification-report-template.md`       | Template for per-option verification reports                             |
 
 ### Three Pillars of Technical Documentation
 
@@ -155,7 +158,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Testing and verification owner: `TESTING.md`.
 - Workflow owner: `WORKFLOW.md`.
 - Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request; the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
-- Adopted extensions: `version-window`, `run-resume`.
+- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`.
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
 - Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md`; `improve dosound-tracker` runs the Session Review recorded below. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
@@ -163,6 +166,10 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined; none are planned.
 - A CI pipeline (`.github/workflows/`) was evaluated and declined; the verification loop is enforced locally and no CI configuration is planned.
 - No dedicated agent entry file: `README.md` is the documented agent route per the File Maintenance rule.
+- Repository profile: `Software`. Topology: `single-project`. Guidelines topology: `Distributed` - `GUIDELINES.md` plus topic owners.
+- Environment-readiness owner: `README.md` for the development environment, `DEPLOYMENT.md` for build and deployment prerequisites.
+- An explicit user instruction may produce an implementation plan without a change record; the plan states the instruction as its reference (for example `docs/plan/1.3.1/remove-ci-workflow.md`).
+- `COMPARISATION` filenames and `docs/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
 
 ## General Workflow
 
@@ -211,16 +218,7 @@ Example:
 
 **New Feature Implementation Workflow**
 
-When asked to implement a new feature, follow this sequence:
-
-1. Read all guidelines files and follow rules.
-2. Analyze current implementation.
-3. Make required research.
-4. Create change request.
-5. Create implementation plan.
-6. Ask for confirmation to implement.
-
-Do not begin implementation until the user confirms the plan.
+The six-step feature sequence - read guidelines, analyze, research, change request, implementation plan, confirmation - is owned by `WORKFLOW.md` "Adding a New Feature". Do not begin implementation until the user confirms the plan.
 
 **Implementation Plan Creation**
 
@@ -352,11 +350,9 @@ These rules apply to every change made in this project. Follow them in order; do
 
 **Verify**
 
-Run the full verification loop defined in `TESTING.md` before the first code modification to establish a known-good baseline. Do not begin implementation until this baseline passes with zero errors and zero warnings.
+`TESTING.md` owns the verification loop - its step order, modes, milestones, and the zero-error/zero-warning bar apply unchanged here.
 
-During implementation, run the targeted verification loop (typecheck, lint, format, build, and only the tests covering the modified code) after each iteration.
-
-After implementation is finished, run the full verification loop again. The work is finished only when both the pre-change baseline and the post-change run pass with zero errors and zero warnings, the implementation matches the documentation, and any plan in scope has been satisfied.
+The work is finished only when the loop passes clean, the implementation matches the documentation, and any plan in scope has been satisfied.
 
 Do not run the verification loop for documentation-only changes. See the "Documentation-Only Changes Bypass the Verification Loop" rule above.
 
@@ -601,6 +597,23 @@ The codebase uses several patterns that may appear "wrong" from a React perspect
 These patterns ensure that audio processing occurs at consistent intervals without interruption from React's render cycle.
 
 In real-time audio applications, performance trumps purity. The "wrong" way that works is better than the "right" way that glitches.
+
+## Agent Operations
+
+**Session Reporting**
+
+Under the `session-reporting` extension:
+
+- A request to "print usage" writes the session usage report as markdown tables: agent identity (software name, version, and the language model when known), conversation summary (prompt requests, reply blocks, sentence and token counts, marking estimated values), context-window usage and remaining headroom, fulfillment of each requested item against its delivered result, and the boundary state (uncommitted files, branch position, reserved decisions). Counters the host does not expose are reported unknown.
+- Operation timing is armed by default. The agent captures the clock before starting an operation's work and ends the response with `<subject> took <m:ss>`. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table before the timing sentence. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
+- In verbose mode the final response additionally reports context usage and a short description of the change immediately before the timing line.
+
+**Clean and Purge**
+
+Under the `clean` and `purge` extensions:
+
+- A request to "clean project" or "clean the project" runs `scripts/clean.sh`, which removes only build artifacts and temporary files that are not under version control - `dist/`, `coverage/`, `playwright-report/`, `test-results/`, and temp residue such as `*.log`, `*.tmp`, `*.bak`, and `.DS_Store` files. Each target is verified ignored and untracked before deletion, a locked file is reported and skipped rather than failing the run, and `--dry-run` lists targets without deleting.
+- A request to "purge project" or "purge the project" removes everything `clean` removes plus `node_modules/` and `work/` - all restorable through `npm install` and session recreation. The script names the restore procedure when it finishes.
 
 ## General Rules
 

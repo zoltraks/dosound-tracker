@@ -23,3 +23,4 @@ or by section, never raw bytes.
 - **`typescript-electron-development.md`** - TypeScript, Electron. Adopted, project deltas.
 - **`typescript-general-development.md`** - TypeScript, general. Adopted, project deltas.
 - **`typescript-react-development.md`** - TypeScript, React. Canonical plus project conventions.
+- **`typescript-refactoring-development.md`** - TypeScript, refactoring. Canonical plus project conventions.

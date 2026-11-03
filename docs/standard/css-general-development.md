@@ -1,6 +1,6 @@
 # CSS Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-10-21 -->
+<!-- Version: 0.1.5 | Date: 2026-10-31 -->
 
 ## Purpose
 
@@ -79,7 +79,7 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
 - **No `float` for layout.** `float` is for text wrapping around images, not for layout.
 - **Visible focus indicators.** A missing `:focus-visible` style on an interactive element is an
   accessibility defect.
-- ** `prefers-reduced-motion` is respected.** An animation that ignores reduced motion is an
+- **`prefers-reduced-motion` is respected.** An animation that ignores reduced motion is an
   accessibility defect.
 - **Stylelint passes.** A Stylelint error is a defect.
 

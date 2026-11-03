@@ -1,6 +1,6 @@
 # TypeScript Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-10-17 -->
+<!-- Version: 0.1.7 | Date: 2026-10-31 -->
 
 ## Purpose
 
@@ -20,7 +20,8 @@ reviewer.
 A project is in scope when all of the following conditions hold.
 
 - The project is written in TypeScript with strict mode enabled.
-- The project targets Node.js 22 LTS for tooling and backend, or modern browsers for frontend.
+- The project targets Node.js 22 LTS or later for tooling and backend, or modern
+  browsers for frontend.
 - The build entry point is `tsc` (backend) or Vite/esbuild (frontend).
 
 A project that uses JavaScript instead of TypeScript is out of scope - use the JavaScript
@@ -143,7 +144,7 @@ The following are the authoritative sources for TypeScript development.
 
 ## Language Version
 
-The project targets **TypeScript 5.9.2** with **Node.js 22.12.0 LTS** for tooling.
+The project targets **TypeScript 5.9** or later with **Node.js 22 LTS** or later for tooling.
 
 TypeScript 5.9 was released June 2025.
 
@@ -345,7 +346,7 @@ Use `existing` or `entry` for collection elements when the natural name is alrea
 in the enclosing scope.
 
 Comments, docblocks, and identifiers are written in English,
-per the project source-language rule in `docs/STYLE.md`.
+per the source-language rule in the project style guide.
 
 ### Type-Specific Conventions
 
@@ -690,6 +691,15 @@ Prefer versions published >= 7 days ago.
 **Zero Warnings.** A TypeScript/ESLint/Prettier deviation requires action.
 
 **Reproducible Builds.** Exact versions, committed lockfile, pinned runtime.
+
+## Fed Patterns
+
+Patterns proven in projects that adopted this standard and evolved their own conventions.
+
+**Full-word identifiers.** Identifiers are written in full words - the extra keystrokes are
+worth more than the decoding cost at every read site. Contract-boundary shorthand clips (a
+project's own `Def`-style type suffixes or wire-name abbreviations) are reserved for the
+contract they name, never for code identifiers.
 
 ## Sources
 

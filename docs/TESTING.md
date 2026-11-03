@@ -96,6 +96,38 @@ All test failures must be fixed before the work is considered complete. This inc
 
 The phrase "pre-existing failure" is not a valid reason to skip fixing. A test suite with failing tests is not clean.
 
+## Verification Options
+
+Under the `verification-options` extension, verification depth is selected per change from a named menu rather than implied:
+
+| Option               | What it covers                                                               | Select when                                         |
+| -------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------- |
+| Completeness check   | Plan coverage, standards compliance, and documentation completeness          | Always available - the default for routine changes  |
+| Test-suite run       | The repository's recorded suite and failure classification                   | Code changed and a suite exists                     |
+| Code review          | Correctness-focused review of the diff                                       | Behavior-critical or externally visible changes     |
+| Pragmatic review     | Over-engineering, scale fit, and unnecessary complexity                      | Substantial additions or restructuring              |
+| Production readiness | Deployment blockers, configuration, error handling, and operational concerns | Changes that reach production or release candidates |
+| Reality check        | Claimed-versus-actual completion: error paths and end-to-end behavior        | Ambiguous scope or prior verification disputes      |
+
+The selected options are recorded with their outcomes and evidence in the change's completion record - the window review under `version-window` work, the session report for ad-hoc work. `template/verification-report-template.md` is the report skeleton when a durable report is recorded.
+
+**Independent verification**
+
+Under the `independent-verification` extension, each review-class option - code review, pragmatic review, production readiness, and reality check - is executed by a reviewer other than the implementer. The recorded model: the project owner (the user) is the reviewer and the AI agent is the implementer. The mechanical options - completeness check and test-suite run - may stay with the implementer.
+
+## Runnable Artifact
+
+Under the `runnable-artifact` extension, a change may not be called verified until the shipped entrypoints run a live slice:
+
+- Web bundle `dist/` - served by `npm run preview` on port 8008; the recorded live slice is the Playwright smoke suite `npm run test:e2e`.
+- Electron bundle - `npm run electron:preview` launches the packaged app; production-ready builds prove the `release/` artifacts exist and postdate the sources.
+
+Recorded substitutions: the smoke suite substitutes a manual launch for routine changes; the Electron launch is required only when `electron/`, the build configuration, or packaging changes.
+
+## Lessons Loop
+
+Under the `lessons-loop` extension, the lessons record is `docs/lesson/` plus the rules institutionalized into the owning documents per the Session Review convention in `GUIDELINES.md`. The record is consulted before implementation and before verification planning - a wound that produced a rule is honored by following that rule.
+
 ## Test Data Locations
 
 All test data, fixtures, and scratch files live under `work/` at the repository root. Never place temporary files in `src/`, in uncommitted `test/fixtures/` subdirectories, or in the repository root.
@@ -248,7 +280,7 @@ Current coverage gaps that must be addressed in future work:
 - `src/synth/` — YM2149 emulator and SoundDriver need comprehensive tests
 - `src/exports/` — all export formatters need tests
 - `src/components/` — most components lack tests
-- `src/hooks/` — many of the 44 hooks lack dedicated tests
+- `src/hooks/` — many of the 50 hooks lack dedicated tests
 - `src/workers/` — no Web Worker tests
 
 The `npm run test:coverage` command will fail until coverage reaches the 80% thresholds. This is expected and documented as a known gap. Regular `npm test` (without coverage) will pass.

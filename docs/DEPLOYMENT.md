@@ -16,19 +16,11 @@ Creates the `dist/` directory with:
 
 The build command does not bump the version. To bump the version and build, run `npm run bump` instead.
 
-**Build Optimisation**
-
-- Code splitting by route or feature.
-- Tree shaking for unused code.
-- Asset compression with gzip and brotli.
-- Optional source maps for debugging.
-- Deterministic filenames without content hashes for Electron compatibility.
-
-The Vite build configuration is defined in `vite.config.ts`.
+The Vite build configuration in `vite.config.ts` emits deterministic asset filenames without content hashes - `assets/[name].js` and `assets/[name][extname]` for both the app and worker bundles - which keeps the packaged Electron file layout stable. The build also defines `__APP_VERSION__` from `package.json` for in-app display.
 
 ## Service Worker Cache
 
-The production build registers a service worker at `/sw.js` that keeps the application available offline. The cache name carries the application version (`dosound-tracker-<version>`), baked into `dist/sw.js` during the build, so each deploy installs a fresh cache and the activate handler removes the previous version's entries.
+The production build registers a service worker at `/sw.js` that keeps the application available offline. The cache name carries the application version (`dosound-tracker-<version>`), baked into `dist/sw.js` during the build by the `version-service-worker-cache` plugin, so each deploy installs a fresh cache and the activate handler removes the previous version's entries.
 
 All same-origin requests use a network-first strategy: the worker fetches the deployed asset, updates the cache, and falls back to the cached copy only when the network is unavailable. Returning clients therefore always receive the current build. Navigation requests fall back to `/index.html` when offline.
 
@@ -74,135 +66,6 @@ After this, open the `.dmg` and install as usual.
 
 Electron desktop builds can be downloaded from the project home page: https://dosound.alyx.pl
 
-## Static Hosting
+## Web Hosting
 
-The application is a static single-page application that can be deployed to any static hosting service.
-
-| Platform     | Instructions                              |
-| ------------ | ----------------------------------------- |
-| Vercel       | Connect Git repo, auto-deploy on push     |
-| Netlify      | Drag `dist/` folder or use CLI            |
-| GitHub Pages | Use `gh-pages` branch or Actions          |
-| AWS S3       | Sync `dist/` to S3 bucket with CloudFront |
-| Azure Static | Use Azure CLI or GitHub Actions           |
-
-**Vercel Deployment**
-
-```bash
-# Install Vercel CLI
-npm i -g vercel
-
-# Deploy
-vercel --prod
-```
-
-**Netlify Deployment**
-
-```bash
-# Install Netlify CLI
-npm i -g netlify-cli
-
-# Deploy
-netlify deploy --prod --dir=dist
-```
-
-## Docker Deployment
-
-Optional Docker configuration for containerised deployment:
-
-```dockerfile
-# Dockerfile
-FROM node:22-alpine AS builder
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build
-
-FROM nginx:alpine
-COPY --from=builder /app/dist /usr/share/nginx/html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
-```
-
-```nginx
-# nginx.conf
-server {
-    listen 80;
-    location / {
-        root /usr/share/nginx/html;
-        index index.html;
-        try_files $uri $uri/ /index.html;
-    }
-}
-```
-
-Build and run:
-
-```bash
-docker build -t dosound-tracker .
-docker run -p 8080:80 dosound-tracker
-```
-
-## Configuration
-
-**Environment Variables**
-
-| Variable           | Description                                       |
-| ------------------ | ------------------------------------------------- |
-| `VITE_APP_TITLE`   | Application title (default `DOSOUND Tracker`)     |
-| `VITE_APP_VERSION` | Version shown in UI (sourced from `package.json`) |
-
-Define these in an `.env` file for local development, or in hosting platform settings for production.
-
-## Performance Considerations
-
-**CDN Usage**
-
-- Serve static assets via CDN for global distribution.
-- Configure long cache headers for versioned assets.
-- Use the `immutable` cache directive for hashed filenames.
-
-**Compression**
-
-Enable Brotli or gzip compression:
-
-```nginx
-gzip on;
-gzip_types text/plain text/css application/javascript application/json;
-gzip_min_length 1000;
-```
-
-**Security Headers**
-
-```nginx
-add_header X-Frame-Options "SAMEORIGIN" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-```
-
-## Health Check
-
-Simple health endpoint for container orchestrators. The `index.html` file serves as a health check; if it returns 200, the service is healthy.
-
-```bash
-curl -f http://localhost:80/index.html || exit 1
-```
-
-## Logging
-
-Client-side logs are available in browser DevTools. There are no server-side logs for static hosting.
-
-For analytics, integrate with services such as:
-
-- Google Analytics 4 for page views and events.
-- Sentry for error tracking.
-- A custom analytics endpoint.
-
-## Rollback
-
-Versioned deployments enable instant rollback:
-
-- Vercel and Netlify: use the dashboard to promote a previous deployment.
-- AWS S3: versioned buckets allow restoring previous versions.
-- Docker: tag images with version numbers and roll back by tag.
+The application is a static single-page application. The live deployment is the project home page above; the `dist/` output deploys to any static file host without additional configuration.

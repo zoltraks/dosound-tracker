@@ -6,8 +6,14 @@
 
 ## Summary
 
-One to three sentences describing what this change is and why it matters.
-Omit if the title is self-explanatory.
+| Field         | Value                                    |
+| ------------- | ---------------------------------------- |
+| Intent        | [what this change is and why it matters] |
+| Key decisions | [decisions taken, or `none`]             |
+| Open risks    | [open questions or risks, or `none`]     |
+
+The summary block precedes the detailed sections and is refreshed when the
+record's decisions or risks change.
 
 ## Description
 

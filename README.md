@@ -99,7 +99,7 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 - **Binary Export**: Raw DOSOUND command stream for direct memory loading
 - **WAV Audio Export**: 44.1kHz 16-bit PCM rendering with software YM2149 simulation
 - **VGM Export**: Video Game Music standard format with loop point support
-- **MAX Export**: MAX specification v1.6 with ZX0 compression
+- **MAX Export**: MAX specification v1.7 with ZX0 compression
 - **Register Dump**: Raw YM2149 register state sequences
 - **Instrument-only Export**: Individual instrument definitions
 
@@ -110,7 +110,7 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 - **Frontend**: React 19, TypeScript, Vite 7
 - **State**: Zustand
 - **Audio**: Web Audio API, custom YM2149 emulator
-- **Build**: Electron 28, Electron Builder 24
+- **Build**: Electron 42, Electron Builder 26
 - **Testing**: Vitest, jsdom, Playwright
 - **Linting**: ESLint 9 with TypeScript support
 - **Formatting**: Prettier
@@ -236,17 +236,18 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 
 **Engineering Standards**
 
-| File                                                                                                | Purpose                                       |
-| --------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| [standard/README.md](docs/standard/README.md)                                                       | Engineering-standard library index            |
-| [standard/typescript-react-development.md](docs/standard/typescript-react-development.md)           | TypeScript and React engineering standard     |
-| [standard/typescript-electron-development.md](docs/standard/typescript-electron-development.md)     | TypeScript and Electron engineering standard  |
-| [standard/typescript-general-development.md](docs/standard/typescript-general-development.md)       | TypeScript engineering standard               |
-| [standard/css-general-development.md](docs/standard/css-general-development.md)                     | CSS engineering standard                      |
-| [standard/html-vanilla-development.md](docs/standard/html-vanilla-development.md)                   | Vanilla HTML engineering standard (reference) |
-| [standard/accessibility-general-development.md](docs/standard/accessibility-general-development.md) | Accessibility engineering standard            |
-| [standard/performance-budgets-development.md](docs/standard/performance-budgets-development.md)     | Performance-budget engineering standard       |
-| [standard/standard-template-development.md](docs/standard/standard-template-development.md)         | Standard-authoring template                   |
+| File                                                                                                  | Purpose                                       |
+| ----------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| [standard/README.md](docs/standard/README.md)                                                         | Engineering-standard library index            |
+| [standard/typescript-react-development.md](docs/standard/typescript-react-development.md)             | TypeScript and React engineering standard     |
+| [standard/typescript-electron-development.md](docs/standard/typescript-electron-development.md)       | TypeScript and Electron engineering standard  |
+| [standard/typescript-general-development.md](docs/standard/typescript-general-development.md)         | TypeScript engineering standard               |
+| [standard/css-general-development.md](docs/standard/css-general-development.md)                       | CSS engineering standard                      |
+| [standard/html-vanilla-development.md](docs/standard/html-vanilla-development.md)                     | Vanilla HTML engineering standard (reference) |
+| [standard/accessibility-general-development.md](docs/standard/accessibility-general-development.md)   | Accessibility engineering standard            |
+| [standard/performance-budgets-development.md](docs/standard/performance-budgets-development.md)       | Performance-budget engineering standard       |
+| [standard/standard-template-development.md](docs/standard/standard-template-development.md)           | Standard-authoring template                   |
+| [standard/typescript-refactoring-development.md](docs/standard/typescript-refactoring-development.md) | TypeScript refactoring engineering standard   |
 
 **Document Templates**
 
@@ -260,6 +261,8 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 | [template/change-review-template.md](docs/template/change-review-template.md)                   | Template for version-window review documents    |
 | [template/session-findings.md](docs/template/session-findings.md)                               | Template for session-review lesson entries      |
 | [template/decision-record.md](docs/template/decision-record.md)                                 | Template for durable dated decision records     |
+| [template/specification-audit-template.md](docs/template/specification-audit-template.md)       | Template for pre-implementation plan audits     |
+| [template/verification-report-template.md](docs/template/verification-report-template.md)       | Template for per-option verification reports    |
 
 **ASE Directory Structure**
 
