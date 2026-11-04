@@ -27,6 +27,7 @@ import {
 } from '../../constants/song.ts';
 import { expandEnvelope, expandLoopingEnvelope } from '../envelope/envelopeUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
+import { normalizeSongSpeed } from './songSpeed.ts';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -166,10 +167,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       ? songNode.author
       : DEFAULT_SONG_AUTHOR;
 
-  const speedRaw = Number(songNode.speed);
-  const baseSpeed = Number.isFinite(speedRaw) && speedRaw > 0 ? Math.floor(speedRaw) : 6;
-  const clampedSpeed = Math.max(2, baseSpeed);
-  const speed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
+  const speed = normalizeSongSpeed(songNode.speed);
 
   const yearRaw = Number(songNode.year);
   const year = Number.isFinite(yearRaw) ? yearRaw : new Date().getFullYear();

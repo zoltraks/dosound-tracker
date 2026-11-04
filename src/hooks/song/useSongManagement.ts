@@ -10,6 +10,7 @@ import {
   parseSongFromYaml,
 } from '../../utils/song/songParser.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
+import { normalizeSongSpeed } from '../../utils/song/songSpeed.ts';
 import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { removeMirroredSnapshot } from '../../utils/storage/persistenceMirror.ts';
@@ -256,10 +257,7 @@ export const createDefaultSong = (): Song => {
 
 export function normalizeRestoredSong(rawSong: unknown): Song {
   const parsedSong = (rawSong || {}) as StoredSongForMigration;
-  const rawSpeed = Number(parsedSong.speed);
-  const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
-  const clampedSpeed = Math.max(2, baseSpeed);
-  const evenSpeed = clampedSpeed & ~1;
+  const evenSpeed = normalizeSongSpeed(parsedSong.speed);
   const normalized = normalizeStoredSongToCurrentSchema(parsedSong);
   return {
     ...normalized,

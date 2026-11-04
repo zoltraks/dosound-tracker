@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../../constants/music.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
+import { loadUiState } from '../../utils/storage/uiState.ts';
 
 export type UiStoreState = {
   currentOctave: number;
@@ -62,7 +63,7 @@ const getInitialChannelMutes = (): [boolean, boolean, boolean] => {
 
 export const useUiStore = create<UiStore>((set) => ({
   currentOctave: getInitialOctave(),
-  sharedCurrentLine: 0,
+  sharedCurrentLine: loadUiState().sharedCurrentLine,
   channelMutes: getInitialChannelMutes(),
   setCurrentOctave: (octave: number) => {
     try {

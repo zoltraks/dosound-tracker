@@ -155,6 +155,7 @@
   --markdown-h2-color: #c5d8d4;
   --markdown-h3-color: #7dcef3;
   --markdown-strong-color: #ff9ce6;
+  --markdown-em-color: #ffd479;
   --markdown-table-header-bg: rgba(255, 255, 255, 0.06);
   --markdown-table-row-bg-odd: rgba(255, 255, 255, 0.03);
   --markdown-table-row-bg-even: rgba(0, 0, 0, 0);
@@ -304,6 +305,7 @@
   --markdown-h2-color: #1f5397;
   --markdown-h3-color: #2a9e77;
   --markdown-strong-color: #c46bc7;
+  --markdown-em-color: #a35c00;
   --markdown-table-header-bg: rgba(0, 0, 0, 0.06);
   --markdown-table-row-bg-odd: rgba(0, 0, 0, 0.03);
   --markdown-table-row-bg-even: rgba(0, 0, 0, 0);
@@ -1314,6 +1316,10 @@ body {
 
 .modal-body.text-display-body strong.markdown-strong {
   color: var(--markdown-strong-color);
+}
+
+.modal-body.text-display-body em.markdown-em {
+  color: var(--markdown-em-color);
 }
 
 .modal-body.text-display-body p {

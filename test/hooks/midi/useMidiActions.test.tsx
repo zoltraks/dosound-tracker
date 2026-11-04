@@ -218,6 +218,7 @@ describe('handleRegisterTrackStopPreview / handleHardStopLivePreview', () => {
     const stop = vi.fn();
     try {
       act(() => hook.result.current.handleRegisterTrackStopPreview('B', stop));
+      act(() => hook.result.current.handleMidiNoteEvent(noteOn));
       act(() => hook.result.current.handleHardStopLivePreview(1));
       expect(ym.writeRegister).toHaveBeenCalledWith(0x09, 0x00);
     } catch (error) {
@@ -229,10 +230,22 @@ describe('handleRegisterTrackStopPreview / handleHardStopLivePreview', () => {
   it('clamps the channel index into range', () => {
     const { hook, ym } = setup();
     try {
+      act(() => hook.result.current.handleMidiNoteEvent(noteOn));
       act(() => hook.result.current.handleHardStopLivePreview(9));
       expect(ym.writeRegister).toHaveBeenCalledWith(0x0a, 0x00);
     } catch (error) {
       console.log('clamp mismatch');
+      throw error;
+    }
+  });
+
+  it('does not touch the volume register when nothing is previewing', () => {
+    const { hook, ym } = setup();
+    try {
+      act(() => hook.result.current.handleHardStopLivePreview(0));
+      expect(ym.writeRegister).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('no-op stop mismatch');
       throw error;
     }
   });

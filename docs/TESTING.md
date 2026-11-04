@@ -83,7 +83,7 @@ Run the verification loop only when source code, configuration, or test files ar
 - Before the first code modification, to establish a known-good baseline.
 - After each code change iteration.
 - After finishing implementation or refactoring.
-- Before version bumping.
+- Before version bumping — followed by `scripts/release-check.sh`, the release gate that enforces the documentation-state preconditions recorded in `VERSIONING.md`.
 - When explicitly asked for a production-ready build.
 
 **Test failures are not optional**
@@ -277,7 +277,7 @@ The project targets 80% coverage for lines, functions, branches, and statements.
 
 Current coverage gaps that must be addressed in future work:
 
-- `src/synth/` — YM2149 emulator and SoundDriver need comprehensive tests
+- `src/synth/` — YM2149 emulator needs comprehensive tests
 - `src/exports/` — all export formatters need tests
 - `src/components/` — most components lack tests
 - `src/hooks/` — many of the 50 hooks lack dedicated tests

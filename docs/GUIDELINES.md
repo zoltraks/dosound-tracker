@@ -608,6 +608,10 @@ Under the `session-reporting` extension:
 - Operation timing is armed by default. The agent captures the clock before starting an operation's work and ends the response with `<subject> took <m:ss>`. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table before the timing sentence. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
 - In verbose mode the final response additionally reports context usage and a short description of the change immediately before the timing line.
 
+**Context Management**
+
+When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local.
+
 **Clean and Purge**
 
 Under the `clean` and `purge` extensions:

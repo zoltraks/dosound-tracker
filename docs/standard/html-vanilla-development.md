@@ -2376,3 +2376,7 @@ The following authoritative references support the rules in this document.
   thresholds.
 - [webstatus.dev](https://webstatus.dev/) and [Can I Use](https://caniuse.com/)
   - feature-support lookups for the baseline gate.
+
+## Project Conventions
+
+No project-specific conventions are recorded for this standard.

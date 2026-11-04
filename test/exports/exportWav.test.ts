@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
 import { exportSongToWav, exportInstrumentToWav } from '../../src/exports/wav.ts';
-import { VBLANK_RATE, type Instrument, type Song } from '../../src/synth/SoundDriver.ts';
+import type { Instrument, Song } from '../../src/synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME as VBLANK_RATE } from '../../src/constants/song.ts';
 
 describe('WAV export context', () => {
   it('uses only a single playlist entry worth of samples when scoped to one pattern', () => {

@@ -145,4 +145,17 @@ describe('renderMarkdown allowed grammar', () => {
       throw error;
     }
   });
+
+  it('renders underscore emphasis as a styled em element', () => {
+    const html = renderMarkdown('Para with _italics_ and __strong__ inside.');
+    expect(html).toContain('<em class="markdown-em">italics</em>');
+    expect(html).toContain('<strong class="markdown-strong">strong</strong>');
+  });
+
+  it('leaves snake_case identifiers untouched by the underscore rule', () => {
+    const html = renderMarkdown('The song_format_v2 key and snake_case_var stay literal.');
+    expect(html).not.toContain('<em');
+    expect(html).toContain('song_format_v2');
+    expect(html).toContain('snake_case_var');
+  });
 });

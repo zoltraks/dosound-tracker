@@ -1,5 +1,16 @@
 # Changes
 
+## Version 1.3.8
+
+The app now restores your working session across reloads, markdown emphasis renders fully, and a dead-code sweep removed the unused synth modules.
+
+- **Session restore**: reopening the app brings back the open modal (manual, changelog, about, export, MIDI, and others), the cursor line, the markdown scroll position, and the window scroll position. Confirmation and destructive dialogs never reopen, and playback never resumes on its own.
+- **Markdown viewer**: `__bold__` and `_italic_` now render alongside the asterisk forms, italics get their own themed color, and identifiers like `snake_case` stay literal.
+- **Startup test tone**: a clean 440 Hz tone plays for 200 ms once the app has finished loading and restoring state, validating that audio output works.
+- **Preview safety**: switching sections no longer silences a channel spuriously - preview cleanup now runs only when a preview is actually playing.
+- **Internals**: the unused SoundDriver, EventOptimizer, and SequencerEngine modules were removed, and song-speed normalization is consolidated in one helper.
+- **Security**: `npm audit` reports 26 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users.
+
 ## Version 1.3.7
 
 Toolchain refresh and code hygiene: the dependency set moved to current versions, the desktop shell gained Electron 45, and hex rendering was consolidated behind a single formatter.

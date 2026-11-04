@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { TrackPanel } from '../../src/components/TrackPanel.tsx';
 import type { Pattern, Instrument } from '../../src/synth/SoundDriver.ts';
+import type { YM2149 } from '../../src/synth/YM2149.ts';
 import type { NavigationSection } from '../../src/constants/navigation.ts';
 
 const createTestPattern = (): Pattern => ({
@@ -30,6 +31,8 @@ const createTestInstrument = (): Instrument => ({
 });
 
 describe('TrackPanel', () => {
+  afterEach(() => cleanup());
+
   it('renders track lines with note and volume columns', () => {
     const pattern = createTestPattern();
     const instrument = createTestInstrument();
@@ -325,5 +328,80 @@ describe('TrackPanel', () => {
     fireEvent.keyDown(panel, { key: 'Enter', ctrlKey: true });
     expect(handleToggleLineFromStart).toHaveBeenCalledWith(5);
     expect(handleToggleLineFromCursor).toHaveBeenCalledTimes(1);
+  });
+
+  const createYm2149Mock = () => {
+    const writeRegister = vi.fn();
+    const ym = {
+      writeRegister,
+      updateChannelWithInstrument: vi.fn(),
+    } as unknown as YM2149;
+    return { ym, writeRegister };
+  };
+
+  const createPanelProps = (pattern: Pattern, instrument: Instrument, ym: YM2149 | null) => ({
+    trackId: 'A' as const,
+    setActiveSection: vi.fn(),
+    currentOctave: 4,
+    currentLine: 0,
+    patternLength: pattern.step.length,
+    onLineChange: vi.fn(),
+    pattern,
+    onPatternChange: vi.fn(),
+    ym2149: ym,
+    currentInstrumentData: instrument,
+    instruments: [instrument],
+    trackBackgroundEnabled: true,
+    isTargetTrack: true,
+    onToggleLineFromCursor: vi.fn(),
+    onToggleLineFromStart: vi.fn(),
+    currentColumn: 'note' as const,
+    setCurrentColumn: vi.fn(),
+    focusRevision: 0,
+  });
+
+  it('does not zero the channel register when no preview ever ran', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+    const { ym, writeRegister } = createYm2149Mock();
+    const props = createPanelProps(pattern, instrument, ym);
+
+    const { rerender } = render(
+      <TrackPanel {...props} activeSection={'piano' as NavigationSection} />,
+    );
+
+    try {
+      expect(writeRegister).not.toHaveBeenCalled();
+
+      rerender(<TrackPanel {...props} activeSection={'trackA' as NavigationSection} />);
+      rerender(<TrackPanel {...props} activeSection={'piano' as NavigationSection} />);
+
+      expect(writeRegister).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('guarded stop mismatch', writeRegister.mock.calls);
+      throw error;
+    }
+  });
+
+  it('stops a live preview when the section flips away', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+    const { ym, writeRegister } = createYm2149Mock();
+    const props = createPanelProps(pattern, instrument, ym);
+
+    const { container, rerender } = render(
+      <TrackPanel {...props} activeSection={'trackA' as NavigationSection} />,
+    );
+
+    const panel = container.querySelector('.track-panel') as HTMLElement;
+    fireEvent.keyDown(panel, { key: 'z' });
+
+    try {
+      rerender(<TrackPanel {...props} activeSection={'piano' as NavigationSection} />);
+      expect(writeRegister).toHaveBeenCalledWith(0x08, 0x00);
+    } catch (error) {
+      console.log('live stop mismatch', writeRegister.mock.calls);
+      throw error;
+    }
   });
 });

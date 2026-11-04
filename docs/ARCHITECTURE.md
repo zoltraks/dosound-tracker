@@ -4,19 +4,19 @@
 
 DOSOUND Tracker is a chiptune music editor for the AY/YM sound chip (YM2149 PSG) used in the Atari ST. It runs as a React 19 single-page application bundled with Vite (rolldown-vite) and ships as a desktop app through Electron 42. The core of the application is a software emulation of the YM2149 chip rendered through the Web Audio API, paired with a tracker-style song editor and a multi-format export pipeline.
 
-The application is built around two main data paths. The first path is live audio playback: song data flows from React state through hooks into the SoundDriver, which generates register-write events, feeds them to the YM2149 emulator, and produces sound through the Web Audio API. The second path is file export: the same song data flows through the exports modules into binary, assembly, VGM, WAV, or Max/MSP formats.
+The application is built around two main data paths. The first path is live audio playback: song data flows from React state through hooks into the sequencer integration, which computes register writes per tick, applies them to the YM2149 emulator, and produces sound through the Web Audio API. The second path is file export: the same song data flows through the exports modules into binary, assembly, VGM, WAV, or Max/MSP formats.
 
 The diagram below shows the high-level data flow.
 
 ```
 +----------+     +-----------+     +----------------+     +------------+
-|  UI      | --> |  Hooks    | --> |  SoundDriver   | --> |  YM2149    |
-|  React   |     |  useSeq   |     |  event gen     |     |  emulator  |
+|  UI      | --> |  Hooks    | --> |  Sequencer     | --> |  YM2149    |
+|  React   |     |  useSeq   |     |  integration   |     |  emulator  |
 +----------+     +-----------+     +----------------+     +------------+
      |                |                     |                    |
      |                |                     v                    v
      |                |          +------------------+    +----------------+
-     |                |          |  SequencerEngine |    |  Web Audio API |
+     |                |          |  playback utils  |    |  Web Audio API |
      |                |          |  50Hz VBLANK     |    |  AudioContext  |
      |                |          +------------------+    +----------------+
      |                |                     ^
@@ -44,7 +44,7 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 - **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. Every hook lives in a domain subdirectory (`midi/`, `instrument/`, `song/`, `playback/`, `keyboard/`, `audio/`, `sequencer/`, `modal/`, `app/`, `storage/`, `file/`, `ui/`) - the folder holds no files directly. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
 - **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated. Modal files are imported directly; the folder carries no barrel file.
 - **hooks/ui** - Holds the single Zustand store, `useUiStore.ts`, beside the UI-domain hooks. The store holds cross-component UI state; `src/stores/` was dissolved when its only member moved here under the directories-only rule.
-- **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip, `SoundDriver.ts` generates register-write events, `SequencerEngine.ts` handles frame timing, and `EventOptimizer.ts` optimizes event streams.
+- **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip and `SoundDriver.ts` holds the song data-model interfaces (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) imported as types across the tree.
 - **types** - Shared TypeScript type definitions used across modules.
 - **utils** - Pure utility functions and stateless helpers. Every utility lives in a domain subdirectory (`instrument/`, `track/`, `song/`, `midi/`, `keyboard/`, `envelope/`, `playback/`, `file/`, `compression/`, `cursor/`, `export/`, `format/`, `log/`, `markdown/`, `panel/`, `pattern/`, `storage/`, `timer/`, `transpose/`, `validation/`, `yaml/`) - the folder holds no files directly, and single-file directories are allowed when a domain has one member.
 - **workers** - Web Workers. `sequencerWorker.ts` runs the 50Hz VBLANK timer in a dedicated thread to keep playback timing isolated from the React render loop.
@@ -70,8 +70,8 @@ The application has two primary data flows.
 
 1. Song data lives in App.tsx useState and is passed to `useDataManagement`, which handles load, save, and mutation of the song model.
 2. `useSequencer` receives song speed and pattern length, starts the Web Worker, and emits tick events at 50Hz.
-3. Each tick drives `useSequencerIntegration`, which calls into the `SoundDriver` to generate the next frame of register-write events.
-4. The `SoundDriver` translates notes, instruments, and envelopes into YM2149 register writes and delay events, then applies them to the `YM2149` emulator instance.
+3. Each tick drives `useSequencerIntegration`, which advances the per-channel instrument envelopes and computes the next frame of YM2149 register values through `src/utils/playback/` helpers.
+4. The integration applies those register writes to the `YM2149` emulator instance.
 5. The `YM2149` emulator maps registers to Web Audio nodes (oscillators, gain nodes, noise buffer, envelope gain) and produces sound through the `AudioContext`.
 
 **Export pipeline:**
@@ -87,9 +87,7 @@ The audio pipeline mirrors the real Atari ST hardware path, emulated in software
 
 The `YM2149` class is the hardware emulator. It owns 16 registers, three tone channels, a noise generator, an envelope generator, and a set of Web Audio nodes (oscillators, gain nodes, noise buffer source, envelope gain). It runs at a configurable clock (default 2 MHz, `YM_CLOCK = 2000000`) set per song via the `clock` field. The clock drives the tone and noise frequency calculations (`f = clock / (16 * period)`). At 1 MHz, period values are half of the 2 MHz values for the same note. It uses a 16-step logarithmic volume table (`YM_LOG_VOLUME_TABLE`) that approximates the real chip's -2dB per step curve. Register writes are batched to avoid redundant node updates.
 
-The `SoundDriver` class sits above the emulator. It defines the core data model (`Song`, `Pattern`, `Step`, `Note`, `Instrument`) and the event types (`SoundEvent` with `register` or `delay` variants). It converts the tracker's musical data into a stream of register writes and delays, using DOSOUND conventions (`DOSOUND_REGISTER_WRITE = 0xFF`, `DOSOUND_END_MARKER = 0x00`). The `EventOptimizer` post-processes the event stream to remove redundant writes. Timing is anchored to the song's frame rate (default 50 Hz, `VBLANK_RATE = 50`), configurable per song via the `frame` field.
-
-The `SequencerEngine` class handles frame-level timing. It indexes instruments by id, resolves song speed into `ticksPerRow` (clamped and forced even), and exposes `processFrame` to advance the register state one tick at a time. The engine is deterministic and stateless across frames except for the register snapshot passed in by the caller.
+The song data model (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) is defined as interfaces in `src/synth/SoundDriver.ts` and consumed across the tree through type-only imports. Per-tick playback logic lives in `src/hooks/sequencer/useSequencerIntegration.ts` and `src/utils/playback/`, which translate instruments, envelopes, and mixer state into register writes on the `YM2149` instance. Timing is anchored to the song's frame rate (default 50 Hz, `DEFAULT_SONG_FRAME`), configurable per song via the `frame` field.
 
 The `sequencerWorker` Web Worker runs the frame-rate timer (`tickInterval = 1000 / frameRate`, 20 ms at 50 Hz, 16.66 ms at 60 Hz) in a dedicated thread. It maintains playback position (pattern, line, tick) and posts `tick`, `update`, and `stop` messages back to the main thread. This isolates timing from React's render cadence and from main-thread workloads.
 
@@ -125,4 +123,4 @@ The current architecture has several documented constraints.
 - **Business logic is scattered across hooks and utils.** Song management, MIDI, file operations, instrument actions, and sequencer integration each live in their own hook files, some of which are large (useSequencerIntegration at ~21KB, useMidiActions at ~21KB, useSongManagement at ~19KB). Cross-hook dependencies are implicit and wired in App.tsx.
 - **No undo/redo.** There is no history stack and no snapshot mechanism. All edits apply directly to state. Recovering from a mistake requires manual re-entry or reloading the song.
 - **No Command pattern.** Mutations are free functions and setter calls, not encapsulated command objects. This blocks future undo/redo and makes edit auditing difficult.
-- **Low test coverage for synth and exports.** The YM2149 emulator, SoundDriver event generation, SequencerEngine frame logic, and the five export format modules have minimal automated tests. The bulk of test coverage targets utilities and hooks.
+- **Low test coverage for synth and exports.** The YM2149 emulator and the five export format modules have minimal automated tests. The bulk of test coverage targets utilities and hooks.

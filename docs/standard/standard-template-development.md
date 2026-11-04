@@ -260,3 +260,7 @@ pass before a standard ships.
 3. Check the file against the Validation Rules section - every Error rule must pass - and
    run `git diff --check`.
 4. Propose a one-sentence commit message.
+
+## Project Conventions
+
+No project-specific conventions are recorded for this standard.

@@ -16,12 +16,15 @@ const applyInlineFormatting = (text: string): string => {
     return `<a href="${url}" target="_blank" rel="noreferrer">${url}</a>`;
   });
 
-  // Bold **text**
-  const withBold = withLinks.replace(
-    /\*\*(.+?)\*\*/g,
-    '<strong class="markdown-strong">$1</strong>',
-  );
-  return withBold.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  // Bold **text** and __text__
+  const withBold = withLinks
+    .replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1</strong>')
+    .replace(/(?<![_\w])__([^_]+?)__(?![_\w])/g, '<strong class="markdown-strong">$1</strong>');
+  // Italic *text* and _text_ (underscore requires non-word boundaries so
+  // snake_case identifiers are left alone)
+  return withBold
+    .replace(/\*(.+?)\*/g, '<em class="markdown-em">$1</em>')
+    .replace(/(?<![_\w])_([^_]+?)_(?![_\w])/g, '<em class="markdown-em">$1</em>');
 };
 
 const renderInlineMarkdown = (text: string): string => {

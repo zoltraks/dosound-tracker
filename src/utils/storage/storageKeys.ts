@@ -28,6 +28,9 @@ export class StorageKeys {
   static readonly DEBUG_INFO_SHOWN = 'dosound-tracker-debug-info-shown' as const;
   static readonly IGNORE_INST_TYPE_WARNING = 'dosound-tracker-ignore-inst-type-warning' as const;
 
+  // View-state snapshot
+  static readonly UI_STATE = 'dosound-tracker-ui-state' as const;
+
   // Data persistence
   static readonly SONG = 'dosound-tracker-song' as const;
   static readonly INSTRUMENT = 'dosound-tracker-instrument' as const;

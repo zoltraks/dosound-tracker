@@ -87,3 +87,10 @@ Recorded during the 1.3.6 dependency upgrade (see `docs/change/1.3.6/dependency-
 - **`typescript` 7**: blocked - `typescript-eslint` requires `typescript <6.1.0`. Revisit when the linter chain supports it.
 - **`eslint` 10 + `@eslint/js` 10**: feasible but a config and plugin sweep of its own - separate change record.
 - **`@vitejs/plugin-react` 6 + `vite` 8**: blocked - plugin 6 requires `vite ^8` and no `rolldown-vite` 8.x is published.
+
+## SoundDriver Runtime Dead Code
+
+`new SoundDriver(` appears nowhere in `src/` - `SoundDriver.ts` is
+referenced only by type imports and `playEvents` is never invoked. It is
+a removal candidate for a future refactoring cycle, pending confirmation
+that the Atari ST export path (`exportToAssembly`) has no live caller.

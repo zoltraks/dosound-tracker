@@ -170,6 +170,8 @@ The request may select a gate mode: `autonomous` runs every stage without pausin
 - Catalogue every active change record in `docs/change/<version>/`. All of them are in scope and none may be skipped.
 - Order the requests from their recorded dependencies.
 - The named window request is the explicit authorization to read that window's `docs/change/` and `docs/plan/` groups.
+- "Continue SDLC autonomously" or "finish the `<version>` window" names the same operation on an in-progress window whose records were written ad hoc during the session rather than as pre-planned requests.
+- A record whose work is already landed is verified against the tree and closed, not re-implemented. A record that should not be implemented is discarded with its rationale recorded in the record itself. Implementation runs only on records that describe unlanded work.
 - An empty window reports zero active records; the refactoring phase may still run on the current state and no bump is forced.
 
 **Request Iteration**
@@ -202,7 +204,7 @@ For each change record in the window:
 
 **Window Close**
 
-- Close the window with the version bump per `VERSIONING.md` (the verification loop, `npm audit`, `npm run bump`, and the `public/CHANGELOG.md` entry). The named window request is the explicit instruction that authorizes this bump.
+- Close the window with the version bump per `VERSIONING.md` (the release gate, verification loop, `npm audit`, `npm run bump`, and the `public/CHANGELOG.md` entry). The named window request is the explicit instruction that authorizes this bump. An ad-hoc bump outside a named window runs the same gate; the missing window review is its recorded waiver.
 - The cycle never commits on its own - commits stay manual under every mode.
 
 **Run State**
@@ -307,6 +309,38 @@ A module-level helper slated for a move into `src/utils/` may already exist ther
 **Table formatting and Prettier**
 
 When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate; `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
+
+## Session Improvement
+
+The documentation set heals and improves itself through a session-review loop. At the end of a development session - or on request - the agent gathers durable lessons from the session's conversation history and routes each one to its owning document.
+
+**Gather lessons**
+
+Mine the session for anything that cost effort, surprised, or would help the next session:
+
+- A fix that revealed a pattern worth standardizing (for example the scroll-restore ordering rule).
+- A recurring correction from the user - the same instruction given twice is a missing convention.
+- Tooling and environment facts discovered on the way (a CLI flag, a port, a schema field that moved).
+- A failed approach worth recording so it is not retried (the vitest 5 and js-yaml 5 reverts live in `FUTURE.md` for this reason).
+
+**Route each lesson**
+
+Routing follows the table recorded in `GUIDELINES.md` under Session Review: wounds land in the owning standard or document, the lesson file indexes rather than hosts rules, deferred work goes to `FUTURE.md`, and durable one-off decisions become dated records in `docs/decision/`.
+
+**Apply and verify**
+
+- Propose each routed lesson briefly before writing - a lesson is a claim about what is durable, not a log of the session.
+- Edits to owning documents follow the change-record workflow; lesson records and session reports land directly.
+- A correction that appears in two consecutive sessions graduates: it becomes a written rule in the owning document, not another lesson entry.
+
+**Housekeeping checklist**
+
+Run periodically and before a version bump:
+
+- `scripts/clean.sh --dry-run` to review residue; `--purge` only when a fresh `npm install` is acceptable.
+- `scripts/release-check.sh` for record coverage, assessment completeness, and window-review presence.
+- Stale-figure sweep: README/toolchain numbers, hook counts, file sizes, standard versions (`diff -w -B` against the canonical library).
+- `git status --short` confirms only the intended change set remains.
 
 ## Working With AI Coding Agents
 

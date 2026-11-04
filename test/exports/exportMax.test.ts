@@ -5,7 +5,8 @@ import { exportSongToMax, exportInstrumentToMax } from '../../src/exports/max.ts
 import { decompressZX0 } from '../../src/utils/compression/zx0.ts';
 import { simulateSong } from '../../src/utils/playback/playbackSimulation.ts';
 import { YM_CLOCK } from '../../src/synth/YM2149.ts';
-import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver.ts';
+import type { Song } from '../../src/synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME as VBLANK_RATE } from '../../src/constants/song.ts';
 
 function loadSongYaml(name: string) {
   const yamlContent = readFileSync(`test/fixtures/${name}`, 'utf-8');

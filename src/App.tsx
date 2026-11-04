@@ -39,6 +39,7 @@ import { ModalManager } from './components/ModalManager.tsx';
 import { useFileOperations } from './hooks/file/useFileOperations.ts';
 import type { UiStore } from './hooks/ui/useUiStore.ts';
 import { useUiStore } from './hooks/ui/useUiStore.ts';
+import { useUiStatePersistence } from './hooks/ui/useUiStatePersistence.ts';
 import { useAppInfoDialogs } from './hooks/app/useAppInfoDialogs.ts';
 import { useSongLifecycleDialogs } from './hooks/song/useSongLifecycleDialogs.ts';
 import { useInstrumentFileLoading } from './hooks/instrument/useInstrumentFileLoading.ts';
@@ -299,7 +300,7 @@ const App: React.FC = () => {
     [mirrorRestoreNotice, messages],
   );
 
-  const { audioContext, ym2149Ref, ym2149 } = useAudioSetup(
+  const { audioContext, ym2149Ref, ym2149, playTestTone } = useAudioSetup(
     currentSong.clock ?? DEFAULT_SONG_CLOCK,
   );
   const previewTickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
@@ -435,6 +436,43 @@ const App: React.FC = () => {
     setIsManualOpen,
     setIsQuitConfirmOpen,
   });
+
+  const { restoreView } = useUiStatePersistence(
+    {
+      isManualOpen,
+      isChangelogOpen,
+      isAboutOpen,
+      isDownloadOpen,
+      isDebugInfoOpen,
+      isMidiModalOpen,
+      isInstrumentMidiOpen,
+      isInstrumentColorOpen,
+      isExportModalOpen,
+    },
+    sharedCurrentLine,
+    {
+      manual: handleShowManual,
+      changelog: handleShowChangelog,
+      about: handleShowAbout,
+      download: () => setIsDownloadOpen(true),
+      debugInfo: () => setIsDebugInfoOpen(true),
+      midi: () => setIsMidiModalOpen(true),
+      instrumentMidi: () => setIsInstrumentMidiOpen(true),
+      instrumentColor: () => setIsInstrumentColorOpen(true),
+      export: () => setIsExportModalOpen(true),
+    },
+  );
+
+  useEffect(() => {
+    restoreView();
+    // The startup test tone fires only after initialization and state
+    // restoration complete - two frames give restored-state reactions a
+    // full commit cycle. Panel section flips no longer reach the channel
+    // volume registers: the panel stopPreview calls are guarded by live
+    // preview state.
+    const raf = requestAnimationFrame(() => requestAnimationFrame(() => playTestTone()));
+    return () => cancelAnimationFrame(raf);
+  }, []);
 
   const {
     isDemoSongPickerOpen,

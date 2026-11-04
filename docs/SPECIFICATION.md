@@ -73,13 +73,13 @@ The register write path supports batch updates via beginBatch and endBatch to av
 
 ## Sequencer Timing
 
-Playback is driven by the song's frame rate (default 50 Hz, VBLANK_RATE = 50, defined in src/synth/SoundDriver.ts). The frame rate is configurable per song via the `frame` field. Each tick corresponds to 1000 / frameRate milliseconds (20 ms at 50 Hz, 16.66 ms at 60 Hz).
+Playback is driven by the song's frame rate (default 50 Hz, DEFAULT_SONG_FRAME = 50, defined in src/constants/song.ts). The frame rate is configurable per song via the `frame` field. Each tick corresponds to 1000 / frameRate milliseconds (20 ms at 50 Hz, 16.66 ms at 60 Hz).
 
 Envelope progression advances every 2 ticks (40 ms at 50 Hz, 33.33 ms at 60 Hz). This means instrument envelope arrays (volume, shift, pitch, noise, mode) step forward at half the frame rate.
 
 Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in src/constants/music.ts). Each pattern contains 64 rows, and the playlist arranges patterns into a song sequence across three channels (A, B, C).
 
-The playback speed parameter controls how many delay cycles elapse between sequencer steps. The minimum speed is 2 (MIN_DELAY_CYCLES = 2). In DOSOUND mode, only even values are accepted: if an odd value is provided, it is rounded up to the next even number. This constraint is enforced in SoundDriver.setPlaybackSpeed.
+The playback speed parameter controls how many ticks elapse between sequencer steps. The minimum speed is 2 and only even values are used: an odd value is normalized down to the previous even value, and non-positive or non-numeric input falls back to 6. The normalization is implemented by `normalizeSongSpeed` in src/utils/song/songSpeed.ts and is applied on the song load and restore paths.
 
 The song speed field on the Song object determines the global tempo. The frame rate field (default 50), chip field (default "YM"), and chip clock field (default 2000000) are defined in src/constants/song.ts. Supported frame rates are 50 and 60 Hz. Supported chip clocks are 2000000 (2 MHz) and 1000000 (1 MHz).
 
@@ -236,6 +236,6 @@ The following constraints reflect the current state of the codebase and are cand
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
 - **No undo/redo**: The application does not implement an undo/redo history. All edits are immediate and irreversible without manual re-entry. No command pattern or state snapshot mechanism is present.
 - **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~1110 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/`; further decomposition remains a candidate for later windows.
-- **Low test coverage for synth and exports**: The YM2149 emulator (src/synth/YM2149.ts), sound driver (src/synth/SoundDriver.ts), and export modules (src/exports/) have minimal automated test coverage. Core audio synthesis and file generation paths are not fully exercised by the test suite.
+- **Low test coverage for synth and exports**: The YM2149 emulator (src/synth/YM2149.ts) and export modules (src/exports/) have minimal automated test coverage. Core audio synthesis and file generation paths are not fully exercised by the test suite.
 - **Single chip support**: Only the YM2149 chip is supported. The constants in src/constants/song.ts define supported chips as a single-element array, leaving no room for AY-3-8910 or other PSG variants without code changes.
 - **Browser audio dependency**: Real-time playback relies on the Web Audio API and OscillatorNode, which imposes browser-specific behavior and latency characteristics that differ from native Atari ST hardware.

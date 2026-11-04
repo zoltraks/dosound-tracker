@@ -104,6 +104,12 @@ export function useMidiActions({
 
   const handleHardStopLivePreview = useCallback(
     (ymChannel: number) => {
+      // Nothing to stop: no live preview timer is running and no preview
+      // is recorded - a stray call must not reach the volume register.
+      if (midiLiveTimerRef.current === null && lastMidiPreviewRef.current === null) {
+        return;
+      }
+
       const ym2149 = ym2149Ref.current;
 
       clearIntervalRef(midiLiveTimerRef);

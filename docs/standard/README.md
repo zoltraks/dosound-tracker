@@ -24,3 +24,13 @@ or by section, never raw bytes.
 - **`typescript-general-development.md`** - TypeScript, general. Adopted, project deltas.
 - **`typescript-react-development.md`** - TypeScript, React. Canonical plus project conventions.
 - **`typescript-refactoring-development.md`** - TypeScript, refactoring. Canonical plus project conventions.
+- **`bash-inline-development.md`** - Bash and inline shell. Canonical.
+
+## Bidirectional Synchronization
+
+The vendored files are canonical text plus an optional `## Project Conventions`
+section at the end. The canonical part is verified against the compass
+checkout (`references/standard/`) with `diff -w -B`, so content drift is
+visible. Conventions recorded in `## Project Conventions` are project-local
+and are the candidates for upstream proposals back into the canonical
+library.

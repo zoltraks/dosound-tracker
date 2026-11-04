@@ -299,14 +299,29 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     }
   }, [isActive, focusRevision]);
 
+  // True when preview state exists that a hard stop must clean up: an
+  // active preview key, a running envelope timer, or pressed keys left
+  // tracked by a lost keyup. Lets the focus-loss effect below suppress
+  // no-op stopPreview calls on mount and on section flips, so they can
+  // no longer reach the channel volume registers.
+  const hasPreviewState = useCallback(
+    () =>
+      activePreviewKeyRef.current !== null ||
+      envelopeTimerRef.current !== null ||
+      pressedNoteKeysRef.current.size > 0,
+    [],
+  );
+
   // Ensure any preview is stopped when this track loses focus or unmounts
   useEffect(() => {
-    if (!isActive) {
+    if (!isActive && hasPreviewState()) {
       stopPreview();
     }
 
     return () => {
-      stopPreview();
+      if (hasPreviewState()) {
+        stopPreview();
+      }
     };
   }, [isActive]);
 

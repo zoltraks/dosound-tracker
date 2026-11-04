@@ -3,7 +3,8 @@ import { readFileSync } from 'node:fs';
 import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
 import { exportSongToVgm, exportInstrumentToVgm } from '../../src/exports/vgm.ts';
 import { YM_CLOCK } from '../../src/synth/YM2149.ts';
-import { VBLANK_RATE, type Song } from '../../src/synth/SoundDriver.ts';
+import type { Song } from '../../src/synth/SoundDriver.ts';
+import { DEFAULT_SONG_FRAME as VBLANK_RATE } from '../../src/constants/song.ts';
 
 function readUtf16LeString(
   bytes: Uint8Array,

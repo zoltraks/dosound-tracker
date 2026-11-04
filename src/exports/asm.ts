@@ -13,6 +13,7 @@ import {
 } from './core.ts';
 import { Formatter } from '../utils/format/formatters.ts';
 import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
+import { normalizeSongSpeed } from '../utils/song/songSpeed.ts';
 
 /**
  * Converts a song to DOSOUND XBIOS assembly format
@@ -362,10 +363,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   // duration of one pattern in the sequencer.
   let maxSteps = stepsCount;
   if (normalizedSong) {
-    const rawSpeed = Number(normalizedSong.speed);
-    const baseSpeed = Number.isFinite(rawSpeed) && rawSpeed > 0 ? Math.floor(rawSpeed) : 6;
-    const clampedSpeed = Math.max(2, baseSpeed);
-    const evenSpeed = clampedSpeed & ~1; // enforce even speed (2,4,6,...)
+    const evenSpeed = normalizeSongSpeed(normalizedSong.speed);
 
     const rawLength = Number(normalizedSong.length);
     const patternLength =

@@ -215,7 +215,10 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     if (isOctaveActive && octaveRef.current) {
       octaveRef.current.focus();
     }
-    if (!isOctaveActive) {
+    // Stop only a preview that actually started - an unconditional stop on
+    // mount or a section flip reached the channel volume register through
+    // handleHardStopLivePreview even with nothing playing.
+    if (!isOctaveActive && previewTimerRef.current !== null) {
       stopPreview();
     }
   }, [isOctaveActive]);
