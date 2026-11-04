@@ -244,9 +244,9 @@ export function useSequencerIntegration({
                 if (volumeOnRow === undefined || volumeOnRow === null) {
                   volText = '-';
                 } else {
-                  volText = clampVolumeNibble(volumeOnRow as number)
-                    .toString(16)
-                    .toUpperCase();
+                  volText = Formatter.hex(clampVolumeNibble(volumeOnRow as number), {
+                    padWidth: 0,
+                  });
                 }
 
                 if (!noteOnRow) {

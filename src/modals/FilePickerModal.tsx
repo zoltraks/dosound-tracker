@@ -54,6 +54,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
 
   useEffect(() => {
     if (!isOpen) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSortDescending(!!defaultSortDescending);
   }, [isOpen, defaultSortDescending]);
 
@@ -61,6 +62,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
     if (!isOpen) return;
 
     if (files && files.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setInternalFiles(files);
       return;
     }
@@ -130,6 +132,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
     if (files.length === 0) {
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setInternalFiles(files);
   }, [files, isOpen]);
 

@@ -30,6 +30,7 @@ export function useAudioSetup(chipClock: number = DEFAULT_SONG_CLOCK): UseAudioS
 
       const ymInstance = new YM2149(audioContext, chipClock);
       ym2149Ref.current = ymInstance;
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setYm2149(ymInstance);
 
       // Expose on window for debugging

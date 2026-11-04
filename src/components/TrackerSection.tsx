@@ -1,3 +1,4 @@
+import { Formatter } from '../utils/format/formatters.ts';
 import React from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
 import type { Pattern, Instrument, Song } from '../synth/SoundDriver.ts';
@@ -113,7 +114,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
                 onClick={() => onLineChange(i)}
               >
-                {i.toString(16).toUpperCase().padStart(2, '0')}
+                {Formatter.hex(i)}
               </div>
             ))}
           </div>

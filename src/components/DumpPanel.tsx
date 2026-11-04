@@ -1,3 +1,4 @@
+import { Formatter } from '../utils/format/formatters.ts';
 import React, { useEffect, useRef, useState } from 'react';
 import { logger } from '../utils/log/logger.ts';
 import { YM2149 } from '../synth/YM2149.ts';
@@ -94,7 +95,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
   }, []);
 
   const formatHex = (value: number, width: number) => {
-    return value.toString(16).toUpperCase().padStart(width, '0');
+    return Formatter.hex(value, { padWidth: width });
   };
 
   const copyToClipboard = (text: string) => {

@@ -1,3 +1,4 @@
+import { Formatter } from '../utils/format/formatters.ts';
 import React from 'react';
 import type { CSSProperties, MouseEvent } from 'react';
 import type { Note } from '../synth/SoundDriver.ts';
@@ -43,7 +44,7 @@ export const TrackLine: React.FC<TrackLineProps> = ({
   const displayVolume =
     volume === undefined || volume === null
       ? '.'
-      : clampVolumeNibble(volume).toString(16).toUpperCase();
+      : Formatter.hex(clampVolumeNibble(volume), { padWidth: 0 });
 
   return (
     <div className={lineClassName} style={lineStyle} onClick={handleRowClick}>

@@ -1,3 +1,4 @@
+import { Formatter } from '../format/formatters.ts';
 import { YM2149 } from '../../synth/YM2149.ts';
 import type { Instrument, Note } from '../../synth/SoundDriver.ts';
 import { asInstrumentId } from '../../types/branded.ts';
@@ -5,7 +6,7 @@ import type { InstrumentId } from '../../types/branded.ts';
 
 export function normalizeInstrumentId(value?: string | number | null): InstrumentId {
   if (typeof value === 'number' && Number.isFinite(value)) {
-    return asInstrumentId(value.toString(16).padStart(2, '0').toUpperCase());
+    return asInstrumentId(Formatter.hex(value));
   }
 
   if (typeof value === 'string') {

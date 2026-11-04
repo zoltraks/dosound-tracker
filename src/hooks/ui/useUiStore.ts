@@ -60,12 +60,7 @@ const getInitialChannelMutes = (): [boolean, boolean, boolean] => {
   return [false, false, false];
 };
 
-type UiStoreSetFn = (
-  partial: Partial<UiStore> | ((state: UiStore) => Partial<UiStore>),
-  replace?: boolean,
-) => void;
-
-export const useUiStore = create<UiStore>((set: UiStoreSetFn) => ({
+export const useUiStore = create<UiStore>((set) => ({
   currentOctave: getInitialOctave(),
   sharedCurrentLine: 0,
   channelMutes: getInitialChannelMutes(),

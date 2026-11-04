@@ -126,8 +126,8 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 
 ### Development Environment
 
-- **Node.js**: v22.18.0
-- **npm**: 11.7.0
+- **Node.js**: v26.13.0
+- **npm**: 11.20.0
 
 ### Export Features
 

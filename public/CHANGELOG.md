@@ -1,5 +1,14 @@
 # Changes
 
+## Version 1.3.7
+
+Toolchain refresh and code hygiene: the dependency set moved to current versions, the desktop shell gained Electron 45, and hex rendering was consolidated behind a single formatter.
+
+- **Toolchain**: React 19.3.1, eslint 9.39.5, typescript-eslint 8.72.1, Playwright 1.64.1, electron-builder 26.18.0, rolldown-vite 7.3.1, Electron 45.2.1, zustand 5.0.16, jsdom 30, and the supporting types and plugins are now current; `vitest` 5 and `js-yaml` 5 were evaluated and deferred with the reason recorded in `docs/FUTURE.md`.
+- **Desktop packaging**: the Windows publisher metadata moved to `win.signtoolOptions.publisherName` and the checksum hook reads its platform from `platformToTargets`, matching electron-builder 26's schema.
+- **Internals**: all hexadecimal rendering in the app and the DOSOUND assembly exporter now routes through `Formatter.hex`, removing seventeen hand-rolled `toString(16)` variants.
+- **Security**: `npm audit` reports 26 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users.
+
 ## Version 1.3.6
 
 Visual feedback polish and continued composition-root decomposition: every section now shows a distinct hover border, and markdown headings render fully in modal viewers.

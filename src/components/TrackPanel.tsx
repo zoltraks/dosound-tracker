@@ -1,3 +1,4 @@
+import { Formatter } from '../utils/format/formatters.ts';
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
@@ -98,6 +99,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   useEffect(() => {
     if (currentInstrumentData?.id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentInstrument(currentInstrumentData.id);
     }
   }, [currentInstrumentData.id]);
@@ -569,7 +571,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       <div className={`track-header ${isTargetTrack ? 'target-track' : ''}`}>
         <span className="track-header-title">{trackId}</span>
         <span className="track-header-volume">
-          VOL {effectiveVolume.toString(16).toUpperCase()}
+          VOL {Formatter.hex(effectiveVolume, { padWidth: 0 })}
         </span>
       </div>
 

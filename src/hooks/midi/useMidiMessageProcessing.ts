@@ -1,3 +1,4 @@
+import { Formatter } from '../../utils/format/formatters.ts';
 import { useState, useEffect, useRef, useCallback, type MutableRefObject } from 'react';
 import { logger } from '../../utils/log/logger.ts';
 import type {
@@ -13,7 +14,7 @@ const bytesToHex = (bytes: ArrayLike<number>): string => {
   let dataHex = '';
   for (let i = 0; i < bytes.length; i += 1) {
     if (i > 0) dataHex += ' ';
-    dataHex += (bytes[i] & 0xff).toString(16).toUpperCase().padStart(2, '0');
+    dataHex += Formatter.hex(bytes[i] & 0xff);
   }
   return dataHex;
 };
@@ -91,7 +92,7 @@ export function useMidiMessageProcessing(
 
       const dataHex = bytesToHex(data);
 
-      const channelHex = channel.toString(16).toUpperCase().padStart(2, '0');
+      const channelHex = Formatter.hex(channel);
 
       const time = formatTime();
 
@@ -270,7 +271,7 @@ export function useMidiMessageProcessing(
 
       const dataHex = bytesToHex(bytes);
 
-      const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
+      const channelHex = Formatter.hex(safeChannel);
       const outputDeviceName = resolveDeviceName(
         configuration.outputId ?? null,
         devices.outputs,
@@ -360,7 +361,7 @@ export function useMidiMessageProcessing(
 
       const dataHex = bytesToHex(bytes);
 
-      const channelHex = safeChannel.toString(16).toUpperCase().padStart(2, '0');
+      const channelHex = Formatter.hex(safeChannel);
       const outputDeviceName = resolveDeviceName(
         configuration.outputId ?? null,
         devices.outputs,
@@ -429,7 +430,7 @@ export function useMidiMessageProcessing(
     const status = 0xff;
     const bytes = [status];
 
-    const dataHex = bytes.map((byte) => byte.toString(16).toUpperCase().padStart(2, '0')).join(' ');
+    const dataHex = bytes.map((byte) => Formatter.hex(byte)).join(' ');
 
     const outputDeviceName = resolveDeviceName(
       configuration.outputId ?? null,

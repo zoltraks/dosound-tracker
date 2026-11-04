@@ -60,6 +60,7 @@ export function useAppInfoDialogs({
         }
 
         if (details.length > 0) {
+          // eslint-disable-next-line react-hooks/set-state-in-effect
           setAboutRuntimeLabel('Runtime');
           setAboutRuntimeDetails(details);
           return;

@@ -51,6 +51,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
     // Find current instrument index
     const index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
     if (index !== -1) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentIndex(index);
     }
   }, [currentInstrument, instruments]);

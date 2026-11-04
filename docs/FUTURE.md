@@ -77,3 +77,13 @@ The YM2149 emulator (`src/synth/YM2149.ts`), sound driver (`src/synth/SoundDrive
 **End-to-end test suite**
 
 The Playwright E2E test infrastructure is in place but the test coverage for critical user flows (first launch, note entry, playback, export, save/load) should be expanded.
+
+## Deferred Dependency Upgrades
+
+Recorded during the 1.3.6 dependency upgrade (see `docs/change/1.3.6/dependency-upgrade-majors.md`).
+
+- **`vitest` 5** (`@vitest/ui`, `@vitest/coverage-v8` together): evaluated 5.1.0 and reverted - the full suite failed under the new runner on rolldown-vite 7. Re-evaluate when vitest 5 stabilizes on this stack.
+- **`js-yaml` 5**: evaluated 5.5.0 and reverted - 77 tests failed on YAML serialization drift. Song and instrument files must round-trip byte-identically; upgrade needs a format-equivalence pass first.
+- **`typescript` 7**: blocked - `typescript-eslint` requires `typescript <6.1.0`. Revisit when the linter chain supports it.
+- **`eslint` 10 + `@eslint/js` 10**: feasible but a config and plugin sweep of its own - separate change record.
+- **`@vitejs/plugin-react` 6 + `vite` 8**: blocked - plugin 6 requires `vite ^8` and no `rolldown-vite` 8.x is published.

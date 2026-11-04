@@ -96,6 +96,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
   const [showCustomInput, setShowCustomInput] = useState<boolean>(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setSelectedColor(normalizeColor(value));
   }, [value]);
 

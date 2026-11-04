@@ -1,3 +1,4 @@
+import { Formatter } from '../utils/format/formatters.ts';
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
 import {
@@ -224,7 +225,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
                 backgroundColor: getBarColor(value),
               }}
               onClick={() => handleBarClick(index)}
-              title={`Pos: ${index.toString(16).toUpperCase()} Mode: ${getModeLabel(value)}`}
+              title={`Pos: ${Formatter.hex(index, { padWidth: 0 })} Mode: ${getModeLabel(value)}`}
             >
               <div className="mode-emoji">{getBarEmoji()}</div>
             </div>

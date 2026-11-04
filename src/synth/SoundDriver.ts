@@ -1,3 +1,4 @@
+import { Formatter } from '../utils/format/formatters.ts';
 import { YM2149 } from './YM2149.ts';
 import { optimizeEvents } from './EventOptimizer.ts';
 import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
@@ -244,7 +245,7 @@ export class SoundDriver {
 
     for (const event of events) {
       if (event.type === 'register' && event.register !== undefined && event.value !== undefined) {
-        assembly += `    dc.b $${event.register.toString(16).padStart(2, '0')},$${event.value.toString(16).padStart(2, '0')}`;
+        assembly += `    dc.b $${Formatter.hex(event.register, { uppercase: false })},$${Formatter.hex(event.value, { uppercase: false })}`;
 
         // Add comment for common registers
         const registerNames = ['TA', 'TB', 'TC', 'NA', 'NB', 'NC', 'NF', 'MX', 'VA', 'VB', 'VC'];

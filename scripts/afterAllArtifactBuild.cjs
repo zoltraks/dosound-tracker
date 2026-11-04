@@ -7,7 +7,8 @@ module.exports = async function afterAllArtifactBuild(context) {
     const hash = createHash('sha256').update(readFileSync(artifactPath)).digest('hex');
     return `${hash}  ${basename(artifactPath)}`;
   });
-  const checksumPath = join(context.outDir, `SHA256SUMS-${context.packager.platform.name}.txt`);
+  const platformName = [...context.platformToTargets.keys()].map((p) => p.name).join('-');
+  const checksumPath = join(context.outDir, `SHA256SUMS-${platformName}.txt`);
   writeFileSync(checksumPath, lines.join('\n') + '\n');
   return [...context.artifactPaths, checksumPath];
 };

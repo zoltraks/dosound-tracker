@@ -1,3 +1,4 @@
+import { Formatter } from '../format/formatters.ts';
 export const DEFAULT_BASE_KEY = 'C-4';
 
 export const formatBaseKey = (note: string, octave: number): string => {
@@ -65,7 +66,7 @@ export const normalizeInstrumentColor = (value: unknown): string | null => {
     }
     const nibble = Math.round(value8 / 17);
     const clamped = Math.max(0, Math.min(15, nibble));
-    return clamped.toString(16);
+    return Formatter.hex(clamped, { uppercase: false, padWidth: 0 });
   };
 
   const r = toNibble(hex.slice(0, 2));

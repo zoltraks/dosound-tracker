@@ -343,7 +343,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
                   height: '3px',
                 }}
                 onClick={() => handlePositionClick(index)}
-                title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
+                title={`Pos: ${Formatter.hex(index, { padWidth: 0 })} Value: ${formatValue(value)}`}
               ></div>
             ))}
           </div>
@@ -401,7 +401,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
                   className={`envelope-bar ${isCurrent ? 'current' : ''} ${isSustain ? 'sustain' : ''}`}
                   style={{ height: `${getBarHeight(value)}%` }}
                   onClick={() => handlePositionClick(index)}
-                  title={`Pos: ${index.toString(16).toUpperCase()} Value: ${formatValue(value)}`}
+                  title={`Pos: ${Formatter.hex(index, { padWidth: 0 })} Value: ${formatValue(value)}`}
                 ></div>
               );
             })}
@@ -433,7 +433,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       )}
 
       <div className="envelope-footer">
-        <span>Pos: {currentPosition.toString(16).toUpperCase()}</span>
+        <span>Pos: {Formatter.hex(currentPosition, { padWidth: 0 })}</span>
         <span>Val: {formatValue(envelopeData[currentPosition])}</span>
       </div>
     </div>
