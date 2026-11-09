@@ -35,6 +35,7 @@ Examples:
 
 - BAD: `docs: update architecture section`.
 - GOOD: `Add MIDI device selection with velocity support`.
+- A version-window close commit uses the format `Version X.Y.Z <sentence ending with a dot>` - no dot after the version number.
 
 **Git Commits**
 
@@ -139,7 +140,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Testing and verification owner: `TESTING.md`.
 - Workflow owner: `WORKFLOW.md`.
 - Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request; the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
-- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`.
+- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`.
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
 - Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md`; `improve dosound-tracker` runs the Session Review recorded below. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
@@ -588,7 +589,7 @@ Under the `session-reporting` extension:
 
 - A request to "print usage" writes the session usage report as markdown tables: agent identity (software name, version, and the language model when known), conversation summary (prompt requests, reply blocks, sentence and token counts, marking estimated values), context-window usage and remaining headroom, fulfillment of each requested item against its delivered result, and the boundary state (uncommitted files, branch position, reserved decisions). Counters the host does not expose are reported unknown.
 - Operation timing is armed by default. The agent captures the clock before starting an operation's work and ends the response with `<subject> took <m:ss>`. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table before the timing sentence. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
-- In verbose mode the final response additionally reports context usage and a short description of the change immediately before the timing line.
+- In verbose mode the final response additionally writes the usage report as markdown tables - the same content a `print usage` request produces, with unavailable counters marked unknown - plus a short description of the change, immediately before the timing line.
 
 **Context Management**
 

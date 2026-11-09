@@ -172,6 +172,7 @@ The request may select a gate mode: `autonomous` runs every stage without pausin
 - Order the requests from their recorded dependencies.
 - The named window request is the explicit authorization to read that window's `docs/change/` and `docs/plan/` groups.
 - "Continue SDLC autonomously" or "finish the `<version>` window" names the same operation on an in-progress window whose records were written ad hoc during the session rather than as pre-planned requests.
+- An unversioned proceed request - "proceed automated SDLC" and the like - resolves to the in-progress window: the `docs/change/` directory matching `package.json`. The word `automated` selects the `autonomous` gate mode.
 - A record whose work is already landed is verified against the tree and closed, not re-implemented. A record that should not be implemented is discarded with its rationale recorded in the record itself. Implementation runs only on records that describe unlanded work.
 - An empty window reports zero active records; the refactoring phase may still run on the current state and no bump is forced.
 
@@ -203,6 +204,14 @@ For each change record in the window:
 - Record the review in `docs/review/<version>/review-<version>.md` using `docs/template/change-review-template.md`. The review reconciles recorded work against the version-control log and reports confirmed, unconfirmed, undocumented, and deviated work with a readiness verdict.
 - The bump decision recorded in the review is the project owner's - never the agent's.
 
+**Improvement**
+
+- After the review and before the bump, the window heals itself. Gather the lessons the run's operations produced - failures, surprises, workarounds, and repeated corrections - and check which problems appeared while the window worked.
+- Each lesson lands as a durable rule or record, routed per the Session Review table in `GUIDELINES.md`, before the bump closes the window.
+- Small adjustments, fixes, and optimizations discovered during the window apply on the fly inside the same run. Larger work is never silently absorbed - it defers to a change record under a later window per the Deferral rule.
+- Any code touched by an improvement fix re-enters the verification loop before the window closes.
+- The step follows the evidence-gated repair convention: a problem is healed only after its real state is verified, never on a guessed finding.
+
 **Window Close**
 
 - Close the window with the version bump per `VERSIONING.md` (the release gate, verification loop, `npm audit`, `npm run bump`, and the `public/CHANGELOG.md` entry). The named window request is the explicit instruction that authorizes this bump. An ad-hoc bump outside a named window runs the same gate; the missing window review is its recorded waiver.
@@ -219,6 +228,7 @@ For each change record in the window:
 - Adopted recommendations are triaged into change records under one or more version windows; each audit-derived record carries its source finding or recommendation identifier in the record's `Source` field.
 - Every recommendation resolves before its window completes: it becomes a change record, or it is declined with the reason recorded.
 - A recommendation never bypasses the change-record gate - audit output is never implemented directly.
+- Every adopted finding is re-verified against the tree before correction - audit evidence ages between report and implementation, and a claim the report marks verified can already be inaccurate. Deviations from a finding are recorded in the window review.
 - The next audit re-verifies the register and seeds the following window; the window's review is the evidence of what the window delivered.
 
 ## Work Modes
@@ -236,6 +246,10 @@ A quick path that applies the change without producing change artifacts. Ad-hoc 
 **Planning**
 
 A collection mode that analyzes requests without implementing them. Each request is analyzed quickly and held on the session's changeset - the conversation, not a durable document. When the planning phase is declared complete, the changeset re-enters the Standard Workflow: each item gets its change record, the current implementation is re-analyzed, and the usual cycle proceeds in the recorded order.
+
+**Improvement**
+
+`improvement` named as a mode on a work request is a working mode, not the review operation. After the described development operation finishes, the agent applies adjustments, fixes, and optimizations on the fly inside the same change set - small repairs do not route through the change-record lifecycle. Improvements that alter observable behavior or exceed the request's scope still split into their own record. This mode never triggers the Session Review on its own.
 
 ## Stage Gates
 
