@@ -37,8 +37,6 @@ export const VOLUME_MAX = 0x0f;
 export const NOISE_MAX = 0x1f;
 export const SHIFT_MIN = -24;
 export const SHIFT_MAX = 24;
-export const ARPEGGIO_MIN = SHIFT_MIN;
-export const ARPEGGIO_MAX = SHIFT_MAX;
 export const PITCH_MIN = -128;
 export const PITCH_MAX = 128;
 

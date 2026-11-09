@@ -321,6 +321,10 @@ A specifier rewrite driven by `find <dir> -mindepth 2` silently skips files dire
 
 Verbatim code that was clean in its origin file can warn in its new home: file-level `eslint-disable` headers do not travel with moved code, and React compiler rules judge a custom-hook file differently from the component the code came from (`set-state-in-effect`, `preserve-manual-memoization`, `exhaustive-deps`). Run `npm run lint` immediately after each extraction step and apply the documented suppression (`/* eslint-disable react-hooks/exhaustive-deps */` file header, scoped `set-state-in-effect` block) rather than discovering all warnings in the final loop.
 
+**Pass a getter when a ref value feeds a long-lived callback**
+
+`react-hooks/refs` errors on reading `ref.current` during render, so a hook or engine that holds audio-path state cannot accept `ym2149Ref.current` as an option. Pass a getter (`() => ref.current`) or mirror options into an internal options ref inside a `useEffect` - the value resolves at call time, which is also fresher than a render-time snapshot. The shared preview engine's `ym2149` option accepts `YM2149 | null | (() => YM2149 | null)` for this reason.
+
 **Check for a canonical implementation before moving a helper**
 
 A module-level helper slated for a move into `src/utils/` may already exist there under a different name - `App.tsx` carried `formatNoteKey` and `parseBaseKeyString`, exact duplicates of `formatBaseKey` and `parseBaseKey` in `src/utils/song/songFormat.ts`. Compare candidate helpers against the target module's exports first; injecting the canonical function avoids writing a duplicate.

@@ -7,7 +7,8 @@ import type { Instrument } from '../synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import LogoDark from '../assets/svg/logo-dark.svg';
 import LogoLight from '../assets/svg/logo-light.svg';
-import { clearIntervalRef } from '../utils/timer/timerUtils.ts';
+import { usePreviewEnvelope } from '../hooks/playback/usePreviewEnvelope.ts';
+import { parseBaseKey } from '../utils/song/songFormat.ts';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;
@@ -63,79 +64,32 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   };
 
   // Simple instrument preview state for octave selection
-  const previewTimerRef = useRef<number | null>(null);
-  const previewSubTickRef = useRef<number>(0);
-  const previewEnvelopeStepRef = useRef<number>(0);
+  const preview = usePreviewEnvelope({ ym2149 });
 
   const stopPreview = () => {
+    preview.stop();
+
     if (onPreviewMidiNoteOff) {
       onPreviewMidiNoteOff(previewChannel);
     }
-
-    if (!ym2149) return;
-
-    clearIntervalRef(previewTimerRef);
-
-    const volumeRegister = 0x08 + previewChannel;
-    ym2149.writeRegister(volumeRegister, 0x00);
   };
 
   const playPreviewNote = (note: string, octave: number) => {
     if (!ym2149) return;
 
-    clearIntervalRef(previewTimerRef);
-
     const channel = previewChannel;
-    const instrument: Instrument = currentInstrument;
-    const noteData = { note, octave };
 
-    // Initialize envelope timing
-    previewSubTickRef.current = 0;
-    previewEnvelopeStepRef.current = 0;
-
-    // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
-    ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
+    preview.start('octave', {
+      channel,
+      instrument: currentInstrument,
+      noteData: { note, octave },
+      tickIntervalMs,
+      honorSustain: false,
+    });
 
     if (onPreviewMidiNoteOn) {
       onPreviewMidiNoteOn(channel, currentInstrument, note, octave);
     }
-
-    // Start envelope timer - base tick interval from song frame rate, advance envelope step every 2 ticks
-    previewTimerRef.current = window.setInterval(() => {
-      const currentSub = (previewSubTickRef.current ?? 0) + 1;
-      previewSubTickRef.current = currentSub;
-
-      let currentStep = previewEnvelopeStepRef.current ?? 0;
-      if (currentSub % 2 === 0) {
-        currentStep = currentStep + 1;
-        previewEnvelopeStepRef.current = currentStep;
-      }
-
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, currentStep, 0x0f);
-    }, tickIntervalMs);
-  };
-
-  const parseBaseKey = (value?: string): { note: string; octave: number } | null => {
-    if (!value) return null;
-    const raw = value.trim().toUpperCase();
-    if (!raw) return null;
-
-    let notePart = raw.charAt(0);
-    let rest = raw.slice(1);
-
-    if (rest.startsWith('#')) {
-      notePart += '#';
-      rest = rest.slice(1);
-    }
-
-    if (rest.startsWith('-')) {
-      rest = rest.slice(1);
-    }
-
-    const octave = parseInt(rest, 10);
-    if (!Number.isFinite(octave)) return null;
-
-    return { note: notePart, octave };
   };
 
   const baseKeyData = parseBaseKey(currentInstrument.base || 'C-4');
@@ -218,7 +172,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     // Stop only a preview that actually started - an unconditional stop on
     // mount or a section flip reached the channel volume register through
     // handleHardStopLivePreview even with nothing playing.
-    if (!isOctaveActive && previewTimerRef.current !== null) {
+    if (!isOctaveActive && preview.hasState()) {
       stopPreview();
     }
   }, [isOctaveActive]);

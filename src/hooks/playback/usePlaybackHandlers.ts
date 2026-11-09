@@ -1,11 +1,10 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef } from 'react';
-import type { Dispatch, MutableRefObject, RefObject, SetStateAction } from 'react';
+import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { SequencerState } from '../sequencer/useSequencer.ts';
 import type { Song } from '../../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
-import { clearIntervalRef } from '../../utils/timer/timerUtils.ts';
 
 export interface UsePlaybackHandlersParams {
   stop: () => void;
@@ -16,7 +15,7 @@ export interface UsePlaybackHandlersParams {
   sequencerState: SequencerState;
   handleStopPlayback: () => void;
   lastSequencerPositionRef: MutableRefObject<{ pattern: number; line: number } | null>;
-  playInstTimerRef: RefObject<number | null>;
+  stopInstrumentPreview: () => void;
   currentSong: Song;
   sharedCurrentLine: number;
   setSharedCurrentLine: (line: number) => void;
@@ -46,7 +45,7 @@ export function usePlaybackHandlers({
   sequencerState,
   handleStopPlayback,
   lastSequencerPositionRef,
-  playInstTimerRef,
+  stopInstrumentPreview,
   currentSong,
   sharedCurrentLine,
   setSharedCurrentLine,
@@ -66,11 +65,11 @@ export function usePlaybackHandlers({
     setIsLinePlaying(false);
 
     // Stop any instrument preview playback
-    clearIntervalRef(playInstTimerRef);
+    stopInstrumentPreview();
 
     // Reset cycle counters and silence all channels
     handleStopPlayback();
-  }, [stop, handleStopPlayback]);
+  }, [stop, handleStopPlayback, stopInstrumentPreview]);
 
   // Handle stop line playback (pattern-loop mode for the current playlist line)
   const handleStopLinePlayback = useCallback(() => {
@@ -81,7 +80,7 @@ export function usePlaybackHandlers({
     setIsLinePlaying(false);
 
     // Stop any instrument preview playback
-    clearIntervalRef(playInstTimerRef);
+    stopInstrumentPreview();
 
     // Reset cycle counters and silence all channels
     handleStopPlayback();
@@ -91,7 +90,7 @@ export function usePlaybackHandlers({
       setSharedCurrentLine(returnPos.line);
       patternReturnPositionRef.current = null;
     }
-  }, [stop, handleStopPlayback, setPosition]);
+  }, [stop, handleStopPlayback, setPosition, stopInstrumentPreview]);
 
   // Handle start song playback
   const handleStartSong = useCallback(() => {

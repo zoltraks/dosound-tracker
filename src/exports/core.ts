@@ -3,6 +3,7 @@ import { NOTES, PATTERN_LENGTH } from '../constants/music.ts';
 import { YM_CLOCK } from '../synth/YM2149.ts';
 import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
 import { parseBaseKey } from '../utils/panel/pianoUtils.ts';
+import { formatBaseKey } from '../utils/song/songFormat.ts';
 
 export { downloadFile, type DownloadFileContent } from '../utils/file/fileOperations.ts';
 
@@ -65,7 +66,7 @@ export function formatNoteLabel(
   }
 
   const note = NOTES[noteIndex];
-  return note.includes('#') ? `${note}${octave}` : `${note}-${octave}`;
+  return formatBaseKey(note, octave);
 }
 
 export function frequencyToPeriod(frequency: number, clock: number = YM_CLOCK): number {

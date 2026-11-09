@@ -1,4 +1,5 @@
 import type { KeyboardToNoteMap } from '../../constants/keyboard.ts';
+import { noteKeyId } from '../panel/pianoUtils.ts';
 
 export function clampOctave(value: number): number {
   const numeric = Number.isFinite(value) ? Math.floor(value) : 0;
@@ -16,7 +17,7 @@ export function getKeyboardMappedNote(
   }
 
   const octave = clampOctave(currentOctave + match.octaveOffset);
-  const keyId = `${match.note}${octave}`;
+  const keyId = noteKeyId(match.note, octave);
 
   return { note: match.note, octave, keyId };
 }

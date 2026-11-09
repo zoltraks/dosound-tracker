@@ -1,3 +1,6 @@
+import { NOTES } from '../../constants/music.ts';
+import { formatBaseKey } from '../song/songFormat.ts';
+
 export interface MidiConfiguration {
   inputEnabled: boolean;
   outputEnabled: boolean;
@@ -54,4 +57,14 @@ export function resolveDeviceName(
   if (!id) return fallback;
   const found = devices.find((d) => d.id === id);
   return found?.name || fallback;
+}
+
+export function resolveMidiNote(noteNumber: number): {
+  noteName: string;
+  octave: number;
+  label: string;
+} {
+  const octave = Math.floor(noteNumber / 12) - 1;
+  const noteName = NOTES[noteNumber % 12] || 'C';
+  return { noteName, octave, label: formatBaseKey(noteName, octave) };
 }

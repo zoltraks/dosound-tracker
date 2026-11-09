@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.4.0
+
+Dialogs now answer the documented Escape and Enter contract, a full reset can no longer be undone by the backup mirror, and every preview surface shares one envelope engine.
+
+- **Modals**: the quit-confirmation and instrument-operation dialogs respond to the keyboard - Escape cancels and Enter confirms, matching the contract the other dialogs already follow.
+- **Reset durability**: a reset now clears only `dosound-tracker-*` local storage keys and waits for the mirrored backup to finish clearing before the app reloads, so a deleted song cannot resurrect and unrelated same-origin data survives.
+- **Instrument preview**: the track panels, piano keyboard, octave panel, MIDI input, and instrument play button all run the same envelope engine, so sustain, release, and auto-stop behave identically everywhere.
+- **Licensing**: `Python-2.0` joined the permitted license set after the prescribed per-package review - it covers `argparse`, a transitive dependency of `js-yaml`.
+- **Security**: `npm audit` reports 12 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users, and the residual is documented until upstream chains accept the fixed release.
+
 ## Version 1.3.9
 
 Pattern names survive save and load, crafted song and clipboard files can no longer exhaust memory, and the desktop shell pins navigation to the app.

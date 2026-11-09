@@ -2,7 +2,11 @@ import type { Song, Instrument } from '../synth/SoundDriver.ts';
 import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music.ts';
 import { YM_CLOCK } from '../synth/YM2149.ts';
 import type { ExportStrategy } from '../constants/export.ts';
-import { simulateSong, type SimulationFrame } from '../utils/playback/playbackSimulation.ts';
+import {
+  simulateSong,
+  type SimulationFrame,
+  type ToneMetaByChannel,
+} from '../utils/playback/playbackSimulation.ts';
 import {
   downloadFile,
   formatNoteLabel,
@@ -13,6 +17,7 @@ import {
 } from './core.ts';
 import { Formatter } from '../utils/format/formatters.ts';
 import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
+import { formatBaseKey } from '../utils/song/songFormat.ts';
 import { normalizeSongSpeed } from '../utils/song/songSpeed.ts';
 
 /**
@@ -119,22 +124,8 @@ function formatFramesToAssembly(
           const period = (coarse << 8) | fine;
           const channelLabel = String.fromCharCode(65 + ch); // A, B, C
 
-          // Prefer original note + pitch delta from playback simulation when available.
           const meta = toneMeta[ch];
-          let comment: string;
-
-          if (meta && meta.note && typeof meta.octave === 'number') {
-            const baseLabel = meta.note.includes('#')
-              ? `${meta.note}${meta.octave}`
-              : `${meta.note}-${meta.octave}`;
-            const delta = meta.pitchDelta || 0;
-            const pitchText = formatPitchDelta(delta);
-            comment = `T${channelLabel} ${baseLabel}${pitchText}`;
-          } else {
-            const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
-            const pitchText = formatPitchDelta(pitchDelta);
-            comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
-          }
+          const comment = buildToneComment(channelLabel, meta, period, chipClock);
 
           asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
           lastRegs[fineReg] = fine;
@@ -197,20 +188,7 @@ function formatFramesToAssembly(
         const channelLabel = String.fromCharCode(65 + ch); // A, B, C
 
         const meta = toneMeta[ch];
-        let comment: string;
-
-        if (meta && meta.note && typeof meta.octave === 'number') {
-          const baseLabel = meta.note.includes('#')
-            ? `${meta.note}${meta.octave}`
-            : `${meta.note}-${meta.octave}`;
-          const delta = meta.pitchDelta || 0;
-          const pitchText = formatPitchDelta(delta);
-          comment = `T${channelLabel} ${baseLabel}${pitchText}`;
-        } else {
-          const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
-          const pitchText = formatPitchDelta(pitchDelta);
-          comment = noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
-        }
+        const comment = buildToneComment(channelLabel, meta, period, chipClock);
 
         asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
       }
@@ -298,12 +276,33 @@ function periodToNoteAndPitch(
         minDiff = diff;
         const idealPeriod = Math.floor(clock / (16 * freq));
         bestPitchDelta = idealPeriod - period;
-        bestLabel = noteName.includes('#') ? `${noteName}${octave}` : `${noteName}-${octave}`;
+        bestLabel = formatBaseKey(noteName, octave);
       }
     }
   }
 
   return { label: bestLabel, pitchDelta: bestPitchDelta };
+}
+
+// Helper: build the tone-register comment, preferring original note + pitch
+// delta from playback simulation when available.
+function buildToneComment(
+  channelLabel: string,
+  meta: ToneMetaByChannel[number] | undefined,
+  period: number,
+  chipClock: number,
+): string {
+  if (meta && meta.note && typeof meta.octave === 'number') {
+    const baseLabel = meta.note.includes('#')
+      ? `${meta.note}${meta.octave}`
+      : `${meta.note}-${meta.octave}`;
+    const delta = meta.pitchDelta || 0;
+    const pitchText = formatPitchDelta(delta);
+    return `T${channelLabel} ${baseLabel}${pitchText}`;
+  }
+  const { label: noteLabel, pitchDelta } = periodToNoteAndPitch(period, chipClock);
+  const pitchText = formatPitchDelta(pitchDelta);
+  return noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
 }
 
 // Helper: format one dc.b line with TAB indent and aligned comment

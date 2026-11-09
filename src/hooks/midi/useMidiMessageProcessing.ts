@@ -7,7 +7,12 @@ import type {
   MidiNoteEvent,
   MidiDeviceInfo,
 } from '../../utils/midi/midiUtils.ts';
-import { resolveDeviceName, formatTime, MAX_MONITOR_ENTRIES } from '../../utils/midi/midiUtils.ts';
+import {
+  resolveDeviceName,
+  resolveMidiNote,
+  formatTime,
+  MAX_MONITOR_ENTRIES,
+} from '../../utils/midi/midiUtils.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 
 const bytesToHex = (bytes: ArrayLike<number>): string => {
@@ -112,11 +117,8 @@ export function useMidiMessageProcessing(
       if (command === 0x80 || (command === 0x90 && data2 === 0)) {
         type = 'Note Off';
         const noteNumber = data1;
-        const midiOctave = Math.floor(noteNumber / 12) - 1;
-        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const noteName = noteNames[noteNumber % 12] || 'C';
-        const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-        noteLabel = `${noteBase}${midiOctave}`;
+        const { noteName, octave: midiOctave, label } = resolveMidiNote(noteNumber);
+        noteLabel = label;
         value = data2;
 
         addInMonitorEntry({
@@ -154,11 +156,8 @@ export function useMidiMessageProcessing(
       } else if (command === 0x90) {
         type = 'Note On';
         const noteNumber = data1;
-        const midiOctave = Math.floor(noteNumber / 12) - 1;
-        const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-        const noteName = noteNames[noteNumber % 12] || 'C';
-        const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-        noteLabel = `${noteBase}${midiOctave}`;
+        const { noteName, octave: midiOctave, label } = resolveMidiNote(noteNumber);
+        noteLabel = label;
         value = data2;
 
         addInMonitorEntry({
@@ -278,11 +277,7 @@ export function useMidiMessageProcessing(
         'MIDI Out',
       );
 
-      const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-      const midiOctave = Math.floor(clampedNote / 12) - 1;
-      const noteName = noteNames[clampedNote % 12] || 'C';
-      const noteBase = noteName.length === 1 ? `${noteName}-` : noteName;
-      const noteLabel = `${noteBase}${midiOctave}`;
+      const { label: noteLabel } = resolveMidiNote(clampedNote);
 
       const type = kind === 'noteOn' ? 'Note On' : 'Note Off';
 

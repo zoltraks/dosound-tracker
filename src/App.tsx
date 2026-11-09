@@ -304,8 +304,6 @@ const App: React.FC = () => {
     currentSong.clock ?? DEFAULT_SONG_CLOCK,
   );
   const previewTickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
-  const playInstTimerRef = useRef<number | null>(null);
-  const playInstStepRef = useRef<number>(0);
 
   const { isMobileViewport, isCommandPanelMobileCollapsed, setIsCommandPanelMobileCollapsed } =
     useResponsivePanels();
@@ -545,6 +543,7 @@ const App: React.FC = () => {
   const {
     handleRenameInstrument,
     handlePlayInstrument,
+    stopInstrumentPreview,
     handleCloneInstrument,
     handleDeleteInstrument,
     handleMoveInstrument,
@@ -567,8 +566,6 @@ const App: React.FC = () => {
     normalizeInstrumentId,
     parseBaseKeyString: parseBaseKey,
     ym2149Ref,
-    playInstTimerRef,
-    playInstStepRef,
   });
 
   const {
@@ -611,7 +608,7 @@ const App: React.FC = () => {
     sequencerState,
     handleStopPlayback,
     lastSequencerPositionRef,
-    playInstTimerRef,
+    stopInstrumentPreview,
     currentSong,
     sharedCurrentLine,
     setSharedCurrentLine,

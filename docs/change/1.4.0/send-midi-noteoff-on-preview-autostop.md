@@ -6,11 +6,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                     |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| Intent        | Stop the outgoing MIDI note when a MIDI-triggered preview envelope auto-stops             |
-| Key decisions | the engine's `onAutoStop` hook invokes the same MIDI noteOff path as an explicit release  |
-| Open risks    | `none`                                                                                    |
+| Field         | Value                                                                                    |
+| ------------- | ---------------------------------------------------------------------------------------- |
+| Intent        | Stop the outgoing MIDI note when a MIDI-triggered preview envelope auto-stops            |
+| Key decisions | the engine's `onAutoStop` hook invokes the same MIDI noteOff path as an explicit release |
+| Open risks    | `none`                                                                                   |
 
 The summary block precedes the detailed sections and is refreshed when the record's decisions or risks change.
 

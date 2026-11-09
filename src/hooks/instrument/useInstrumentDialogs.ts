@@ -3,6 +3,7 @@ import { useCallback, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { Instrument, Song } from '../../synth/SoundDriver.ts';
+import { formatBaseKey } from '../../utils/song/songFormat.ts';
 
 export interface UseInstrumentDialogsParams {
   currentSong: Song;
@@ -228,9 +229,7 @@ export function useInstrumentDialogs({
 
   const handleChangeBaseKey = useCallback(
     (note: string, octave: number) => {
-      const upper = note.toUpperCase();
-      const formatted = upper.endsWith('#') ? `${upper}${octave}` : `${upper}-${octave}`;
-      updateInstrument({ base: formatted });
+      updateInstrument({ base: formatBaseKey(note, octave) });
     },
     [updateInstrument],
   );

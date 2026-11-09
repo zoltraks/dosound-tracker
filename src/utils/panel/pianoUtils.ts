@@ -2,6 +2,8 @@ import { MIN_OCTAVE, MAX_OCTAVE, PIANO_SHOW_EXTRA_TOP_C } from '../../constants/
 
 export { parseBaseKey } from '../song/songFormat.ts';
 
+export const noteKeyId = (note: string, octave: number): string => `${note}${octave}`;
+
 export interface PianoKeyConfig {
   note: string;
   octave: number;
@@ -30,7 +32,7 @@ export function generatePianoKeys(
     const whiteNotes = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
     for (let i = 0; i < whiteNotes.length; i += 1) {
       const note = whiteNotes[i];
-      const keyId = `${note}${octave}`;
+      const keyId = noteKeyId(note, octave);
       keys.push({
         note,
         octave,
@@ -50,7 +52,7 @@ export function generatePianoKeys(
     ];
 
     for (const blackKey of blackKeyPositions) {
-      const keyId = `${blackKey.note}${octave}`;
+      const keyId = noteKeyId(blackKey.note, octave);
       keys.push({
         note: blackKey.note,
         octave,
@@ -65,7 +67,7 @@ export function generatePianoKeys(
   if (PIANO_SHOW_EXTRA_TOP_C) {
     const highestDisplayedOctave = startOctave + octaveSpan - 1;
     const extraCOctave = Math.min(MAX_OCTAVE, highestDisplayedOctave + 1);
-    const extraKeyId = `C${extraCOctave}`;
+    const extraKeyId = noteKeyId('C', extraCOctave);
 
     keys.push({
       note: 'C',

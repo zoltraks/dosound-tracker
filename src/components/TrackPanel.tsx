@@ -8,7 +8,6 @@ import { YM2149 } from '../synth/YM2149.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import { TrackLine } from './TrackLine.tsx';
 import { computeEffectiveVolume } from '../utils/track/trackUtils.ts';
-import { clearIntervalRef } from '../utils/timer/timerUtils.ts';
 import {
   buildInstrumentColorMap,
   formatTrackNoteDisplay,
@@ -27,12 +26,8 @@ import {
   stepLineIndex,
   updatePatternStep,
 } from '../utils/track/trackPanelUtils.ts';
-import {
-  advancePreviewEnvelopeTick,
-  getPreviewEnvelopeApplyStep,
-} from '../utils/envelope/previewEnvelopeTiming.ts';
-
-type PreviewInstrument = Instrument;
+import { usePreviewEnvelope } from '../hooks/playback/usePreviewEnvelope.ts';
+import { noteKeyId } from '../utils/panel/pianoUtils.ts';
 
 interface TrackPanelProps {
   trackId: 'A' | 'B' | 'C';
@@ -105,15 +100,18 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   }, [currentInstrumentData.id]);
 
   // Envelope timing state for preview notes (monophonic per track, piano-like)
-  const envelopeTimerRef = useRef<number | null>(null);
-  const previewSubTickRef = useRef<number>(0);
-  const previewEnvelopeStepRef = useRef<number>(0);
-  const previewLastTickTimeRef = useRef<number | null>(null);
-  const previewNextTickTimeRef = useRef<number | null>(null);
-  const previewSustainIndexRef = useRef<number | null>(null);
-  const previewReleasedRef = useRef<boolean>(false);
   const activePreviewKeyRef = useRef<string | null>(null);
   const pressedNoteKeysRef = useRef<Set<string>>(new Set());
+  const previewChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
+  const preview = usePreviewEnvelope({
+    ym2149,
+    onAutoStop: () => {
+      activePreviewKeyRef.current = null;
+      if (onPreviewMidiNoteOff) {
+        onPreviewMidiNoteOff(previewChannel);
+      }
+    },
+  });
 
   const sectionName = `track${trackId}` as NavigationSection;
   const isActive = activeSection === sectionName;
@@ -129,18 +127,16 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
   // Hard stop of any current preview on this track/channel
   const stopPreview = useCallback(() => {
-    // Map track to channel
-    const channel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-
-    clearIntervalRef(envelopeTimerRef);
-
-    previewSubTickRef.current = 0;
-    previewEnvelopeStepRef.current = 0;
-    previewLastTickTimeRef.current = null;
-    previewNextTickTimeRef.current = null;
-    previewSustainIndexRef.current = null;
-    previewReleasedRef.current = false;
+    preview.stop();
     activePreviewKeyRef.current = null;
+
+    if (onHardStopLivePreview) {
+      onHardStopLivePreview(previewChannel);
+    }
+
+    if (onPreviewMidiNoteOff) {
+      onPreviewMidiNoteOff(previewChannel);
+    }
 
     // Clear any tracked pressed note keys when performing a hard stop so that
     // stale state from a lost keyup (e.g. focus change while a key is held)
@@ -148,22 +144,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     if (pressedNoteKeysRef.current.size > 0) {
       pressedNoteKeysRef.current.clear();
     }
-
-    if (onHardStopLivePreview) {
-      onHardStopLivePreview(channel);
-    }
-
-    if (onPreviewMidiNoteOff) {
-      onPreviewMidiNoteOff(channel);
-    }
-
-    if (!ym2149) {
-      return;
-    }
-
-    const volumeRegister = 0x08 + channel;
-    ym2149.writeRegister(volumeRegister, 0x00);
-  }, [trackId, ym2149, onPreviewMidiNoteOff]);
+  }, [previewChannel, preview, onHardStopLivePreview, onPreviewMidiNoteOff]);
 
   useEffect(() => {
     if (onRegisterStopPreview) {
@@ -176,112 +157,30 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     (note: string, octave: number) => {
       if (!ym2149) return;
 
-      // Map track to channel
-      const channel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
-      const instrument: PreviewInstrument = currentInstrumentData as unknown as PreviewInstrument;
-      const noteData = { note, octave };
-
       // Monophonic per track: stop any existing preview first
       stopPreview();
 
-      const keyId = `${note}${octave}`;
+      const keyId = noteKeyId(note, octave);
       activePreviewKeyRef.current = keyId;
 
-      // Initialize sustain state for this preview note
-      const rawSustain =
-        instrument && typeof instrument.sustain === 'number' ? instrument.sustain : null;
-      const sustainIndex =
-        typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
-          ? Math.floor(rawSustain)
-          : null;
-
-      previewSustainIndexRef.current = sustainIndex;
-      previewReleasedRef.current = false;
-
-      // Initialize envelope timing
-      const now = performance.now();
-      previewSubTickRef.current = 0;
-      previewEnvelopeStepRef.current = 0;
-      previewLastTickTimeRef.current = now;
-      previewNextTickTimeRef.current = now + 20;
-
-      // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
+      preview.start(keyId, {
+        channel: previewChannel,
+        instrument: currentInstrumentData,
+        noteData: { note, octave },
+        tickIntervalMs,
+      });
 
       if (onPreviewMidiNoteOn) {
-        onPreviewMidiNoteOn(channel, currentInstrumentData, note, octave);
+        onPreviewMidiNoteOn(previewChannel, currentInstrumentData, note, octave);
       }
-
-      // Precompute volume envelope tail information so we know when to auto-stop
-      const volumeEnv: number[] =
-        Array.isArray(instrument.volume) && instrument.volume.length > 0
-          ? instrument.volume
-          : [0x0f];
-      const lastVolumeIndex = volumeEnv.length - 1;
-      const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
-      const volumeRegister = 0x08 + channel;
-
-      // Start envelope timer - base tick interval from song frame rate, advance envelope step every 2 ticks
-      envelopeTimerRef.current = window.setInterval(() => {
-        const sustain = previewSustainIndexRef.current;
-        const released = previewReleasedRef.current;
-
-        const TICK_INTERVAL_MS = tickIntervalMs;
-        const nowTick = performance.now();
-
-        const advanced = advancePreviewEnvelopeTick({
-          now: nowTick,
-          nextTickTime: previewNextTickTimeRef.current,
-          subTick: previewSubTickRef.current,
-          rawStep: previewEnvelopeStepRef.current,
-          sustainIndex: sustain,
-          released,
-          tickIntervalMs: TICK_INTERVAL_MS,
-        });
-
-        previewSubTickRef.current = advanced.subTick;
-        previewEnvelopeStepRef.current = advanced.rawStep;
-        previewLastTickTimeRef.current = nowTick;
-        previewNextTickTimeRef.current = advanced.nextTickTime;
-
-        const effectiveRawStep = advanced.rawStep;
-        const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
-
-        ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
-
-        // If this note has been released and the envelope has reached the end
-        // of the volume envelope with a final value of 0, automatically stop
-        // the preview to avoid leaving runaway timers.
-        if (
-          released &&
-          lastVolumeIndex >= 0 &&
-          effectiveRawStep >= lastVolumeIndex &&
-          lastVolumeValue <= 0
-        ) {
-          clearIntervalRef(envelopeTimerRef);
-
-          previewSubTickRef.current = 0;
-          previewEnvelopeStepRef.current = 0;
-          previewSustainIndexRef.current = null;
-          previewReleasedRef.current = false;
-          previewLastTickTimeRef.current = null;
-          previewNextTickTimeRef.current = null;
-          activePreviewKeyRef.current = null;
-
-          ym2149.writeRegister(volumeRegister, 0x00);
-          if (onPreviewMidiNoteOff) {
-            onPreviewMidiNoteOff(channel);
-          }
-        }
-      }, tickIntervalMs);
     },
     [
       ym2149,
-      trackId,
       currentInstrumentData,
       tickIntervalMs,
       onPreviewMidiNoteOn,
-      onPreviewMidiNoteOff,
+      previewChannel,
+      preview,
       stopPreview,
     ],
   );
@@ -299,17 +198,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     }
   }, [isActive, focusRevision]);
 
-  // True when preview state exists that a hard stop must clean up: an
-  // active preview key, a running envelope timer, or pressed keys left
-  // tracked by a lost keyup. Lets the focus-loss effect below suppress
-  // no-op stopPreview calls on mount and on section flips, so they can
-  // no longer reach the channel volume registers.
+  // True when preview state exists that a hard stop must clean up: a
+  // running envelope voice, or pressed keys left tracked by a lost keyup.
+  // Lets the focus-loss effect below suppress no-op stopPreview calls on
+  // mount and on section flips, so they can no longer reach the channel
+  // volume registers.
   const hasPreviewState = useCallback(
-    () =>
-      activePreviewKeyRef.current !== null ||
-      envelopeTimerRef.current !== null ||
-      pressedNoteKeysRef.current.size > 0,
-    [],
+    () => preview.hasState() || pressedNoteKeysRef.current.size > 0,
+    [preview],
   );
 
   // Ensure any preview is stopped when this track loses focus or unmounts
@@ -539,19 +435,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         return;
       }
 
-      const sustain = previewSustainIndexRef.current;
-      const hasSustain = typeof sustain === 'number' && sustain >= 0;
-
-      if (hasSustain) {
-        // For instruments with sustain, key release acts as a release trigger:
-        // keep the timer/envelope running and allow it to progress past sustain.
-        previewReleasedRef.current = true;
-      } else {
-        // No sustain: perform immediate hard stop.
+      // For instruments with sustain, key release acts as a release trigger:
+      // keep the timer/envelope running and allow it to progress past sustain.
+      // No sustain: perform immediate hard stop.
+      if (!preview.release(keyId)) {
         stopPreview();
       }
     },
-    [isActive, currentOctave, stopPreview],
+    [isActive, currentOctave, stopPreview, preview],
   );
 
   const handleLineClick = useCallback(

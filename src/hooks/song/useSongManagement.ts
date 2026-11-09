@@ -15,8 +15,6 @@ import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { removeMirroredSnapshot } from '../../utils/storage/persistenceMirror.ts';
 
-export type TrackKey = 'A' | 'B' | 'C';
-
 export type StoredInstrumentForMigration = {
   volume?: unknown;
   volumeEnvelope?: unknown;

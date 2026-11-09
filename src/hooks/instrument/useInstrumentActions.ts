@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useRef } from 'react';
-import type { RefObject, MutableRefObject } from 'react';
+import type { RefObject } from 'react';
 import type { Song, Instrument } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { YM2149 } from '../../synth/YM2149.ts';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
+import { usePreviewEnvelope } from '../playback/usePreviewEnvelope.ts';
 import {
   clearInstrumentAndNotes,
   clearInstrumentOnly,
@@ -18,7 +19,6 @@ import {
 } from '../../utils/instrument/instrumentActionUtils.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 import type { InstrumentDeleteUsage } from '../modal/useModalState.ts';
-import { clearIntervalRef } from '../../utils/timer/timerUtils.ts';
 
 interface UseInstrumentActionsArgs {
   currentSong: Song;
@@ -36,13 +36,12 @@ interface UseInstrumentActionsArgs {
   normalizeInstrumentId: (value?: string | number | null) => InstrumentId;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
   ym2149Ref: RefObject<YM2149 | null>;
-  playInstTimerRef: MutableRefObject<number | null>;
-  playInstStepRef: MutableRefObject<number>;
 }
 
 interface UseInstrumentActionsResult {
   handleRenameInstrument: (name: string) => void;
   handlePlayInstrument: () => void;
+  stopInstrumentPreview: () => void;
   handleCloneInstrument: () => void;
   handleDeleteInstrument: () => void;
   handleMoveInstrument: (index: number, direction: 'up' | 'down') => void;
@@ -67,14 +66,14 @@ export function useInstrumentActions({
   normalizeInstrumentId,
   parseBaseKeyString,
   ym2149Ref,
-  playInstTimerRef,
-  playInstStepRef,
 }: UseInstrumentActionsArgs): UseInstrumentActionsResult {
   const tickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
   const tickIntervalMsRef = useRef(tickIntervalMs);
   useEffect(() => {
     tickIntervalMsRef.current = tickIntervalMs;
   }, [tickIntervalMs]);
+
+  const instrumentPreview = usePreviewEnvelope({ ym2149: () => ym2149Ref.current });
 
   const handleRenameInstrument = useCallback(
     (name: string) => {
@@ -93,42 +92,21 @@ export function useInstrumentActions({
       return;
     }
 
-    const ym2149 = ym2149Ref.current;
-
-    const channel = getInstrumentPlaybackChannel(activeSection, lastTrackId);
-
-    clearIntervalRef(playInstTimerRef);
-
-    playInstStepRef.current = 0;
-    let playInstSubTick = 0;
-
-    const noteData = { note: base.note, octave: base.octave };
-
-    ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, 0, 0x0f);
-
-    playInstTimerRef.current = window.setInterval(() => {
-      // Advance envelope step every 2 ticks
-      const step = playInstStepRef.current;
-      ym2149.updateChannelWithInstrument(channel, currentInstrument, noteData, step, 0x0f);
-
-      playInstSubTick = (playInstSubTick + 1) % 2;
-      if (playInstSubTick === 0) {
-        playInstStepRef.current = playInstStepRef.current + 1;
-      }
-
-      if (playInstStepRef.current >= 64) {
-        clearIntervalRef(playInstTimerRef);
-        ym2149.writeRegister(0x08 + channel, 0x00);
-      }
-    }, tickIntervalMsRef.current);
+    instrumentPreview.start('play', {
+      channel: getInstrumentPlaybackChannel(activeSection, lastTrackId),
+      instrument: currentInstrument,
+      noteData: { note: base.note, octave: base.octave },
+      tickIntervalMs: tickIntervalMsRef.current,
+      honorSustain: false,
+      stopAfterStep: 64,
+    });
   }, [
     activeSection,
     currentInstrument,
     lastTrackId,
     parseBaseKeyString,
     ym2149Ref,
-    playInstTimerRef,
-    playInstStepRef,
+    instrumentPreview,
   ]);
 
   const handleCloneInstrument = useCallback(() => {
@@ -393,6 +371,7 @@ export function useInstrumentActions({
   return {
     handleRenameInstrument,
     handlePlayInstrument,
+    stopInstrumentPreview: instrumentPreview.stop,
     handleCloneInstrument,
     handleDeleteInstrument,
     handleMoveInstrument,

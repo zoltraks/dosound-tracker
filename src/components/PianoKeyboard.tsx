@@ -5,15 +5,10 @@ import { YM2149 } from '../synth/YM2149.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import { PianoKey } from './PianoKey.tsx';
-import { generatePianoKeys, parseBaseKey } from '../utils/panel/pianoUtils.ts';
+import { generatePianoKeys, noteKeyId, parseBaseKey } from '../utils/panel/pianoUtils.ts';
 import type { PianoKeyConfig } from '../utils/panel/pianoUtils.ts';
 import { getKeyboardMappedNote } from '../utils/keyboard/keyboardNoteMapping.ts';
-import {
-  advancePreviewEnvelopeTick,
-  getPreviewEnvelopeApplyStep,
-} from '../utils/envelope/previewEnvelopeTiming.ts';
-
-type PreviewInstrument = Instrument;
+import { usePreviewEnvelope } from '../hooks/playback/usePreviewEnvelope.ts';
 
 interface PianoKeyboardProps {
   activeSection: NavigationSection;
@@ -55,13 +50,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const [isCompactLayout, setIsCompactLayout] = useState(false);
 
   // Envelope timing state per previewed key
-  const envelopeTimersRef = useRef<{ [key: string]: number }>({});
-  const previewSubTicksRef = useRef<{ [key: string]: number }>({});
-  const previewEnvelopeStepsRef = useRef<{ [key: string]: number }>({});
-  const previewSustainIndexRef = useRef<{ [key: string]: number | null }>({});
-  const previewReleasedRef = useRef<{ [key: string]: boolean }>({});
-  const previewLastTickTimeRef = useRef<{ [key: string]: number }>({});
-  const previewNextTickTimeRef = useRef<{ [key: string]: number }>({});
+  const preview = usePreviewEnvelope({ ym2149 });
 
   const pianoKeys = generatePianoKeys(isCompactLayout, currentOctave);
 
@@ -105,76 +94,30 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
       if (!ym2149) return;
 
-      const volumeRegister = 0x08 + previewChannel;
-
       // If note and octave provided, handle per-key release
       if (note && octave) {
-        const keyId = `${note}${octave}`;
-        const hasTimer = !!envelopeTimersRef.current[keyId];
-        const hasState =
-          previewSubTicksRef.current[keyId] !== undefined ||
-          previewEnvelopeStepsRef.current[keyId] !== undefined ||
-          previewSustainIndexRef.current[keyId] !== undefined ||
-          previewReleasedRef.current[keyId] !== undefined;
+        const keyId = noteKeyId(note, octave);
 
         // If there is no active preview state for this note, treat this as a
         // stale key-up event and ignore it so we don't accidentally mute a
         // newer note that is currently playing on the same preview channel.
-        if (!hasTimer && !hasState) {
+        if (!preview.hasState(keyId)) {
           return;
         }
 
-        const sustain = previewSustainIndexRef.current[keyId];
-        const hasSustain = typeof sustain === 'number' && sustain >= 0;
-
-        if (hasSustain) {
-          // For instruments with sustain, key release acts as a release trigger:
-          // keep the timer/envelope running and allow it to progress past sustain.
-          previewReleasedRef.current[keyId] = true;
-          return;
+        // For instruments with sustain, key release acts as a release trigger:
+        // keep the timer/envelope running and allow it to progress past sustain.
+        // No sustain: perform immediate hard stop.
+        if (!preview.release(keyId)) {
+          preview.stop(keyId);
         }
-
-        // No sustain for this note: perform immediate hard stop as before.
-        if (envelopeTimersRef.current[keyId]) {
-          clearInterval(envelopeTimersRef.current[keyId]);
-          delete envelopeTimersRef.current[keyId];
-        }
-        if (previewSubTicksRef.current[keyId] !== undefined) {
-          delete previewSubTicksRef.current[keyId];
-        }
-        if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
-          delete previewEnvelopeStepsRef.current[keyId];
-        }
-        if (previewSustainIndexRef.current[keyId] !== undefined) {
-          delete previewSustainIndexRef.current[keyId];
-        }
-        if (previewReleasedRef.current[keyId] !== undefined) {
-          delete previewReleasedRef.current[keyId];
-        }
-        if (previewLastTickTimeRef.current[keyId] !== undefined) {
-          delete previewLastTickTimeRef.current[keyId];
-        }
-        if (previewNextTickTimeRef.current[keyId] !== undefined) {
-          delete previewNextTickTimeRef.current[keyId];
-        }
-
-        ym2149.writeRegister(volumeRegister, 0x00);
         return;
       }
 
-      // Clear all timers (fallback)
-      Object.values(envelopeTimersRef.current).forEach((timer) => clearInterval(timer));
-      envelopeTimersRef.current = {};
-      previewSubTicksRef.current = {};
-      previewEnvelopeStepsRef.current = {};
-      previewSustainIndexRef.current = {};
-      previewReleasedRef.current = {};
-      previewLastTickTimeRef.current = {};
-      previewNextTickTimeRef.current = {};
-
-      ym2149.writeRegister(volumeRegister, 0x00);
+      // Clear all voices (fallback)
+      preview.stop();
     },
-    [ym2149, previewChannel, onPreviewMidiNoteOff],
+    [ym2149, previewChannel, onPreviewMidiNoteOff, preview],
   );
 
   const playNote = useCallback(
@@ -183,118 +126,33 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
       const baseFreq = NOTE_FREQUENCIES[note];
       if (!baseFreq) return;
-      const keyId = `${note}${octave}`;
+      const keyId = noteKeyId(note, octave);
 
       // For preview, treat the channel as strictly monophonic: before starting
       // a new note, stop any existing preview envelopes on this channel to
       // avoid overlapping timers fighting over the same YM2149 registers.
       stopNote();
 
-      const channel = previewChannel;
-      const instrument: PreviewInstrument = currentInstrument as unknown as PreviewInstrument;
-      const noteData = { note, octave };
-
-      // Initialize sustain state for this preview note
-      const rawSustain =
-        instrument && typeof instrument.sustain === 'number' ? instrument.sustain : null;
-      const sustainIndex =
-        typeof rawSustain === 'number' && Number.isFinite(rawSustain) && rawSustain >= 0
-          ? Math.floor(rawSustain)
-          : null;
-
-      previewSustainIndexRef.current[keyId] = sustainIndex;
-      previewReleasedRef.current[keyId] = false;
-
-      // Initialize envelope timing
-      const now = performance.now();
-      previewSubTicksRef.current[keyId] = 0;
-      previewEnvelopeStepsRef.current[keyId] = 0;
-      previewLastTickTimeRef.current[keyId] = now;
-      previewNextTickTimeRef.current[keyId] = now + 20;
-
-      // Apply initial state (step 0) with default volume modifier (0xF = no attenuation)
-      ym2149.updateChannelWithInstrument(channel, instrument, noteData, 0, 0x0f);
+      preview.start(keyId, {
+        channel: previewChannel,
+        instrument: currentInstrument,
+        noteData: { note, octave },
+        tickIntervalMs,
+      });
 
       if (onPreviewMidiNoteOn) {
-        onPreviewMidiNoteOn(channel, currentInstrument, note, octave);
+        onPreviewMidiNoteOn(previewChannel, currentInstrument, note, octave);
       }
-
-      // Precompute volume envelope tail information so we know when to auto-stop
-      const volumeEnv: number[] =
-        Array.isArray(instrument.volume) && instrument.volume.length > 0
-          ? instrument.volume
-          : [0x0f];
-      const lastVolumeIndex = volumeEnv.length - 1;
-      const lastVolumeValue = volumeEnv[lastVolumeIndex] ?? 0;
-      const volumeRegister = 0x08 + channel;
-
-      // Start envelope timer - base tick interval from song frame rate, advance
-      // envelope step every second virtual tick (2 ticks), with catch-up for missed ticks.
-      envelopeTimersRef.current[keyId] = window.setInterval(() => {
-        const sustain = previewSustainIndexRef.current[keyId];
-        const released = previewReleasedRef.current[keyId] ?? false;
-
-        const TICK_INTERVAL_MS = tickIntervalMs;
-        const nowTick = performance.now();
-
-        const advanced = advancePreviewEnvelopeTick({
-          now: nowTick,
-          nextTickTime: previewNextTickTimeRef.current[keyId],
-          subTick: previewSubTicksRef.current[keyId],
-          rawStep: previewEnvelopeStepsRef.current[keyId],
-          sustainIndex: sustain,
-          released,
-          tickIntervalMs: TICK_INTERVAL_MS,
-        });
-
-        previewSubTicksRef.current[keyId] = advanced.subTick;
-        previewEnvelopeStepsRef.current[keyId] = advanced.rawStep;
-        previewLastTickTimeRef.current[keyId] = nowTick;
-        previewNextTickTimeRef.current[keyId] = advanced.nextTickTime;
-
-        const effectiveRawStep = advanced.rawStep;
-        const stepForApply = getPreviewEnvelopeApplyStep(effectiveRawStep, sustain, released);
-
-        ym2149.updateChannelWithInstrument(channel, instrument, noteData, stepForApply, 0x0f);
-
-        // If this note has been released and the envelope has reached the end
-        // of the volume envelope with a final value of 0, automatically stop
-        // the preview to avoid leaving runaway timers.
-        if (
-          released &&
-          lastVolumeIndex >= 0 &&
-          effectiveRawStep >= lastVolumeIndex &&
-          lastVolumeValue <= 0
-        ) {
-          const timerId = envelopeTimersRef.current[keyId];
-          if (timerId) {
-            clearInterval(timerId);
-            delete envelopeTimersRef.current[keyId];
-          }
-          if (previewSubTicksRef.current[keyId] !== undefined) {
-            delete previewSubTicksRef.current[keyId];
-          }
-          if (previewEnvelopeStepsRef.current[keyId] !== undefined) {
-            delete previewEnvelopeStepsRef.current[keyId];
-          }
-          if (previewSustainIndexRef.current[keyId] !== undefined) {
-            delete previewSustainIndexRef.current[keyId];
-          }
-          if (previewReleasedRef.current[keyId] !== undefined) {
-            delete previewReleasedRef.current[keyId];
-          }
-          if (previewLastTickTimeRef.current[keyId] !== undefined) {
-            delete previewLastTickTimeRef.current[keyId];
-          }
-          if (previewNextTickTimeRef.current[keyId] !== undefined) {
-            delete previewNextTickTimeRef.current[keyId];
-          }
-
-          ym2149.writeRegister(volumeRegister, 0x00);
-        }
-      }, tickIntervalMs);
     },
-    [ym2149, currentInstrument, previewChannel, tickIntervalMs, stopNote, onPreviewMidiNoteOn],
+    [
+      ym2149,
+      currentInstrument,
+      previewChannel,
+      tickIntervalMs,
+      stopNote,
+      preview,
+      onPreviewMidiNoteOn,
+    ],
   );
 
   const playNoteWithAudioUnlock = useCallback(
@@ -325,7 +183,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         if (baseKeyData) {
           event.preventDefault();
           event.stopPropagation();
-          const keyId = `${baseKeyData.note}${baseKeyData.octave}`;
+          const keyId = noteKeyId(baseKeyData.note, baseKeyData.octave);
 
           if (!pressedKeys.has(keyId)) {
             setPressedKeys((prev) => new Set(prev).add(keyId));
@@ -369,7 +227,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         if (baseKeyData) {
           event.preventDefault();
           event.stopPropagation();
-          const keyId = `${baseKeyData.note}${baseKeyData.octave}`;
+          const keyId = noteKeyId(baseKeyData.note, baseKeyData.octave);
 
           setPressedKeys((prev) => {
             const newSet = new Set(prev);
@@ -406,7 +264,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   const handlePianoKeyDown = useCallback(
     (note: string, octave: number) => {
-      const keyId = `${note}${octave}`;
+      const keyId = noteKeyId(note, octave);
 
       if (!pressedKeys.has(keyId)) {
         setPressedKeys((prev) => new Set(prev).add(keyId));
@@ -422,7 +280,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   const handlePianoKeyUp = useCallback(
     (note: string, octave: number) => {
-      const keyId = `${note}${octave}`;
+      const keyId = noteKeyId(note, octave);
 
       setPressedKeys((prev) => {
         const newSet = new Set(prev);
