@@ -4,6 +4,10 @@
 
 **Source:** AUDIT-1.4 REC-019 (FND-INF-008)
 
+**Status:** Abandoned
+
+**Abandonment reason:** Repairing a missing review for a released version makes no sense - the evidence belongs to the closed window. The recorded rule treats a forgotten review or audit report for a previous version as abandoned, not retroactively produced.
+
 ## Summary
 
 | Field         | Value                                                                                           |

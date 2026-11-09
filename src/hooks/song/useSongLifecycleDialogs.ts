@@ -1,9 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useState } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { clearMirroredSnapshots } from '../../utils/storage/persistenceMirror.ts';
-import type { ExtendedWindow } from '../../types/electronApi.ts';
+import { clearApplicationStorage } from '../../utils/storage/applicationStorage.ts';
 import { logger } from '../../utils/log/logger.ts';
 
 export interface UseSongLifecycleDialogsParams {
@@ -89,33 +88,17 @@ export function useSongLifecycleDialogs({
   }, []);
 
   const handleConfirmReset = useCallback(() => {
-    // Clear all localStorage data
     try {
-      const preservedTheme = localStorage.getItem(StorageKeys.THEME);
-      const preservedDebug = localStorage.getItem(StorageKeys.DEBUG_MODE);
-
-      localStorage.clear();
-      clearMirroredSnapshots();
-
-      if (preservedTheme !== null) {
-        localStorage.setItem(StorageKeys.THEME, preservedTheme);
-      }
-
-      if (preservedDebug !== null) {
-        localStorage.setItem(StorageKeys.DEBUG_MODE, preservedDebug);
-      }
+      clearApplicationStorage();
     } catch {
       // ignore
     }
     setChannelMutes([false, false, false]);
     setCurrentOctave(3);
-    // Reload the application to start fresh
-    try {
-      (window as ExtendedWindow).__dosoundTrackerIsResetting = true;
-    } catch {
-      // ignore
-    }
-    window.location.reload();
+    // Reload only after the mirror clear commits so reset data cannot resurrect
+    void clearMirroredSnapshots().finally(() => {
+      window.location.reload();
+    });
   }, [setChannelMutes, setCurrentOctave]);
 
   const handleCancelReset = useCallback(() => {

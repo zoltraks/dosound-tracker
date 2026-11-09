@@ -154,6 +154,11 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - CTRL+S saves the current song
 - CTRL+I creates a new instrument
 
+**Modal shortcuts:**
+
+- ESCAPE cancels or closes the open modal dialog
+- ENTER confirms the open modal dialog
+
 The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
 
 ## Session Persistence
@@ -176,7 +181,7 @@ On startup the application requests persistent storage and checks `StorageKeys.S
 
 **Mirror invalidation**
 
-Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action clears the whole snapshot store. Without this, intentionally deleted data would resurrect on the next load.
+Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action removes every `dosound-tracker-*` local storage key except the preserved theme and debug-mode settings, then awaits the mirror clear and reloads only after the clear commits. Without this, intentionally deleted data would resurrect on the next load.
 
 **Persistence reminder**
 
@@ -210,6 +215,7 @@ The following utilities were extracted to eliminate duplication and are the cano
 - **`src/hooks/storage/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
 - **`src/exports/core.ts`** — `formatPitchDelta` for formatting signed pitch delta values in assembly export comments. `exportInstrumentWith` generic wrapper for instrument preview exports across VGM, MAX, and WAV formats.
 - **`src/utils/instrument/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
+- **`src/hooks/playback/usePreviewEnvelope.ts`** — the single ref-driven preview-envelope engine: per-key voices, sustain and release tracking, `window.setInterval` ticks through `advancePreviewEnvelopeTick`/`getPreviewEnvelopeApplyStep`, and auto-stop on a silent envelope tail or a caller-supplied `stopAfterStep` cap. Consumed by `TrackPanel`, `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, and `useInstrumentActions`; per-start options reproduce each surface's reduced or extended semantics.
 
 ### Branded Types
 

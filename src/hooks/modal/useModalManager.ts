@@ -160,6 +160,7 @@ export function useModalManager(options: UseModalManagerOptions): void {
         isRenumberConfirmOpen ||
         isNewSongConfirmOpen ||
         isResetConfirmOpen ||
+        isQuitConfirmOpen ||
         isInstrumentDeleteOpen ||
         isInstrumentTypeWarningOpen ||
         isExportOpen ||
@@ -320,6 +321,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
         }
         if (renumberSummary) {
           handleCloseRenumberSummary();
+          return;
+        }
+        if (instrumentOperationSummary) {
+          handleCloseInstrumentOperationSummary();
           return;
         }
         if (midiLoadError) {

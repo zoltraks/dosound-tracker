@@ -108,11 +108,10 @@ export const removeMirroredSnapshot = (key: MirrorKey): void => {
   );
 };
 
-export const clearMirroredSnapshots = (): void => {
-  void withStore('readwrite', (store) => store.clear()).catch((error) =>
-    logger.warn('Failed to clear mirrored snapshots', error),
-  );
-};
+export const clearMirroredSnapshots = (): Promise<void> =>
+  withStore('readwrite', (store) => store.clear())
+    .then(() => undefined)
+    .catch((error) => logger.warn('Failed to clear mirrored snapshots', error));
 
 export const requestPersistentStorage = (): void => {
   try {

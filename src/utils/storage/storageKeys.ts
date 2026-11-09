@@ -3,6 +3,8 @@
  * This class consolidates all localStorage key usage to ensure consistency
  * and make it easier to manage key names across the application.
  */
+export const APPLICATION_STORAGE_PREFIX = 'dosound-tracker-' as const;
+
 export class StorageKeys {
   // Debug and development settings
   static readonly DEBUG_MODE = 'dosound-tracker-debug-mode' as const;

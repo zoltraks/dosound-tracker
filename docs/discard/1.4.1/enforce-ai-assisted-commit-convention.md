@@ -4,6 +4,10 @@
 
 **Source:** AUDIT-1.4 REC-021 (FND-AIP-001)
 
+**Status:** Abandoned
+
+**Abandonment reason:** The project owner does not want an `AI-assisted` marker in commits. The convention this record would enforce is rescinded, so the record has no work to land. `WORKFLOW.md` now records that commits carry no AI-assisted markers.
+
 ## Summary
 
 | Field         | Value                                                            |

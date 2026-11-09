@@ -13,5 +13,4 @@ export type ElectronApi = {
 
 export type ExtendedWindow = Window & {
   electronAPI?: ElectronApi;
-  __dosoundTrackerIsResetting?: boolean;
 };

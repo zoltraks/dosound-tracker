@@ -17,7 +17,7 @@ The license file is at the repository root: `LICENSE`.
 
 ## Dependency Licensing
 
-- Permitted open-source licenses: MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost, BlueOak-1.0.0, CC-BY-4.0, CC0-1.0, WTFPL, MIT-0.
+- Permitted open-source licenses: MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost, BlueOak-1.0.0, CC-BY-4.0, CC0-1.0, WTFPL, MIT-0, Python-2.0.
 - Packages with no declared license field require a per-package review before adoption.
 - GPL-licensed libraries may **not** be used in this project without explicit written approval.
 - All dependencies are declared in `package.json`.

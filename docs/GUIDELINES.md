@@ -145,6 +145,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md`; `improve dosound-tracker` runs the Session Review recorded below. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
 - Abandoned change records move to `docs/discard/<version>/` with an explicit abandonment reason recorded in the record.
+- A window review or audit report that was never produced for a released version is abandoned, not repaired - change records that propose retroactively writing past-version reports are discarded.
 - Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined; none are planned.
 - A CI pipeline (`.github/workflows/`) was evaluated and declined; the verification loop is enforced locally and no CI configuration is planned.
 - No dedicated agent entry file: `README.md` is the documented agent route per the File Maintenance rule.
@@ -593,7 +594,7 @@ Under the `session-reporting` extension:
 
 **Context Management**
 
-When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local.
+When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local. Spawn freely for exploration: scouts are cheap, and a delegated survey is cheaper than a full read. Subagent titles name the task itself - never a role or agent-kind prefix such as "Scout".
 
 **Clean and Purge**
 

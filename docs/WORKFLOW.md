@@ -10,13 +10,17 @@ This document describes the day-to-day operational steps for delivering changes.
 
 This is the default method for implementing all changes. The high-level rules live in `GUIDELINES.md` under "Applying a Change"; this section captures the operational details.
 
+**Analyze the current implementation**
+
+Every change request begins with a new implementation analysis of the current codebase. The analysis is never carried over from earlier work or assumed from the request alone - it grounds the implementation plan written for the request.
+
 **Documentation-First Approach**
 
 Every implementation begins with updating project documentation. Do not write any code before documentation is updated.
 
-**Update project documentation**
+**Update the project specification**
 
-Edit the relevant project documentation files to reflect the planned changes:
+The project specification update is the first step of implementation, taken when work on the plan begins. When several implementation plans exist, each specification update runs only at the start of its own implementation - never ahead of it, so the specification never describes behaviour that is not yet implemented. Edit the relevant project documentation files to reflect the planned changes:
 
 - `PROJECT.md` for new requirements or behavioural changes.
 - `ARCHITECTURE.md` for architectural or structural changes.
@@ -180,9 +184,9 @@ The request may select a gate mode: `autonomous` runs every stage without pausin
 
 For each change record in the window:
 
-- Analyze the current implementation and the project documentation deeply.
+- Perform a new implementation analysis of the current implementation and the project documentation - each record gets its own analysis, never carried over.
 - Write the implementation plan into `docs/plan/<version>/` before touching code.
-- Follow the Documentation-First Approach: update the named specification sections before implementing.
+- Follow the Documentation-First Approach: the specification update is the first implementation step of each record - it runs when that record's implementation begins, never ahead of it.
 - Work in verifiable increments and run the verification loop until typecheck, lint, format, build, and test all pass. A failure returns to fix and re-verify until clean.
 - A request is fulfilled only when its acceptance criteria hold and verification is clean.
 - The plan names unit tests for utility-level functions and considers adding or adjusting existing tests.
@@ -370,7 +374,7 @@ When delegating implementation to an AI coding agent, provide the following cont
 
 Verify agent output against the build-test-fix loop. Never accept code that breaks audio timing or violates the audio-critical principles in `GUIDELINES.md`.
 
-Mark AI-assisted authorship per change: the commit description or the change-request document records the tool used, for example `AI-assisted: <tool>`.
+Commits carry no AI-assisted markers: neither the commit description nor a trailer records the tool used.
 
 ## Continuity
 
