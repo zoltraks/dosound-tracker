@@ -290,3 +290,11 @@ Remaining coverage gaps that may be addressed in future work:
 **Fake timers quantize performance.now on fractional intervals**
 
 Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep with fractional `setInterval` delays - a callback scheduled at 16.67 ms can observe `now` a fraction early, so boundary assertions on `1000 / 60`-style intervals are flaky. Use integer intervals in timer tests; a non-20 ms integer still proves an offset derives from the configured interval.
+
+**Reinstall Playwright browsers after regenerating the dependency tree**
+
+`rm -rf node_modules` or a lockfile regeneration can bump `@playwright/test` within its declared range, and the new version requires fresh browser binaries - `npm run test:e2e` then fails with `Executable doesn't exist`, not a code error. Run `npx playwright install` (or the project browsers) after any tree regeneration before judging e2e results.
+
+**Scratch vitest probes must live under `test/`**
+
+The vitest include glob is `test/**/*.{test,spec}.{ts,tsx}`, so a throwaway probe placed in `work/` is silently skipped. Put probe files under `test/` temporarily and delete them in the same session.

@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 
+// Dispatched on window after every successful write so long-lived caches
+// (e.g. the MIDI debug flag) can invalidate. `detail` carries the key.
+export const LOCAL_STORAGE_WRITE_EVENT = 'dosound-local-storage-write';
+
 export function useLocalStorageState<T>(
   key: string,
   defaultValue: T,
@@ -31,6 +35,9 @@ export function useLocalStorageState<T>(
     try {
       const serialized = write ? write(value) : String(value);
       localStorage.setItem(key, serialized);
+      if (typeof window !== 'undefined' && typeof window.dispatchEvent === 'function') {
+        window.dispatchEvent(new CustomEvent(LOCAL_STORAGE_WRITE_EVENT, { detail: key }));
+      }
     } catch {
       // ignore
     }

@@ -330,15 +330,6 @@ export const useSequencer = (
     [calculateTickInterval],
   );
 
-  // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
-      }
-    };
-  }, []);
-
   return {
     sequencerState,
     stop,

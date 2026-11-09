@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo } from 'react';
 import { useKeyboardNavigation } from './hooks/keyboard/useKeyboardNavigation.ts';
 import { useTheme } from './hooks/ui/useTheme.ts';
 import { useDataManagement } from './hooks/song/useDataManagement.ts';
@@ -19,13 +19,11 @@ import { useModalState } from './hooks/modal/useModalState.ts';
 import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.ts';
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
-import { usePlaybackSimulation } from './hooks/playback/usePlaybackSimulation.ts';
-import { useSequencerIntegration } from './hooks/sequencer/useSequencerIntegration.ts';
+import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
 import { normalizeInstrumentId } from './utils/playback/playbackUtils.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
 import { DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
 import type { Instrument, Pattern } from './synth/SoundDriver.ts';
-import type { MidiConfiguration } from './hooks/midi/useMidi.ts';
 import { HeaderPanel } from './components/HeaderPanel.tsx';
 import { CommandPanel } from './components/CommandPanel.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
@@ -345,48 +343,26 @@ const App: React.FC = () => {
     currentTrackColumn,
   });
 
-  const [isLinePlaying, setIsLinePlaying] = useState(false);
-
-  // MIDI helper ref so callbacks defined before useMidiHandling can safely
-  // call instrument MIDI send/stop functions without referencing them before
-  // their declaration.
-  const midiHelpersRef = useRef<{
-    sendInstrumentMidiNoteOn: (
-      ymChannel: number,
-      instrument: Instrument | undefined,
-      note: string,
-      octave: number,
-      volumeFromStep?: number | null,
-      velocityOverride?: number | null,
-    ) => void;
-    sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
-  } | null>(null);
-
-  const midiConfigurationRef = useRef<MidiConfiguration | null>(null);
-
-  const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
-  const { resetPlaybackState: handleStopPlayback, lastSequencerPositionRef } = playbackState;
-
-  const { sequencerCallback } = useSequencerIntegration({
+  const {
+    isLinePlaying,
+    setIsLinePlaying,
+    midiHelpersRef,
+    midiConfigurationRef,
+    handleStopPlayback,
+    lastSequencerPositionRef,
+  } = usePlaybackBridge({
     currentSong,
     patternsById,
     instrumentsById,
     channelMutes,
     ym2149Ref,
-    midiHelpersRef,
-    playbackState,
     isDebugMode,
     setSharedCurrentLine,
-    setIsLinePlaying,
     stop,
     setPosition,
     currentInstrument,
+    setCallback,
   });
-
-  // Register sequencer callback
-  useEffect(() => {
-    setCallback(sequencerCallback);
-  }, [setCallback, sequencerCallback]);
 
   const { getCurrentPatternForTrack, handlePatternChange } = useTrackPattern({
     currentSong,
