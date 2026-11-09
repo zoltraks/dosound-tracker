@@ -8,4 +8,4 @@ Align `test/` structure with the reorganized `src/` - rename `test/stores/` for 
 
 ## Description
 
-The test tree kept its pre-reorganization layout while `src/` gained full domain grouping. `test/stores/` still names a directory that no longer exists in `src/`. Align names and evaluate mirrored subfolders where a clean mirror exists; tests that cover several files keep their flat names.
+The test tree kept its pre-reorganization layout while `src/` gained full domain grouping. `test/stores/` still names a directory that no longer exists in `src/`. Align names and evaluate mirrored subfolders where a clean mirror exists - tests that cover several files keep their flat names.

@@ -35,7 +35,7 @@ None.
 
 **Verify the dependency is dead**
 
-Confirm no import site exists before removal. `grep -rn "jest-dom" src/ test/ e2e/` returns no source reference; `test/setup.ts` and `test/setup-localstorage.ts` do not register it.
+Confirm no import site exists before removal. `grep -rn "jest-dom" src/ test/ e2e/` returns no source reference - `test/setup.ts` and `test/setup-localstorage.ts` do not register it.
 
 File to modify: none - verification only.
 

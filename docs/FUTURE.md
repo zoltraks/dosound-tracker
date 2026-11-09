@@ -1,6 +1,6 @@
 # DOSOUND Tracker - Future Development
 
-This document tracks potential future enhancements. Items here are not committed work; they are candidates for future change requests.
+This document tracks potential future enhancements. Items here are not committed work - they are candidates for future change requests.
 
 ## Implemented Features
 
@@ -48,7 +48,7 @@ The application has no undo/redo history. All edits are immediate and irreversib
 
 **App.tsx decomposition**
 
-The main application component has grown to over 2000 lines and handles significant rendering and event-handling logic. Decomposing it into smaller orchestrator components and extracting logic into dedicated hooks would improve maintainability.
+The main application component still concentrates the hook wiring and JSX prop map (over 1100 lines after the staged decomposition) and handles significant rendering and event-handling logic. Decomposing it into smaller orchestrator components and extracting logic into dedicated hooks would improve maintainability.
 
 **Store splitting**
 
@@ -70,9 +70,9 @@ The current optimized dump strategy merges consecutive delays. Further optimizat
 
 ## Testing and Quality
 
-**Synth and export test coverage**
+**Synth test coverage**
 
-The YM2149 emulator (`src/synth/YM2149.ts`), sound driver (`src/synth/SoundDriver.ts`), and export modules have minimal automated test coverage. Core audio synthesis and file generation paths should be fully exercised by the test suite.
+The YM2149 emulator (`src/synth/YM2149.ts`) and sound driver (`src/synth/SoundDriver.ts`) have minimal automated test coverage - `test/synth/` holds a single file while the export modules are exercised by the `test/exports/` suite. Core audio synthesis paths should be fully exercised by the test suite.
 
 **End-to-end test suite**
 
@@ -83,16 +83,12 @@ The Playwright E2E test infrastructure is in place but the test coverage for cri
 Recorded during the 1.3.6 dependency upgrade (see `docs/change/1.3.6/dependency-upgrade-majors.md`).
 
 - **`vitest` 5** (`@vitest/ui`, `@vitest/coverage-v8` together): evaluated 5.1.0 and reverted - the full suite failed under the new runner on rolldown-vite 7. Re-evaluate when vitest 5 stabilizes on this stack.
-- **`js-yaml` 5**: evaluated 5.5.0 and reverted - 77 tests failed on YAML serialization drift. Song and instrument files must round-trip byte-identically; upgrade needs a format-equivalence pass first.
+- **`js-yaml` 5**: evaluated 5.5.0 and reverted - 77 tests failed on YAML serialization drift. Song and instrument files must round-trip byte-identically - upgrade needs a format-equivalence pass first.
 - **`typescript` 7**: blocked - `typescript-eslint` requires `typescript <6.1.0`. Revisit when the linter chain supports it.
-- **`eslint` 10 + `@eslint/js` 10**: feasible but a config and plugin sweep of its own - separate change record.
-- **`@vitejs/plugin-react` 6 + `vite` 8**: blocked - plugin 6 requires `vite ^8` and no `rolldown-vite` 8.x is published.
+- **`eslint` 10 + `@eslint/js` 10 and `vite` 8 + `@vitejs/plugin-react` 6**: landed in the 1.4.1 toolchain upgrade - no longer deferred.
 
-## SoundDriver Runtime Dead Code
+## Dead Code Candidates
 
-`new SoundDriver(` appears nowhere in `src/` - `SoundDriver.ts` is
-referenced only by type imports and `playEvents` is never invoked. It is
-a removal candidate for a future refactoring cycle, pending confirmation
-that the Atari ST export path (`exportToAssembly`) has no live caller.
+The `SoundDriver` runtime half of this item already landed - `SoundDriver.ts` now carries only the data-model interfaces, `playEvents` is gone, and `exportToAssembly` is a live export path.
 
-- `trackClipboard.ts` `quoteNoteValues` single-quote strip (~line 139) is unreachable through the generator's `quotingType: '"'` path - verified by characterization tests; a later window may evaluate removing it as defensive dead code.
+- `trackClipboard.ts` `quoteNoteValues` single-quote strip (~line 139) is unreachable through the generator's `quotingType: '"'` path - verified by characterization tests - a later window may evaluate removing it as defensive dead code - note the shared `yamlUtils.ts` strip stays load-bearing for `instrumentIO.ts`, which dumps without `quotingType`.

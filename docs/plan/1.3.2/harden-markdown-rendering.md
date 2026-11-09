@@ -15,10 +15,10 @@ Follow TypeScript and React engineering standards from `docs/standard/ts-react-d
 
 ## Audio-Critical Requirements
 
-- **Audio impact assessment**: the change touches `src/utils/markdown.ts`, a new fetch helper, `src/hooks/useMessageSystem.ts`, `src/components/EnvelopeSection.tsx`, `src/App.tsx` fetch handlers, and `vite.config.ts`. None of these sit on the audio render path. `EnvelopeSection.tsx` gains only a type-level change (`TrustedHtml` instead of `string`); the `useMemo` dependency array is unchanged.
+- **Audio impact assessment**: the change touches `src/utils/markdown.ts`, a new fetch helper, `src/hooks/useMessageSystem.ts`, `src/components/EnvelopeSection.tsx`, `src/App.tsx` fetch handlers, and `vite.config.ts`. None of these sit on the audio render path. `EnvelopeSection.tsx` gains only a type-level change (`TrustedHtml` instead of `string`) - the `useMemo` dependency array is unchanged.
 - **Timing stability verification**: no timers, callbacks, or state patterns on audio paths are modified. No manual playback testing is required.
 - **Linting exception documentation**: no new linting exceptions are introduced or preserved.
-- **Playback simulation**: not applicable; the sequencer and SoundDriver are untouched.
+- **Playback simulation**: not applicable - the sequencer and SoundDriver are untouched.
 
 ## Documentation Updates
 
@@ -95,7 +95,7 @@ export const fetchBundledMarkdown = async (name: string): Promise<string> => {
 
 **Route all markdown fetches through the allowlist**
 
-`useMessageSystem` fetches `MESSAGES.md`; `handleShowChangelog` and `handleShowManual` in `App.tsx` fetch `CHANGELOG.md` and `MANUAL.md`. All three switch to `fetchBundledMarkdown`, and the manual-specific HTML sniffing in `App.tsx` is removed because the helper now covers every bundled document.
+`useMessageSystem` fetches `MESSAGES.md` - `handleShowChangelog` and `handleShowManual` in `App.tsx` fetch `CHANGELOG.md` and `MANUAL.md`. All three switch to `fetchBundledMarkdown`, and the manual-specific HTML sniffing in `App.tsx` is removed because the helper now covers every bundled document.
 
 Files to modify: `src/hooks/useMessageSystem.ts`, `src/App.tsx`.
 
@@ -120,7 +120,7 @@ const currentMessageHtml: TrustedHtml = useMemo(() => {
 
 **Inject a content security policy at build time**
 
-A Vite plugin active only during `build` inserts a restrictive CSP meta tag into `dist/index.html`. The packaged Electron app loads that file over `file://`, so the policy ships with the desktop bundle; development mode is unaffected because the plugin never runs under `vite dev`.
+A Vite plugin active only during `build` inserts a restrictive CSP meta tag into `dist/index.html`. The packaged Electron app loads that file over `file://`, so the policy ships with the desktop bundle - development mode is unaffected because the plugin never runs under `vite dev`.
 
 File to modify: `vite.config.ts`.
 

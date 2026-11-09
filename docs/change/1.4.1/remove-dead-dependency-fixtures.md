@@ -23,7 +23,7 @@ The change uninstalls the unused dependency and prunes the dead fixtures so `tes
 ## Hints
 
 - Verification is `npm test` still green after removal.
-- `align-tests-documented-rules` moves a fixture dependency inside `test/`; the two records must not prune what the other one introduces - land this first or reconcile in the plan.
+- `align-tests-documented-rules` moves a fixture dependency inside `test/` - the two records must not prune what the other one introduces - land this first or reconcile in the plan.
 
 ## Out of Scope
 

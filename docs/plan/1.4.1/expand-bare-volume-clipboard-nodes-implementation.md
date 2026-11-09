@@ -57,7 +57,7 @@ Both callers produce equivalent results downstream - `songParser` applies `parse
 
 **Extend the characterization tests**
 
-`test/utils/track/trackClipboard.test.ts` documents both shapes; the two pass-through assertions that expect `{volume: N}` now expect the expanded `{wait: true, volume: N}` form, and the bare-node test gains a round-trip idempotence assertion.
+`test/utils/track/trackClipboard.test.ts` documents both shapes - the two pass-through assertions that expect `{volume: N}` now expect the expanded `{wait: true, volume: N}` form, and the bare-node test gains a round-trip idempotence assertion.
 
 File to modify: `test/utils/track/trackClipboard.test.ts`.
 
@@ -85,7 +85,7 @@ npm test -- test/utils/track/trackClipboard.test.ts test/utils/song/songParser.t
 
 **Integration tests**
 
-None - the paste flow tolerates both shapes already; the hook-level tests prove it.
+None - the paste flow tolerates both shapes already - the hook-level tests prove it.
 
 ## Verification
 
@@ -93,4 +93,4 @@ None - the paste flow tolerates both shapes already; the hook-level tests prove 
 - `npm run lint` - zero errors, zero warnings.
 - `npm run format` - applied to the tree.
 - `npm run build` - `tsc -b && vite build` clean.
-- `npm test` - the full suite green; copy/paste round-trip is node-idempotent.
+- `npm test` - the full suite green - copy/paste round-trip is node-idempotent.

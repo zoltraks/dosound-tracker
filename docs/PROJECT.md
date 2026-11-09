@@ -18,7 +18,7 @@ The application's core feature is its ability to export music data directly into
 - Provide a pattern-based playlist system for song arrangement.
 - Offer 256 instrument slots with full parameter control.
 - Emulate the YM2149 chip with bit-perfect register simulation.
-- Support multiple export formats (assembly, binary, VGM, WAV, MAX).
+- Support multiple export formats (assembly, register dump, binary, VGM, WAV, MAX).
 - Provide real-time audio playback with sub-millisecond timing.
 - Support MIDI input for live recording and instrument control.
 - Deploy as both a web application and a cross-platform desktop application via Electron.
@@ -39,20 +39,20 @@ The application's core feature is its ability to export music data directly into
 
 ## Glossary
 
-| Term       | Definition                                                            |
-| ---------- | --------------------------------------------------------------------- |
-| YM2149     | Yamaha YM2149 Programmable Sound Generator (PSG) used in the Atari ST |
-| PSG        | Programmable Sound Generator                                          |
-| DOSOUND    | XBIOS function on Atari ST TOS for playing music data                 |
-| XBIOS      | Extended BIOS of the Atari ST operating system                        |
-| VBLANK     | Vertical blanking interrupt, 50Hz on PAL Atari ST                     |
-| Chiptune   | Music written for sound chips from old computers and consoles         |
-| Pattern    | A 64-step sequence of notes for a single track                        |
-| Playlist   | A sequence of pattern references defining the song arrangement        |
-| Track      | One of three independent audio channels (A, B, C)                     |
-| Instrument | A set of parameters defining the sound of a note                      |
-| Envelope   | A sequence of volume or pitch values over time                        |
-| LFSR       | Linear Feedback Shift Register, used for noise generation             |
+| Term       | Definition                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| YM2149     | Yamaha YM2149 Programmable Sound Generator (PSG) used in the Atari ST                          |
+| PSG        | Programmable Sound Generator                                                                   |
+| DOSOUND    | XBIOS function on Atari ST TOS for playing music data                                          |
+| XBIOS      | Extended BIOS of the Atari ST operating system                                                 |
+| VBLANK     | Vertical blanking interrupt, 50Hz on PAL Atari ST                                              |
+| Chiptune   | Music written for sound chips from old computers and consoles                                  |
+| Pattern    | A sequence of note steps for a single track (64 steps by default, 4-256 configurable per song) |
+| Playlist   | A sequence of pattern references defining the song arrangement                                 |
+| Track      | One of three independent audio channels (A, B, C)                                              |
+| Instrument | A set of parameters defining the sound of a note                                               |
+| Envelope   | A sequence of volume or pitch values over time                                                 |
+| LFSR       | Linear Feedback Shift Register, used for noise generation                                      |
 
 ## Functional Requirements
 
@@ -62,7 +62,7 @@ The system must support composition across three independent audio channels (Tra
 
 **F-02: Pattern-Based Sequencing**
 
-The system must use pattern-based composition with 64-step pattern length. Patterns are single-track sequences.
+The system must use pattern-based composition with a configurable pattern length of 4-256 steps (64 by default). Patterns are single-track sequences.
 
 **F-03: Playlist Arrangement**
 
@@ -75,7 +75,7 @@ The system must provide 256 instrument slots with the following parameters:
 - Mode control: pure tone, pure noise, or mixed tone and noise generation.
 - Volume envelope: 32-step amplitude control (ADSR-like shaping).
 - Arpeggio engine: real-time pitch shifting in semitone increments (-24 to +24).
-- Pitch modulation: direct frequency deviation for vibrato and fine-tuning.
+- Pitch modulation: direct period (divider) deviation for vibrato and fine-tuning.
 - Noise generation: dynamic noise period control (0-31 range).
 - Sustain points: realistic note release behavior with configurable sustain.
 
@@ -107,7 +107,7 @@ The system must export music data as DOSOUND-compatible assembly code with:
 The system must support the following export formats:
 
 - DOSOUND assembly (native Atari ST format with optimization).
-- WAV audio (44.1kHz 16-bit stereo rendering).
+- WAV audio (44.1kHz 16-bit mono rendering).
 - Register dump (raw YM2149 register state sequences).
 - Instrument-only export (individual instrument definitions).
 - Binary export.
@@ -147,7 +147,7 @@ The system must deploy as:
 
 The system must provide toggle buttons in the Song information panel for selecting the replay rate (50 Hz or 60 Hz) and the YM2149 chip clock (2 MHz or 1 MHz). The Rate button is placed in the Title row and the Clock button in the Author row. Both buttons match the combined width of the two number-spinner buttons used elsewhere in the panel. New songs default to 50 Hz and 2 MHz. Songs loaded without these settings fall back to the same defaults. Both values are persisted in the song YAML file format.
 
-The selected replay rate drives the sequencer worker tick interval (20 ms at 50 Hz, 16.66 ms at 60 Hz) and all instrument preview envelope timers. The selected chip clock drives the YM2149 emulator frequency calculation and the tone period register values. At 1 MHz, period values are half of the 2 MHz values for the same note, preserving the composed pitch. Noise period register values are set directly from instrument envelopes and are not recalculated; the noise timbre change at 1 MHz is expected.
+The selected replay rate drives the sequencer worker tick interval (20 ms at 50 Hz, 16.66 ms at 60 Hz) and all instrument preview envelope timers. The selected chip clock drives the YM2149 emulator frequency calculation and the tone period register values. At 1 MHz, period values are half of the 2 MHz values for the same note, preserving the composed pitch. Noise period register values are set directly from instrument envelopes and are not recalculated - the noise timbre change at 1 MHz is expected.
 
 All export formats (VGM, MAX, WAV, ASM, BIN) read the configured frame rate and chip clock from the song. VGM uses the appropriate wait command (0x63 for 50 Hz, 0x62 for 60 Hz) and writes the clock and rate to the header. MAX writes the frame rate and clock to the chip setup chunk. WAV renders at the correct samples-per-tick for the frame rate. ASM and BIN use the configured clock for period calculations.
 
@@ -167,7 +167,7 @@ Audio stability is the highest priority. React best practices are secondary to a
 
 **N-02: Timing Accuracy**
 
-The system must use 50Hz VBLANK timing matching the original Atari ST DOSOUND behavior. Envelope progression must occur every 40ms (every 2 ticks).
+The system must use 50Hz VBLANK timing by default, matching the original Atari ST DOSOUND behavior (a 60Hz rate is selectable per F-14). Envelope progression must occur every 2 ticks (40ms at 50Hz).
 
 **N-03: Export Fidelity**
 
@@ -223,14 +223,14 @@ The emulation logic is split into two core areas under `src/synth/`.
 
 This module is responsible for the low-level register simulation.
 
-- Implement functions to handle the 14 programmable YM2149 registers (R0 through R13).
+- Implement functions to handle the 16 YM2149 registers (R0 through R15).
 - Ensure accurate calculation of tone frequencies, noise generation, and envelope shapes.
 
 **DOSOUND Driver Logic**
 
 The DOSOUND format uses a packed data structure to define musical events, relying on delays and data blocks rather than a simple note-on/note-off stream.
 
-- The logic must correctly read and interpret the DOSOUND data format and translate these events into sequential register writes for the YM2149 emulator.
+- The logic must translate the song's pattern and instrument events into sequential register writes for the YM2149 emulator, producing the register sequence the original DOSOUND routine would generate.
 - The timing must be tied to the Atari ST's 50Hz VBLANK, as the original DOSOUND routine relied on this timing.
 
 **Playback**
@@ -318,4 +318,4 @@ Do not focus on Dump, EQ, logo, title, or the theme toggle during navigation.
 
 **Piano Keyboard Mapping**
 
-The computer keyboard doubles as a piano. The lower letter row maps to the base octave, and the upper letter and number rows map one or two octaves above. See `src/constants/keyboard.ts` for the exact key-to-note map and `SPECIFICATION.md` for the full input binding reference.
+The computer keyboard doubles as a piano. The lower letter row starts at the base octave and continues into the next octave, and the upper letter and number rows map one or two octaves above. See `src/constants/keyboard.ts` for the exact key-to-note map and `SPECIFICATION.md` for the full input binding reference.

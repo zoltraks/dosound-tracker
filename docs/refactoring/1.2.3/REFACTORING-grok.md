@@ -22,7 +22,7 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 
 1. **Monolithic core.ts**: All export functions and helpers are in one file
 2. **Code duplication**: Download functions across formats are nearly identical
-3. **Unused code**: Minimal unused code identified; most functions are utilized
+3. **Unused code**: Minimal unused code identified - most functions are utilized
 4. **Duplicated patterns**: Similar helper functions for different formats
 
 ## Refactoring Goals
@@ -78,7 +78,7 @@ The `src/exports/` directory contains format-specific files (`asm.ts`, `bin.ts`,
 
 ### 3. Remove Unused Code
 
-**Current Issue**: Analysis shows minimal unused code; most functions are utilized in tests and application logic.
+**Current Issue**: Analysis shows minimal unused code - most functions are utilized in tests and application logic.
 
 **Proposed Solution**:
 

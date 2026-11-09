@@ -1,8 +1,8 @@
 # DOSOUND Tracker Refactoring Proposal
 
-**Version:** 1.2.5  
-**Date:** December 21, 2025  
-**Project:** DOSOUND Tracker  
+**Version:** 1.2.5
+**Date:** December 21, 2025
+**Project:** DOSOUND Tracker
 **Type:** Refactoring Proposal
 
 ## Executive Summary

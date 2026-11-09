@@ -11,7 +11,7 @@ Implements `docs/change/1.3.7/ui-state-restoration.md`.
 3. `useUiStore.ts`: hydrate `sharedCurrentLine`/`channelMutes` from `UI_STATE`.
 4. `src/hooks/ui/useUiStatePersistence.ts`: subscribe-and-save effect.
 5. `MarkdownModal.tsx`/`ModalManager.tsx`: scroll reporting + restore.
-6. `App.tsx`: mount-time reopen through existing handlers; wire the hook.
+6. `App.tsx`: mount-time reopen through existing handlers - wire the hook.
 7. `useAppState.ts`: RESET clears `UI_STATE`.
 8. Tests + verification loop.
 

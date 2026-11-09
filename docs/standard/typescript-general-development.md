@@ -728,5 +728,5 @@ since conflict edits routinely break `format:check`.
 
 ## Project Conventions
 
-- Strict mode with no `any`; use `unknown` for genuinely unknown values.
-- Identifier types are branded in `src/types/branded.ts`; factories accept `number | BrandedType` and convert at boundaries.
+- Strict mode with no `any` - use `unknown` for genuinely unknown values.
+- Identifier types are branded in `src/types/branded.ts` - factories accept `number | BrandedType` and convert at boundaries.

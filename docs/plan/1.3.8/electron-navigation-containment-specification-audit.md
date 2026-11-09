@@ -29,7 +29,7 @@ The record requires new-window containment and navigation restriction. The plan 
 Verified against the tree:
 
 - `electron/main.cjs` `createWindow` installs session permission handlers at lines 23-35 - the navigation handlers join the same block.
-- `electron/permissions.cjs` exports `isAppOrigin` and `isMidiAllowed`; adding `isExternalHttpUrl` preserves the standalone-`.cjs` test convention.
+- `electron/permissions.cjs` exports `isAppOrigin` and `isMidiAllowed` - adding `isExternalHttpUrl` preserves the standalone-`.cjs` test convention.
 - `test/electron/permissions.test.ts` exists and loads the module through `createRequire`.
 - `src/utils/markdown/markdown.ts` emits `target="_blank"` links for http(s) URLs only - exactly the class delegated to `openExternal`.
 

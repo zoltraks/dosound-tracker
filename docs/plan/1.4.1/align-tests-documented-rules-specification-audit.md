@@ -25,7 +25,7 @@ Every requirement in the record maps to a plan step, the one wording ambiguity i
 | Centralize the MIDI storage key under `StorageKeys`                      | Join the MIDI storage key to StorageKeys     |
 | The new fixture survives the sibling record's pruning                    | Ordering lands this record after the pruning |
 
-Extension beyond the record: `test/utils/branchGaps.test.ts` patches `Storage.prototype.setItem` - a third instance of the same violation class, excluded from the audit finding but identical in mechanism. It is folded into the plan so the rule violation class is actually cleared; the deviation is recorded in the window review.
+Extension beyond the record: `test/utils/branchGaps.test.ts` patches `Storage.prototype.setItem` - a third instance of the same violation class, excluded from the audit finding but identical in mechanism. It is folded into the plan so the rule violation class is actually cleared - the deviation is recorded in the window review.
 
 ## Ambiguity
 
@@ -34,10 +34,10 @@ Extension beyond the record: `test/utils/branchGaps.test.ts` patches `Storage.pr
 
 ## Implementability
 
-- `test/hooks/storage/useLocalStorageState.test.tsx:45` holds the prototype spy; `vi.spyOn(localStorage, 'getItem')` is the documented replacement pattern.
-- `test/utils/branchGaps.test.ts:68-79` holds the prototype stub; `useStorage.ts:51-53` warns through `logger.warn` on `setItem` failure, so a `logger` spy proves the path.
-- `src/assets/song.yaml` exists and is the only out-of-tree read in the suite; `test/fixtures/` is the committed-fixture destination.
-- `src/utils/storage/storageKeys.ts` is the central module; `useMidi.ts:8,55,59,107` is the only consumer of the exported key.
+- `test/hooks/storage/useLocalStorageState.test.tsx:45` holds the prototype spy - `vi.spyOn(localStorage, 'getItem')` is the documented replacement pattern.
+- `test/utils/branchGaps.test.ts:68-79` holds the prototype stub - `useStorage.ts:51-53` warns through `logger.warn` on `setItem` failure, so a `logger` spy proves the path.
+- `src/assets/song.yaml` exists and is the only out-of-tree read in the suite - `test/fixtures/` is the committed-fixture destination.
+- `src/utils/storage/storageKeys.ts` is the central module - `useMidi.ts:8,55,59,107` is the only consumer of the exported key.
 - `test/hooks/midi/useMidi.test.tsx:6` re-declares the literal and can import `StorageKeys`.
 
 ## Fidelity
@@ -45,7 +45,7 @@ Extension beyond the record: `test/utils/branchGaps.test.ts` patches `Storage.pr
 - Enumeration fidelity: all four work items and the in-kind extension are enumerated with file paths.
 - Vocabulary freeze: the plan reuses the record's terms ("centralized", "confinement").
 - Cross-party parity: the key string `'dosound-tracker-midi-configuration'` is preserved byte-for-byte in `StorageKeys.MIDI_CONFIGURATION`, so persisted user configuration survives the move.
-- Constants completeness: `MAX_MONITOR_ENTRIES` and the rest of `midiUtils.ts` are untouched; only `STORAGE_KEY` is removed.
+- Constants completeness: `MAX_MONITOR_ENTRIES` and the rest of `midiUtils.ts` are untouched - only `STORAGE_KEY` is removed.
 - Boundary decisions: `TESTING.md` rule text is untouched per the record's Out of Scope.
 
 ## Findings Returned to Planning

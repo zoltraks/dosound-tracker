@@ -18,7 +18,7 @@ small code-touching items. One real refactoring target exists.
 
 **Retire the superseded test duplicate**
 
-Merge the revived file into the canonical suite by deleting `exportMaxChunks.test.ts`; every
+Merge the revived file into the canonical suite by deleting `exportMaxChunks.test.ts` - every
 unique assertion it carried is either duplicated or superseded by `exportMax.test.ts`. This is
 the `merge` option of the dead-test change record, applied at the file level.
 

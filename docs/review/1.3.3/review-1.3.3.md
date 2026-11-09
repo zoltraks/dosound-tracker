@@ -30,11 +30,11 @@ The release covers the `docs/change/1.3.3/` group: `stage-orchestrator-decomposi
 
 ## Repository Analysis
 
-The window's work is delivered as an uncommitted change set; the version-control log shows no 1.3.3 commits yet, per the repository rule that the cycle never commits on its own.
+The window's work is delivered as an uncommitted change set - the version-control log shows no 1.3.3 commits yet, per the repository rule that the cycle never commits on its own.
 
 - **Confirmed** - the decomposition diff is present in the working tree: `src/App.tsx` shrank by roughly 1540 net lines and twelve new hook files plus `src/types/electronApi.ts` carry the extracted concerns.
 - **Unconfirmed** - none.
-- **Undocumented** - none; every source change traces to the change record or the refactoring proposal.
+- **Undocumented** - none - every source change traces to the change record or the refactoring proposal.
 - **Deviations** - `useResponsivePanels` uses lazy state initializers instead of the verbatim mount effect, because the moved code surfaced a `set-state-in-effect` lint warning that the oversized `App.tsx` never triggered. Recorded in `docs/refactoring/1.3.3/ASSESSMENT.md`.
 
 ## Findings

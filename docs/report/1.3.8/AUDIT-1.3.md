@@ -8,7 +8,7 @@ Disposition: adopt
 
 ## Summary
 
-The ASE documentation set is complete and largely conforming. All canonical Software-profile roles resolve, every adopted extension has a governing section, and the execution policy is recorded. Nine actionable findings were produced; all were approved and applied in this run. `MAX.md` is externally managed and was excluded from edits.
+The ASE documentation set is complete and largely conforming. All canonical Software-profile roles resolve, every adopted extension has a governing section, and the execution policy is recorded. Nine actionable findings were produced - all were approved and applied in this run. `MAX.md` is externally managed and was excluded from edits.
 
 ## Findings
 

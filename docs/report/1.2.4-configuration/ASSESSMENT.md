@@ -177,7 +177,7 @@ Despite different conclusions, all assessors agreed on these facts:
 | **MiniMax**  | Positive     | ⭐⭐⭐⭐      | Appreciates consistency, values backward compat less |
 | **Devstral** | **Negative** | ⭐⭐          | "Breaking change," penalized in scoring (60 vs 100)  |
 
-**Analysis**: Devstral heavily penalized this; KAT saw it as fixable; MiniMax accepted the trade-off.
+**Analysis**: Devstral heavily penalized this - KAT saw it as fixable - MiniMax accepted the trade-off.
 
 #### Scope Breadth Assessment
 
@@ -223,7 +223,7 @@ Despite different conclusions, all assessors agreed on these facts:
    setConfiguration(configuration: MidiConfiguration)
    ```
 
-   **MiniMax Analysis**: Neither approach wrong; style preference
+   **MiniMax Analysis**: Neither approach wrong - style preference
 
 2. **Type Inference vs Explicit Typing**
 
@@ -298,7 +298,7 @@ const onChangeConfig = (patch: Partial<MidiConfiguration>) => {
 
 **MiniMax Observation**: Grok kept some shorter forms where context makes meaning clear, reducing verbosity. This is a **deliberate trade-off** not an oversight.
 
-**KAT/Devstral View**: Didn't deeply analyze this pattern; focused on type names only.
+**KAT/Devstral View**: Didn't deeply analyze this pattern - focused on type names only.
 
 ### Import Statement Organization
 
@@ -324,7 +324,7 @@ import type {
 } from '../utils/midiUtils';
 ```
 
-**MiniMax Analysis**: Both valid; GPT more readable for long lists, Grok more concise for short lists.
+**MiniMax Analysis**: Both valid - GPT more readable for long lists, Grok more concise for short lists.
 
 **Other Assessors**: Didn't mention this difference.
 
@@ -357,7 +357,7 @@ import type {
 | Consistency       | 5%     | 95       | 85        | GPT more uniform     |
 | **Total**         | 100%   | **86.5** | **95.25** | Grok wins            |
 
-**Key Insight**: Weight assignment determines winner. MiniMax values maintainability and practical impact more; Devstral values consistency more.
+**Key Insight**: Weight assignment determines winner. MiniMax values maintainability and practical impact more - Devstral values consistency more.
 
 ### Synthesis Scoring (Balanced)
 

@@ -20,7 +20,7 @@ The summary block precedes the detailed sections and is refreshed when the recor
 
 The same audit found three stale claims in `ARCHITECTURE.md`: that components own no business logic, that the store persists channel mutes, and that song data lives in `App.tsx` useState. Each claim is verified against the current implementation and corrected.
 
-The change updates `FORMAT.md` so every saver key matches emitted output - or the document carries a format version marker - and corrects the `ARCHITECTURE.md` claims. This is a documentation-only change; `MAX.md` is externally managed and must not be edited.
+The change updates `FORMAT.md` so every saver key matches emitted output - or the document carries a format version marker - and corrects the `ARCHITECTURE.md` claims. This is a documentation-only change - `MAX.md` is externally managed and must not be edited.
 
 ## Hints
 

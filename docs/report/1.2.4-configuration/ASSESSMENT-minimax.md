@@ -45,6 +45,7 @@ This assessment compares the refactoring outcomes from two AI models (GPT 5.1 Co
   ```
 
 - **Grok Model**: Uses `configuration` as parameter name for clarity
+
   ```typescript
   const setConfiguration = useCallback((configuration: MidiConfiguration) => {
     setConfigurationState(configuration);
@@ -73,6 +74,7 @@ This assessment compares the refactoring outcomes from two AI models (GPT 5.1 Co
   ```
 
 - **Grok Model**: More concise but explicit typing
+
   ```typescript
   const [localConfig, setLocalConfig] = useState<MidiConfiguration>(configuration);
   ```
@@ -117,6 +119,7 @@ This assessment compares the refactoring outcomes from two AI models (GPT 5.1 Co
   ```
 
 - **GPT Model**: Relies more on type inference
+
   ```typescript
   setLocalConfiguration((prev) => ({ ...prev, inputEnabled: checked }));
   ```
@@ -135,6 +138,7 @@ This assessment compares the refactoring outcomes from two AI models (GPT 5.1 Co
   ```
 
 - **Grok Model**: More concise import statements
+
   ```typescript
   import type {
     MidiConfiguration,
@@ -159,6 +163,7 @@ This assessment compares the refactoring outcomes from two AI models (GPT 5.1 Co
   ```
 
 - **Grok Model**: Maintained existing import paths
+
   ```typescript
   import {
     buildMidiConfigurationYaml,

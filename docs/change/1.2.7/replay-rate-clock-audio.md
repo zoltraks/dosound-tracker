@@ -52,7 +52,7 @@ The export must select the correct command based on the song's frame rate. The d
 
 **DOSOUND assembly and binary export**
 
-The DOSOUND assembly format uses frame-count-based delays (not absolute time). At 60 Hz, a delay of 2 frames represents 33.33 ms instead of 40 ms. The frame counts in the export remain the same; only the absolute time they represent changes. The period values in the register stream are recalculated using the configured clock. No format-level changes are needed for ASM/BIN beyond using the dynamic clock in the period calculation.
+The DOSOUND assembly format uses frame-count-based delays (not absolute time). At 60 Hz, a delay of 2 frames represents 33.33 ms instead of 40 ms. The frame counts in the export remain the same - only the absolute time they represent changes. The period values in the register stream are recalculated using the configured clock. No format-level changes are needed for ASM/BIN beyond using the dynamic clock in the period calculation.
 
 ## Use Cases
 
@@ -67,15 +67,15 @@ The DOSOUND assembly format uses frame-count-based delays (not absolute time). A
 
 - The `frame` and `clock` fields already exist on the `Song` interface and are persisted in the YAML format.
 - The `DEFAULT_SONG_FRAME`, `DEFAULT_SONG_CLOCK`, `SUPPORTED_SONG_FRAMES`, and `SUPPORTED_SONG_CLOCKS` constants already exist in `src/constants/song.ts`.
-- The worker already accepts a `tickInterval` parameter via `setParams`; it just needs to be fed the correct value from the song's frame rate.
-- The `previewEnvelopeTiming.ts` utility already accepts a `tickIntervalMs` parameter with a default of 20; callers need to pass the dynamic value.
-- The `YM2149` class constructor currently takes only `audioContext`; it needs to accept the clock as a second parameter.
-- The `VBLANK_RATE` and `YM_CLOCK` constants should remain as defaults but must not be used directly in audio or export paths; the song's `frame` and `clock` fields drive the actual values.
+- The worker already accepts a `tickInterval` parameter via `setParams` - it just needs to be fed the correct value from the song's frame rate.
+- The `previewEnvelopeTiming.ts` utility already accepts a `tickIntervalMs` parameter with a default of 20 - callers need to pass the dynamic value.
+- The `YM2149` class constructor currently takes only `audioContext` - it needs to accept the clock as a second parameter.
+- The `VBLANK_RATE` and `YM_CLOCK` constants should remain as defaults but must not be used directly in audio or export paths - the song's `frame` and `clock` fields drive the actual values.
 - Audio-critical development principles in `GUIDELINES.md` apply. The `useSequencer` and `useSequencerIntegration` hooks use sparse dependency arrays and prop mirroring intentionally. New parameters (`frameRate`, `chipClock`) must be threaded through without breaking these patterns.
 
 ## Out of Scope
 
 - Adding more than two frame rates or clock values.
 - Changing the DOSOUND assembly delay format to support absolute time.
-- Retroactively converting existing songs to the new timing; songs without `frame` or `clock` fields default to 50 Hz and 2 MHz.
-- The `SequencerEngine.processFrame` stub; it is not used in the current playback path.
+- Retroactively converting existing songs to the new timing - songs without `frame` or `clock` fields default to 50 Hz and 2 MHz.
+- The `SequencerEngine.processFrame` stub - it is not used in the current playback path.

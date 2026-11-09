@@ -1,7 +1,7 @@
 # DOSOUND Tracker Refactoring Proposal
 
-**Version:** 1.2.5  
-**Project:** DOSOUND Tracker  
+**Version:** 1.2.5
+**Project:** DOSOUND Tracker
 **Type:** Refactoring Proposal for AI-Assisted Implementation
 
 ## Project Analysis

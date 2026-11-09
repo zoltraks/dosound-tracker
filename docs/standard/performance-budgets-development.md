@@ -512,5 +512,5 @@ and round-trip tests assert equality on the full buffer, not on sampled fields.
 
 Project-specific values for the DOSOUND Tracker codebase.
 
-- The audio tick runs at 50 Hz (20 ms per step) through `src/workers/sequencerWorker.ts`;
+- The audio tick runs at 50 Hz (20 ms per step) through `src/workers/sequencerWorker.ts`.
   no React re-render may occur inside the tick path.

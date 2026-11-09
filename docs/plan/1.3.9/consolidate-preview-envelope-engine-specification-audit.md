@@ -33,14 +33,14 @@ The plan is ready for implementation. All five copies were diffed against the ca
 ## Implementability
 
 - `useMidiActions` inputs arrive per event (`ym2149Ref`, derived `ymChannel`, `tickIntervalMsRef`) - the engine takes `channel` and `tickIntervalMs` per `start`, and `ym2149` from the mirrored options ref, so per-event values flow correctly.
-- `usePlaybackHandlers` clears `playInstTimerRef` at two sites; passing `stopInstrumentPreview` through `App.tsx` keeps the external-stop contract.
-- `PianoKeyboard`'s stale key-up guard maps to `hasState(keyId)`; `TrackPanel`'s `hasPreviewState` maps to `hasState()` plus `pressedNoteKeysRef`, which stays component-side.
-- `clearIntervalRef` remains used where timers live outside the engine; `window.setInterval` inside the engine returns `number` in the DOM lib, matching existing usage.
+- `usePlaybackHandlers` clears `playInstTimerRef` at two sites - passing `stopInstrumentPreview` through `App.tsx` keeps the external-stop contract.
+- `PianoKeyboard`'s stale key-up guard maps to `hasState(keyId)` - `TrackPanel`'s `hasPreviewState` maps to `hasState()` plus `pressedNoteKeysRef`, which stays component-side.
+- `clearIntervalRef` remains used where timers live outside the engine - `window.setInterval` inside the engine returns `number` in the DOM lib, matching existing usage.
 
 ## Fidelity
 
-- Tick math: the engine calls `advancePreviewEnvelopeTick` + `getPreviewEnvelopeApplyStep` - the shared helpers already used by three of five copies; `useMidiActions` copy B's inlined equivalent math is removed.
-- Reduced variants reproduce exactly through `honorSustain: false` (HeaderPanel) and `honorSustain: false` + `stopAfterStep: 64` (useInstrumentActions); HeaderPanel's missing catch-up changes only under timer throttling and moves toward the canonical contract - recorded as an accepted implementation difference.
+- Tick math: the engine calls `advancePreviewEnvelopeTick` + `getPreviewEnvelopeApplyStep` - the shared helpers already used by three of five copies - `useMidiActions` copy B's inlined equivalent math is removed.
+- Reduced variants reproduce exactly through `honorSustain: false` (HeaderPanel) and `honorSustain: false` + `stopAfterStep: 64` (useInstrumentActions) - HeaderPanel's missing catch-up changes only under timer throttling and moves toward the canonical contract - recorded as an accepted implementation difference.
 - Divergence recorded, not folded: MIDI auto-stop noteOff omission is deferred to `docs/change/1.4.0/send-midi-noteoff-on-preview-autostop.md`.
 - The record's localStorage claim is false for all five files - noted in the plan rather than silently absorbed.
 

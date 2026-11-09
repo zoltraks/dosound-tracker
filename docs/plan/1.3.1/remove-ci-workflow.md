@@ -30,7 +30,7 @@ Add a recorded convention in `GUIDELINES.md` mirroring the community-files prece
 
 ## Testing Strategy
 
-Documentation-only change beside deleting a CI config file - the verification loop is bypassed per the documentation-only rule; Prettier check covers the edited documents.
+Documentation-only change beside deleting a CI config file - the verification loop is bypassed per the documentation-only rule - Prettier check covers the edited documents.
 
 ## Verification
 

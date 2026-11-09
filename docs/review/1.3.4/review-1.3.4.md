@@ -26,8 +26,8 @@ The version is ready for a bump. All three change records are fulfilled, the tre
 
 ## Unconfirmed or Deviated Work
 
-- Refactoring phase executed as proposal-plus-assessment only; execution deferred to `docs/change/1.3.5/` (app decomposition continuation, test-tree alignment) - a deliberate deviation recorded in the assessment.
-- Manual audio playback verification remains a human check; the worker bundle resolves correctly in the build output.
+- Refactoring phase executed as proposal-plus-assessment only - execution deferred to `docs/change/1.3.5/` (app decomposition continuation, test-tree alignment) - a deliberate deviation recorded in the assessment.
+- Manual audio playback verification remains a human check - the worker bundle resolves correctly in the build output.
 
 ## Readiness
 

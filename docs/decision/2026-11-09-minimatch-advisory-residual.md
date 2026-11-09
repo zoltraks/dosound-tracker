@@ -17,13 +17,13 @@ The 12 moderate `minimatch` advisories are accepted as a documented residual unt
 
 ## Rationale
 
-Every consuming edge pins `^10` or `^9` ranges that cannot resolve `minimatch@11.0.1` or newer, and no stable upstream release widens those ranges. The advisory is a denial of service via crafted glob patterns; all reach is dev-only - `@typescript-eslint/typescript-estree` matches project-controlled tsconfig globs, and `app-builder-lib`/`@electron/universal` match project-controlled packaging patterns. No attacker-controlled input reaches the glob engine in this project's usage, and nothing ships to end users.
+Every consuming edge pins `^10` or `^9` ranges that cannot resolve `minimatch@11.0.1` or newer, and no stable upstream release widens those ranges. The advisory is a denial of service via crafted glob patterns - all reach is dev-only - `@typescript-eslint/typescript-estree` matches project-controlled tsconfig globs, and `app-builder-lib`/`@electron/universal` match project-controlled packaging patterns. No attacker-controlled input reaches the glob engine in this project's usage, and nothing ships to end users.
 
 ## Consequences
 
 - The advisory set is re-verified at each version-bump security audit until upstream clears it.
 - An upstream release that widens or bumps the minimatch ranges (typescript-eslint or electron-builder on `minimatch@11`/`@electron/universal@3`) removes the residual.
-- `npm audit` keeps reporting 12 moderate advisories; this record is the accepted-deviation note for that output.
+- `npm audit` keeps reporting 12 moderate advisories - this record is the accepted-deviation note for that output.
 
 ## Status
 

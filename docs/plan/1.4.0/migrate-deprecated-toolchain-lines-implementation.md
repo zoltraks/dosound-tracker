@@ -18,7 +18,7 @@ This implementation plan is based on the change request at
 
 ## Analysis
 
-Registry-verified on 2026-11-09. eslint 9 is EOL; eslint 10.14.0 is current
+Registry-verified on 2026-11-09. eslint 9 is EOL - eslint 10.14.0 is current
 and the whole plugin chain (typescript-eslint 8.72.1, react-hooks 7.1.1,
 react-refresh 0.5.7) accepts it. `rolldown-vite` is deprecated at 7.3.1 and
 merged into vite 8.3.x. `@vitejs/plugin-react` 6 requires vite 8, so the
@@ -28,7 +28,7 @@ at 4.1.12 - it accepts vite 8.
 
 ## Documentation Updates
 
-- `TESTING.md` — no change needed; gates stay the same commands.
+- `TESTING.md` — no change needed - gates stay the same commands.
 - `ARCHITECTURE.md` — the rolldown-vite mention becomes vite 8.
 
 ## Step by Step Implementation
@@ -39,8 +39,8 @@ Rename the rolldown-vite bundler mention to vite 8.
 
 **Update package.json**
 
-- `eslint` `^9.39.5` to `^10.14.0`; `@eslint/js` `^9.39.5` to `^10.0.1`.
-- `vite` `npm:rolldown-vite@7.3.1` to `^8.3.7` in `devDependencies`; delete
+- `eslint` `^9.39.5` to `^10.14.0` - `@eslint/js` `^9.39.5` to `^10.0.1`.
+- `vite` `npm:rolldown-vite@7.3.1` to `^8.3.7` in `devDependencies` - delete
   the `overrides` block.
 - `@vitejs/plugin-react` `^5.2.0` to `^6.3.0`.
 

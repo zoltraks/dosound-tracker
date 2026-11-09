@@ -56,7 +56,7 @@ The bump script writes `package.json` before building. If the build then fails, 
 The automated script handles the version number increment and the `package-lock.json` version sync. The following steps remain manual:
 
 - Running the security audit (`npm audit`).
-- Creating the CHANGELOG entry **before** `npm run bump` runs - the script's internal build copies `public/CHANGELOG.md` into `dist/`; an entry written after the bump is not in the served build until a second `npm run build`, and the release gate fails a stale `dist/CHANGELOG.md`.
+- Creating the CHANGELOG entry **before** `npm run bump` runs - the script's internal build copies `public/CHANGELOG.md` into `dist/` - an entry written after the bump is not in the served build until a second `npm run build`, and the release gate fails a stale `dist/CHANGELOG.md`.
 
 ## Version Bump Procedure
 
@@ -66,7 +66,7 @@ When bumping the version manually (outside the automated build script):
 - **Pass the release gate**: run `scripts/release-check.sh` and resolve every `FAIL` item. The gate enforces the documentation-state preconditions below. `scripts/release-check.sh --warn` reports without failing for inspection only.
   - Every changed `src/` file in the window must be covered by at least one change record in `docs/change/<version>/` (the gate enforces presence-level coverage).
   - A refactoring cycle for the bumping version requires an `ASSESSMENT.md` beside its `REFACTORING.md` - an open cycle cannot be released.
-  - A bump that closes a named version window requires the window review `docs/review/<version>/review-<version>.md`; an ad-hoc bump outside a window may proceed without one, and the missing review is reported as a warning.
+  - A bump that closes a named version window requires the window review `docs/review/<version>/review-<version>.md` - an ad-hoc bump outside a window may proceed without one, and the missing review is reported as a warning.
   - **Waiver**: an ad-hoc bump outside a named window is the recorded waiver path - the gate warns on the missing review instead of failing. Any other precondition failure must be resolved, never waived.
 - **Run a security audit**: execute `npm audit` and review findings. If vulnerabilities are found:
   - Run `npm audit fix` to resolve fixable issues automatically.

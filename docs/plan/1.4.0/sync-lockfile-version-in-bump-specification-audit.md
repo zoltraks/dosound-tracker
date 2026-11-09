@@ -25,7 +25,7 @@ Every requirement in the change record maps to a plan step.
 - Bump script syncs the lockfile in the same operation: covered by the
   `bump-version.mjs` step.
 - `VERSIONING.md` updated if the procedure needs it: covered by the
-  documentation step; it does need it because the manual `npm install` step
+  documentation step - it does need it because the manual `npm install` step
   is absorbed.
 - Verification through the next bump: covered by the integration-test note
   and the copied-manifest harness.
@@ -42,9 +42,9 @@ the bump would rewrite resolved metadata and could fail without network.
 ## Implementability
 
 - `scripts/bump-version.mjs` exists and already imports `readFileSync`,
-  `writeFileSync`, `resolve`; the added code needs no new imports.
+  `writeFileSync`, `resolve` - the added code needs no new imports.
 - `package-lock.json` carries `"version": "1.3.9"` at the root (line 3) and
-  inside `packages[""]` (line 9); both fields the plan writes are present.
+  inside `packages[""]` (line 9) - both fields the plan writes are present.
 - The lockfile uses two-space JSON indent, matching the plan's
   `JSON.stringify(lock, null, 2)` rewrite, so the sync produces a minimal
   diff.
@@ -57,7 +57,7 @@ the bump would rewrite resolved metadata and could fail without network.
   sync must touch - root `version` and `packages[""].version`. Both are
   enumerated.
 - Boundary decisions: a missing or unparsable lockfile fails the script
-  loudly; the plan states this explicitly.
+  loudly - the plan states this explicitly.
 - Constants completeness: no numeric bounds involved.
 
 ## Findings Returned to Planning

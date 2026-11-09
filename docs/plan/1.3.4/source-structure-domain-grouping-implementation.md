@@ -8,10 +8,10 @@ This implementation plan is based on the change request at `docs/change/1.3.4/so
 
 Follow TypeScript and React engineering standards from `docs/standard/ts-react-development.md`:
 
-- Organize source code by responsibility; group related files together.
-- Use relative imports for cross-module imports; do not introduce `@/` alias usage.
+- Organize source code by responsibility - group related files together.
+- Use relative imports for cross-module imports - do not introduce `@/` alias usage.
 - Keep file names unchanged so imports stay discoverable and git history is preserved by `git mv`.
-- No abbreviations in identifiers; directory names use lowercase domain words already established by file-name prefixes.
+- No abbreviations in identifiers - directory names use lowercase domain words already established by file-name prefixes.
 
 ## Audio-Critical Requirements
 
@@ -21,14 +21,14 @@ This change moves files that sit on audio paths (`src/hooks/sequencer/`, `src/ho
 - `useCallback` and `useMemo` dependency arrays are untouched.
 - State management patterns are untouched.
 - The YM2149 emulator and SoundDriver are untouched.
-- One audio-adjacent specifier changes: `new URL('../workers/sequencerWorker.ts', import.meta.url)` inside `useSequencer.ts` becomes `'../../workers/sequencerWorker.ts'`. The worker bundle path is resolved by Vite at build time; the build step verifies it.
+- One audio-adjacent specifier changes: `new URL('../workers/sequencerWorker.ts', import.meta.url)` inside `useSequencer.ts` becomes `'../../workers/sequencerWorker.ts'`. The worker bundle path is resolved by Vite at build time - the build step verifies it.
 - Manual audio verification: play a short phrase after the build to confirm the worker still ticks, since the move touches the worker URL specifier.
 
 ## Documentation Updates
 
 Update the active documentation set before any source code modifications.
 
-- `SPECIFICATION.md` — rewrite the Source Directory Structure section to record domain subfolders, `modals/`, and `assets/`; update `src/utils/instrumentPanelUtils.ts` and `src/hooks/useMidiMessageProcessing.ts` references to their new paths.
+- `SPECIFICATION.md` — rewrite the Source Directory Structure section to record domain subfolders, `modals/`, and `assets/` - update `src/utils/instrumentPanelUtils.ts` and `src/hooks/useMidiMessageProcessing.ts` references to their new paths.
 - `ARCHITECTURE.md` — update the Module Boundaries bullets for `hooks` and `utils` to record the domain subfolder grouping.
 - `docs/standard/ts-react-development.md` — correct the Import Paths statement: a `@/` alias is configured in `vite.config.ts` and `vitest.config.ts`, while the project convention keeps relative specifiers.
 - `REFACTORING.md` — correct the stale `2194-line App.tsx` figure to the current ~1390 lines used by the other pillars.
@@ -106,7 +106,7 @@ After the modals wave and again after each directory wave, run the targeted veri
 
 **Unit tests**
 
-No new utility functions are added, so no new test files are created. Existing tests keep their locations; their import specifiers are rewritten to the new source paths (for example `../../src/utils/songParser` becomes `../../src/utils/song/songParser`).
+No new utility functions are added, so no new test files are created. Existing tests keep their locations - their import specifiers are rewritten to the new source paths (for example `../../src/utils/songParser` becomes `../../src/utils/song/songParser`).
 
 **Integration tests**
 

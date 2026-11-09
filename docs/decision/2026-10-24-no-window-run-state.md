@@ -12,7 +12,7 @@ During the 1.3.1 SDLC window, a `docs/plan/1.3.1/window-run.md` run-state record
 
 ## Decision
 
-`docs/plan/<version>/window-run.md` is never created for ordinary SDLC window runs; it exists only for the run-resume extension when resuming is explicitly needed.
+`docs/plan/<version>/window-run.md` is never created for ordinary SDLC window runs - it exists only for the run-resume extension when resuming is explicitly needed.
 
 ## Rationale
 
@@ -21,7 +21,7 @@ The owner reviewed the artifact and rejected it. The run-state record adds an ex
 ## Consequences
 
 - Future window runs skip the run-state file while keeping the per-request implementation plans that `WORKFLOW.md` requires.
-- A window that is interrupted mid-run loses the formal resume record; progress is reconstructed from the plan files, change records, and the working tree instead.
+- A window that is interrupted mid-run loses the formal resume record - progress is reconstructed from the plan files, change records, and the working tree instead.
 
 ## Status
 

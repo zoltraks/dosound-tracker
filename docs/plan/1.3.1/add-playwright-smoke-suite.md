@@ -40,7 +40,7 @@ No store changes.
 
 **Create the shared spec helpers**
 
-One spec file keeps the suite compact; a small helper module holds the repeated interactions.
+One spec file keeps the suite compact - a small helper module holds the repeated interactions.
 
 File to create: `e2e/helpers.ts`.
 
@@ -68,7 +68,7 @@ File to create: `e2e/smoke.spec.ts`.
 
 **Restrict the project matrix to runnable engines**
 
-The firefox project is removed from `playwright.config.ts` because headless launch fails under the current macOS sandbox (`sandbox_extension_issue_file_to_process` denied for `plugin-container.app`, both headless and headed). Chromium and webkit remain; the exclusion is recorded in `TESTING.md` and a `REASON:` comment marks the revert point in the config.
+The firefox project is removed from `playwright.config.ts` because headless launch fails under the current macOS sandbox (`sandbox_extension_issue_file_to_process` denied for `plugin-container.app`, both headless and headed). Chromium and webkit remain - the exclusion is recorded in `TESTING.md` and a `REASON:` comment marks the revert point in the config.
 
 File to modify: `playwright.config.ts`.
 
@@ -96,7 +96,7 @@ Execute the steps above in this sequence.
 
 **Unit tests**
 
-No new utility functions are added; no unit tests are required.
+No new utility functions are added - no unit tests are required.
 
 **Integration tests**
 

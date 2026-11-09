@@ -23,19 +23,19 @@ refactoring phase, this review, the improvement step, and the close.
 ## Unconfirmed or Deviated Work
 
 - `midi-preview-tick-from-frame-rate`: the record's two `useMidiActions`
-  sites no longer existed after the 1.3.9 consolidation; the defect was
+  sites no longer existed after the 1.3.9 consolidation - the defect was
   found and fixed once in `usePreviewEnvelope.ts`, covering every consumer.
 - `log-silent-catches-trim-dead-surface`: `__dosoundTrackerIsResetting` and
-  the empty `if (!pattern)` block were already absent; verified and
+  the empty `if (!pattern)` block were already absent - verified and
   recorded rather than repaired. The dead-member count is eight, not seven.
 - `migrate-deprecated-toolchain-lines`: the stale lockfile blocked
-  `npm install` until it was regenerated; eslint 10 surfaced seven
+  `npm install` until it was regenerated - eslint 10 surfaced seven
   pre-existing findings (`no-useless-assignment`, `preserve-caught-error`)
   which were fixed in place.
 
 ## Undocumented Work
 
-The window produced only the recorded work; no unrecorded source change
+The window produced only the recorded work - no unrecorded source change
 exists beyond formatting side effects of the canonical `npm run format`
 sweep on historical documents, which `TESTING.md` accepts.
 

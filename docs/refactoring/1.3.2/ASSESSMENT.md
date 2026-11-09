@@ -36,4 +36,4 @@ None from the proposal. The larger App.tsx orchestrator decomposition is already
 
 ## Lessons Learned
 
-A grep census of literal key strings was enough to size this refactoring; the verification loop confirmed zero behavioural change. Small tidy-phase consolidations fit comfortably inside a feature window when the census is complete before the proposal is written.
+A grep census of literal key strings was enough to size this refactoring - the verification loop confirmed zero behavioural change. Small tidy-phase consolidations fit comfortably inside a feature window when the census is complete before the proposal is written.

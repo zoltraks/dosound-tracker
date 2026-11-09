@@ -14,7 +14,7 @@ Preventing rule: see "Place an extracted hook before its earliest consumer" in `
 
 Observed symptom: three successive slices each needed a follow-up cycle to remove imports left unused by the extraction - `yaml` after `useInstrumentFileLoading`, `ExportType`/`ExportStrategy` after `useExportModal`, `clearIntervalRef` and the editor-cursor helpers after later slices.
 
-Root cause: extractions removed the using code but not the import block; `eslint` and `tsc -b` reported each orphan only on the next verification pass.
+Root cause: extractions removed the using code but not the import block - `eslint` and `tsc -b` reported each orphan only on the next verification pass.
 
 Preventing rule: see "Check the origin file's imports after each extraction" in `docs/WORKFLOW.md`.
 
@@ -30,7 +30,7 @@ Preventing rule: see "Hook Extraction" in `docs/standard/ts-react-development.md
 
 Observed symptom: the verbatim move of the mobile-viewport mount effect into `useResponsivePanels` produced a `react-hooks/set-state-in-effect` warning that `src/App.tsx` never emitted for the identical code.
 
-Root cause: the compiler-powered react-hooks rules only analyze files they can fully model; the 2600-line component escaped analysis, so the warning surfaced only after extraction into a small file.
+Root cause: the compiler-powered react-hooks rules only analyze files they can fully model - the 2600-line component escaped analysis, so the warning surfaced only after extraction into a small file.
 
 Preventing rule: see "Hook Extraction" in `docs/standard/ts-react-development.md`.
 
@@ -38,6 +38,6 @@ Preventing rule: see "Hook Extraction" in `docs/standard/ts-react-development.md
 
 Observed symptom: a `git stash`-based attempt to lint the pre-change tree still reported the new `useResponsivePanels` warning, making the baseline comparison inconclusive.
 
-Root cause: `git stash` does not stash untracked files; the new hook file stayed on disk and kept linting.
+Root cause: `git stash` does not stash untracked files - the new hook file stayed on disk and kept linting.
 
 Preventing rule: see "Untracked files survive `git stash`" in `docs/WORKFLOW.md`.

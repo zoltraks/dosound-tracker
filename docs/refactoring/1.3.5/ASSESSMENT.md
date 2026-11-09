@@ -17,7 +17,7 @@ Overall result: complete. Both proposed steps were applied exactly as written.
   (for example the MIDI helper ref comment) were kept.
 - **Name canonical implementations at injection sites** — completed. The injection
   objects in `useTrackOperations`, `useInstrumentActions`, and `useMidiActions` now read
-  `formatNoteKey: formatBaseKey` and `parseBaseKeyString: parseBaseKey`; both module-level
+  `formatNoteKey: formatBaseKey` and `parseBaseKeyString: parseBaseKey` - both module-level
   const aliases were deleted.
 
 ## Deviations and Rationale
@@ -30,7 +30,7 @@ None. The steps landed as proposed with no scope additions.
 - `npm run lint` — zero errors, zero warnings.
 - `npm run format` — applied.
 - `npm run build` — success.
-- `npm test` — 544 tests passed across 73 files; identical to the pre-change count.
+- `npm test` — 544 tests passed across 73 files - identical to the pre-change count.
 
 ## Remaining Gaps
 

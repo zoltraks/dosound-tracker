@@ -4,7 +4,7 @@
 
 - All code must be **original** and not copied from existing solutions.
 - Never copy code from other sources without proper licensing and attribution.
-- **Never** accept AI-generated code that resembles or duplicates code from other projects; always verify originality.
+- **Never** accept AI-generated code that resembles or duplicates code from other projects - always verify originality.
 - When adding external libraries or dependencies, verify license compatibility before use.
 - Document the source and license of any third-party code or libraries used.
 - Do not include copyrighted material without explicit permission.

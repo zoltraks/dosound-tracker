@@ -19,7 +19,7 @@ Follow TypeScript and React engineering standards from `docs/standard/ts-react-d
 - **Audio impact assessment**: the change adds test files only. No production code, render timing, dependency arrays, or audio-path state management is modified.
 - **Timing stability verification**: not applicable - no runtime code changes.
 - **Linting exception documentation**: no new linting exceptions.
-- **Playback simulation**: sequencer and driver tests exercise `SoundDriver`, `SequencerEngine`, and the export simulation synchronously; YM2149 tests substitute a stub `AudioContext` factory so no real audio device is touched.
+- **Playback simulation**: sequencer and driver tests exercise `SoundDriver`, `SequencerEngine`, and the export simulation synchronously - YM2149 tests substitute a stub `AudioContext` factory so no real audio device is touched.
 
 ## Documentation Updates
 
@@ -83,7 +83,7 @@ Uncovered pools in `src/hooks/`: `useInstrumentManagement` (0%), `useSongManagem
 File to create or update: `test/hooks/<hook>.test.tsx` via `renderHook`.
 
 - Hook-level state transitions with jsdom and the existing localStorage setup.
-- MIDI processing with synthetic `Uint8Array` messages; Web MIDI API stubbed.
+- MIDI processing with synthetic `Uint8Array` messages - Web MIDI API stubbed.
 
 **Cover counted components and modals**
 

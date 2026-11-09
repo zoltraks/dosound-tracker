@@ -64,7 +64,7 @@ Creating a new song or loading a different song resets the cursor as it does tod
 - The instrument list index in `src/components/InstrumentSection.tsx` follows the application's current instrument selection. Persist the current instrument selection, not the derived list index, to avoid a second source of truth.
 - The octave is `currentOctave` in `src/stores/uiStore.ts`.
 - The canonical local-storage state hook is `useLocalStorageState` in `src/hooks/useLocalStorageState.ts`. Local storage keys are centralised in `src/utils/storageKeys.ts`.
-- The `EnvelopePanel` and `ToneNoisePanel` hold audio-critical prop-mirrored state. Only the step cursor changes; the mirrored envelope data must not be altered.
+- The `EnvelopePanel` and `ToneNoisePanel` hold audio-critical prop-mirrored state. Only the step cursor changes - the mirrored envelope data must not be altered.
 
 ## Out of Scope
 

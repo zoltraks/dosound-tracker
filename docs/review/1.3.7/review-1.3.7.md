@@ -39,8 +39,8 @@ All records under `docs/change/1.3.7/`, the `docs/refactoring/1.3.7/` pair, the 
 
 - **Confirmed** - all ten records' work is present in the uncommitted diff: markdown parser + themed `em`, `uiState.ts`/`useUiStatePersistence.ts`, dedicated-oscillator test tone, `release-check.sh`, Session Improvement section, `bash-inline` vendored, context-management rule, preview guards (`hasPreviewState`, early return in `handleHardStopLivePreview`), dead-module removal, `songSpeed.ts`.
 - **Unconfirmed** - none.
-- **Undocumented** - none material; `docs/lesson/lessons-2026-11-04-test-tone-and-restore.md` is a lessons index per convention, not a change record.
-- **Deviations** - the test tone went through parameter iterations before the mechanism fix (recorded as the session's primary lesson); `TESTING.md` coverage-gap line corrected from SoundDriver to YM2149 only.
+- **Undocumented** - none material - `docs/lesson/lessons-2026-11-04-test-tone-and-restore.md` is a lessons index per convention, not a change record.
+- **Deviations** - the test tone went through parameter iterations before the mechanism fix (recorded as the session's primary lesson) - `TESTING.md` coverage-gap line corrected from SoundDriver to YM2149 only.
 
 ## Findings
 
@@ -62,7 +62,7 @@ All records under `docs/change/1.3.7/`, the `docs/refactoring/1.3.7/` pair, the 
 
 ## Unable to Verify
 
-- Electron packaging (`electron:build`) was not re-run this window; Electron 45 packaging was proven during the dependency wave and no packaging-affecting change landed since.
+- Electron packaging (`electron:build`) was not re-run this window - Electron 45 packaging was proven during the dependency wave and no packaging-affecting change landed since.
 
 ## Decision
 

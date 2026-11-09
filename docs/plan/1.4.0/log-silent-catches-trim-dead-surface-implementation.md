@@ -25,14 +25,14 @@ Verified against the tree on 2026-11-09.
   listener attach/detach sites, device `close()` calls, `inputs.get`/
   `outputs.get` lookups, and the `localStorage` debug-flag read. `logger` is
   already imported in the file.
-- `useSequencer` returns nineteen members; eight have zero consumers outside
+- `useSequencer` returns nineteen members - eight have zero consumers outside
   the hook: `start`, `setBPM`, `setTicksPerRow`, `setTickCallback`,
   `getCurrentTime`, `jumpToLine`, `nextLine`, `previousLine`. The record's
   "seven" aged by one - `start` joined the dead set.
 - `debugTimestamp` is declared on `SequencerWorkerTickData` but the worker
   never emits it.
 - `bpm` and `ticksPerRow` in `SequencerState` are read only by the dead
-  `getCurrentTime` member; after its removal both are write-only fields and
+  `getCurrentTime` member - after its removal both are write-only fields and
   join the trim.
 - `__dosoundTrackerIsResetting` has no occurrence in `src/`, `test/`, or
   `electron/` - already absent, nothing to trim.
@@ -44,27 +44,27 @@ Verified against the tree on 2026-11-09.
 - Match the existing `logger.warn('Failed to ...', error)` convention used in
   `persistenceMirror.ts`.
 - MIDI hot-path rule honoured: the catches sit in send/open/close/listener
-  paths, not in the per-message handler; `logger.warn` passes the error
+  paths, not in the per-message handler - `logger.warn` passes the error
   object with no per-event allocation.
 - Persistence-mirror degradation logging stays untouched per the record.
 
 ## Audio-Critical Requirements
 
 - No render timing, dependency array, or state-management change.
-- The trim removes uncalled code only; the worker message shape keeps every
+- The trim removes uncalled code only - the worker message shape keeps every
   emitted field.
 
 ## Documentation Updates
 
-- `ARCHITECTURE.md` - none required; the hook's return surface is not
+- `ARCHITECTURE.md` - none required - the hook's return surface is not
   itemized there.
-- `SPECIFICATION.md` - none required; removed members were not documented.
+- `SPECIFICATION.md` - none required - removed members were not documented.
 
 Both files are verified to carry no reference to the removed members.
 
 ## Type and State Updates
 
-`SequencerState` loses `bpm` and `ticksPerRow`;
+`SequencerState` loses `bpm` and `ticksPerRow`.
 `SequencerWorkerTickData` loses `debugTimestamp`. `useSequencer`'s return
 object drops the eight dead members and `tickCallbackRef` is removed with
 `setTickCallback`.
@@ -87,7 +87,7 @@ Delete `start`, `setBPM`, `setTicksPerRow`, `setTickCallback`,
 `getCurrentTime`, `jumpToLine`, `nextLine`, `previousLine` from the return
 object and their definitions. Remove `tickCallbackRef` and its invocation in
 the message handler. Remove `bpm` and `ticksPerRow` from `SequencerState`
-and both initial state objects; `updateSpeed` keeps its worker post but
+and both initial state objects - `updateSpeed` keeps its worker post but
 drops the state write. Remove `debugTimestamp` from
 `SequencerWorkerTickData`.
 
@@ -103,12 +103,12 @@ File to modify: `src/hooks/sequencer/useSequencer.ts`.
 
 **Unit tests**
 
-Existing suites cover the hook surfaces that remain; no new tests - this is
+Existing suites cover the hook surfaces that remain - no new tests - this is
 removal and logging only.
 
 **Integration tests**
 
-Typecheck proves no consumer referenced the removed members; the full suite
+Typecheck proves no consumer referenced the removed members - the full suite
 confirms no behaviour change.
 
 ## Verification

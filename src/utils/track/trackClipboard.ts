@@ -4,7 +4,8 @@ import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { PATTERN_LENGTH, MAX_PATTERN_LENGTH } from '../../constants/music.ts';
 import { assertImportSize } from '../validation/importSize.ts';
 import { expandRunNodes } from '../yaml/runLength.ts';
-import { quoteYamlValues } from '../yaml/yamlUtils.ts';
+import { quoteYamlValues, YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';
+import { createNoteOff } from './trackPanelUtils.ts';
 
 export type TrackClipboardStep = {
   wait?: boolean | number;
@@ -125,11 +126,7 @@ export function generateClipboardData(
   flushRun();
 
   const exportData = { step: compressedSteps };
-  const yamlContent = yaml.dump(exportData, {
-    indent: 2,
-    lineWidth: -1,
-    quotingType: '"',
-  });
+  const yamlContent = yaml.dump(exportData, YAML_DUMP_OPTIONS);
 
   return quoteYamlValues(yamlContent, 'note');
 }
@@ -211,7 +208,7 @@ export function applyClipboardToLines(
     const isOffNote = typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
 
     if (isOffNote) {
-      line.note = { note: '===', octave: 0, instrument: '00' };
+      line.note = createNoteOff();
     } else if (ln.wait === true || ln.space === true) {
       line.note = null;
     } else if (typeof rawNote === 'string') {

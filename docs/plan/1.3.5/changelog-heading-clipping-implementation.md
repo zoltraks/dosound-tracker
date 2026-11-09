@@ -14,7 +14,7 @@ Follow the CSS engineering standard from `docs/standard/css-general-development.
 
 ## Documentation Updates
 
-No documentation files require changes. The fix restores the intended rendering; `PROJECT.md`, `ARCHITECTURE.md`, `SPECIFICATION.md`, and `FORMAT.md` are unaffected.
+No documentation files require changes. The fix restores the intended rendering - `PROJECT.md`, `ARCHITECTURE.md`, `SPECIFICATION.md`, and `FORMAT.md` are unaffected.
 
 ## Type and State Updates
 
@@ -53,7 +53,7 @@ File to modify: `src/App.css`.
 
 ## Testing Strategy
 
-No new unit or integration tests. The change is a CSS line-height on rendered markdown; no utility functions, state actions, or component logic change. The existing component tests for the modal continue to pass unchanged.
+No new unit or integration tests. The change is a CSS line-height on rendered markdown - no utility functions, state actions, or component logic change. The existing component tests for the modal continue to pass unchanged.
 
 ## Verification
 

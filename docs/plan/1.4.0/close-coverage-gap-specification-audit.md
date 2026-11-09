@@ -14,7 +14,7 @@
 
 ## Verdict
 
-Ready. The measured gap is ~74 branches, dominated by one file; the plan
+Ready. The measured gap is ~74 branches, dominated by one file - the plan
 targets the deficit directly instead of the record's broader worst-case
 envelope.
 
@@ -26,7 +26,7 @@ the plan's target. `TESTING.md`'s stale expectation note is synced.
 ## Ambiguity
 
 "highest-risk untested paths first" resolves to the largest measured
-branch deficit; sequencer-worker and modal coverage remain candidates for
+branch deficit - sequencer-worker and modal coverage remain candidates for
 later windows and are noted, not skipped silently.
 
 ## Implementability

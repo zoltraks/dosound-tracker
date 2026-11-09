@@ -29,9 +29,9 @@ The change record states one requirement: custom pattern names survive a save/lo
 Verified against the tree:
 
 - `src/utils/song/songIO.ts` builds `patternNode` at lines 241-249 with `number` and `step` - the insertion point exists.
-- `Pattern.name` is `string` per `src/synth/SoundDriver.ts`; test fixtures already pass `name`.
+- `Pattern.name` is `string` per `src/synth/SoundDriver.ts` - test fixtures already pass `name`.
 - `src/utils/song/songParser.ts` reads `patternNode.name` with the `Pattern ${number}` fallback - the parser needs no change.
-- `test/utils/song/songIO.test.ts` exists with a `song()` factory carrying `name: 'P'` - the existing fixture name `P` differs from `Pattern 00` and will now be emitted; assertions on emitted keys must tolerate the new key.
+- `test/utils/song/songIO.test.ts` exists with a `song()` factory carrying `name: 'P'` - the existing fixture name `P` differs from `Pattern 00` and will now be emitted - assertions on emitted keys must tolerate the new key.
 
 ## Fidelity
 

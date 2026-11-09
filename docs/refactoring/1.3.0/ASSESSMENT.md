@@ -28,7 +28,7 @@ line 349 clamps without truncation (migrating would change fractional envelope i
 ## Verification
 
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build` - clean.
-- `npm test` - 47 files, 266 tests, zero failures. Baseline was 45 files, 255 tests; the
+- `npm test` - 47 files, 266 tests, zero failures. Baseline was 45 files, 255 tests - the
   delta is the `permissions` suite (6 tests) and the `volumeUtils` suite (5 tests).
 - Export fixture suites pass unchanged - `clampVolumeNibble` is a pure function with no
   render, hook, or timing surface, so audio paths are unaffected.
@@ -42,5 +42,5 @@ behaviour-visible decision, not refactoring.
 ## Lessons
 
 The clamp's three truncation dialects (`| 0`, `Math.floor`, none) were equivalent only after
-the clamp bound was accounted for; cataloguing every site before writing the helper is what
+the clamp bound was accounted for - cataloguing every site before writing the helper is what
 kept the consolidation behaviour-preserving.

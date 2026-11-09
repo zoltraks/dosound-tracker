@@ -25,7 +25,7 @@ now derives `tickIntervalMs` from `currentSong.frame` and passes it into
 unfocused). The defect survived the move inside the shared engine -
 `usePreviewEnvelope.ts` initialises `nextTickTime` to `now + 20` while the
 interval timer runs at `tickIntervalMs`. At 60 Hz the first envelope
-boundary lands one interval late; at 50 Hz the constant happens to equal
+boundary lands one interval late - at 50 Hz the constant happens to equal
 the interval. Fixing the engine site repairs every consumer - TrackPanel,
 PianoKeyboard, HeaderPanel, `useMidiActions`, and `useInstrumentActions` -
 not only the MIDI paths the record named.
@@ -37,7 +37,7 @@ Follow TypeScript engineering standards from
 standard `docs/standard/typescript-audio-development.md`:
 
 - Derive timing constants from the configured interval, never a literal.
-- Keep the change single-line; audio timing paths favour minimal diffs.
+- Keep the change single-line - audio timing paths favour minimal diffs.
 - Prove the fix with a deterministic timer test before touching the code.
 
 ## Audio-Critical Requirements
@@ -109,7 +109,7 @@ Execute the steps above in this sequence.
 
 **Unit tests**
 
-The new case covers the 60 Hz boundary; the existing suite keeps the 50 Hz
+The new case covers the 60 Hz boundary - the existing suite keeps the 50 Hz
 shape (`tickIntervalMs: 20`) green, proving unchanged behaviour at the
 default rate.
 

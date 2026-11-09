@@ -30,19 +30,19 @@ plan repairs it where it actually lives.
 
 ## Ambiguity
 
-The record's "at two sites" no longer matches the tree; the plan records the
+The record's "at two sites" no longer matches the tree - the plan records the
 relocated defect and widens the fix from the two named MIDI surfaces to the
 single shared site. That is a scope tightening, not an interpretation fork.
 
 ## Implementability
 
-- `usePreviewEnvelope.ts` line 142 initialises `nextTickTime` to `now + 20`;
+- `usePreviewEnvelope.ts` line 142 initialises `nextTickTime` to `now + 20`.
   `tickIntervalMs` is destructured in the same scope at line 110, so the fix
   is a single-expression change with no new dependencies.
 - `useMidiActions.ts` lines 62, 217, and 285 already derive and pass
   `tickIntervalMs` from `currentSong.frame`, confirming the engine site is
   the only remaining hardcoded offset.
-- `advancePreviewEnvelopeTick` accepts `tickIntervalMs` with a `20` default;
+- `advancePreviewEnvelopeTick` accepts `tickIntervalMs` with a `20` default.
   the engine always passes the configured value, so no utility change is
   needed.
 - The test harness (`EngineHarness`, fake timers, `appliedSteps`) already
@@ -53,7 +53,7 @@ single shared site. That is a scope tightening, not an interpretation fork.
 
 - Enumeration fidelity: every preview consumer (`TrackPanel`,
   `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, `useInstrumentActions`)
-  shares the one engine site; none carry their own offset. Verified by
+  shares the one engine site - none carry their own offset. Verified by
   grepping `nextTickTime` and `tickIntervalMs` across `src/`.
 - Constants completeness: the 60 Hz interval is `1000 / 60 = 16.66 ms`, the
   50 Hz interval is `20 ms`, matching `DEFAULT_SONG_FRAME` and the

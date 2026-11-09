@@ -20,7 +20,7 @@ Preventing rule: see "Type checking" in `docs/TESTING.md`.
 
 ### Version Bump Leaves Skew When Build Fails Midway
 
-Observed symptom: the first `npm run bump` wrote version 1.3.2 into `package.json` and then failed on test type errors; re-running bumped again to 1.3.3, skipping the intended release number until `package.json` was corrected manually.
+Observed symptom: the first `npm run bump` wrote version 1.3.2 into `package.json` and then failed on test type errors - re-running bumped again to 1.3.3, skipping the intended release number until `package.json` was corrected manually.
 
 Root cause: `scripts/bump-version.mjs` writes the new version before invoking the build, so a mid-run failure leaves the recorded version ahead of the delivered build.
 

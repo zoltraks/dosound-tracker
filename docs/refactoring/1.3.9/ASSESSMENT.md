@@ -35,13 +35,13 @@ No deviations from the plan. Three deliberate exclusions were declared in the pr
 - `npm run lint` - zero errors, zero warnings.
 - `npx prettier --write` - applied to all touched files, two proposal documents reformatted.
 - `npm run build` - passes.
-- `npm test` - 76 files, 555 tests, all green (555 before the window, 555 after; no test changes required).
+- `npm test` - 76 files, 555 tests, all green (555 before the window, 555 after - no test changes required).
 - Per-step verification ran after each of the five steps: `tsc --noEmit`, `eslint`, and the affected test subsets (`test/exports/`, `test/components/`, `test/hooks/`, `test/utils/`) stayed green throughout.
 - Export output fidelity - the export suite (`test/exports/`, `exportCoreAndValidation.test.ts`, 62 tests) is green, confirming byte-identical output after the `core.ts` and `asm.ts` substitutions.
 
 ## Remaining Gaps
 
-- `src/exports/core.ts:47` retains the inline conditional by design; normalising `formatNoteLabel` for non-uppercase input would be a behaviour change and was not deferred since no call site can currently produce it.
+- `src/exports/core.ts:47` retains the inline conditional by design - normalising `formatNoteLabel` for non-uppercase input would be a behaviour change and was not deferred since no call site can currently produce it.
 - `ExportFormat`, `asTrackId`, and `LogEntry` remain as documented-but-unreferenced exports pending the 1.4.0 record.
 - The dead items enumerated by `log-silent-catches-trim-dead-surface` (seven `useSequencer` exports, `debugTimestamp`, `__dosoundTrackerIsResetting`, the empty `if` block) are untouched - they belong to that record's scope, not this window's.
 

@@ -28,16 +28,16 @@ The change record requires bounded expansion at both sites plus a byte cap on fi
 
 Verified against the tree:
 
-- `songParser.ts` lines 270-272 and 281-285 hold the two unbounded loops; `clampedLength` is computed at line 159 before use.
-- `trackClipboard.ts` lines 187-189 and 197-199 hold the matching loops; `MAX_PATTERN_LENGTH` bounds pastes beyond any pattern length.
-- `useDataManagement.ts` `loadSong` has `setSongError` in scope; `MidiModal.tsx` `handleFileChange` has `onLoadError` in scope.
+- `songParser.ts` lines 270-272 and 281-285 hold the two unbounded loops - `clampedLength` is computed at line 159 before use.
+- `trackClipboard.ts` lines 187-189 and 197-199 hold the matching loops - `MAX_PATTERN_LENGTH` bounds pastes beyond any pattern length.
+- `useDataManagement.ts` `loadSong` has `setSongError` in scope - `MidiModal.tsx` `handleFileChange` has `onLoadError` in scope.
 - The instrument file input passes only text to `onLoadInstrument` - no error channel exists, so the parse-level cap is the only check there, as the plan states.
 - `parseMidiConfigurationFromYaml(text, currentConfiguration)` and `parseInstrumentFromText(content, id)` both take the raw text first - entry checks fit.
 
 ## Fidelity
 
-- Constants completeness: `MAX_IMPORT_BYTES = 1 MiB` and `MAX_PATTERN_LENGTH = 256` are enumerated; the 256 value matches the existing parser clamp `Math.min(256, ...)`.
-- Boundary decisions: a run truncated at capacity leaves later sibling nodes pushed but unread - harmless single allocations; documented behavior stays "expansion bounded to remaining length".
+- Constants completeness: `MAX_IMPORT_BYTES = 1 MiB` and `MAX_PATTERN_LENGTH = 256` are enumerated - the 256 value matches the existing parser clamp `Math.min(256, ...)`.
+- Boundary decisions: a run truncated at capacity leaves later sibling nodes pushed but unread - harmless single allocations - documented behavior stays "expansion bounded to remaining length".
 - Cross-party parity: the saver never emits runs beyond pattern length, so truncation only affects malformed input.
 
 ## Findings Returned to Planning

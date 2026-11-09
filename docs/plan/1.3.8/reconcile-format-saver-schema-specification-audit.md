@@ -30,7 +30,7 @@ Verified against the tree:
 
 - `songIO.ts` emits `line`, `pattern` nodes with `number`/`name`/`step`, `instrument` nodes with `number`/`name`/`base`/`color`/`octave`/`shift`/`pitch`/`noise`/`mode`/`sustain`/`midi`.
 - `trackClipboard.ts` emits root `step`.
-- Note-off rows emit `note: 'OFF'`; `wait` replaces the documented `space`; `shift` replaces the documented `arpeggio`.
+- Note-off rows emit `note: 'OFF'` - `wait` replaces the documented `space` - `shift` replaces the documented `arpeggio`.
 - `PlaylistPanel.tsx`, `ToneNoisePanel.tsx`, `EnvelopePanel.tsx` perform direct `localStorage` I/O - the presentational claim is stale.
 - `useUiStore.ts` persists channel mutes through `EQ_MUTES` - that claim is accurate and stays.
 - `useDataManagement.ts:73` owns `useState<Song>` - the App.tsx-local-state claim is stale.

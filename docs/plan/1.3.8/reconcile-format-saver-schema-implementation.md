@@ -16,7 +16,7 @@ This implementation plan is based on the change request at `docs/change/1.3.8/re
 
 ## Documentation Updates
 
-This change is documentation-only; every edit below is the documentation update itself.
+This change is documentation-only - every edit below is the documentation update itself.
 
 **Rewrite the saver key set in `FORMAT.md`**
 

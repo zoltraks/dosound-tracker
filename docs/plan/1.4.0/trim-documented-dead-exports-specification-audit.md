@@ -14,7 +14,7 @@
 
 ## Verdict
 
-Ready. All three items are verified unreferenced; the per-item decision
+Ready. All three items are verified unreferenced - the per-item decision
 distinguishes state descriptions from documented intent, which is exactly
 the judgement the record's hint asks for.
 
@@ -26,7 +26,7 @@ the record declares.
 
 ## Ambiguity
 
-The record leaves per-item keep-or-remove open; the plan resolves each with
+The record leaves per-item keep-or-remove open - the plan resolves each with
 a stated rationale.
 
 ## Implementability
@@ -38,7 +38,7 @@ a stated rationale.
 
 ## Fidelity
 
-Boundary decided: `TrackId` type stays, only the dead constructor leaves;
+Boundary decided: `TrackId` type stays, only the dead constructor leaves.
 LOGGER.md is untouched because `LogEntry` stays.
 
 ## Findings Returned to Planning

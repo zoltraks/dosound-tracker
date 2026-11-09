@@ -21,5 +21,5 @@ lacks the current version's heading.
 
 ## Outcome
 
-- `npm run build` refreshed `dist/`; the modal now shows 1.3.8.
+- `npm run build` refreshed `dist/` - the modal now shows 1.3.8.
 - The ordering rule and the mechanical check prevent recurrence.

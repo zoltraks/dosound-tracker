@@ -20,7 +20,7 @@ This implementation plan is based on the change request at
 
 The single-author posture is already accepted in `WORKFLOW.md` under
 Continuity. No succession path exists. Stale remote branches exist
-(`origin/broken/*`, `origin/refactoring/*`, `origin/repair/*` and similar);
+(`origin/broken/*`, `origin/refactoring/*`, `origin/repair/*` and similar).
 their deletion is a remote-side irreversible operation, so the plan records
 the inventory and leaves pruning to the owner.
 

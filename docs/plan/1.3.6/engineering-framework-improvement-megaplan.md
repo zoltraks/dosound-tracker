@@ -31,7 +31,7 @@ Record 6 depends on record 4: the extension rules are written into `TESTING.md`,
 
 **Wave 1** - records 1, 2, 3.
 
-Disjoint write sets: record 1 touches `README.md`, `REFACTORING.md`, and one line of `TESTING.md`; record 2 touches `DEPLOYMENT.md` only; record 3 touches `docs/standard/` files plus index tables.
+Disjoint write sets: record 1 touches `README.md`, `REFACTORING.md`, and one line of `TESTING.md` - record 2 touches `DEPLOYMENT.md` only - record 3 touches `docs/standard/` files plus index tables.
 
 **Wave 2** - records 4, 5.
 

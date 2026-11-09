@@ -16,7 +16,7 @@ Five majors are feasible but need proof rather than assumption:
 
 - `vitest` + `@vitest/ui` + `@vitest/coverage-v8` 5.1.0 - peer accepts vite ^7.
 - `zustand` 5.0.16 - single store via `create`.
-- `js-yaml` 5.5.0 - six YAML call sites; export round-trips must stay byte-identical.
+- `js-yaml` 5.5.0 - six YAML call sites - export round-trips must stay byte-identical.
 - `lucide-react` 1.67.0 - about three icon imports.
 - `eslint-plugin-react-refresh` 0.5.7 - lint gate.
 

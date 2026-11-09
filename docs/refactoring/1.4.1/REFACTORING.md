@@ -23,7 +23,7 @@ Three leftover surfaces surfaced while the window's records landed.
 
 Seen but not planned: the run-length _compression_ logic in
 `trackClipboard.ts` and `songIO.ts` is near-verbatim at only two sites,
-so the Rule of Three holds back a shared `compressRunNodes` for now;
+so the Rule of Three holds back a shared `compressRunNodes` for now.
 and `songIO.ts` writes the untrimmed `title`/`author` while checking the
 trimmed value - a behaviour question, deferred to a change record under
 a later window.
@@ -90,8 +90,8 @@ File to add: `test/utils/transpose/transposeUtils.test.ts`,
 
 ## Risk
 
-Low. The comment and quoter items are Tidy with identical output; the
-clamp extraction is mechanical against guarded inputs; the tests add
+Low. The comment and quoter items are Tidy with identical output - the
+clamp extraction is mechanical against guarded inputs - the tests add
 coverage without touching source. The full suite plus typecheck is the
 regression gate. Audio paths are untouched - the `| 0` MIDI sites stay
 local by design.

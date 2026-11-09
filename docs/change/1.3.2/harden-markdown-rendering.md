@@ -19,4 +19,4 @@ Restrict the sinks to first-party content and add a restrictive content security
 
 ## Hints
 
-The sinks currently render only `MESSAGES.md`; keep the source set bounded.
+The sinks currently render only `MESSAGES.md` - keep the source set bounded.

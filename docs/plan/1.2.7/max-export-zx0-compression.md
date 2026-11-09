@@ -31,8 +31,8 @@ Consult `GUIDELINES.md` for the audio-critical development principles before mak
 
 Per project guidelines, update the active documentation set before any source code modifications. Update only the files affected by this change.
 
-- `PROJECT.md` — no change. The MAX export feature is already listed; only its internal behaviour changes.
-- `ARCHITECTURE.md` — no change. No new modules are added to the architecture diagram; `src/utils/zx0.ts` is a leaf utility with no callers other than `src/exports/max.ts`.
+- `PROJECT.md` — no change. The MAX export feature is already listed - only its internal behaviour changes.
+- `ARCHITECTURE.md` — no change. No new modules are added to the architecture diagram - `src/utils/zx0.ts` is a leaf utility with no callers other than `src/exports/max.ts`.
 - `SPECIFICATION.md` — update the MAX export entry to reflect ZX0 compression, 14-register frames, and the corrected REG7 delimiter encoding.
 - `FORMAT.md` — rewrite the `EXPORT MAX` section to document the three strategy-to-format mappings, the ZX0 compression byte (`0x08`), the 14-register frame width, the single-byte REG7 delimiter, and the mandatory stream-size field in the stream definition chunk.
 

@@ -38,7 +38,7 @@ The test file location `test/hooks/modal/` exists and mirrors `src/hooks/modal/`
 
 ## Fidelity
 
-- Enumeration fidelity: both modals named by the record are covered; `isInstrumentDeleteOpen` intentionally stays out of the Enter chain (its dialog offers two confirm actions, so Enter has no unique confirmation path) and remains out of scope per the record.
+- Enumeration fidelity: both modals named by the record are covered - `isInstrumentDeleteOpen` intentionally stays out of the Enter chain (its dialog offers two confirm actions, so Enter has no unique confirmation path) and remains out of scope per the record.
 - Constants completeness: no constants, bounds, or defaults are introduced.
 - Boundary decisions: Enter on `instrumentOperationSummary` maps to its single close action - decided, not implied.
 

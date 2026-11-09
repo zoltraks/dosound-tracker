@@ -6,7 +6,7 @@
 
 Builds require the toolchain floor declared in `package.json` `engines`
 (Node `>=26.13.0`, npm `>=11.20.0`), pinned exactly by `.nvmrc` and enforced
-at install time through `.npmrc`.
+at install time through `.npmrc`. Clean installs print `npm warn install-scripts` prompts for `electron-winstaller` and `fsevents` - allowlist notices from the host npm policy, not project defects.
 
 **Production Build**
 
@@ -30,7 +30,7 @@ The production build registers a service worker at `/sw.js` that keeps the appli
 
 All same-origin requests use a network-first strategy: the worker fetches the deployed asset, updates the cache, and falls back to the cached copy only when the network is unavailable. Returning clients therefore always receive the current build. Navigation requests fall back to `/index.html` when offline.
 
-Every production build also injects a restrictive `Content-Security-Policy` meta tag into `dist/index.html`; the directive list is defined by the `inject-content-security-policy` plugin in `vite.config.ts` and ships to both web deploys and the packaged Electron bundle.
+Every production build also injects a restrictive `Content-Security-Policy` meta tag into `dist/index.html` - the directive list is defined by the `inject-content-security-policy` plugin in `vite.config.ts` and ships to both web deploys and the packaged Electron bundle.
 
 ## Electron Distribution
 
@@ -74,4 +74,4 @@ Electron desktop builds can be downloaded from the project home page: https://do
 
 ## Web Hosting
 
-The application is a static single-page application. The live deployment is the project home page above; the `dist/` output deploys to any static file host without additional configuration.
+The application is a static single-page application. The live deployment is the project home page above - the `dist/` output deploys to any static file host without additional configuration.

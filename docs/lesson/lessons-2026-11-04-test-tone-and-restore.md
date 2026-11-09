@@ -14,7 +14,7 @@ effects, whose unconditional `stopPreview()` reaches
 before the `if (!ym2149)` guard, so any flip landing after the chip
 exists zeroes that channel's volume. `setPosition`, `stop()`,
 `resetPlaybackState`, and mute application are all playback-gated and
-register-clean at init; `SoundDriver.stop()` is dead code at runtime. Re-asserting through the window worked
+register-clean at init - `SoundDriver.stop()` is dead code at runtime. Re-asserting through the window worked
 but was the wrong mechanism. The proper fix: the tone's job is audio-path
 validation, so a dedicated `OscillatorNode` scheduled on the AudioContext
 clock is the mechanism - deterministic and immune to YM register state.
@@ -42,7 +42,7 @@ only with `(?<![_\w])`/`(?![_\w])` guards.
 
 **Convention-only rules fail silently**
 
-The markdown fix shipped without a change record until challenged; a bump
+The markdown fix shipped without a change record until challenged - a bump
 ran without a review. The rules were correct but unenforced. Mechanical
 gates (`scripts/release-check.sh`) close the gap - record coverage,
 assessment completeness, review presence.
@@ -50,7 +50,7 @@ assessment completeness, review presence.
 **Evaluated majors keep-or-revert is the right gate**
 
 vitest 5 (suite-wide failure on rolldown-vite 7) and js-yaml 5 (77
-serialization-drift failures) were evaluated and reverted; zustand 5,
+serialization-drift failures) were evaluated and reverted - zustand 5,
 lucide-react 1.x, electron 45 kept. One package per step, per-package
 gate, individual revert - never a bulk bump.
 

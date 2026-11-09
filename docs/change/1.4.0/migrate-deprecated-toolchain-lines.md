@@ -22,7 +22,7 @@ The change migrates eslint to the 10.x line and the vite alias to Vite 8 when ea
 
 ## Hints
 
-- The `typescript-eslint` chain upgrade interacts with `clear-minimatch-advisory-chain`; landing this migration may clear residual advisories recorded there.
+- The `typescript-eslint` chain upgrade interacts with `clear-minimatch-advisory-chain` - landing this migration may clear residual advisories recorded there.
 - Configuration files under eslint scope (`eslint.config.js`, `vite.config.ts`) move with the migration.
 
 ## Out of Scope

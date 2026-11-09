@@ -47,9 +47,9 @@ under every mode, so reconciliation runs against `git diff` rather than the log.
 - **Unconfirmed** - none.
 - **Undocumented** - formatting side effects from `npm run format` on `docs/plan/1.2.9/`,
   `docs/refactoring/1.2.9/`, `docs/report/1.2.9/`, `docs/review/1.2.9/`, `public/CHANGELOG.md`,
-  and `tsconfig.app.json`; an accepted loop side effect per `TESTING.md`, not undocumented work.
+  and `tsconfig.app.json` - an accepted loop side effect per `TESTING.md`, not undocumented work.
 - **Deviations** - the service worker moved from `public/js/` to `public/` so its scope can
-  cover the application; the previous `/js/` scope controlled nothing, which the plan records
+  cover the application - the previous `/js/` scope controlled nothing, which the plan records
   as a required repair for the record's use case to be meaningful.
 
 ## Findings
@@ -64,19 +64,19 @@ under every mode, so reconciliation runs against `git diff` rather than the log.
   47 files / 266 tests, zero errors and zero warnings.
 - `npm audit` - zero vulnerabilities after remediation.
 - `dist/sw.js` carries the baked `dosound-tracker-1.3.0` cache name with no placeholder left.
-- `scripts/afterAllArtifactBuild.cjs` exercised against a scratch artifact; the emitted
+- `scripts/afterAllArtifactBuild.cjs` exercised against a scratch artifact - the emitted
   `SHA256SUMS-mac.txt` verifies with `shasum -a 256 -c`.
 
 ## Unable to Verify
 
 No packaged Electron artifact was built - `npm run electron:build` was not run in this window,
 so the checksum hook is proven against a synthetic artifact rather than a real installer. No
-browser, audio-playback, or service-worker-runtime verification ran; the audio paths touched by
+browser, audio-playback, or service-worker-runtime verification ran - the audio paths touched by
 the refactoring are pure-function call sites only.
 
 ## Decision
 
 - **Decision:** go
-- **Decided by:** the project owner (window request authorization; recorded by the agent under autonomous mode)
+- **Decided by:** the project owner (window request authorization - recorded by the agent under autonomous mode)
 - **Conditions:** commit the staged work before the bump or alongside it
 - **Accepted risks:** unsigned desktop binaries (checksums now published beside each artifact)

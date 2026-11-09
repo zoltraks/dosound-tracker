@@ -31,7 +31,7 @@ The plan is ready for implementation. The record's open risk materialized exactl
 
 ## Implementability
 
-Verified against the registry during the audit: `electron-builder@26.18.1` exists and is 14 days old; `app-builder-lib@26.18.1` still requires `@electron/universal@2.0.3` and `minimatch ^10.2.5`; `@typescript-eslint/typescript-estree@8.72.2` still requires `minimatch ^10.2.2`; the `next`/`canary` lines are unstable and keep `^10` pins anyway. `minimatch@11.0.1` is the first fixed release and satisfies none of the parent ranges.
+Verified against the registry during the audit: `electron-builder@26.18.1` exists and is 14 days old - `app-builder-lib@26.18.1` still requires `@electron/universal@2.0.3` and `minimatch ^10.2.5` - `@typescript-eslint/typescript-estree@8.72.2` still requires `minimatch ^10.2.2` - the `next`/`canary` lines are unstable and keep `^10` pins anyway. `minimatch@11.0.1` is the first fixed release and satisfies none of the parent ranges.
 
 ## Fidelity
 

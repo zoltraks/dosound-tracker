@@ -42,7 +42,7 @@ second mechanism.
 
 ## Implementability
 
-- `tsconfig.node.json` currently includes only `vite.config.ts`; adding the
+- `tsconfig.node.json` currently includes only `vite.config.ts` - adding the
   two sibling configs and `e2e/` is a one-line edit.
 - `e2e/helpers.ts` and `e2e/smoke.spec.ts` import `@playwright/test` and
   `node:fs/promises` only - no DOM usage, so `lib: ["ES2023"]` and
@@ -50,7 +50,7 @@ second mechanism.
 - `tsc -b` already runs inside `npm run build` and passes, so the script
   change is proven before it is made.
 - The `.cjs` and `.mjs` sources (`electron/*.cjs`, `scripts/*.cjs`,
-  `scripts/bump-version.mjs`, `eslint.config.js`) are small and clean; the
+  `scripts/bump-version.mjs`, `eslint.config.js`) are small and clean - the
   risk of new lint findings exists but is bounded, and the plan absorbs
   resolving them.
 
@@ -62,7 +62,7 @@ second mechanism.
   `eslint.config.js`. Shell scripts (`*.sh`) are named as the remaining
   ungated surface and excluded because ESLint does not parse them.
 - Boundary decisions: `.cjs` typecheck exclusion is recorded with its
-  rationale; react plugins stay out of non-React blocks.
+  rationale - react plugins stay out of non-React blocks.
 
 ## Findings Returned to Planning
 

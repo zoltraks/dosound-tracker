@@ -9,7 +9,7 @@ The window's change record decomposed `src/App.tsx` into bounded orchestration h
 
 ## Goal
 
-`App.tsx` keeps only wiring that needs render scope. Pure helpers sit at module level; store actions reach consumers without wrapper callbacks.
+`App.tsx` keeps only wiring that needs render scope. Pure helpers sit at module level - store actions reach consumers without wrapper callbacks.
 
 ## Plan
 
@@ -23,13 +23,13 @@ File to modify: `src/App.tsx`.
 
 **Lift pure helpers to module scope**
 
-Convert `formatNoteKey` and `parseBaseKeyString` from `useCallback` bindings to module-level function declarations above the component. Call sites and dependency arrays are unchanged; a module binding is permanently stable, which is strictly stronger than an empty-deps callback.
+Convert `formatNoteKey` and `parseBaseKeyString` from `useCallback` bindings to module-level function declarations above the component. Call sites and dependency arrays are unchanged - a module binding is permanently stable, which is strictly stronger than an empty-deps callback.
 
 File to modify: `src/App.tsx`.
 
 ## Risk
 
-Low. Both items are tidy-level removals verified by typecheck and the existing suite. No audio-path callback identity or dependency array changes; the moved functions were pure.
+Low. Both items are tidy-level removals verified by typecheck and the existing suite. No audio-path callback identity or dependency array changes - the moved functions were pure.
 
 ## Acceptance Criteria
 

@@ -22,7 +22,7 @@ The change grows tests on the highest-risk untested paths - the sequencer worker
 
 ## Hints
 
-- The audit notes critical domains (synth, exports, parsers) already carry coverage; the growth targets the interaction layer.
+- The audit notes critical domains (synth, exports, parsers) already carry coverage - the growth targets the interaction layer.
 - Characterization tests precede any testability refactoring on modules that can only be exercised through the UI.
 
 ## Out of Scope

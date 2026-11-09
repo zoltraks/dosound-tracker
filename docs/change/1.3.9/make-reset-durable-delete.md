@@ -27,7 +27,7 @@ The change awaits the mirror clear - or gates mirror restore on the reset flag -
 
 ## Hints
 
-- This record lands before `log-silent-catches-trim-dead-surface`; whether the reset flag gains a consumer or is removed is decided here, and the later record trims only what remains dead.
+- This record lands before `log-silent-catches-trim-dead-surface` - whether the reset flag gains a consumer or is removed is decided here, and the later record trims only what remains dead.
 - Verification is a reset then double-reload with no resurrection.
 
 ## Out of Scope

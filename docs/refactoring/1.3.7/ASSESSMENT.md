@@ -25,14 +25,14 @@ Complete. Both focus areas landed as proposed.
   `SoundDriver` class (`convertSongToSoundEvents`, `playEvents`,
   `exportToAssembly`, `stop`, `isCurrentlyPlaying`), the `SoundEvent`
   interface, and the `DOSOUND_REGISTER_WRITE`, `DOSOUND_END_MARKER`,
-  `VBLANK_RATE`, and `MIN_DELAY_CYCLES` constants were deleted; the only
+  `VBLANK_RATE`, and `MIN_DELAY_CYCLES` constants were deleted - the only
   `src/` consumers of the constants were the deleted class members.
 - `src/synth/EventOptimizer.ts` and `src/synth/SequencerEngine.ts` were
   deleted. `optimizeEvents` was consumed only by the removed
   `convertSongToSoundEvents`, and `SequencerEngine` was an unreferenced
   stub whose `processFrame` was a placeholder body.
 - `test/synth/SoundDriver.test.ts`, `test/synth/EventOptimizer.test.ts`,
-  and `test/synth/SequencerEngine.test.ts` were deleted; they exercised
+  and `test/synth/SequencerEngine.test.ts` were deleted - they exercised
   only the removed code.
 - The three `VBLANK_RATE` value imports in `exportWav.test.ts`,
   `exportMax.test.ts`, and `exportVgm.test.ts` now alias
@@ -66,7 +66,7 @@ SoundDriver(` appears only in the dead-module test, and the live
 - `npm run lint`: zero errors, zero warnings.
 - `npx prettier --write` on every touched file: all unchanged.
 - `npm test`: 72 files, 532 tests, all pass. Baseline was 74 files and
-  555 tests; the delta is the three deleted dead-code test files (-3)
+  555 tests - the delta is the three deleted dead-code test files (-3)
   and the new `songSpeed` test file (+1).
 - `npm run build`: production bundle emitted, index.js shrank from
   570.74 kB to 570.66 kB.
@@ -78,10 +78,10 @@ SoundDriver(` appears only in the dead-module test, and the live
 ## Remaining Gaps
 
 - `TESTING.md` still lists `SoundDriver` among the coverage-gap modules
-  and names `test/synth/` generically; the file carried concurrent
+  and names `test/synth/` generically - the file carried concurrent
   edits during this cycle and was left untouched - a one-line follow-up
   remains.
-- The `src/synth/SoundDriver.ts` filename no longer describes a driver;
+- The `src/synth/SoundDriver.ts` filename no longer describes a driver.
   renaming it to `src/types/song.ts` (or similar) is deferred because it
   rewrites every type-import specifier across the tree, including files
   under concurrent edit.
@@ -99,5 +99,5 @@ SoundDriver(` appears only in the dead-module test, and the live
   `SequencerEngine` stub had no callers once the driver went away, so
   dead-code sweeps should always re-grep after the first removal.
 - The specification's "rounded up to the next even number" claim for
-  speed had drifted from the code's `& ~1` round-down; the consolidation
+  speed had drifted from the code's `& ~1` round-down - the consolidation
   surfaced and corrected that documentation drift.

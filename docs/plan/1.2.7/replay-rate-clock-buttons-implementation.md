@@ -34,7 +34,7 @@ Per project guidelines, update the active documentation set before any source co
 The following discrepancies between documentation and implementation were found and fixed before starting this feature:
 
 - `FORMAT.md` — The SAVE SONG root structure was missing the `chip` and `frame` fields, even though both the saver writes them and the parser reads them. Added `chip` and `frame` to the root structure YAML example and documented loader and saver rules for both fields.
-- `SPECIFICATION.md` — The Source Directory Structure table listed `src/utils` as 42 files; the actual count is 43. Corrected the count.
+- `SPECIFICATION.md` — The Source Directory Structure table listed `src/utils` as 42 files - the actual count is 43. Corrected the count.
 
 **Feature documentation updates**
 

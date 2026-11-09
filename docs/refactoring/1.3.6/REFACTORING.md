@@ -33,7 +33,7 @@ clamped nibble, so `Math.abs` inside `Formatter.hex` changes nothing, and
 
 ## Risk
 
-Low. Output is byte-identical by construction; tests assert assembly,
+Low. Output is byte-identical by construction - tests assert assembly,
 YAML, and UI strings containing hex. The debug-mode sequencer log keeps
 its guarded `console.log` - `isDebugMode` gating makes it an intentional
 feature, excluded from scope.

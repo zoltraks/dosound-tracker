@@ -22,7 +22,7 @@ Preventing rule: see "Verify packaging metadata through an unpacked build" in `W
 
 Observed symptom: the audit finding named two `Storage.prototype` violations, but `branchGaps.test.ts` carried a third instance that would have survived the record's literal scope.
 
-Root cause: audit-derived records enumerate the sites the report saw; the violation class, not the file list, is the requirement.
+Root cause: audit-derived records enumerate the sites the report saw - the violation class, not the file list, is the requirement.
 
 Preventing rule: see "Audit findings age between report and implementation" in `WORKFLOW.md` - every finding is re-verified against the current tree, and the record's mechanism governs over its literal line list.
 

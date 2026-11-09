@@ -59,7 +59,7 @@ File to modify: `src/hooks/useInstrumentWarnings.ts`.
 
 ## Risk
 
-Purely mechanical substitution of identical strings; no storage key value changes, so persisted state is untouched. Typecheck and lint catch any missed or mistyped reference; the existing storage-related tests cover the paths. No audio-path code is touched.
+Purely mechanical substitution of identical strings - no storage key value changes, so persisted state is untouched. Typecheck and lint catch any missed or mistyped reference - the existing storage-related tests cover the paths. No audio-path code is touched.
 
 ## Acceptance Criteria
 

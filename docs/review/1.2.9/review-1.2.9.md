@@ -45,10 +45,10 @@ The window's work is staged in the working tree and not yet committed - commits 
 every mode, so reconciliation runs against `git diff` rather than the log.
 
 - **Confirmed** - all ten delivered records are present in the working-tree diff.
-- **Unconfirmed** - none; `name-continuity-owner` was declined by the project owner with the reason recorded.
-- **Undocumented** - none; every modification maps to a change record or plan.
+- **Unconfirmed** - none - `name-continuity-owner` was declined by the project owner with the reason recorded.
+- **Undocumented** - none - every modification maps to a change record or plan.
 - **Deviations** - the dead test file was first renamed, then merged (deleted) at the refactoring
-  phase when analysis proved it a strict subset of the canonical suite; net coverage loss is zero.
+  phase when analysis proved it a strict subset of the canonical suite - net coverage loss is zero.
 
 ## Findings
 
@@ -69,6 +69,6 @@ audio-critical or UI code paths.
 ## Decision
 
 - **Decision:** go
-- **Decided by:** the project owner (window request authorization; recorded by the agent under autonomous mode)
+- **Decided by:** the project owner (window request authorization - recorded by the agent under autonomous mode)
 - **Conditions:** commit the staged work before the bump or alongside it
 - **Accepted risks:** single-maintainer concentration (declined record) and the recorded audit advisories

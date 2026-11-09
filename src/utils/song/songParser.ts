@@ -11,6 +11,7 @@ import {
 } from '../../constants/music.ts';
 import { assertImportSize } from '../validation/importSize.ts';
 import { expandRunNodes } from '../yaml/runLength.ts';
+import { coerceYamlNumber } from '../yaml/yamlUtils.ts';
 import { validateSongData } from '../validation/validation.ts';
 import {
   DEFAULT_BASE_KEY,
@@ -32,6 +33,7 @@ import { expandEnvelope, expandLoopingEnvelope } from '../envelope/envelopeUtils
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeSongSpeed } from './songSpeed.ts';
 import { clampMidiChannel, clampMidiProgram } from '../midi/midiUtils.ts';
+import { createNoteOff } from '../track/trackPanelUtils.ts';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -180,17 +182,9 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
   // Optional loop position (0-based playlist index)
   let loop: number | null = null;
-  const rawLoop = songNode.loop;
-  if (typeof rawLoop === 'number' && Number.isFinite(rawLoop)) {
-    loop = Math.max(0, Math.floor(rawLoop));
-  } else if (typeof rawLoop === 'string') {
-    const trimmed = rawLoop.trim();
-    if (trimmed) {
-      const parsed = Number(trimmed);
-      if (Number.isFinite(parsed)) {
-        loop = Math.max(0, Math.floor(parsed));
-      }
-    }
+  const coercedLoop = coerceYamlNumber(songNode.loop);
+  if (coercedLoop !== null) {
+    loop = Math.max(0, Math.floor(coercedLoop));
   }
 
   const lineNodes = Array.isArray(songNode.line)
@@ -269,11 +263,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
         if (ln.off === true || isOffNote) {
           // Empty or note-off line: currently treated as space
-          line.note = {
-            note: '===',
-            octave: 0,
-            instrument: '00',
-          };
+          line.note = createNoteOff();
         } else if (ln.wait === true || ln.space === true) {
           // Empty or note-off line: currently treated as space
         } else if (typeof rawNote === 'string') {
@@ -344,19 +334,8 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     const baseParsed = parseBaseKey(nodeObj.base);
     const base = baseParsed ? formatBaseKey(baseParsed.note, baseParsed.octave) : DEFAULT_BASE_KEY;
 
-    const rawOctave = nodeObj.octave;
-    let octave = DEFAULT_OCTAVE;
-    if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
-      octave = rawOctave;
-    } else if (typeof rawOctave === 'string') {
-      const trimmed = rawOctave.trim();
-      if (trimmed) {
-        const parsed = Number(trimmed);
-        if (Number.isFinite(parsed)) {
-          octave = parsed;
-        }
-      }
-    }
+    const coercedOctave = coerceYamlNumber(nodeObj.octave);
+    let octave = coercedOctave !== null ? coercedOctave : DEFAULT_OCTAVE;
     octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
     const volume = expandEnvelope(nodeObj.volume, ENVELOPE_LENGTH, 0x0f);
@@ -374,22 +353,11 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     // Accept either numeric or string values in YAML and clamp to a
     // non-negative integer. If out of range or invalid, treat as unset.
     let sustain: number | null = null;
-    const rawSustain = nodeObj.sustain;
-    if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
-      const s = Math.floor(rawSustain);
+    const coercedSustain = coerceYamlNumber(nodeObj.sustain);
+    if (coercedSustain !== null) {
+      const s = Math.floor(coercedSustain);
       if (s >= 0) {
         sustain = s;
-      }
-    } else if (typeof rawSustain === 'string') {
-      const trimmed = rawSustain.trim();
-      if (trimmed) {
-        const parsed = Number(trimmed);
-        if (Number.isFinite(parsed)) {
-          const s = Math.floor(parsed);
-          if (s >= 0) {
-            sustain = s;
-          }
-        }
       }
     }
 
@@ -402,31 +370,15 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       const midiNode = rawMidi as { channel?: unknown; program?: unknown };
 
       let channel: number | null = null;
-      const rawChannel = midiNode.channel;
-      if (typeof rawChannel === 'number' && Number.isFinite(rawChannel)) {
-        channel = clampMidiChannel(rawChannel);
-      } else if (typeof rawChannel === 'string') {
-        const trimmed = rawChannel.trim();
-        if (trimmed) {
-          const parsed = Number(trimmed);
-          if (Number.isFinite(parsed)) {
-            channel = clampMidiChannel(parsed);
-          }
-        }
+      const coercedChannel = coerceYamlNumber(midiNode.channel);
+      if (coercedChannel !== null) {
+        channel = clampMidiChannel(coercedChannel);
       }
 
       let program: number | null = null;
-      const rawProgram = midiNode.program;
-      if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
-        program = clampMidiProgram(rawProgram);
-      } else if (typeof rawProgram === 'string') {
-        const trimmed = rawProgram.trim();
-        if (trimmed) {
-          const parsed = Number(trimmed);
-          if (Number.isFinite(parsed)) {
-            program = clampMidiProgram(parsed);
-          }
-        }
+      const coercedProgram = coerceYamlNumber(midiNode.program);
+      if (coercedProgram !== null) {
+        program = clampMidiProgram(coercedProgram);
       }
 
       if (channel !== null || program !== null) {

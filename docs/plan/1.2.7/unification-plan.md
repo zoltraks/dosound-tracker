@@ -163,10 +163,10 @@ Adapt from PET LAB's version. Key differences:
 Adapt from PET LAB's version. Key differences:
 
 - DOSOUND uses semantic versioning (MAJOR.MINOR.PATCH) with the same increment rules
-- The `scripts/bump-version.mjs` script exists and auto-bumps on build; document it
+- The `scripts/bump-version.mjs` script exists and auto-bumps on build - document it
 - The version bump procedure should note that the bump script automates the version number increment, but the CHANGELOG entry and security audit remain manual steps
 - CHANGELOG conventions (same format as PET LAB)
-- Note: DOSOUND currently has no `CHANGELOG.md`; creating one is part of this plan
+- Note: DOSOUND currently has no `CHANGELOG.md` - creating one is part of this plan
 
 **docs/DEPLOYMENT.md**
 
@@ -175,7 +175,7 @@ Adapt from PET LAB's version. Key differences:
 - Build output (dist/ directory)
 - Electron distribution (macOS, Windows, Linux via electron-builder)
 - Static hosting options
-- No PWA (DOSOUND is not a PWA; remove PWA sections)
+- No PWA (DOSOUND is not a PWA - remove PWA sections)
 - Download page reference (https://dosound.alyx.pl)
 - Configuration (environment variables, Vite define)
 
@@ -219,7 +219,7 @@ Add a DOSOUND-specific section at the top:
 
 The rest of the standard (naming conventions, file structure, project organization) is domain-agnostic and can be copied with minimal changes.
 
-No `asm-dasm-development.md` is needed because DOSOUND generates assembly output but does not write 6502 assembly; it targets the 68000/YM2149 DOSOUND format. The assembly generation code is documented in `SPECIFICATION.md` and `FORMAT.md`.
+No `asm-dasm-development.md` is needed because DOSOUND generates assembly output but does not write 6502 assembly - it targets the 68000/YM2149 DOSOUND format. The assembly generation code is documented in `SPECIFICATION.md` and `FORMAT.md`.
 
 ### 1.8 Update Root README.md
 

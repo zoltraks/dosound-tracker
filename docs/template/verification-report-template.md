@@ -1,22 +1,11 @@
 # Verification Report - [Change Name]
 
-**Status:** Draft | Complete
-
-**Verdict:** Pass | Pass with Known Issues | Blocked
-
 ## Document Information
 
 |        |                                    |
 | ------ | ---------------------------------- |
 | Change | [change record under verification] |
 | Date   | [YYYY-MM-DD]                       |
-
-## Verdict
-
-State the outcome first in one or two sentences: whether the change passed
-the selected verification and under what conditions.
-
-A blocked verdict lists the open items that prevent a pass.
 
 ## Selected Options
 

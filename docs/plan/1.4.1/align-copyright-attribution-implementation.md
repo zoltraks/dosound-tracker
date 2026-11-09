@@ -14,8 +14,8 @@
 
 ## Best Practices
 
-- `COPYRIGHTS.md` owns attribution rules; the aligned field uses the `LICENSE` notice text verbatim so the two surfaces can never drift in entity or year independently.
-- The packaging metadata domain is covered by `standard/typescript-electron-development.md`; a manifest-only change needs no Electron code edit.
+- `COPYRIGHTS.md` owns attribution rules - the aligned field uses the `LICENSE` notice text verbatim so the two surfaces can never drift in entity or year independently.
+- The packaging metadata domain is covered by `standard/typescript-electron-development.md` - a manifest-only change needs no Electron code edit.
 
 ## Documentation Updates
 
@@ -78,4 +78,4 @@ None.
 - `npm run format` - applied to the tree.
 - `npm run build` - `tsc -b && vite build` clean.
 - `npm test` - the full suite green.
-- `npx electron-builder --dir` - the packaging config including `build.copyright` parses; the unpacked bundle builds.
+- `npx electron-builder --dir` - the packaging config including `build.copyright` parses - the unpacked bundle builds.

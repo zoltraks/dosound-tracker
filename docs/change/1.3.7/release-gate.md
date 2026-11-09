@@ -31,4 +31,4 @@ a refactoring assessment or window review. A release gate closes that hole.
 
 ## Outcome
 
-- The gate runs clean on the current tree; verification loop passes.
+- The gate runs clean on the current tree - verification loop passes.

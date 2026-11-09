@@ -119,10 +119,10 @@ Under the `independent-verification` extension, each review-class option - code 
 
 Under the `runnable-artifact` extension, a change may not be called verified until the shipped entrypoints run a live slice:
 
-- Web bundle `dist/` - served by `npm run preview` on port 8008; the recorded live slice is the Playwright smoke suite `npm run test:e2e`.
-- Electron bundle - `npm run electron:preview` launches the packaged app; production-ready builds prove the `release/` artifacts exist and postdate the sources.
+- Web bundle `dist/` - served by `npm run preview` on port 8008 - the recorded live slice is the Playwright smoke suite `npm run test:e2e`.
+- Electron bundle - `npm run electron:preview` launches the packaged app - production-ready builds prove the `release/` artifacts exist and postdate the sources.
 
-Recorded substitutions: the smoke suite substitutes a manual launch for routine changes; the Electron launch is required only when `electron/`, the build configuration, or packaging changes.
+Recorded substitutions: the smoke suite substitutes a manual launch for routine changes - the Electron launch is required only when `electron/`, the build configuration, or packaging changes.
 
 ## Lessons Loop
 
@@ -204,7 +204,7 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 - Save and load a song file.
 - Switch theme between dark and light.
 
-`npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/`; the `pretest:e2e` script builds first, so the preview always serves the current code. The suite runs on the chromium and webkit projects; the firefox project is excluded because headless launch fails under the current macOS sandbox.
+`npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/` - the `pretest:e2e` script builds first, so the preview always serves the current code. The suite runs on the chromium and webkit projects - the firefox project is excluded because headless launch fails under the current macOS sandbox.
 
 ## Test Configuration
 
@@ -223,7 +223,7 @@ Node 26 prints `ExperimentalWarning: localStorage is not available` lines during
 
 - `npm run typecheck` runs `tsc -b` across the project graph: `tsconfig.app.json` covers `src/` and `test/`, and `tsconfig.node.json` covers the Vite, Vitest, and Playwright config files and `e2e/`. The same gate runs inside `npm run build` and `npm run bump`.
 - `tsconfig.app.json` includes both `src/` and `test/`, so every test file must be type-clean even though `vitest` does not typecheck.
-- CommonJS sources (`electron/`, `scripts/`) sit outside TypeScript's emit-free scope; ESLint is their static gate.
+- CommonJS sources (`electron/`, `scripts/`) sit outside TypeScript's emit-free scope - ESLint is their static gate.
 
 **Component test hygiene**
 
@@ -234,6 +234,7 @@ Node 26 prints `ExperimentalWarning: localStorage is not available` lines during
 - `fetch` stubs must return the full Response surface the code under test reads - `ok`, `headers.get()`, and `text()` - not only the fields an older consumer used. A stub that omits `headers` turns a new header read into a TypeError that only surfaces as an empty-state test failure.
 - Assertions on rendered or generated HTML must distinguish escaped entities from raw markup - `&quot;` inside an attribute value is safe text, not an attribute breakout. Assert on the unescaped pattern (a real quote followed by an attribute name), not on substring scans that match entity bodies.
 - Assertions on expansion, truncation, or filtering must prove the code path actually ran - assert the expanded output's content, not only its bounded shape. Input that never triggers the mechanism can satisfy a bounds assertion vacuously: a step node carrying a sibling `instrument` key is not a run and never expands, so asserting "at most N steps" proves nothing.
+- Assertions on serialized YAML must account for scalar normalization on round-trip - `yaml.load` strips plain-scalar surrounding whitespace, so a parse-back assertion can pass while the emitted text is still wrong. Assert on the raw output text for unquoted scalars (for example `toContain('author: Writer')`), and use the parsed document only for values the emitter guarantees to quote.
 
 **Playwright**
 
@@ -291,7 +292,7 @@ Remaining coverage gaps that may be addressed in future work:
 
 **Fake timers quantize performance.now on fractional intervals**
 
-Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep with fractional `setInterval` delays - a callback scheduled at 16.67 ms can observe `now` a fraction early, so boundary assertions on `1000 / 60`-style intervals are flaky. Use integer intervals in timer tests; a non-20 ms integer still proves an offset derives from the configured interval.
+Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep with fractional `setInterval` delays - a callback scheduled at 16.67 ms can observe `now` a fraction early, so boundary assertions on `1000 / 60`-style intervals are flaky. Use integer intervals in timer tests - a non-20 ms integer still proves an offset derives from the configured interval.
 
 **Reinstall Playwright browsers after regenerating the dependency tree**
 

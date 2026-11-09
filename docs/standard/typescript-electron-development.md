@@ -1102,4 +1102,4 @@ The following authoritative references support the rules in this document.
 Project-specific values for the DOSOUND Tracker codebase.
 
 - `electron/permissions.cjs` grants `midi` only for the packaged `file://` bundle and the
-  dev origin `http://localhost:8008`; `midiSysex` is never granted.
+  dev origin `http://localhost:8008` - `midiSysex` is never granted.

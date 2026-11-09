@@ -239,6 +239,19 @@ describe('buildSongYamlForExport step compression', () => {
       throw error;
     }
   });
+
+  it('trims padded title and author on save', () => {
+    try {
+      const s = song({ title: '  Padded  ', author: '  Writer  ' });
+      const text = buildSongYamlForExport(s);
+      const doc = yaml.load(text) as { song: Record<string, unknown> };
+      expect(doc.song.title).toBe('Padded');
+      expect(text).toContain('author: Writer');
+    } catch (error) {
+      console.log('metadata trim mismatch');
+      throw error;
+    }
+  });
 });
 
 describe('buildSongYamlForExport pattern names', () => {

@@ -32,7 +32,7 @@ as documented API surface.
 
 ## Documentation Updates
 
-- `SPECIFICATION.md` — the `export.ts` line drops `ExportFormat`; the branded
+- `SPECIFICATION.md` — the `export.ts` line drops `ExportFormat` - the branded
   types paragraph names three constructors.
 
 ## Step by Step Implementation
@@ -49,7 +49,7 @@ Delete the union type from `src/constants/export.ts`.
 
 **Remove asTrackId**
 
-Delete the constructor from `src/types/branded.ts`; `TrackId` itself stays -
+Delete the constructor from `src/types/branded.ts` - `TrackId` itself stays -
 it is used across the tree.
 
 ## Testing Strategy

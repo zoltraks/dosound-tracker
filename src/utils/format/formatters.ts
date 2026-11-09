@@ -77,38 +77,4 @@ export class Formatter {
         return value.toString();
     }
   }
-
-  /**
-   * Format instrument ID to consistent format
-   * @param value - Raw instrument ID (number, string, or null)
-   * @returns Normalized 2-digit hex string or empty string
-   */
-  static instrumentId(value?: string | number | null): string {
-    if (value === null || value === undefined) {
-      return '';
-    }
-
-    if (typeof value === 'number') {
-      return Formatter.hex(value, { padWidth: 2, uppercase: true, noPad: false });
-    }
-
-    if (typeof value === 'string') {
-      const parsed = parseInt(value, 16);
-      if (isNaN(parsed)) {
-        return '';
-      }
-      return Formatter.hex(parsed, { padWidth: 2, uppercase: true, noPad: false });
-    }
-
-    return '';
-  }
-
-  /**
-   * Format instrument slot ID with prefix
-   * @param slotIndex - Slot index number
-   * @returns Formatted slot ID (e.g., "INST 01")
-   */
-  static instrumentSlot(slotIndex: number): string {
-    return `INST ${Formatter.hex(slotIndex, { padWidth: 2, uppercase: true, noPad: false })}`;
-  }
 }

@@ -8,7 +8,7 @@ This document describes the day-to-day operational steps for delivering changes.
 
 ## Standard Implementation Process
 
-This is the default method for implementing all changes. The high-level rules live in `GUIDELINES.md` under "Applying a Change"; this section captures the operational details.
+This is the default method for implementing all changes. The high-level rules live in `GUIDELINES.md` under "Applying a Change" - this section captures the operational details.
 
 **Analyze the current implementation**
 
@@ -60,7 +60,7 @@ If inconsistencies are found between implementation and documentation, update ei
 
 **Propose a commit message**
 
-Once the implementation is complete and consistent, propose a commit message for the change. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules in `GUIDELINES.md`. The assistant proposes only; the user commits manually.
+Once the implementation is complete and consistent, propose a commit message for the change. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules in `GUIDELINES.md`. The assistant proposes only - the user commits manually.
 
 ## Adding a New Feature
 
@@ -168,7 +168,7 @@ Existing `docs/report/<version>/` contents are historical, but the directory its
 
 The repository adopts the `version-window` extension and the `audit-driven-development` convention. A named window request - "run the SDLC for `<version>`" or "process the `<version>` window" - executes the whole window as one operation instead of one change request at a time.
 
-The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline; `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result. An unspecified mode follows the recorded default: `human-in-the-loop`.
+The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline - `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result. An unspecified mode follows the recorded default: `human-in-the-loop`.
 
 **Intake**
 
@@ -178,7 +178,7 @@ The request may select a gate mode: `autonomous` runs every stage without pausin
 - "Continue SDLC autonomously" or "finish the `<version>` window" names the same operation on an in-progress window whose records were written ad hoc during the session rather than as pre-planned requests.
 - An unversioned proceed request - "proceed automated SDLC" and the like - resolves to the in-progress window: the `docs/change/` directory matching `package.json`. The word `automated` selects the `autonomous` gate mode.
 - A record whose work is already landed is verified against the tree and closed, not re-implemented. A record that should not be implemented is discarded with its rationale recorded in the record itself. Implementation runs only on records that describe unlanded work.
-- An empty window reports zero active records; the refactoring phase may still run on the current state and no bump is forced.
+- An empty window reports zero active records - the refactoring phase may still run on the current state and no bump is forced.
 
 **Request Iteration**
 
@@ -205,7 +205,7 @@ For each change record in the window:
 **Window Review**
 
 - With the tree clean and production-ready after refactoring, review the window's delivered work against its change records and plans.
-- Record the review in `docs/review/<version>/review-<version>.md` using `docs/template/change-review-template.md`. The review reconciles recorded work against the version-control log and reports confirmed, unconfirmed, undocumented, and deviated work with a readiness verdict.
+- Record the review in `docs/review/<version>/review-<version>.md` using `docs/template/change-review-template.md`. The review reconciles recorded work against the version-control log and reports confirmed, unconfirmed, undocumented, and deviated work.
 - The bump decision recorded in the review is the project owner's - never the agent's.
 
 **Improvement**
@@ -218,7 +218,7 @@ For each change record in the window:
 
 **Window Close**
 
-- Close the window with the version bump per `VERSIONING.md` (the release gate, verification loop, `npm audit`, `npm run bump`, and the `public/CHANGELOG.md` entry). The named window request is the explicit instruction that authorizes this bump. An ad-hoc bump outside a named window runs the same gate; the missing window review is its recorded waiver.
+- Close the window with the version bump per `VERSIONING.md` (the release gate, verification loop, `npm audit`, `npm run bump`, and the `public/CHANGELOG.md` entry). The named window request is the explicit instruction that authorizes this bump. An ad-hoc bump outside a named window runs the same gate - the missing window review is its recorded waiver.
 - The cycle never commits on its own - commits stay manual under every mode.
 
 **Run State**
@@ -229,11 +229,11 @@ For each change record in the window:
 **Audit-Driven Ring**
 
 - An external audit produces prioritized findings and recommendations in `docs/report/<version>/`.
-- Adopted recommendations are triaged into change records under one or more version windows; each audit-derived record carries its source finding or recommendation identifier in the record's `Source` field.
+- Adopted recommendations are triaged into change records under one or more version windows - each audit-derived record carries its source finding or recommendation identifier in the record's `Source` field.
 - Every recommendation resolves before its window completes: it becomes a change record, or it is declined with the reason recorded.
 - A recommendation never bypasses the change-record gate - audit output is never implemented directly.
 - Every adopted finding is re-verified against the tree before correction - audit evidence ages between report and implementation, and a claim the report marks verified can already be inaccurate. Deviations from a finding are recorded in the window review.
-- The next audit re-verifies the register and seeds the following window; the window's review is the evidence of what the window delivered.
+- The next audit re-verifies the register and seeds the following window - the window's review is the evidence of what the window delivered.
 
 ## Work Modes
 
@@ -245,7 +245,7 @@ The default mode. Every modification request runs the full change lifecycle: a c
 
 **Ad-Hoc**
 
-A quick path that applies the change without producing change artifacts. Ad-hoc is never the default - it applies only when the request explicitly demands it through phrasing such as "ad-hoc", "immediate", or "quick fix". The agent may propose the ad-hoc path when a request looks small enough for it; the user selects the mode, the proposal never selects itself. An ad-hoc change still requires a deep analysis of the current implementation before any edit - the analysis runs inside the session and is summarized in the response without producing a durable document. The recorded verification procedure still applies, and the outcome is reported in the session rather than in change artifacts.
+A quick path that applies the change without producing change artifacts. Ad-hoc is never the default - it applies only when the request explicitly demands it through phrasing such as "ad-hoc", "immediate", or "quick fix". The agent may propose the ad-hoc path when a request looks small enough for it - the user selects the mode, the proposal never selects itself. An ad-hoc change still requires a deep analysis of the current implementation before any edit - the analysis runs inside the session and is summarized in the response without producing a durable document. The recorded verification procedure still applies, and the outcome is reported in the session rather than in change artifacts.
 
 **Planning**
 
@@ -285,13 +285,17 @@ Under the `preserve-before-reorganize` extension, a documentation reorganization
 
 A mass-move specifier rewrite must cover both directions: specifiers that point at moved files and the moved files' own outbound imports to unmoved targets - the latter silently break one directory level deeper. Resolve each specifier against the importer's post-move location, falling back to its pre-move location, and cover `import()`, re-exports, `vi.mock`, query-suffixed specifiers, and `new URL(..., import.meta.url)` alongside `from` clauses. `npm run typecheck` runs `tsc -b` and is the gate that catches leftovers.
 
+**Re-validate after structural document repairs**
+
+A transposed or stray fence can swallow the rest of a document, hiding its prose from `validate-document.py` and the format pass - the 1.4.2 GUIDELINES fence defect masked six findings behind a bogus code block. After any structural fence fix in a document, re-run the validation battery on the whole file because newly exposed lines were never checked.
+
 **Re-read files after a format sweep**
 
-`npm run format` rewrites the whole tree, including documents a session may still be editing; an edit staged against the pre-format content fails its exact-match check. Re-read any file before editing it after a format run.
+`npm run format` rewrites the whole tree, including documents a session may still be editing - an edit staged against the pre-format content fails its exact-match check. Re-read any file before editing it after a format run.
 
 **Stopping the development server**
 
-Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F`; on macOS and Linux use `lsof -ti :8008 | xargs kill`. Verify the port is free before restarting.
+Terminating the shell that launched `npm run dev` can leave the Vite process alive and holding port 8008 - a restarted server then falls back to another port while the stale process keeps serving the old build. To stop the server reliably, kill the process holding the port: `netstat -ano | findstr :8008` to find the PID, then `taskkill /PID <pid> /F` - on macOS and Linux use `lsof -ti :8008 | xargs kill`. Verify the port is free before restarting.
 
 **Verify visual changes on the dev server**
 
@@ -303,11 +307,11 @@ A throwaway `@playwright/test` script under `work/` can drive the dev server and
 
 **Place an extracted hook before its earliest consumer**
 
-When a block of `App.tsx` moves into a hook, the hook call must precede the earliest consumer of any returned value - aggregate flags such as `isNavigationSuspended` consume modal-open state far earlier than the moved handler block. Scan consumers before choosing the call position; a `TS2448 used before its declaration` error is the symptom of a hook placed too late.
+When a block of `App.tsx` moves into a hook, the hook call must precede the earliest consumer of any returned value - aggregate flags such as `isNavigationSuspended` consume modal-open state far earlier than the moved handler block. Scan consumers before choosing the call position - a `TS2448 used before its declaration` error is the symptom of a hook placed too late.
 
 **Verify packaging metadata through an unpacked build**
 
-`npx electron-builder --dir` packages the app without producing installers, so a `build.copyright`-style manifest change can be proven end-to-end in minutes: the unpacked `release/mac-arm64/<App>.app/Contents/Info.plist` then carries `NSHumanReadableCopyright` read via `/usr/libexec/PlistBuddy`. Skipped code signing is expected - binaries ship unsigned per `DEPLOYMENT.md`. Electron-builder output accumulates in `release/` - verification bundles and stale installers alike - and `scripts/clean.sh` does not sweep it; prune `release/` by hand when a fresh packaging check matters.
+`npx electron-builder --dir` packages the app without producing installers, so a `build.copyright`-style manifest change can be proven end-to-end in minutes: the unpacked `release/mac-arm64/<App>.app/Contents/Info.plist` then carries `NSHumanReadableCopyright` read via `/usr/libexec/PlistBuddy`. Skipped code signing is expected - binaries ship unsigned per `DEPLOYMENT.md`. Electron-builder output accumulates in `release/` - verification bundles and stale installers alike - and `scripts/clean.sh` does not sweep it - prune `release/` by hand when a fresh packaging check matters.
 
 **The git index can move under the session**
 
@@ -335,11 +339,11 @@ Verbatim code that was clean in its origin file can warn in its new home: file-l
 
 **Check for a canonical implementation before moving a helper**
 
-A module-level helper slated for a move into `src/utils/` may already exist there under a different name - `App.tsx` carried `formatNoteKey` and `parseBaseKeyString`, exact duplicates of `formatBaseKey` and `parseBaseKey` in `src/utils/song/songFormat.ts`. Compare candidate helpers against the target module's exports first; injecting the canonical function avoids writing a duplicate.
+A module-level helper slated for a move into `src/utils/` may already exist there under a different name - `App.tsx` carried `formatNoteKey` and `parseBaseKeyString`, exact duplicates of `formatBaseKey` and `parseBaseKey` in `src/utils/song/songFormat.ts`. Compare candidate helpers against the target module's exports first - injecting the canonical function avoids writing a duplicate.
 
 **Table formatting and Prettier**
 
-When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate; `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
+When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate - `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
 
 ## Session Improvement
 
@@ -361,14 +365,14 @@ Routing follows the table recorded in `GUIDELINES.md` under Session Review: woun
 **Apply and verify**
 
 - Propose each routed lesson briefly before writing - a lesson is a claim about what is durable, not a log of the session.
-- Edits to owning documents follow the change-record workflow; lesson records and session reports land directly.
+- Edits to owning documents follow the change-record workflow - lesson records and session reports land directly.
 - A correction that appears in two consecutive sessions graduates: it becomes a written rule in the owning document, not another lesson entry.
 
 **Housekeeping checklist**
 
 Run periodically and before a version bump:
 
-- `scripts/clean.sh --dry-run` to review residue; `--purge` only when a fresh `npm install` is acceptable.
+- `scripts/clean.sh --dry-run` to review residue - `--purge` only when a fresh `npm install` is acceptable.
 - `scripts/release-check.sh` for record coverage, assessment completeness, and window-review presence.
 - Stale-figure sweep: README/toolchain numbers, hook counts, file sizes, standard versions (`diff -w -B` against the canonical library), and path references inside `docs/template/` against the real tree.
 - `git status --short` confirms only the intended change set remains.
@@ -390,16 +394,16 @@ Commits carry no AI-assisted markers: neither the commit description nor a trail
 
 ## Continuity
 
-The project is a single-author project by design; no second maintainer exists and the contributor-concentration risk is accepted by the project owner.
+The project is a single-author project by design - no second maintainer exists and the contributor-concentration risk is accepted by the project owner.
 
 **Continuity plan**
 
 If the owner becomes unreachable, the escalation path is:
 
-- **Repository** - the GitHub account of record owns `zoltraks/dosound-tracker`; recovery goes through that account's credentials and GitHub account-recovery procedures. The full history lives in every clone, so the code itself is never hostage to a single checkout.
-- **Published site** - `https://dosound.alyx.pl` is served from the static `dist/` bundle; control follows the domain and hosting account of record.
-- **Release-signing materials** - none exist today. Desktop binaries ship unsigned per `DEPLOYMENT.md`; if signing is procured later, the certificates and notarization credentials join this list.
-- **Stale remote branches** - `origin/` carries abandoned `broken/*`, `refactoring/*`, `repair/*`, and feature branches from earlier sessions. Pruning them is an owner action, since remote deletion is irreversible; the recommendation is to remove everything except `main` when the owner next reviews the remote.
+- **Repository** - the GitHub account of record owns `zoltraks/dosound-tracker` - recovery goes through that account's credentials and GitHub account-recovery procedures. The full history lives in every clone, so the code itself is never hostage to a single checkout.
+- **Published site** - `https://dosound.alyx.pl` is served from the static `dist/` bundle - control follows the domain and hosting account of record.
+- **Release-signing materials** - none exist today. Desktop binaries ship unsigned per `DEPLOYMENT.md` - if signing is procured later, the certificates and notarization credentials join this list.
+- **Stale remote branches** - `origin/` carries abandoned `broken/*`, `refactoring/*`, `repair/*`, and feature branches from earlier sessions. Pruning them is an owner action, since remote deletion is irreversible - the recommendation is to remove everything except `main` when the owner next reviews the remote.
 
 **Close the window on a clean production-ready build**
 
@@ -411,4 +415,4 @@ Editing a dependency alias (for example `npm:` specifiers or `overrides`) leaves
 
 **Audit findings age between report and implementation**
 
-Change records written from an audit describe the tree at audit time; consolidations and trims can relocate or remove the cited sites before the window runs. Re-verify every finding against the current tree before correcting - the record's mechanism, not its literal line list, is the requirement.
+Change records written from an audit describe the tree at audit time - consolidations and trims can relocate or remove the cited sites before the window runs. Re-verify every finding against the current tree before correcting - the record's mechanism, not its literal line list, is the requirement.

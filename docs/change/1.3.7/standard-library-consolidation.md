@@ -14,7 +14,7 @@
 
 ## Description
 
-All ten vendored standards are already at canonical versions; remaining
+All ten vendored standards are already at canonical versions - remaining
 diffs are format noise per the recorded `diff -w -B` sync rule. The missing
 match for this project is `bash-inline-development.md` (`scripts/*.sh`),
 now vendored. `html-vanilla-development.md`, `standard-template-development.md`,
@@ -26,7 +26,7 @@ feed to the compass library possible.
 
 - `docs/standard/bash-inline-development.md` vendored at 0.1.9 with an
   empty Project Conventions section.
-- `## Project Conventions` added where missing; `docs/standard/README.md`
+- `## Project Conventions` added where missing - `docs/standard/README.md`
   records the bidirectional-synchronization rule.
 
 ## Outcome

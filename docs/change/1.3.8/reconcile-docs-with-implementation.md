@@ -26,8 +26,8 @@ A deep analysis of the implementation against the active documentation set found
 **User manual corrections** (`public/MANUAL.md`)
 
 - "MAX specification v1.6" corrected to v1.7.
-- "Buffer size: 256 samples, latency <10ms, CPU <5%" - invented metrics with no source in the implementation; removed or reworded qualitatively.
-- "Per-instrument MIDI configuration with note range assignment" - the instrument MIDI model carries only `channel` and `program`; the claim is corrected.
+- "Buffer size: 256 samples, latency <10ms, CPU <5%" - invented metrics with no source in the implementation - removed or reworded qualitatively.
+- "Per-instrument MIDI configuration with note range assignment" - the instrument MIDI model carries only `channel` and `program` - the claim is corrected.
 - Versioned example filename in the quarantine workaround (`dosound-tracker-1.2.0-...`) kept as an example - acceptable, but may be generalized.
 
 ## Out of Scope

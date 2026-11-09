@@ -30,7 +30,7 @@ The change teaches the parser to treat a bare `volume`-only node like the
 ## Hints
 
 - Characterization tests in `test/utils/track/trackClipboard.test.ts`
-  already document both shapes; extend them for the expansion.
+  already document both shapes - extend them for the expansion.
 - Verify against `src/utils/yaml/runLength.ts` semantics before editing.
 
 ## Out of Scope

@@ -142,11 +142,11 @@ src/
 
 Project-specific values for the DOSOUND Tracker codebase.
 
-- The audio cadence is a 50 Hz tick driven by `src/workers/sequencerWorker.ts`; the worker
+- The audio cadence is a 50 Hz tick driven by `src/workers/sequencerWorker.ts` - the worker
   URL is `new URL('../../workers/sequencerWorker.ts', import.meta.url)`.
 - `GUIDELINES.md` owns the audio-critical principles - the accepted lint warnings
   (`react-hooks/exhaustive-deps`, `set-state-in-effect`) live there, not here.
 - The MIDI hot path is `src/hooks/midi/useMidiMessageProcessing.ts` - direct `Uint8Array`
   access and string concatenation loops only.
 - Export modules under `src/exports/` plus `src/utils/compression/zx0.ts` produce
-  byte-identical output; round-trip tests assert full-buffer equality.
+  byte-identical output - round-trip tests assert full-buffer equality.

@@ -14,7 +14,7 @@
 
 ## Verdict
 
-The single behavioural requirement maps to one expansion branch and one spec line in each loader block; the shared-helper risk is named and discharged by downstream-parity verification.
+The single behavioural requirement maps to one expansion branch and one spec line in each loader block - the shared-helper risk is named and discharged by downstream-parity verification.
 
 ## Completeness
 
@@ -32,8 +32,8 @@ The single behavioural requirement maps to one expansion branch and one spec lin
 
 ## Implementability
 
-- `src/utils/yaml/runLength.ts:20-57` holds the expansion loop; the fall-through push is the insertion point and `makeWait` is already a parameter.
-- `expandRunNodes` has exactly two callers, `trackClipboard.ts:172` and `songParser.ts:250`; downstream of both, the bare and expanded shapes produce identical results (`parseVolumeNibble` applies volume in the song loader; `applyClipboardStepToLine` tolerates both in the clipboard path), so the shared edit introduces no behaviour change beyond node form.
+- `src/utils/yaml/runLength.ts:20-57` holds the expansion loop - the fall-through push is the insertion point and `makeWait` is already a parameter.
+- `expandRunNodes` has exactly two callers, `trackClipboard.ts:172` and `songParser.ts:250` - downstream of both, the bare and expanded shapes produce identical results (`parseVolumeNibble` applies volume in the song loader - `applyClipboardStepToLine` tolerates both in the clipboard path), so the shared edit introduces no behaviour change beyond node form.
 - `FORMAT.md` documents both loader blocks and the saver's bare-`{volume}` emission, so the documented surface and the code stay consistent.
 - `test/utils/track/trackClipboard.test.ts` lines ~204-220 and ~258-259 hold the pass-through assertions named in the record's hints.
 
@@ -41,7 +41,7 @@ The single behavioural requirement maps to one expansion branch and one spec lin
 
 - Enumeration fidelity: one branch, two spec bullets, three test sites.
 - Vocabulary freeze: "bare `volume`-only node", "wait row carrying the volume" reuse the record's language.
-- Cross-party parity: `parseClipboardData` and `parseSongFromYaml` share `expandRunNodes`; both loader spec blocks in `FORMAT.md` gain the same rule so the two documented surfaces stay parity.
+- Cross-party parity: `parseClipboardData` and `parseSongFromYaml` share `expandRunNodes` - both loader spec blocks in `FORMAT.md` gain the same rule so the two documented surfaces stay parity.
 - Constants completeness: `MAX_PATTERN_LENGTH` capacity bounding is unchanged - a bare node expands to exactly one row.
 - Boundary decisions: `applyClipboardToLines`, the generator's emission shapes, and saver behaviour stay untouched per Out of Scope.
 

@@ -8,11 +8,11 @@ This rule is strict. "Slight" behaviour changes, error-message rewordings, accep
 
 **Refactor vs Tidy vs Behaviour Change**
 
-Three categories of edit exist; they must not be mixed in a single step.
+Three categories of edit exist - they must not be mixed in a single step.
 
 - **Tidy**: renames, dead-code removal, import sorting, formatting nits, JSDoc additions. Safe and obvious. Allowed as preparatory steps inside a refactoring proposal, but must be committed before any structural change touches the same file.
 - **Refactor**: extract, inline, move, split, merge, replace pattern with pattern. Behaviour-preserving by definition. The body of a refactoring proposal.
-- **Behaviour change**: new feature, bug fix, performance optimisation that alters observable timing. Out of scope for refactoring; route through `docs/change/<version>/`.
+- **Behaviour change**: new feature, bug fix, performance optimisation that alters observable timing. Out of scope for refactoring - route through `docs/change/<version>/`.
 
 If a step in a refactoring plan turns out to require a behaviour change, stop and split the work into a change request before continuing.
 
@@ -38,7 +38,7 @@ Based on the analysis, preliminarily select the most needed refactoring directio
 
 Before creating the proposal, determine the primary focus of the refactoring. The focus areas are tailored to this codebase.
 
-- **App.tsx decomposition**: split the ~1140-line `App.tsx` into smaller orchestrator components or extract logic into dedicated hooks. Reduce the number of hooks called directly in `App.tsx`.
+- **App.tsx decomposition**: split the ~1120-line `App.tsx` into smaller orchestrator components or extract logic into dedicated hooks. Reduce the number of hooks called directly in `App.tsx`.
 - **Custom hook extraction**: move cross-component logic from `App.tsx` into named hooks under `src/hooks/`. Hooks must name what they do, not how.
 - **Business logic separation**: extract business logic from `utils/` and `hooks/` into dedicated service or domain modules. Separate pure data transformation from React lifecycle concerns.
 - **Store boundary cleanup**: evaluate whether the single `uiStore` should be split into domain stores (song, instrument, playback, UI). Tighten store responsibilities.
@@ -46,7 +46,7 @@ Before creating the proposal, determine the primary focus of the refactoring. Th
 - **Export module isolation**: keep `src/exports/` modules self-contained and individually testable. Each format (asm, bin, max, vgm, wav) should be independently testable.
 - **Synth module isolation**: separate pure YM2149 emulation logic from Web Audio API integration in `src/synth/`. Keep the emulator testable as plain functions.
 - **Test coverage and testability**: add missing unit tests, characterisation-test untested logic before restructuring it, refactor for testability when modules can only be exercised through the UI.
-- **DRY consolidation**: eliminate duplication that has crossed the Rule-of-Three threshold; extract shared utilities and lift them to the lowest common module.
+- **DRY consolidation**: eliminate duplication that has crossed the Rule-of-Three threshold - extract shared utilities and lift them to the lowest common module.
 - **Type and schema tightening**: replace `any`, widen-then-narrow patterns, and unchecked casts with discriminated unions and exhaustive switch coverage. Keep `src/types/` the single source of truth.
 - **All of the above**: multiple focus areas that must be addressed together.
 
@@ -64,13 +64,13 @@ After the refactoring is complete, create the assessment document:
 
 - `ASSESSMENT.md` for the evaluation of results.
 
-The existing `docs/refactoring/` directory already contains versioned proposals and assessments from versions 1.0.21 through 1.2.7. These are preserved and serve as templates for structure and content.
+The existing `docs/refactoring/` directory already contains versioned proposals and assessments from versions 1.0.21 through 1.4.2. These are preserved and serve as templates for structure and content.
 
 If the current version is not specified when requesting an assessment, the AI agent must use the refactoring proposal for the current version from `docs/refactoring/<version>/REFACTORING.md`.
 
 **Proposal Content**
 
-Each proposal document must include the sections below. Do not include time estimates or duration predictions for individual phases; refactoring proposals are designed for automatic code generation using an AI coding agent and model. The agent executes steps based on technical requirements and verification results, not time constraints. Focus on clear technical specifications and verifiable outcomes.
+Each proposal document must include the sections below. Do not include time estimates or duration predictions for individual phases - refactoring proposals are designed for automatic code generation using an AI coding agent and model. The agent executes steps based on technical requirements and verification results, not time constraints. Focus on clear technical specifications and verifiable outcomes.
 
 **Problem**
 

@@ -45,7 +45,7 @@ standard `docs/standard/typescript-audio-development.md`:
 
 This change touches an audio-adjacent path.
 
-- The change adds one option value at engine construction; it does not alter
+- The change adds one option value at engine construction - it does not alter
   React render timing, dependency arrays, or state management.
 - `onAutoStop` fires inside the engine's interval callback, the same point
   `TrackPanel` already uses - no new timing surface.
@@ -129,7 +129,7 @@ Execute the steps above in this sequence.
 
 **Unit tests**
 
-The new case covers the auto-stop noteOff on the unfocused path; existing
+The new case covers the auto-stop noteOff on the unfocused path - existing
 tests cover explicit release and hard-stop semantics. A second noteOff for an
 already-released preview is idempotent for the device, so no guard against
 double-send is added.
@@ -138,7 +138,7 @@ Test file to update: `test/hooks/midi/useMidiActions.test.tsx`.
 
 **Integration tests**
 
-The record's MIDI-monitor check is a device-level verification; the hook
+The record's MIDI-monitor check is a device-level verification - the hook
 test approximates it through the helper spy and fake timers.
 
 ## Verification

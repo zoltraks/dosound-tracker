@@ -38,10 +38,10 @@ The 1.4.1 window carried four records: three audit-derived chores (`remove-dead-
 
 **Confirmed**
 
-- `package.json` and `package-lock.json`: `@testing-library/jest-dom` removed; `build.copyright` reads `Copyright (c) 2025 Zoltar X / New Generation`, byte-identical to `LICENSE:3` and verified inside a real packaged `Info.plist` (`release/mac-arm64`).
+- `package.json` and `package-lock.json`: `@testing-library/jest-dom` removed - `build.copyright` reads `Copyright (c) 2025 Zoltar X / New Generation`, byte-identical to `LICENSE:3` and verified inside a real packaged `Info.plist` (`release/mac-arm64`).
 - `test/fixtures/` holds only the two referenced fixtures plus the `bundled-song.yaml` this window added.
-- `useLocalStorageState.test.tsx` spies the `localStorage` object; `useDataManagement.test.ts` reads inside `test/`; `StorageKeys.MIDI_CONFIGURATION` is the single source of the MIDI key.
-- `runLength.ts` expands a bare `{volume}` node through `makeWait`; `FORMAT.md` records the rule in both loader blocks.
+- `useLocalStorageState.test.tsx` spies the `localStorage` object - `useDataManagement.test.ts` reads inside `test/` - `StorageKeys.MIDI_CONFIGURATION` is the single source of the MIDI key.
+- `runLength.ts` expands a bare `{volume}` node through `makeWait` - `FORMAT.md` records the rule in both loader blocks.
 - Refactoring: ~35 lines of stale comments removed, shared YAML quoter reused, MIDI clamps extracted to `midiUtils.ts`, and 16 characterization tests added.
 
 **Unconfirmed**
@@ -50,14 +50,14 @@ The 1.4.1 window carried four records: three audit-derived chores (`remove-dead-
 
 **Undocumented**
 
-- Commit `fdf9862` landed improvement-mode work (debug-flag cache, playback bridge hook) without a change record - recorded session improvements under the `improvement` working mode; the clipboard record it authored was then implemented inside this window.
+- Commit `fdf9862` landed improvement-mode work (debug-flag cache, playback bridge hook) without a change record - recorded session improvements under the `improvement` working mode - the clipboard record it authored was then implemented inside this window.
 
 **Deviations**
 
-- `branchGaps.test.ts` carried a third instance of the `Storage.prototype` violation the audit finding did not name; folded into `align-tests-documented-rules` as an in-kind repair and strengthened to prove the warn path runs.
+- `branchGaps.test.ts` carried a third instance of the `Storage.prototype` violation the audit finding did not name - folded into `align-tests-documented-rules` as an in-kind repair and strengthened to prove the warn path runs.
 - `COPYRIGHTS.md` gained one line recording the `build.copyright`-mirrors-`LICENSE` convention - documentation-first work that prevents recurrence.
 - `songIO.ts` writes untrimmed `title`/`author` while guarding on the trimmed value - a behaviour question deferred to `change/1.4.2/trim-song-metadata-on-save.md`, not silently fixed.
-- The `trackClipboard.ts`/`songIO.ts` compression duplication stays: two sites fail the Rule of Three; recorded as a gap in `refactoring/1.4.1/ASSESSMENT.md`.
+- The `trackClipboard.ts`/`songIO.ts` compression duplication stays: two sites fail the Rule of Three - recorded as a gap in `refactoring/1.4.1/ASSESSMENT.md`.
 
 ## Findings
 
@@ -72,7 +72,7 @@ The 1.4.1 window carried four records: three audit-derived chores (`remove-dead-
 - Pre-change baseline: full loop clean (typecheck, lint, format, build, 604 tests).
 - Per-record loops after each change: all green.
 - Post-refactoring full loop: `tsc -b` clean, eslint zero warnings, prettier applied, `vite build` clean, `vitest` 78 files / 620 tests passing.
-- `npx electron-builder --dir` produced the unsigned `release/mac-arm64` bundle; `Info.plist` carries the aligned copyright string.
+- `npx electron-builder --dir` produced the unsigned `release/mac-arm64` bundle - `Info.plist` carries the aligned copyright string.
 - Runnable artifact: `npm run test:e2e` executes during window close against the freshly rebuilt `dist/`.
 
 ## Decision

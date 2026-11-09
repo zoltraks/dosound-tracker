@@ -30,7 +30,7 @@ Create `.github/workflows/ci.yml`. It runs on every push and on pull requests ag
 
 **Unit tests**
 
-No new utility functions. The workflow file is configuration; its correctness is verified by YAML shape and by matching the documented loop commands exactly.
+No new utility functions. The workflow file is configuration - its correctness is verified by YAML shape and by matching the documented loop commands exactly.
 
 ## Verification
 

@@ -4,7 +4,7 @@
 
 DOSOUND Tracker is a chiptune music editor for the AY/YM sound chip (YM2149 PSG) used in the Atari ST. It runs as a React 19 single-page application bundled with Vite 8 (rolldown) and ships as a desktop app through Electron 45. The core of the application is a software emulation of the YM2149 chip rendered through the Web Audio API, paired with a tracker-style song editor and a multi-format export pipeline.
 
-The application is built around two main data paths. The first path is live audio playback: song data flows from React state through hooks into the sequencer integration, which computes register writes per tick, applies them to the YM2149 emulator, and produces sound through the Web Audio API. The second path is file export: the same song data flows through the exports modules into binary, assembly, VGM, WAV, or Max/MSP formats.
+The application is built around two main data paths. The first path is live audio playback: song data flows from React state through hooks into the sequencer integration, which computes register writes per tick, applies them to the YM2149 emulator, and produces sound through the Web Audio API. The second path is file export: the same song data flows through the exports modules into binary, assembly, VGM, WAV, or MAX formats.
 
 The diagram below shows the high-level data flow.
 
@@ -42,8 +42,8 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 - **constants** - Static configuration values. Music constants (PATTERN_LENGTH, NOTE_FREQUENCIES, octave limits), song metadata options (SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES), and export type definitions.
 - **exports** - File export pipeline. `core.ts` holds shared helpers (normalizeSongForExport, parseBaseKeyForExport, formatNoteLabel, downloadFile re-export). Format modules `asm.ts`, `bin.ts`, `max.ts`, `vgm.ts`, and `wav.ts` each produce a specific output format from normalized song data.
 - **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. `usePreviewEnvelope` in `hooks/playback/` is the single preview-envelope engine shared by every instrument-preview surface. Every hook lives in a domain subdirectory (`midi/`, `instrument/`, `song/`, `playback/`, `keyboard/`, `audio/`, `sequencer/`, `modal/`, `app/`, `storage/`, `file/`, `ui/`) - the folder holds no files directly. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
-- **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated. Modal files are imported directly; the folder carries no barrel file.
-- **hooks/ui** - Holds the single Zustand store, `useUiStore.ts`, beside the UI-domain hooks. The store holds cross-component UI state; `src/stores/` was dissolved when its only member moved here under the directories-only rule.
+- **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated. Modal files are imported directly - the folder carries no barrel file.
+- **hooks/ui** - Holds the single Zustand store, `useUiStore.ts`, beside the UI-domain hooks. The store holds cross-component UI state - `src/stores/` was dissolved when its only member moved here under the directories-only rule.
 - **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip and `SoundDriver.ts` holds the song data-model interfaces (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) imported as types across the tree.
 - **types** - Shared TypeScript type definitions used across modules.
 - **utils** - Pure utility functions and stateless helpers. Every utility lives in a domain subdirectory (`instrument/`, `track/`, `song/`, `midi/`, `keyboard/`, `envelope/`, `playback/`, `file/`, `compression/`, `cursor/`, `export/`, `format/`, `log/`, `markdown/`, `panel/`, `pattern/`, `storage/`, `timer/`, `transpose/`, `validation/`, `yaml/`) - the folder holds no files directly, and single-file directories are allowed when a domain has one member.
@@ -54,7 +54,7 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 
 The application uses three distinct state domains, each chosen for a specific reason.
 
-The first domain is the single Zustand store, `useUiStore`. It holds cross-component UI state that multiple panels need to read or write without prop drilling: `currentOctave`, `sharedCurrentLine`, and `channelMutes`. The store also persists channel mutes to localStorage. App.tsx subscribes to this store at its top level and passes values down as props.
+The first domain is the single Zustand store, `useUiStore`. It holds cross-component UI state that multiple panels need to read or write without prop drilling: `currentOctave`, `sharedCurrentLine`, and `channelMutes`. The store persists `currentOctave` to localStorage itself, while `sharedCurrentLine` and `channelMutes` are restored from localStorage at startup and written back by the persistence hooks. App.tsx subscribes to this store at its top level and passes values down as props.
 
 The second domain is hook-owned local state. Song data, instrument lists, pattern data, and playback flags live in `useState` calls inside `useDataManagement` and sibling hooks wired from `App.tsx`. These are passed down to child components and hooks as props. This keeps the song model co-located with the orchestrator and avoids a second store.
 
@@ -68,8 +68,8 @@ The application has two primary data flows.
 
 **Playback pipeline:**
 
-1. Song data lives in App.tsx useState and is passed to `useDataManagement`, which handles load, save, and mutation of the song model.
-2. `useSequencer` receives song speed and pattern length, starts the Web Worker, and emits tick events at 50Hz.
+1. Song data lives in `useState` inside `useDataManagement`, which is wired from App.tsx and handles load, save, and mutation of the song model.
+2. `useSequencer` receives the song's pattern length and frame rate, starts the Web Worker, and emits tick events at that rate (50Hz default).
 3. Each tick drives `useSequencerIntegration`, which advances the per-channel instrument envelopes and computes the next frame of YM2149 register values through `src/utils/playback/` helpers.
 4. The integration applies those register writes to the `YM2149` emulator instance.
 5. The `YM2149` emulator maps registers to Web Audio nodes (oscillators, gain nodes, noise buffer, envelope gain) and produces sound through the `AudioContext`.
@@ -98,8 +98,8 @@ The export pipeline converts the in-memory song model into distributable file fo
 - **asm.ts** - Produces Motorola 68000 assembly source compatible with the DOSOUND replay routine. Emits register-write byte streams with delay markers.
 - **bin.ts** - Produces raw binary data representing the DOSOUND register stream, suitable for direct inclusion in Atari ST programs.
 - **vgm.ts** - Produces VGM (Video Game Music) format files, a standard chip-music capture format that records YM2149 register writes with timing.
-- **wav.ts** - Produces WAV audio by rendering the song through the YM2149 emulator offline and encoding the resulting PCM samples.
-- **max.ts** - Produces MAX (Music Assembly eXchange) files, a chunk-based binary interchange format for chiptune songs, specified in `MAX.md`.
+- **wav.ts** - Produces WAV audio by simulating the song's register frames (`simulateSong`) and synthesizing the resulting PCM samples in software.
+- **max.ts** - Produces MAX (Music Audio eXchange) files, a chunk-based binary interchange format for chiptune songs, specified in `MAX.md`.
 
 All format modules import shared helpers from `exports/core.ts`: `normalizeSongForExport` for safe defaults, `parseBaseKeyForExport` for base-key parsing, `formatNoteLabel` for note display, and `downloadFile` for file delivery. This keeps note handling, key parsing, and file writing consistent across every format.
 
@@ -109,7 +109,7 @@ Several decisions in the codebase are deliberate trade-offs rather than oversigh
 
 **Intentional React anti-patterns for audio stability.** The codebase disables `react-hooks/exhaustive-deps` at the top of App.tsx and in several hooks. Dependency arrays are kept sparse on purpose. Prop values are mirrored into refs so that audio callbacks always read the latest value without being re-created on every render. Direct `setState` calls are used in some hot paths instead of functional updates. These patterns violate common React guidance but are chosen because re-creating audio callbacks or re-rendering at 50Hz causes audible glitches and timing drift.
 
-**Single store vs domain stores.** The project uses one Zustand store (`uiStore`) for cross-component UI state only. Song, instrument, and pattern data stay in App.tsx useState and travel as props. This avoids the overhead of synchronizing multiple stores and keeps the song model close to the orchestrator. The trade-off is a heavy App component and deep prop passing.
+**Single store vs domain stores.** The project uses one Zustand store (`uiStore`) for cross-component UI state only. Song, instrument, and pattern data stay in `useState` inside the domain hooks wired from App.tsx and travel as props. This avoids the overhead of synchronizing multiple stores and keeps the song model close to the orchestrator. The trade-off is a heavy App component and deep prop passing.
 
 **Web Worker for timing.** The 50Hz VBLANK clock runs in `sequencerWorker.ts` rather than on the main thread. This protects playback timing from React renders, garbage collection pauses, and UI event handlers. The worker owns the tick interval and playback position, posting messages back to the hook, which then drives the synth.
 
@@ -119,8 +119,8 @@ Several decisions in the codebase are deliberate trade-offs rather than oversigh
 
 The current architecture has several documented constraints.
 
-- **App.tsx is ~1140 lines.** The central orchestrator still holds all hook wiring, state declarations, and the JSX prop map. Staged decomposition moved the dialog, persistence, and playback handler bodies into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
-- **Business logic is scattered across hooks and utils.** Song management, MIDI, file operations, instrument actions, and sequencer integration each live in their own hook files, some of which are large (useSequencerIntegration at ~21KB, useMidiActions at ~21KB, useSongManagement at ~19KB). Cross-hook dependencies are implicit and wired in App.tsx.
+- **App.tsx is ~1120 lines.** The central orchestrator still holds all hook wiring and the JSX prop map. Staged decomposition moved the dialog, persistence, and playback handler bodies into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
+- **Business logic is scattered across hooks and utils.** Song management, MIDI, file operations, instrument actions, and sequencer integration each live in their own hook files, some of which are large (useSequencerIntegration at ~21KB, useSongManagement at ~19KB, useMidiMessageProcessing at ~19KB). Cross-hook dependencies are implicit and wired in App.tsx.
 - **No undo/redo.** There is no history stack and no snapshot mechanism. All edits apply directly to state. Recovering from a mistake requires manual re-entry or reloading the song.
 - **No Command pattern.** Mutations are free functions and setter calls, not encapsulated command objects. This blocks future undo/redo and makes edit auditing difficult.
-- **Low test coverage for synth and exports.** The YM2149 emulator and the five export format modules have minimal automated tests. The bulk of test coverage targets utilities and hooks.
+- **Low test coverage for the synth.** The YM2149 emulator has minimal automated tests - `test/synth/` holds a single file. The export format modules are exercised by the `test/exports/` suite; the bulk of remaining coverage targets utilities and hooks.

@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import type { MidiConfiguration } from '../../hooks/midi/useMidi.ts';
 import { assertImportSize } from '../validation/importSize.ts';
+import { YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';
 
 export class MidiConfigurationFormatError extends Error {
   constructor(message: string) {
@@ -34,11 +35,7 @@ export const buildMidiConfigurationYaml = (configuration: MidiConfiguration): st
     },
   };
 
-  const yamlContent = yaml.dump(exportData, {
-    indent: 2,
-    lineWidth: -1,
-    quotingType: '"',
-  });
+  const yamlContent = yaml.dump(exportData, YAML_DUMP_OPTIONS);
 
   return yamlContent;
 };

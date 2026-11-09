@@ -18,4 +18,4 @@ Generate SHA-256 checksums at build time and publish them beside each artifact, 
 
 ## Out of Scope
 
-Signing itself is a separate procurement decision; this change delivers verifiable integrity.
+Signing itself is a separate procurement decision - this change delivers verifiable integrity.

@@ -1,7 +1,7 @@
 # DOSOUND Tracker - Refactoring Proposal
 
-**Version:** 1.2.6  
-**Date:** December 23, 2025  
+**Version:** 1.2.6
+**Date:** December 23, 2025
 **Focus:** Unused and Duplicated Code Removal
 
 ## Executive Summary

@@ -15,7 +15,7 @@
 
 ## Verdict
 
-Ready for the bump. Both active change records in the window are implemented, documented, and verified; the working tree carries all changes uncommitted per the no-commit rule of the cycle.
+Ready for the bump. Both active change records in the window are implemented, documented, and verified - the working tree carries all changes uncommitted per the no-commit rule of the cycle.
 
 ## Scope
 
@@ -36,7 +36,7 @@ The cycle never commits, so reconciliation runs against the working-tree diff ra
 - **Confirmed** - `harden-markdown-rendering`: `src/utils/bundledMarkdown.ts`, `src/utils/markdown.ts` brand, rewired fetches in `useMessageSystem.ts` and `App.tsx`, `TrustedHtml` sink in `EnvelopeSection.tsx`, `inject-content-security-policy` plugin in `vite.config.ts`, and `dist/index.html` carries the injected meta tag. `add-persistence-redundancy`: `src/utils/persistenceMirror.ts`, mirror call in `useStorage.ts`, `normalizeRestoredSong` in `useSongManagement.ts`, restore effect and `mirrorRestoreNotice` in `useDataManagement.ts`, reset clearing and notice wiring in `App.tsx`, `MESSAGES.md` reminder, F-16 in `PROJECT.md`, mirror sections in `SPECIFICATION.md`, CSP note in `DEPLOYMENT.md`.
 - **Unconfirmed** - none.
 - **Undocumented** - none: the `useMessageSystem.test.tsx` stub extension and the storage-key consolidation are covered by the respective record and the refactoring proposal.
-- **Deviations** - none: each record's plan was followed; the sanitiser alternative in the fix record was set aside in favour of the allowlist plus CSP option the record itself offers.
+- **Deviations** - none: each record's plan was followed - the sanitiser alternative in the fix record was set aside in favour of the allowlist plus CSP option the record itself offers.
 
 ## Findings
 
@@ -47,15 +47,15 @@ The cycle never commits, so reconciliation runs against the working-tree diff ra
 ## Verification Evidence
 
 - `npm run typecheck`, `npm run lint`, `npm run build`: clean, zero errors and zero warnings.
-- `npm test`: 73 files, 544 tests pass (was 68 files / 525 tests before the window; +2 test files for the fix, +3 for the feature).
+- `npm test`: 73 files, 544 tests pass (was 68 files / 525 tests before the window - +2 test files for the fix, +3 for the feature).
 - `npm run test:e2e`: 12 Playwright tests pass on chromium and webkit against `vite preview` serving the CSP-carrying `dist/` build - the app keeps working under the policy.
 - `dist/index.html` contains the `Content-Security-Policy` meta tag.
-- `git status`: only the window's recorded files are modified or new; no stray changes.
+- `git status`: only the window's recorded files are modified or new - no stray changes.
 
 ## Unable to Verify
 
-- The packaged Electron bundle over `file://` was not executed in this environment; the `connect-src` policy includes `file:` explicitly for the bundled-document fetches, and first launch of a packaged build is the residual check.
-- Real IndexedDB behaviour in a live browser is exercised only through the in-memory fake in tests; jsdom exposes no `indexedDB`. The mirror degrades to a logged warning when unavailable.
+- The packaged Electron bundle over `file://` was not executed in this environment - the `connect-src` policy includes `file:` explicitly for the bundled-document fetches, and first launch of a packaged build is the residual check.
+- Real IndexedDB behaviour in a live browser is exercised only through the in-memory fake in tests - jsdom exposes no `indexedDB`. The mirror degrades to a logged warning when unavailable.
 
 ## Decision
 

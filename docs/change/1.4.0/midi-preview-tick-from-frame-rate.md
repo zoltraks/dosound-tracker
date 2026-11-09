@@ -16,7 +16,7 @@ The summary block precedes the detailed sections and is refreshed when the recor
 
 ## Description
 
-`useMidiActions.ts` sets `midiLiveNextTickTimeRef.current = nowTick + 20` at two sites while the tick interval derives from `song.frame`. At 60 Hz replay the first envelope tick lands about 3.3 ms late; the 50 Hz path is correct only because 20 ms happens to equal its interval.
+`useMidiActions.ts` sets `midiLiveNextTickTimeRef.current = nowTick + 20` at two sites while the tick interval derives from `song.frame`. At 60 Hz replay the first envelope tick lands about 3.3 ms late - the 50 Hz path is correct only because 20 ms happens to equal its interval.
 
 The change derives the offset from the configured frame interval at both sites, so live preview keeps accurate timing at 50 Hz and 60 Hz.
 
@@ -28,7 +28,7 @@ The change derives the offset from the configured frame interval at both sites, 
 ## Hints
 
 - Verification is a manual preview check at 60 Hz.
-- This touches an audio-adjacent timing path; the audio-critical principles in `GUIDELINES.md` apply.
+- This touches an audio-adjacent timing path - the audio-critical principles in `GUIDELINES.md` apply.
 
 ## Out of Scope
 

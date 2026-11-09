@@ -20,7 +20,7 @@ If only documentation changes, state it in the plan - several window items are d
 
 **Apply the change**
 
-Update WORKFLOW.md to define the disclosure convention for AI-assisted authorship; documentation-only, no code change.
+Update WORKFLOW.md to define the disclosure convention for AI-assisted authorship - documentation-only, no code change.
 
 ## Implementation Order
 

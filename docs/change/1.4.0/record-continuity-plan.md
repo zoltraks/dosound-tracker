@@ -22,7 +22,7 @@ The change records a continuity plan in `WORKFLOW.md`: a named successor, backup
 
 ## Hints
 
-- The single-author delivery model itself stays accepted; this records the contingency, not a staffing change.
+- The single-author delivery model itself stays accepted - this records the contingency, not a staffing change.
 - The stale remote branches noted by the same finding may be pruned as part of the housekeeping step.
 
 ## Out of Scope

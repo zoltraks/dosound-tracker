@@ -30,7 +30,7 @@ The plan is ready for implementation. The finding was re-verified against the lo
 
 ## Implementability
 
-Documentation-only edit on a file that exists. The license scan in the plan was executed during this audit and reported `argparse@2.0.1` as the sole off-whitelist entry; `csstype@3.2.3` reports a missing field in the lockfile but declares MIT in-package - inside the permitted set already.
+Documentation-only edit on a file that exists. The license scan in the plan was executed during this audit and reported `argparse@2.0.1` as the sole off-whitelist entry - `csstype@3.2.3` reports a missing field in the lockfile but declares MIT in-package - inside the permitted set already.
 
 ## Fidelity
 

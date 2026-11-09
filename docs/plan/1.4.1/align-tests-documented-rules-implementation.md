@@ -15,7 +15,7 @@
 ## Best Practices
 
 - `TESTING.md` owns the violated rules: spies and stubs for `localStorage` target the `localStorage` object itself, and unit tests stay self-contained inside `test/`.
-- Test edits follow `standard/typescript-general-development.md` and `standard/typescript-react-development.md`; assertions must prove the code path ran, not only the absence of a throw.
+- Test edits follow `standard/typescript-general-development.md` and `standard/typescript-react-development.md` - assertions must prove the code path ran, not only the absence of a throw.
 - The key move makes the code match `SPECIFICATION.md`, which already records that local storage keys are centralised in `src/utils/storage/storageKeys.ts`.
 
 ## Documentation Updates
@@ -30,7 +30,7 @@ None.
 
 **State store modifications**
 
-None. `StorageKeys` gains one static member; it is a constants class, not a store.
+None. `StorageKeys` gains one static member - it is a constants class, not a store.
 
 ## Step by Step Implementation
 
@@ -65,7 +65,7 @@ File to read: `src/utils/log/logger.ts` for the `logger` import.
 
 **Copy the bundled-song fixture inside test/**
 
-`test/utils/song/useDataManagement.test.ts` reads `src/assets/song.yaml`, violating the `test/` confinement rule. Copy the file to `test/fixtures/bundled-song.yaml` - the committed snapshot proves the bundled singular-key document parses; the fixture landed after `remove-dead-dependency-fixtures` so it survives the pruning.
+`test/utils/song/useDataManagement.test.ts` reads `src/assets/song.yaml`, violating the `test/` confinement rule. Copy the file to `test/fixtures/bundled-song.yaml` - the committed snapshot proves the bundled singular-key document parses - the fixture landed after `remove-dead-dependency-fixtures` so it survives the pruning.
 
 File to add: `test/fixtures/bundled-song.yaml` (verbatim copy of `src/assets/song.yaml`).
 
@@ -84,7 +84,7 @@ File to modify: `src/utils/storage/storageKeys.ts`.
 
 File to modify: `src/hooks/midi/useMidi.ts` - replace the `STORAGE_KEY` import with `StorageKeys` and use `StorageKeys.MIDI_CONFIGURATION` at the three sites. `OLD_STORAGE_KEY` stays local: the migration pair was deliberately kept local in `refactoring/1.3.2/REFACTORING.md`, and the record moves only the live key.
 
-File to modify: `src/utils/midi/midiUtils.ts` - remove the `export const STORAGE_KEY` line; no other importer exists.
+File to modify: `src/utils/midi/midiUtils.ts` - remove the `export const STORAGE_KEY` line - no other importer exists.
 
 File to modify: `test/hooks/midi/useMidi.test.tsx` - replace the local `'dosound-tracker-midi-configuration'` literal with `StorageKeys.MIDI_CONFIGURATION`.
 
@@ -118,4 +118,4 @@ npm test -- test/hooks/storage/useLocalStorageState.test.tsx test/utils/branchGa
 - `npm run lint` - zero errors, zero warnings.
 - `npm run format` - applied to the tree.
 - `npm run build` - `tsc -b && vite build` clean.
-- `npm test` - the full suite green; the two repaired tests now exercise real error paths.
+- `npm test` - the full suite green - the two repaired tests now exercise real error paths.

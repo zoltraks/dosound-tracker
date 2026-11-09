@@ -16,7 +16,7 @@ Follow TypeScript and React engineering standards from `docs/standard/ts-react-d
 
 ## Audio-Critical Requirements
 
-- **Audio impact assessment**: the mirror write rides the existing idle-scheduled `scheduleJsonSave` path and commits asynchronously, so no render or audio-path timing changes. No `useCallback`/`useMemo` dependency arrays on audio paths are modified; the restore effect runs once on mount.
+- **Audio impact assessment**: the mirror write rides the existing idle-scheduled `scheduleJsonSave` path and commits asynchronously, so no render or audio-path timing changes. No `useCallback`/`useMemo` dependency arrays on audio paths are modified - the restore effect runs once on mount.
 - **Timing stability verification**: playback simulation is unaffected because the sequencer, SoundDriver, and worker are untouched. No manual playback testing is required.
 - **Linting exception documentation**: no new linting exceptions are introduced or preserved.
 - **Playback simulation**: not applicable.
@@ -29,7 +29,7 @@ Per project guidelines, update the active documentation set before any source co
 - `SPECIFICATION.md` — extend the Session Persistence section with the mirror database, the restore flow, the persistence request, and the reset interplay.
 - `public/MESSAGES.md` — one new rotation entry reminding composers to keep file copies.
 
-No changes to `ARCHITECTURE.md` or `FORMAT.md` are required; the module stays inside the existing hooks/utils boundaries and no file format changes.
+No changes to `ARCHITECTURE.md` or `FORMAT.md` are required - the module stays inside the existing hooks/utils boundaries and no file format changes.
 
 ## Type and State Updates
 
@@ -117,7 +117,7 @@ clearMirroredSnapshots();
 
 **Restore on startup when localStorage is empty**
 
-`useDataManagement` gains a mount effect: request persistent storage, then when `StorageKeys.SONG` is absent from localStorage, read the `song` mirror. A present snapshot is normalized through the same schema migration `loadInitialSong` uses and becomes `currentSong`; the song is marked dirty so the user knows the restored state differs from the last file save. A notice string is exposed for the message rotation.
+`useDataManagement` gains a mount effect: request persistent storage, then when `StorageKeys.SONG` is absent from localStorage, read the `song` mirror. A present snapshot is normalized through the same schema migration `loadInitialSong` uses and becomes `currentSong` - the song is marked dirty so the user knows the restored state differs from the last file save. A notice string is exposed for the message rotation.
 
 File to modify: `src/hooks/useDataManagement.ts`.
 

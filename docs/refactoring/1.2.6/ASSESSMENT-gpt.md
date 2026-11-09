@@ -33,7 +33,7 @@
 
 - **Proposal reference:** Phase 1.1
 - **Proposed change:** Remove 10 unused methods from `src/synth/SoundDriver.ts` (`playEvents`, `processEvents`, `exportToAssembly`, `isCurrentlyPlaying`, `findInstrument`, `calculateNoteFrequency`, `frequencyToPeriod`, `calculateMixerValue`, `processNote`, `processPattern`) leaving `convertSongToSoundEvents()` intact.
-- **Expected outcome:** No functional change; removal only.
+- **Expected outcome:** No functional change - removal only.
 
 - **Implementation status:** ❌ Not Implemented
 - **Verification details (evidence):**
@@ -60,10 +60,10 @@
 
 - **Implementation status:** ⚠️ Partially Implemented
 - **Verification details (evidence):**
-  - `src/utils/valueFormatting.ts` no longer imports the previously-called-out unused type; it now imports `EnvelopePanelType` and uses it in `formatEnvelopeValue()`.
+  - `src/utils/valueFormatting.ts` no longer imports the previously-called-out unused type - it now imports `EnvelopePanelType` and uses it in `formatEnvelopeValue()`.
   - `src/utils/validation.ts` still imports `Song` and uses it for type guards.
   - `src/utils/trackUtils.ts` imports `Pattern` and uses it.
-  - The proposal’s exact “unused import” list does not match current code state; some items appear already addressed or no longer applicable.
+  - The proposal’s exact “unused import” list does not match current code state - some items appear already addressed or no longer applicable.
 
 - **Safety validation:** ✅ (type-only / compile-time effects only)
 
@@ -139,7 +139,7 @@
 #### 2.5 Frequency-to-period duplication resolved by Phase 1
 
 - **Proposal reference:** Phase 2.5
-- **Proposed change:** No explicit action; resolved by removing unused `SoundDriver.frequencyToPeriod()`.
+- **Proposed change:** No explicit action - resolved by removing unused `SoundDriver.frequencyToPeriod()`.
 
 - **Implementation status:** ❌ Not Implemented
 - **Verification details:**
@@ -161,7 +161,7 @@
 - **Implementation status:** ⚠️ Partially Implemented
 - **Verification details (evidence):**
   - `src/hooks/useStorage.ts` now uses generics (`scheduleJsonSave<K extends JsonStorageKey>`) and type-level mapping for key -> value type.
-  - `src/utils/formatters.ts` exists and provides a `Formatter` class; however, this file does not match the proposal’s example (“formatValue(any)”) since the current implementation focuses on formatting utilities rather than a single `formatValue` function.
+  - `src/utils/formatters.ts` exists and provides a `Formatter` class - however, this file does not match the proposal’s example (“formatValue(any)”) since the current implementation focuses on formatting utilities rather than a single `formatValue` function.
 
 - **Safety validation:** ✅
 
@@ -223,7 +223,7 @@
 
 ## Code Deduplication Analysis
 
-- **Envelope deduplication:** ✅ unified in `src/utils/envelopeUtils.ts`; used by both YAML parsing and instrument parsing.
+- **Envelope deduplication:** ✅ unified in `src/utils/envelopeUtils.ts` - used by both YAML parsing and instrument parsing.
 - **YAML quote helpers:** ⚠️ partially unified via `src/utils/yamlUtils.ts`, but `songIO.ts` still has specialized title quoting.
 
 ---
@@ -336,7 +336,7 @@ These may be beneficial, but they are **out of scope** for the 1.2.6 proposal as
 1. **Protected code modified**
    - **Severity:** Critical
    - **Location:** `src/synth/SoundDriver.ts`
-   - **Problem:** Proposal disallows modifications; diff shows substantive edits.
+   - **Problem:** Proposal disallows modifications - diff shows substantive edits.
    - **Recommended fix:** Revert file to `main`.
    - **Impact:** High risk of audio/export behavior changes and violates process guarantees.
 

@@ -31,7 +31,7 @@ Follow TypeScript engineering standards from `docs/standard/typescript-general-d
 
 **Add the limit constants**
 
-`MAX_PATTERN_LENGTH = 256` beside `PATTERN_LENGTH` in `music.ts`; `MAX_IMPORT_BYTES = 1024 * 1024` in a new `src/constants/import.ts`. One MiB sits well above the documented under-100KB typical-song target.
+`MAX_PATTERN_LENGTH = 256` beside `PATTERN_LENGTH` in `music.ts` - `MAX_IMPORT_BYTES = 1024 * 1024` in a new `src/constants/import.ts`. One MiB sits well above the documented under-100KB typical-song target.
 
 Files to modify or create: `src/constants/music.ts`, `src/constants/import.ts`.
 
@@ -61,7 +61,7 @@ Files to modify: `src/hooks/song/useDataManagement.ts`, `src/modals/MidiModal.ts
 
 **Add tests**
 
-- `songParserGaps.test.ts`: a `wait: 1000000` run expands to at most the pattern length; oversized file content throws.
+- `songParserGaps.test.ts`: a `wait: 1000000` run expands to at most the pattern length - oversized file content throws.
 - New `trackClipboard.test.ts`: bounded expansion and the byte cap on `parseClipboardData`.
 
 Files to modify or create: `test/utils/song/songParserGaps.test.ts`, `test/utils/track/trackClipboard.test.ts`.
@@ -79,8 +79,8 @@ Files to modify or create: `test/utils/song/songParserGaps.test.ts`, `test/utils
 
 **Unit tests**
 
-- `test/utils/song/songParserGaps.test.ts` - `wait: 1000000` in a pattern of length 64 produces at most 64 steps; content over `MAX_IMPORT_BYTES` throws.
-- `test/utils/track/trackClipboard.test.ts` - `wait: 500` expands to at most 256 steps; oversized clipboard text throws; a small valid payload still parses.
+- `test/utils/song/songParserGaps.test.ts` - `wait: 1000000` in a pattern of length 64 produces at most 64 steps - content over `MAX_IMPORT_BYTES` throws.
+- `test/utils/track/trackClipboard.test.ts` - `wait: 500` expands to at most 256 steps - oversized clipboard text throws - a small valid payload still parses.
 
 ## Verification
 

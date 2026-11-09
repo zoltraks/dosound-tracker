@@ -17,7 +17,7 @@ rather than length assertions).
 
 ## Deviations
 
-The change record offered rename-or-merge; the iteration phase renamed, and the refactoring
+The change record offered rename-or-merge - the iteration phase renamed, and the refactoring
 phase's analysis showed merge (deletion) was correct because the file was a strict subset. The
 record's goal - no dead file implying unrunnable coverage - holds in both readings.
 

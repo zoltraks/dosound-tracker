@@ -1,12 +1,19 @@
 # Changes
 
+## Version 1.4.3
+
+Saved songs no longer keep stray whitespace in their metadata.
+
+- **Metadata**: title and author values are now written trimmed of surrounding whitespace, so a name typed with accidental padding is not baked into the song file.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency `minimatch` chains inside eslint and electron-builder tooling - nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+
 ## Version 1.4.2
 
 Clipboard round-trips stay faithful for volume-only lines, and packaged builds carry a single consistent copyright attribution.
 
 - **Clipboard**: volume-only rows copied from a track now expand to their documented wait-row form on paste, so a copy/paste round-trip preserves the data exactly instead of changing shape.
 - **Attribution**: packaged desktop binaries now carry the same copyright notice as the `LICENSE` file, ending the ambiguous attribution in installer and app metadata.
-- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency `minimatch` chains inside eslint and electron-builder tooling; nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency `minimatch` chains inside eslint and electron-builder tooling - nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
 
 ## Version 1.4.1
 
@@ -14,11 +21,11 @@ MIDI preview timing is frame-accurate at every replay rate, released previews st
 
 - **MIDI preview**: the first live-preview envelope tick now derives from the song's configured frame rate instead of a fixed 20 ms offset, so 60 Hz previews start on the correct boundary, and a released preview that fades to silence sends the matching note-off to connected devices instead of leaving the note hanging.
 - **Toolchain floor**: Node 26.13.0 and npm 11.20.0 are declared as `engines` floors in `package.json`, enforced at install time through `.npmrc`, and pinned exactly by `.nvmrc`.
-- **Toolchain**: lint and build moved to eslint 10 and vite 8, replacing the deprecated eslint 9 and rolldown-vite lines; the version bump now syncs `package-lock.json` automatically, and the e2e suite always previews a fresh build.
+- **Toolchain**: lint and build moved to eslint 10 and vite 8, replacing the deprecated eslint 9 and rolldown-vite lines - the version bump now syncs `package-lock.json` automatically, and the e2e suite always previews a fresh build.
 - **Diagnostics**: previously silent MIDI send, open, close, and listener failures now log warnings, and dead sequencer and export surface was removed.
 - **Coverage**: the branch-coverage gate passes its configured 80% threshold again after the clipboard copy/paste paths were characterized.
 - **Continuity**: the workflow documentation records an escalation path covering repository access, the published site, and release-signing materials.
-- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency chains inside eslint and electron-builder tooling; nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency chains inside eslint and electron-builder tooling - nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
 
 ## Version 1.4.0
 
@@ -28,17 +35,17 @@ Dialogs now answer the documented Escape and Enter contract, a full reset can no
 - **Reset durability**: a reset now clears only `dosound-tracker-*` local storage keys and waits for the mirrored backup to finish clearing before the app reloads, so a deleted song cannot resurrect and unrelated same-origin data survives.
 - **Instrument preview**: the track panels, piano keyboard, octave panel, MIDI input, and instrument play button all run the same envelope engine, so sustain, release, and auto-stop behave identically everywhere.
 - **Licensing**: `Python-2.0` joined the permitted license set after the prescribed per-package review - it covers `argparse`, a transitive dependency of `js-yaml`.
-- **Security**: `npm audit` reports 12 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users, and the residual is documented until upstream chains accept the fixed release.
+- **Security**: `npm audit` reports 12 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling - nothing ships to end users, and the residual is documented until upstream chains accept the fixed release.
 
 ## Version 1.3.9
 
 Pattern names survive save and load, crafted song and clipboard files can no longer exhaust memory, and the desktop shell pins navigation to the app.
 
-- **Pattern names**: custom pattern names are now written to the song file and survive a save/load round-trip; generated `Pattern NN` names stay implicit.
+- **Pattern names**: custom pattern names are now written to the song file and survive a save/load round-trip - generated `Pattern NN` names stay implicit.
 - **Import hardening**: run-length counts (`wait`, `space`, `off`) in song and clipboard data expand only up to the remaining pattern length, and imported files larger than 1 MiB are rejected with an error instead of freezing the app.
 - **Desktop containment**: clicking a link inside a bundled document opens it in the system browser instead of an application window, and top-level navigation is pinned to the app's own origin.
-- **Documentation**: the format reference now matches the keys the saver actually emits (`line`, `step`, `wait`, `shift`), with loader-accepted aliases marked as input-only; the manual and architecture documents were reconciled with the current implementation.
-- **Security**: `npm audit` reports 12 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users, and clearing the chain is scheduled for the next window.
+- **Documentation**: the format reference now matches the keys the saver actually emits (`line`, `step`, `wait`, `shift`), with loader-accepted aliases marked as input-only - the manual and architecture documents were reconciled with the current implementation.
+- **Security**: `npm audit` reports 12 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling - nothing ships to end users, and clearing the chain is scheduled for the next window.
 
 ## Version 1.3.8
 
@@ -49,16 +56,16 @@ The app now restores your working session across reloads, markdown emphasis rend
 - **Startup test tone**: a clean 440 Hz tone plays for 200 ms once the app has finished loading and restoring state, validating that audio output works.
 - **Preview safety**: switching sections no longer silences a channel spuriously - preview cleanup now runs only when a preview is actually playing.
 - **Internals**: the unused SoundDriver, EventOptimizer, and SequencerEngine modules were removed, and song-speed normalization is consolidated in one helper.
-- **Security**: `npm audit` reports 26 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users.
+- **Security**: `npm audit` reports 26 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling - nothing ships to end users.
 
 ## Version 1.3.7
 
 Toolchain refresh and code hygiene: the dependency set moved to current versions, the desktop shell gained Electron 45, and hex rendering was consolidated behind a single formatter.
 
-- **Toolchain**: React 19.3.1, eslint 9.39.5, typescript-eslint 8.72.1, Playwright 1.64.1, electron-builder 26.18.0, rolldown-vite 7.3.1, Electron 45.2.1, zustand 5.0.16, jsdom 30, and the supporting types and plugins are now current; `vitest` 5 and `js-yaml` 5 were evaluated and deferred with the reason recorded in `docs/FUTURE.md`.
+- **Toolchain**: React 19.3.1, eslint 9.39.5, typescript-eslint 8.72.1, Playwright 1.64.1, electron-builder 26.18.0, rolldown-vite 7.3.1, Electron 45.2.1, zustand 5.0.16, jsdom 30, and the supporting types and plugins are now current - `vitest` 5 and `js-yaml` 5 were evaluated and deferred with the reason recorded in `docs/FUTURE.md`.
 - **Desktop packaging**: the Windows publisher metadata moved to `win.signtoolOptions.publisherName` and the checksum hook reads its platform from `platformToTargets`, matching electron-builder 26's schema.
 - **Internals**: all hexadecimal rendering in the app and the DOSOUND assembly exporter now routes through `Formatter.hex`, removing seventeen hand-rolled `toString(16)` variants.
-- **Security**: `npm audit` reports 26 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users.
+- **Security**: `npm audit` reports 26 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling - nothing ships to end users.
 
 ## Version 1.3.6
 
@@ -82,7 +89,7 @@ The source tree was fully grouped into domain subdirectories and the engineering
 
 The application composition root was decomposed into bounded orchestration hooks with no user-facing changes.
 
-- **Structure**: `src/App.tsx` shrank from 2620 to 1388 lines; dialog, file-loading, persistence, and playback handler clusters moved into twelve dedicated hooks under `src/hooks/`, preserving the documented audio-critical constraints.
+- **Structure**: `src/App.tsx` shrank from 2620 to 1388 lines - dialog, file-loading, persistence, and playback handler clusters moved into twelve dedicated hooks under `src/hooks/`, preserving the documented audio-critical constraints.
 - **Security**: `npm audit` reports zero known vulnerabilities.
 
 ## Version 1.3.3
@@ -90,15 +97,15 @@ The application composition root was decomposed into bounded orchestration hooks
 Security and durability window: the markdown rendering path was hardened against hostile markup, and song data gained a redundant persistence mirror so compositions survive a cleared browser store.
 
 - **Markdown security**: all bundled documents (MESSAGES.md, CHANGELOG.md, MANUAL.md) now load through an allowlist fetch that rejects anything outside the set and any body that looks like HTML, and production builds inject a restrictive Content-Security-Policy meta tag into `index.html`, covering both web deploys and the packaged Electron app.
-- **Persistence redundancy**: song and instrument autosaves are mirrored into an IndexedDB snapshot store; when local storage is cleared, the previous session is restored on next launch with a visible notice, and a periodic message reminds composers to keep file copies with CTRL+S.
+- **Persistence redundancy**: song and instrument autosaves are mirrored into an IndexedDB snapshot store - when local storage is cleared, the previous session is restored on next launch with a visible notice, and a periodic message reminds composers to keep file copies with CTRL+S.
 - **Security**: `npm audit` reports zero known vulnerabilities.
 
 ## Version 1.3.2
 
 Quality window: end-to-end smoke coverage for the documented flows and a test-suite expansion that closes the coverage gap above the 80% thresholds.
 
-- **End-to-end testing**: a new Playwright smoke suite in `e2e/` covers the six documented flows - first launch state, note entry and song playback, instrument envelope editing and preview, DOSOUND assembly export, song save and load, and theme switching - running deterministically on Chromium and WebKit; Firefox is excluded because its plugin-container cannot launch under the macOS sandbox in this environment, as recorded in `docs/TESTING.md`.
-- **Coverage closure**: the test suite grew from 266 to 525 tests, raising measured coverage from 60.41% statements, 50.23% branches, 67.03% functions, and 60.57% lines to 92.26%, 80.18%, 94.99%, and 92.51% respectively - all above the configured 80% thresholds; new suites cover the YM2149 emulator, `SoundDriver`, event optimization, MIDI message processing and device management, song data management, instrument operations, assembly/binary/VGM export paths, and track-panel editing.
+- **End-to-end testing**: a new Playwright smoke suite in `e2e/` covers the six documented flows - first launch state, note entry and song playback, instrument envelope editing and preview, DOSOUND assembly export, song save and load, and theme switching - running deterministically on Chromium and WebKit - Firefox is excluded because its plugin-container cannot launch under the macOS sandbox in this environment, as recorded in `docs/TESTING.md`.
+- **Coverage closure**: the test suite grew from 266 to 525 tests, raising measured coverage from 60.41% statements, 50.23% branches, 67.03% functions, and 60.57% lines to 92.26%, 80.18%, 94.99%, and 92.51% respectively - all above the configured 80% thresholds - new suites cover the YM2149 emulator, `SoundDriver`, event optimization, MIDI message processing and device management, song data management, instrument operations, assembly/binary/VGM export paths, and track-panel editing.
 - **MIDI processing**: repeated hex-formatting and debug-flag reads inside `useMidiMessageProcessing` were consolidated into shared helpers with no behavior change.
 - **Security**: `npm audit` reports zero known vulnerabilities.
 
@@ -107,19 +114,19 @@ Quality window: end-to-end smoke coverage for the documented flows and a test-su
 Infrastructure and security window: continuous integration, release integrity checks, dependency remediation, and desktop permission scoping.
 
 - **Continuous integration**: a GitHub Actions workflow now runs the documented verification loop (typecheck, lint, format check, build, and test) on every push and on pull requests against `main`.
-- **Release integrity**: desktop builds now emit a `SHA256SUMS-<platform>.txt` checksum file beside each artifact, so downloads can be verified with `shasum -a 256 -c`; code signing was evaluated and recorded as a separate procurement decision.
-- **Security**: all `npm audit` advisories resolved - the vitest toolchain updated to 4.1.12 and zod to 4.6.7, leaving zero known vulnerabilities; the Electron permission handlers now grant MIDI access only to the application's own origin and no longer grant `midiSysex` at all.
+- **Release integrity**: desktop builds now emit a `SHA256SUMS-<platform>.txt` checksum file beside each artifact, so downloads can be verified with `shasum -a 256 -c` - code signing was evaluated and recorded as a separate procurement decision.
+- **Security**: all `npm audit` advisories resolved - the vitest toolchain updated to 4.1.12 and zod to 4.6.7, leaving zero known vulnerabilities - the Electron permission handlers now grant MIDI access only to the application's own origin and no longer grant `midiSysex` at all.
 - **Offline freshness**: the service worker cache name now carries the application version and fetches network-first, so returning clients always receive the deployed build while the offline fallback is preserved.
 
 ## Version 1.3.0
 
 Audit-driven hygiene window: documentation accuracy fixes, license policy reconciliation, test-suite cleanup, and configuration hygiene from the 1.2 audit report.
 
-- **Testing**: the extensionless `exportMax.test` file was merged into the canonical `exportMax.test.ts` suite; analysis confirmed it was a strict subset and it was retired during the refactoring phase.
+- **Testing**: the extensionless `exportMax.test` file was merged into the canonical `exportMax.test.ts` suite - analysis confirmed it was a strict subset and it was retired during the refactoring phase.
 - **Code style**: `REASON:` comments added to the three bare non-null assertions, the duplicated numbered comment removed from `useMidi.ts`, and the unused `@/` path alias removed from `tsconfig` and `vitest` configuration.
 - **Licensing**: `COPYRIGHTS.md` now records the ZX0 port attribution (BSD-3-Clause, Einar Saukas) and the permitted-license list covers all resolved permissive classes with a review rule for undeclared packages.
 - **Documentation**: the Electron version figure corrected to 42, the test-file naming rule aligned to the camelCase convention, an AI-disclosure convention added, and a continuity-owner requirement recorded.
-- **Security**: `npm audit` reports 5 advisories in development tooling (4 moderate, 1 high in zod via vitest); remediation is scheduled for the 1.3.0 change window.
+- **Security**: `npm audit` reports 5 advisories in development tooling (4 moderate, 1 high in zod via vitest) - remediation is scheduled for the 1.3.0 change window.
 
 ## Version 1.2.9
 
@@ -130,7 +137,7 @@ Editor cursor persistence across reloads, safer track column input handling, a n
 - **Volume column input**: note keys now enter notes only in the note column, and the volume column accepts hexadecimal nibbles only, preventing accidental volume changes.
 - **Bundled songs**: added "Billy" to the bundled song repository.
 - **Documentation**: reorganized the ASE documentation set by distilling source-obvious content, recording the repository layout map and abandoned-change convention, adding refactoring and findings templates, and moving CHANGELOG.md to public/.
-- **Security**: updated transitive dependencies via `npm audit fix`; four moderate vitest advisories remain in development tooling only, pending a vitest major upgrade.
+- **Security**: updated transitive dependencies via `npm audit fix` - four moderate vitest advisories remain in development tooling only, pending a vitest major upgrade.
 
 ## Version 1.2.8
 
@@ -195,7 +202,7 @@ MIDI velocity support, faster envelope editing, richer manual markdown rendering
 - Added **MIDI velocity** support so note velocity can optionally scale live input volume and be passed through to MIDI OUT, improving expressiveness when playing from external controllers.
 - Added new **envelope editing shortcuts** for copying, resetting, rotating, and incrementing values (including arpeggio/shift helpers) to speed up instrument programming from the keyboard.
 - Upgraded the in-app **MANUAL** renderer with markdown tables and `###` headings plus themed styling so documentation pages can include richer structured content.
-- Updated **YAML schema naming** so songs export `line` (instead of `playlist`), pattern steps export `wait` (instead of `space`), and instruments export `shift` (UI label: Arpeggio); older YAML keys are still accepted on import.
+- Updated **YAML schema naming** so songs export `line` (instead of `playlist`), pattern steps export `wait` (instead of `space`), and instruments export `shift` (UI label: Arpeggio) - older YAML keys are still accepted on import.
 - Simplified pattern steps to a single `note` field and further modularized playback/MIDI utilities without changing core workflows.
 
 ## Version 1.2.2
@@ -222,7 +229,7 @@ Song loop timing fixes, runtime diagnostics in the About dialog, dynamic downloa
 
 - Fixed an audible timing delay on the first row after a playlist **loop** by moving loop handling into the sequencer worker, tracking playlist length and loop index explicitly, and letting the worker wrap directly to the loop position so song playback transitions smoothly without an extra silent tick between patterns.
 - Added **runtime information** to the About dialog so Electron builds show Electron/Chromium/Node.js version strings via a new `getRuntimeInfo` preload API, while browser builds fall back to displaying the user agent for easier environment diagnostics when reporting bugs.
-- Made the header **DOWNLOAD** button conditional by introducing a `useDownloadAvailability` hook that fetches and parses `download/LIST.txt`, filters out `.gitkeep` and index entries and ignores HTML/404 responses so the button only appears when real downloadable files are present; also narrowed the header toolbar from 42px to 35px to free more horizontal space.
+- Made the header **DOWNLOAD** button conditional by introducing a `useDownloadAvailability` hook that fetches and parses `download/LIST.txt`, filters out `.gitkeep` and index entries and ignores HTML/404 responses so the button only appears when real downloadable files are present - also narrowed the header toolbar from 42px to 35px to free more horizontal space.
 - Upgraded the **Electron** runtime from 28.x to 39.x, including updated Node typings and supporting docs describing the upgrade and compatibility checks for `main.cjs` and `preload.cjs`, while keeping the existing audio and UI behavior unchanged.
 - Hardened tests and development guidance by installing a robust **localStorage test setup** for jsdom-based tests, refining type assertions around global objects, and adding documentation such as audio‑critical `GUIDELINES.md` and a detailed 1.1.9 refactoring assessment to capture current architecture and safe refactoring boundaries.
 

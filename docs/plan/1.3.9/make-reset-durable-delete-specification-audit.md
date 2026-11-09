@@ -40,8 +40,8 @@ The record offers "awaits the mirror clear - or gates mirror restore on the rese
 
 ## Fidelity
 
-- Preservation parity: today THEME and DEBUG_MODE are read before `clear()` and re-set after; the plan preserves them by exclusion - same observable outcome.
-- Ordering fidelity: `setChannelMutes` runs after the wipe today and re-writes the UI-state key; the plan keeps that order.
+- Preservation parity: today THEME and DEBUG_MODE are read before `clear()` and re-set after - the plan preserves them by exclusion - same observable outcome.
+- Ordering fidelity: `setChannelMutes` runs after the wipe today and re-writes the UI-state key - the plan keeps that order.
 - Boundary decision: reload moves inside `.finally()` on the clear promise, which always resolves - reload is guaranteed even when IndexedDB is absent or the clear fails.
 - Constants completeness: the `dosound-tracker-` prefix becomes a single exported constant rather than a string literal.
 

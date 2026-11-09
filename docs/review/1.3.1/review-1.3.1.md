@@ -14,7 +14,7 @@
 
 ## Verdict
 
-The window is ready for the bump to 1.3.2. Both active change records were delivered with plans, implementation, and clean verification; the refactoring phase completed with a matching assessment; and the full verification loop passes including all four 80% coverage thresholds.
+The window is ready for the bump to 1.3.2. Both active change records were delivered with plans, implementation, and clean verification - the refactoring phase completed with a matching assessment - and the full verification loop passes including all four 80% coverage thresholds.
 
 ## Scope
 
@@ -49,7 +49,7 @@ Covers the two active records under `docs/change/1.3.1/` — `add-playwright-smo
 
 ## Unable to Verify
 
-Firefox E2E coverage — the engine cannot launch under this macOS sandbox; Chromium and WebKit coverage stands in its place.
+Firefox E2E coverage — the engine cannot launch under this macOS sandbox - Chromium and WebKit coverage stands in its place.
 
 ## Decision
 

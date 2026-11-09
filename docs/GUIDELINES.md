@@ -139,19 +139,19 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Document style owner: `STYLE.md`.
 - Testing and verification owner: `TESTING.md`.
 - Workflow owner: `WORKFLOW.md`.
-- Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request; the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
+- Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request - the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
 - Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`.
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
-- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md`; `improve dosound-tracker` runs the Session Review recorded below. Trigger phrases are recorded, never implied.
+- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded below. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
 - Abandoned change records move to `docs/discard/<version>/` with an explicit abandonment reason recorded in the record.
 - A window review or audit report that was never produced for a released version is abandoned, not repaired - change records that propose retroactively writing past-version reports are discarded.
-- Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined; none are planned.
-- A CI pipeline (`.github/workflows/`) was evaluated and declined; the verification loop is enforced locally and no CI configuration is planned.
+- Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined - none are planned.
+- A CI pipeline (`.github/workflows/`) was evaluated and declined - the verification loop is enforced locally and no CI configuration is planned.
 - No dedicated agent entry file: `README.md` is the documented agent route per the File Maintenance rule.
 - Repository profile: `Software`. Topology: `single-project`. Guidelines topology: `Distributed` - `GUIDELINES.md` plus topic owners.
 - Environment-readiness owner: `README.md` for the development environment, `DEPLOYMENT.md` for build and deployment prerequisites.
-- An explicit user instruction may produce an implementation plan without a change record; the plan states the instruction as its reference (for example `docs/plan/1.3.1/remove-ci-workflow.md`).
+- An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/plan/1.3.1/remove-ci-workflow.md`).
 - `COMPARISATION` filenames and `docs/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
 
 ## General Workflow
@@ -173,9 +173,9 @@ This rule is mandatory and unconditional. Before making any change in this codeb
   - `TESTING.md`
   - `DEPLOYMENT.md`
   - `VERSIONING.md`
-  - `standard/README.md` (index; consult the matching standard file for the task)
+  - `standard/README.md` (index - consult the matching standard file for the task)
 - Never assume a subset of these files is sufficient.
-- For any implementation task, consult the corresponding standard in `standard/` before writing code - the index is `standard/README.md`. These standards are generalized; project-specific conventions and code organization live in `SPECIFICATION.md` and in each standard's `Project Conventions` section.
+- For any implementation task, consult the corresponding standard in `standard/` before writing code - the index is `standard/README.md`. These standards are generalized - project-specific conventions and code organization live in `SPECIFICATION.md` and in each standard's `Project Conventions` section.
 - Ask for clarification when requirements are missing or ambiguous.
 - When a guideline file is added, removed, or its purpose changes, update this file accordingly.
 
@@ -213,7 +213,7 @@ When asked to make an implementation plan:
 - Use the template at `docs/template/implementation-plan-template.md`.
 - Create a comprehensive implementation plan in `docs/plan/<current_version>/`. Name the plan document to match the change request file (for example `midi-support-implementation.md` for `midi-support.md`), or according to the nature of the change if based on a description.
 - Use the current version number from `package.json` for the plan directory.
-- Do not include time estimates for phases; time does not matter for agentic software engineering.
+- Do not include time estimates for phases - time does not matter for agentic software engineering.
 
 **Required Plan Contents**
 
@@ -257,18 +257,16 @@ File to modify: `src/components/TrackPanel.tsx`.
 // Import currentInstrument
 ````
 
-```
-
 **Change Request and Plan Directory Access**
 
-- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. Otherwise never automatically scan or gather change requests from this directory; the user will manually request implementation plans for individual changes.
+- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. Otherwise never automatically scan or gather change requests from this directory - the user will manually request implementation plans for individual changes.
 - Do not read any document from `docs/plan/` unless specifically instructed by the user or a named window request authorizes the window's plan group. Implementation plans are written to this directory only when the user explicitly requests them or a window run requires them.
 - Do not read any document from `docs/archive/` or `docs/refactoring/` unless specifically instructed by the user. These directories contain historical documents and refactoring proposals that are not part of the active documentation set.
 - Do not read any document from `docs/report/` unless the user explicitly requests it. This directory is for custom reports generated on demand and is not part of the active documentation set.
 - Do not read any document from `docs/prompt/` unless specifically instructed by the user. This directory contains historical AI prompt logs from versions 1.0, 1.1, and 1.2 and is not part of the active documentation set.
 - Do not read any document from `docs/feature/` unless specifically instructed by the user. This directory contains feature proposals that are not part of the active documentation set.
 - Do not read any document from `docs/discard/` unless specifically instructed by the user. This directory holds abandoned change records and is not part of the active documentation set.
-- Do not read any document from `docs/review/` or `docs/lesson/` unless specifically instructed by the user. These directories hold generated reviews and recorded lessons; they are outputs and records, not active rules.
+- Do not read any document from `docs/review/` or `docs/lesson/` unless specifically instructed by the user. These directories hold generated reviews and recorded lessons - they are outputs and records, not active rules.
 - Do not read any document from `docs/decision/` unless specifically instructed by the user or a session review routes a decision there.
 
 **Change Request Document Creation**
@@ -296,7 +294,7 @@ Run the verification loop only when source code, configuration, or test files ar
 
 ## Applying a Change
 
-These rules apply to every change made in this project. Follow them in order; do not skip steps.
+These rules apply to every change made in this project. Follow them in order - do not skip steps.
 
 **Understand the change**
 
@@ -305,7 +303,7 @@ These rules apply to every change made in this project. Follow them in order; do
 
 **Create or confirm the plan**
 
-- When asked to perform a change, first create an implementation plan and write it under `docs/plan/[current_version]/`.
+- When asked to perform a change, first create an implementation plan and write it under `docs/plan/<current_version>/`.
 - Name the plan document to match the change request or according to the nature of the change.
 - Use the current version number from `package.json` for the directory name.
 - If a plan already exists, ensure it is consistent with the current request.
@@ -346,7 +344,7 @@ Do not run the verification loop for documentation-only changes. See the "Docume
 
 **Propose a commit message**
 
-After the change is complete and the verification loop passes, propose a commit message for review. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules above. Do not commit; the user commits manually.
+After the change is complete and the verification loop passes, propose a commit message for review. Check `git status` to describe accurately what is being committed, and follow the Commit Messages rules above. Do not commit - the user commits manually.
 
 ## Session Review
 
@@ -366,13 +364,13 @@ The project records a session-review convention. When the user says "improve dos
 
 **Routing**
 
-| Lesson kind              | Owning destination                                                        |
-| ------------------------ | ------------------------------------------------------------------------- |
+| Lesson kind              | Owning destination                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
 | Engineering wound        | The relevant standard's findings, for example `standard/typescript-react-development.md` |
-| Testing or tooling wound | The owning section of `TESTING.md`                                        |
-| Versioning wound         | The owning section of `VERSIONING.md`                                     |
+| Testing or tooling wound | The owning section of `TESTING.md`                                                       |
+| Versioning wound         | The owning section of `VERSIONING.md`                                                    |
 | Workflow wound           | A rule in this file plus a dated record in `docs/decision/` when the decision is durable |
-| Machine or tooling quirk | Environment notes in `DEPLOYMENT.md` or `WORKFLOW.md`                     |
+| Machine or tooling quirk | Environment notes in `DEPLOYMENT.md` or `WORKFLOW.md`                                    |
 
 The lesson file indexes rules that live in the owning documents - it does not hold the rules themselves.
 
@@ -444,7 +442,7 @@ Examples:
 
 - Use 24-hour time, from `00:00:00` to `23:59:59`.
 - No `T` separator between date and time.
-- No timezone indicator; local time only.
+- No timezone indicator - local time only.
 - Month and day are zero-padded, `01` to `12` and `01` to `31`.
 - Hours, minutes, and seconds are zero-padded, `00` to `59`.
 
@@ -608,9 +606,8 @@ Under the `clean` and `purge` extensions:
 - **Strict rule adherence**: follow the rules at all times unless specifically told to do otherwise.
 - **Default workflow**: every change follows the standard workflow (change request, deep analysis, implementation plan, documentation-first updates, verification loop) unless the request explicitly names an ad-hoc, immediate, or quick path.
 - **Structural proposals carry trees**: every answer or document that proposes a structural change (directory locations, file moves) includes the proposed directory tree as one fenced annotated block.
-- **Copyright compliance**: `COPYRIGHTS.md` contains mandatory copyright and licensing rules that must be obeyed. All code must be original, AI-generated code must be verified for originality, and dependency licensing must be compatible (MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost only; GPL is not allowed).
+- **Copyright compliance**: `COPYRIGHTS.md` contains mandatory copyright and licensing rules that must be obeyed. All code must be original, AI-generated code must be verified for originality, and dependency licensing must be compatible (MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost only - GPL is not allowed).
 - **No legacy checking**: unless specifically told to do so, do not implement additional support for previous behaviour or create legacy checking for deprecated configuration keys or features.
 - **Debug logging cleanup**: when debug logging such as `console.log` is added to trace bugs, it must be removed after the bug is fixed.
 - **AI interaction patterns**: when explaining what actions will be taken for a request type, describe the process generally without asking for task-specific details. Only ask for specifics when the user actually initiates that type of request. This applies to refactoring proposals, feature implementations, and any multi-step workflows.
 - **Refactoring proposals**: when asked to create a refactoring proposal, do not ask the user what to refactor. Instead, autonomously analyse recent changes, the current implementation, existing guidelines and standards, and good practices to determine the most valuable refactoring focus. Present the proposal for review before implementing.
-```

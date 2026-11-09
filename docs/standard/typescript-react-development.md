@@ -1550,7 +1550,7 @@ The following authoritative references support the rules in this document.
 Project-specific conventions extend the standard above for the DOSOUND Tracker codebase.
 
 - `useLocalStorageState` in `src/hooks/storage/` is the shared hook for localStorage-backed
-  state; states sharing one JSON key are not split without a schema change.
+  state - states sharing one JSON key are not split without a schema change.
 - `useUiStore` in `src/hooks/ui/` is the single Zustand store for cross-component UI state.
 - `src/assets/song.yaml` is imported with a `?raw` query suffix - query-suffixed specifiers
   are treated as import specifiers in every move refactoring.

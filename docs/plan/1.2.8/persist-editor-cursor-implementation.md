@@ -30,7 +30,7 @@ Phases 1 and 2 do not touch audio components. They add effects and swap plain lo
 Phase 3 modifies `EnvelopePanel` and `ToneNoisePanel`, which hold audio-critical prop-mirrored state.
 
 - Does this change affect React render timing? Only the step cursor state changes. The mirrored `envelopeData` state, its `useEffect` sync, and the `onChange` path are left untouched.
-- Does this modify `useCallback` or `useMemo` dependencies in audio paths? No audio-path dependency arrays change. No new prop is added; only the local `currentPosition` state is swapped for a persisted equivalent.
+- Does this modify `useCallback` or `useMemo` dependencies in audio paths? No audio-path dependency arrays change. No new prop is added - only the local `currentPosition` state is swapped for a persisted equivalent.
 - Does this change state management patterns in audio paths? No. The envelope value pipeline is unchanged. Only `currentPosition` moves from `useState` to `useLocalStorageState`, keyed per panel and independent of the instrument.
 - Does this modify the YM2149 emulator or SoundDriver? No.
 - Must audio playback be manually tested after the change? Yes for Phase 3. Verify envelope editing and instrument preview still sound correct and that switching instruments and reloading does not disturb envelope data.

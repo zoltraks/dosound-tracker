@@ -107,12 +107,12 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 
 ### Technology Stack
 
-- **Frontend**: React 19, TypeScript, Vite 7
+- **Frontend**: React 19, TypeScript, Vite 8
 - **State**: Zustand
 - **Audio**: Web Audio API, custom YM2149 emulator
 - **Build**: Electron 45, Electron Builder 26
 - **Testing**: Vitest, jsdom, Playwright
-- **Linting**: ESLint 9 with TypeScript support
+- **Linting**: ESLint 10 with TypeScript support
 - **Formatting**: Prettier
 
 ### **Implementation Details**

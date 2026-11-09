@@ -23,7 +23,7 @@ The change repoints the spy at the `localStorage` object itself, copies the need
 ## Hints
 
 - Verification is `npm test` green under both storage paths.
-- `remove-dead-dependency-fixtures` prunes unreferenced fixtures; the fixture this record introduces must survive that pruning - reconcile in whichever lands second.
+- `remove-dead-dependency-fixtures` prunes unreferenced fixtures - the fixture this record introduces must survive that pruning - reconcile in whichever lands second.
 
 ## Out of Scope
 

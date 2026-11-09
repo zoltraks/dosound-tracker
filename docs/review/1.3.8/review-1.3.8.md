@@ -34,12 +34,12 @@ Eight records under `docs/change/1.3.8/`: the four audit-driven P1 remediations 
 
 ## Repository Analysis
 
-The window's work is uncommitted in the working tree; reconciliation is against `git status` and `git diff` rather than the log.
+The window's work is uncommitted in the working tree - reconciliation is against `git status` and `git diff` rather than the log.
 
 - **Confirmed** - every record's changes are present in the tree: `songIO.ts` name emission, `songParser.ts`/`trackClipboard.ts` bounded expansion, `import.ts` cap and file-size pre-checks, `main.cjs`/`permissions.cjs` navigation containment, `FORMAT.md`/`ARCHITECTURE.md`/`SPECIFICATION.md`/`PROJECT.md`/`README.md`/`MANUAL.md` reconciliations, the two shared utils, and 12 new tests (544 total).
 - **Unconfirmed** - none.
 - **Undocumented** - none beyond formatting sweeps.
-- **Deviations** - the run expander landed in `src/utils/yaml/runLength.ts` rather than a shared guard file (domain separation); `ARCHITECTURE.md` store-persists-mutes claim was verified accurate and kept, narrowing the audit finding.
+- **Deviations** - the run expander landed in `src/utils/yaml/runLength.ts` rather than a shared guard file (domain separation) - `ARCHITECTURE.md` store-persists-mutes claim was verified accurate and kept, narrowing the audit finding.
 
 ## Findings
 
@@ -56,7 +56,7 @@ The window's work is uncommitted in the working tree; reconciliation is against 
 
 ## Unable to Verify
 
-Packaged-build link click for `REC-002` is manual-verification pending; the handler logic is unit-covered and the Electron launch is required only when packaging changes ship.
+Packaged-build link click for `REC-002` is manual-verification pending - the handler logic is unit-covered and the Electron launch is required only when packaging changes ship.
 
 ## Decision
 
@@ -64,5 +64,5 @@ The go or no-go record for the version bump.
 
 - **Decision:** go - the named window request authorizes the closing bump under autonomous mode
 - **Decided by:** the project owner
-- **Conditions:** commits remain manual; the packaged-build link check is performed before the next desktop release
+- **Conditions:** commits remain manual - the packaged-build link check is performed before the next desktop release
 - **Accepted risks:** none

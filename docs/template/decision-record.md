@@ -23,7 +23,3 @@
 
 - [What this decision makes easier or enables]
 - [What this decision makes harder or rules out]
-
-## Status
-
-[Accepted | Superseded by [decision-<nnn>-<slug>.md] | Rejected]

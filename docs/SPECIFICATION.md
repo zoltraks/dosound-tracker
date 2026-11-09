@@ -6,7 +6,7 @@ The project is built as a desktop application using Electron, with the audio eng
 
 ## Technology Stack
 
-See `package.json` for the dependency list and exact versions. The application is a React and TypeScript single-page app built with rolldown-vite, using Zustand for state and the Web Audio API for real-time YM2149 synthesis, packaged for the desktop with Electron. Tests run on Vitest and linting on ESLint. Song files are parsed with js-yaml, icons come from lucide-react, and desktop installers are produced by electron-builder.
+See `package.json` for the dependency list and exact versions. The application is a React and TypeScript single-page app built with Vite 8 (rolldown), using Zustand for state and the Web Audio API for real-time YM2149 synthesis, packaged for the desktop with Electron. Tests run on Vitest and linting on ESLint. Song files are parsed with js-yaml, icons come from lucide-react, and desktop installers are produced by electron-builder.
 
 ## Audio-Critical Development
 
@@ -63,7 +63,7 @@ The tone period for each channel is a 12-bit value assembled from the coarse (hi
 f = YM_CLOCK / (16 * period)
 ```
 
-where YM_CLOCK is the configured chip clock (2000000 Hz by default, 1000000 Hz at 1 MHz) and period is the 12-bit tone period value. For example, at 2 MHz a period of 284 produces approximately 440 Hz (A4); at 1 MHz the same note uses a period of 142.
+where YM_CLOCK is the configured chip clock (2000000 Hz by default, 1000000 Hz at 1 MHz) and period is the 12-bit tone period value. For example, at 2 MHz a period of 284 produces approximately 440 Hz (A4) - at 1 MHz the same note uses a period of 142.
 
 The mixer register (R7) uses active-low bits: a bit value of 0 means the corresponding tone or noise generator is enabled. Bits 0-2 control tone for channels A, B, C and bits 3-5 control noise for channels A, B, C.
 
@@ -85,11 +85,13 @@ The song speed field on the Song object determines the global tempo. The frame r
 
 ## Export Formats
 
-DOSOUND Tracker supports five export formats. Each format produces a downloadable file from the browser environment. See FORMAT.md for detailed file layout specifications.
+DOSOUND Tracker supports six export formats. Each format produces a downloadable file from the browser environment. See FORMAT.md for detailed file layout specifications.
 
 **DOSOUND Assembly** generates Motorola 68000 assembly source compatible with the DOSOUND XBIOS playback routine. The export simulates song playback, collects register states per frame, and emits optimized dc.b directives with register/value pairs and delay markers. Three strategies are available: simple, complex, and optimized. See src/exports/asm.ts.
 
 **Binary** parses the generated assembly output and extracts raw byte data from dc.b directives, producing a compact binary file suitable for direct memory loading. See src/exports/bin.ts.
+
+**Register Dump** writes the raw YM2149 register stream as a 68k assembly listing (typical extension `_dump.s`), produced by `exportSongRegisterDump` in src/exports/asm.ts. The dump is intended for debugging and analysis of the per-frame register data rather than for compact inclusion. See FORMAT.md for the dump layout.
 
 **MAX** produces a MAX-format binary file (MAX specification v1.7) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The chip setup chunk records the song's frame rate and chip clock. The export captures one register snapshot per tick and writes all 14 YM2149 registers (R0–R13). Three strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/compression/zx0.ts.
 
@@ -97,7 +99,7 @@ DOSOUND Tracker supports five export formats. Each format produces a downloadabl
 
 **WAV** renders the song to a 16-bit PCM WAV file at 44100 Hz sample rate. The export uses a software YM2149 simulation including a noise LFSR to produce the final audio samples. The samples-per-tick is derived from the song's frame rate (882 at 50 Hz, 735 at 60 Hz) and the frequency calculation uses the song's chip clock. See src/exports/wav.ts.
 
-Export scope can target the full song, a single pattern, or a single instrument. Export strategies (simple, complex, optimized) and formats (dump, data, bin, vgm, max, wav) are typed in src/constants/export.ts.
+Export scope can target the full song, a single pattern, or a single instrument. The `ExportType` and `ExportStrategy` (simple, complex, optimized) unions are typed in src/constants/export.ts - the six formats dispatch through the export modal's per-format handlers.
 
 ## Constants
 
@@ -132,7 +134,7 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 **Editing shortcuts:**
 
 - SPACE clears the current cursor position
-- BACKSPACE clears and moves the cursor up
+- BACKSPACE clears the current cursor position
 - CTRL+SPACE inserts a note-off event
 - CTRL+Minus selects the previous instrument
 - CTRL+Plus selects the next instrument
@@ -140,19 +142,12 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 **Playback shortcuts:**
 
 - F2 plays the current line
-- CTRL+5 plays from the start of the line
+- CTRL+5 plays the song from the start of the current line
 - CTRL+6 plays the current line
 - CTRL+8 stops playback
 - ESC stops playback
 - ENTER in a track plays the current line from the cursor row and toggles playback, restoring the cursor on stop
 - CTRL+ENTER in a track plays the current line from its first row and toggles playback, restoring the cursor on stop
-
-**File operation shortcuts:**
-
-- CTRL+N creates a new song
-- CTRL+O loads a song from file
-- CTRL+S saves the current song
-- CTRL+I creates a new instrument
 
 **Modal shortcuts:**
 
@@ -167,7 +162,7 @@ The editor cursor is remembered across reloads through local storage. Local stor
 
 The top-level cursor is stored under `EDITOR_CURSOR` as a JSON object with the focused section, the selected track, the playlist line, the track row, and the track column. On mount it is parsed, clamped to the restored song, and applied through the existing setters. The playlist line is clamped to the playlist length, the track row to the pattern length. An invalid section falls back to the selected track's section. It is written when playback is not running, so no local storage writes occur on the audio path.
 
-Additional cursor state is persisted at its source of truth to avoid duplicate state. The selected instrument id is stored under `CURRENT_INSTRUMENT`; the instrument list highlight follows it. The playlist row cursor inside the playlist panel follows the top-level playlist line and is not stored separately.
+Additional cursor state is persisted at its source of truth to avoid duplicate state. The selected instrument id is stored under `CURRENT_INSTRUMENT` - the instrument list highlight follows it. The playlist row cursor inside the playlist panel follows the top-level playlist line and is not stored separately.
 
 Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type, and the per-instrument octave selection under `INSTRUMENT_OCTAVES` through `src/hooks/instrument/useInstrumentOctaves.ts`. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
 
@@ -185,7 +180,7 @@ Two destructive paths drop the mirror together with local storage: the legacy-sc
 
 **Persistence reminder**
 
-`public/MESSAGES.md` carries a rotation entry reminding composers that browser storage can be cleared and that `CTRL+S` keeps a file copy of the song.
+`public/MESSAGES.md` carries a rotation entry reminding composers that browser storage can be cleared and that a file copy of the song is the durable record.
 
 ## Markdown Rendering Security
 
@@ -197,7 +192,7 @@ Bundled Markdown documents are rendered into HTML by `src/utils/markdown/markdow
 
 **Bounded source set**
 
-Only bundled first-party documents may reach a markdown sink: `MESSAGES.md`, `CHANGELOG.md`, and `MANUAL.md`. All fetches go through `fetchBundledMarkdown` in `src/utils/markdown/bundledMarkdown.ts`, which rejects names outside the allowlist and bodies that look like HTML (a `text/html` content type or a leading `<!doctype`/`<html` marker), so an SPA fallback page is never rendered as document content.
+Only bundled first-party documents may reach a markdown sink: `MESSAGES.md`, `CHANGELOG.md`, and `MANUAL.md`. All fetches go through `fetchBundledMarkdown` in `src/utils/markdown/bundledMarkdown.ts`, which rejects names outside the allowlist and bodies that look like HTML (a `text/html` content type, a leading `<!doctype`/`<html` marker, or a `<script type="module"` marker within the first 512 characters), so an SPA fallback page is never rendered as document content.
 
 **Content security policy**
 
@@ -215,7 +210,7 @@ The following utilities were extracted to eliminate duplication and are the cano
 - **`src/hooks/storage/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
 - **`src/exports/core.ts`** — `formatPitchDelta` for formatting signed pitch delta values in assembly export comments. `exportInstrumentWith` generic wrapper for instrument preview exports across VGM, MAX, and WAV formats.
 - **`src/utils/instrument/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
-- **`src/hooks/playback/usePreviewEnvelope.ts`** — the single ref-driven preview-envelope engine: per-key voices, sustain and release tracking, `window.setInterval` ticks through `advancePreviewEnvelopeTick`/`getPreviewEnvelopeApplyStep`, and auto-stop on a silent envelope tail or a caller-supplied `stopAfterStep` cap. The first envelope boundary is scheduled from the caller-supplied `tickIntervalMs` - the interval derived from the song's configured frame rate - so preview timing stays accurate at both 50 Hz and 60 Hz. Consumed by `TrackPanel`, `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, and `useInstrumentActions`; per-start options reproduce each surface's reduced or extended semantics. MIDI preview surfaces wire `onAutoStop` to the outgoing MIDI noteOff path, so a released preview that reaches a silent envelope tail emits the matching noteOff on the connected device at the moment the channel is silenced.
+- **`src/hooks/playback/usePreviewEnvelope.ts`** — the single ref-driven preview-envelope engine: per-key voices, sustain and release tracking, `window.setInterval` ticks through `advancePreviewEnvelopeTick`/`getPreviewEnvelopeApplyStep`, and auto-stop on a silent envelope tail or a caller-supplied `stopAfterStep` cap. The first envelope boundary is scheduled from the caller-supplied `tickIntervalMs` - the interval derived from the song's configured frame rate - so preview timing stays accurate at both 50 Hz and 60 Hz. Consumed by `TrackPanel`, `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, and `useInstrumentActions` - per-start options reproduce each surface's reduced or extended semantics. MIDI preview surfaces wire `onAutoStop` to the outgoing MIDI noteOff path, so a released preview that reaches a silent envelope tail emits the matching noteOff on the connected device at the moment the channel is silenced.
 
 ### Branded Types
 
@@ -245,7 +240,7 @@ The following constraints reflect the current state of the codebase and are cand
 
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
 - **No undo/redo**: The application does not implement an undo/redo history. All edits are immediate and irreversible without manual re-entry. No command pattern or state snapshot mechanism is present.
-- **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~1140 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/`; further decomposition remains a candidate for later windows.
-- **Low test coverage for synth and exports**: The YM2149 emulator (src/synth/YM2149.ts) and export modules (src/exports/) have minimal automated test coverage. Core audio synthesis and file generation paths are not fully exercised by the test suite.
+- **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~1120 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/` - further decomposition remains a candidate for later windows.
+- **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) has minimal automated test coverage - `test/synth/` holds a single file. The export modules (src/exports/) are exercised by the `test/exports/` suite. Core audio synthesis paths are not fully exercised by the test suite.
 - **Single chip support**: Only the YM2149 chip is supported. The constants in src/constants/song.ts define supported chips as a single-element array, leaving no room for AY-3-8910 or other PSG variants without code changes.
 - **Browser audio dependency**: Real-time playback relies on the Web Audio API and OscillatorNode, which imposes browser-specific behavior and latency characteristics that differ from native Atari ST hardware.

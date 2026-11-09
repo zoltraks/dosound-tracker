@@ -32,7 +32,7 @@ Per project guidelines, update the active documentation set before any source
 code modifications. Update only the files affected by this change.
 
 - `VERSIONING.md` — the manual `npm install` step is absorbed by the bump
-  script; the automated-bump section gains the lockfile sync.
+  script - the automated-bump section gains the lockfile sync.
 
 No other pillar document changes. `PROJECT.md`, `ARCHITECTURE.md`,
 `SPECIFICATION.md`, and `FORMAT.md` are unaffected.

@@ -18,7 +18,7 @@ The 1.3.9 window is ready for the version bump: all five change records are fulf
 
 ## Scope
 
-This review covers the five active change records under `docs/change/1.3.9/` and the refactoring pair under `docs/refactoring/1.3.9/`. Deferred discoveries live in `docs/change/1.4.0/`; two requests were abandoned into `docs/discard/`.
+This review covers the five active change records under `docs/change/1.3.9/` and the refactoring pair under `docs/refactoring/1.3.9/`. Deferred discoveries live in `docs/change/1.4.0/` - two requests were abandoned into `docs/discard/`.
 
 ## Recorded Work
 
@@ -35,8 +35,8 @@ This review covers the five active change records under `docs/change/1.3.9/` and
 
 - **Confirmed** - every record's plan exists under `docs/plan/1.3.9/` beside its specification audit, and each lands in the working tree as recorded.
 - **Unconfirmed** - none.
-- **Undocumented** - none; every changed `src/` file traces to a record or the refactoring proposal.
-- **Deviations** - (a) `PreviewEnvelopeOptions.ym2149` accepts a getter because `react-hooks/refs` forbids render-time ref reads; (b) `handleHardStopLivePreview` keeps its clamped register write alongside the engine's per-voice write to preserve an existing test contract; (c) `optionsRef` mirrors via `useEffect` rather than render-body assignment; (d) MIDI auto-stop still sends no noteOff - deferred to `docs/change/1.4.0/send-midi-noteoff-on-preview-autostop.md`; (e) two change requests abandoned (`docs/discard/1.4.1/enforce-ai-assisted-commit-convention.md`, `docs/discard/1.4.0/resolve-missing-1.3.6-review.md`) with reasons recorded.
+- **Undocumented** - none - every changed `src/` file traces to a record or the refactoring proposal.
+- **Deviations** - (a) `PreviewEnvelopeOptions.ym2149` accepts a getter because `react-hooks/refs` forbids render-time ref reads - (b) `handleHardStopLivePreview` keeps its clamped register write alongside the engine's per-voice write to preserve an existing test contract - (c) `optionsRef` mirrors via `useEffect` rather than render-body assignment - (d) MIDI auto-stop still sends no noteOff - deferred to `docs/change/1.4.0/send-midi-noteoff-on-preview-autostop.md` - (e) two change requests abandoned (`docs/discard/1.4.1/enforce-ai-assisted-commit-convention.md`, `docs/discard/1.4.0/resolve-missing-1.3.6-review.md`) with reasons recorded.
 
 ## Findings
 
@@ -55,7 +55,7 @@ This review covers the five active change records under `docs/change/1.3.9/` and
 
 ## Unable to Verify
 
-- Manual audio playback on the five migrated preview surfaces - the recorded human gate; the shared engine is unit-tested and the surfaces keep their per-call-site options.
+- Manual audio playback on the five migrated preview surfaces - the recorded human gate - the shared engine is unit-tested and the surfaces keep their per-call-site options.
 
 ## Decision
 

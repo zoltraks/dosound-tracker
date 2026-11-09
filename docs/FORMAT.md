@@ -47,17 +47,18 @@ song:
 Loader rules (from `parseSongFromYaml`):
 
 - Input text larger than `MAX_IMPORT_BYTES` (1 MiB) is rejected before parsing.
-- Run-length counts (`wait`, `space`, `off` numerics) expand only up to the remaining pattern length; counts beyond capacity are truncated.
+- Run-length counts (`wait`, `space`, `off` numerics) expand only up to the remaining pattern length - counts beyond capacity are truncated.
 - `title`, `author`: empty or missing → defaults.
 - `speed`: invalid or ≤0 → defaults to 6, then clamped to ≥2 and forced even.
 - `length`: invalid → defaults to `PATTERN_LENGTH` (64), then clamped to `[4, 256]`.
-- `loop`: numeric or numeric string; clamped to `[0, playlist.length-1]`; otherwise `null`.
-- `chip`: missing or non-string → defaults to `"YM"`; string values are trimmed and uppercased.
-- `frame`: missing or non-numeric → defaults to `50`; numeric values are floored to integers.
-- `clock`: missing or non-numeric → defaults to `2000000`; numeric values are floored to integers.
+- `loop`: numeric or numeric string - clamped to `[0, playlist.length-1]` - otherwise `null`.
+- `chip`: missing or non-string → defaults to `"YM"` - string values are trimmed and uppercased.
+- `frame`: missing or non-numeric → defaults to `50` - numeric values are floored to integers.
+- `clock`: missing or non-numeric → defaults to `2000000` - numeric values are floored to integers.
 
 Saver rules (from `buildSongYamlForExport`):
 
+- `title` and `author` are written only when non-empty after trimming, and the stored value is trimmed of surrounding whitespace.
 - `chip`, `frame`, and `clock` are always written. `chip` is normalised to uppercase (default `"YM"`). `frame` defaults to `50` when missing. `clock` defaults to `2000000` when missing.
 - The saver emits `line`, `pattern`, and `instrument` lists only. `playlist`, `patterns`, `instruments`, `steps`, `lines`, `space`, `off`, and `arpeggio` are loader-accepted input aliases and never appear in emitted output.
 
@@ -96,10 +97,10 @@ Each pattern node has:
   - If non-empty string → used as pattern ID (uppercased internally).
   - Otherwise loader assigns a hex string ID based on index.
 - `name`:
-  - Optional; defaults to `"Pattern ${number}"` if missing.
+  - Optional - defaults to `"Pattern ${number}"` if missing.
   - The saver writes `name` only when it differs from that generated default.
 - `step` / `steps` / `lines`:
-  - List of step objects (see below). The saver always writes `step`; `steps` and `lines` are loader-accepted aliases.
+  - List of step objects (see below). The saver always writes `step` - `steps` and `lines` are loader-accepted aliases.
 
 ### Pattern steps
 
@@ -113,7 +114,7 @@ Each logical row in `trackA` is encoded as a **step** with these fields:
   - `true` → single empty row.
   - integer `N > 0` → run of `N` consecutive empty rows.
 - `off: boolean | number` (input only)
-  - `true` → explicit key-release row; integer `N` → run of `N` key-release rows. The saver never emits `off`; key-release rows are written as `note: 'OFF'`.
+  - `true` → explicit key-release row - integer `N` → run of `N` key-release rows. The saver never emits `off` - key-release rows are written as `note: 'OFF'`.
 - `space: boolean | number` (input only)
   - Loader-accepted alias for `wait`.
 - `volume: number | string` (optional)
@@ -181,7 +182,7 @@ Saver (`saveSong`) rules:
 
 Loader (`parseSongFromYaml`) rules:
 
-- `number` interpreted as hex slot index where possible; otherwise index-based fallback.
+- `number` interpreted as hex slot index where possible - otherwise index-based fallback.
 - `base` parsed via `parseBaseKey` and normalized via `formatBaseKey`.
 - `octave` read from number or numeric string, then clamped.
 - `volume` / `shift` / `pitch` / `noise` / `mode` expanded to `ENVELOPE_LENGTH` values, padding with the last value. The `arpeggio` alias expands with looping semantics.
@@ -263,7 +264,7 @@ Details:
   - For each row up to the current pattern length:
     - `off: true` or `note: 'OFF'` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
     - `wait: true` or `space: true` → empty.
-    - `note: string` → parsed via `parseBaseKeyString` into note + octave; instrument defaults to `"00"` if missing.
+    - `note: string` → parsed via `parseBaseKeyString` into note + octave - instrument defaults to `"00"` if missing.
     - Optional `volume` nibble 0..15.
   - Overwrites the monotrack data (`trackA`) and per-line `volume` for the selected pattern.
 
@@ -273,7 +274,7 @@ Details:
 
 - Text format: **68k assembly source**.
 - Typical extension: `.s`.
-- Produced by `exportToAssembly(song, isComplexDumpMode)`.
+- Produced by `exportToAssembly(song, strategy)`.
 - Used as DOSOUND-compatible music data (XBIOS DOSOUND format in assembly form).
 
 ### Structure
@@ -343,7 +344,7 @@ Details:
 
 - Binary format: **raw DOSOUND data bytes**.
 - Typical extension: `.bin`.
-- Produced by `exportToBinary(song, isComplexDumpMode)`.
+- Produced by `exportToBinary(song, strategy)`.
 
 ### Structure
 
@@ -357,7 +358,7 @@ Details:
 
 ### Output file
 
-- Binary format: **MAX** (Music Assembly eXchange), specification v1.7.
+- Binary format: **MAX** (Music Audio eXchange), specification v1.7.
 - Typical extension: `.max`.
 - Produced by `exportSongToMax(song, strategy)` or `exportInstrumentToMax(instrument, song, strategy)`.
 - Contains ZX0-compressed YM2149 register streams with metadata.
@@ -373,7 +374,7 @@ Details:
 
 ### Frame capture
 
-The export calls `simulateSong` directly and captures one register snapshot per tick. The tick rate is determined by the song's frame rate (default 50 Hz, 20 ms per frame; 60 Hz = 16.66 ms per frame). All 14 YM2149 registers (R0–R13) are included in every snapshot. Registers R11–R13 (envelope period and shape) default to 0 because the simulation does not yet model the hardware envelope generator. The simulation uses the song's chip clock for tone period calculations.
+The export calls `simulateSong` directly and captures one register snapshot per tick. The tick rate is determined by the song's frame rate (default 50 Hz, 20 ms per frame - 60 Hz = 16.66 ms per frame). All 14 YM2149 registers (R0–R13) are included in every snapshot. Registers R11–R13 (envelope period and shape) default to 0 because the simulation does not yet model the hardware envelope generator. The simulation uses the song's chip clock for tone period calculations.
 
 ### Export strategies
 
@@ -410,7 +411,7 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
 
 - Binary format: **VGM** (Video Game Music) file.
 - Typical extension: `.vgm`.
-- Produced by `exportSongToVgm(song)`.
+- Produced by `exportSongToVgm(song, strategy)`.
 
 ### Structure
 
@@ -444,7 +445,7 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
     - The sample offset at that point.
   - These values are encoded into `loop offset` and `loop sample` fields in the header.
 
-This document does not attempt to fully describe the VGM specification; it documents only how this tracker maps its internal song representation into a VGM file.
+This document does not attempt to fully describe the VGM specification - it documents only how this tracker maps its internal song representation into a VGM file.
 
 ## EXPORT WAV
 

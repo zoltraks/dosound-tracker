@@ -27,7 +27,7 @@ The change applies the recorded convention going forward: new commits carry the 
 ## Hints
 
 - Verification is a trailer census on new commits.
-- The leaked prompt subject is historical and stays as-is; rewriting history is out of bounds.
+- The leaked prompt subject is historical and stays as-is - rewriting history is out of bounds.
 
 ## Out of Scope
 

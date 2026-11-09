@@ -27,8 +27,8 @@ The change installs navigation containment in the main process: new-window reque
 
 ## Hints
 
-- Sandbox and contextIsolation remain enabled; this change adds the missing navigation layer, not a replacement for existing hardening.
-- The preload surface is five read-mostly methods; containment should not expand or alter it.
+- Sandbox and contextIsolation remain enabled - this change adds the missing navigation layer, not a replacement for existing hardening.
+- The preload surface is five read-mostly methods - containment should not expand or alter it.
 
 ## Out of Scope
 

@@ -33,7 +33,7 @@ The change bounds every expansion loop to the remaining pattern length and adds 
 
 ## Hints
 
-- The same bound applies at both expansion sites; they should share one limit constant rather than duplicating a magic number.
+- The same bound applies at both expansion sites - they should share one limit constant rather than duplicating a magic number.
 - The byte cap covers `FileReader.readAsText`, fetch-based song loads, and the clipboard import path.
 
 ## Out of Scope

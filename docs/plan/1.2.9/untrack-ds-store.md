@@ -20,7 +20,7 @@ If only documentation changes, state it in the plan - several window items are d
 
 **Apply the change**
 
-Run git rm --cached test/.DS_Store; the file stays ignored.
+Run git rm --cached test/.DS_Store - the file stays ignored.
 
 ## Implementation Order
 

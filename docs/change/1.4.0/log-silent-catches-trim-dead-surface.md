@@ -23,7 +23,7 @@ The change converts each silent catch to a `logger.warn` with context and remove
 ## Hints
 
 - The `__dosoundTrackerIsResetting` flag is trimmed only if `make-reset-durable-delete` did not land first and give it a real consumer.
-- The MIDI path is a hot path; logging stays outside per-event allocation patterns per `SPECIFICATION.md`.
+- The MIDI path is a hot path - logging stays outside per-event allocation patterns per `SPECIFICATION.md`.
 
 ## Out of Scope
 

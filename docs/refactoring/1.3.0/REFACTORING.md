@@ -63,7 +63,7 @@ state-flow changes, so audio timing is unaffected.
 
 ## Risk
 
-Low. The helper is a pure function; every migrated site used an equivalent clamp. The
+Low. The helper is a pure function - every migrated site used an equivalent clamp. The
 deferred sites (`playbackSimulation.ts:349`, and the `SoundDriver.clampVolume` guard) are the
 only places semantics could drift, and they are handled explicitly. Export output is exercised
 by the fixture tests, which must stay byte-identical.

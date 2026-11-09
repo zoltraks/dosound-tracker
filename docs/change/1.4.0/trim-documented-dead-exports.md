@@ -27,7 +27,7 @@ The change removes each export and updates the naming document in the same chang
 ## Hints
 
 - Deleting `asTrackId` breaks the four-helper symmetry the spec describes - decide whether the spec documents intended API or current state before removing.
-- `LogEntry` is referenced by `LOGGER.md` design fragments; sync that document if the interface is removed.
+- `LogEntry` is referenced by `LOGGER.md` design fragments - sync that document if the interface is removed.
 - Complements `log-silent-catches-trim-dead-surface`, which enumerates different dead items on the MIDI and sequencer paths.
 
 ## Out of Scope

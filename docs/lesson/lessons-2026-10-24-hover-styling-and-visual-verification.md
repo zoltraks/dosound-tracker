@@ -30,7 +30,7 @@ Preventing rule: see "Check rendered styles headlessly" in `WORKFLOW.md`.
 
 Observed symptom: the recorded dev-server kill recipe named `netstat` and `taskkill`, which do not exist on macOS.
 
-Root cause: the tooling note was written for one platform; `lsof -ti :8008 | xargs kill` is the POSIX equivalent.
+Root cause: the tooling note was written for one platform - `lsof -ti :8008 | xargs kill` is the POSIX equivalent.
 
 Preventing rule: see "Stopping the development server" in `WORKFLOW.md`.
 
@@ -38,7 +38,7 @@ Preventing rule: see "Stopping the development server" in `WORKFLOW.md`.
 
 Observed symptom: `.octave-selection.active` set `border-bottom-color` yet no border appeared - the base rule declared no border-bottom at all.
 
-Root cause: a color-only declaration against a nonexistent border is dead code; a transparent placeholder border in the base rule made both the active and the new hover color render.
+Root cause: a color-only declaration against a nonexistent border is dead code - a transparent placeholder border in the base rule made both the active and the new hover color render.
 
 Preventing rule: see "Project Conventions" in `standard/css-general-development.md`.
 
@@ -46,6 +46,6 @@ Preventing rule: see "Project Conventions" in `standard/css-general-development.
 
 Observed symptom: the "`W + 2` contiguous hyphens" wording read as ambiguous against the repository's actual separator rows.
 
-Root cause: the rule counted the padded inner width rather than the hyphen run; the files use `W` hyphens between the standard one-space delimiters.
+Root cause: the rule counted the padded inner width rather than the hyphen run - the files use `W` hyphens between the standard one-space delimiters.
 
 Preventing rule: see "Markdown Tables" in `GUIDELINES.md`.

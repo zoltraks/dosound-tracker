@@ -28,14 +28,14 @@ The plan adds one in-scope-supporting doc line (the mirroring convention in `COP
 
 ## Ambiguity
 
-- "aligned to the `LICENSE` entity and year" - resolved as the verbatim `LICENSE` notice `Copyright (c) 2025 Zoltar X / New Generation`, including the `(c)` glyph, so entity, year, and glyph can never diverge. The current field uses `©`; the aligned field drops it for the `LICENSE` spelling.
-- `signtoolOptions.publisherName` and `author.name` name the same natural person under a different field purpose; the record scopes to `build.copyright` only, and they stay.
+- "aligned to the `LICENSE` entity and year" - resolved as the verbatim `LICENSE` notice `Copyright (c) 2025 Zoltar X / New Generation`, including the `(c)` glyph, so entity, year, and glyph can never diverge. The current field uses `©` - the aligned field drops it for the `LICENSE` spelling.
+- `signtoolOptions.publisherName` and `author.name` name the same natural person under a different field purpose - the record scopes to `build.copyright` only, and they stay.
 
 ## Implementability
 
 - `package.json:89` holds `"copyright": "Copyright © 2024 Filip Golewski"` inside the `build` block.
 - `LICENSE:3` holds `Copyright (c) 2025 Zoltar X / New Generation`.
-- `docs/COPYRIGHTS.md` exists and is the owning document; `electron-builder` is installed, so `--dir` can exercise the manifest.
+- `docs/COPYRIGHTS.md` exists and is the owning document - `electron-builder` is installed, so `--dir` can exercise the manifest.
 
 ## Fidelity
 

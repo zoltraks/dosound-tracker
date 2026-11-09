@@ -20,7 +20,7 @@ If only documentation changes, state it in the plan - several window items are d
 
 **Apply the change**
 
-Amend the test-file naming rule in the standard to camelCase, matching the tree and GUIDELINES.md; no renames needed.
+Amend the test-file naming rule in the standard to camelCase, matching the tree and GUIDELINES.md - no renames needed.
 
 ## Implementation Order
 

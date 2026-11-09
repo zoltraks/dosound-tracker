@@ -1,9 +1,5 @@
 # Specification Audit - [Change Name]
 
-**Status:** Draft | Complete
-
-**Verdict:** Ready for Implementation | Returned to Planning
-
 ## Document Information
 
 |            |                                         |
@@ -11,13 +7,6 @@
 | Change     | [change record the audited plan serves] |
 | Plan       | [path to the implementation plan]       |
 | Audit Date | [YYYY-MM-DD]                            |
-
-## Verdict
-
-State the recommendation first in one or two sentences: whether the plan is
-ready for implementation and why.
-
-A plan that returns to planning lists the findings that must close first.
 
 ## Completeness
 

@@ -42,7 +42,7 @@ Overall result: **complete** - every proposed item landed as written.
 | `npm run build`     | pass (`tsc -b && vite build`)    |
 | `npm test`          | pass, 78 files / 620 tests       |
 
-Test count moved from 604 to 620 (+16 characterization tests); file
+Test count moved from 604 to 620 (+16 characterization tests) - file
 count moved from 76 to 78 (two new test files).
 
 ## Remaining Gaps

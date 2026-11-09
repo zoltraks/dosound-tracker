@@ -16,7 +16,7 @@
 
 ## Description
 
-Song data and preferences already persist; the view itself does not. Being on
+Song data and preferences already persist - the view itself does not. Being on
 the MANUAL view and reloading loses the modal, the position, and the scroll.
 `useModalState` holds ~30 transient flags, `useUiStore` holds the cursor
 line and mutes, and none survive a reload.
@@ -32,10 +32,10 @@ line and mutes, and none survive a reload.
   paste dialogs are excluded - reopening a pending destructive action is
   unsafe.
 - `src/hooks/ui/useUiStatePersistence.ts` - writes the snapshot on state
-  change; `App.tsx` re-opens the saved modal on mount through the existing
+  change - `App.tsx` re-opens the saved modal on mount through the existing
   open handlers so content reloads correctly.
 - `useUiStore` hydrates `sharedCurrentLine` and `channelMutes` from the
-  snapshot; octave and current instrument already persist elsewhere.
+  snapshot - octave and current instrument already persist elsewhere.
 - `MarkdownModal` reports scroll changes and restores its scroll offset
   once the document has loaded (empty content would clamp the offset).
 - The window scroll position is captured in the snapshot and restored.
@@ -44,7 +44,7 @@ line and mutes, and none survive a reload.
 
 ## Outcome
 
-- Verification loop clean (552 tests); reload during MANUAL view restores
+- Verification loop clean (552 tests) - reload during MANUAL view restores
   modal, content, and scroll offset - including the case where the document
   loads asynchronously after the modal opens.
 - Follow-up fix inside the same record: scroll restore waits for loaded

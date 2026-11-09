@@ -13,7 +13,7 @@ Today only `.track-panel` shows a hover border (`var(--border-bright)`), which r
 - Introduce a dedicated hover-border color token, red-violet in the dark theme and metal blue in the light theme, chosen to blend with each theme's `--active-border` while remaining visibly distinct.
 - Every navigable section gains the mouse-over border the track panels show today: octave selection, command panel, track panels A/B/C, tone/noise and envelope panels, song information, playlist, instrument list, and piano keyboard. The Dump and EQ panels are included as visible bordered sections.
 - The smooth fade in and out is preserved and extended to the sections that lack a border transition today.
-- The hover color wins over the active color while the pointer is over a section; the active style returns when the pointer leaves.
+- The hover color wins over the active color while the pointer is over a section - the active style returns when the pointer leaves.
 
 ## Use Cases
 

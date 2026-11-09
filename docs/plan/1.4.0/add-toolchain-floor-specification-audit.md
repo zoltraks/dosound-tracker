@@ -43,13 +43,13 @@ summary block records the decision. That fallback is the only open branch.
 
 ## Implementability
 
-- `package.json` has no `engines` or `packageManager` field today; adding
+- `package.json` has no `engines` or `packageManager` field today - adding
   `engines` is a plain manifest edit.
-- No `.nvmrc` or `.npmrc` exists at the root; both creations are clean.
-- README lines 129-130 declare Node v26.13.0 and npm 11.20.0; the running
+- No `.nvmrc` or `.npmrc` exists at the root - both creations are clean.
+- README lines 129-130 declare Node v26.13.0 and npm 11.20.0 - the running
   environment is exactly those versions, so the floor admits it.
 - `npm install` is available and the lockfile version already drifts
-  (1.3.9 vs 1.4.0); the refresh will also write the current version into the
+  (1.3.9 vs 1.4.0) - the refresh will also write the current version into the
   lockfile, which is normal tooling behaviour, not manual repair.
 
 ## Fidelity

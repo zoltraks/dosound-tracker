@@ -22,8 +22,8 @@ The change writes the trimmed values the guard already computed, so a non-empty 
 
 ## Hints
 
-- The same pattern repeats for `title` (lines ~261-264) and `author` (~266-269); fix both together.
-- `test/utils/song/songIO.test.ts` is the characterization surface; add a whitespace-padding case.
+- The same pattern repeats for `title` (lines ~261-264) and `author` (~266-269) - fix both together.
+- `test/utils/song/songIO.test.ts` is the characterization surface - add a whitespace-padding case.
 - The deferred run-length compression deduplication between `trackClipboard.ts` and `songIO.ts` is a refactoring candidate for a later cycle - this record is the behaviour fix only.
 
 ## Out of Scope

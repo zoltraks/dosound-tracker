@@ -13,7 +13,7 @@ routed through `Formatter.hex` exactly as planned:
   `Formatter.hex(value, { uppercase: false })` / `{ uppercase: false,
 padWidth: 0 }`, preserving the lowercase output DOSOUND assembly
   requires.
-- The `Formatter` import was added to the eight files that lacked it;
+- The `Formatter` import was added to the eight files that lacked it.
   `EnvelopePanel.tsx` and `useSequencerIntegration.ts` already carried it.
 
 ## Deviations
@@ -32,13 +32,13 @@ place - it is `isDebugMode`-gated, an intentional feature, not dead code.
 
 ## Remaining Gaps
 
-- `padWidth: 0` expresses "no padding" indirectly; a named `pad: false`
+- `padWidth: 0` expresses "no padding" indirectly - a named `pad: false`
   option on `Formatter.hex` would read better if the pattern recurs.
 - Other duplicated formatting idioms (time strings, percent) remain
   candidates for future windows.
 
 ## Lessons
 
-- `toString(16)` chains accumulated silently because they work; the
+- `toString(16)` chains accumulated silently because they work - the
   Rule-of-Three owner is `Formatter` and any future hex site should route
   through it.

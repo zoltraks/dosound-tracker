@@ -66,33 +66,4 @@ describe('Formatter', () => {
       expect(Formatter.envelopeValue('mode', 0)).toBe('TONE');
     });
   });
-
-  describe('instrumentId', () => {
-    it('should handle numeric input', () => {
-      expect(Formatter.instrumentId(15)).toBe('0F');
-      expect(Formatter.instrumentId(0)).toBe('00');
-    });
-
-    it('should handle string hex input', () => {
-      expect(Formatter.instrumentId('A')).toBe('0A');
-      expect(Formatter.instrumentId('0F')).toBe('0F');
-    });
-
-    it('should handle null/undefined', () => {
-      expect(Formatter.instrumentId(null)).toBe('');
-      expect(Formatter.instrumentId(undefined)).toBe('');
-    });
-
-    it('should handle invalid strings', () => {
-      expect(Formatter.instrumentId('invalid')).toBe('');
-    });
-  });
-
-  describe('instrumentSlot', () => {
-    it('should format slot IDs', () => {
-      expect(Formatter.instrumentSlot(0)).toBe('INST 00');
-      expect(Formatter.instrumentSlot(15)).toBe('INST 0F');
-      expect(Formatter.instrumentSlot(255)).toBe('INST FF');
-    });
-  });
 });

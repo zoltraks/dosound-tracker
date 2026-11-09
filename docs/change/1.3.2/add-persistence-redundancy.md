@@ -19,4 +19,4 @@ Add a redundant path - periodic export reminders, File System Access persistence
 
 ## Hints
 
-Keep the autosave UX unchanged; redundancy must not interrupt composition flow.
+Keep the autosave UX unchanged - redundancy must not interrupt composition flow.

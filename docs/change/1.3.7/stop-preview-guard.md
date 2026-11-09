@@ -25,7 +25,7 @@ register-driven startup test tone.
 Stopping must still happen when a real preview is running and the section
 flips away or the panel unmounts. Only the init and no-op calls are
 suppressed. A MIDI live preview owned by the hook, not the panel, is not
-panel preview state and survives a section flip; it still stops on its
+panel preview state and survives a section flip - it still stops on its
 normal note-off path.
 
 ## Implementation
@@ -41,13 +41,13 @@ normal note-off path.
   early when no live preview timer and no recorded preview exist, so a
   stray stop cannot reach the channel volume register.
 - Tests: `test/hooks/midi/useMidiActions.test.tsx` hard-stop cases arm a
-  live preview before stopping and gain a no-preview no-write case;
+  live preview before stopping and gain a no-preview no-write case.
   `test/components/TrackPanel.test.tsx` gains mount and flip cases that
   assert the register is untouched without a preview and still zeroed
   after a real preview.
 
 ## Outcome
 
-- Verification loop clean; mounts and section flips without a preview no
+- Verification loop clean - mounts and section flips without a preview no
   longer write to the chip, while real previews still stop on flip and
   unmount.

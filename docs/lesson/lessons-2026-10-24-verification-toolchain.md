@@ -20,7 +20,7 @@ Preventing rule: see "Install the toolchain before the baseline loop" in `WORKFL
 
 ### npm audit fix No-ops on Peer-Pinned Chains
 
-Observed symptom: `npm audit fix` reported the vitest advisories as fixable yet left `vitest@4.1.10` and its `@vitest/*` siblings installed; a second `npm audit` still listed four moderate advisories.
+Observed symptom: `npm audit fix` reported the vitest advisories as fixable yet left `vitest@4.1.10` and its `@vitest/*` siblings installed - a second `npm audit` still listed four moderate advisories.
 
 Root cause: the `@vitest/*` packages pin `vitest` at an exact version, so npm could not apply the fix through the lockfile alone. Explicit `npm install -D vitest@^4.1.12 @vitest/coverage-v8@^4.1.12 @vitest/ui@^4.1.12` moved the whole chain inside the declared `^4.1.5` range.
 
@@ -38,6 +38,6 @@ Preventing rule: see "Re-read files after a format sweep" in `WORKFLOW.md`.
 
 Observed symptom: the scoped MIDI-permission logic could not be unit tested in place - importing `electron/main.cjs` executes `require('electron')`, which does not exist under the test runtime.
 
-Root cause: the main-process entry point mixes runtime wiring with policy logic; the testable policy had to be extracted into `electron/permissions.cjs`, a standalone CommonJS module loaded in tests through `createRequire` with an explicit interface assertion.
+Root cause: the main-process entry point mixes runtime wiring with policy logic - the testable policy had to be extracted into `electron/permissions.cjs`, a standalone CommonJS module loaded in tests through `createRequire` with an explicit interface assertion.
 
 Preventing rule: see "Electron module tests" in `TESTING.md`.

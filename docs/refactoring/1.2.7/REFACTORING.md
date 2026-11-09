@@ -58,7 +58,7 @@ After this refactoring:
 - A `formatPitchDelta` function in `exports/core.ts` consolidates the 6 asm.ts duplications
 - A generic `exportInstrumentWith` wrapper in `exports/core.ts` consolidates the 3 instrument preview export patterns
 - A single `createEmptyInstrument` factory replaces the 3 inline constructions
-- `hexFormatting.ts` and `valueFormatting.ts` are deleted; call sites use `Formatter` directly
+- `hexFormatting.ts` and `valueFormatting.ts` are deleted - call sites use `Formatter` directly
 - 46 obvious comments are removed
 - 5 efficiency hotspots are optimized without changing behaviour
 - All export outputs remain byte-identical for existing fixtures

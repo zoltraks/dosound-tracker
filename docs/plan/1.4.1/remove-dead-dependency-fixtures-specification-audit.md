@@ -29,18 +29,18 @@ No uncovered requirement in either direction.
 
 ## Ambiguity
 
-- "Eight of ten files" resolved by reference scan: the two keepers are `song-vgm-noise.yaml` and `song-vgm-tone.yaml`; the other eight have zero inbound references from `src/`, `test/`, or `e2e/`.
+- "Eight of ten files" resolved by reference scan: the two keepers are `song-vgm-noise.yaml` and `song-vgm-tone.yaml` - the other eight have zero inbound references from `src/`, `test/`, or `e2e/`.
 - The cross-record hint ("land this first or reconcile") is honoured by window ordering: this record runs before `align-tests-documented-rules`, which introduces its fixture afterwards.
 
 ## Implementability
 
-- `package.json:51` declares `"@testing-library/jest-dom": "^7.0.1"`; zero import sites in `src/`, `test/`, or `e2e/`; no setup file registers it.
-- `test/fixtures/` holds exactly the ten files the record describes; reference scans confirm the eight named for deletion are unreferenced.
-- `npm` is the declared package manager; `npm uninstall -D` rewrites both `package.json` and `package-lock.json`.
+- `package.json:51` declares `"@testing-library/jest-dom": "^7.0.1"` - zero import sites in `src/`, `test/`, or `e2e/` - no setup file registers it.
+- `test/fixtures/` holds exactly the ten files the record describes - reference scans confirm the eight named for deletion are unreferenced.
+- `npm` is the declared package manager - `npm uninstall -D` rewrites both `package.json` and `package-lock.json`.
 
 ## Fidelity
 
-- Enumeration fidelity: the prune list names all eight files explicitly; no wildcard deletion.
+- Enumeration fidelity: the prune list names all eight files explicitly - no wildcard deletion.
 - Vocabulary freeze: the plan uses the record's terms ("unused declaration", "unreferenced fixtures").
 - Cross-party parity: keepers named in the plan match the live import sites in `exportVgm.test.ts`, `exportMax.test.ts`, `exportWav.test.ts`, and `songParser.test.ts`.
 - Constants completeness: no constants involved.

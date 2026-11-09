@@ -26,7 +26,7 @@ the single largest deficit.
 
 ## Documentation Updates
 
-- `TESTING.md` — the known-gap note is removed; the coverage-gaps list is
+- `TESTING.md` — the known-gap note is removed - the coverage-gaps list is
   updated to the post-change state.
 
 ## Step by Step Implementation
@@ -44,7 +44,7 @@ Drop the documented expected-failure note now that the gate passes.
 
 ## Testing Strategy
 
-The change is tests-only; `npm run test:coverage` is the acceptance gate.
+The change is tests-only - `npm run test:coverage` is the acceptance gate.
 
 ## Verification
 

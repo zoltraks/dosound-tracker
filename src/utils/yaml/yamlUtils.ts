@@ -20,3 +20,37 @@ export const quoteYamlValues = (text: string, keyPattern: string): string => {
     return `${indent}${key}: "${inner}"`;
   });
 };
+
+/**
+ * Canonical options for YAML song-data emitters.
+ * Instrument export keeps its own options (`flowLevel`, default quoting).
+ */
+export const YAML_DUMP_OPTIONS = {
+  indent: 2,
+  lineWidth: -1,
+  quotingType: '"',
+} as const;
+
+/**
+ * Coerces a YAML scalar into a finite number.
+ * Accepts a finite `number`, or a `string` that trims to a finite `Number()`.
+ * Returns `null` for every other input; callers apply their own floor,
+ * clamp, and default math.
+ */
+export const coerceYamlNumber = (value: unknown): number | null => {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    const trimmed = value.trim();
+    if (trimmed) {
+      const parsed = Number(trimmed);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+  }
+
+  return null;
+};

@@ -21,7 +21,7 @@ This implementation plan is based on the change request at
 Follow general engineering standards from
 `docs/standard/typescript-general-development.md`:
 
-- One tsconfig per toolchain domain; extend `tsconfig.node.json` rather than
+- One tsconfig per toolchain domain - extend `tsconfig.node.json` rather than
   adding a third project.
 - ESLint flat-config blocks stay minimal: parser and globals per file kind,
   no rule duplication.
@@ -34,7 +34,7 @@ Per project guidelines, update the active documentation set before any source
 code modifications. Update only the files affected by this change.
 
 - `TESTING.md` — the type-check section drops the no-op note and describes
-  `tsc -b` scope; the e2e sections record the automatic build precondition.
+  `tsc -b` scope - the e2e sections record the automatic build precondition.
 
 `PROJECT.md`, `ARCHITECTURE.md`, `SPECIFICATION.md`, and `FORMAT.md` are
 unaffected.

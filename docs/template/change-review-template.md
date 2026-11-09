@@ -1,9 +1,5 @@
 # Version [version] Review
 
-**Status:** Draft | Complete
-
-**Verdict:** Ready | Ready with Conditions | Not Ready
-
 ## Document Information
 
 |             |                                                          |
@@ -11,14 +7,6 @@
 | Version     | [version under review]                                   |
 | Review Date | [YYYY-MM-DD]                                             |
 | Commands    | [read-only commands used, for example git log, git diff] |
-
-## Verdict
-
-State the recommendation first in one or two sentences: whether the version
-is ready for a bump and why.
-
-If a verdict cannot be given, state what is missing - an unclear scope or
-unfinished work is itself the finding.
 
 ## Scope
 

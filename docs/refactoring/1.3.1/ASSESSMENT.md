@@ -2,7 +2,7 @@
 
 **Implemented**
 
-- Extracted `bytesToHex`, `isDebugEnabled` module-level helpers in `src/hooks/useMidiMessageProcessing.ts` and replaced all repeated call sites (three hex-formatting loops, four debug-flag try/catch blocks). File shrank by ~40 duplicated lines; the statement denominator dropped correspondingly (4734 → 4723 counted statements).
+- Extracted `bytesToHex`, `isDebugEnabled` module-level helpers in `src/hooks/useMidiMessageProcessing.ts` and replaced all repeated call sites (three hex-formatting loops, four debug-flag try/catch blocks). File shrank by ~40 duplicated lines - the statement denominator dropped correspondingly (4734 → 4723 counted statements).
 
 **Deferred**
 

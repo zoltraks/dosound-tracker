@@ -15,8 +15,8 @@
 ## Verdict
 
 The plan is ready for implementation. The engine's `onAutoStop` hook exists
-and already fires at the right moment; `useMidiActions` is the one consumer
-that does not wire it; the helper path the record names is the one already
+and already fires at the right moment - `useMidiActions` is the one consumer
+that does not wire it - the helper path the record names is the one already
 used on explicit release.
 
 ## Completeness
@@ -58,7 +58,7 @@ existing `TrackPanel` semantics, not a new defect.
   recorded preview present (send + clear) and absent (no-op).
 - Boundary decisions: clearing `lastMidiPreviewRef` inside `onAutoStop`
   prevents a later `handleHardStopLivePreview` from sending a third noteOff
-  for an already-silent channel; the plan states this ordering.
+  for an already-silent channel - the plan states this ordering.
 - Vocabulary freeze: channel values stay on the 0-2 YM range the helper
   expects, sourced from the recorded preview, never recomputed.
 

@@ -18,7 +18,7 @@ The summary block precedes the detailed sections and is refreshed when the recor
 
 `argparse@2.0.1`, a production dependency of `js-yaml`, carries the `Python-2.0` license, which is absent from the permitted-license whitelist in `docs/COPYRIGHTS.md`. It is the only production-chain license outside the declared set.
 
-The change performs the per-package license review the policy already prescribes for undeclared licenses: `Python-2.0` is evaluated and, if acceptable, added to the permitted list in `docs/COPYRIGHTS.md`; otherwise the `js-yaml` dependency path is replaced so every production-chain license sits inside the declared classes.
+The change performs the per-package license review the policy already prescribes for undeclared licenses: `Python-2.0` is evaluated and, if acceptable, added to the permitted list in `docs/COPYRIGHTS.md` - otherwise the `js-yaml` dependency path is replaced so every production-chain license sits inside the declared classes.
 
 ## Hints
 

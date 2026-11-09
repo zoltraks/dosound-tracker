@@ -14,7 +14,7 @@ If no existing rule covers a lesson, add the rule to the owning document first, 
 
 Observed symptom: a bounded-expansion test left the sibling `instrument` key inside the step node, so the node was never a run, never expanded, and the bounds assertion passed vacuously.
 
-Root cause: run detection requires every key to be `wait`/`space`/`off`/`volume`; a leftover sibling key turns the node into an ordinary pass-through while the assertion still sees a bounded result.
+Root cause: run detection requires every key to be `wait`/`space`/`off`/`volume` - a leftover sibling key turns the node into an ordinary pass-through while the assertion still sees a bounded result.
 
 Preventing rule: see "Component test hygiene" in `TESTING.md` - assertions on expansion or truncation must prove the code path ran, not only its output shape.
 
@@ -30,13 +30,13 @@ Preventing rule: see "Intake" under Version Window SDLC in `WORKFLOW.md` - an un
 
 Observed symptom: the audit marked three `ARCHITECTURE.md` claims stale, but the channel-mute persistence claim verified accurate in the tree - only two of three needed correcting.
 
-Root cause: audit evidence ages between the report and the window; tree state can outrun a verified claim.
+Root cause: audit evidence ages between the report and the window - tree state can outrun a verified claim.
 
 Preventing rule: see "Audit-Driven Ring" in `WORKFLOW.md` - every adopted finding is re-verified against the tree before correction, and deviations are recorded in the window review.
 
 ### Window-Close Commit Format
 
-Observed symptom: the proposed bump commit put a dot after the version number; the convention is `Version X.Y.Z <sentence ending with a dot>`.
+Observed symptom: the proposed bump commit put a dot after the version number - the convention is `Version X.Y.Z <sentence ending with a dot>`.
 
 Root cause: the format existed in the user's head, not in the written rules.
 

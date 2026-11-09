@@ -51,13 +51,13 @@ no-default contract and is not converted.
    `test/synth/SoundDriver.test.ts`, `test/synth/EventOptimizer.test.ts`, and
    `test/synth/SequencerEngine.test.ts`.
 4. Extract `normalizeSongSpeed` into `src/utils/song/songSpeed.ts` and route
-   `songParser.ts`, `asm.ts`, and `useSongManagement.ts` through it; add
+   `songParser.ts`, `asm.ts`, and `useSongManagement.ts` through it - add
    `test/utils/song/songSpeed.test.ts`.
 5. Run the full verification loop.
 
 ## Risk
 
-Low. Every deleted symbol is provably unreferenced in `src/`; the surviving
+Low. Every deleted symbol is provably unreferenced in `src/` - the surviving
 interfaces keep their module path so no import specifier changes. The
 `normalizeSongSpeed` extraction is a verbatim lift of an identical idiom, so
 parsed songs, restored songs, and the assembly step cap produce identical
@@ -69,10 +69,10 @@ default-6 fallback - merging it would change the accepted range.
 ## Acceptance Criteria
 
 - No `SoundDriver`, `EventOptimizer`, or `SequencerEngine` runtime code
-  remains; all `src/` imports of `synth/SoundDriver.ts` are type-only and
+  remains - all `src/` imports of `synth/SoundDriver.ts` are type-only and
   resolve against the slimmed module.
 - Identical behaviour: parsed, restored, and exported songs carry the same
   `speed` values, and export fixtures produce byte-identical output.
-- Typecheck, lint, build, and the test suite all pass with zero warnings;
+- Typecheck, lint, build, and the test suite all pass with zero warnings.
   the suite loses only the three deleted dead-code test files and gains the
   `songSpeed` unit test.

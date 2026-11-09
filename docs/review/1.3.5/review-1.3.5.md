@@ -42,15 +42,15 @@ Read the version-control log for the version period and reconciled it against th
 recorded work above.
 
 - **Confirmed** - `section-hover-border` and `changelog-heading-clipping` shipped in
-  commits `be91cbb`, `26d648c`, and `8a2ac01`; the standards sync, test-tree
+  commits `be91cbb`, `26d648c`, and `8a2ac01` - the standards sync, test-tree
   alignment, App.tsx decomposition, and the refactoring tidy-up ship in this
   session's uncommitted change set.
 - **Unconfirmed** - none.
 - **Undocumented** - commit `8dea75b` folds session lessons into guidelines and
-  workflow documents; it is session-review output, not window scope.
+  workflow documents - it is session-review output, not window scope.
 - **Deviations** - the two helper functions the plan called to move verbatim into
   `songFormat.ts` turned out to be exact duplicates of the existing `formatBaseKey`
-  and `parseBaseKey`; the canonical utilities are injected directly instead, which
+  and `parseBaseKey` - the canonical utilities are injected directly instead, which
   is strictly better than duplicating them.
 
 ## Findings
@@ -69,7 +69,7 @@ recorded work above.
 
 ## Unable to Verify
 
-Manual audio playback and hover styling were not exercised in a live browser;
+Manual audio playback and hover styling were not exercised in a live browser.
 CSS and wiring changes are covered by the suite and code review only.
 
 ## Decision

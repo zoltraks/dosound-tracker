@@ -22,7 +22,7 @@ The change extends lint and typecheck coverage to the config files, `e2e/`, and 
 
 ## Hints
 
-- `tsc -b` inside `npm run build` already covers `src/` and `test/`; whether `typecheck` becomes a real gate or the build stays the effective type check is decided in the plan, and `TESTING.md` is updated to match.
+- `tsc -b` inside `npm run build` already covers `src/` and `test/` - whether `typecheck` becomes a real gate or the build stays the effective type check is decided in the plan, and `TESTING.md` is updated to match.
 - Verification is lint and typecheck reporting on every source file, plus e2e proving it runs a fresh build.
 
 ## Out of Scope

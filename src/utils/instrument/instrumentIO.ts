@@ -14,7 +14,7 @@ import {
   isEnvelopeZeroDefault,
   trimEnvelope,
 } from '../envelope/envelopeUtils.ts';
-import { quoteYamlValues } from '../yaml/yamlUtils.ts';
+import { quoteYamlValues, coerceYamlNumber } from '../yaml/yamlUtils.ts';
 import { normalizeInstrumentId } from '../playback/playbackUtils.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 
@@ -127,38 +127,16 @@ export const parseInstrumentFromText = (
 
   const instNode = node as InstrumentFileNode;
 
-  const rawOctave = instNode.octave;
-  let octave = DEFAULT_OCTAVE;
-  if (typeof rawOctave === 'number' && Number.isFinite(rawOctave)) {
-    octave = rawOctave;
-  } else if (typeof rawOctave === 'string') {
-    const trimmed = rawOctave.trim();
-    if (trimmed) {
-      const parsedOct = Number(trimmed);
-      if (Number.isFinite(parsedOct)) {
-        octave = parsedOct;
-      }
-    }
-  }
+  const coercedOctave = coerceYamlNumber(instNode.octave);
+  let octave = coercedOctave !== null ? coercedOctave : DEFAULT_OCTAVE;
   octave = Math.max(MIN_OCTAVE, Math.min(MAX_OCTAVE, Math.floor(octave)));
 
   let sustain: number | null = null;
-  const rawSustain = instNode.sustain;
-  if (typeof rawSustain === 'number' && Number.isFinite(rawSustain)) {
-    const s = Math.floor(rawSustain);
+  const coercedSustain = coerceYamlNumber(instNode.sustain);
+  if (coercedSustain !== null) {
+    const s = Math.floor(coercedSustain);
     if (s >= 0) {
       sustain = s;
-    }
-  } else if (typeof rawSustain === 'string') {
-    const trimmed = rawSustain.trim();
-    if (trimmed) {
-      const parsedSus = Number(trimmed);
-      if (Number.isFinite(parsedSus)) {
-        const s = Math.floor(parsedSus);
-        if (s >= 0) {
-          sustain = s;
-        }
-      }
     }
   }
 

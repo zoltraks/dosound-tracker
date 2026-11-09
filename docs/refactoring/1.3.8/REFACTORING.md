@@ -25,7 +25,7 @@ One shared guard and one shared expander consumed by all call sites, with byte-i
 
 **Extract the import-size guard**
 
-Add `assertImportSize(text, subject)` to a shared utility; each parser calls it with its own subject label. Tidy step - no behavior change.
+Add `assertImportSize(text, subject)` to a shared utility - each parser calls it with its own subject label. Tidy step - no behavior change.
 
 Files: `src/utils/validation/importSize.ts` (new), `src/utils/song/songParser.ts`, `src/utils/track/trackClipboard.ts`, `src/utils/instrument/instrumentIO.ts`, `src/utils/midi/midiConfiguration.ts`.
 

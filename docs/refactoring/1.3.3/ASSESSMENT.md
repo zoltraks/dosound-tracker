@@ -11,8 +11,8 @@ Complete. Both proposed tidy items shipped and the full verification loop is cle
 
 ## Proposal vs Implementation
 
-- Remove the channel-mute wrapper: completed. `handleToggleChannelMute` deleted; `SongSection` receives `toggleChannelMute` directly.
-- Lift `formatNoteKey` and `parseBaseKeyString` to module scope: completed. Both are now module-level function declarations above the component; call sites unchanged.
+- Remove the channel-mute wrapper: completed. `handleToggleChannelMute` deleted - `SongSection` receives `toggleChannelMute` directly.
+- Lift `formatNoteKey` and `parseBaseKeyString` to module scope: completed. Both are now module-level function declarations above the component - call sites unchanged.
 
 ## Deviations and Rationale
 
@@ -22,7 +22,7 @@ Complete. Both proposed tidy items shipped and the full verification loop is cle
 
 - `npm run lint`, `npm run build`: clean after both steps.
 - `npm test`: 73 files, 544 tests pass, same as the pre-change baseline.
-- `src/exports/` untouched; export output unchanged.
+- `src/exports/` untouched - export output unchanged.
 
 ## Remaining Gaps
 
@@ -30,4 +30,4 @@ None for this proposal. The larger orchestration work was the window's change re
 
 ## Lessons Learned
 
-- The react-hooks compiler rules only fire on files small enough to analyse; code moved out of a very large component can surface warnings that were previously invisible. Extracted hook files should be lint-checked as they land, which the staged-slice verification did.
+- The react-hooks compiler rules only fire on files small enough to analyse - code moved out of a very large component can surface warnings that were previously invisible. Extracted hook files should be lint-checked as they land, which the staged-slice verification did.

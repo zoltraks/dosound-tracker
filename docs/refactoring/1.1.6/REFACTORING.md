@@ -1,6 +1,6 @@
 # DOSOUND Tracker - Refactoring Proposal v1.1.6
 
-**Date:** 2025-12-08  
+**Date:** 2025-12-08
 **Version:** 1.1.6
 **Author:** Kilo Code Assistant
 

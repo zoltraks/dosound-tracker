@@ -27,7 +27,7 @@ The change writes `name` into the pattern node when the stored name differs from
 
 ## Hints
 
-- `FORMAT.md` already documents `name` as an optional pattern-node key; the saver rules section is updated to describe when it is emitted, per the documentation-first rule.
+- `FORMAT.md` already documents `name` as an optional pattern-node key - the saver rules section is updated to describe when it is emitted, per the documentation-first rule.
 - Verification is a rename, save, load round-trip test.
 
 ## Out of Scope

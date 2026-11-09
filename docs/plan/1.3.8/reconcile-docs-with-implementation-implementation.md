@@ -16,7 +16,7 @@ This implementation plan is based on the change request at `docs/change/1.3.8/re
 
 ## Documentation Updates
 
-This change is documentation-only; every edit below is the documentation update itself.
+This change is documentation-only - every edit below is the documentation update itself.
 
 **Correct the MAX format description**
 
@@ -26,13 +26,13 @@ File to modify: `docs/ARCHITECTURE.md`.
 
 **Correct the Electron version**
 
-`ARCHITECTURE.md` and `README.md` say "Electron 42"; `package.json` pins `electron` at 45.x. Update both to Electron 45.
+`ARCHITECTURE.md` and `README.md` say "Electron 42" - `package.json` pins `electron` at 45.x. Update both to Electron 45.
 
 Files to modify: `docs/ARCHITECTURE.md`, `README.md`.
 
 **Document the constants module**
 
-`SPECIFICATION.md` lists five constants files; `src/constants/` has six. Add `modal.ts` (modal titles and confirmation texts).
+`SPECIFICATION.md` lists five constants files - `src/constants/` has six. Add `modal.ts` (modal titles and confirmation texts).
 
 File to modify: `docs/SPECIFICATION.md`.
 
@@ -53,8 +53,8 @@ File to modify: `docs/SPECIFICATION.md`.
 `public/MANUAL.md` edits:
 
 - "MAX specification v1.6" becomes v1.7.
-- Remove the invented "Buffer size: 256 samples, latency <10ms, CPU <5%" metrics; keep a qualitative real-time statement.
-- Correct "per-instrument MIDI configuration with note range assignment" - the model carries `channel` and `program` only; reword to match.
+- Remove the invented "Buffer size: 256 samples, latency <10ms, CPU <5%" metrics - keep a qualitative real-time statement.
+- Correct "per-instrument MIDI configuration with note range assignment" - the model carries `channel` and `program` only - reword to match.
 - Generalize the versioned `.dmg` example filename so it does not pin an old release.
 
 File to modify: `public/MANUAL.md`.

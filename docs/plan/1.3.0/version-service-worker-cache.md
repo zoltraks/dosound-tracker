@@ -22,7 +22,7 @@ The worker lives at `public/js/sw.js`, which caps its scope at `/js/` - it contr
 
 **Version the cache name**
 
-Bake the application version into the emitted worker at build time. `public/sw.js` carries a `__APP_VERSION__` placeholder inside the cache name; a small `closeBundle` plugin in `vite.config.ts` rewrites `dist/sw.js` with `packageJson.version`, which `vite.config.ts` already imports. The registration URL stays `/sw.js`, so each deploy updates the existing registration through the normal byte-diff install/activate flow, and the activate handler's cache sweep deletes the previous version's cache.
+Bake the application version into the emitted worker at build time. `public/sw.js` carries a `__APP_VERSION__` placeholder inside the cache name - a small `closeBundle` plugin in `vite.config.ts` rewrites `dist/sw.js` with `packageJson.version`, which `vite.config.ts` already imports. The registration URL stays `/sw.js`, so each deploy updates the existing registration through the normal byte-diff install/activate flow, and the activate handler's cache sweep deletes the previous version's cache.
 
 **Prefer network-first for build assets**
 

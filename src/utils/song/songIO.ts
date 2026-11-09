@@ -6,7 +6,7 @@ import { Formatter } from '../format/formatters.ts';
 import { formatInstrumentSlotId } from '../instrument/instrumentSelection.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
 import { isEnvelopeZeroDefault, trimEnvelope } from '../envelope/envelopeUtils.ts';
-import { quoteYamlValues } from '../yaml/yamlUtils.ts';
+import { quoteYamlValues, YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { clampMidiChannel, clampMidiProgram } from '../midi/midiUtils.ts';
 
@@ -259,12 +259,12 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
   const trimmedTitle = (currentSong.title || '').trim();
   if (trimmedTitle) {
-    songNode.title = currentSong.title;
+    songNode.title = trimmedTitle;
   }
 
   const trimmedAuthor = (currentSong.author || '').trim();
   if (trimmedAuthor) {
-    songNode.author = currentSong.author;
+    songNode.author = trimmedAuthor;
   }
 
   const yearValue = Number(currentSong.year);
@@ -292,11 +292,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     song: songNode,
   };
 
-  let yamlContent = yaml.dump(exportData, {
-    indent: 2,
-    lineWidth: -1,
-    quotingType: '"',
-  });
+  let yamlContent = yaml.dump(exportData, YAML_DUMP_OPTIONS);
 
   const compressInstrumentArray = (key: string, text: string): string => {
     const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');

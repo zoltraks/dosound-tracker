@@ -1126,5 +1126,5 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_si
 ## Project Conventions
 
 - The UI is monospaced and DOS-like: avoid complex modern styling where text rendering suffices.
-- Dark (default) and light themes are token-driven; classes use `kebab-case` or BEM.
+- Dark (default) and light themes are token-driven - classes use `kebab-case` or BEM.
 - A `border-color` rule without a visible border is dead code - the base rule must declare the border (or a transparent placeholder) before a state rule changes its color.

@@ -56,7 +56,7 @@ Each step extracts one bounded concern from `App.tsx` into a dedicated hook unde
 
 Move the About, Changelog, Manual, and Quit dialog concerns: `aboutRuntimeLabel`/`aboutRuntimeDetails` state, the runtime-info `useEffect`, and `handleShowAbout`, `handleShowChangelog`, `handleCloseChangelog`, `handleShowManual`, `handleCloseManual`, `handleConfirmQuit`, `handleCancelQuit`.
 
-Blast-radius win: removes the Electron runtime-info probe and the bundled-markdown fetch chain from the orchestrator; no audio-path inputs.
+Blast-radius win: removes the Electron runtime-info probe and the bundled-markdown fetch chain from the orchestrator - no audio-path inputs.
 
 File to create: `src/hooks/useAppInfoDialogs.ts`. File to modify: `src/App.tsx`.
 
@@ -64,7 +64,7 @@ File to create: `src/hooks/useAppInfoDialogs.ts`. File to modify: `src/App.tsx`.
 
 Move the new-song, reset, and demo-song flows: `pendingNewSongAction`, `isDemoSongPickerOpen`, `handleRequestNewSong`, `handleConfirmNewSong`, `handleCancelNewSong`, `handleRequestReset`, `handleConfirmReset`, `handleCancelReset`, `openDemoSongPicker`, `handleDemoSongClick`, `handlePickDemoSong`.
 
-Blast-radius win: the reset/reload and demo-song fetch logic leaves the render path; consumers only see stable handlers and the picker-open flag.
+Blast-radius win: the reset/reload and demo-song fetch logic leaves the render path - consumers only see stable handlers and the picker-open flag.
 
 File to create: `src/hooks/useSongLifecycleDialogs.ts`. File to modify: `src/App.tsx`.
 
@@ -72,7 +72,7 @@ File to create: `src/hooks/useSongLifecycleDialogs.ts`. File to modify: `src/App
 
 Move `instrumentFileInputRef`, `isRepositoryInstrumentOpen`, `handleLoadInstrumentClick`, `handleOpenRepositoryInstrumentPicker`, `handleInstrumentFileContent`, `handleConfirmInstrumentTypeWarning`, `handleCancelInstrumentTypeWarning`, and `handlePickRepositoryInstrument`.
 
-Blast-radius win: YAML sniffing and the instrument type-warning flow are bounded to one hook; `App.tsx` stops importing `js-yaml` directly.
+Blast-radius win: YAML sniffing and the instrument type-warning flow are bounded to one hook - `App.tsx` stops importing `js-yaml` directly.
 
 File to create: `src/hooks/useInstrumentFileLoading.ts`. File to modify: `src/App.tsx`.
 
@@ -96,7 +96,7 @@ File to create: `src/hooks/useInstrumentDialogs.ts`. File to modify: `src/App.ts
 
 Move `handleToggleDebugMode`, `handleOptimizeSong`, `handleConfirmOptimize`, `handleCancelOptimize`, `handleCloseOptimizeSummary`, `handleRenumberSong`, `handleConfirmRenumber`, `handleCancelRenumber`, `handleCloseRenumberSummary`, and `handleCloseInstrumentOperationSummary`.
 
-Blast-radius win: summary-dialog plumbing for the song tools leaves the orchestrator; each handler is a thin confirm/cancel pair with no audio-path reach.
+Blast-radius win: summary-dialog plumbing for the song tools leaves the orchestrator - each handler is a thin confirm/cancel pair with no audio-path reach.
 
 File to create: `src/hooks/useSongToolDialogs.ts`. File to modify: `src/App.tsx`.
 
@@ -104,7 +104,7 @@ File to create: `src/hooks/useSongToolDialogs.ts`. File to modify: `src/App.tsx`
 
 Move `pendingExportType`, `pendingExportStrategy`, `handleOpenExport`, `handleCancelExport`, `handleConfirmExport`, `handleExportTypeChange`, `handleExportStrategyChange`, `buildExportContext`, and the six `handleExport*FromModal` handlers.
 
-Blast-radius win: the export-context assembly and the six format fan-out handlers collapse into one hook; `App.tsx` no longer knows the export-modal pending-state protocol.
+Blast-radius win: the export-context assembly and the six format fan-out handlers collapse into one hook - `App.tsx` no longer knows the export-modal pending-state protocol.
 
 File to create: `src/hooks/useExportModal.ts`. File to modify: `src/App.tsx`.
 
@@ -112,7 +112,7 @@ File to create: `src/hooks/useExportModal.ts`. File to modify: `src/App.tsx`.
 
 Move `handleOpenTranspose`, `handleCancelTranspose`, `handleConfirmTranspose`, `handleTransposeAmountChange`, and `handleCloseTransposeSummary`.
 
-Blast-radius win: the semitone parsing and summary-string assembly move out of the render path; the transpose scope setters stay in `useAppState` untouched.
+Blast-radius win: the semitone parsing and summary-string assembly move out of the render path - the transpose scope setters stay in `useAppState` untouched.
 
 File to create: `src/hooks/useTransposeDialog.ts`. File to modify: `src/App.tsx`.
 
@@ -120,7 +120,7 @@ File to create: `src/hooks/useTransposeDialog.ts`. File to modify: `src/App.tsx`
 
 Move `handleLiveMidiConfigChange`, `handleShowMidi`, `handleCloseMidi`, `handleSaveMidiConfig`, `handleClearMidiMonitors`, `handleRescanMidiDevices`, and `handleMidiSystemReset`. The hook consumes the `useMidiHandling` return value.
 
-Blast-radius win: the MIDI modal handler cluster is bounded; `App.tsx` wires `useMidiHandling` once and passes the result through.
+Blast-radius win: the MIDI modal handler cluster is bounded - `App.tsx` wires `useMidiHandling` once and passes the result through.
 
 File to create: `src/hooks/useMidiDialog.ts`. File to modify: `src/App.tsx`.
 
@@ -128,7 +128,7 @@ File to create: `src/hooks/useMidiDialog.ts`. File to modify: `src/App.tsx`.
 
 Move `isMobileViewport`, `isCommandPanelMobileCollapsed`, the resize/mount `useEffect`, and the `COMMAND_PANEL_MOBILE` persistence effect.
 
-Blast-radius win: viewport probing and its localStorage mirror leave the orchestrator; the effect order is preserved by calling the hook where the effects stood.
+Blast-radius win: viewport probing and its localStorage mirror leave the orchestrator - the effect order is preserved by calling the hook where the effects stood.
 
 File to create: `src/hooks/useResponsivePanels.ts`. File to modify: `src/App.tsx`.
 
@@ -169,17 +169,17 @@ Execute the steps above in this sequence.
 13. Extract `usePlaybackHandlers`, run targeted verification
 14. Run the full verification loop
 
-The slices run lowest-risk first; the audio-critical playback slice lands last so any timing problem is attributable to that single step.
+The slices run lowest-risk first - the audio-critical playback slice lands last so any timing problem is attributable to that single step.
 
 ## Testing Strategy
 
 **Unit tests**
 
-The extracted hooks are wiring containers rather than pure functions, so there is no new utility surface to unit-test. Existing hook tests continue to apply unchanged; no test file changes are planned unless a slice exposes a pure helper worth lifting into `src/utils/`, in which case a matching `test/utils/` file is added in the same step.
+The extracted hooks are wiring containers rather than pure functions, so there is no new utility surface to unit-test. Existing hook tests continue to apply unchanged - no test file changes are planned unless a slice exposes a pure helper worth lifting into `src/utils/`, in which case a matching `test/utils/` file is added in the same step.
 
 **Integration tests**
 
-No new integration tests. The existing suite (`test/`, 544 tests at baseline) exercises the moved handlers through their consumers; any regression in wiring fails the targeted runs after each slice.
+No new integration tests. The existing suite (`test/`, 544 tests at baseline) exercises the moved handlers through their consumers - any regression in wiring fails the targeted runs after each slice.
 
 Manual verification after the playback slice: play the demo song, run line-loop playback from cursor and from start, stop, and confirm the Enter/Ctrl+Enter cursor-restore behaviour still holds.
 

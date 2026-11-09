@@ -38,7 +38,7 @@ File to modify: `package.json`. Add `"afterAllArtifactBuild": "scripts/afterAllA
 
 **Evaluate code signing**
 
-Record the evaluation in `DEPLOYMENT.md`: macOS builds are unsigned today with the documented quarantine workaround; signing requires a paid Apple Developer Program membership with notarization, and Windows requires a purchased OV or EV certificate. Signing stays a procurement decision outside this change - the checksums deliver verifiable integrity now, which is the record's stated scope.
+Record the evaluation in `DEPLOYMENT.md`: macOS builds are unsigned today with the documented quarantine workaround - signing requires a paid Apple Developer Program membership with notarization, and Windows requires a purchased OV or EV certificate. Signing stays a procurement decision outside this change - the checksums deliver verifiable integrity now, which is the record's stated scope.
 
 ## Implementation Order
 
@@ -51,7 +51,7 @@ Record the evaluation in `DEPLOYMENT.md`: macOS builds are unsigned today with t
 
 **Unit tests**
 
-No new utility functions exported to the app. The hook is exercised for real by `npm run electron:build`, which requires the desktop packaging toolchain; the verification loop confirms nothing regresses, and the hook logic is plain Node built-ins.
+No new utility functions exported to the app. The hook is exercised for real by `npm run electron:build`, which requires the desktop packaging toolchain - the verification loop confirms nothing regresses, and the hook logic is plain Node built-ins.
 
 ## Verification
 

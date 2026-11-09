@@ -19,7 +19,7 @@ This implementation plan is based on the change request at `docs/change/1.3.8/el
 Follow the TypeScript and Electron engineering standard from `docs/standard/typescript-electron-development.md`:
 
 - Main-process helpers live in standalone `.cjs` modules so tests can import them without the Electron runtime.
-- Sandbox and contextIsolation stay enabled; containment adds a layer, not a replacement.
+- Sandbox and contextIsolation stay enabled - containment adds a layer, not a replacement.
 
 ## Documentation Updates
 
@@ -59,7 +59,7 @@ File to modify: `test/electron/permissions.test.ts`.
 
 Test file to update: `test/electron/permissions.test.ts`.
 
-- `isExternalHttpUrl('https://example.com')` is true; `isExternalHttpUrl('file:///app/index.html')` and `isExternalHttpUrl('javascript:alert(1)')` are false.
+- `isExternalHttpUrl('https://example.com')` is true - `isExternalHttpUrl('file:///app/index.html')` and `isExternalHttpUrl('javascript:alert(1)')` are false.
 - `isAppOrigin` keeps covering `file://` and `http://localhost:8008`.
 
 **Manual verification**

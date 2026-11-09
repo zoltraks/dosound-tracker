@@ -12,7 +12,7 @@
 
 ## Description
 
-`npm outdated` reports 29 updatable packages and `npm audit` reports 28 vulnerabilities (2 high: `follow-redirects`, `joi`; 26 moderate across the `minimatch` chain in eslint/electron-builder/typescript-eslint). All vulnerabilities are devDependency issues - nothing ships to users.
+`npm outdated` reports 29 updatable packages and `npm audit` reports 28 vulnerabilities (2 high: `follow-redirects`, `joi` - 26 moderate across the `minimatch` chain in eslint/electron-builder/typescript-eslint). All vulnerabilities are devDependency issues - nothing ships to users.
 
 This record covers the routine tier: every in-range bump, the rolldown-vite pin, and the safe majors (`@types/node` 26, `globals` 17, `wait-on` 9, `jsdom` 30, `@testing-library/jest-dom` 7, `electron` 45).
 
@@ -36,5 +36,5 @@ This record covers the routine tier: every in-range bump, the rolldown-vite pin,
 - electron-builder 26 required two config fixes: `win.publisherName` moved to `win.signtoolOptions.publisherName`, and `scripts/afterAllArtifactBuild.cjs` reads the platform from `platformToTargets` after the `packager` field was dropped from `BuildResult`.
 - `eslint-plugin-react-hooks` 7.1.1 surfaced nine `set-state-in-effect` warnings at documented prop-mirroring sites - scoped suppressions applied per the tooling convention.
 - `zustand` 5 dropped the loose `UiStoreSetFn` type annotation in `useUiStore.ts` for inference.
-- `npm audit` residual: 26 moderate advisories inside the devDependency `minimatch` chain - nothing ships to users; `--force` would downgrade `typescript-eslint` and is rejected.
+- `npm audit` residual: 26 moderate advisories inside the devDependency `minimatch` chain - nothing ships to users - `--force` would downgrade `typescript-eslint` and is rejected.
 - `README.md` development environment updated to Node v26.13.0 / npm 11.20.0.

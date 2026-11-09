@@ -22,7 +22,7 @@ Preventing rule: see "Component test hygiene" in `TESTING.md` - enumeration uses
 
 Observed symptom: `react-hooks/refs` errored when `ym2149Ref.current` was passed as an engine option - the shared preview engine initially could not receive the emulator from the two ref-fed call sites.
 
-Root cause: React 19 hooks linting treats render-time `ref.current` reads as an error, not a warning; the engine needed call-time resolution instead.
+Root cause: React 19 hooks linting treats render-time `ref.current` reads as an error, not a warning - the engine needed call-time resolution instead.
 
 Preventing rule: see "Pass a getter when a ref value feeds a long-lived callback" in `WORKFLOW.md` - the engine option accepts `YM2149 | null | (() => YM2149 | null)`.
 
@@ -30,7 +30,7 @@ Preventing rule: see "Pass a getter when a ref value feeds a long-lived callback
 
 Observed symptom: twelve `minimatch` advisories could not be cleared - every consuming chain pins `^10` or `^9` while only `11.0.1+` is fixed, and the record's out-of-scope rules forbid forced resolution.
 
-Root cause: upstream typescript-eslint and electron-builder chains have no compatible fixed release; the finding was re-verified against the registry rather than trusted.
+Root cause: upstream typescript-eslint and electron-builder chains have no compatible fixed release - the finding was re-verified against the registry rather than trusted.
 
 Preventing rule: see "Session Review" routing in `GUIDELINES.md` - the residual landed as `docs/decision/2026-11-09-minimatch-advisory-residual.md` with the reach analysis.
 
@@ -40,4 +40,4 @@ Observed symptom: `HeaderPanel` and `useInstrumentActions` preview engines lack 
 
 Root cause: the copies are intentionally reduced variants - one-shot and throttled previews - not broken duplicates.
 
-Preventing rule: see "Specification Audit" in `WORKFLOW.md` - semantic differences discovered during consolidation split into their own record; reduced semantics reproduce through engine options (`honorSustain`, `stopAfterStep`), and the MIDI auto-stop noteOff divergence defers to `docs/change/1.4.0/send-midi-noteoff-on-preview-autostop.md`.
+Preventing rule: see "Specification Audit" in `WORKFLOW.md` - semantic differences discovered during consolidation split into their own record - reduced semantics reproduce through engine options (`honorSustain`, `stopAfterStep`), and the MIDI auto-stop noteOff divergence defers to `docs/change/1.4.0/send-midi-noteoff-on-preview-autostop.md`.

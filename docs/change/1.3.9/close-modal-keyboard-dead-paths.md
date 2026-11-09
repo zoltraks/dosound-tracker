@@ -22,7 +22,7 @@ The change adds `isQuitConfirmOpen` to both guard lists and `instrumentOperation
 
 ## Use Cases
 
-- When the quit-confirm dialog is the only open modal and the user presses Escape, the dialog closes; Enter confirms.
+- When the quit-confirm dialog is the only open modal and the user presses Escape, the dialog closes - Enter confirms.
 - When the instrument-operation summary is open, Enter applies the same action as its confirmation path.
 
 ## Hints

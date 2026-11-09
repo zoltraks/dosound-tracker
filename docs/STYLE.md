@@ -49,7 +49,7 @@ Examples:
 ## Formatting Rules
 
 - Put code, commands, file names, and paths in backticks.
-- **Code blocks**: always use three backticks. No indentation; the block starts at the very beginning of the line. Mandatory spacing: exactly one blank line before and after the block.
+- **Code blocks**: always use three backticks. No indentation - the block starts at the very beginning of the line. Mandatory spacing: exactly one blank line before and after the block.
 
 ## API Design Documentation
 
@@ -61,3 +61,5 @@ Examples:
 ## Generated Documents
 
 Documents produced from templates (`docs/template/`) and generated records (reviews, assessments, plans, lessons) obey the same rules as hand-written documents. A generated document is checked against this style before delivery - pattern-matching the template's look is not a substitute for the rules.
+
+Generated documents carry no `Status` or `Verdict` fields or sections. Outcomes live in the document's own result tables and decision sections, never in a metadata banner or a standalone verdict heading.

@@ -8,6 +8,7 @@ The window's App.tsx decomposition left tidy-level debris behind:
   `Removed instrumentLookupByNormalizedId`, `Removed updateChannelWithInstrument`) and a
   section comment that describes history rather than code (`Track line playback loop
 state (previously pattern playback state)`).
+
 - Two module-level const aliases, `formatNoteKey` and `parseBaseKeyString`, kept only so
   three injection sites could use shorthand property names. The canonical implementations
   live in `src/utils/song/songFormat.ts` as `formatBaseKey` and `parseBaseKey`.
@@ -15,7 +16,7 @@ state (previously pattern playback state)`).
 ## Goal
 
 `App.tsx` carries no comments that narrate removed code, and every injected helper names
-its canonical implementation at the call site. Behaviour is identical; this is a tidy
+its canonical implementation at the call site. Behaviour is identical - this is a tidy
 step only.
 
 ## Plan
@@ -35,8 +36,8 @@ names at the three injection objects: `formatNoteKey: formatBaseKey` and
 
 ## Risk
 
-Low. No logic changes; the alias values are reference-identical to the injected
-functions. `npm run lint` catches any orphaned import; `tsc -b` catches any typo.
+Low. No logic changes - the alias values are reference-identical to the injected
+functions. `npm run lint` catches any orphaned import - `tsc -b` catches any typo.
 
 ## Acceptance Criteria
 

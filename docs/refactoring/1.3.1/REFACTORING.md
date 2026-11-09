@@ -12,9 +12,9 @@ This duplication makes the file longer than its logic requires and increases the
 
 **Analysis**
 
-- The repeats are intra-file and identical in shape: the debug read is literally the same five lines; the hex loop is the same four lines; the monitor/debug sequence differs only in field values. These are mechanical consolidations with a single owner (this file), so no new module boundary is introduced.
+- The repeats are intra-file and identical in shape: the debug read is literally the same five lines - the hex loop is the same four lines - the monitor/debug sequence differs only in field values. These are mechanical consolidations with a single owner (this file), so no new module boundary is introduced.
 - The live-preview envelope machinery (interval + `advancePreviewEnvelopeTick` + sustain/release refs) is duplicated between `useMidiActions.ts` and `components/TrackPanel.tsx`, but it exists at exactly two call sites — below the Rule-of-Three threshold — and sits in audio-critical paths where extraction risk outweighs the benefit. It is documented here as considered-and-deferred, not implemented.
-- The slot-extension block in `useInstrumentManagement.ts` appears twice (`updateInstrumentInSong`, `applyLoadedInstrumentToSong`), also below the threshold; deferred for the same reason.
+- The slot-extension block in `useInstrumentManagement.ts` appears twice (`updateInstrumentInSong`, `applyLoadedInstrumentToSong`), also below the threshold - deferred for the same reason.
 - The change is protected by the window's new unit tests (`test/hooks/useMidiMessageProcessing.test.tsx`, 14 cases covering decode, send, device switching, and cleanup), so observable behavior is pinned before restructuring.
 
 **Goal**

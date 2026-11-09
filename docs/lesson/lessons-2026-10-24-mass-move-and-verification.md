@@ -4,7 +4,7 @@ Durable lessons recorded when a session ends.
 
 ### Move Rewrites Cover Both Directions
 
-Observed symptom: a specifier rewrite for the domain-subfolder reorganization fixed only imports pointing at moved files; the moved files' own imports of unmoved modules broke with TS2307 errors.
+Observed symptom: a specifier rewrite for the domain-subfolder reorganization fixed only imports pointing at moved files - the moved files' own imports of unmoved modules broke with TS2307 errors.
 
 Root cause: the rewriter keyed rewrites on the target being in the move map, ignoring that a moved importer's relative paths re-root one level deeper.
 
@@ -12,7 +12,7 @@ Preventing rule: see "Rewrite every specifier in a moved file, not only inbound 
 
 ### The Real Type Gate Is the Build
 
-Observed symptom: `npm run typecheck` reported clean while broken imports existed; `npx tsc -b` caught them.
+Observed symptom: `npm run typecheck` reported clean while broken imports existed - `npx tsc -b` caught them.
 
 Root cause: the root `tsconfig.json` is solution-style (`files: []`), so `tsc --noEmit` checks nothing - already recorded in `TESTING.md`.
 
@@ -28,8 +28,8 @@ Preventing rule: covered by "Re-read files after a format sweep" in `WORKFLOW.md
 
 ### Single-File Directories Are Accepted
 
-Observed symptom: the directories-only rule produced single-file directories (`utils/timer/`, `utils/log/`); the user later questioned a remaining single-file directory (`stores/`).
+Observed symptom: the directories-only rule produced single-file directories (`utils/timer/`, `utils/log/`) - the user later questioned a remaining single-file directory (`stores/`).
 
-Root cause: strict domain grouping forces singletons; the tension was surfaced and resolved by recording them as allowed and dissolving `stores/` into `hooks/ui/` instead.
+Root cause: strict domain grouping forces singletons - the tension was surfaced and resolved by recording them as allowed and dissolving `stores/` into `hooks/ui/` instead.
 
 Preventing rule: covered by "Source Directory Structure" in `SPECIFICATION.md` - no new rule needed.

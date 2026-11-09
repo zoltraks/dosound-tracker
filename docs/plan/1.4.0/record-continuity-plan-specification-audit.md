@@ -15,7 +15,7 @@
 ## Verdict
 
 Ready. The required escalation path is fully specifiable from recorded
-facts; the optional pruning is correctly deferred to the owner as a
+facts - the optional pruning is correctly deferred to the owner as a
 destructive remote operation.
 
 ## Completeness
@@ -31,7 +31,7 @@ the plan picks the escalation path since no second person can be named.
 
 ## Implementability
 
-`WORKFLOW.md` has a Continuity section to extend; `git branch -r` supplied
+`WORKFLOW.md` has a Continuity section to extend - `git branch -r` supplied
 the stale-branch inventory.
 
 ## Fidelity

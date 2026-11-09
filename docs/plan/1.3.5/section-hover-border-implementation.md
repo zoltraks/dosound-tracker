@@ -10,7 +10,7 @@ Follow the CSS engineering standard from `docs/standard/css-general-development.
 
 - Keep selectors shallow and scoped to the existing component classes.
 - Theme colors live in custom properties on `:root` and `.light`, never raw values in component rules.
-- Extend the existing rules; do not reformat unrelated blocks.
+- Extend the existing rules - do not reformat unrelated blocks.
 
 ## Documentation Updates
 
@@ -24,7 +24,7 @@ No TypeScript types, interfaces, or stores change. The fix is CSS only.
 
 **Declare the hover-border token in both themes**
 
-Add `--section-hover-border` to the dark palette in `:root` beside the border tokens, and to `.light` beside its equivalents. Dark theme uses a red-violet `#b84ec8` that sits between the existing violet and pink accents and blends with `--active-border` (`#7aa2f7`). Light theme uses a saturated metal blue `#2f6fae` that stays readable on light surfaces and blends with `--active-border` (`#f59e0b`); the light `--border-color` shifts to a light gray `#a8b0bb` so the hover color stands apart.
+Add `--section-hover-border` to the dark palette in `:root` beside the border tokens, and to `.light` beside its equivalents. Dark theme uses a red-violet `#b84ec8` that sits between the existing violet and pink accents and blends with `--active-border` (`#7aa2f7`). Light theme uses a saturated metal blue `#2f6fae` that stays readable on light surfaces and blends with `--active-border` (`#f59e0b`) - the light `--border-color` shifts to a light gray `#a8b0bb` so the hover color stands apart.
 
 File to modify: `src/App.css`.
 
@@ -42,7 +42,7 @@ File to modify: `src/App.css`.
 
 **Point the track-panel hover border at the new token**
 
-`.track-panel:hover` keeps its shadow glow; only the border color token changes.
+`.track-panel:hover` keeps its shadow glow - only the border color token changes.
 
 File to modify: `src/App.css`.
 
@@ -55,7 +55,7 @@ File to modify: `src/App.css`.
 
 **Give every bordered section the same hover border**
 
-Add a `:hover` rule directly after each section's `.active` rule so the hover color wins while the pointer is over the section, matching the track-panel ordering convention. Sections: `.envelope-panel` (covers tone/noise, volume, arpeggio, pitch, noise), `.information-panel`, `.playlist-panel`, `.instrument-panel`, `.piano-keyboard`, `.dump-panel`, `.eq-panel`. Command and octave sections have only a bottom border, so they hover on `border-bottom-color`. `.octave-selection` gains a transparent `border-bottom` in its base rule so the hover and the existing `.active` `border-bottom-color` can render; the active rule already sets that color and becomes visible once the base border exists.
+Add a `:hover` rule directly after each section's `.active` rule so the hover color wins while the pointer is over the section, matching the track-panel ordering convention. Sections: `.envelope-panel` (covers tone/noise, volume, arpeggio, pitch, noise), `.information-panel`, `.playlist-panel`, `.instrument-panel`, `.piano-keyboard`, `.dump-panel`, `.eq-panel`. Command and octave sections have only a bottom border, so they hover on `border-bottom-color`. `.octave-selection` gains a transparent `border-bottom` in its base rule so the hover and the existing `.active` `border-bottom-color` can render - the active rule already sets that color and becomes visible once the base border exists.
 
 File to modify: `src/App.css`.
 

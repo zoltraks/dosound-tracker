@@ -79,7 +79,7 @@ if (instrumentOperationSummary) {
 
 **Add modal keyboard contract tests**
 
-A new test file exercises the keydown listener the hook installs on `window`: with the quit-confirm as the only open modal, Escape invokes `handleCancelQuit` and Enter invokes `handleConfirmQuit`; with `instrumentOperationSummary` open, Enter invokes `handleCloseInstrumentOperationSummary`; with no modal open, no handler fires.
+A new test file exercises the keydown listener the hook installs on `window`: with the quit-confirm as the only open modal, Escape invokes `handleCancelQuit` and Enter invokes `handleConfirmQuit` - with `instrumentOperationSummary` open, Enter invokes `handleCloseInstrumentOperationSummary` - with no modal open, no handler fires.
 
 Test file to create: `test/hooks/modal/useModalManager.test.tsx`.
 

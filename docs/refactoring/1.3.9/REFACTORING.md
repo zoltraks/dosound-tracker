@@ -198,7 +198,7 @@ Three further dead exports - `ExportFormat`, `asTrackId`, and `LogEntry` - are d
 
 **Impact**
 
-Dead surface is maintenance noise; the two arpeggio aliases imply an API that no caller uses.
+Dead surface is maintenance noise - the two arpeggio aliases imply an API that no caller uses.
 
 **Recommendation**
 
@@ -214,7 +214,7 @@ No Breaking Change
 
 **Example**
 
-Before: `export const ARPEGGIO_MIN = SHIFT_MIN;`. After: line removed; `SHIFT_MIN` remains the single name.
+Before: `export const ARPEGGIO_MIN = SHIFT_MIN;`. After: line removed - `SHIFT_MIN` remains the single name.
 
 ## Plan
 
@@ -256,7 +256,7 @@ Files: `src/exports/asm.ts`.
 
 ## Step Granularity
 
-Each step is confined to its own file set and leaves the tree buildable. The two extraction steps each touch at most four files and are purely mechanical substitutions - a regression would be obvious from that step's verification output. No step mixes a rename with a structural change; the dead-export step runs first and touches no file shared with later steps.
+Each step is confined to its own file set and leaves the tree buildable. The two extraction steps each touch at most four files and are purely mechanical substitutions - a regression would be obvious from that step's verification output. No step mixes a rename with a structural change - the dead-export step runs first and touches no file shared with later steps.
 
 ## Risk
 
@@ -266,7 +266,7 @@ All substitutions are pure-function replacements verified against identical inpu
 
 - `npm run lint` - zero errors, zero warnings.
 - `npm run build` - passes.
-- `npm test` - 76 files, 555 tests, all green (identical count; no test changes required).
+- `npm test` - 76 files, 555 tests, all green (identical count - no test changes required).
 - Export output byte-identical - the export test suite stays green.
 - Each of the eleven key-id sites, three MIDI label sites, three `formatBaseKey` sites, and two asm tone-comment sites delegates to the canonical helper.
 - `core.ts:47` retains its original expression, with the reason recorded in the assessment.

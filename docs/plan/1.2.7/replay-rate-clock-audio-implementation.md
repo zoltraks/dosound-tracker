@@ -20,7 +20,7 @@ Follow TypeScript and React engineering standards from `docs/standard/ts-react-d
 This change directly affects audio playback, timing, the sequencer, and the YM2149 emulator. The following questions must be addressed:
 
 - **Does this change affect React render timing?** Yes. The `useSequencer` hook receives a new `frameRate` parameter that drives the worker tick interval. The `useSequencerIntegration` hook receives `frameRate` and `chipClock` that flow into the YM2149 instance. These must be threaded through using the existing prop-mirroring and sparse-dependency-array patterns.
-- **Does this modify `useCallback` or `useMemo` dependencies?** Minimally. The `calculateTickInterval` callback in `useSequencer` must use the frame rate. Per `GUIDELINES.md`, sparse dependency arrays are intentional in audio paths; only the frame rate ref should be added.
+- **Does this modify `useCallback` or `useMemo` dependencies?** Minimally. The `calculateTickInterval` callback in `useSequencer` must use the frame rate. Per `GUIDELINES.md`, sparse dependency arrays are intentional in audio paths - only the frame rate ref should be added.
 - **Does this change state management patterns in audio paths?** No new state domains. The frame rate and chip clock are read from `currentSong` and passed as parameters, mirroring how `songSpeed` and `patternLength` are already handled.
 - **Does this modify the YM2149 emulator or SoundDriver?** Yes. The `YM2149` class gains a `clock` instance property. The `SoundDriver.VBLANK_RATE` constant remains as a default but is no longer used directly in the playback path.
 - **Must audio playback be manually tested after the change?** Yes. Playback at 50 Hz / 2 MHz must be identical to before. Playback at 60 Hz must tick faster. Playback at 1 MHz must produce the same pitch with halved period values.
@@ -31,9 +31,9 @@ Consult `GUIDELINES.md` for the audio-critical development principles before mak
 
 The change touches the innermost timing loop (worker tick interval) and the innermost synthesis path (YM2149 clock). The risk is high. Mitigations:
 
-- The worker already accepts `tickInterval` via `setParams`; we only change how the value is computed.
+- The worker already accepts `tickInterval` via `setParams` - we only change how the value is computed.
 - The YM2149 clock is used in three places inside the class (tone frequency, noise frequency, period-from-frequency). All three switch to the instance property.
-- The preview timers already accept `tickIntervalMs` in `previewEnvelopeTiming.ts`; we only change what callers pass.
+- The preview timers already accept `tickIntervalMs` in `previewEnvelopeTiming.ts` - we only change what callers pass.
 
 **Timing stability verification**
 
@@ -224,7 +224,7 @@ Files to modify:
 - `src/components/HeaderPanel.tsx` — same.
 - `src/hooks/useMidiActions.ts` — replace hardcoded `TICK_INTERVAL_MS = 20` with a parameter from the song's frame rate.
 - `src/hooks/useInstrumentActions.ts` — replace hardcoded `}, 20)` with the dynamic interval.
-- `src/utils/previewEnvelopeTiming.ts` — the default `tickIntervalMs = 20` stays as a fallback; callers pass the dynamic value.
+- `src/utils/previewEnvelopeTiming.ts` — the default `tickIntervalMs = 20` stays as a fallback - callers pass the dynamic value.
 
 **Update playbackSimulation to use dynamic clock**
 

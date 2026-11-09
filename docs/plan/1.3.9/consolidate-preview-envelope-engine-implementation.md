@@ -30,11 +30,11 @@ The record's localStorage claim does not hold: none of the five files performs d
 
 ## Best Practices
 
-Follow `docs/standard/typescript-audio-development.md`: audio-rate state lives in refs, never React state; the tick path is allocation-free after start; no new re-renders on the audio path. `// REASON:` comments mark deliberate deviations. `docs/standard/typescript-react-development.md` applies for the hook shape and naming.
+Follow `docs/standard/typescript-audio-development.md`: audio-rate state lives in refs, never React state - the tick path is allocation-free after start - no new re-renders on the audio path. `// REASON:` comments mark deliberate deviations. `docs/standard/typescript-react-development.md` applies for the hook shape and naming.
 
 ## Audio-Critical Requirements
 
-- The engine is ref-driven: voices live in a `Map` inside a `useRef`; options are mirrored into a ref each render so callbacks never churn.
+- The engine is ref-driven: voices live in a `Map` inside a `useRef` - options are mirrored into a ref each render so callbacks never churn.
 - `useCallback`/`useMemo` dependency arrays stay sparse by design - the returned methods are `useCallback` with empty dependency arrays reading `optionsRef`.
 - State management pattern unchanged: no `useState` additions on the audio path.
 - YM2149 emulator and SoundDriver untouched.
@@ -55,25 +55,25 @@ New types in the hook file: `PreviewEnvelopeOptions` (`ym2149`, `onAutoStop`), `
 
 **State store modifications**
 
-None. `playInstTimerRef`/`playInstStepRef` in `App.tsx` are removed; `usePlaybackHandlers` receives `stopInstrumentPreview` instead.
+None. `playInstTimerRef`/`playInstStepRef` in `App.tsx` are removed - `usePlaybackHandlers` receives `stopInstrumentPreview` instead.
 
 ## Step by Step Implementation
 
 **Create the shared engine**
 
-`src/hooks/playback/usePreviewEnvelope.ts`: voices `Map<string, PreviewVoice>` in a ref; `optionsRef` mirrored each render; methods `start`, `release` (returns true when the voice has sustain), `stop` (per keyId or all), `hasState`. `start` stops every existing voice first - all five surfaces are channel-monophonic. Auto-stop fires on the released-tail condition or `stopAfterStep`, writes `0x08 + channel = 0`, and invokes `onAutoStop`.
+`src/hooks/playback/usePreviewEnvelope.ts`: voices `Map<string, PreviewVoice>` in a ref - `optionsRef` mirrored each render - methods `start`, `release` (returns true when the voice has sustain), `stop` (per keyId or all), `hasState`. `start` stops every existing voice first - all five surfaces are channel-monophonic. Auto-stop fires on the released-tail condition or `stopAfterStep`, writes `0x08 + channel = 0`, and invokes `onAutoStop`.
 
 **Migrate `TrackPanel.tsx`**
 
-Replace the seven engine refs and the `playPreviewNote`/`stopPreview` internals with the hook; keep `pressedNoteKeysRef`, `hasPreviewState`, `onRegisterStopPreview`, and the keyup release wiring. `stopPreview` = `preview.stop()` + `onHardStopLivePreview` + `onPreviewMidiNoteOff` + pressed-key clear. `onAutoStop` calls `onPreviewMidiNoteOff(channel)`.
+Replace the seven engine refs and the `playPreviewNote`/`stopPreview` internals with the hook - keep `pressedNoteKeysRef`, `hasPreviewState`, `onRegisterStopPreview`, and the keyup release wiring. `stopPreview` = `preview.stop()` + `onHardStopLivePreview` + `onPreviewMidiNoteOff` + pressed-key clear. `onAutoStop` calls `onPreviewMidiNoteOff(channel)`.
 
 **Migrate `PianoKeyboard.tsx`**
 
-Replace the seven per-key maps and `playNote`/`stopNote` internals; keep `pressedKeys` state and key lifecycle. Stale-key guard becomes `preview.hasState(keyId)`; release becomes `preview.release(keyId)` else `preview.stop(keyId)`.
+Replace the seven per-key maps and `playNote`/`stopNote` internals - keep `pressedKeys` state and key lifecycle. Stale-key guard becomes `preview.hasState(keyId)` - release becomes `preview.release(keyId)` else `preview.stop(keyId)`.
 
 **Migrate `HeaderPanel.tsx`**
 
-Replace `previewTimerRef`/`previewSubTickRef`/`previewEnvelopeStepRef` and the interval body; call `start` with `honorSustain: false`; `stopPreview` = `preview.stop()` + `onPreviewMidiNoteOff`. The `previewTimerRef.current !== null` guard becomes `preview.hasState()`.
+Replace `previewTimerRef`/`previewSubTickRef`/`previewEnvelopeStepRef` and the interval body - call `start` with `honorSustain: false` - `stopPreview` = `preview.stop()` + `onPreviewMidiNoteOff`. The `previewTimerRef.current !== null` guard becomes `preview.hasState()`.
 
 **Migrate `useMidiActions.ts`**
 
@@ -85,7 +85,7 @@ Collapse both copies' engine portions onto one `start`/`release`/`stop` path. Ve
 
 **Add engine tests**
 
-`test/hooks/playback/usePreviewEnvelope.test.tsx` with `vi.useFakeTimers`: start applies step 0 and advances every 2 ticks; sustain clamps while unreleased; release advances past sustain and auto-stops at the tail writing the volume register; `stopAfterStep` stops at the cap; `stop()` clears and writes the register.
+`test/hooks/playback/usePreviewEnvelope.test.tsx` with `vi.useFakeTimers`: start applies step 0 and advances every 2 ticks - sustain clamps while unreleased - release advances past sustain and auto-stops at the tail writing the volume register - `stopAfterStep` stops at the cap - `stop()` clears and writes the register.
 
 ## Implementation Order
 
@@ -103,9 +103,9 @@ Collapse both copies' engine portions onto one `start`/`release`/`stop` path. Ve
 
 **Integration tests**
 
-No new integration tests - existing suites cover the call-site surfaces; the engine contract is unit-tested.
+No new integration tests - existing suites cover the call-site surfaces - the engine contract is unit-tested.
 
 ## Verification
 
-- `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`, `npm test` after each migration; full loop at completion.
+- `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`, `npm test` after each migration - full loop at completion.
 - Manual audio verification on all five surfaces per the audio-critical requirements.

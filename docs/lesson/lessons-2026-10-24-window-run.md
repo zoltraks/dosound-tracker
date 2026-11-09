@@ -32,7 +32,7 @@ Root cause: the first rewrite pass covered `from` clauses and dynamic `import()`
 but not `vi.mock(...)` specifiers, which resolve relative to the test file.
 
 Preventing rule: see "Rewrite every specifier in a moved file, not only inbound
-ones" in `WORKFLOW.md` (existing rule; this session is further evidence for it).
+ones" in `WORKFLOW.md` (existing rule - this session is further evidence for it).
 
 ### Verbatim Code Warns in Its New File
 
@@ -50,7 +50,7 @@ Preventing rule: see "Lint the destination file right after an extraction" in
 ### Canonical Utilities Already Existed for the Moved Helpers
 
 Observed symptom: the plan called to move `formatNoteKey` and
-`parseBaseKeyString` verbatim into `src/utils/song/songFormat.ts`; inspection
+`parseBaseKeyString` verbatim into `src/utils/song/songFormat.ts` - inspection
 showed they were exact duplicates of `formatBaseKey` and `parseBaseKey` already
 exported there.
 
@@ -81,4 +81,4 @@ Root cause: a separately launched preview process is not a child of the dev
 server and survives its shutdown.
 
 Preventing rule: see "Stopping the development server" in `WORKFLOW.md`
-(existing rule; confirmed working this session).
+(existing rule - confirmed working this session).

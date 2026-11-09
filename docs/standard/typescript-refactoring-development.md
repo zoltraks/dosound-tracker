@@ -165,10 +165,10 @@ Project-specific conventions extend the standard above for the DOSOUND Tracker c
 - The audio-critical patterns protected during refactoring - prop mirroring, sparse
   dependency arrays, direct `setState`, manual memoization - are owned by `GUIDELINES.md`.
 - Typical refactor subjects for this codebase, ordered by how often they pay off:
-  divergent copies of a shared engine or algorithm consolidated once three sites exist;
-  orchestrator decomposition bounded by domain seams rather than line count;
-  dead surface left by landed work (orphaned imports, unused exports, never-read flags);
-  widen-then-narrow types replaced by discriminated unions; and characterisation tests
+  divergent copies of a shared engine or algorithm consolidated once three sites exist.
+  orchestrator decomposition bounded by domain seams rather than line count.
+  dead surface left by landed work (orphaned imports, unused exports, never-read flags).
+  widen-then-narrow types replaced by discriminated unions - and characterisation tests
   written at observable seams before restructuring thinly-covered modules.
 - Behavior tests exercise observable states, not internals - a suite that survives a
   refactor unchanged is the proof the refactor preserved behavior.

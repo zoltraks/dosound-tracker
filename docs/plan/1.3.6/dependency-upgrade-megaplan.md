@@ -39,13 +39,13 @@ Record 2 depends on record 1: the evaluated majors land on the already-updated t
 ## Gate Roll-Up
 
 - **Wave 1** - loop clean, e2e 12/12, `electron:build` produces artifacts.
-- **Wave 2** - each kept major passes its gate; each failure reverts alone.
-- **Close** - `npm audit` residual documented; verification loop clean.
+- **Wave 2** - each kept major passes its gate - each failure reverts alone.
+- **Close** - `npm audit` residual documented - verification loop clean.
 
 ## Definition Of Done
 
 - Manifests updated, loop clean, e2e green, Electron packaging proven.
-- Deferrals recorded; no commits made.
+- Deferrals recorded - no commits made.
 
 ## Verification
 

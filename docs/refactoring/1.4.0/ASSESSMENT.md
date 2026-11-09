@@ -31,7 +31,7 @@ changed nothing observable. No deviations beyond the proposal.
 | `test`          | 604 passed                 |
 | `test:coverage` | all thresholds pass        |
 
-Test count unchanged at 604; the extraction and the parameter removal are
+Test count unchanged at 604 - the extraction and the parameter removal are
 behaviour-preserving by construction.
 
 ## Remaining Gaps
