@@ -283,7 +283,7 @@ Under the `preserve-before-reorganize` extension, a documentation reorganization
 
 **Rewrite every specifier in a moved file, not only inbound ones**
 
-A mass-move specifier rewrite must cover both directions: specifiers that point at moved files and the moved files' own outbound imports to unmoved targets - the latter silently break one directory level deeper. Resolve each specifier against the importer's post-move location, falling back to its pre-move location, and cover `import()`, re-exports, `vi.mock`, query-suffixed specifiers, and `new URL(..., import.meta.url)` alongside `from` clauses. `npx tsc -b` is the gate that catches leftovers - `npm run typecheck` checks nothing on its own.
+A mass-move specifier rewrite must cover both directions: specifiers that point at moved files and the moved files' own outbound imports to unmoved targets - the latter silently break one directory level deeper. Resolve each specifier against the importer's post-move location, falling back to its pre-move location, and cover `import()`, re-exports, `vi.mock`, query-suffixed specifiers, and `new URL(..., import.meta.url)` alongside `from` clauses. `npm run typecheck` runs `tsc -b` and is the gate that catches leftovers.
 
 **Re-read files after a format sweep**
 
@@ -304,6 +304,14 @@ A throwaway `@playwright/test` script under `work/` can drive the dev server and
 **Place an extracted hook before its earliest consumer**
 
 When a block of `App.tsx` moves into a hook, the hook call must precede the earliest consumer of any returned value - aggregate flags such as `isNavigationSuspended` consume modal-open state far earlier than the moved handler block. Scan consumers before choosing the call position; a `TS2448 used before its declaration` error is the symptom of a hook placed too late.
+
+**Verify packaging metadata through an unpacked build**
+
+`npx electron-builder --dir` packages the app without producing installers, so a `build.copyright`-style manifest change can be proven end-to-end in minutes: the unpacked `release/mac-arm64/<App>.app/Contents/Info.plist` then carries `NSHumanReadableCopyright` read via `/usr/libexec/PlistBuddy`. Skipped code signing is expected - binaries ship unsigned per `DEPLOYMENT.md`. Electron-builder output accumulates in `release/` - verification bundles and stale installers alike - and `scripts/clean.sh` does not sweep it; prune `release/` by hand when a fresh packaging check matters.
+
+**The git index can move under the session**
+
+Nothing in the repository stages files - no hooks, no `git add` in scripts, no lint-staged config - so staged entries that appear mid-session come from the host environment. Read `git status` fresh when reporting boundary state rather than assuming the index matches the last command run.
 
 **Check the origin file's imports after each extraction**
 
@@ -362,7 +370,7 @@ Run periodically and before a version bump:
 
 - `scripts/clean.sh --dry-run` to review residue; `--purge` only when a fresh `npm install` is acceptable.
 - `scripts/release-check.sh` for record coverage, assessment completeness, and window-review presence.
-- Stale-figure sweep: README/toolchain numbers, hook counts, file sizes, standard versions (`diff -w -B` against the canonical library).
+- Stale-figure sweep: README/toolchain numbers, hook counts, file sizes, standard versions (`diff -w -B` against the canonical library), and path references inside `docs/template/` against the real tree.
 - `git status --short` confirms only the intended change set remains.
 
 ## Working With AI Coding Agents

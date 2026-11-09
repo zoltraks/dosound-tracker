@@ -31,6 +31,7 @@ import {
 import { expandEnvelope, expandLoopingEnvelope } from '../envelope/envelopeUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeSongSpeed } from './songSpeed.ts';
+import { clampMidiChannel, clampMidiProgram } from '../midi/midiUtils.ts';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -403,15 +404,13 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       let channel: number | null = null;
       const rawChannel = midiNode.channel;
       if (typeof rawChannel === 'number' && Number.isFinite(rawChannel)) {
-        const clamped = Math.max(1, Math.min(16, Math.floor(rawChannel)));
-        channel = clamped;
+        channel = clampMidiChannel(rawChannel);
       } else if (typeof rawChannel === 'string') {
         const trimmed = rawChannel.trim();
         if (trimmed) {
           const parsed = Number(trimmed);
           if (Number.isFinite(parsed)) {
-            const clamped = Math.max(1, Math.min(16, Math.floor(parsed)));
-            channel = clamped;
+            channel = clampMidiChannel(parsed);
           }
         }
       }
@@ -419,15 +418,13 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       let program: number | null = null;
       const rawProgram = midiNode.program;
       if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
-        const clamped = Math.max(0, Math.min(127, Math.floor(rawProgram)));
-        program = clamped;
+        program = clampMidiProgram(rawProgram);
       } else if (typeof rawProgram === 'string') {
         const trimmed = rawProgram.trim();
         if (trimmed) {
           const parsed = Number(trimmed);
           if (Number.isFinite(parsed)) {
-            const clamped = Math.max(0, Math.min(127, Math.floor(parsed)));
-            program = clamped;
+            program = clampMidiProgram(parsed);
           }
         }
       }

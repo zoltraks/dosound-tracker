@@ -4,6 +4,7 @@ import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { PATTERN_LENGTH, MAX_PATTERN_LENGTH } from '../../constants/music.ts';
 import { assertImportSize } from '../validation/importSize.ts';
 import { expandRunNodes } from '../yaml/runLength.ts';
+import { quoteYamlValues } from '../yaml/yamlUtils.ts';
 
 export type TrackClipboardStep = {
   wait?: boolean | number;
@@ -130,21 +131,7 @@ export function generateClipboardData(
     quotingType: '"',
   });
 
-  const quoteNoteValues = (text: string): string => {
-    const noteLineRegex = /^(\s*-\s+|\s+)(note):\s*(.+)$/gm;
-    return text.replace(noteLineRegex, (_match, indent, key, value) => {
-      let inner = String(value).trim();
-      if (
-        (inner.startsWith('"') && inner.endsWith('"')) ||
-        (inner.startsWith("'") && inner.endsWith("'"))
-      ) {
-        inner = inner.slice(1, -1);
-      }
-      return `${indent}${key}: "${inner}"`;
-    });
-  };
-
-  return quoteNoteValues(yamlContent);
+  return quoteYamlValues(yamlContent, 'note');
 }
 
 export function parseClipboardData(text: string): TrackClipboardStep[] {
@@ -267,17 +254,6 @@ export function applyClipboardToLines(
   for (let i = 0; i < targetLength; i++) {
     const baseLine = existingLines[i] || { note: null };
 
-    // In replace mode, we take the step if available (or default empty), otherwise we fallback to what?
-    // Original logic: "if (mode === 'replace') { ... const rawStep = expandedSteps[i]; ... }"
-    // It constructed a completely new line based on step, defaulting to null if step was missing/emptyish?
-    // Actually for 'replace' it seems to wipe out anything not in the clipboard if clipboard is shorter?
-    // Let's re-read original 'replace' loop.
-    // It creates `const line: PatternLine = { ... }` from scratch (copying trackB/C from baseLine but resetting trackA/volume?).
-    // Yes: `line.trackA = ...` or `line.trackA = null`.
-    // So 'replace' effectively overwrites trackA and volume for the length of the clipboard?
-    // And if `i >= expandedSteps.length`, `rawStep` is undefined -> `line.trackA = null`.
-    // So 'replace' clears the track for the whole pattern length?
-
     const rawStep = i < steps.length ? steps[i] : undefined;
 
     if (mode === 'replace') {
@@ -286,20 +262,6 @@ export function applyClipboardToLines(
       } else {
         // Clear line
         newLines.push({ ...baseLine, note: null, volume: undefined });
-        // Note: Original code set volume to clamped if exists, else it didn't touch it?
-        // Wait, original 'replace' else block: `line.trackA = null;` and `newLines.push(line)`.
-        // `line` was initialized with `trackA: baseLine.trackA`.
-        // But `line.trackA` was overwritten in if/else blocks.
-        // If `rawStep` undefined, it went to `else { line.trackA = null }`.
-        // And volume? `line.volume` was not set in else block.
-        // `line` was initialized as `{ trackA: baseLine.trackA, ... }` but `volume` property wasn't copied from baseLine?
-        // `const line: PatternLine = { trackA: baseLine.trackA, ... }`
-        // It didn't copy `volume` from baseLine explicitly in the `line` init.
-        // `baseLine` has `volume`. PatternLine has `volume`.
-        // `existingLines[i]` has volume.
-        // `const line: PatternLine = { trackA: baseLine.trackA, trackB: baseLine.trackB, trackC: baseLine.trackC }`
-        // Volume is missing from init! So volume is `undefined` by default in `line`.
-        // So 'replace' CLEARS volume if not present in step.
       }
     } else if (mode === 'overwriteAll') {
       if (!rawStep || isStepEmpty(rawStep)) {

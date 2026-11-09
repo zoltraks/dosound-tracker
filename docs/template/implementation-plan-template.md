@@ -17,7 +17,7 @@ This implementation plan is based on the change request at `docs/change/[version
 
 ## Best Practices
 
-Follow TypeScript and React engineering standards from `docs/standard/ts-react-development.md`:
+Follow TypeScript and React engineering standards from `docs/standard/typescript-react-development.md`:
 
 - Functional components only with proper TypeScript interfaces
 - Props interface named with `Props` suffix
@@ -65,7 +65,7 @@ File to modify: `src/types/[filename].ts`.
 
 Specify updates to stores, state properties, and actions. List all subscribing components affected by this state change.
 
-File to modify: `src/stores/[filename].ts`.
+File to modify: `src/hooks/ui/useUiStore.ts`.
 
 ```typescript
 // Define store state extensions or action implementations here

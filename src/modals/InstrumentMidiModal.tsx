@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import NumberSpinner from '../components/NumberSpinner.tsx';
+import { clampMidiChannel, clampMidiProgram } from '../utils/midi/midiUtils.ts';
 
 interface InstrumentMidiModalProps {
   isOpen: boolean;
@@ -75,14 +76,12 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
   const handleSave = useCallback(() => {
     let normalizedChannel: number | null = null;
     if (typeof channel === 'number' && Number.isFinite(channel)) {
-      const clamped = Math.max(1, Math.min(16, Math.floor(channel)));
-      normalizedChannel = clamped;
+      normalizedChannel = clampMidiChannel(channel);
     }
 
     let normalizedProgram: number | null = null;
     if (typeof program === 'number' && Number.isFinite(program)) {
-      const clamped = Math.max(0, Math.min(127, Math.floor(program)));
-      normalizedProgram = clamped;
+      normalizedProgram = clampMidiProgram(program);
     }
 
     onSave({ channel: normalizedChannel, program: normalizedProgram });

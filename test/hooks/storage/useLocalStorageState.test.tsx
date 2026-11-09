@@ -42,10 +42,11 @@ describe('useLocalStorageState', () => {
   });
 
   it('falls back to default on localStorage error', () => {
-    const spy = vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+    const spy = vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
       throw new Error('access denied');
     });
     const { result } = renderHook(() => useLocalStorageState('err-key', 'fallback'));
+    expect(spy).toHaveBeenCalled();
     expect(result.current[0]).toBe('fallback');
     spy.mockRestore();
   });

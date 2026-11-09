@@ -36,4 +36,7 @@ export class StorageKeys {
   // Data persistence
   static readonly SONG = 'dosound-tracker-song' as const;
   static readonly INSTRUMENT = 'dosound-tracker-instrument' as const;
+
+  // MIDI
+  static readonly MIDI_CONFIGURATION = 'dosound-tracker-midi-configuration' as const;
 }

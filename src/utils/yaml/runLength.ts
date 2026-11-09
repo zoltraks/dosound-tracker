@@ -51,6 +51,11 @@ export const expandRunNodes = <T>(
         }
         continue;
       }
+
+      if (hasVolume && keys.length === 1 && expanded.length < capacity) {
+        expanded.push(makeWait(ln.volume));
+        continue;
+      }
     }
 
     expanded.push(node as T);

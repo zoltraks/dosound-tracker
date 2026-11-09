@@ -1,7 +1,7 @@
 {
   "name": "dosound-tracker",
   "private": true,
-  "version": "1.4.1",
+  "version": "1.4.2",
   "type": "module",
   "description": "DOSOUND Tracker",
   "main": "electron/main.cjs",
@@ -48,7 +48,6 @@
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
     "@testing-library/dom": "^10.4.2",
-    "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@types/js-yaml": "^4.0.9",
     "@types/node": "^26.6.6",
@@ -86,7 +85,7 @@
   "build": {
     "appId": "com.dosound.tracker",
     "productName": "DOSOUND Tracker",
-    "copyright": "Copyright © 2024 Filip Golewski",
+    "copyright": "Copyright (c) 2025 Zoltar X / New Generation",
     "files": [
       "dist/**/*",
       "electron/**/*",

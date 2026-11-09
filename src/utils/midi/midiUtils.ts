@@ -38,7 +38,12 @@ export interface MidiNoteEvent {
 }
 
 export const MAX_MONITOR_ENTRIES = 1000;
-export const STORAGE_KEY = 'dosound-tracker-midi-configuration';
+
+export const clampMidiChannel = (value: number): number =>
+  Math.max(1, Math.min(16, Math.floor(value)));
+
+export const clampMidiProgram = (value: number): number =>
+  Math.max(0, Math.min(127, Math.floor(value)));
 
 export function formatTime(): string {
   const now = new Date();

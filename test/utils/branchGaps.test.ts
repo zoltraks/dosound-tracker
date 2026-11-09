@@ -9,6 +9,7 @@ import {
 } from '../../src/utils/midi/midiConfiguration.ts';
 import type { MidiConfiguration } from '../../src/utils/midi/midiUtils.ts';
 import { StorageKeys } from '../../src/utils/storage/storageKeys.ts';
+import { logger } from '../../src/utils/log/logger.ts';
 import type { MutableRefObject } from 'react';
 import type { Pattern } from '../../src/synth/SoundDriver.ts';
 import yaml from 'js-yaml';
@@ -65,18 +66,20 @@ describe('scheduleJsonSave reschedule and error branches', () => {
   it('warns but survives when localStorage throws', () => {
     vi.useFakeTimers();
     const r = ref();
-    const original = Storage.prototype.setItem;
-    Storage.prototype.setItem = () => {
+    const setSpy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
       throw new Error('quota');
-    };
+    });
+    const warnSpy = vi.spyOn(logger, 'warn');
     try {
       scheduleJsonSave(StorageKeys.SONG, { t: 1 } as never, r, 10);
       expect(() => vi.advanceTimersByTime(20)).not.toThrow();
+      expect(warnSpy).toHaveBeenCalled();
     } catch (error) {
       console.log('quota mismatch');
       throw error;
     } finally {
-      Storage.prototype.setItem = original;
+      setSpy.mockRestore();
+      warnSpy.mockRestore();
       vi.useRealTimers();
     }
   });

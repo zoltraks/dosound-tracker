@@ -10,7 +10,7 @@ const readFixture = (relativePath: string): string => {
 
 describe('parseSongFromYaml', () => {
   it('parses the bundled singular-key song.yaml correctly', () => {
-    const yamlText = readFixture('src/assets/song.yaml');
+    const yamlText = readFixture('test/fixtures/bundled-song.yaml');
     const song = parseSongFromYaml(yamlText);
 
     expect(song.title).toBeTruthy();

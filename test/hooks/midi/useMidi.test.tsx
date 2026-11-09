@@ -2,8 +2,9 @@ import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
 import { useMidi, type MidiConfiguration } from '../../../src/hooks/midi/useMidi.ts';
+import { StorageKeys } from '../../../src/utils/storage/storageKeys.ts';
 
-const STORAGE_KEY = 'dosound-tracker-midi-configuration';
+const STORAGE_KEY = StorageKeys.MIDI_CONFIGURATION;
 
 type HookResult = ReturnType<typeof useMidi>;
 

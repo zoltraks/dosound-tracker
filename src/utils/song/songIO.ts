@@ -8,6 +8,7 @@ import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../..
 import { isEnvelopeZeroDefault, trimEnvelope } from '../envelope/envelopeUtils.ts';
 import { quoteYamlValues } from '../yaml/yamlUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
+import { clampMidiChannel, clampMidiProgram } from '../midi/midiUtils.ts';
 
 export const buildSongYamlForExport = (currentSong: Song): string => {
   const instrumentSource = currentSong.instrument;
@@ -74,15 +75,13 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
 
       const rawChannel = midi.channel;
       if (typeof rawChannel === 'number' && Number.isFinite(rawChannel)) {
-        const clamped = Math.max(1, Math.min(16, Math.floor(rawChannel)));
-        midiNode.channel = clamped;
+        midiNode.channel = clampMidiChannel(rawChannel);
         hasChannel = true;
       }
 
       const rawProgram = midi.program;
       if (typeof rawProgram === 'number' && Number.isFinite(rawProgram)) {
-        const clamped = Math.max(0, Math.min(127, Math.floor(rawProgram)));
-        midiNode.program = clamped;
+        midiNode.program = clampMidiProgram(rawProgram);
         hasProgram = true;
       }
 

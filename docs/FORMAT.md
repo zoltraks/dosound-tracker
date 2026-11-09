@@ -138,6 +138,7 @@ Then it:
 Loader behaviour:
 
 - Expands compressed runs (`wait: N`, `space: N`, and `off: N`, with or without `volume`).
+- A bare `volume`-only node (`{volume: V}` with no `wait`, `space`, `off`, or `note` sibling) expands like `wait: 1` carrying the volume - one empty row keeping the nibble.
 - For each expanded step (up to `length`):
   - `off: true` or `note: 'OFF'` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
   - `wait: true` or `space: true` → empty cell.
@@ -258,6 +259,7 @@ Details:
 - Import (`handlePasteTrack`):
   - Expects YAML with root `step: [...]`.
   - Expands run-length encoded steps (`wait: N`, `space: N`, `off: N`, with or without `volume`).
+  - A bare `volume`-only node (`{volume: V}` with no `wait`, `space`, `off`, or `note` sibling) expands like `wait: 1` carrying the volume - one empty row keeping the nibble.
   - For each row up to the current pattern length:
     - `off: true` or `note: 'OFF'` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
     - `wait: true` or `space: true` → empty.

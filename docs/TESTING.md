@@ -217,6 +217,8 @@ See `vitest.config.ts` for the Vitest configuration. The configuration includes:
 - Coverage provider v8 with 80% thresholds for lines, functions, branches, and statements.
 - Path alias `@/` resolving to `src/`.
 
+Node 26 prints `ExperimentalWarning: localStorage is not available` lines during `vitest` runs. This is host-runtime noise from the built-in localStorage module in worker threads, not a suite failure - the jsdom localStorage mock in `test/setup-localstorage.ts` is unaffected.
+
 **Type checking**
 
 - `npm run typecheck` runs `tsc -b` across the project graph: `tsconfig.app.json` covers `src/` and `test/`, and `tsconfig.node.json` covers the Vite, Vitest, and Playwright config files and `e2e/`. The same gate runs inside `npm run build` and `npm run bump`.

@@ -5,7 +5,7 @@ import type {
   MidiNoteEvent,
   MidiDeviceInfo,
 } from '../../utils/midi/midiUtils.ts';
-import { STORAGE_KEY } from '../../utils/midi/midiUtils.ts';
+import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { useMidiDeviceManagement } from './useMidiDeviceManagement.ts';
 import { useMidiMessageProcessing } from './useMidiMessageProcessing.ts';
 
@@ -52,11 +52,11 @@ export function useMidi(
 
   const [configuration, setConfigurationState] = useState<MidiConfiguration>(() => {
     try {
-      let raw = localStorage.getItem(STORAGE_KEY);
+      let raw = localStorage.getItem(StorageKeys.MIDI_CONFIGURATION);
       if (!raw) {
         raw = localStorage.getItem(OLD_STORAGE_KEY);
         if (raw) {
-          localStorage.setItem(STORAGE_KEY, raw);
+          localStorage.setItem(StorageKeys.MIDI_CONFIGURATION, raw);
           localStorage.removeItem(OLD_STORAGE_KEY);
         }
       }
@@ -104,7 +104,7 @@ export function useMidi(
         ignoreInputVolume: !!configuration.ignoreInputVolume,
         ignoreOutputVolume: !!configuration.ignoreOutputVolume,
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(toStore));
+      localStorage.setItem(StorageKeys.MIDI_CONFIGURATION, JSON.stringify(toStore));
     } catch {
       // ignore storage errors
     }

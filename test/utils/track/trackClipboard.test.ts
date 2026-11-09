@@ -210,9 +210,18 @@ describe('generateClipboardData', () => {
     try {
       expect(yaml).toContain('volume: 5');
       expect(yaml).not.toContain('wait: 1');
-      // A bare {volume} node is not a run - it passes through expansion untouched.
+      // A bare {volume} node expands like a wait row carrying the volume.
       const round = parseClipboardData(yaml);
-      expect(round[0]).toEqual({ volume: 5 });
+      expect(round[0]).toEqual({ wait: true, volume: 5 });
+      // Round-trip idempotence: the parsed step serializes to the same node.
+      const again = parseClipboardData(
+        generateClipboardData(
+          makePattern([{ note: null, volume: 5 }, { note: makeNote('F', 1, '03') }]),
+          4,
+          formatBaseKey,
+        ),
+      );
+      expect(again[0]).toEqual(round[0]);
     } catch (error) {
       console.log('single-volume mismatch', yaml);
       throw error;
@@ -253,10 +262,11 @@ describe('generateClipboardData', () => {
       formatBaseKey,
     );
     try {
-      // Each volume run has count 1, so both emit as bare {volume} nodes.
+      // Each volume run has count 1, so both emit as bare {volume} nodes and
+      // expand back into wait rows carrying their own volume.
       const round = parseClipboardData(yaml);
-      expect(round[0]).toEqual({ volume: 5 });
-      expect(round[1]).toEqual({ volume: 7 });
+      expect(round[0]).toEqual({ wait: true, volume: 5 });
+      expect(round[1]).toEqual({ wait: true, volume: 7 });
       expect(round[2].note).toBe('A-4');
     } catch (error) {
       console.log('volume-split mismatch', yaml);

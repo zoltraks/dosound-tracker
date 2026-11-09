@@ -1,5 +1,13 @@
 # Changes
 
+## Version 1.4.2
+
+Clipboard round-trips stay faithful for volume-only lines, and packaged builds carry a single consistent copyright attribution.
+
+- **Clipboard**: volume-only rows copied from a track now expand to their documented wait-row form on paste, so a copy/paste round-trip preserves the data exactly instead of changing shape.
+- **Attribution**: packaged desktop binaries now carry the same copyright notice as the `LICENSE` file, ending the ambiguous attribution in installer and app metadata.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency `minimatch` chains inside eslint and electron-builder tooling; nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+
 ## Version 1.4.1
 
 MIDI preview timing is frame-accurate at every replay rate, released previews stop talking to connected devices when they go silent, and the development toolchain moved onto supported release lines.
@@ -11,7 +19,6 @@ MIDI preview timing is frame-accurate at every replay rate, released previews st
 - **Coverage**: the branch-coverage gate passes its configured 80% threshold again after the clipboard copy/paste paths were characterized.
 - **Continuity**: the workflow documentation records an escalation path covering repository access, the published site, and release-signing materials.
 - **Security**: `npm audit` reports 15 moderate advisories confined to devDependency chains inside eslint and electron-builder tooling; nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
-
 
 ## Version 1.4.0
 

@@ -6,11 +6,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                    |
-| ------------- | ---------------------------------------------------------------------------------------- |
-| Intent        | Make clipboard YAML round-trip idempotent for volume-only lines                           |
+| Field         | Value                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------ |
+| Intent        | Make clipboard YAML round-trip idempotent for volume-only lines                            |
 | Key decisions | bare `{volume: N}` nodes expand to a wait row carrying the volume, matching `{wait:1,...}` |
-| Open risks    | `none`                                                                                    |
+| Open risks    | `none`                                                                                     |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

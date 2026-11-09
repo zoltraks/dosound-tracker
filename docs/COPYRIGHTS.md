@@ -14,6 +14,7 @@
 
 This project is released under the MIT License.
 The license file is at the repository root: `LICENSE`.
+The electron-builder `build.copyright` field in `package.json` mirrors the copyright notice in `LICENSE` verbatim.
 
 ## Dependency Licensing
 
