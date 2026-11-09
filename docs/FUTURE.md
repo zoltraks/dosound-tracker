@@ -94,3 +94,5 @@ Recorded during the 1.3.6 dependency upgrade (see `docs/change/1.3.6/dependency-
 referenced only by type imports and `playEvents` is never invoked. It is
 a removal candidate for a future refactoring cycle, pending confirmation
 that the Atari ST export path (`exportToAssembly`) has no live caller.
+
+- `trackClipboard.ts` `quoteNoteValues` single-quote strip (~line 139) is unreachable through the generator's `quotingType: '"'` path - verified by characterization tests; a later window may evaluate removing it as defensive dead code.

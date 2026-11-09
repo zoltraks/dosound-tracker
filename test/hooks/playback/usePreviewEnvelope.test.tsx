@@ -92,6 +92,33 @@ describe('usePreviewEnvelope', () => {
     }
   });
 
+  it('schedules the first envelope boundary from the configured tick interval', () => {
+    vi.useFakeTimers();
+    const { ym, engine } = setup();
+    // An interval other than the historical 20 ms literal proves the offset
+    // derives from tickIntervalMs; fake timers quantize performance.now, so
+    // fractional intervals are avoided.
+    try {
+      act(() => {
+        engine.start('k', startArgs(makeInstrument(), { tickIntervalMs: 10 }));
+      });
+      expect(appliedSteps(ym)).toEqual([0]);
+
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
+      expect(appliedSteps(ym)).toEqual([0, 0]);
+
+      act(() => {
+        vi.advanceTimersByTime(10);
+      });
+      expect(appliedSteps(ym)).toEqual([0, 0, 1]);
+    } catch (error) {
+      console.log('frame-rate tick mismatch', ym.updateChannelWithInstrument.mock.calls);
+      throw error;
+    }
+  });
+
   it('clamps at the sustain step until release, then fades to the tail and auto-stops', () => {
     vi.useFakeTimers();
     const onAutoStop = vi.fn();

@@ -490,8 +490,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             const volumeIsActive = isCurrentLine && currentColumn === 'volume';
             const noteIsActive = isCurrentLine && currentColumn === 'note';
 
-            let instrumentColor: string | null = null;
-            instrumentColor = getInstrumentColorForNote(noteData, instrumentColorMap);
+            const instrumentColor = getInstrumentColorForNote(noteData, instrumentColorMap);
 
             const lineClassName =
               `${getLineClass(lineIndex)}${instrumentColor ? ' track-line-colored' : ''}`.trim();

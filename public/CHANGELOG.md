@@ -1,5 +1,18 @@
 # Changes
 
+## Version 1.4.1
+
+MIDI preview timing is frame-accurate at every replay rate, released previews stop talking to connected devices when they go silent, and the development toolchain moved onto supported release lines.
+
+- **MIDI preview**: the first live-preview envelope tick now derives from the song's configured frame rate instead of a fixed 20 ms offset, so 60 Hz previews start on the correct boundary, and a released preview that fades to silence sends the matching note-off to connected devices instead of leaving the note hanging.
+- **Toolchain floor**: Node 26.13.0 and npm 11.20.0 are declared as `engines` floors in `package.json`, enforced at install time through `.npmrc`, and pinned exactly by `.nvmrc`.
+- **Toolchain**: lint and build moved to eslint 10 and vite 8, replacing the deprecated eslint 9 and rolldown-vite lines; the version bump now syncs `package-lock.json` automatically, and the e2e suite always previews a fresh build.
+- **Diagnostics**: previously silent MIDI send, open, close, and listener failures now log warnings, and dead sequencer and export surface was removed.
+- **Coverage**: the branch-coverage gate passes its configured 80% threshold again after the clipboard copy/paste paths were characterized.
+- **Continuity**: the workflow documentation records an escalation path covering repository access, the published site, and release-signing materials.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency chains inside eslint and electron-builder tooling; nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+
+
 ## Version 1.4.0
 
 Dialogs now answer the documented Escape and Enter contract, a full reset can no longer be undone by the backup mirror, and every preview surface shares one envelope engine.

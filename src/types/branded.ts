@@ -10,5 +10,4 @@ export type PlaylistPatternId = Brand<string, 'PlaylistPatternId'>;
 
 export const asInstrumentId = (value: string): InstrumentId => value as InstrumentId;
 export const asPatternId = (value: string): PatternId => value as PatternId;
-export const asTrackId = (value: string): TrackId => value as TrackId;
 export const asPlaylistPatternId = (value: string): PlaylistPatternId => value as PlaylistPatternId;

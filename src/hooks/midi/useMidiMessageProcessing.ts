@@ -27,8 +27,17 @@ const bytesToHex = (bytes: ArrayLike<number>): string => {
 const isDebugEnabled = (): boolean => {
   try {
     return localStorage.getItem(StorageKeys.DEBUG_MODE) === 'on';
-  } catch {
+  } catch (error) {
+    logger.warn('Failed to read MIDI debug flag', error);
     return false;
+  }
+};
+
+const sendBuffer = (output: MIDIOutput, bytes: number[]): void => {
+  try {
+    output.send(new Uint8Array(bytes));
+  } catch (error) {
+    logger.warn('Failed to send MIDI output', error);
   }
 };
 
@@ -103,9 +112,9 @@ export function useMidiMessageProcessing(
 
       const debugOn = isDebugEnabled();
 
-      let type = 'Unknown';
-      let noteLabel = '';
-      let value: number | null = null;
+      let type: string;
+      let noteLabel: string;
+      let value: number | null;
 
       let deviceId: string = configuration.inputId || '';
       const target = event.target as MIDIInput | null;
@@ -311,12 +320,7 @@ export function useMidiMessageProcessing(
         return;
       }
 
-      try {
-        const buffer = new Uint8Array(bytes);
-        output.send(buffer);
-      } catch {
-        // Ignore send errors
-      }
+      sendBuffer(output, bytes);
     },
     [
       addOutMonitorEntry,
@@ -396,12 +400,7 @@ export function useMidiMessageProcessing(
         return;
       }
 
-      try {
-        const buffer = new Uint8Array(bytes);
-        output.send(buffer);
-      } catch {
-        // Ignore send errors
-      }
+      sendBuffer(output, bytes);
     },
     [
       addOutMonitorEntry,
@@ -455,12 +454,7 @@ export function useMidiMessageProcessing(
       });
     }
 
-    try {
-      const buffer = new Uint8Array(bytes);
-      output.send(buffer);
-    } catch {
-      // Ignore send errors
-    }
+    sendBuffer(output, bytes);
   }, [
     addOutMonitorEntry,
     configuration.outputEnabled,
@@ -484,7 +478,8 @@ export function useMidiMessageProcessing(
             ? access.inputs.get(configuration.inputId)
             : null;
         nextInput = rawInput ?? null;
-      } catch {
+      } catch (error) {
+        logger.warn('Failed to look up MIDI input', error);
         nextInput = null;
       }
     }
@@ -496,14 +491,14 @@ export function useMidiMessageProcessing(
       if (typeof previousInput.removeEventListener === 'function') {
         try {
           previousInput.removeEventListener('midimessage', previousHandler);
-        } catch {
-          // ignore
+        } catch (error) {
+          logger.warn('Failed to detach MIDI input listener', error);
         }
       } else if ('onmidimessage' in previousInput) {
         try {
           (previousInput as MIDIInput).onmidimessage = null;
-        } catch {
-          // ignore
+        } catch (error) {
+          logger.warn('Failed to detach MIDI input listener', error);
         }
       }
     }
@@ -513,8 +508,8 @@ export function useMidiMessageProcessing(
         if (typeof previousInput.close === 'function') {
           previousInput.close();
         }
-      } catch {
-        // ignore
+      } catch (error) {
+        logger.warn('Failed to detach MIDI input listener', error);
       }
     }
 
@@ -527,13 +522,13 @@ export function useMidiMessageProcessing(
           if (typeof nextInput.open === 'function') {
             const result = nextInput.open();
             if (result && typeof result.then === 'function') {
-              result.catch(() => {
-                // ignore open errors
+              result.catch((error) => {
+                logger.warn('Failed to open MIDI input', error);
               });
             }
           }
-        } catch {
-          // ignore open errors
+        } catch (error) {
+          logger.warn('MIDI operation failed', error);
         }
 
         if (typeof nextInput.addEventListener === 'function') {
@@ -542,8 +537,8 @@ export function useMidiMessageProcessing(
           (nextInput as MIDIInput).onmidimessage = handleMidiMessage;
         }
         currentInputHandlerRef.current = handleMidiMessage;
-      } catch {
-        // ignore listener errors
+      } catch (error) {
+        logger.warn('Failed to attach MIDI input listener', error);
       }
     }
   }, [configuration.inputEnabled, configuration.inputId, handleMidiMessage, midiAccessRef]);
@@ -558,8 +553,8 @@ export function useMidiMessageProcessing(
           if (typeof previousOutput.close === 'function') {
             previousOutput.close();
           }
-        } catch {
-          // ignore
+        } catch (error) {
+          logger.warn('Failed to close MIDI output', error);
         }
       }
       currentOutputRef.current = null;
@@ -574,7 +569,8 @@ export function useMidiMessageProcessing(
             ? access.outputs.get(configuration.outputId)
             : null;
         nextOutput = rawOutput ?? null;
-      } catch {
+      } catch (error) {
+        logger.warn('Failed to look up MIDI output', error);
         nextOutput = null;
       }
     }
@@ -585,8 +581,8 @@ export function useMidiMessageProcessing(
         if (typeof previousOutput.close === 'function') {
           previousOutput.close();
         }
-      } catch {
-        // ignore
+      } catch (error) {
+        logger.warn('Failed to close MIDI output', error);
       }
     }
 
@@ -595,13 +591,13 @@ export function useMidiMessageProcessing(
         if (typeof nextOutput.open === 'function') {
           const result = nextOutput.open();
           if (result && typeof result.then === 'function') {
-            result.catch(() => {
-              // ignore open errors
+            result.catch((error) => {
+              logger.warn('Failed to open MIDI output', error);
             });
           }
         }
-      } catch {
-        // ignore open errors
+      } catch (error) {
+        logger.warn('MIDI operation failed', error);
       }
     }
 
@@ -626,14 +622,14 @@ export function useMidiMessageProcessing(
         if (typeof input.removeEventListener === 'function') {
           try {
             input.removeEventListener('midimessage', handler);
-          } catch {
-            // ignore
+          } catch (error) {
+            logger.warn('Failed to detach MIDI input listener', error);
           }
         } else if ('onmidimessage' in input) {
           try {
             (input as MIDIInput).onmidimessage = null;
-          } catch {
-            // ignore
+          } catch (error) {
+            logger.warn('Failed to detach MIDI input listener', error);
           }
         }
       }
@@ -642,8 +638,8 @@ export function useMidiMessageProcessing(
         if (input && typeof input.close === 'function') {
           input.close();
         }
-      } catch {
-        // ignore
+      } catch (error) {
+        logger.warn('Failed to detach MIDI input listener', error);
       }
 
       const output = currentOutputRef.current;
@@ -651,8 +647,8 @@ export function useMidiMessageProcessing(
         if (output && typeof output.close === 'function') {
           output.close();
         }
-      } catch {
-        // ignore
+      } catch (error) {
+        logger.warn('Failed to close MIDI input', error);
       }
       currentInputRef.current = null;
       currentOutputRef.current = null;

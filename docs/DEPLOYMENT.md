@@ -2,6 +2,12 @@
 
 ## Build Output
 
+**Toolchain**
+
+Builds require the toolchain floor declared in `package.json` `engines`
+(Node `>=26.13.0`, npm `>=11.20.0`), pinned exactly by `.nvmrc` and enforced
+at install time through `.npmrc`.
+
 **Production Build**
 
 ```bash

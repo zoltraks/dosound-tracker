@@ -129,6 +129,10 @@ Made by **Zoltar X / New Generation** using **Windsurf** and **GPT 5.1**.
 - **Node.js**: v26.13.0
 - **npm**: 11.20.0
 
+The declared versions are floors: `package.json` `engines` admits them and
+newer, `.nvmrc` pins the exact Node version, and `.npmrc` enforces the floor
+at install time.
+
 ### Export Features
 
 - **Register change tracking**: Only outputs changed registers

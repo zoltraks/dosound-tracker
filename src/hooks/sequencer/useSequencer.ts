@@ -7,8 +7,6 @@ export interface SequencerState {
   currentPattern: number;
   currentLine: number;
   currentTick: number;
-  bpm: number;
-  ticksPerRow: number;
 }
 
 interface SequencerWorkerTickData {
@@ -16,7 +14,6 @@ interface SequencerWorkerTickData {
   currentPattern: number;
   currentLine: number;
   currentTick: number;
-  debugTimestamp?: number;
 }
 
 type SequencerWorkerMessage =
@@ -25,7 +22,6 @@ type SequencerWorkerMessage =
   | { type: 'stop'; data: SequencerWorkerTickData };
 
 export const useSequencer = (
-  songSpeed: number = 6,
   patternLength: number = 64,
   frameRate: number = DEFAULT_SONG_FRAME,
 ) => {
@@ -35,9 +31,6 @@ export const useSequencer = (
     currentPattern: 0,
     currentLine: 0,
     currentTick: 0,
-    bpm: 125,
-    // Use song speed directly as number of frames per row
-    ticksPerRow: Math.max(1, songSpeed | 0),
   });
 
   const playbackStateRef = useRef<SequencerState>({
@@ -46,14 +39,10 @@ export const useSequencer = (
     currentPattern: 0,
     currentLine: 0,
     currentTick: 0,
-    bpm: 125,
-    // Use song speed directly as number of frames per row
-    ticksPerRow: Math.max(1, songSpeed | 0),
   });
 
   const workerRef = useRef<Worker | null>(null);
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
-  const tickCallbackRef = useRef<((tick: number) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
   const frameRateRef = useRef(frameRate);
 
@@ -141,9 +130,6 @@ export const useSequencer = (
                 // processed twice, which can introduce audible stutters.
                 if (callbackRef.current) {
                   callbackRef.current(mergedState);
-                }
-                if (tickCallbackRef.current) {
-                  tickCallbackRef.current(mergedState.currentTick);
                 }
               }
 
@@ -239,10 +225,6 @@ export const useSequencer = (
     [sequencerState],
   );
 
-  const start = useCallback(() => {
-    startPlayback(false);
-  }, [startPlayback]);
-
   const stop = useCallback(() => {
     const stoppedState: SequencerState = {
       ...sequencerState,
@@ -283,20 +265,9 @@ export const useSequencer = (
     [sequencerState],
   );
 
-  const setBPM = useCallback((bpm: number) => {
-    setSequencerState((prev) => ({ ...prev, bpm }));
-  }, []);
-
-  const setTicksPerRow = useCallback((ticksPerRow: number) => {
-    // Use provided value directly as VBLANK frames per row
-    setSequencerState((prev) => ({ ...prev, ticksPerRow: Math.max(1, ticksPerRow | 0) }));
-  }, []);
-
   const updateSpeed = useCallback((newSpeed: number) => {
     // Use song speed directly as number of VBLANK frames per row (50 Hz)
     const newTicksPerRow = Math.max(1, newSpeed | 0);
-
-    setSequencerState((prev) => ({ ...prev, ticksPerRow: newTicksPerRow }));
 
     // Update worker parameters
     if (workerRef.current) {
@@ -323,72 +294,6 @@ export const useSequencer = (
 
   const setCallback = useCallback((callback: (state: SequencerState) => void) => {
     callbackRef.current = callback;
-  }, []);
-
-  const setTickCallback = useCallback((callback: (tick: number) => void) => {
-    tickCallbackRef.current = callback;
-  }, []);
-
-  const getCurrentTime = useCallback(() => {
-    // Calculate current playback time in seconds
-    const maxLines = patternLengthRef.current || 1;
-    const totalTicks =
-      (sequencerState.currentPattern * maxLines + sequencerState.currentLine) *
-        sequencerState.ticksPerRow +
-      sequencerState.currentTick;
-    const tickDuration = 60.0 / (sequencerState.bpm * 4); // 16th notes
-    return totalTicks * tickDuration;
-  }, [sequencerState]);
-
-  const jumpToLine = useCallback((line: number) => {
-    setSequencerState((prev) => {
-      const maxLines = patternLengthRef.current || 1;
-      return {
-        ...prev,
-        currentLine: Math.max(0, Math.min(maxLines - 1, line)),
-        currentTick: 0,
-      };
-    });
-  }, []);
-
-  const nextLine = useCallback(() => {
-    setSequencerState((prev) => {
-      const maxLines = patternLengthRef.current || 1;
-      const newLine = prev.currentLine + 1;
-      if (newLine >= maxLines) {
-        return {
-          ...prev,
-          currentPattern: prev.currentPattern + 1,
-          currentLine: 0,
-          currentTick: 0,
-        };
-      }
-      return {
-        ...prev,
-        currentLine: newLine,
-        currentTick: 0,
-      };
-    });
-  }, []);
-
-  const previousLine = useCallback(() => {
-    setSequencerState((prev) => {
-      const newLine = prev.currentLine - 1;
-      if (newLine < 0) {
-        const newPattern = Math.max(0, prev.currentPattern - 1);
-        return {
-          ...prev,
-          currentPattern: newPattern,
-          currentLine: Math.max(0, (patternLengthRef.current || 1) - 1),
-          currentTick: 0,
-        };
-      }
-      return {
-        ...prev,
-        currentLine: newLine,
-        currentTick: 0,
-      };
-    });
   }, []);
 
   const updatePatternLength = useCallback((newLength: number) => {
@@ -436,20 +341,12 @@ export const useSequencer = (
 
   return {
     sequencerState,
-    start,
     stop,
     setPosition,
-    setBPM,
-    setTicksPerRow,
     updateSpeed,
     startPatternLoop,
     startSong,
     setCallback,
-    setTickCallback,
-    getCurrentTime,
-    jumpToLine,
-    nextLine,
-    previousLine,
     updatePatternLength,
     updateFrameRate,
     updateSongLoop,

@@ -336,6 +336,47 @@ describe('live preview envelope', () => {
     }
   });
 
+  it('sends a MIDI noteOff when a released preview auto-stops', () => {
+    vi.useFakeTimers();
+    const fadeInstrument = {
+      id: '00',
+      name: 'i',
+      volume: [15, 15, 0],
+      shift: [0],
+      pitch: [0],
+      noise: [0],
+      mode: [0],
+      base: 'C-4',
+      sustain: 1,
+    };
+    const { hook, ym, helpers } = setup({
+      activeSection: 'piano',
+      lastTrackId: 'B',
+      currentInstrument: fadeInstrument,
+    });
+    try {
+      act(() => hook.result.current.handleMidiNoteEvent(noteOn));
+      act(() => hook.result.current.handleMidiNoteEvent(noteOff));
+      // Explicit release sends the first noteOff on the focused channel B.
+      expect(helpers.sendInstrumentMidiNoteOffForChannel).toHaveBeenCalledWith(1);
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+      // The silent-tail auto-stop emits the matching noteOff again and
+      // silences channel B through the engine.
+      expect(helpers.sendInstrumentMidiNoteOffForChannel).toHaveBeenCalledTimes(2);
+      expect(ym.writeRegister).toHaveBeenCalledWith(0x09, 0x00);
+    } catch (error) {
+      console.log(
+        'auto-stop noteOff mismatch',
+        helpers.sendInstrumentMidiNoteOffForChannel.mock.calls,
+      );
+      throw error;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it('invokes the registered stop-preview when retriggering a track', () => {
     const stop = vi.fn();
     const { hook } = setup();

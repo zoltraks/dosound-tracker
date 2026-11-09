@@ -204,7 +204,7 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 - Save and load a song file.
 - Switch theme between dark and light.
 
-`npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/`; run `npm run build` first so the preview serves the current code. The suite runs on the chromium and webkit projects; the firefox project is excluded because headless launch fails under the current macOS sandbox.
+`npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/`; the `pretest:e2e` script builds first, so the preview always serves the current code. The suite runs on the chromium and webkit projects; the firefox project is excluded because headless launch fails under the current macOS sandbox.
 
 ## Test Configuration
 
@@ -219,8 +219,9 @@ See `vitest.config.ts` for the Vitest configuration. The configuration includes:
 
 **Type checking**
 
-- `tsconfig.app.json` includes both `src/` and `test/`, so every test file must be type-clean: `tsc -b` (inside `npm run build` and `npm run bump`) typechecks tests even though `vitest` does not.
-- `npm run typecheck` runs `tsc --noEmit` against the solution-style root `tsconfig.json` (`files: []`) and checks nothing on its own. The effective type gate for test code is the build step, not the typecheck script.
+- `npm run typecheck` runs `tsc -b` across the project graph: `tsconfig.app.json` covers `src/` and `test/`, and `tsconfig.node.json` covers the Vite, Vitest, and Playwright config files and `e2e/`. The same gate runs inside `npm run build` and `npm run bump`.
+- `tsconfig.app.json` includes both `src/` and `test/`, so every test file must be type-clean even though `vitest` does not typecheck.
+- CommonJS sources (`electron/`, `scripts/`) sit outside TypeScript's emit-free scope; ESLint is their static gate.
 
 **Component test hygiene**
 
@@ -277,12 +278,15 @@ Main-process helpers live in standalone `.cjs` modules (for example `electron/pe
 
 The project targets 80% coverage for lines, functions, branches, and statements. Coverage thresholds are enforced in `vitest.config.ts`.
 
-Current coverage gaps that must be addressed in future work:
+Remaining coverage gaps that may be addressed in future work:
 
-- `src/synth/` — YM2149 emulator needs comprehensive tests
-- `src/exports/` — all export formatters need tests
-- `src/components/` — most components lack tests
-- `src/hooks/` — many of the 50 hooks lack dedicated tests
+- `src/components/` — several components still lack dedicated tests
+- `src/hooks/` — a number of hooks have thin branch coverage
 - `src/workers/` — no Web Worker tests
+- `src/modals/` — thin coverage beyond `FilePickerModal`
 
-The `npm run test:coverage` command will fail until coverage reaches the 80% thresholds. This is expected and documented as a known gap. Regular `npm test` (without coverage) will pass.
+`npm run test:coverage` passes the configured 80% thresholds and is an enforceable gate.
+
+**Fake timers quantize performance.now on fractional intervals**
+
+Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep with fractional `setInterval` delays - a callback scheduled at 16.67 ms can observe `now` a fraction early, so boundary assertions on `1000 / 60`-style intervals are flaky. Use integer intervals in timer tests; a non-20 ms integer still proves an offset derives from the configured interval.

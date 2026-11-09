@@ -3,7 +3,7 @@
 ## Document Information
 
 |                    |                                                                                                       |
-|--------------------|-------------------------------------------------------------------------------------------------------|
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
 | Report Revision    | 1.4                                                                                                   |
 | Report Date        | 2026-11-09                                                                                            |
 | Report Style       | Audit                                                                                                 |
@@ -56,7 +56,7 @@
 ## Audit Coverage
 
 | Report type                                             | Status    | Rationale                                                                        |
-|---------------------------------------------------------|-----------|----------------------------------------------------------------------------------|
+| ------------------------------------------------------- | --------- | -------------------------------------------------------------------------------- |
 | Software Architecture Review                            | Covered   | Module boundaries, flows, coupling, and documented-decision drift                |
 | Code Quality Audit                                      | Covered   | Defect census, test workflow, style, and stack conformance                       |
 | Security Vulnerability Assessment                       | Covered   | Input surfaces, DOM sinks, Electron boundary, secrets, advisories                |
@@ -72,7 +72,7 @@
 ## Glossary Index
 
 | Term                                   | Definition                                                              |
-|----------------------------------------|-------------------------------------------------------------------------|
+| -------------------------------------- | ----------------------------------------------------------------------- |
 | ASVS                                   | Application Security Verification Standard - OWASP security checklist   |
 | CSP                                    | Content Security Policy - browser directive limiting resource origins   |
 | CVE                                    | Common Vulnerabilities and Exposures - public vulnerability identifiers |
@@ -112,7 +112,7 @@
 **Identifier triplets**
 
 | Triplet | Scope     | Description                                                 |
-|---------|-----------|-------------------------------------------------------------|
+| ------- | --------- | ----------------------------------------------------------- |
 | FND     | Findings  | Technical Findings identifier prefix (`FND-SEC-001`)        |
 | EVD     | Evidence  | Evidence List identifier prefix (`EVD-001`)                 |
 | RSK     | Risks     | Unified Risk Register identifier prefix (`RSK-001`)         |
@@ -174,7 +174,7 @@ separately from defects.
 ## Executive Summary
 
 | Field             | Value                                                                                       |
-|-------------------|---------------------------------------------------------------------------------------------|
+| ----------------- | ------------------------------------------------------------------------------------------- |
 | System type       | codebase                                                                                    |
 | Scope             | Full source tree, configuration, documentation, tests, git history of dosound-tracker 1.3.8 |
 | Source basis      | inspected code, configuration, documentation, git history, commissioned executions          |
@@ -182,7 +182,7 @@ separately from defects.
 | **Overall score** | **6/10** (Average)                                                                          |
 
 |                     |               |
-|---------------------|---------------|
+| ------------------- | ------------- |
 | Product Quality     | 8.3/10 (Good) |
 | Engineering Process | 7.3/10 (Good) |
 
@@ -296,7 +296,7 @@ not a shipped-artifact [SBOM](#glossary-index) and not a claim of [SPDX](#glossa
 or CycloneDX conformance.
 
 | Component                  | Version   | License                   | Risk   | Advisory        | Source                          |
-|----------------------------|-----------|---------------------------|--------|-----------------|---------------------------------|
+| -------------------------- | --------- | ------------------------- | ------ | --------------- | ------------------------------- |
 | js-yaml                    | 4.3.2     | MIT                       | None   | None identified | package.json, package-lock.json |
 | lucide-react               | 1.67.0    | [ISC](#glossary-index)    | None   | None identified | package.json, package-lock.json |
 | react                      | 19.3.1    | MIT                       | None   | None identified | package.json, package-lock.json |
@@ -351,7 +351,7 @@ and the electron-builder `copyright` field (2024, Filip Golewski) -
 **Risk Map**
 
 | Severity | Count | Identifiers                                                                                                                                                                                                          |
-|----------|-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | HIGH     | 1     | [RSK-001](#rsk-001-renderer-freeze-or-oom-on-crafted-input)                                                                                                                                                          |
 | MEDIUM   | 3     | [RSK-002](#rsk-002-remote-content-executes-inside-an-application-window), [RSK-003](#rsk-003-external-importers-produce-incompatible-files), [RSK-004](#rsk-004-preview-engines-diverge-silently-across-five-copies) |
 | MEDIUM   | 2     | [RSK-006](#rsk-006-total-continuity-loss-on-a-single-event), [RSK-007](#rsk-007-silent-user-data-loss-on-saveload)                                                                                                   |
@@ -365,7 +365,7 @@ bounded to the local import surface.
 Team continuity is 100 percent single-author delivery, owner-accepted, with no named successor.
 
 | Area                   | Rating   | Key evidence                                                                                                                                                                                                                      |
-|------------------------|----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Documentation          | Strong   | 12-file source-of-truth corpus plus per-version change, plan, and review records - mostly synchronized ([FND-ARC-002](#fnd-arc-002-formatmd-and-architecturemd-drift-from-shipped-behavior))                                      |
 | Test suite             | Adequate | 532 unit tests and 12 e2e checks pass under execution, coverage gate documented as an expected failure ([EVD-001](#evidence-list))                                                                                                |
 | Security posture       | Adequate | Deny-by-default permissions, escape-first markdown, build-time [CSP](#glossary-index), no telemetry - one confirmed expansion defect ([FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers)) |
@@ -376,7 +376,7 @@ Team continuity is 100 percent single-author delivery, owner-accepted, with no n
 **Legend**
 
 | Band      | Score |
-|-----------|-------|
+| --------- | ----- |
 | Excellent | 9-10  |
 | Good      | 7-8   |
 | Average   | 4-6   |
@@ -385,7 +385,7 @@ Team continuity is 100 percent single-author delivery, owner-accepted, with no n
 **Scorecard Summary**
 
 | Dimension               | Score |
-|-------------------------|-------|
+| ----------------------- | ----- |
 | Functional Suitability  | 9/10  |
 | Testability             | 8/10  |
 | Design Soundness        | 7/10  |
@@ -431,7 +431,7 @@ and one leaked agent prompt as a commit message.
 no incident data, no lead-time measurement.
 
 | Continuity element    | State                                                                |
-|-----------------------|----------------------------------------------------------------------|
+| --------------------- | -------------------------------------------------------------------- |
 | Contributor diversity | 100 percent single author, High concentration, owner-accepted        |
 | Release anchoring     | No git tags, changelog plus version script plus checksum manifests   |
 | Knowledge records     | Strong `docs/` corpus with per-version change, plan, and review dirs |
@@ -524,7 +524,7 @@ Scout reports landed verbatim under `work/` before folding.
 ### Read-depth
 
 | Area               | Files | Read depth |
-|--------------------|-------|------------|
+| ------------------ | ----- | ---------- |
 | src/ (all domains) | 171   | Full read  |
 | test/              | 78    | Sampled    |
 | e2e/               | 2     | Full read  |
@@ -551,7 +551,7 @@ no credentials, public endpoints, personal-data processing, multi-actor audit tr
 health-signal surface, alert channel, or authored skills).
 
 | Criteria      | Family                  | Applicability           | Criticality | Method                        | Sufficiency            |
-|---------------|-------------------------|-------------------------|-------------|-------------------------------|------------------------|
+| ------------- | ----------------------- | ----------------------- | ----------- | ----------------------------- | ---------------------- |
 | FNC-REQ       | Functional Suitability  | Requirements doc        | Critical    | Requirements registry grading | All mandatory graded   |
 | FNC-JOURNEY   | Functional Suitability  | Advertised workflows    | High        | Journey trace per workflow    | Every core workflow    |
 | FNC-STUB      | Functional Suitability  | Advertised capabilities | High        | Shipped-surface census        | Zero stubs             |
@@ -655,7 +655,7 @@ health-signal surface, alert channel, or authored skills).
 ### Key Measurements
 
 | Measurement                        | Value | Evidence                  |
-|------------------------------------|-------|---------------------------|
+| ---------------------------------- | ----- | ------------------------- |
 | Production source files            | 171   | [EVD-007](#evidence-list) |
 | Test files                         | 78    | [EVD-007](#evidence-list) |
 | Documentation files                | 359   | [EVD-007](#evidence-list) |
@@ -688,7 +688,7 @@ git log --format=%s | head -50 && git tag -l && git shortlog -sne --all
 ### Evidence List
 
 | Evidence | Source                              | Result                                                                  | Type        | Artifact                           |
-|----------|-------------------------------------|-------------------------------------------------------------------------|-------------|------------------------------------|
+| -------- | ----------------------------------- | ----------------------------------------------------------------------- | ----------- | ---------------------------------- |
 | EVD-001  | `npm test` (vitest 4.1.12)          | Pass - 72 files, 532 tests, 0 failures                                  | Observation | Executed in work/isolation         |
 | EVD-002  | `npm run typecheck` (tsc 5.9.3)     | Pass - exit 0, vacuous by design (`files:[]`)                           | Observation | tsconfig.json                      |
 | EVD-003  | `npm run lint` (eslint 9.39.5)      | Pass - 0 errors, 0 warnings                                             | Observation | eslint.config.js                   |
@@ -738,7 +738,7 @@ Evidence basis is `Inspected` for source observations and `Executed` for the six
 ### Severity definitions
 
 | Severity | Meaning                  | Treatment                 |
-|----------|--------------------------|---------------------------|
+| -------- | ------------------------ | ------------------------- |
 | Critical | Critical contextual risk | Gate resolution           |
 | High     | Major contextual risk    | Gate resolution           |
 | Medium   | Material contained risk  | Track and plan            |
@@ -749,7 +749,7 @@ Severity derives from the impact/likelihood matrix, not CVSS.
 ## Scoring Rubrics
 
 | Band      | Score Range | Definition                                                   |
-|-----------|-------------|--------------------------------------------------------------|
+| --------- | ----------- | ------------------------------------------------------------ |
 | Excellent | 9-10        | Capability is comprehensive and verified by strong evidence  |
 | Good      | 7-8         | Capability is solid overall, minor or noticeable gaps exist  |
 | Average   | 4-6         | Capability is present but uneven, limited, or inconsistent   |
@@ -758,7 +758,7 @@ Severity derives from the impact/likelihood matrix, not CVSS.
 ### Scorecard Summary
 
 | Dimension               | Score |
-|-------------------------|-------|
+| ----------------------- | ----- |
 | Functional Suitability  | 9/10  |
 | Testability             | 8/10  |
 | Design Soundness        | 7/10  |
@@ -896,7 +896,7 @@ The largest structural debt is `App.css` at 3569 lines,
 a monolith stylesheet with no per-panel split.
 
 | Area                       | Verdict   | Basis                                                           |
-|----------------------------|-----------|-----------------------------------------------------------------|
+| -------------------------- | --------- | --------------------------------------------------------------- |
 | Directory organization     | Passed    | `hooks/` and `utils/` hold zero root files, domain-grouped tree |
 | Naming conventions         | Partially | Two PascalCase `.ts` violations in `src/synth/`                 |
 | Component placement        | Passed    | Components and modals flat, hooks/utils domain subdirs          |
@@ -923,7 +923,7 @@ and partially mitigated by SHA256 manifests.
 Applied via STRIDE enumeration over the traced boundaries, proportional to a local single-user app.
 
 | Boundary                                | Threat                               | Existing control                                              | Verdict                                                                                    |
-|-----------------------------------------|--------------------------------------|---------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| --------------------------------------- | ------------------------------------ | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
 | [YAML](#glossary-index) import          | Crafted input [OOM](#glossary-index) | Structural parse + post-parse clamp (too late)                | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers) |
 | Paste import                            | Same expansion path                  | Step-shape validation only                                    | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers) |
 | Markdown rendering                      | Stored or reflected XSS              | Escape-first renderer, https autolink, [CSP](#glossary-index) | Controlled                                                                                 |
@@ -938,7 +938,7 @@ Applied via STRIDE enumeration over the traced boundaries, proportional to a loc
 ## Standards Conformance
 
 | Standard             | Applied scope                                                          | Verdict                                                                                                                                                                                                                                                                                                        |
-|----------------------|------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------------------- | ---------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | OWASP Top 10 (2025)  | Client-side subset: A03 Injection, A05 Misconfiguration, A08 Integrity | Partially conformant: strong injection and [CSP](#glossary-index) posture, [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers) (resource-control gap) and [FND-SEC-002](#fnd-sec-002-no-navigation-containment-in-packaged-electron) (navigation misconfiguration) open |
 | OWASP ASVS 5.0.0     | Input validation and client-side controls                              | Partial: input-bounds control absent                                                                                                                                                                                                                                                                           |
 | ISO/IEC 25010:2023   | Product-quality coverage via scorecard crosswalk                       | Coverage statement in Scope Exclusions                                                                                                                                                                                                                                                                         |
@@ -967,7 +967,7 @@ The requirements registry is `docs/PROJECT.md` (F-01 through F-16 functional,
 N-01 through N-06 non-functional).
 
 | Requirement | Obligation | Status  | Evidence                                                                                                 |
-|-------------|------------|---------|----------------------------------------------------------------------------------------------------------|
+| ----------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------- |
 | F-01        | Mandatory  | Pass    | [EVD-001](#evidence-list), [EVD-006](#evidence-list)                                                     |
 | F-02        | Mandatory  | Pass    | [EVD-001](#evidence-list), [EVD-006](#evidence-list)                                                     |
 | F-03        | Mandatory  | Pass    | [EVD-001](#evidence-list), [EVD-006](#evidence-list)                                                     |
@@ -998,7 +998,7 @@ N-06 is partial against a self-documented coverage gap.
 ## Structure Conformance
 
 | Lens                      | Status  | Evidence                                    |
-|---------------------------|---------|---------------------------------------------|
+| ------------------------- | ------- | ------------------------------------------- |
 | Directory grouping rule   | Pass    | `hooks/` and `utils/` hold zero root files  |
 | Naming convention         | Partial | Two PascalCase `.ts` violations in `synth/` |
 | Test-subject mirroring    | Partial | Four test filenames diverge from subjects   |
@@ -1017,7 +1017,7 @@ Two files carry leftover dev-narrative comments (`trackClipboard.ts:300-333`,
 `playbackUtils.ts:44-48`).
 
 | Lens             | Status  | Evidence                                                                                                                                                                                |
-|------------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ---------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Identifier shape | Pass    | Naming census clean except `synth/` pair                                                                                                                                                |
 | Vocabulary       | Pass    | Consistent tracker-domain terms across modules                                                                                                                                          |
 | Comment hygiene  | Partial | Two dev-narrative comment blocks remain                                                                                                                                                 |
@@ -1075,7 +1075,7 @@ unsigned posture already partially mitigated by checksum manifests.
 22 findings: 1 High, 6 Medium, 15 Low.
 
 | Finding                                                                                               | Severity | Pillar                      | Summary                                                             |
-|-------------------------------------------------------------------------------------------------------|----------|-----------------------------|---------------------------------------------------------------------|
+| ----------------------------------------------------------------------------------------------------- | -------- | --------------------------- | ------------------------------------------------------------------- |
 | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers)            | High     | Security & Compliance       | Unbounded run-length expansion [OOMs](#glossary-index) the renderer |
 | [FND-SEC-002](#fnd-sec-002-no-navigation-containment-in-packaged-electron)                            | Medium   | Security & Compliance       | No navigation containment in packaged Electron                      |
 | [FND-ARC-001](#fnd-arc-001-preview-envelope-engine-duplicated-five-times-across-components-and-hooks) | Medium   | Architecture & Design       | Preview-envelope engine duplicated five times                       |
@@ -1737,7 +1737,7 @@ As a commit subject (`c6daeb4`).
 Nine risks registered: 1 High, 5 Medium, 3 Low.
 
 | Risk                                                                     | Severity | Likelihood | Source                                                                                                | Summary                                                    |
-|--------------------------------------------------------------------------|----------|------------|-------------------------------------------------------------------------------------------------------|------------------------------------------------------------|
+| ------------------------------------------------------------------------ | -------- | ---------- | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
 | [RSK-001](#rsk-001-renderer-freeze-or-oom-on-crafted-input)              | High     | Medium     | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers)            | Renderer freeze or [OOM](#glossary-index) on crafted input |
 | [RSK-002](#rsk-002-remote-content-executes-inside-an-application-window) | Medium   | Low        | [FND-SEC-002](#fnd-sec-002-no-navigation-containment-in-packaged-electron)                            | Remote content executes inside an application window       |
 | [RSK-003](#rsk-003-external-importers-produce-incompatible-files)        | Medium   | Medium     | [FND-ARC-002](#fnd-arc-002-formatmd-and-architecturemd-drift-from-shipped-behavior)                   | External importers produce incompatible files              |
@@ -1978,7 +1978,8 @@ Monolith `App.css` 3569 lines, no per-panel split.
   attempted, and security findings carry source-level evidence only.
 
 A scoped penetration test is
-  a separately commissioned engagement.
+a separately commissioned engagement.
+
 - **Organizational and team interviews, business-fit assessment** - `Not performed` by default.
   The report covers the engineering pillars of a technical due diligence,
   not the interview-based pillars.
@@ -1986,7 +1987,8 @@ A scoped penetration test is
   a SOC 2 attestation, or a PCI-DSS assessment.
 
 Referenced standards are scoring
-  rubrics and coverage checklists only.
+rubrics and coverage checklists only.
+
 - **Operational runtime infrastructure** - `Not inspected` - no servers, hosting,
   or live deployment exists, only the deployment path and packaging configuration were audited.
 - **End-user devices and browser internals** - `Not inspected` - Web Audio behavior across host OS
@@ -2002,7 +2004,7 @@ Referenced standards are scoring
 AI System Assessment is omitted (not an AI system).
 
 Most Skill Definition
-  criteria are not applicable (no authored skills, the agent-guidance set was assessed and passed).
+criteria are not applicable (no authored skills, the agent-guidance set was assessed and passed).
 
 The coverage statement (ISO/IEC 25010:2023) assesses functional suitability,
 reliability via operational safety, usability-adjacent interaction paths,
@@ -2018,7 +2020,7 @@ server-side categories (A01, A02, A04, A06, A09, A10) are inapplicable to a back
 ## Known Limitations
 
 | Item                                          | Reason                                     | Resolution                              |
-|-----------------------------------------------|--------------------------------------------|-----------------------------------------|
+| --------------------------------------------- | ------------------------------------------ | --------------------------------------- |
 | Exact code coverage percentage                | `test:coverage` was not commissioned       | `npm run test:coverage`                 |
 | Audio latency and glitch behavior             | Requires live audio profiling              | Browser audio profiling session         |
 | Packaged-Electron link behavior               | Requires a packaged build                  | `npm run pack` plus manual click test   |
@@ -2031,7 +2033,7 @@ server-side categories (A01, A02, A04, A06, A09, A10) are inapplicable to a back
 ## Executed Evidence
 
 | Check            | Tool & Version              | Command             | Result | Resolves                                                                                          |
-|------------------|-----------------------------|---------------------|--------|---------------------------------------------------------------------------------------------------|
+| ---------------- | --------------------------- | ------------------- | ------ | ------------------------------------------------------------------------------------------------- |
 | Unit test suite  | vitest 4.1.12, node 26.13.0 | `npm test`          | Pass   | TST-WFLOW, TST-ASSERT, TST-ISO                                                                    |
 | Typecheck script | tsc 5.9.3                   | `npm run typecheck` | Pass   | N-04 gate (vacuous by design)                                                                     |
 | Lint             | eslint 9.39.5               | `npm run lint`      | Pass   | N-05, CQY-ANALYSIS                                                                                |
@@ -2048,7 +2050,7 @@ The `npm run build` command ran as the documented prerequisite for the e2e suite
 ## Further Verification
 
 | Claim                                    | Command / Procedure                     | Pass Criteria                        | Resolves                                                                                              |
-|------------------------------------------|-----------------------------------------|--------------------------------------|-------------------------------------------------------------------------------------------------------|
+| ---------------------------------------- | --------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------- |
 | Coverage target unmet                    | `npm run test:coverage`                 | All metrics at or above 80 percent   | [FND-CQY-007](#fnd-cqy-007-configured-80-percent-coverage-threshold-is-unmet)                         |
 | [OOM](#glossary-index) defect reproduces | Crafted `space: 1e6` YAML import        | Bounded allocation or graceful error | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers)            |
 | Remote-window surface                    | Packaged build plus markdown-link click | Navigation denied or external shell  | [FND-SEC-002](#fnd-sec-002-no-navigation-containment-in-packaged-electron)                            |
@@ -2061,7 +2063,7 @@ The `npm run build` command ran as the documented prerequisite for the e2e suite
 ## Remediation Roadmap
 
 | Rec                                                                       | Priority | Finding                                                                                               | Recommendation                                                      | Impact | Effort | Complexity | Verification                            |
-|---------------------------------------------------------------------------|----------|-------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------|--------|--------|------------|-----------------------------------------|
+| ------------------------------------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------- | ------ | ------ | ---------- | --------------------------------------- |
 | [REC-001](#rec-001-bound-run-length-expansion-and-cap-import-size)        | P1       | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers)            | Bound run-length expansion and cap import size                      | HIGH   | LOW    | LOW        | Bounded-allocation unit test            |
 | [REC-002](#rec-002-add-navigation-containment-to-the-electron-shell)      | P1       | [FND-SEC-002](#fnd-sec-002-no-navigation-containment-in-packaged-electron)                            | Add navigation containment to the Electron shell                    | HIGH   | LOW    | LOW        | Packaged-build link-click test          |
 | [REC-003](#rec-003-reconcile-formatmd-with-the-emitted-saver-schema)      | P1       | [FND-ARC-002](#fnd-arc-002-formatmd-and-architecturemd-drift-from-shipped-behavior)                   | Reconcile FORMAT.md with emitted saver schema                       | MEDIUM | LOW    | LOW        | Doc-to-emitter diff                     |
@@ -2379,7 +2381,7 @@ Modals) until the gate passes.
 ### Recommendation Classification
 
 | Rec                                                                       | Recommendation                                                      | Class       | Basis                        |
-|---------------------------------------------------------------------------|---------------------------------------------------------------------|-------------|------------------------------|
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------- | ----------- | ---------------------------- |
 | [REC-001](#rec-001-bound-run-length-expansion-and-cap-import-size)        | Bound run-length expansion and cap import size                      | Recommended | Blocks readiness gate        |
 | [REC-002](#rec-002-add-navigation-containment-to-the-electron-shell)      | Add navigation containment to the Electron shell                    | Recommended | Live remote-content surface  |
 | [REC-003](#rec-003-reconcile-formatmd-with-the-emitted-saver-schema)      | Reconcile FORMAT.md with the emitted saver schema                   | Recommended | Contract correctness         |
@@ -2406,7 +2408,7 @@ Modals) until the gate passes.
 ### Follow-up Plan
 
 | Finding                                                                                               | Priority | Evidence                                    | Trigger                 |
-|-------------------------------------------------------------------------------------------------------|----------|---------------------------------------------|-------------------------|
+| ----------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------- | ----------------------- |
 | [FND-SEC-001](#fnd-sec-001-unbounded-run-length-expansion-in-song-and-clipboard-importers)            | P1       | Bounded-expansion unit test plus import cap | Next release window     |
 | [FND-SEC-002](#fnd-sec-002-no-navigation-containment-in-packaged-electron)                            | P1       | Navigation-handler implementation           | Next Electron build     |
 | [FND-ARC-002](#fnd-arc-002-formatmd-and-architecturemd-drift-from-shipped-behavior)                   | P1       | Reconciled FORMAT.md                        | Next documentation pass |
@@ -2432,7 +2434,7 @@ planning - none does here, since the High finding is local-input-bound.
 ## Reference Sources
 
 | Reference                                   | Publisher or Author          | Used In                                                                                                   |
-|---------------------------------------------|------------------------------|-----------------------------------------------------------------------------------------------------------|
+| ------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------- |
 | ISO/IEC 25010:2023                          | ISO/IEC                      | Scorecard crosswalk, coverage                                                                             |
 | OWASP Top 10 (2025)                         | [OWASP](#glossary-index)     | Standards Conformance, Security                                                                           |
 | OWASP ASVS 5.0.0                            | [OWASP](#glossary-index)     | Input-validation controls                                                                                 |

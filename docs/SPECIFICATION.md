@@ -106,7 +106,7 @@ Application constants live in `src/constants/`, one file per domain. See those f
 - **music.ts** — note frequencies, octave bounds, default and maximum pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits.
 - **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
 - **song.ts** — chip, frame rate, and clock defaults and their supported values.
-- **export.ts** — the ExportType, ExportStrategy, and ExportFormat union types.
+- **export.ts** — the ExportType and ExportStrategy union types.
 - **navigation.ts** — NAVIGATION_ORDER and the KEYBOARD_SHORTCUTS map.
 - **modal.ts** — modal dialog titles and confirmation texts (INFO_MODAL_TITLES, CONFIRM_MODAL_TEXT).
 - **import.ts** — the MAX_IMPORT_BYTES byte cap applied to imported text content.
@@ -215,11 +215,11 @@ The following utilities were extracted to eliminate duplication and are the cano
 - **`src/hooks/storage/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
 - **`src/exports/core.ts`** — `formatPitchDelta` for formatting signed pitch delta values in assembly export comments. `exportInstrumentWith` generic wrapper for instrument preview exports across VGM, MAX, and WAV formats.
 - **`src/utils/instrument/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
-- **`src/hooks/playback/usePreviewEnvelope.ts`** — the single ref-driven preview-envelope engine: per-key voices, sustain and release tracking, `window.setInterval` ticks through `advancePreviewEnvelopeTick`/`getPreviewEnvelopeApplyStep`, and auto-stop on a silent envelope tail or a caller-supplied `stopAfterStep` cap. Consumed by `TrackPanel`, `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, and `useInstrumentActions`; per-start options reproduce each surface's reduced or extended semantics.
+- **`src/hooks/playback/usePreviewEnvelope.ts`** — the single ref-driven preview-envelope engine: per-key voices, sustain and release tracking, `window.setInterval` ticks through `advancePreviewEnvelopeTick`/`getPreviewEnvelopeApplyStep`, and auto-stop on a silent envelope tail or a caller-supplied `stopAfterStep` cap. The first envelope boundary is scheduled from the caller-supplied `tickIntervalMs` - the interval derived from the song's configured frame rate - so preview timing stays accurate at both 50 Hz and 60 Hz. Consumed by `TrackPanel`, `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, and `useInstrumentActions`; per-start options reproduce each surface's reduced or extended semantics. MIDI preview surfaces wire `onAutoStop` to the outgoing MIDI noteOff path, so a released preview that reaches a silent envelope tail emits the matching noteOff on the connected device at the moment the channel is silenced.
 
 ### Branded Types
 
-Branded identifier types (`InstrumentId`, `PatternId`, `TrackId`, `PlaylistPatternId`) are defined in `src/types/branded.ts`. Factory functions that create domain objects accept `number | BrandedType` so callers can pass either a numeric slot index or a pre-branded ID string. Use `asInstrumentId`, `asPatternId`, `asTrackId`, and `asPlaylistPatternId` constructor functions to convert plain strings to branded types at system boundaries (file parsing, user input).
+Branded identifier types (`InstrumentId`, `PatternId`, `TrackId`, `PlaylistPatternId`) are defined in `src/types/branded.ts`. Factory functions that create domain objects accept `number | BrandedType` so callers can pass either a numeric slot index or a pre-branded ID string. Use `asInstrumentId`, `asPatternId`, and `asPlaylistPatternId` constructor functions to convert plain strings to branded types at system boundaries (file parsing, user input).
 
 ### Export Output Stability
 

@@ -34,11 +34,7 @@ export function usePlaybackControls({
     updateFrameRate,
     updateSongLoop,
     setPatternLoopMode,
-  } = useSequencer(
-    currentSong.speed,
-    currentSong.length || PATTERN_LENGTH,
-    currentSong.frame ?? DEFAULT_SONG_FRAME,
-  );
+  } = useSequencer(currentSong.length || PATTERN_LENGTH, currentSong.frame ?? DEFAULT_SONG_FRAME);
   const playlistEntries = useMemo(
     () => mapSongLineToPlaylistEntries(currentSong.line),
     [currentSong.line],

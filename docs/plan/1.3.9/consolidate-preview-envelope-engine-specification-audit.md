@@ -6,11 +6,11 @@
 
 ## Document Information
 
-|            |                                                                                    |
-| ---------- | ---------------------------------------------------------------------------------- |
-| Change     | `docs/change/1.3.9/consolidate-preview-envelope-engine.md`                         |
-| Plan       | `docs/plan/1.3.9/consolidate-preview-envelope-engine-implementation.md`            |
-| Audit Date | 2026-11-09                                                                         |
+|            |                                                                         |
+| ---------- | ----------------------------------------------------------------------- |
+| Change     | `docs/change/1.3.9/consolidate-preview-envelope-engine.md`              |
+| Plan       | `docs/plan/1.3.9/consolidate-preview-envelope-engine-implementation.md` |
+| Audit Date | 2026-11-09                                                              |
 
 ## Verdict
 
@@ -18,13 +18,13 @@ The plan is ready for implementation. All five copies were diffed against the ca
 
 ## Completeness
 
-| Requirement                                                        | Plan step                                    |
-| ------------------------------------------------------------------ | -------------------------------------------- |
-| One ref-driven implementation under `src/hooks/`                   | `usePreviewEnvelope` engine step             |
-| All five call sites consume it                                     | Five migration steps                         |
-| Ref-driven timing, no new re-renders, no semantic change           | Audio-Critical Requirements + engine options |
-| Call-site-by-call-site migration with verification after each      | Implementation Order                         |
-| Semantic differences split into their own record                   | MIDI auto-stop noteOff deferred record       |
+| Requirement                                                   | Plan step                                    |
+| ------------------------------------------------------------- | -------------------------------------------- |
+| One ref-driven implementation under `src/hooks/`              | `usePreviewEnvelope` engine step             |
+| All five call sites consume it                                | Five migration steps                         |
+| Ref-driven timing, no new re-renders, no semantic change      | Audio-Critical Requirements + engine options |
+| Call-site-by-call-site migration with verification after each | Implementation Order                         |
+| Semantic differences split into their own record              | MIDI auto-stop noteOff deferred record       |
 
 ## Ambiguity
 

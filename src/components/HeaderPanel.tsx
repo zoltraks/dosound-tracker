@@ -135,7 +135,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
       event.stopPropagation();
     }
 
-    let nextOctave = currentOctave;
+    let nextOctave: number;
 
     if (key === 'ArrowLeft' || key === 'ArrowDown') {
       nextOctave = Math.max(0, currentOctave - 1);

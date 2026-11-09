@@ -2,11 +2,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                 |
-| ------------- | ------------------------------------------------------------------------------------- |
-| Intent        | Clear the 12 moderate `minimatch` advisories in dev-only transitive chains            |
+| Field         | Value                                                                                                |
+| ------------- | ---------------------------------------------------------------------------------------------------- |
+| Intent        | Clear the 12 moderate `minimatch` advisories in dev-only transitive chains                           |
 | Key decisions | compatible patch bump applied; residual documented because no compatible upgrade clears the advisory |
-| Open risks    | residual advisory accepted pending upstream fixes                                     |
+| Open risks    | residual advisory accepted pending upstream fixes                                                    |
 
 The summary block precedes the detailed sections and is refreshed when the record's decisions or risks change.
 

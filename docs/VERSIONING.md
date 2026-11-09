@@ -47,13 +47,13 @@ The MAJOR number has no maximum limit and can be incremented beyond 9:
 
 The project includes an automated version bump script at `scripts/bump-version.mjs`.
 
-This script is executed by the `npm run bump` command, which increments the patch number in `package.json` following the standard increment rules above and then builds the application.
+This script is executed by the `npm run bump` command, which increments the patch number in `package.json` following the standard increment rules above, writes the new version into `package-lock.json`, and then builds the application.
 
 The `npm run build` command builds the application without bumping the version. Use `npm run build` for verification loops and rebuilds. Use `npm run bump` only when a version bump is explicitly requested.
 
 The bump script writes `package.json` before building. If the build then fails, the repository is left with a bumped version and no matching build. Run the full verification loop first, and if a bump fails partway restore the intended version in `package.json` and fix the failure before bumping again — never re-run `npm run bump` blindly, since it increments from whatever version is currently recorded.
 
-The automated script handles only the version number increment. The following steps remain manual:
+The automated script handles the version number increment and the `package-lock.json` version sync. The following steps remain manual:
 
 - Running the security audit (`npm audit`).
 - Creating the CHANGELOG entry **before** `npm run bump` runs - the script's internal build copies `public/CHANGELOG.md` into `dist/`; an entry written after the bump is not in the served build until a second `npm run build`, and the release gate fails a stale `dist/CHANGELOG.md`.

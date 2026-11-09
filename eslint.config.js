@@ -6,16 +6,7 @@ import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores([
-    'dist',
-    'release',
-    'node_modules',
-    'work',
-    'coverage',
-    'vite.config.ts',
-    'vitest.config.ts',
-    'playwright.config.ts',
-  ]),
+  globalIgnores(['dist', 'release', 'node_modules', 'work', 'coverage']),
   {
     files: ['src/**/*.{ts,tsx}', 'test/**/*.{ts,tsx}'],
     extends: [
@@ -43,6 +34,38 @@ export default defineConfig([
       'react-hooks/immutability': 'warn',
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    files: ['*.config.ts', 'e2e/**/*.ts'],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: {
+      globals: globals.node,
+      parser: tseslint.parser,
+      parserOptions: {
+        project: ['./tsconfig.node.json'],
+      },
+    },
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    files: ['eslint.config.js', 'scripts/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: globals.node,
+    },
+  },
+  {
+    files: ['electron/**/*.cjs', 'scripts/**/*.cjs'],
+    extends: [js.configs.recommended],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'commonjs',
+      globals: globals.node,
     },
   },
 ]);

@@ -74,7 +74,21 @@ export function useMidiActions({
   // The getter form keeps the chip fresh at event time: ym2149Ref.current
   // cannot be read during render (react-hooks/refs) and the engine resolves
   // the getter on each start/stop.
-  const livePreview = usePreviewEnvelope({ ym2149: () => ym2149Ref.current });
+  const livePreview = usePreviewEnvelope({
+    ym2149: () => ym2149Ref.current,
+    onAutoStop: () => {
+      // A preview that reaches a silent tail must still release the outgoing
+      // MIDI note, otherwise the device holds it until the next explicit stop.
+      const last = lastMidiPreviewRef.current;
+      if (last) {
+        const helpers = midiHelpersRef.current;
+        if (helpers) {
+          helpers.sendInstrumentMidiNoteOffForChannel(last.ymChannel);
+        }
+        lastMidiPreviewRef.current = null;
+      }
+    },
+  });
 
   const trackStopPreviewRef = useRef<{
     A: (() => void) | null;
@@ -259,9 +273,8 @@ export function useMidiActions({
             if (!hadVoice) {
               ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
             }
+            lastMidiPreviewRef.current = null;
           }
-
-          lastMidiPreviewRef.current = null;
         }
         return;
       }
@@ -329,9 +342,8 @@ export function useMidiActions({
               if (!hadVoice) {
                 ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
               }
+              lastMidiPreviewRef.current = null;
             }
-
-            lastMidiPreviewRef.current = null;
           }
         }
       }

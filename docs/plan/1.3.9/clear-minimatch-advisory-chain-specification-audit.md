@@ -6,11 +6,11 @@
 
 ## Document Information
 
-|            |                                                                             |
-| ---------- | --------------------------------------------------------------------------- |
-| Change     | `docs/change/1.3.9/clear-minimatch-advisory-chain.md`                       |
-| Plan       | `docs/plan/1.3.9/clear-minimatch-advisory-chain-implementation.md`          |
-| Audit Date | 2026-11-09                                                                  |
+|            |                                                                    |
+| ---------- | ------------------------------------------------------------------ |
+| Change     | `docs/change/1.3.9/clear-minimatch-advisory-chain.md`              |
+| Plan       | `docs/plan/1.3.9/clear-minimatch-advisory-chain-implementation.md` |
+| Audit Date | 2026-11-09                                                         |
 
 ## Verdict
 
@@ -18,12 +18,12 @@ The plan is ready for implementation. The record's open risk materialized exactl
 
 ## Completeness
 
-| Requirement                                                      | Plan step                                         |
-| ---------------------------------------------------------------- | ------------------------------------------------- |
-| Upgrade affected chains on compatible versions                   | electron-builder 26.18.0 to 26.18.1 bump          |
-| Remove the advisory set where possible                           | No compatible removal exists - verified per chain |
-| Document any residual advisory with its reach analysis           | Decision record step                              |
-| No forced downgrades or breaking toolchain changes               | `npm audit fix --force` rejected per the record   |
+| Requirement                                            | Plan step                                         |
+| ------------------------------------------------------ | ------------------------------------------------- |
+| Upgrade affected chains on compatible versions         | electron-builder 26.18.0 to 26.18.1 bump          |
+| Remove the advisory set where possible                 | No compatible removal exists - verified per chain |
+| Document any residual advisory with its reach analysis | Decision record step                              |
+| No forced downgrades or breaking toolchain changes     | `npm audit fix --force` rejected per the record   |
 
 ## Ambiguity
 

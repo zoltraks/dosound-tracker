@@ -139,7 +139,7 @@ export function usePreviewEnvelope(options: PreviewEnvelopeOptions): PreviewEnve
       subTick: 0,
       rawStep: 0,
       lastTickTime: now,
-      nextTickTime: now + 20,
+      nextTickTime: now + tickIntervalMs,
       lastVolumeIndex,
       lastVolumeValue,
       stopAfterStep:

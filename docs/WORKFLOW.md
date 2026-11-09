@@ -383,3 +383,24 @@ Commits carry no AI-assisted markers: neither the commit description nor a trail
 ## Continuity
 
 The project is a single-author project by design; no second maintainer exists and the contributor-concentration risk is accepted by the project owner.
+
+**Continuity plan**
+
+If the owner becomes unreachable, the escalation path is:
+
+- **Repository** - the GitHub account of record owns `zoltraks/dosound-tracker`; recovery goes through that account's credentials and GitHub account-recovery procedures. The full history lives in every clone, so the code itself is never hostage to a single checkout.
+- **Published site** - `https://dosound.alyx.pl` is served from the static `dist/` bundle; control follows the domain and hosting account of record.
+- **Release-signing materials** - none exist today. Desktop binaries ship unsigned per `DEPLOYMENT.md`; if signing is procured later, the certificates and notarization credentials join this list.
+- **Stale remote branches** - `origin/` carries abandoned `broken/*`, `refactoring/*`, `repair/*`, and feature branches from earlier sessions. Pruning them is an owner action, since remote deletion is irreversible; the recommendation is to remove everything except `main` when the owner next reviews the remote.
+
+**Close the window on a clean production-ready build**
+
+After the refactoring phase and before the bump, the last verification step is a clean production build: `scripts/clean.sh` removes build artifacts, then the full verification loop rebuilds `dist/` from scratch and the runnable-artifact slice proves the served bundle. The release gate runs against that fresh output, never against a stale `dist/`.
+
+**Stale lockfiles block manifest edits**
+
+Editing a dependency alias (for example `npm:` specifiers or `overrides`) leaves the old resolution recorded in `package-lock.json`, and `npm install` then fails with `ERESOLVE` that names the manifest, not the lockfile. Regenerating `node_modules` and the lockfile (`rm -rf node_modules package-lock.json && npm install`) resolves cleanly and is a legitimate migration step, not a bypass.
+
+**Audit findings age between report and implementation**
+
+Change records written from an audit describe the tree at audit time; consolidations and trims can relocate or remove the cited sites before the window runs. Re-verify every finding against the current tree before correcting - the record's mechanism, not its literal line list, is the requirement.

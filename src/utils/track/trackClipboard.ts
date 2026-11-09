@@ -156,6 +156,7 @@ export function parseClipboardData(text: string): TrackClipboardStep[] {
   } catch (error) {
     throw new Error(
       'Failed to parse YAML: ' + (error instanceof Error ? error.message : String(error)),
+      { cause: error },
     );
   }
 

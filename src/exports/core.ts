@@ -52,7 +52,7 @@ export function formatNoteLabel(
   const n = NOTES.length;
 
   let octave = baseOctave;
-  let noteIndex = idx;
+  let noteIndex: number;
 
   if (total >= 0) {
     octave += Math.floor(total / n);

@@ -2,11 +2,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                       |
-| ------------- | ------------------------------------------------------------------------------------------- |
-| Intent        | Replace five divergent copies of the preview-envelope engine with one shared implementation |
+| Field         | Value                                                                                                  |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| Intent        | Replace five divergent copies of the preview-envelope engine with one shared implementation            |
 | Key decisions | a ref-driven `usePreviewEnvelope` hook in `src/hooks/playback/` with per-key voices, per-start options |
-| Open risks    | audio timing must be preserved; reduced variants keep their reduced semantics through engine options |
+| Open risks    | audio timing must be preserved; reduced variants keep their reduced semantics through engine options   |
 
 The summary block precedes the detailed sections and is refreshed when the record's decisions or risks change.
 

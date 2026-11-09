@@ -6,6 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const packageJsonPath = resolve(__dirname, '..', 'package.json');
+const packageLockPath = resolve(__dirname, '..', 'package-lock.json');
 
 try {
   const raw = readFileSync(packageJsonPath, 'utf8');
@@ -35,6 +36,16 @@ try {
   pkg.version = nextVersion;
 
   writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+
+  const lock = JSON.parse(readFileSync(packageLockPath, 'utf8'));
+
+  lock.version = nextVersion;
+
+  if (lock.packages && lock.packages['']) {
+    lock.packages[''].version = nextVersion;
+  }
+
+  writeFileSync(packageLockPath, JSON.stringify(lock, null, 2) + '\n', 'utf8');
 
   console.log(`Bumped version from ${current} to ${nextVersion}`);
 } catch (error) {
