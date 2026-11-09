@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { buildSongYamlForExport } from '../../../src/utils/song/songIO.ts';
+import { parseSongFromYaml } from '../../../src/utils/song/songParser.ts';
 import {
   buildInstrumentYamlForExport,
   parseInstrumentFromText,
@@ -235,6 +236,45 @@ describe('buildSongYamlForExport step compression', () => {
       expect(doc.song.loop).toBe(2);
     } catch (error) {
       console.log('metadata mismatch');
+      throw error;
+    }
+  });
+});
+
+describe('buildSongYamlForExport pattern names', () => {
+  it('writes a custom pattern name', () => {
+    try {
+      const s = song({ pattern: [{ id: '00', name: 'Verse', step: [{ note: null }] }] });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { pattern: Record<string, unknown>[] };
+      };
+      expect(doc.song.pattern[0].name).toBe('Verse');
+    } catch (error) {
+      console.log('custom-name mismatch');
+      throw error;
+    }
+  });
+
+  it('omits the generated default pattern name', () => {
+    try {
+      const s = song({ pattern: [{ id: '00', name: 'Pattern 00', step: [{ note: null }] }] });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { pattern: Record<string, unknown>[] };
+      };
+      expect(doc.song.pattern[0].name).toBeUndefined();
+    } catch (error) {
+      console.log('default-name mismatch');
+      throw error;
+    }
+  });
+
+  it('round-trips a custom pattern name through the parser', () => {
+    try {
+      const s = song({ pattern: [{ id: '00', name: 'Chorus', step: [{ note: null }] }] });
+      const parsed = parseSongFromYaml(buildSongYamlForExport(s));
+      expect(parsed.pattern[0].name).toBe('Chorus');
+    } catch (error) {
+      console.log('pattern-name roundtrip mismatch');
       throw error;
     }
   });

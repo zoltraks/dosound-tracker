@@ -1,7 +1,9 @@
 import yaml from 'js-yaml';
 import type { Pattern, Step } from '../../synth/SoundDriver.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
-import { PATTERN_LENGTH } from '../../constants/music.ts';
+import { PATTERN_LENGTH, MAX_PATTERN_LENGTH } from '../../constants/music.ts';
+import { assertImportSize } from '../validation/importSize.ts';
+import { expandRunNodes } from '../yaml/runLength.ts';
 
 export type TrackClipboardStep = {
   wait?: boolean | number;
@@ -146,6 +148,8 @@ export function generateClipboardData(
 }
 
 export function parseClipboardData(text: string): TrackClipboardStep[] {
+  assertImportSize(text, 'Clipboard data');
+
   let parsed: unknown;
   try {
     parsed = yaml.load(text);
@@ -163,48 +167,13 @@ export function parseClipboardData(text: string): TrackClipboardStep[] {
   }
 
   const rawSteps = stepNode as unknown[];
-  const expandedSteps: TrackClipboardStep[] = [];
 
-  for (const node of rawSteps) {
-    if (node && typeof node === 'object') {
-      const ln = node as TrackClipboardStep;
-      const keys = Object.keys(ln);
-      const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
-      const onlySpaceOrOff = keys.every((k) => k === 'wait' || k === 'space' || k === 'off');
-      const onlySpaceOffVolume = keys.every(
-        (k) => k === 'wait' || k === 'space' || k === 'off' || k === 'volume',
-      );
-
-      const spaceVal = ln.wait ?? ln.space;
-      const offVal = ln.off;
-      const isNumericSpace =
-        typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
-      const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
-
-      if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
-        const count = (isNumericSpace ? spaceVal : offVal) as number;
-        const isOff = isNumericOff && !isNumericSpace;
-        for (let i = 0; i < count; i++) {
-          expandedSteps.push(isOff ? { note: 'OFF' } : { wait: true });
-        }
-        continue;
-      }
-
-      if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
-        const count = (isNumericSpace ? spaceVal : offVal) as number;
-        const isOff = isNumericOff && !isNumericSpace;
-        const vol = ln.volume;
-        for (let i = 0; i < count; i++) {
-          expandedSteps.push(isOff ? { note: 'OFF', volume: vol } : { wait: true, volume: vol });
-        }
-        continue;
-      }
-    }
-
-    expandedSteps.push(node as TrackClipboardStep);
-  }
-
-  return expandedSteps;
+  return expandRunNodes<TrackClipboardStep>(
+    rawSteps,
+    MAX_PATTERN_LENGTH,
+    (volume) => (volume === undefined ? { wait: true } : { wait: true, volume }),
+    (volume) => (volume === undefined ? { note: 'OFF' } : { note: 'OFF', volume }),
+  );
 }
 
 export function applyClipboardToLines(

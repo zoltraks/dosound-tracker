@@ -103,11 +103,13 @@ Export scope can target the full song, a single pattern, or a single instrument.
 
 Application constants live in `src/constants/`, one file per domain. See those files for the actual values.
 
-- **music.ts** — note frequencies, octave bounds, pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits.
+- **music.ts** — note frequencies, octave bounds, default and maximum pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits.
 - **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
 - **song.ts** — chip, frame rate, and clock defaults and their supported values.
 - **export.ts** — the ExportType, ExportStrategy, and ExportFormat union types.
 - **navigation.ts** — NAVIGATION_ORDER and the KEYBOARD_SHORTCUTS map.
+- **modal.ts** — modal dialog titles and confirmation texts (INFO_MODAL_TITLES, CONFIRM_MODAL_TEXT).
+- **import.ts** — the MAX_IMPORT_BYTES byte cap applied to imported text content.
 
 ## Keyboard Shortcuts and Input Bindings
 
@@ -162,7 +164,7 @@ The top-level cursor is stored under `EDITOR_CURSOR` as a JSON object with the f
 
 Additional cursor state is persisted at its source of truth to avoid duplicate state. The selected instrument id is stored under `CURRENT_INSTRUMENT`; the instrument list highlight follows it. The playlist row cursor inside the playlist panel follows the top-level playlist line and is not stored separately.
 
-Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, and each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
+Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type, and the per-instrument octave selection under `INSTRUMENT_OCTAVES` through `src/hooks/instrument/useInstrumentOctaves.ts`. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
 
 **Snapshot mirror**
 
@@ -228,6 +230,8 @@ MIDI message handling in `src/hooks/midi/useMidiMessageProcessing.ts` is a hot p
 ### Electron Permission Policy
 
 The desktop main process (`electron/main.cjs`) grants the `midi` permission only when the requesting page is the application's own origin: the packaged `file://` bundle or the development server at `http://localhost:8008`. Requests from any other origin are denied, and `midiSysex` is never granted because the app does not request it. The origin check lives in `electron/permissions.cjs`.
+
+Navigation is contained by the same origin policy. `webContents.setWindowOpenHandler` never creates a second window: external `http:`/`https:` links are delegated to `shell.openExternal` and every other request is denied. `will-navigate` calls `preventDefault` for any target outside the app origin, so top-level navigation is pinned to the bundle.
 
 ## Known Limitations
 

@@ -4,10 +4,11 @@ import { createRequire } from 'node:module';
 interface PermissionsModule {
   isAppOrigin(url: unknown): boolean;
   isMidiAllowed(permission: unknown, url: unknown): boolean;
+  isExternalHttpUrl(url: unknown): boolean;
 }
 
 const require = createRequire(import.meta.url);
-const { isAppOrigin, isMidiAllowed } =
+const { isAppOrigin, isMidiAllowed, isExternalHttpUrl } =
   require('../../electron/permissions.cjs') as PermissionsModule;
 
 describe('Electron MIDI permission policy', () => {
@@ -41,5 +42,22 @@ describe('Electron MIDI permission policy', () => {
   it('denies unrelated permissions even on the app origin', () => {
     expect(isMidiAllowed('media', 'file:///Users/app/dist/index.html')).toBe(false);
     expect(isMidiAllowed('notifications', 'http://localhost:8008/')).toBe(false);
+  });
+});
+
+describe('Electron external link policy', () => {
+  it('delegates http and https links to the system browser', () => {
+    expect(isExternalHttpUrl('https://dosound.alyx.pl')).toBe(true);
+    expect(isExternalHttpUrl('http://example.com/page')).toBe(true);
+    expect(isExternalHttpUrl('HTTPS://EXAMPLE.COM')).toBe(true);
+  });
+
+  it('rejects non-external schemes and non-strings', () => {
+    expect(isExternalHttpUrl('file:///app/dist/index.html')).toBe(false);
+    expect(isExternalHttpUrl('javascript:alert(1)')).toBe(false);
+    expect(isExternalHttpUrl('data:text/html,<b>x</b>')).toBe(false);
+    expect(isExternalHttpUrl('')).toBe(false);
+    expect(isExternalHttpUrl(null)).toBe(false);
+    expect(isExternalHttpUrl(42)).toBe(false);
   });
 });

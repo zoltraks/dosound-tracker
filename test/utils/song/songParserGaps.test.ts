@@ -191,3 +191,39 @@ song:
     }
   });
 });
+
+describe('parseSongFromYaml bounded expansion', () => {
+  it('bounds wait runs to the remaining pattern length', () => {
+    try {
+      const yaml = base().replace('- note: "C-4"\n          instrument: "00"', '- wait: 1000000');
+      const song = parseSongFromYaml(yaml);
+      expect(song.pattern[0].step).toHaveLength(4);
+      expect(song.pattern[0].step.every((s) => s.note === null)).toBe(true);
+    } catch (error) {
+      console.log('bounded-wait mismatch');
+      throw error;
+    }
+  });
+
+  it('bounds off runs to the remaining pattern length', () => {
+    try {
+      const yaml = base().replace('- note: "C-4"\n          instrument: "00"', '- off: 999999');
+      const song = parseSongFromYaml(yaml);
+      expect(song.pattern[0].step).toHaveLength(4);
+      expect(song.pattern[0].step[0].note?.note).toBe('===');
+    } catch (error) {
+      console.log('bounded-off mismatch');
+      throw error;
+    }
+  });
+
+  it('rejects content over the import byte cap', () => {
+    try {
+      const oversized = base() + '#'.repeat(1024 * 1024 + 1);
+      expect(() => parseSongFromYaml(oversized)).toThrow('maximum import size');
+    } catch (error) {
+      console.log('byte-cap mismatch');
+      throw error;
+    }
+  });
+});

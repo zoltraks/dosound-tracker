@@ -1,6 +1,7 @@
 import yaml from 'js-yaml';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import { ENVELOPE_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../../constants/music.ts';
+import { assertImportSize } from '../validation/importSize.ts';
 import {
   DEFAULT_BASE_KEY,
   formatBaseKey,
@@ -94,6 +95,8 @@ export const parseInstrumentFromText = (
   content: string,
   currentInstrumentId: InstrumentId,
 ): Instrument => {
+  assertImportSize(content, 'Instrument file');
+
   const parsed = yaml.load(content) as unknown;
 
   if (!parsed || typeof parsed !== 'object' || !('instrument' in parsed)) {

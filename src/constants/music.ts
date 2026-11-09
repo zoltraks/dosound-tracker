@@ -30,6 +30,7 @@ export const MAX_OCTAVE = 7;
 export const PIANO_SHOW_EXTRA_TOP_C = false;
 
 export const PATTERN_LENGTH = 64;
+export const MAX_PATTERN_LENGTH = 256;
 export const MAX_INSTRUMENTS = 256;
 
 export const VOLUME_MAX = 0x0f;

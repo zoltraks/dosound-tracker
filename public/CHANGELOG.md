@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.3.9
+
+Pattern names survive save and load, crafted song and clipboard files can no longer exhaust memory, and the desktop shell pins navigation to the app.
+
+- **Pattern names**: custom pattern names are now written to the song file and survive a save/load round-trip; generated `Pattern NN` names stay implicit.
+- **Import hardening**: run-length counts (`wait`, `space`, `off`) in song and clipboard data expand only up to the remaining pattern length, and imported files larger than 1 MiB are rejected with an error instead of freezing the app.
+- **Desktop containment**: clicking a link inside a bundled document opens it in the system browser instead of an application window, and top-level navigation is pinned to the app's own origin.
+- **Documentation**: the format reference now matches the keys the saver actually emits (`line`, `step`, `wait`, `shift`), with loader-accepted aliases marked as input-only; the manual and architecture documents were reconciled with the current implementation.
+- **Security**: `npm audit` reports 12 moderate advisories confined to the devDependency `minimatch` chain inside eslint and electron-builder tooling; nothing ships to end users, and clearing the chain is scheduled for the next window.
+
 ## Version 1.3.8
 
 The app now restores your working session across reloads, markdown emphasis renders fully, and a dead-code sweep removed the unused synth modules.

@@ -39,13 +39,15 @@ song:
   chip: 'YM' # optional, chip type (default "YM")
   frame: 50 # optional, replay rate in Hz (default 50)
   clock: 2000000 # optional, chip clock in Hz (default 2000000)
-  playlist: [...] # required list
+  line: [...] # required playlist list (or `playlist` alias when loading)
   pattern: [...] # required list (or `patterns` alias when loading)
   instrument: [...] # required list (or `instruments` alias when loading)
 ```
 
 Loader rules (from `parseSongFromYaml`):
 
+- Input text larger than `MAX_IMPORT_BYTES` (1 MiB) is rejected before parsing.
+- Run-length counts (`wait`, `space`, `off` numerics) expand only up to the remaining pattern length; counts beyond capacity are truncated.
 - `title`, `author`: empty or missing → defaults.
 - `speed`: invalid or ≤0 → defaults to 6, then clamped to ≥2 and forced even.
 - `length`: invalid → defaults to `PATTERN_LENGTH` (64), then clamped to `[4, 256]`.
@@ -57,6 +59,7 @@ Loader rules (from `parseSongFromYaml`):
 Saver rules (from `buildSongYamlForExport`):
 
 - `chip`, `frame`, and `clock` are always written. `chip` is normalised to uppercase (default `"YM"`). `frame` defaults to `50` when missing. `clock` defaults to `2000000` when missing.
+- The saver emits `line`, `pattern`, and `instrument` lists only. `playlist`, `patterns`, `instruments`, `steps`, `lines`, `space`, `off`, and `arpeggio` are loader-accepted input aliases and never appear in emitted output.
 
 ### Playlist
 
@@ -64,13 +67,14 @@ Shape of each playlist row:
 
 ```yaml
 song:
-  playlist:
+  line:
     - A: '00' # pattern ID used for track A
       B: '01' # pattern ID used for track B
       C: '02' # pattern ID used for track C
     - A: '03' # B or C omitted → treated as "--"
 ```
 
+- The loader also accepts `playlist` as an input alias for `line`.
 - `A`, `B`, `C` values should be strings (pattern identifiers such as `"01"`, `"1A"`).
 - Loader behaviour:
   - For each entry `e`:
@@ -84,8 +88,8 @@ Each pattern node has:
 
 ```yaml
 - number: '01' # pattern ID (string recommended)
-  name: 'Pattern 01' # optional
-  steps: [...] # or `lines: [...]`
+  name: 'Pattern 01' # optional, written only when different from the default
+  step: [...] # step list; loader also accepts `steps` or `lines`
 ```
 
 - `number`:
@@ -93,8 +97,9 @@ Each pattern node has:
   - Otherwise loader assigns a hex string ID based on index.
 - `name`:
   - Optional; defaults to `"Pattern ${number}"` if missing.
-- `steps` / `lines`:
-  - List of step objects (see below). Loader accepts both keys; saver always writes `steps`.
+  - The saver writes `name` only when it differs from that generated default.
+- `step` / `steps` / `lines`:
+  - List of step objects (see below). The saver always writes `step`; `steps` and `lines` are loader-accepted aliases.
 
 ### Pattern steps
 
@@ -104,36 +109,38 @@ Each logical row in `trackA` is encoded as a **step** with these fields:
   - Note in `C-4` or `C#4` style (dash before octave unless there is `#`).
 - `instrument: string` (optional)
   - Instrument number (e.g. `"00"`, `"1A"`), uppercased internally.
-- `off: boolean` (optional)
-  - `true` → explicit key-release row.
-- `space: boolean | number` (optional)
+- `wait: boolean | number` (optional)
   - `true` → single empty row.
   - integer `N > 0` → run of `N` consecutive empty rows.
+- `off: boolean | number` (input only)
+  - `true` → explicit key-release row; integer `N` → run of `N` key-release rows. The saver never emits `off`; key-release rows are written as `note: 'OFF'`.
+- `space: boolean | number` (input only)
+  - Loader-accepted alias for `wait`.
 - `volume: number | string` (optional)
   - Per-row volume nibble (0..15). Strings may be decimal or hex (optionally with `$` prefix) and are parsed by `parseVolumeNibble`.
 
 Saver (`saveSong`) behaviour for each row:
 
-- No note and no volume → `{ space: true }`.
-- No note but volume present → `{ space: 1, volume: V }`.
+- No note and no volume → `{ wait: true }`.
+- No note but volume present → `{ wait: 1, volume: V }`.
 - Note-off row → `{ note: 'OFF' }`.
 - Note row → `{ note: "C-4", instrument: "01", [volume] }`.
 
 Then it:
 
-1. Trims trailing pure-space steps (only `space: true`).
+1. Trims trailing pure-wait steps (only `wait: true`).
 2. Compresses runs:
-   - Pure spaces: `space: N`.
-   - Volume-only rows with `space: 1` and `volume` set, no other keys:
+   - Pure waits: `wait: N`.
+   - Volume-only rows with `wait: 1` and `volume` set, no other keys:
      - Single row → `{ volume: V }`.
-     - Run of N>1 with same V → `{ space: N, volume: V }`.
+     - Run of N>1 with same V → `{ wait: N, volume: V }`.
 
 Loader behaviour:
 
-- Expands compressed runs (both `space: N` and `off: N`, with or without `volume`).
+- Expands compressed runs (`wait: N`, `space: N`, and `off: N`, with or without `volume`).
 - For each expanded step (up to `length`):
-  - `off: true` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
-  - `space: true` → empty cell.
+  - `off: true` or `note: 'OFF'` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
+  - `wait: true` or `space: true` → empty cell.
   - `note` string → parsed via `parseBaseKey` into `note` + `octave`.
   - `instrument` missing/blank → defaults to `"00"`.
   - `volume` → parsed and clamped to nibble 0..15 if valid.
@@ -150,7 +157,7 @@ Each instrument node has:
   sustain: 8 # optional, >=0 integer index
   color: '#abc' # optional 3-digit hex color
   volume: [...] # required envelope (trimmed)
-  arpeggio: [...] # optional envelope
+  shift: [...] # optional envelope (loader also accepts `arpeggio`)
   pitch: [...] # optional envelope
   noise: [...] # optional envelope
   mode: [...] # optional envelope
@@ -165,7 +172,7 @@ Saver (`saveSong`) rules:
 - Writes `name` if non-empty.
 - Writes `base` if different from `DEFAULT_BASE_KEY`.
 - Writes `octave` if present and not default (clamped to `[MIN_OCTAVE, MAX_OCTAVE]`).
-- Writes `arpeggio`, `pitch`, `noise`, `mode` only when their trimmed envelope is not `[]` or `[0]`.
+- Writes `shift`, `pitch`, `noise`, `mode` only when their trimmed envelope is not `[]` or `[0]`.
 - Writes `sustain` if numeric and `>= 0`.
 - Writes `color` if valid 3-digit hex color.
 - Writes `midi` if channel or program is set.
@@ -176,7 +183,7 @@ Loader (`parseSongFromYaml`) rules:
 - `number` interpreted as hex slot index where possible; otherwise index-based fallback.
 - `base` parsed via `parseBaseKey` and normalized via `formatBaseKey`.
 - `octave` read from number or numeric string, then clamped.
-- `volume` / `arpeggio` / `pitch` / `noise` / `mode` expanded to `ENVELOPE_LENGTH` values, padding with the last value.
+- `volume` / `shift` / `pitch` / `noise` / `mode` expanded to `ENVELOPE_LENGTH` values, padding with the last value. The `arpeggio` alias expands with looping semantics.
 - `sustain` numeric or numeric string, floored and kept only if `>= 0`.
 - `color` normalized to 3-digit hex format.
 - `midi` channel/program parsed and clamped to valid MIDI ranges.
@@ -202,7 +209,7 @@ instrument:
   sustain: 5 # optional
   color: '#abc' # optional 3-digit hex color
   volume: [...] # required envelope
-  arpeggio: [...] # optional envelope
+  shift: [...] # optional envelope (loader also accepts `arpeggio`)
   pitch: [...] # optional envelope
   noise: [...] # optional envelope
   mode: [...] # optional envelope
@@ -223,19 +230,19 @@ Behaviour:
 
 - Text format: **YAML**.
 - Destination: **system clipboard** (not a file).
-- Root key: `steps`.
+- Root key: `step`.
 - Semantics of each step match the pattern step format used in `SAVE SONG`.
 
 ### Clipboard structure
 
 ```yaml
-steps:
+step:
   - note: 'C-4'
     instrument: '00'
-  - space: 3
-  - off: true
+  - wait: 3
+  - note: 'OFF'
   - volume: 12
-  - space: 2
+  - wait: 2
     volume: 10
 ```
 
@@ -243,17 +250,17 @@ Details:
 
 - Export (`handleCopyTrack`):
   - Operates on the currently selected pattern (monotrack data from `trackA`).
-  - Builds raw steps exactly like `SAVE SONG` pattern steps (including `space`, `off`, `note`, `instrument`, optional `volume`).
-  - Trims trailing pure-space steps.
-  - Compresses runs of pure spaces and volume-only rows using the same run-length encoding as `SAVE SONG`.
-  - Serializes YAML with root `{ steps: [...] }`.
+  - Builds raw steps exactly like `SAVE SONG` pattern steps (including `wait`, `note`, `instrument`, optional `volume`).
+  - Trims trailing pure-wait steps.
+  - Compresses runs of pure waits and volume-only rows using the same run-length encoding as `SAVE SONG`.
+  - Serializes YAML with root `{ step: [...] }`.
 
 - Import (`handlePasteTrack`):
-  - Expects YAML with root `steps: [...]`.
-  - Expands run-length encoded steps (`space: N`, `off: N`, with or without `volume`).
+  - Expects YAML with root `step: [...]`.
+  - Expands run-length encoded steps (`wait: N`, `space: N`, `off: N`, with or without `volume`).
   - For each row up to the current pattern length:
-    - `off: true` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
-    - `space: true` → empty.
+    - `off: true` or `note: 'OFF'` → internal key-release (`note: '===', octave: 0, instrument: '00'`).
+    - `wait: true` or `space: true` → empty.
     - `note: string` → parsed via `parseBaseKeyString` into note + octave; instrument defaults to `"00"` if missing.
     - Optional `volume` nibble 0..15.
   - Overwrites the monotrack data (`trackA`) and per-line `volume` for the selected pattern.

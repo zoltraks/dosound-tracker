@@ -2,12 +2,15 @@ import yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, Step } from '../../synth/SoundDriver.ts';
 import {
   MAX_INSTRUMENTS,
+  MAX_PATTERN_LENGTH,
   ENVELOPE_LENGTH,
   PATTERN_LENGTH,
   DEFAULT_OCTAVE,
   MIN_OCTAVE,
   MAX_OCTAVE,
 } from '../../constants/music.ts';
+import { assertImportSize } from '../validation/importSize.ts';
+import { expandRunNodes } from '../yaml/runLength.ts';
 import { validateSongData } from '../validation/validation.ts';
 import {
   DEFAULT_BASE_KEY,
@@ -140,6 +143,8 @@ export interface ParseSongOptions {
 }
 
 export const parseSongFromYaml = (content: string, options?: ParseSongOptions): Song => {
+  assertImportSize(content, 'Song file');
+
   const parsed = yaml.load(content) as unknown;
 
   if (!parsed || typeof parsed !== 'object' || (!('song' in parsed) && !('music' in parsed))) {
@@ -156,7 +161,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
   const rawLength = Number(songNode.length);
   const patternLengthRaw = Number.isFinite(rawLength) ? rawLength : PATTERN_LENGTH;
-  const clampedLength = Math.max(4, Math.min(256, Math.floor(patternLengthRaw)));
+  const clampedLength = Math.max(4, Math.min(MAX_PATTERN_LENGTH, Math.floor(patternLengthRaw)));
 
   const title =
     typeof songNode.title === 'string' && songNode.title.trim()
@@ -240,57 +245,14 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
         : Array.isArray(patternNode.lines)
           ? patternNode.lines
           : [];
-    const expandedLineNodes: unknown[] = [];
-
-    // Expand compressed space/off runs (space: N / off: N) into individual logical lines.
-    // Support both pure runs and volume-only runs, e.g. `space: 3` or
-    // `space: 3, volume: 14`.
-    for (const nodeLine of rawLineNodes) {
-      if (nodeLine && typeof nodeLine === 'object') {
-        const ln = nodeLine as PatternStepNodeYaml;
-
-        const keys = Object.keys(ln);
-        const hasVolume = Object.prototype.hasOwnProperty.call(ln, 'volume');
-        const onlySpaceOrOff = keys.every((k) => k === 'wait' || k === 'space' || k === 'off');
-        const onlySpaceOffVolume = keys.every(
-          (k) => k === 'wait' || k === 'space' || k === 'off' || k === 'volume',
-        );
-
-        const spaceVal = ln.wait ?? ln.space;
-        const offVal = ln.off;
-
-        const isNumericSpace =
-          typeof spaceVal === 'number' && Number.isFinite(spaceVal) && spaceVal > 0;
-        const isNumericOff = typeof offVal === 'number' && Number.isFinite(offVal) && offVal > 0;
-
-        // Pure runs without volume
-        if (!hasVolume && onlySpaceOrOff && (isNumericSpace || isNumericOff)) {
-          const count = (isNumericSpace ? spaceVal : offVal) as number;
-          const isOff = isNumericOff && !isNumericSpace;
-          for (let i = 0; i < count; i++) {
-            expandedLineNodes.push(isOff ? { off: true } : { wait: true });
-          }
-          continue;
-        }
-
-        // Volume-only runs: replicate the volume onto each expanded step.
-        if (hasVolume && onlySpaceOffVolume && (isNumericSpace || isNumericOff)) {
-          const count = (isNumericSpace ? spaceVal : offVal) as number;
-          const isOff = isNumericOff && !isNumericSpace;
-          const vol = ln.volume;
-          for (let i = 0; i < count; i++) {
-            expandedLineNodes.push(
-              isOff ? { off: true, volume: vol } : { wait: true, volume: vol },
-            );
-          }
-          continue;
-        }
-
-        expandedLineNodes.push(nodeLine);
-      } else {
-        expandedLineNodes.push(nodeLine);
-      }
-    }
+    // Expand compressed wait/space/off runs into individual logical lines,
+    // bounded to the remaining pattern length.
+    const expandedLineNodes = expandRunNodes<unknown>(
+      rawLineNodes,
+      clampedLength,
+      (volume) => (volume === undefined ? { wait: true } : { wait: true, volume }),
+      (volume) => (volume === undefined ? { off: true } : { off: true, volume }),
+    );
 
     const step: Step[] = [];
 

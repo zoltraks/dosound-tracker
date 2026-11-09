@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { Instrument, Song, Pattern, Step } from '../../synth/SoundDriver.ts';
 import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../constants/music.ts';
+import { MAX_IMPORT_BYTES } from '../../constants/import.ts';
 import {
   DEFAULT_BASE_KEY,
   DEFAULT_SONG_TITLE,
@@ -314,6 +315,10 @@ export const useDataManagement = () => {
 
   const loadSong = useCallback(
     (file: File) => {
+      if (file.size > MAX_IMPORT_BYTES) {
+        setSongError('Song file exceeds the maximum import size.');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = (e.target?.result ?? '') as string;

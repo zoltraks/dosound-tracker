@@ -1,6 +1,6 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
-const { isMidiAllowed } = require('./permissions.cjs');
+const { isAppOrigin, isMidiAllowed, isExternalHttpUrl } = require('./permissions.cjs');
 
 let mainWindow;
 let isQuitting = false;
@@ -33,6 +33,19 @@ function createWindow() {
       return Boolean(webContents) && isMidiAllowed(permission, webContents.getURL());
     });
   }
+
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    if (isExternalHttpUrl(url)) {
+      shell.openExternal(url);
+    }
+    return { action: 'deny' };
+  });
+
+  mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
+    if (!isAppOrigin(navigationUrl)) {
+      event.preventDefault();
+    }
+  });
 
   if (app.isPackaged) {
     const indexPath = path.join(__dirname, '..', 'dist', 'index.html');

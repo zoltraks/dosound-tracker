@@ -22,7 +22,7 @@ If not, share this file: the musician gets the top half, the coder gets the bott
 If macOS refuses to open the DMG, open **Terminal** in the folder where you downloaded it and run:
 
 ```bash
-xattr -dr com.apple.quarantine dosound-tracker-1.2.0-mac-arm64.dmg
+xattr -dr com.apple.quarantine dosound-tracker-X.Y.Z-mac-arm64.dmg
 ```
 
 Adjust the file name if you downloaded a different version, then open the `.dmg` and install as usual.
@@ -353,7 +353,7 @@ Application supports several export formats. Each format can target the full son
 
 **MAX Format:**
 
-- MAX specification v1.6 chunk-based binary format
+- MAX specification v1.7 chunk-based binary format
 - Info chunks for song metadata
 - Chip setup chunk recording frame rate and chip clock
 - Stream definition chunk with compression info
@@ -386,7 +386,7 @@ Application supports several export formats. Each format can target the full son
 - Input and output enable/disable toggles
 - Ignore volume toggle for input and output (default: on)
 - Channel mapping and program change support
-- Per-instrument MIDI configuration with note range assignment
+- Per-instrument MIDI configuration: channel and program assignment
 - Real-time input and output event monitors
 - Device refresh button
 - All settings persist to localStorage
@@ -479,9 +479,7 @@ The following settings persist across sessions via localStorage:
 **Performance:**
 
 - Real-time synthesis at configurable frame rate (50 Hz or 60 Hz)
-- Buffer size: 256 samples
-- Latency: <10ms typical
-- CPU usage: <5% on modern hardware
+- Low-latency Web Audio rendering through a dedicated sequencer worker
 
 **File Formats:**
 

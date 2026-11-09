@@ -238,9 +238,14 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     }
     flushRun();
 
-    const patternNode: { number: string; step?: PatternStep[] } = {
+    const patternNode: { number: string; name?: string; step?: PatternStep[] } = {
       number,
     };
+
+    const trimmedName = typeof pattern.name === 'string' ? pattern.name.trim() : '';
+    if (trimmedName && trimmedName !== `Pattern ${number}`) {
+      patternNode.name = trimmedName;
+    }
 
     if (compressedLines.length > 0) {
       patternNode.step = compressedLines;

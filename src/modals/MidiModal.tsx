@@ -8,6 +8,7 @@ import {
   parseMidiConfigurationFromYaml,
   MidiConfigurationFormatError,
 } from '../utils/midi/midiConfiguration.ts';
+import { MAX_IMPORT_BYTES } from '../constants/import.ts';
 import { downloadFile } from '../utils/file/fileOperations.ts';
 
 interface MidiModalProps {
@@ -105,6 +106,14 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     const input = event.target;
     const file = input.files && input.files[0];
     if (!file) {
+      return;
+    }
+
+    if (file.size > MAX_IMPORT_BYTES) {
+      if (onLoadError) {
+        onLoadError('MIDI configuration file exceeds the maximum import size.');
+      }
+      input.value = '';
       return;
     }
 

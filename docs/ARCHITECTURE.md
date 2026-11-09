@@ -2,7 +2,7 @@
 
 ## System Overview
 
-DOSOUND Tracker is a chiptune music editor for the AY/YM sound chip (YM2149 PSG) used in the Atari ST. It runs as a React 19 single-page application bundled with Vite (rolldown-vite) and ships as a desktop app through Electron 42. The core of the application is a software emulation of the YM2149 chip rendered through the Web Audio API, paired with a tracker-style song editor and a multi-format export pipeline.
+DOSOUND Tracker is a chiptune music editor for the AY/YM sound chip (YM2149 PSG) used in the Atari ST. It runs as a React 19 single-page application bundled with Vite (rolldown-vite) and ships as a desktop app through Electron 45. The core of the application is a software emulation of the YM2149 chip rendered through the Web Audio API, paired with a tracker-style song editor and a multi-format export pipeline.
 
 The application is built around two main data paths. The first path is live audio playback: song data flows from React state through hooks into the sequencer integration, which computes register writes per tick, applies them to the YM2149 emulator, and produces sound through the Web Audio API. The second path is file export: the same song data flows through the exports modules into binary, assembly, VGM, WAV, or Max/MSP formats.
 
@@ -38,7 +38,7 @@ The diagram below shows the high-level data flow.
 
 The source tree under `src/` is organized into focused folders. Each folder owns a single responsibility.
 
-- **components** - Presentational React components. Includes layout shells (AppLayout), panels (HeaderPanel, CommandPanel, TrackerSection, EnvelopeSection, SongSection, FileInputs, PianoKeyboard), and the ModalManager. Components receive data and callbacks as props and do not own business logic.
+- **components** - Presentational React components. Includes layout shells (AppLayout), panels (HeaderPanel, CommandPanel, TrackerSection, EnvelopeSection, SongSection, FileInputs, PianoKeyboard), and the ModalManager. Components receive data and callbacks as props and do not own business logic. Three panels are the recorded exception: `PlaylistPanel`, `ToneNoisePanel`, and `EnvelopePanel` read and write `localStorage` directly for their persisted cursor and track-column state.
 - **constants** - Static configuration values. Music constants (PATTERN_LENGTH, NOTE_FREQUENCIES, octave limits), song metadata options (SUPPORTED_SONG_CHIPS, SUPPORTED_SONG_FRAMES), and export type definitions.
 - **exports** - File export pipeline. `core.ts` holds shared helpers (normalizeSongForExport, parseBaseKeyForExport, formatNoteLabel, downloadFile re-export). Format modules `asm.ts`, `bin.ts`, `max.ts`, `vgm.ts`, and `wav.ts` each produce a specific output format from normalized song data.
 - **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. Every hook lives in a domain subdirectory (`midi/`, `instrument/`, `song/`, `playback/`, `keyboard/`, `audio/`, `sequencer/`, `modal/`, `app/`, `storage/`, `file/`, `ui/`) - the folder holds no files directly. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
@@ -56,7 +56,7 @@ The application uses three distinct state domains, each chosen for a specific re
 
 The first domain is the single Zustand store, `useUiStore`. It holds cross-component UI state that multiple panels need to read or write without prop drilling: `currentOctave`, `sharedCurrentLine`, and `channelMutes`. The store also persists channel mutes to localStorage. App.tsx subscribes to this store at its top level and passes values down as props.
 
-The second domain is App.tsx local state. Song data, instrument lists, pattern data, and playback flags live in `useState` calls inside the App component. These are passed down to child components and hooks as props. This keeps the song model co-located with the orchestrator and avoids a second store.
+The second domain is hook-owned local state. Song data, instrument lists, pattern data, and playback flags live in `useState` calls inside `useDataManagement` and sibling hooks wired from `App.tsx`. These are passed down to child components and hooks as props. This keeps the song model co-located with the orchestrator and avoids a second store.
 
 The third domain is hook-local refs. Audio-rate state such as the live playback position, worker handles, and callback refs are stored in `useRef` inside hooks like `useSequencer`. This avoids triggering React re-renders at 50Hz and keeps the audio thread decoupled from the render thread.
 
@@ -99,7 +99,7 @@ The export pipeline converts the in-memory song model into distributable file fo
 - **bin.ts** - Produces raw binary data representing the DOSOUND register stream, suitable for direct inclusion in Atari ST programs.
 - **vgm.ts** - Produces VGM (Video Game Music) format files, a standard chip-music capture format that records YM2149 register writes with timing.
 - **wav.ts** - Produces WAV audio by rendering the song through the YM2149 emulator offline and encoding the resulting PCM samples.
-- **max.ts** - Produces output for Max/MSP, enabling use of the song data inside the Max visual programming environment.
+- **max.ts** - Produces MAX (Music Assembly eXchange) files, a chunk-based binary interchange format for chiptune songs, specified in `MAX.md`.
 
 All format modules import shared helpers from `exports/core.ts`: `normalizeSongForExport` for safe defaults, `parseBaseKeyForExport` for base-key parsing, `formatNoteLabel` for note display, and `downloadFile` for file delivery. This keeps note handling, key parsing, and file writing consistent across every format.
 

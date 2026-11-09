@@ -299,8 +299,9 @@ See `media/layout.png` for the full layout image.
 
 **Navigation Block Order**
 
+- On-screen piano keyboard
 - Octave selection
-- Theme mode (dark/light)
+- Commands panel
 - Track A
 - Track B
 - Track C
@@ -312,9 +313,8 @@ See `media/layout.png` for the full layout image.
 - Song information
 - Song playlist
 - Instrument list
-- On-screen piano keyboard
 
-Do not focus on Dump, EQ, logo, or title during navigation.
+Do not focus on Dump, EQ, logo, title, or the theme toggle during navigation.
 
 **Piano Keyboard Mapping**
 

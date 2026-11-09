@@ -8,4 +8,8 @@ function isMidiAllowed(permission, url) {
   return permission === 'midi' && isAppOrigin(url);
 }
 
-module.exports = { isAppOrigin, isMidiAllowed };
+function isExternalHttpUrl(url) {
+  return typeof url === 'string' && /^https?:\/\//i.test(url);
+}
+
+module.exports = { isAppOrigin, isMidiAllowed, isExternalHttpUrl };

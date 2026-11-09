@@ -1,5 +1,6 @@
 import yaml from 'js-yaml';
 import type { MidiConfiguration } from '../../hooks/midi/useMidi.ts';
+import { assertImportSize } from '../validation/importSize.ts';
 
 export class MidiConfigurationFormatError extends Error {
   constructor(message: string) {
@@ -46,6 +47,8 @@ export const parseMidiConfigurationFromYaml = (
   text: string,
   currentConfiguration: MidiConfiguration,
 ): MidiConfiguration => {
+  assertImportSize(text, 'MIDI configuration file');
+
   const parsed = yaml.load(text) as unknown;
 
   if (!parsed || typeof parsed !== 'object' || !('midi' in (parsed as Record<string, unknown>))) {
