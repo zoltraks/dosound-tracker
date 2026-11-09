@@ -1,6 +1,6 @@
 # Engineering Standard Template
 
-<!-- Version: 0.1.7 | Date: 2026-10-31 -->
+<!-- Version: 0.1.8 | Date: 2026-11-08 -->
 
 ## Purpose
 
@@ -11,7 +11,7 @@ Every `*-development.md` file must conform to this structure.
 The file doubles as a copyable skeleton - duplicate it,
 then replace the guidance in each section with real content.
 
-Conformance follows the Validation Rules section below; where the toolchain ships a
+Conformance follows the Validation Rules section below - where the toolchain ships a
 standards-validator script it enforces the same rules mechanically.
 
 ## Scope
@@ -19,8 +19,8 @@ standards-validator script it enforces the same rules mechanically.
 A document is in scope when it is a `*-development.md` engineering standard,
 whether it lives in this library or was copied into a consumer project.
 
-- Every standard is hermetic: it never links to or names a sibling standard document.
-- Category documents assume the `general` document for the same identifier is applied first.
+- Every standard is hermetic: it never links to or names a sibling standard document
+- Category documents assume the `general` document for the same identifier is applied first
 
 Out of scope: improvement plans, templates for other document kinds, and produced project documents.
 
@@ -29,10 +29,10 @@ Out of scope: improvement plans, templates for other document kinds, and produce
 ### Order Of Operations
 
 1. Copy this file to `docs/standard/<language>-<category>-development.md`.
-2. Replace the H1 and the version header values.
-3. Replace each section's guidance text with the real rules.
-4. Keep every skeleton table header unchanged - the validation checklist keys on them.
-5. Check the file against the Validation Rules section and run `git diff --check` before delivering.
+2. Replace the H1 and the version header values
+3. Replace each section's guidance text with the real rules
+4. Keep every skeleton table header unchanged - the validation checklist keys on them
+5. Check the file against the Validation Rules section and run `git diff --check` before delivering
 
 ### Precedence
 
@@ -50,12 +50,12 @@ A stacked standard adds its base standard as one extra rank above "This standard
 
 ### Non-Negotiable Rules
 
-- **Exact section set** - every standard carries the 17 sections below in the order shown.
+- **Exact section set** - every standard carries the 17 sections below in the order shown
 - **Executable verification** - every row in the Verification table is a runnable command,
   never "Review" or "Manual".
-- **Hermetic content** - no links to sibling standards, so a copied file stays usable alone.
-- **Version floor** - the Language Version section states a minimum recommended version
-  as a floor ("X or later"), never an exact pin and never a floating range like `latest`.
+- **Hermetic content** - no links to sibling standards, so a copied file stays usable alone
+- **Version floor** - the Language Version section states a minimum recommended version as a floor
+  ("X or later"), never an exact pin and never a floating range like `latest`.
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -85,23 +85,22 @@ extend `<name>` following this template."
 ## Documentation
 
 - [Key words for use in RFCs to Indicate Requirement Levels](https://www.rfc-editor.org/rfc/rfc2119)
-  - the MUST/SHOULD/MAY vocabulary for normative rules.
-- [CommonMark Specification](https://spec.commonmark.org/) - the Markdown grammar every standard is
-  written in.
+  - the MUST/SHOULD/MAY vocabulary for normative rules
+- [CommonMark Specification](https://spec.commonmark.org/) - the Markdown grammar every
+  standard is written in.
 - [GitHub Flavored Markdown](https://docs.github.com/en/get-started/writing-on-github) - table and
   code-fence rendering rules.
 
 ## Language Version
 
 This section states a minimum recommended version or normative specification as a floor,
-such as "Rust 1.85 or later" - never an exact pin and never a floating range such as
-`latest`.
+such as "Rust 1.85 or later" - never an exact pin and never a floating range such as `latest`.
 
-A floor is recommended over a pin because a patch release carries security fixes that a
-project should take automatically.
+A floor is recommended over a pin because a patch release carries security fixes that a project
+should take automatically.
 
-The concrete pin lives in the project's toolchain or manifest file
-(`rust-toolchain.toml`, `.csproj`, `go.mod`, `package.json`), not in the standard.
+The concrete pin lives in the project's toolchain or manifest file (`rust-toolchain.toml`,
+`.csproj`, `go.mod`, `package.json`), not in the standard.
 
 The version header carries `Version` and `Date` fields only - never `Runtime` or other additions.
 
@@ -142,11 +141,11 @@ Prose follows the repository documentation style in the project style guide.
 A standard's Testing section names the framework, the placement convention,
 and the exact commands that run the suite.
 
-For this document itself, the check is the Validation Rules section below - every Error
-rule must pass and `git diff --check` must stay clean.
+For this document itself, the check is the Validation Rules section below - every Error rule must
+pass and `git diff --check` must stay clean.
 
-When a document-quality battery is configured for the repository, it applies to every
-touched standard file.
+When a document-quality battery is configured for the repository,
+it applies to every touched standard file.
 
 ## Build
 
@@ -178,33 +177,33 @@ A standard's Dependencies section uses this schema:
 
 ### Correctness
 
-- The standard passes every Error rule in the Validation Rules section.
-- Every command in the Verification table runs as written.
+- The standard passes every Error rule in the Validation Rules section
+- Every command in the Verification table runs as written
 
 ### Structure
 
-- All 17 sections are present in the canonical order.
-- Required subsections and table schemas match this template.
+- All 17 sections are present in the canonical order
+- Required subsections and table schemas match this template
 
 ### Quality
 
-- Rules are normative and checkable, not aspirational.
-- Examples are generic and anonymized.
+- Rules are normative and checkable, not aspirational
+- Examples are generic and anonymized
 
 ### Hygiene
 
-- The version header was bumped and re-dated on change.
-- No secrets, product names, or internal identifiers appear.
+- The version header was bumped and re-dated on change
+- No secrets, product names, or internal identifiers appear
 
 ## General Principles
 
-- Every standard stands alone.
-- Sections are a contract, not a suggestion.
-- Executable checks beat review notes.
-- State version floors, never pins and never floats.
-- Scrub real names, paths, and identifiers.
-- One purpose per document.
-- A violation is a defect, not a style preference.
+- Every standard stands alone
+- Sections are a contract, not a suggestion
+- Executable checks beat review notes
+- State version floors, never pins and never floats
+- Scrub real names, paths, and identifiers
+- One purpose per document
+- A violation is a defect, not a style preference
 
 ## Fed Patterns
 
@@ -232,8 +231,8 @@ _The sections below govern the template itself and are not part of the copied sk
 
 ## Validation Rules
 
-Conformance is checked against these rules on every standard change - every Error must
-pass before a standard ships.
+Conformance is checked against these rules on every standard change - every Error must pass
+before a standard ships.
 
 | Rule                                                          | Severity |
 | ------------------------------------------------------------- | -------- |
@@ -255,11 +254,11 @@ pass before a standard ships.
 
 ## Change Procedure
 
-1. Bump the patch version in the header and refresh the date.
-2. Update the project's changelog when one exists.
+1. Bump the patch version in the header and refresh the date
+2. Update the project's changelog when one exists
 3. Check the file against the Validation Rules section - every Error rule must pass - and
    run `git diff --check`.
-4. Propose a one-sentence commit message.
+4. Propose a one-sentence commit message
 
 ## Project Conventions
 

@@ -1,6 +1,6 @@
 # TypeScript, React, and Electron Desktop Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-10-24 -->
+<!-- Version: 0.1.5 | Date: 2026-11-08 -->
 
 ## Purpose
 
@@ -12,16 +12,16 @@ the renderer conventions, the security model, the testing, and the packaging.
 
 It builds on the TypeScript engineering standard and adds only the Electron+React-specific rules.
 
-It is written to be executed directly by an AI coding agent and to be read without effort by a human
-reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
 A project is in scope when all of the following conditions hold.
 
-- The project is a desktop application built with Electron.
-- The renderer process is a React 19 application written in TypeScript.
-- The main and preload scripts are CommonJS modules consumed by Electron.
+- The project is a desktop application built with Electron
+- The renderer process is a React 19 application written in TypeScript
+- The main and preload scripts are CommonJS modules consumed by Electron
 
 A project that uses Tauri instead of Electron is out of scope,
 because Tauri has a different process model and a Rust-based backend.
@@ -40,18 +40,18 @@ Read it before reading anything else in this document.
 
 ### Order Of Operations
 
-Follow these steps in order at the start of every task that touches Electron, TypeScript,
-or React code.
+Follow these steps in order at the start of every task that touches Electron,
+TypeScript, or React code.
 
 1. Read the project rules file, such as `AGENTS.md`, `README.md`, or `docs/GUIDELINES.md`,
    because a project rule overrides this standard.
-2. Read the TypeScript engineering standard for shared language, tooling, and dependency rules.
+2. Read the TypeScript engineering standard for shared language, tooling, and dependency rules
 3. Determine the Electron version, the React version, the TypeScript version, the build tool,
    and the packaging tool using the Agent Intake Protocol below.
-4. Confirm the conclusion with the user when the repository is ambiguous or empty.
-5. Apply the sections of this standard that match the confirmed project kind.
-6. Run every applicable row of the Verification section.
-7. Check the result against the Definition of Done before reporting the task complete.
+4. Confirm the conclusion with the user when the repository is ambiguous or empty
+5. Apply the sections of this standard that match the confirmed project kind
+6. Run every applicable row of the Verification section
+7. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -74,21 +74,21 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
 
 ### Non-Negotiable Rules
 
-- **Context isolation is enabled.** A `BrowserWindow` with `contextIsolation: false` is a security
-  defect.
+- **Context isolation is enabled.** A `BrowserWindow` with `contextIsolation: false`
+  is a security defect.
 - **Node integration is disabled in the renderer.** A `BrowserWindow` with `nodeIntegration: true`
   is a security defect.
-- **Sandbox is enabled.** A `BrowserWindow` with `sandbox: false` without a `// REASON:` comment is
-  a security defect.
+- **Sandbox is enabled.** A `BrowserWindow` with `sandbox: false` without a `// REASON:` comment
+  is a security defect.
 - **The preload script uses `contextBridge.exposeInMainWorld`.
   ** Direct `window` assignment in the preload is a defect.
 - **No `any` type.** Use `unknown` when the type is genuinely unknown,
   because `any` disables the type system.
 - **No `console.log` in production code.** Use a structured logger,
   because console output bypasses log levels.
-- **No hardcoded secrets.** A secret in a committed file is a security incident.
-- **`eslint .` produces no errors.** An ESLint error is a defect.
-- **`tsc --noEmit` produces no errors.** A TypeScript error is a defect.
+- **No hardcoded secrets.** A secret in a committed file is a security incident
+- **`eslint .` produces no errors.** An ESLint error is a defect
+- **`tsc --noEmit` produces no errors.** A TypeScript error is a defect
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -142,18 +142,18 @@ When the repository is empty or the user declares a new project, ask the followi
 The following are the authoritative sources for Electron, TypeScript, and React development.
 
 - [Electron Documentation](https://www.electronjs.org/docs/latest) - official Electron reference.
-- [Electron Security](https://www.electronjs.org/docs/latest/tutorial/security) - security best
-  practices.
+- [Electron Security](https://www.electronjs.org/docs/latest/tutorial/security) - security
+  best practices.
 - [Electron Context Isolation](https://www.electronjs.org/docs/latest/tutorial/context-isolation) -
   context isolation model.
 - [Electron Sandbox](https://www.electronjs.org/docs/latest/tutorial/sandbox) - sandboxing model.
 - [Electron IPC](https://www.electronjs.org/docs/latest/tutorial/ipc) - inter-process communication.
 - [electron-builder](https://www.electron.build/) - packaging and distribution.
-- The general TypeScript engineering standard - base language and tooling rules.
+- The general TypeScript engineering standard - base language and tooling rules
 - [React Documentation](https://react.dev/) - official React reference.
 - [Vite Documentation](https://vitejs.dev/guide/) - build tool reference.
-- The general accessibility engineering standard - WCAG 2.2 AA + axe-core.
-- The performance budgets engineering standard - Core Web Vitals + bundle budgets.
+- The general accessibility engineering standard - WCAG 2.2 AA + axe-core
+- The performance budgets engineering standard - Core Web Vitals + bundle budgets
 
 ## Language Version
 
@@ -306,9 +306,9 @@ resolve: {
 
 ### React Components
 
-- Functional components only. No class components.
+- Functional components only. No class components
 - Props interface named with `Props` suffix: `ButtonProps`.
-- Destructure props in the function signature.
+- Destructure props in the function signature
 - Prefer `export function` over `React.FC`,
   because `React.FC` adds no value and complicates generics.
 
@@ -331,14 +331,14 @@ export function Button({ onClick, children, variant = 'primary' }: ButtonProps) 
 ### Hooks
 
 - Custom hooks start with `use`.
-- Keep hooks focused on a single responsibility.
-- Document hook parameters and return value with JSDoc.
+- Keep hooks focused on a single responsibility
+- Document hook parameters and return value with JSDoc
 
 ### State Management
 
-- Use Zustand for global state that crosses component boundaries.
-- Use React Context for localised state within a subtree.
-- Use `useState` and `useReducer` for component-local state.
+- Use Zustand for global state that crosses component boundaries
+- Use React Context for localised state within a subtree
+- Use `useState` and `useReducer` for component-local state
 
 ### Zustand Store Pattern
 
@@ -380,9 +380,9 @@ export const useUIStore = create<UIStore>()(
 
 ### Error Handling
 
-- Use React Error Boundaries for component-level error isolation.
-- Define domain-specific error classes for engine errors.
-- Never swallow an error silently, because a swallowed error hides a failure.
+- Use React Error Boundaries for component-level error isolation
+- Define domain-specific error classes for engine errors
+- Never swallow an error silently, because a swallowed error hides a failure
 
 ```typescript
 export class EngineError extends Error {
@@ -408,12 +408,12 @@ Handle errors with `try/catch`.
 
 ### Forbidden Patterns
 
-- `any` type, because it disables the type system.
-- Non-null assertion (`!`) without a `// REASON:` comment, because it suppresses a null check.
-- `@ts-ignore` without a `// REASON:` comment, because it suppresses a type error.
-- `console.log` in production code, because console output bypasses structured logging.
-- `setState` in `useEffect` without a dependency guard, because it causes infinite loops.
-- Direct DOM manipulation outside of React refs, because it bypasses React's reconciliation.
+- `any` type, because it disables the type system
+- Non-null assertion (`!`) without a `// REASON:` comment, because it suppresses a null check
+- `@ts-ignore` without a `// REASON:` comment, because it suppresses a type error
+- `console.log` in production code, because console output bypasses structured logging
+- `setState` in `useEffect` without a dependency guard, because it causes infinite loops
+- Direct DOM manipulation outside of React refs, because it bypasses React's reconciliation
 
 ### Secure Electron Boundaries
 
@@ -462,8 +462,8 @@ function createWindow(): BrowserWindow {
 }
 ```
 
-Exposing raw `ipcRenderer` to `window`, setting `nodeIntegration: true`, and
-loading unvalidated URLs are forbidden.
+Exposing raw `ipcRenderer` to `window`, setting `nodeIntegration: true`,
+and loading unvalidated URLs are forbidden.
 
 ## Electron Integration
 
@@ -584,8 +584,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
 ### Renderer Detection
 
-The renderer detects Electron at runtime by checking for the `window.electronAPI` object exposed by
-the preload script.
+The renderer detects Electron at runtime by checking for the `window.electronAPI` object exposed
+by the preload script.
 
 There is no separate type declaration file,
 because the preload API is consumed directly where needed.
@@ -616,8 +616,8 @@ because it gives the renderer direct access to the filesystem and the operating 
 
 The sandbox is enabled by default since Electron 20 and must remain enabled.
 
-A sandboxed renderer cannot access Node.js APIs and can only perform privileged tasks through IPC to
-the main process.
+A sandboxed renderer cannot access Node.js APIs and can only perform privileged tasks through IPC
+to the main process.
 
 Disabling the sandbox without a `// REASON:` comment is a security defect.
 
@@ -641,8 +641,8 @@ because a missing CSP allows arbitrary script injection.
 Do not load remote content in a desktop application with full system access,
 because remote content is untrusted.
 
-If remote content is required, load it in a `BrowserView` or `<webview>` with reduced privileges and
-a strict CSP.
+If remote content is required, load it in a `BrowserView` or `<webview>` with reduced
+privileges and a strict CSP.
 
 ## Styling
 
@@ -877,8 +877,8 @@ Add a dependency only when the need is concrete and the alternative is significa
 
 Evaluate the maintenance status, license, and bundle size impact before adding a new library.
 
-Prefer libraries with active maintenance and a permissive license such as MIT, Apache 2.0, BSD,
-or ISC.
+Prefer libraries with active maintenance and a permissive license such as MIT,
+Apache 2.0, BSD, or ISC.
 
 ### npm Overrides
 
@@ -960,9 +960,9 @@ Code is self-documenting through naming.
 
 Limit comments to the following.
 
-- A `// REASON:` comment on a non-obvious decision.
-- JSDoc for public APIs and hooks.
-- A file-level comment stating single responsibility.
+- A `// REASON:` comment on a non-obvious decision
+- JSDoc for public APIs and hooks
+- A file-level comment stating single responsibility
 
 Never use numbered comments.
 
@@ -995,45 +995,45 @@ Do not leave commented-out code, because version control preserves history.
 
 ### Correctness
 
-- `tsc --noEmit` produces no errors.
-- `eslint .` produces no errors.
-- No `any` type was introduced.
-- Context isolation, node integration disabled, and sandbox enabled are verified.
-- Tests cover normal cases, boundary values, and error paths.
+- `tsc --noEmit` produces no errors
+- `eslint .` produces no errors
+- No `any` type was introduced
+- Context isolation, node integration disabled, and sandbox enabled are verified
+- Tests cover normal cases, boundary values, and error paths
 
 ### Structure
 
-- The project layout matches the confirmed project kind.
-- No circular dependency was introduced.
-- No component file exceeds approximately 300 lines without a justification.
-- Every component is a function component.
+- The project layout matches the confirmed project kind
+- No circular dependency was introduced
+- No component file exceeds approximately 300 lines without a justification
+- Every component is a function component
 
 ### Interface
 
-- Every public API has a typed signature.
-- Every props interface is named with the `Props` suffix.
+- Every public API has a typed signature
+- Every props interface is named with the `Props` suffix
 - Every hook starts with `use`.
 - Every error class ends with `Error`.
 
 ### Interaction
 
-- Every `useEffect` has a correct dependency array or a `// REASON:` comment.
-- Every event listener is removed in cleanup.
-- Every IPC listener in the preload validates callback types.
-- Every `async` call is awaited or explicitly voided with a comment.
+- Every `useEffect` has a correct dependency array or a `// REASON:` comment
+- Every event listener is removed in cleanup
+- Every IPC listener in the preload validates callback types
+- Every `async` call is awaited or explicitly voided with a comment
 
 ### Quality
 
-- `prettier --check .` produces no output.
-- No debugging output or commented-out code remains.
-- Comments explain reasons, not actions.
+- `prettier --check .` produces no output
+- No debugging output or commented-out code remains
+- Comments explain reasons, not actions
 
 ### Hygiene
 
-- `node_modules/`, `dist/`, `release/`, and `coverage/` are gitignored.
-- No secret, token, or credential was committed.
-- `.env` files are gitignored.
-- Documentation was updated when the change altered the public API, the build, or a project rule.
+- `node_modules/`, `dist/`, `release/`, and `coverage/` are gitignored
+- No secret, token, or credential was committed
+- `.env` files are gitignored
+- Documentation was updated when the change altered the public API, the build, or a project rule
 
 ## General Principles
 
@@ -1066,14 +1066,16 @@ does not want, and both cases require an action.
 Patterns proven in projects that adopted this standard and evolved their own conventions.
 
 **Testable main-process helpers.** Main-process helpers live in standalone CommonJS modules so unit
-tests import them under a plain Node runner via `createRequire`, without booting the Electron
-runtime. The entry file itself is never imported in tests - helper modules export pure functions and
-explicit constants whose shape is asserted rather than trusted.
+tests import them under a plain Node runner via `createRequire`,
+without booting the Electron runtime.
+
+The entry file itself is never imported in tests - helper modules export pure functions and explicit
+constants whose shape is asserted rather than trusted.
 
 **Origin-gated permissions.** Device permissions are granted per origin - the packaged `file://`
 bundle and the development server origin are allowlisted separately - and privileged sub-permissions
-are never granted. A permission handler returns an explicit boolean for every request, never a
-default grant.
+are never granted. A permission handler returns an explicit boolean for every request,
+never a default grant.
 
 ## Sources
 

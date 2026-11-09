@@ -119,7 +119,7 @@ Several decisions in the codebase are deliberate trade-offs rather than oversigh
 
 The current architecture has several documented constraints.
 
-- **App.tsx is ~1110 lines.** The central orchestrator still holds all hook wiring, state declarations, and the JSX prop map. Staged decomposition moved the dialog, persistence, and playback handler bodies into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
+- **App.tsx is ~1140 lines.** The central orchestrator still holds all hook wiring, state declarations, and the JSX prop map. Staged decomposition moved the dialog, persistence, and playback handler bodies into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
 - **Business logic is scattered across hooks and utils.** Song management, MIDI, file operations, instrument actions, and sequencer integration each live in their own hook files, some of which are large (useSequencerIntegration at ~21KB, useMidiActions at ~21KB, useSongManagement at ~19KB). Cross-hook dependencies are implicit and wired in App.tsx.
 - **No undo/redo.** There is no history stack and no snapshot mechanism. All edits apply directly to state. Recovering from a mistake requires manual re-entry or reloading the song.
 - **No Command pattern.** Mutations are free functions and setter calls, not encapsulated command objects. This blocks future undo/redo and makes edit auditing difficult.

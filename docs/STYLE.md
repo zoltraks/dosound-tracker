@@ -19,6 +19,8 @@ documents at the repository root and under `public/`.
 - **Flattened structure**: use H2 for all major sections under the main H1. Avoid deeply nested hierarchies beyond H3. Stick to the existing heading levels of the document being modified.
 - **Horizontal dividers**: do not use `---` anywhere in documents. Separate sections using headings only.
 - **Headings**: avoid using colons in headings.
+- **Section headers**: bold text used as a section header places the header text on its own line with no trailing period, followed by one blank line, then the content on the next line.
+- **Fragment wording**: use "fragment", not "excerpt", for code examples.
 
 ## Internal Document References
 

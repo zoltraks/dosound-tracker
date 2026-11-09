@@ -1,34 +1,34 @@
 # TypeScript Engineering Standards
 
-<!-- Version: 0.1.7 | Date: 2026-10-31 -->
+<!-- Version: 0.1.9 | Date: 2026-11-08 -->
 
 ## Purpose
 
-This document defines the engineering standard for TypeScript projects running on Node.js or in the
-browser.
+This document defines the engineering standard for TypeScript projects running on
+Node.js or in the browser.
 
-It covers the language version, compiler configuration, project layout, coding conventions, tooling,
-testing, and build.
+It covers the language version, compiler configuration, project layout, coding conventions,
+tooling, testing, and build.
 
 It builds on the JavaScript engineering standard and adds only the TypeScript-specific rules.
 
-It is written to be executed directly by an AI coding agent and to be read without effort by a human
-reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
 A project is in scope when all of the following conditions hold.
 
-- The project is written in TypeScript with strict mode enabled.
-- The project targets Node.js 22 LTS or later for tooling and backend, or modern
-  browsers for frontend.
+- The project is written in TypeScript with strict mode enabled
+- The project targets Node.js 22 LTS or later for tooling and backend,
+  or modern browsers for frontend.
 - The build entry point is `tsc` (backend) or Vite/esbuild (frontend).
 
 A project that uses JavaScript instead of TypeScript is out of scope - use the JavaScript
 engineering standard.
 
-A project that uses a different compile-to-JS language (e.g., CoffeeScript, PureScript)
-is out of scope.
+A project that uses a different compile-to-JS language (e.g., CoffeeScript,
+PureScript) is out of scope.
 
 ## How To Use This Standard
 
@@ -42,13 +42,13 @@ Follow these steps in order at the start of every task that touches TypeScript c
 
 1. Read the project rules file, such as `AGENTS.md`, `README.md`, or `docs/GUIDELINES.md`,
    because a project rule overrides this standard.
-2. Read the JavaScript engineering standard for shared runtime, tooling, and dependency rules.
+2. Read the JavaScript engineering standard for shared runtime, tooling, and dependency rules
 3. Determine the TypeScript version, build tool,
    and project kind using the Agent Intake Protocol below.
-4. Confirm the conclusion with the user when the repository is ambiguous or empty.
-5. Apply the sections of this standard that match the confirmed project kind.
-6. Run every applicable row of the Verification section.
-7. Check the result against the Definition of Done before reporting the task complete.
+4. Confirm the conclusion with the user when the repository is ambiguous or empty
+5. Apply the sections of this standard that match the confirmed project kind
+6. Run every applicable row of the Verification section
+7. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -72,16 +72,16 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
 
 - **Strict mode is enabled.** `tsconfig.json` has `"strict": true`.
   A project with `strict: false` is a defect.
-- **No `any` type.** Use `unknown` when the type is genuinely unknown. An `any` type is a defect.
-- **No non-null assertions without reason.** `!` requires a `// REASON:` comment.
+- **No `any` type.** Use `unknown` when the type is genuinely unknown. An `any` type is a defect
+- **No non-null assertions without reason.** `!` requires a `// REASON:` comment
   A non-null assertion without reason is a defect.
-- **No `@ts-ignore` without reason.** `@ts-ignore` requires a `// REASON:` comment.
+- **No `@ts-ignore` without reason.** `@ts-ignore` requires a `// REASON:` comment
   A suppression without reason is a defect.
 - **No `as` type assertions on external data.** External data is untyped at runtime - use a type
   guard or runtime validator (Zod). An unchecked `as` on external data is a defect.
-- **`tsc --noEmit` produces no errors.** A TypeScript error is a defect.
-- **`eslint .` produces no errors.** An ESLint error is a defect.
-- **`prettier --check .` produces no output.** A formatting deviation is a defect.
+- **`tsc --noEmit` produces no errors.** A TypeScript error is a defect
+- **`eslint .` produces no errors.** An ESLint error is a defect
+- **`prettier --check .` produces no output.** A formatting deviation is a defect
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -137,14 +137,14 @@ The following are the authoritative sources for TypeScript development.
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) - official
   reference
 - [TSConfig Reference](https://www.typescriptlang.org/tsconfig) - compiler options
-- [TypeScript 5.9 Release Notes](https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/)
+- [TypeScript 5.9 Release Notes][a]
   - version changes
 - [typescript-eslint](https://typescript-eslint.io/) - linting rules
 - The general JavaScript engineering standard - base runtime and tooling rules
 
 ## Language Version
 
-The project targets **TypeScript 5.9** or later with **Node.js 22 LTS** or later for tooling.
+The project targets **TypeScript 5.9**or later with**Node.js 22 LTS** or later for tooling.
 
 TypeScript 5.9 was released June 2025.
 
@@ -179,15 +179,15 @@ These options are non-negotiable - they catch real bugs at compile time.
 
 - **TypeScript 5.9.2**: Language and compiler
 - **Node.js 22.12.0 LTS**: Tooling runtime (per JavaScript standard)
-- **Vite 7** or **esbuild**: Build tool (Vite for frontend, esbuild for backend)
+- **Vite 7**or**esbuild**: Build tool (Vite for frontend, esbuild for backend)
 - **Vitest**: Test runner
 - **ESLint 9** with `typescript-eslint`: Linting
 - **Prettier 3**: Formatting (single source of truth)
 - **Zod**: Runtime validation at trust boundaries
 - **OpenTelemetry JS SDK**: Observability
 
-Dependencies are added only when the need is concrete and the standard library is significantly more
-complex.
+Dependencies are added only when the need is concrete and the standard library is
+significantly more complex.
 
 ## Project Structure
 
@@ -338,12 +338,12 @@ Aim below ~500 lines per file and split a file when it approaches ~1000 lines.
 Avoid abbreviations - `configuration` not `config`, `response` not `res`.
 
 When expanding a clipped lambda parameter such as `f` to a domain word such as `field`,
-check the enclosing scope first: a parameter that shadows an outer binding silently flips
-semantics, and `items.map((field) => field === field)` compares an element to itself when
-`field` is already bound above.
+check the enclosing scope first: a parameter that shadows an outer binding silently flips semantics,
+and `items.map((field) => field === field)` compares an element to itself when `field` is
+already bound above.
 
-Use `existing` or `entry` for collection elements when the natural name is already bound
-in the enclosing scope.
+Use `existing` or `entry` for collection elements when the natural name is already bound in
+the enclosing scope.
 
 Comments, docblocks, and identifiers are written in English,
 per the source-language rule in the project style guide.
@@ -398,7 +398,7 @@ function isUser(obj: unknown): obj is User {
 
 ### Generics
 
-- Prefer explicit generic parameters over inference when the type is part of the API contract.
+- Prefer explicit generic parameters over inference when the type is part of the API contract
 - Use `const` type parameters for literal inference: `function foo<T extends string>(x: T)`.
 
 ### Module System
@@ -406,7 +406,7 @@ function isUser(obj: unknown): obj is User {
 - **ESM only** for application code (`"type": "module"`, `module: "NodeNext"` or `"bundler"`).
 - `.js` extensions required in relative imports: `import { foo } from './bar.js'`.
 - CommonJS only for Node.js config files that require it (e.g., Electron main process).
-- No `require` in TypeScript source files.
+- No `require` in TypeScript source files
 
 ### Path Aliases
 
@@ -436,26 +436,26 @@ class NotFoundError extends Error {
 }
 ```
 
-- `Result<T, E>` discriminated unions for recoverable errors.
-- Never swallow errors - handle, propagate, or log with context.
+- `Result<T, E>` discriminated unions for recoverable errors
+- Never swallow errors - handle, propagate, or log with context
 
 ### Configuration
 
-- Zod schema validation at startup - fail fast.
+- Zod schema validation at startup - fail fast
 - Environment variables documented in `README.md`, templated in `.env.example`.
-- Pass config as parameter, never read `process.env` deep in modules.
+- Pass config as parameter, never read `process.env` deep in modules
 
 ### Logging
 
 - Pino structured JSON logging (per JavaScript standard).
-- Correlation IDs on request-scoped logs.
-- No `console.log` in production code.
+- Correlation IDs on request-scoped logs
+- No `console.log` in production code
 
 ### Observability
 
-- OpenTelemetry JS SDK for traces, metrics, logs.
-- `/health/live`, `/health/ready`, `/metrics` endpoints.
-- Structured logging with correlation IDs.
+- OpenTelemetry JS SDK for traces, metrics, logs
+- `/health/live`, `/health/ready`, `/metrics` endpoints
+- Structured logging with correlation IDs
 
 ### Forbidden Patterns
 
@@ -497,7 +497,9 @@ export type AsyncResult<T> =
   | { status: 'error'; error: Error };
 ```
 
-`any` is forbidden. Untrusted input is `unknown` narrowed by a type guard:
+`any` is forbidden.
+
+Untrusted input is `unknown` narrowed by a type guard:
 
 ```typescript
 export function isRecord(value: unknown): value is Record<string, unknown> {
@@ -561,9 +563,9 @@ Do not mix test frameworks.
 ### Requirements
 
 - Unit test coverage >= 80% (lines, functions, branches, statements).
-- Every exported function has tests for normal case, boundary values, error paths.
+- Every exported function has tests for normal case, boundary values, error paths
 - Test files: `*.test.ts` in `test/` mirroring `src/`.
-- Pure functions tested in isolation, integration tests use testcontainers.
+- Pure functions tested in isolation, integration tests use testcontainers
 
 ### Running Tests
 
@@ -643,34 +645,34 @@ Prefer versions published >= 7 days ago.
 
 ### Correctness
 
-- `tsc --noEmit` produces no errors.
-- `eslint .` produces no errors.
-- `prettier --check .` produces no output.
-- `npm test` passes with >= 80% coverage.
-- `npm audit --omit=dev` reports no vulnerabilities.
-- No `any`, no `!` without reason, no `@ts-ignore` without reason.
+- `tsc --noEmit` produces no errors
+- `eslint .` produces no errors
+- `prettier --check .` produces no output
+- `npm test` passes with >= 80% coverage
+- `npm audit --omit=dev` reports no vulnerabilities
+- No `any`, no `!` without reason, no `@ts-ignore` without reason
 
 ### Structure
 
-- Project layout matches confirmed structure.
+- Project layout matches confirmed structure
 - Project references configured and valid (`tsc --build --dry`).
-- `package.json` has exact TypeScript version.
-- No circular dependencies.
-- Aim below ~500 lines per file, and no file exceeds ~1000 lines without a recorded justification.
+- `package.json` has exact TypeScript version
+- No circular dependencies
+- Aim below ~500 lines per file, and no file exceeds ~1000 lines without a recorded justification
 
 ### Quality
 
 - JSDoc on all exported APIs: `@param`, `@returns`, `@throws`.
-- Comments explain reasons, not actions.
-- No debugging output or commented-out code remains.
-- Error classes have `code` property for machine handling.
+- Comments explain reasons, not actions
+- No debugging output or commented-out code remains
+- Error classes have `code` property for machine handling
 
 ### Hygiene
 
-- `node_modules/`, `dist/`, `coverage/` are gitignored.
-- `.env` files are gitignored, `.env.example` committed.
-- No secret, token, or credential committed.
-- Documentation updated when change alters public API, build, or project rule.
+- `node_modules/`, `dist/`, `coverage/` are gitignored
+- `.env` files are gitignored, `.env.example` committed
+- No secret, token, or credential committed
+- Documentation updated when change alters public API, build, or project rule
 
 ## General Principles
 
@@ -696,10 +698,21 @@ Prefer versions published >= 7 days ago.
 
 Patterns proven in projects that adopted this standard and evolved their own conventions.
 
-**Full-word identifiers.** Identifiers are written in full words - the extra keystrokes are
-worth more than the decoding cost at every read site. Contract-boundary shorthand clips (a
-project's own `Def`-style type suffixes or wire-name abbreviations) are reserved for the
-contract they name, never for code identifiers.
+**Full-word identifiers.** Identifiers are written in full words - the extra keystrokes are worth
+more than the decoding cost at every read site.
+
+Contract-boundary shorthand clips (a project's own `Def` -style type suffixes or wire-name
+abbreviations) are reserved for the contract they name, never for code identifiers.
+
+**Merge discipline.** After any merge that touched `src/`,
+`tsc --noEmit` and the package lint act as oracles for the auto-merge's silent duplications (both
+sides adding the same declaration lands two copies with no conflict marker).
+
+A conflicted lockfile is reconciled against the merged `package.json` - identical dependency names
+and spec strings make the matching side's lockfile correct, otherwise `npm install` regenerates it.
+
+The package-pinned formatter runs on every hand-resolved file,
+since conflict edits routinely break `format:check`.
 
 ## Sources
 
@@ -710,6 +723,8 @@ contract they name, never for code identifiers.
 - The general JavaScript engineering standard
 - [OpenTelemetry JavaScript](https://opentelemetry.io/docs/languages/js/)
 - [Zod Documentation](https://zod.dev/)
+
+[a]: https://devblogs.microsoft.com/typescript/announcing-typescript-5-9/
 
 ## Project Conventions
 

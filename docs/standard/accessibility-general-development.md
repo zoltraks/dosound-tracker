@@ -1,6 +1,6 @@
 # Accessibility Engineering Standards
 
-<!-- Version: 0.1.3 | Date: 2026-10-24 -->
+<!-- Version: 0.1.4 | Date: 2026-11-08 -->
 
 ## Purpose
 
@@ -11,8 +11,8 @@ It covers WCAG 2.2 Level AA conformance, automated testing, ARIA patterns, and m
 It is referenced by frontend engineering standards (CSS, HTML vanilla, TypeScript/React,
 JavaScript/Express) and does not stack - it is a cross-cutting requirement.
 
-It is written to be executed directly by an AI coding agent and to be read without effort by a human
-reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
@@ -41,12 +41,12 @@ Read it before reading anything else in this document.
 
 Follow these steps in order at the start of every task that touches UI code.
 
-1. Read the project rules file and the referring frontend standard.
-2. Run automated accessibility audit (axe-core) on the current build.
-3. Apply the relevant sections below for the component/feature being built.
-4. Run manual verification checklist for new interactive components.
-5. Run every applicable row of the Verification section.
-6. Check the result against the Definition of Done before reporting the task complete.
+1. Read the project rules file and the referring frontend standard
+2. Run automated accessibility audit (axe-core) on the current build
+3. Apply the relevant sections below for the component/feature being built
+4. Run manual verification checklist for new interactive components
+5. Run every applicable row of the Verification section
+6. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -66,25 +66,25 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
 
 ### Non-Negotiable Rules
 
-- **WCAG 2.2 Level AA conformance.** Every page/component meets all Level A and AA success criteria.
+- **WCAG 2.2 Level AA conformance.** Every page/component meets all Level A and AA success criteria
   A violation is a defect.
-- **axe-core passes in CI.** `axe-core` automated audit reports zero violations on merge.
+- **axe-core passes in CI.** `axe-core` automated audit reports zero violations on merge
   A violation is a defect.
-- **Keyboard operability.** Every interactive element is reachable and operable via keyboard alone.
+- **Keyboard operability.** Every interactive element is reachable and operable via keyboard alone
   A keyboard trap is a defect.
 - **Focus visibility.** Every interactive element has a visible `:focus-visible` style meeting 3:1
   contrast. Missing focus indicator is a defect.
-- **Color contrast.** Text 4.5:1, large text 3:1, UI components 3:1 against adjacent colors.
+- **Color contrast.** Text 4.5:1, large text 3:1, UI components 3:1 against adjacent colors
   A contrast failure is a defect.
 - **No color-only information.** Information conveyed by color is also available via text, icon,
   or pattern. A color-only signal is a defect.
-- **ARIA patterns followed.** Custom widgets implement WAI-ARIA Authoring Practices Guide patterns.
+- **ARIA patterns followed.** Custom widgets implement WAI-ARIA Authoring Practices Guide patterns
   A pattern deviation is a defect.
 - **Screen reader compatibility.** Semantic HTML, `alt` text, `aria-label` / `aria-labelledby`,
   live regions for dynamic content. A screen reader failure is a defect.
-- **Responsive zoom.** 200% zoom without horizontal scroll, 400% with reflow.
+- **Responsive zoom.** 200% zoom without horizontal scroll, 400% with reflow
   A reflow failure is a defect.
-- **Reduced motion.** `prefers-reduced-motion` respected, no auto-playing animation > 5s.
+- **Reduced motion.** `prefers-reduced-motion` respected, no auto-playing animation > 5s
   A violation is a defect.
 
 A violation of any of these rules is a defect, not a style preference.
@@ -118,8 +118,9 @@ When detection is ambiguous, ask only the questions that resolve the ambiguity.
 
 ### New Project
 
-When the repository is empty or the user declares a new project,
-accessibility tooling is mandatory. Ask the following questions.
+When the repository is empty or the user declares a new project, accessibility tooling is mandatory.
+
+Ask the following questions.
 
 | Question                   | Options                                  | Default If Declined       |
 | -------------------------- | ---------------------------------------- | ------------------------- |
@@ -267,9 +268,9 @@ export default [
 ### Keyboard Operability
 
 - **Tab order** follows visual order (DOM order) - no `tabindex > 0`.
-- **Focus trap** in modals, drawers, dialogs - focus cycles within, `Escape` closes.
+- **Focus trap** in modals, drawers, dialogs - focus cycles within, `Escape` closes
 - **Skip links** at page top: "Skip to main content" -> `#main`.
-- **Focus restoration** - when a dialog closes, focus returns to trigger element.
+- **Focus restoration** - when a dialog closes, focus returns to trigger element
 
 ### Focus Visibility
 
@@ -307,8 +308,8 @@ Custom widgets must follow WAI-ARIA APG 1.2 patterns exactly.
 
 ### Screen Reader Compatibility
 
-- Semantic HTML: `<nav>`, `<main>`, `<article>`, `<section>`, `<h1>` - `<h6>`, `<button>`,
-  `<label for="id">`
+- Semantic HTML: `<nav>`, `<main>`, `<article>`, `<section>`, `<h1>` - `<h6>`,
+  `<button>`, `<label for="id">`
 - Every `<img>` has `alt` - descriptive for content, empty for decorative
 - Complex images have `aria-describedby` pointing to full description
 - Forms: `<label for="id">`, `aria-required`, `aria-invalid`, `aria-describedby` for errors
@@ -341,8 +342,8 @@ with spacing compensating where size falls short:
 }
 ```
 
-The native `<dialog>` element provides focus trapping and `Esc` dismissal
-without a custom implementation (1.4.13, 2.1.2):
+The native `<dialog>` element provides focus trapping and `Esc` dismissal without a custom
+implementation (1.4.13, 2.1.2):
 
 ```html
 <dialog id="confirm-dialog" aria-labelledby="dialog-title">
@@ -358,8 +359,7 @@ without a custom implementation (1.4.13, 2.1.2):
 </script>
 ```
 
-Authentication flows permit paste and password-manager autofill (3.3.8) -
-`autocomplete` stays enabled and no copy gate blocks the field:
+Authentication flows permit paste and password-manager autofill (3.3.8) - `autocomplete` stays enabled and no copy gate blocks the field:
 
 ```html
 <input type="text" name="username" autocomplete="username" />
@@ -386,9 +386,9 @@ Status updates announce through a polite live region (4.1.3):
 
 ### CI Requirements
 
-- `axe-core` audit runs on every PR - zero violations to merge.
-- `eslint-plugin-jsx-a11y` runs on every PR - zero errors to merge.
-- Component tests include `axe` assertions - zero violations to merge.
+- `axe-core` audit runs on every PR - zero violations to merge
+- `eslint-plugin-jsx-a11y` runs on every PR - zero errors to merge
+- Component tests include `axe` assertions - zero violations to merge
 
 ## Testing
 
@@ -407,10 +407,10 @@ Status updates announce through a polite live region (4.1.3):
 ### Requirements
 
 - Zero axe-core violations in CI (E2E + component).
-- Zero eslint-plugin-jsx-a11y errors in CI.
-- Manual keyboard operability checklist passes for new components.
+- Zero eslint-plugin-jsx-a11y errors in CI
+- Manual keyboard operability checklist passes for new components
 - Manual screen reader smoke test passes (NVDA/VoiceOver).
-- Color contrast meets WCAG 2.2 AA ratios.
+- Color contrast meets WCAG 2.2 AA ratios
 
 ## Build
 
@@ -467,30 +467,30 @@ jobs:
 ### Correctness
 
 - `axe-core` reports zero violations in CI (E2E + component).
-- `eslint .` reports zero `jsx-a11y` errors.
-- Manual keyboard operability checklist passes.
+- `eslint .` reports zero `jsx-a11y` errors
+- Manual keyboard operability checklist passes
 - Manual screen reader smoke test passes (NVDA/VoiceOver).
-- Color contrast meets WCAG 2.2 AA ratios.
+- Color contrast meets WCAG 2.2 AA ratios
 
 ### Structure
 
-- Semantic HTML used throughout - no `div`/`span` where native element exists.
-- ARIA only where native semantics insufficient - no redundant ARIA.
+- Semantic HTML used throughout - no `div`/`span` where native element exists
+- ARIA only where native semantics insufficient - no redundant ARIA
 - Focus management implemented for all overlays (modals, drawers, toasts).
-- Skip link present at page top.
+- Skip link present at page top
 
 ### Quality
 
-- Design tokens define verified contrast ratios.
-- Reduced motion implemented for all animations.
-- No auto-playing media without controls.
+- Design tokens define verified contrast ratios
+- Reduced motion implemented for all animations
+- No auto-playing media without controls
 - Error messages linked via `aria-describedby`.
 
 ### Hygiene
 
 - Accessibility test files committed (`*.a11y.test.ts`, `accessibility.spec.ts`).
-- No `role="presentation"` on focusable elements.
-- Documentation updated when component API changes affect accessibility.
+- No `role="presentation"` on focusable elements
+- Documentation updated when component API changes affect accessibility
 
 ## General Principles
 
@@ -506,20 +506,20 @@ jobs:
 
 **Standards Over Custom.** Follow APG patterns exactly - custom patterns cause screen reader bugs.
 
-**Accessibility Is Not a Feature.** It is a baseline quality attribute - every component ships
-accessible.
+**Accessibility Is Not a Feature.** It is a baseline quality attribute - every
+component ships accessible.
 
 ## Fed Patterns
 
 Patterns proven in projects that adopted this standard and evolved their own conventions.
 
-**Recorded keyboard order.** Keyboard traversal follows a recorded, documented order through the
-interface's logical regions - the order is stated in prose so agents and tests verify the same
-sequence rather than inferring it.
+**Recorded keyboard order.** Keyboard traversal follows a recorded,
+documented order through the interface's logical regions - the order is stated in prose so agents
+and tests verify the same sequence rather than inferring it.
 
 **Active-region signalling.** The currently focused or active interface region is visually
-highlighted in addition to the element-level focus ring, so navigation stays legible in dense
-layouts.
+highlighted in addition to the element-level focus ring,
+so navigation stays legible in dense layouts.
 
 ## Sources
 

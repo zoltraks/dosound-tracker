@@ -155,9 +155,10 @@ The following directories are preserved from the previous workflow and are not p
 
 - `docs/prompt/<version>/` — historical AI prompt logs from versions 1.0, 1.1, and 1.2
 - `docs/feature/` — feature proposals such as LOGGER.md
-- `docs/report/<version>/` — generated analysis reports
 
 Do not modify these directories unless explicitly instructed.
+
+Existing `docs/report/<version>/` contents are historical, but the directory itself remains the live report role - new audits and generated reports land there per the Audit-Driven Ring and the repository layout map.
 
 ## Version Window SDLC
 

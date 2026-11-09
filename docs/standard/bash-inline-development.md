@@ -1,36 +1,34 @@
 # Bash Inline Engineering Standards
 
-<!-- Version: 0.1.9 | Date: 2026-10-24 -->
+<!-- Version: 0.2.0 | Date: 2026-11-08 -->
 
 ## Purpose
 
-This document defines the engineering standard for using bash as an
-inline tool: one-liners, loops, pipelines, and scratch probe scripts
-run from a terminal or an agent session - not for building shippable
-shell programs.
+This document defines the engineering standard for using bash as an inline tool: one-liners, loops,
+pipelines, and scratch probe scripts run from a terminal or an agent session - not for building
+shippable shell programs.
 
-It covers host differences between GNU bash and Git Bash, invocation
-forms, environment and PATH handling, exit codes and pipelines,
-quoting, managed-desktop constraints, scratch-probe conventions, and
-the boundary where a suite utility replaces a script.
+It covers host differences between GNU bash and Git Bash, invocation forms,
+environment and PATH handling, exit codes and pipelines, quoting, managed-desktop constraints,
+scratch-probe conventions, and the boundary where a suite utility replaces a script.
 
-It is written to be executed directly by an AI coding agent and to be
-read without effort by a human reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
 A task is in scope when all of the following conditions hold.
 
-- Bash runs as a means, not the deliverable - probing state, reshaping
-  output, driving a tool chain, checking an environment.
-- The script lives for minutes: a `-c` string, a loop typed at the
-  prompt, a heredoc-fed probe, or a scratch file deleted after use.
-- The environment is a managed desktop - no admin rights assumed, no
-  guarantee of package installation, an unfamiliar PATH.
+- Bash runs as a means, not the deliverable - probing state, reshaping output, driving a tool chain,
+  checking an environment.
+- The script lives for minutes: a `-c` string, a loop typed at the prompt, a heredoc-fed probe,
+  or a scratch file deleted after use.
+- The environment is a managed desktop - no admin rights assumed,
+  no guarantee of package installation, an unfamiliar PATH.
 
-Authoring a shipped script, a cron job, a system init script, or the
-project's own tooling is out of scope - those follow product
-engineering standards, though every rule here still applies.
+Authoring a shipped script, a cron job, a system init script,
+or the project's own tooling is out of scope - those follow product engineering standards,
+though every rule here still applies.
 
 ## How To Use This Standard
 
@@ -40,26 +38,20 @@ Read it before reading anything else in this document.
 
 ### Order Of Operations
 
-Follow these steps in order at the start of every task that uses bash
-as an inline tool.
+Follow these steps in order at the start of every task that uses bash as an inline tool.
 
-1. Read the project rules file, such as `AGENTS.md`, `README.md`, or
-   `docs/GUIDELINES.md`, because a project rule overrides this
-   standard.
-2. Discover the tool before writing a command - `command -v x` tells
-   you what a name resolves to, never assume presence or version.
-3. Prefer the suite utility that owns the capability - a probe that
-   `suite-probe`, `suite-net`, `suite-task`, or `suite-table` already
-   covers is a utility call, not a
-   pipeline.
-4. Pick the invocation form: a one-liner for a single step, a loop for
-   a sweep, a `work/scripts/*.sh` file for anything reused or nested.
-5. Set the output contract up front - capture to a `work/dumps/` file
-   when output is large, machine-read, or inspected more than once.
-6. Verify by exit code and printed evidence - never by the absence of
-   an error message.
-7. Check the result against the Definition of Done before reporting
-   the task complete.
+1. Read the project rules file, such as `AGENTS.md`, `README.md`, or `docs/GUIDELINES.md`,
+   because a project rule overrides this standard.
+2. Discover the tool before writing a command - `command -v x` tells you what a name resolves to,
+   never assume presence or version.
+3. Prefer the suite utility that owns the capability - a probe that `suite-probe`, `suite-net`,
+   `suite-task`, or `suite-table` already covers is a utility call, not a pipeline.
+4. Pick the invocation form: a one-liner for a single step, a loop for a sweep,
+   a `work/scripts/*.sh` file for anything reused or nested.
+5. Set the output contract up front - capture to a `work/dumps/` file when output is large,
+   machine-read, or inspected more than once.
+6. Verify by exit code and printed evidence - never by the absence of an error message
+7. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -75,28 +67,22 @@ When two rules conflict, apply the first matching source in this list.
 
 ### Non-Negotiable Rules
 
-- **A pipeline hides the left side's exit code.** `cmd | head`
-  reports `head`'s status - check the command's exit code on the
-  unpiped run, read `PIPESTATUS[0]`, or capture to a file first.
-- **Machine-read output gets a forced locale.** `LC_ALL=C` in front of
-  a command whose text you parse - localized tools break field
-  grammars. The same rule the C# backend code follows applies to the
-  inline probe.
-- **Variables are quoted.** `"$var"` at every expansion site - an
-  unquoted expansion word-splits and glob-expands, and a path with a
-  space silently becomes two arguments.
-- **Heredocs are single-quoted.** `cat <<'EOF'` or
-  `python3 - <<'EOF'` keeps `$`, backticks, and `$(...)` inside the
-  payload - shell expansion inside a heredoc silently eats both.
+- **A pipeline hides the left side's exit code.** `cmd | head` reports `head`'s status - check the
+  command's exit code on the unpiped run, read `PIPESTATUS[0]`, or capture to a file first.
+- **Machine-read output gets a forced locale.** `LC_ALL=C` in front of a command whose text you
+  parse - localized tools break field grammars.
+  The same rule the C# backend code follows applies to the inline probe.
+- **Variables are quoted.** `"$var"` at every expansion site - an unquoted expansion word-splits and
+  glob-expands, and a path with a space silently becomes two arguments.
+- **Heredocs are single-quoted.** `cat <<'EOF'` or `python3 - <<'EOF'` keeps `$`, backticks,
+  and `$(...)` inside the payload - shell expansion inside a heredoc silently eats both.
 - **Environment overrides go on the command, not in `export`.**
-  `VAR=x cmd` scopes the change to the one run - a stray `export`
-  leaks into every later command in the session, and `env -u VAR cmd`
-  verifies a no-variable path without unsetting anything.
-- **A probe prints evidence.** Observed values, not pass/fail - the
-  reader verifies the claim from the printed data.
-- **Lock-holders are investigated, not killed.** A held dpkg or
-  package-manager lock means another process is working - find it
-  (`fuser`, `ps`), wait for it, and never kill an updater mid-flight.
+  `VAR=x cmd` scopes the change to the one run - a stray `export` leaks into every later command in
+  the session, and `env -u VAR cmd` verifies a no-variable path without unsetting anything.
+- **A probe prints evidence.** Observed values,
+  not pass/fail - the reader verifies the claim from the printed data.
+- **Lock-holders are investigated, not killed.** A held dpkg or package-manager lock means another
+  process is working - find it (`fuser`, `ps`), wait for it, and never kill an updater mid-flight.
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -104,8 +90,7 @@ A violation of any of these rules is a defect, not a style preference.
 
 ### Detection First
 
-Before asking the user anything, inspect the repository and infer the
-probe environment.
+Before asking the user anything, inspect the repository and infer the probe environment.
 
 | Signal Found In Repository              | Inferred Decision                     | Confidence |
 | --------------------------------------- | ------------------------------------- | ---------- |
@@ -117,21 +102,20 @@ probe environment.
 
 ### Existing Project
 
-When detection is confident, state the conclusion and ask for a single
-confirmation rather than running a questionnaire.
+When detection is confident, state the conclusion and ask for a single confirmation rather than
+running a questionnaire.
 
-Example: "I see scratch probe conventions under `work/` and a
-`.shellcheckrc` - I will probe under those conventions.
+Example: "I see scratch probe conventions under `work/` and a `.shellcheckrc` - I will probe
+under those conventions.
 
 Is that correct?"
 
-When detection is ambiguous, ask only the questions that resolve the
-ambiguity.
+When detection is ambiguous, ask only the questions that resolve the ambiguity.
 
 ### New Project
 
-When the repository is empty or the user declares a new probing
-context, ask the following questions.
+When the repository is empty or the user declares a new probing context,
+ask the following questions.
 
 | Question                     | Options                       | Default If Declined |
 | ---------------------------- | ----------------------------- | ------------------- |
@@ -144,26 +128,23 @@ context, ask the following questions.
 The following are the authoritative sources for inline bash work.
 
 - [GNU Bash Reference Manual](https://www.gnu.org/software/bash/manual/bash.html)
-  - quoting, expansion, `PIPESTATUS`, and process substitution.
-- [POSIX Shell Command Language](https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html)
-  - the portable subset.
+  - quoting, expansion, `PIPESTATUS`, and process substitution
+- [POSIX Shell Command Language][a]
+  - the portable subset
 - [ShellCheck Wiki](https://www.shellcheck.net/wiki/)
-  - static analysis rules for shell scripts.
+  - static analysis rules for shell scripts
 
 ## Language Version
 
-Inline probes target GNU Bash 5.2+ on Linux and macOS, and the MSYS2
-Git Bash port on Windows.
+Inline probes target GNU Bash 5.2+ on Linux and macOS, and the MSYS2 Git Bash port on Windows.
 
 Scripts stay inside the POSIX-leaning subset that both hosts share.
 
-On runtime upgrade, re-validate all rules against release notes before
-writing code.
+On runtime upgrade, re-validate all rules against release notes before writing code.
 
 ## Project Structure
 
-Scratch probe content lives in a temporary tree that is removed when
-the session ends.
+Scratch probe content lives in a temporary tree that is removed when the session ends.
 
 ```
 repo-root/
@@ -172,14 +153,14 @@ repo-root/
     └── dumps/           # Raw command outputs and captured traces
 ```
 
-- `work/dumps/` holds command captures - one subdirectory per probe
-  topic, JSON output redirected in full.
-- `work/scripts/` holds throwaway probe scripts - single-quoted
-  heredoc writes only, deleted with the scratch tree.
-- A dump is inspected with the file tools, not `cat`-ed back into the
-  transcript - large output stays out of context.
-- Temporary test directories (`mkdir work/dumps/empty`) are removed
-  with `rmdir` when done - empty-dir PATH tricks leave no trace.
+- `work/dumps/` holds command captures - one subdirectory per probe topic,
+  JSON output redirected in full.
+- `work/scripts/` holds throwaway probe scripts - single-quoted heredoc writes only,
+  deleted with the scratch tree.
+- A dump is inspected with the file tools,
+  not `cat` -ed back into the transcript - large output stays out of context.
+- Temporary test directories (`mkdir work/dumps/empty`)
+  are removed with `rmdir` when done - empty-dir PATH tricks leave no trace.
 
 ## Naming Conventions
 
@@ -194,8 +175,7 @@ repo-root/
 
 ### Host Differences
 
-Probes run on GNU bash (Linux, macOS) and Git Bash (Windows) - same
-language, different universe.
+Probes run on GNU bash (Linux, macOS) and Git Bash (Windows) - same language, different universe.
 
 | Behavior                | GNU bash                  | Git Bash on Windows                                                                 |
 | ----------------------- | ------------------------- | ----------------------------------------------------------------------------------- |
@@ -213,37 +193,35 @@ language, different universe.
 
 Two Windows-host quirks worth keeping near the surface:
 
-- A bulk rewrite under `core.fscache` leaves every touched file
-  phantom-modified - `git diff` clean, `git status` full. Refresh
-  per-path with
-  `git -c core.fscache=false ls-files -m -z | xargs -0 -n 100 git -c core.fscache=false update-index --refresh --`.
-- Build output can be localized (`Kompilacja powiodla sie.` is
-  success) - trust the exit code or read the raw tail, never grep for
-  English result words.
-- A device-namespace path (`\\.\pipe\name`, `\\?\C:\...`) loses a
-  backslash layer crossing the bash-to-PowerShell hand-off, inside a
-  single-quoted heredoc the same as an inline `-Command` - an authored
-  `'\\.\pipe\'` arrives as `'\.\pipe\'` and .NET resolves it relative
-  to cwd. Build the value programmatically (`[char]92` concatenation,
-  `[IO.Path]` joins) and print it before use - never trust a literal
-  `\\` through this channel.
+- A bulk rewrite under `core.fscache` leaves every touched file phantom-modified - `git diff` clean,
+  `git status` full. Refresh per-path with:
+
+  ```
+  git -c core.fscache=false ls-files -m -z | xargs -0 -n 100 git -c core.fscache=false update-index --refresh --
+  ```
+
+- Build output can be localized (`Kompilacja powiodla sie.` is success)
+  - trust the exit code or read the raw tail, never grep for English result words
+- A device-namespace path (`\\.\pipe\name`, `\\?\C:\...`)
+  loses a backslash layer crossing the bash-to-PowerShell hand-off,
+  inside a single-quoted heredoc the same as an inline `-Command` - an authored `'\\.\pipe\'`
+  arrives as `'\.\pipe\'` and .NET resolves it relative to cwd.
+  Build the value programmatically (`[char]92` concatenation, `[IO.Path]` joins)
+  and print it before use - never trust a literal `\\` through this channel.
 
 ### Invocation Forms
 
-- `bash -c '<line>'` - a single composed step. Quote the whole string
-  once - inner single quotes are impossible inside it.
+- `bash -c '<line>'` - a single composed step
+  Quote the whole string once - inner single quotes are impossible inside it.
 - Interactive line or loop - sweeps like
-  `for t in a b c; do command -v "$t" || echo "$t missing"; done` are
-  the discovery idiom.
-- `cmd1 && cmd2` - chain only when later steps depend on the earlier
-  succeeding, and prefer one command per agent call anyway.
-- `work/scripts/<name>.sh` - multi-step probes live in scratch
-  files, run with `bash file` or `bash -x file` for tracing. A
-  pipeline's debug story is a log file, not a longer pipeline.
-- `env VAR=x cmd` - per-command environment, the override that cannot
-  leak.
-- `bash <<'EOF'` - a multi-statement probe passed on stdin, quoted
-  delimiter mandatory:
+  `for t in a b c; do command -v "$t" || echo "$t missing"; done` are the discovery idiom.
+- `cmd1 && cmd2` - chain only when later steps depend on the earlier succeeding,
+  and prefer one command per agent call anyway.
+- `work/scripts/<name>.sh` - multi-step probes live in scratch files,
+  run with `bash file` or `bash -x file` for tracing. A pipeline's debug story is a log file,
+  not a longer pipeline.
+- `env VAR=x cmd` - per-command environment, the override that cannot leak
+- `bash <<'EOF'` - a multi-statement probe passed on stdin, quoted delimiter mandatory:
 
   ```bash
   bash <<'EOF'
@@ -255,25 +233,21 @@ Two Windows-host quirks worth keeping near the surface:
 
 ### Environment And PATH
 
-- `command -v` is the discovery verb - `which` is an alias with
-  inconsistent flags across distributions.
-- PATH differs between login shells, non-login shells, and service
-  environments - a tool that exists interactively can be absent for a
-  spawned process. Probe the environment the command will actually
-  see, not your own.
-- Simulate a missing tool with a clean PATH -
-  `env PATH=/tmp/emptydir cmd` - the standard way to verify a
-  tool-absent code path without uninstalling anything.
-- `~/.bashrc` edits affect new shells, never the running one - source
-  it or use the full path for the current session.
-- Machine-wide variables lag: a process started before `setx` or a
-  `/etc/environment` change sees the old environment - verify with
-  `env -u` per run rather than trusting inheritance.
+- `command -v` is the discovery verb - `which` is an alias with inconsistent flags
+  across distributions.
+- PATH differs between login shells, non-login shells,
+  and service environments - a tool that exists interactively can be absent for a spawned process.
+  Probe the environment the command will actually see, not your own.
+- Simulate a missing tool with a clean PATH - `env PATH=/tmp/emptydir cmd` - the standard way to
+  verify a tool-absent code path without uninstalling anything.
+- `~/.bashrc` edits affect new shells, never the running one - source it or use the full path for
+  the current session.
+- Machine-wide variables lag: a process started before `setx` or a `/etc/environment` change sees
+  the old environment - verify with `env -u` per run rather than trusting inheritance.
 
 ### Exit Codes And Pipelines
 
-- The exit code is the contract - `echo $?` or `; echo "exit=$?"` on
-  every verification run.
+- The exit code is the contract - `echo $?` or `; echo "exit=$?"` on every verification run
 - `PIPESTATUS` (bash, not POSIX `sh`) indexes each pipeline member:
 
   ```bash
@@ -284,79 +258,74 @@ Two Windows-host quirks worth keeping near the surface:
   fi
   ```
 
-- `cmd || true` is a deliberate swallow - acceptable when the failure
-  is the probe's expected outcome and you print the code anyway.
-- Never append an exit-code marker into the same redirection as a JSON
-  payload - `cmd > out.json` followed by an echoed marker into the same
-  file leaves `Extra data` trailing the document and every downstream
-  parse fails. Print the marker to the console or stderr, or capture
-  `STATUS=$?` in a variable outside the redirect.
-- Never merge diagnostics into a structured payload -
-  `cmd --json 2>&1 | parser` prepends warning lines to the document
-  and the parse fails on a tool whose stdout was already clean. Keep
-  the streams separate - `cmd --json 2>err.log | parser`, or
-  `2>/dev/null` only when the warnings are known and disposable.
-- `xargs` exit code aggregates child failures - `xargs -0` pairs with
-  `-print0`/`-z` producers for filenames with spaces.
-- Never `if cmd | grep -q pattern` to test for presence - the pipe
-  runs `grep`, not the condition you meant, and `grep -q` on a
-  truncated stream can false-positive.
+- `cmd || true` is a deliberate swallow - acceptable when the failure is the probe's expected
+  outcome and you print the code anyway.
+- Never append an exit-code marker into the same redirection as a JSON payload - `cmd > out.json`
+  followed by an echoed marker into the same file leaves `Extra data` trailing the document and
+  every downstream parse fails. Print the marker to the console or stderr,
+  or capture `STATUS=$?` in a variable outside the redirect.
+- Never merge diagnostics into a structured payload - `cmd --json 2>&1 | parser` prepends warning
+  lines to the document and the parse fails on a tool whose stdout was already clean.
+  Keep the streams separate - `cmd --json 2>err.log | parser`,
+  or `2>/dev/null` only when the warnings are known and disposable.
+- `xargs` exit code aggregates child failures - `xargs -0` pairs with `-print0` / `-z` producers for
+  filenames with spaces.
+- Never `if cmd | grep -q pattern` to test for presence - the pipe runs `grep`,
+  not the condition you meant, and `grep -q` on a truncated stream can false-positive.
 
 ### Quoting And Word Splitting
 
-- Double quotes for variable expansion, single quotes for literal
-  text - the difference is `$` and backtick interpretation.
-- `"$@"` and arrays for argument lists - string-concatenated commands
-  re-split and lose quoting boundaries.
-- `--` terminates option parsing - `rm -- "$f"`, `grep -- "$pat"` -
-  when an argument could begin with a dash.
-- `$(...)` not backticks - nestable, readable, no escaping ambiguity.
-- Parameter expansion supplies defaults - `${var:-default}` guards an
-  unset value without an `if`.
-- Process substitution `<(...)` feeds a command's stdout where a file
-  is expected - `diff <(cmd a) <(cmd b)`.
+- Double quotes for variable expansion, single quotes for literal text - the difference is `$` and
+  backtick interpretation.
+- `"$@"` and arrays for argument lists - string-concatenated commands re-split and
+  lose quoting boundaries.
+- `--` terminates option parsing - `rm -- "$f"`,
+  `grep -- "$pat"` - when an argument could begin with a dash.
+- `$(...)` not backticks - nestable, readable, no escaping ambiguity
+- Parameter expansion supplies defaults - `${var:-default}` guards an unset value without an `if`.
+- Process substitution `<(...)` feeds a command's stdout where a file is expected -
+  `diff <(cmd a) <(cmd b)`.
 
 ### Managed-Desktop Constraints
 
-- No admin, no installs, no daemons - probes stay user-level.
-- Interpreters may exist but are not guaranteed - `command -v python3`
-  before relying on it, and `suite-table`/`suite-probe` cover the common
-  JSON and file work without any interpreter.
-- Do not write to system paths or `/tmp` scratch shared with other
-  users - scratch lives in the project's `work/` tree.
-- A long-running lock or update (`apt`, update managers) belongs to
-  another process - inspect the holder and wait.
+- No admin, no installs, no daemons - probes stay user-level
+- Interpreters may exist but are not guaranteed - `command -v python3` before relying on it,
+  and `suite-table` / `suite-probe` cover the common JSON and file work without any interpreter.
+- Do not write to system paths or `/tmp` scratch shared with other users - scratch lives in the
+  project's `work/` tree.
+- A long-running lock or update (`apt`, update managers)
+  belongs to another process - inspect the holder and wait.
 
 ### Scratch Probe Conventions
 
-- Scratch probes live under `work/scripts/` - they are deleted with the
-  scratch tree and never referenced by shipped code.
-- Dumps live one subdirectory per probe topic, JSON output redirected
-  in full - inspect a dump with the file tools, never `cat` it back
-  into the transcript, so large output stays out of context.
-- A probe is disposable: optimize for fast writing and clear output, not
-  structure - but keep the non-negotiable rules (they exist because
-  probes are where shortcuts hurt).
-- Temporary directories a probe creates are removed with `rmdir` when
-  done - an empty-dir PATH trick leaves no trace.
-- Never put credentials, tokens, or user data into a probe - scripts in
-  a scratch directory outlive memory of them.
+- Scratch probes live under `work/scripts/` - they are deleted with the scratch tree and never
+  referenced by shipped code.
+- Dumps live one subdirectory per probe topic,
+  JSON output redirected in full - inspect a dump with the file tools,
+  never `cat` it back into the transcript, so large output stays out of context.
+- A probe is disposable: optimize for fast writing and clear output,
+  not structure - but keep the non-negotiable rules (they exist because probes are
+  where shortcuts hurt).
+- Temporary directories a probe creates are removed with `rmdir` when done - an empty-dir PATH
+  trick leaves no trace.
+- Never put credentials, tokens, or user data into a probe - scripts in a scratch directory
+  outlive memory of them.
 
 ### When To Reach For Bash
 
 - The capability has no suite verb and no standard utility covers it:
-  package-manager state, service health, PATH resolution sweeps,
-  capability simulation, lock inspection.
-- JSON shaping when `suite-table` cannot express the transform -
-  `python3 - <<'EOF'` for structured reads, `python3 -m json.tool`
-  for pretty-printing.
-- Orchestration around existing utilities - loops over `--json`
-  output, batched document validation, environment permutations for
-  testing.
-- Never to replace a capability a suite utility already owns, never
-  to parse rendered text a utility already emits as JSON.
+  package-manager state, service health, PATH resolution sweeps, capability
+  simulation, lock inspection.
+- JSON shaping when `suite-table` cannot express the transform - `python3 - <<'EOF'` for structured
+  reads, `python3 -m json.tool` for pretty-printing.
+- Orchestration around existing utilities - loops over `--json` output, batched document validation,
+  environment permutations for testing.
+- Never to replace a capability a suite utility already owns,
+  never to parse rendered text a utility already emits as JSON.
 
 ### Common Operations
+
+Recipes for the operations an inline suite performs most often.
 
 ### Discover Executables
 
@@ -427,11 +396,10 @@ tr -cd '\r' < file | wc -c  # 0 means LF-clean
 
 ### Forbidden Patterns
 
-- Unquoted expansions (`echo $file`) - word-splitting and globbing.
-- `eval` with untrusted variables - arbitrary code execution.
-- Ignoring pipeline failures - the right side's exit code hides the
-  left side's crash.
-- `export` for a one-off override - it leaks into every later command.
+- Unquoted expansions (`echo $file`) - word-splitting and globbing
+- `eval` with untrusted variables - arbitrary code execution
+- Ignoring pipeline failures - the right side's exit code hides the left side's crash
+- `export` for a one-off override - it leaks into every later command
 
 ## Formatting and Linting
 
@@ -441,8 +409,8 @@ ShellCheck lints every scratch script file.
 shellcheck -s bash work/scripts/*.sh
 ```
 
-Suppress a rule deliberately with a directive comment that states the
-reason - never blanket-disable with `shellcheck -e` at the call site.
+Suppress a rule deliberately with a directive comment that states the reason - never blanket-disable
+with `shellcheck -e` at the call site.
 
 Indentation is two spaces.
 
@@ -450,11 +418,11 @@ Indentation is two spaces.
 
 Inline commands are verified on synthetic inputs.
 
-Run the probe against a known-good fixture and check the exit code and
-stderr - an assertion is a printed value, not a silent zero.
+Run the probe against a known-good fixture and check the exit code and stderr - an assertion is a
+printed value, not a silent zero.
 
-Use `bash -n` for a syntax check without execution, and `bash -x` for
-a traced run when a probe misbehaves.
+Use `bash -n` for a syntax check without execution,
+and `bash -x` for a traced run when a probe misbehaves.
 
 ## Build
 
@@ -462,8 +430,8 @@ Not applicable - inline scripts are interpreted, not built.
 
 Scratch files do not need `chmod +x` when invoked as `bash file`.
 
-A scratch file that graduates into project tooling leaves `work/` and
-follows the product's script conventions instead.
+A scratch file that graduates into project tooling leaves `work/` and follows the product's script
+conventions instead.
 
 ## Dependencies
 
@@ -477,8 +445,8 @@ Inline probes use standard coreutils and widely available helpers.
 | Process  | `ps`, `fuser`                   | Lock and holder inspection |
 | Lint     | `shellcheck`                    | Static analysis of scripts |
 
-Avoid fragile or platform-absent utilities - a probe that needs an
-uncommon tool declares the dependency in its header comment.
+Avoid fragile or platform-absent utilities - a probe that needs an uncommon tool declares the
+dependency in its header comment.
 
 ## Verification
 
@@ -494,71 +462,68 @@ uncommon tool declares the dependency in its header comment.
 
 ### Correctness
 
-- Commands ran against the environment they claim to probe - PATH,
-  locale, and privileges verified, not assumed.
-- Verification output shows observed values, not inferred success.
+- Commands ran against the environment they claim to probe - PATH, locale, and privileges
+  verified, not assumed.
+- Verification output shows observed values, not inferred success
 - Pipelines were checked on the unpiped command or via `PIPESTATUS`.
 
 ### Structure
 
-- Scratch files live under `work/scripts/` and dumps under
-  `work/dumps/`.
-- Machine-read text ran under `LC_ALL=C` or was captured raw.
+- Scratch files live under `work/scripts/` and dumps under `work/dumps/`.
+- Machine-read text ran under `LC_ALL=C` or was captured raw
 
 ### Quality
 
-- The probe prints the evidence it claims - exit codes next to every
-  assertion.
-- Every `export` is justified - overrides are per-command otherwise.
-- ShellCheck reports no warnings on scratch files kept for the
-  session.
+- The probe prints the evidence it claims - exit codes next to every assertion
+- Every `export` is justified - overrides are per-command otherwise
+- ShellCheck reports no warnings on scratch files kept for the session
 
 ### Hygiene
 
-- No lock-holders killed, no system paths touched, no stray exports.
-- Scratch files under `work/` are removed when done.
-- The report cites the evidence - a captured dump path or printed
-  output, never "it worked".
+- No lock-holders killed, no system paths touched, no stray exports
+- Scratch files under `work/` are removed when done
+- The report cites the evidence - a captured dump path or printed output, never "it worked".
 
 ## General Principles
 
-- **Always quote variables.** `"$var"` at every expansion site.
-- **Check the left side of the pipe.** `PIPESTATUS` or the unpiped
-  run decides the verdict.
-- **Single-quote heredocs.** `<<'EOF'` keeps the payload literal.
-- **Locale before parsing.** `LC_ALL=C` for machine-read output.
+- **Always quote variables.** `"$var"` at every expansion site
+- **Check the left side of the pipe.** `PIPESTATUS` or the unpiped run decides the verdict
+- **Single-quote heredocs.** `<<'EOF'` keeps the payload literal
+- **Locale before parsing.** `LC_ALL=C` for machine-read output
 - **Per-command environment.** `VAR=x cmd`, never `export`.
-- **Print evidence, not verdicts.** The reader verifies from data.
-- **Clean up scratch files.** `work/` ends the session empty.
-- **Investigate lock-holders.** Wait, never kill an updater.
+- **Print evidence, not verdicts.** The reader verifies from data
+- **Clean up scratch files.** `work/` ends the session empty
+- **Investigate lock-holders.** Wait, never kill an updater
 
 ## Fed Patterns
 
 Patterns proven in projects that adopted this standard and evolved their own conventions.
 
-**Device-namespace paths lose a backslash layer.** A literal `'\\.\pipe\name'` or
-`'\\?\C:\...'` crossing the bash-to-PowerShell hand-off arrives as `'\.\pipe\'` inside a
-single-quoted heredoc the same as an inline `-Command`, and .NET resolves it relative to cwd.
-Build the value programmatically (`[char]92` concatenation, `[IO.Path]` joins) and print it
-before use - never trust a literal `\\` through this channel.
+**Device-namespace paths lose a backslash layer.** A literal `'\\.\pipe\name'` or `'\\?\C:\...'`
+crossing the bash-to-PowerShell hand-off arrives as `'\.\pipe\'` inside a single-quoted heredoc the
+same as an inline `-Command`, and .NET resolves it relative to cwd.
 
-**Bash double quotes corrupt PowerShell payloads.** `$env:` variables expand to empty before
-the called program sees them - `powershell -Command "Set-Clipboard -Value '... $env:USERPROFILE
-...'"` strips the variable name. Build command and payload strings in a `.ps1` file with
-single-quoted literals, or write the file with a single-quoted heredoc.
+Build the value programmatically (`[char]92` concatenation, `[IO.Path]` joins)
+and print it before use - never trust a literal `\\` through this channel.
+
+**Bash double quotes corrupt PowerShell payloads.** `$env:` variables expand to empty before the
+called program sees them - `powershell -Command "Set-Clipboard -Value '... $env:USERPROFILE ...'"`
+strips the variable name. Build command and payload strings in a `.ps1` file with single-quoted
+literals, or write the file with a single-quoted heredoc.
 
 ## Sources
 
-- https://www.gnu.org/software/bash/manual/bash.html - GNU Bash
-  Reference Manual: quoting, expansion, `PIPESTATUS`, process
-  substitution.
+- https://www.gnu.org/software/bash/manual/bash.html - GNU Bash Reference Manual: quoting,
+  expansion, `PIPESTATUS`, process substitution.
 - https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
-  - POSIX Shell Command Language: the portable subset.
+  - POSIX Shell Command Language: the portable subset
 - https://www.shellcheck.net/wiki/ - ShellCheck static analysis rules.
-- `bash(1)` - quoting, expansion, `PIPESTATUS`, process substitution.
-- `help test`, `help printf` - builtins over `/usr/bin` variants.
-- The repository's agent rules and decision records - the
-  utilities-first boundary this standard implements.
+- `bash(1)` - quoting, expansion, `PIPESTATUS`, process substitution
+- `help test`, `help printf` - builtins over `/usr/bin` variants
+- The repository's agent rules and decision records - the utilities-first boundary this
+  standard implements.
+
+[a]: https://pubs.opengroup.org/onlinepubs/9699919799/utilities/V3_chap02.html
 
 ## Project Conventions
 

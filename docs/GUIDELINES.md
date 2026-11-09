@@ -4,28 +4,7 @@
 
 **Section Header Format**
 
-- Use "fragment", not "excerpt", for code examples.
-- Section headers using bold (`**Header**`) must follow this format:
-  - Header text on its own line.
-  - No period at the end.
-  - Followed by a blank line.
-  - Content on the next line.
-
-Example:
-
-```
-**Schema validator**
-
-Rejects unknown fields loudly in development.
-```
-
-Not:
-
-```
-**Schema validator.**
-
-Rejects unknown fields loudly in development.
-```
+Owned by `STYLE.md` - the bold section-header format and "fragment" terminology rules live there.
 
 **Identifier Format**
 
@@ -100,6 +79,7 @@ The active documentation set is composed of the following files. Each file is th
 | `standard/accessibility-general-development.md`  | Accessibility engineering standard                                       |
 | `standard/performance-budgets-development.md`    | Performance-budget engineering standard                                  |
 | `standard/standard-template-development.md`      | Standard-authoring template                                              |
+| `standard/bash-inline-development.md`            | Bash and inline shell engineering standard                               |
 | `template/change-request-template.md`            | Template for change request specification documents                      |
 | `template/implementation-plan-template.md`       | Template for implementation plan documents                               |
 | `template/refactoring-proposal-template.md`      | Template for refactoring proposal documents                              |
@@ -149,6 +129,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 | Standards              | `docs/standard/`                    | Engineering standards, one per technology stack  |
 | Media                  | `docs/media/`                       | Documentation images                             |
 | Changelog              | `public/CHANGELOG.md`               | Written only at version bump                     |
+| Bundled documents      | `public/`                           | MANUAL.md, MESSAGES.md rendered in-app           |
 | Local workspace        | `work/`                             | Gitignored scratch, shell-access only            |
 | Agent entry            | `README.md`                         | Routes agents to `GUIDELINES.md`; no `AGENTS.md` |
 
@@ -501,6 +482,7 @@ See `TESTING.md` for the canonical verification loop, test types, fixtures, and 
 - **Binary output location**: all compiled output must go to a dedicated `dist/` or `build/` directory. Never build to the repository root, source directories, or outside the project. The `dist/` directory must be gitignored.
 - **Temporary files**: always use the `work` directory at the repository root for temporary files, test data, local-only configurations, and generated artifacts. Never create `work/` subdirectories inside component directories. Tests that generate files on disk must write them inside `work/` and must clean them up afterward using `try/finally` so no generated file is left behind inside or outside `work/`.
 - **Agent entry files**: do not create `AGENTS.md` or equivalent agent entry files. `README.md` routes agents to `GUIDELINES.md` as the documented entry point. Do not propose adding such files during documentation evaluations, supplements, or reorganizations.
+- **MAX.md**: externally managed document - never edit it. Format-spec changes arrive with the upstream specification.
 
 ## Audio-Critical Development Principles
 

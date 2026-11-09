@@ -348,7 +348,7 @@ Details:
 
 ### Output file
 
-- Binary format: **MAX** (Music Assembly eXchange), specification v1.6.
+- Binary format: **MAX** (Music Assembly eXchange), specification v1.7.
 - Typical extension: `.max`.
 - Produced by `exportSongToMax(song, strategy)` or `exportInstrumentToMax(instrument, song, strategy)`.
 - Contains ZX0-compressed YM2149 register streams with metadata.

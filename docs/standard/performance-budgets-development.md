@@ -1,6 +1,6 @@
 # Performance Budgets Engineering Standards
 
-<!-- Version: 0.1.3 | Date: 2026-10-24 -->
+<!-- Version: 0.1.4 | Date: 2026-11-08 -->
 
 ## Purpose
 
@@ -9,11 +9,11 @@ This document defines performance budgets for all engineering standards.
 It covers frontend (Core Web Vitals, bundle size), backend (latency, throughput, memory),
 and CLI (startup, command latency).
 
-It is referenced by all engineering standards and does not stack - it is a cross-cutting
-requirement.
+It is referenced by all engineering standards and does not stack - it is a
+cross-cutting requirement.
 
-It is written to be executed directly by an AI coding agent and to be read without effort by a human
-reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
@@ -39,12 +39,12 @@ Read it before reading anything else in this document.
 
 Follow these steps in order at the start of every task that affects performance.
 
-1. Read the project rules file and the referring engineering standard.
+1. Read the project rules file and the referring engineering standard
 2. Identify the project category (frontend, backend, CLI, database).
-3. Apply the relevant budget table for the category.
-4. Add performance test/assertion to CI for the changed code path.
-5. Run every applicable row of the Verification section.
-6. Check the result against the Definition of Done before reporting the task complete.
+3. Apply the relevant budget table for the category
+4. Add performance test/assertion to CI for the changed code path
+5. Run every applicable row of the Verification section
+6. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -66,11 +66,11 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
 
 - **Budgets are enforced in CI.** Every PR runs performance assertions,
   a regression fails the build.
-- **Budgets are measured in production-like conditions.** Synthetic benchmarks on dev machines are
-  not sufficient.
-- **p95/p99 percentiles are used.** Averages hide tail latency, mean/median are not acceptable.
-- **Budgets include cold start.** First-request latency counts for serverless and CLI.
-- **Memory budgets include RSS + heap.** No leaks over 24h soak test.
+- **Budgets are measured in production-like conditions.** Synthetic benchmarks on dev
+  machines are not sufficient.
+- **p95/p99 percentiles are used.** Averages hide tail latency, mean/median are not acceptable
+- **Budgets include cold start.** First-request latency counts for serverless and CLI
+- **Memory budgets include RSS + heap.** No leaks over 24h soak test
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -258,8 +258,8 @@ Bundlesize gates the emitted artifacts in `package.json`:
 }
 ```
 
-Raising a budget to bypass a regression, or merging a change with regressed
-p99 latencies, is forbidden without an architecture review.
+Raising a budget to bypass a regression, or merging a change with regressed p99 latencies,
+is forbidden without an architecture review.
 
 ## Formatting and Linting
 
@@ -323,10 +323,10 @@ export const options = {
 
 ### Requirements
 
-- All budget assertions pass in CI for the changed code path.
+- All budget assertions pass in CI for the changed code path
 - No performance regression > 10% vs main branch (for CLI/Backend).
-- Lighthouse CI score >= 0.9 for Performance category.
-- Bundle size within budget for frontend.
+- Lighthouse CI score >= 0.9 for Performance category
+- Bundle size within budget for frontend
 
 ## Build
 
@@ -434,33 +434,33 @@ if ratio > 1.1: exit(1)
 
 ### Correctness
 
-- All budget assertions pass in CI for the changed code path.
+- All budget assertions pass in CI for the changed code path
 - No performance regression > 10% vs main branch (for CLI/Backend).
-- Lighthouse CI score >= 0.9 for Performance category.
-- Bundle size within budget for frontend.
+- Lighthouse CI score >= 0.9 for Performance category
+- Bundle size within budget for frontend
 
 ### Structure
 
 - Performance test scripts committed (`tests/load/`, `tests/performance/`).
 - Budget configuration committed (`lighthouse-budget.json`, k6 thresholds).
-- CI workflows for performance run on every PR.
+- CI workflows for performance run on every PR
 
 ### Quality
 
-- Performance budgets documented in project README.
+- Performance budgets documented in project README
 - Alerting configured for production metrics (p99 latency, error rate, memory).
-- Profiling data available for production debugging.
+- Profiling data available for production debugging
 
 ### Hygiene
 
-- Performance test artifacts (reports, profiles) gitignored.
-- No hardcoded performance thresholds in source code - use config.
-- Documentation updated when budget changes.
+- Performance test artifacts (reports, profiles) gitignored
+- No hardcoded performance thresholds in source code - use config
+- Documentation updated when budget changes
 
 ## General Principles
 
-**Measure What Users Experience.** Lab metrics (Lighthouse), field metrics (Web Vitals), and load
-test (k6).
+**Measure What Users Experience.** Lab metrics (Lighthouse), field metrics (Web
+Vitals), and load test (k6).
 
 **Percentiles Over Averages.** p95/p99 reveal tail latency, mean/median hide it.
 
@@ -470,8 +470,8 @@ test (k6).
 
 **Memory Is a Budget.** RSS + heap, no leaks over 24h soak.
 
-**Performance Is a Feature.** Every PR either improves or maintains - never degrades without
-explicit approval.
+**Performance Is a Feature.** Every PR either improves or maintains - never degrades
+without explicit approval.
 
 **Tooling Over Intuition.** Automated CI assertions > manual "feels fast" checks.
 
@@ -480,19 +480,21 @@ explicit approval.
 Patterns proven in projects that adopted this standard and evolved their own conventions.
 
 **Tick budget as a hard bound.** A real-time path running at a fixed cadence (for example a 50 Hz
-audio tick, 20 ms per step) treats the interval as a hard budget: no framework re-render, no
-per-event allocation, and no allocation of arrays or closures inside the tick path. Cadence state
-that must stay latest lives outside the render cycle (refs, worker-local state) rather than in
-re-rendered component state.
+audio tick, 20 ms per step) treats the interval as a hard budget: no framework re-render,
+no per-event allocation, and no allocation of arrays or closures inside the tick path.
 
-**Dedicated timing worker.** Long-running or metronome-critical timing runs in a dedicated
-Worker so main-thread rendering work cannot jitter the schedule. The worker is constructed via
-`new Worker(new URL('<path>', import.meta.url))` and the URL specifier is treated as an import
-specifier during any move refactoring.
+Cadence state that must stay latest lives outside the render cycle (refs, worker-local state)
+rather than in re-rendered component state.
+
+**Dedicated timing worker.** Long-running or metronome-critical timing runs in a dedicated Worker so
+main-thread rendering work cannot jitter the schedule.
+
+The worker is constructed via `new Worker(new URL('<path>', import.meta.url))` and the URL specifier
+is treated as an import specifier during any move refactoring.
 
 **Byte-identical output contract.** Pure export or encoding modules that serialize persisted data
-produce byte-identical output for identical input - refactoring preserves the bytes exactly, and
-round-trip tests assert equality on the full buffer, not on sampled fields.
+produce byte-identical output for identical input - refactoring preserves the bytes exactly,
+and round-trip tests assert equality on the full buffer, not on sampled fields.
 
 ## Sources
 

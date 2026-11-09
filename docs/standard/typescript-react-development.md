@@ -1,27 +1,27 @@
 # TypeScript and React Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-10-24 -->
+<!-- Version: 0.1.5 | Date: 2026-11-08 -->
 
 ## Purpose
 
-This document defines the engineering standard for TypeScript projects that build React 19
-applications.
+This document defines the engineering standard for TypeScript projects that build
+React 19 applications.
 
 It covers the language version, the project layout, the coding conventions, the state management,
 the testing, and the build.
 
 It builds on the TypeScript engineering standard and adds only the React-specific rules.
 
-It is written to be executed directly by an AI coding agent and to be read without effort by a human
-reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
 A project is in scope when all of the following conditions hold.
 
-- The project is written in TypeScript with strict mode enabled.
-- The project builds a React 19 web application.
-- The build entry point is Vite or an equivalent static bundler.
+- The project is written in TypeScript with strict mode enabled
+- The project builds a React 19 web application
+- The build entry point is Vite or an equivalent static bundler
 
 A project that uses Angular, Vue, Svelte, or Solid instead of React is out of scope,
 because those frameworks have different conventions and ecosystems.
@@ -33,15 +33,15 @@ A project that uses JavaScript instead of TypeScript is out of scope,
 because this standard depends on TypeScript's type system for its rules.
 
 A project that uses Electron is in scope for the renderer-process portions,
-but the Electron-specific main and preload conventions are covered by the companion Electron desktop
-standard.
+but the Electron-specific main and preload conventions are covered by the companion
+Electron desktop standard.
 
-Optional-stack libraries - TanStack Query, Zustand, Tailwind CSS, routing libraries - are covered
-as conditional rules that apply when the project adopts them.
+Optional-stack libraries - TanStack Query, Zustand, Tailwind CSS,
+routing libraries - are covered as conditional rules that apply when the project adopts them.
 
 A project that combines a React frontend with a Node.js service applies this standard to the
-frontend and applies the TypeScript engineering standard and the matching backend standard to the
-service.
+frontend and applies the TypeScript engineering standard and the matching backend
+standard to the service.
 
 ## How To Use This Standard
 
@@ -55,13 +55,13 @@ Follow these steps in order at the start of every task that touches TypeScript o
 
 1. Read the project rules file, such as `AGENTS.md`, `README.md`, or `docs/GUIDELINES.md`,
    because a project rule overrides this standard.
-2. Read the TypeScript engineering standard for shared language, tooling, and dependency rules.
+2. Read the TypeScript engineering standard for shared language, tooling, and dependency rules
 3. Determine the TypeScript version, the React version, the build tool, the state management,
    and the test framework using the Agent Intake Protocol below.
-4. Confirm the conclusion with the user when the repository is ambiguous or empty.
-5. Apply the sections of this standard that match the confirmed project kind.
-6. Run every applicable row of the Verification section.
-7. Check the result against the Definition of Done before reporting the task complete.
+4. Confirm the conclusion with the user when the repository is ambiguous or empty
+5. Apply the sections of this standard that match the confirmed project kind
+6. Run every applicable row of the Verification section
+7. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -84,19 +84,19 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
 
 ### Non-Negotiable Rules
 
-- **TypeScript strict mode is enabled.** A project with `strict: false` is a defect.
+- **TypeScript strict mode is enabled.** A project with `strict: false` is a defect
 - **No `any` type.** Use `unknown` when the type is genuinely unknown,
   because `any` disables the type system.
 - **No `console.log` in production code.** Use a structured logger,
   because console output bypasses log levels and structured fields.
-- **No hardcoded secrets.** A secret in a committed file is a security incident.
+- **No hardcoded secrets.** A secret in a committed file is a security incident
 - **No floating promises.** Every `async` call is awaited or explicitly voided with a comment,
   because a floating promise's rejection is unhandled.
-- **No class components.** React function components only, because class components are legacy.
+- **No class components.** React function components only, because class components are legacy
 - **No direct DOM manipulation outside React refs.** `document.querySelector` in a React component
   is a defect, because it bypasses React's reconciliation.
-- **`eslint .` produces no errors.** An ESLint error is a defect.
-- **`tsc --noEmit` produces no errors.** A TypeScript error is a defect.
+- **`eslint .` produces no errors.** An ESLint error is a defect
+- **`tsc --noEmit` produces no errors.** A TypeScript error is a defect
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -154,7 +154,7 @@ The following are the authoritative sources for TypeScript and React development
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) - official
   TypeScript reference.
 - [TypeScript tsconfig reference](https://www.typescriptlang.org/tsconfig) - compiler options.
-- The general TypeScript engineering standard - base language and tooling rules.
+- The general TypeScript engineering standard - base language and tooling rules
 - [React Documentation](https://react.dev/) - official React reference.
 - [React Hooks API](https://react.dev/reference/react) - hooks reference.
 - [Vite Documentation](https://vitejs.dev/guide/) - build tool reference.
@@ -163,11 +163,11 @@ The following are the authoritative sources for TypeScript and React development
   testing.
 - [Zod](https://zod.dev/) - runtime schema validation.
 - [TanStack Query](https://tanstack.com/query/latest) - server state management, when adopted.
-- [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction) - client state management,
-  when adopted.
+- [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction) - client state
+  management, when adopted.
 - [Tailwind CSS](https://tailwindcss.com/docs) - styling framework, when adopted.
-- The general accessibility engineering standard - WCAG 2.2 AA + axe-core.
-- The performance budgets engineering standard - Core Web Vitals + bundle budgets.
+- The general accessibility engineering standard - WCAG 2.2 AA + axe-core
+- The performance budgets engineering standard - Core Web Vitals + bundle budgets
 
 ## Language Version
 
@@ -224,11 +224,13 @@ the TypeScript engineering standard and the matching backend standard.
 Maintain `.gitignore` at project root to exclude `node_modules/`, `dist/`, `.env*`, `coverage/`,
 IDE files, and OS files.
 
-A mature example of this partition: a React + TypeScript desktop application that holds
-twelve domain subdirectories inside `hooks/` and twenty-one inside `utils/` - the kind
-folders (`components/`, `types/`, `constants/`, `workers/`) stay at the root, every grouped
-directory is domain-only with zero flat files, and the entry files sit at the root as the
-recorded exception. The shape reads at a glance and a file move is only a specifier edit.
+A mature example of this partition: a React + TypeScript desktop application that holds twelve
+domain subdirectories inside `hooks/` and twenty-one inside `utils/` - the kind folders
+(`components/`, `types/`, `constants/`, `workers/`) stay at the root,
+every grouped directory is domain-only with zero flat files,
+and the entry files sit at the root as the recorded exception.
+
+The shape reads at a glance and a file move is only a specifier edit.
 
 ## Naming Conventions
 
@@ -277,11 +279,11 @@ and `noFallthroughCasesInSwitch`.
 
 ### Banned Constructs
 
-- `any`, because it disables the type system. Use `unknown` when the type is genuinely unknown.
+- `any`, because it disables the type system. Use `unknown` when the type is genuinely unknown
 - Non-null assertion (`!`) without a `// REASON:` comment,
   because it suppresses a null check without proving the value is non-null.
-- `@ts-ignore` without a `// REASON:` comment, because it suppresses a type error without fixing it.
-- `as` type assertions on external data, because external data is untyped at runtime.
+- `@ts-ignore` without a `// REASON:` comment, because it suppresses a type error without fixing it
+- `as` type assertions on external data, because external data is untyped at runtime
   Use a type guard or runtime schema validator instead.
 
 ### Type Guards
@@ -438,16 +440,16 @@ initialisation time.
 
 Use dependency inversion or shared types to break cycles.
 
-A module that imports from more than ten other modules is likely doing too much and should be split
-by responsibility.
+A module that imports from more than ten other modules is likely doing too much and should be
+split by responsibility.
 
 ## Code Conventions
 
 ### React Components
 
-- Functional components only. No class components.
+- Functional components only. No class components
 - Props interface named with `Props` suffix: `ButtonProps`.
-- Destructure props in the function signature.
+- Destructure props in the function signature
 - Prefer `export function` over `React.FC`,
   because `React.FC` adds no value and complicates generics.
 
@@ -470,26 +472,26 @@ export function Button({ onClick, children, variant = 'primary' }: ButtonProps) 
 ### Hooks
 
 - Custom hooks start with `use`.
-- Keep hooks focused on a single responsibility.
-- Document hook parameters and return value with JSDoc.
-- Follow the rules of hooks strictly.
-- Encapsulate complex side effects in dedicated custom hooks.
+- Keep hooks focused on a single responsibility
+- Document hook parameters and return value with JSDoc
+- Follow the rules of hooks strictly
+- Encapsulate complex side effects in dedicated custom hooks
 - Use `useCallback` and `useMemo` when passing functions or derived values into `useEffect`
   dependency arrays, because an unstable reference causes the effect to re-run on every render.
 - Avoid deep or unstable dependency arrays,
   and extract a custom hook when an effect is hard to express cleanly.
-- When extracting effects into a custom hook, a ref shared with code that stays above the hook
-  call site is declared in the component and passed in as a parameter - moving it into the hook
-  creates a use-before-declaration dependency.
+- When extracting effects into a custom hook,
+  a ref shared with code that stays above the hook call site is declared in the component and passed
+  in as a parameter - moving it into the hook creates a use-before-declaration dependency.
 - A hook or pure helper defined inside a component file belongs in the hooks or logic directory as
-  soon as it is shared, long enough to obscure the component, or independently testable - do not
-  leave private extractions buried in page files.
+  soon as it is shared, long enough to obscure the component,
+  or independently testable - do not leave private extractions buried in page files.
 - Early-return gates that interleave with conditional returns are plain functions returning
-  `ReactNode | null` called during render - never hooks, because a hook call placed after a
-  conditional return violates the rules of hooks.
-- A component file that also exports contexts, providers, or pure formatters should be split so each
-  unit lives under the directory matching its nature, because mixed modules hide the shared pieces
-  from importers and break fast-refresh assumptions.
+  `ReactNode | null` called during render - never hooks,
+  because a hook call placed after a conditional return violates the rules of hooks.
+- A component file that also exports contexts, providers,
+  or pure formatters should be split so each unit lives under the directory matching its nature,
+  because mixed modules hide the shared pieces from importers and break fast-refresh assumptions.
 
 ```typescript
 /**
@@ -506,13 +508,13 @@ export function useCanvas(canvasRef: RefObject<HTMLCanvasElement>) {
 
 Start with React built-in state.
 
-- `useState` and `useReducer` for component-local state, form inputs, and overlays.
-- `useRef` for DOM element references and instances that must not trigger re-renders on change.
-- React Context for localised state within a subtree.
-- Custom hooks for reusable stateful logic.
+- `useState` and `useReducer` for component-local state, form inputs, and overlays
+- `useRef` for DOM element references and instances that must not trigger re-renders on change
+- React Context for localised state within a subtree
+- Custom hooks for reusable stateful logic
 
-When shared state across independent components becomes a real requirement, evaluate a client store
-such as Zustand.
+When shared state across independent components becomes a real requirement,
+evaluate a client store such as Zustand.
 
 Use TanStack Query for server state and data fetching when the project adopts it.
 
@@ -561,9 +563,9 @@ export const useUIStore = create<UIStore>()(
 
 Each component does one thing.
 
-- Container components manage state and pass data to children.
-- Presentational components receive props and render UI.
-- Hooks encapsulate reusable logic.
+- Container components manage state and pass data to children
+- Presentational components receive props and render UI
+- Hooks encapsulate reusable logic
 
 Do not pass props through more than two component layers,
 because props drilling makes the component tree rigid and hard to refactor.
@@ -579,16 +581,17 @@ if (error) return <ErrorMessage error={error} />;
 return <DataView data={data} />;
 ```
 
-Reusable UI primitives are placed in `src/components/` or a dedicated `src/components/ui/`
-subdirectory.
+Reusable UI primitives are placed in `src/components/` or a dedicated
+`src/components/ui/` subdirectory.
 
 Each primitive is a presentational component with no business logic,
 because a primitive with business logic is no longer reusable.
 
 Business logic belongs at the call site or in dedicated hooks.
 
-When code repeats with different parameters, extract a parameterized utility function rather than
-copying the block - deduplicate before or alongside structural extraction, not as a later cleanup.
+When code repeats with different parameters,
+extract a parameterized utility function rather than copying the block - deduplicate before or
+alongside structural extraction, not as a later cleanup.
 
 ### Error Handling in React
 
@@ -638,15 +641,15 @@ async function fetchData(signal: AbortSignal): Promise<Data> {
 
 ### Forbidden Patterns
 
-- `any` type, because it disables the type system.
-- Non-null assertion (`!`) without a `// REASON:` comment, because it suppresses a null check.
-- `@ts-ignore` without a `// REASON:` comment, because it suppresses a type error.
-- `console.log` in production code, because console output bypasses structured logging.
-- `setState` in `useEffect` without a dependency guard, because it causes infinite loops.
-- Direct DOM manipulation outside of React refs, because it bypasses React's reconciliation.
+- `any` type, because it disables the type system
+- Non-null assertion (`!`) without a `// REASON:` comment, because it suppresses a null check
+- `@ts-ignore` without a `// REASON:` comment, because it suppresses a type error
+- `console.log` in production code, because console output bypasses structured logging
+- `setState` in `useEffect` without a dependency guard, because it causes infinite loops
+- Direct DOM manipulation outside of React refs, because it bypasses React's reconciliation
 - Synchronous file I/O (`readFileSync`, `writeFileSync`) on the hot path,
   because it blocks the event loop.
-- Mutable shared state across module boundaries, because it creates hidden coupling.
+- Mutable shared state across module boundaries, because it creates hidden coupling
 
 ### React 19 Patterns
 
@@ -706,8 +709,8 @@ export function TextInput({ label, ref, ...rest }: TextInputProps) {
 }
 ```
 
-`React.FC` wrapper types, deprecated `forwardRef`, and side effects outside
-`useEffect` are forbidden.
+`React.FC` wrapper types, deprecated `forwardRef`,
+and side effects outside `useEffect` are forbidden.
 
 ## Specialized Patterns
 
@@ -715,8 +718,8 @@ The rules in this section apply only when the application actually contains the 
 
 ### Canvas Rendering
 
-When rendering to a `<canvas>` element, React's reconciler is not involved in frame-by-frame
-rendering.
+When rendering to a `<canvas>` element, React's reconciler is not involved in
+frame-by-frame rendering.
 
 The rendering loop accesses the canvas directly via `useRef` and `requestAnimationFrame`,
 because React's reconciliation is too slow for per-frame updates.
@@ -752,8 +755,8 @@ squeezing the element.
 
 ### Persistent Connections
 
-When the application holds a persistent connection such as a WebSocket, network connection logic is
-isolated in a dedicated module.
+When the application holds a persistent connection such as a WebSocket,
+network connection logic is isolated in a dedicated module.
 
 A custom hook consumes this module and exposes connection state and send and receive functions,
 because isolating the connection logic makes it independently testable.
@@ -769,20 +772,20 @@ interface ConnectionHandle {
 
 The connection module owns the following responsibilities.
 
-- Establishing the connection with a configurable endpoint.
-- Automatic reconnection with backoff on unexpected disconnection.
-- Buffering outgoing data when the connection is temporarily unavailable.
-- Delivering incoming data to a registered callback.
+- Establishing the connection with a configurable endpoint
+- Automatic reconnection with backoff on unexpected disconnection
+- Buffering outgoing data when the connection is temporarily unavailable
+- Delivering incoming data to a registered callback
 
 ### Real-Time and Timing-Critical Code
 
 In real-time systems where timing is critical, such as audio, video, or simulation,
 standard React patterns may be deliberately violated for stability.
 
-- Dependency arrays in `useCallback` and `useMemo` may be deliberately sparse to prevent render
-  interruptions.
-- Local state may mirror props for stable timing isolation from prop-driven updates.
-- Synchronous state updates may be preferred over deferred patterns.
+- Dependency arrays in `useCallback` and `useMemo` may be deliberately sparse to prevent
+  render interruptions.
+- Local state may mirror props for stable timing isolation from prop-driven updates
+- Synchronous state updates may be preferred over deferred patterns
 
 Document these deviations with a `// REASON:` comment at the call site,
 because a reviewer who cannot see the reason will "fix" the deviation and introduce glitches.
@@ -792,8 +795,9 @@ behaviour is unaffected.
 
 ### Node.js Companion Services
 
-When the repository also contains a Node.js service, the following runtime rules apply to that
-service code in addition to the TypeScript engineering standard.
+When the repository also contains a Node.js service,
+the following runtime rules apply to that service code in addition to the TypeScript
+engineering standard.
 
 Use the `pipeline` API for composing streams,
 because `pipeline` propagates errors and cleans up on failure.
@@ -842,8 +846,8 @@ The rules in this section apply when the project uses `react-i18next` or an equi
 translation runtime.
 
 Evaluate `t()` lookups at render or registration time, never at module scope,
-because a module-level `t()` runs before the i18next initialisation gate and freezes the
-fallback language.
+because a module-level `t()` runs before the i18next initialisation gate and freezes
+the fallback language.
 
 ```tsx
 // Defect: freezes the fallback language at import time
@@ -853,10 +857,10 @@ const TITLE = t('settings.title');
 const title = t('settings.title');
 ```
 
-Use i18next plural families (`key_one`, `key_few`, `key_many`, `key_other`) for
-count-bearing labels, never hand-rolled plural logic in JSX,
-because the required suffix set differs per locale and CLDR plural rules own the
-selection for each shipped language.
+Use i18next plural families (`key_one`, `key_few`, `key_many`, `key_other`)
+for count-bearing labels, never hand-rolled plural logic in JSX,
+because the required suffix set differs per locale and CLDR plural rules own the selection for
+each shipped language.
 
 ## Styling
 
@@ -878,9 +882,9 @@ Define colours as CSS custom properties on `:root` and any theme variants such a
 
 ### Viewport Shells
 
-When an application shell must fill the viewport, lock it with `100dvh` inside a dedicated media
-query chosen for the scroll boundary, not a breakpoint owned by another feature such as navigation
-width.
+When an application shell must fill the viewport,
+lock it with `100dvh` inside a dedicated media query chosen for the scroll boundary,
+not a breakpoint owned by another feature such as navigation width.
 
 Below the lock threshold the document flows naturally so narrow screens keep a native scrollbar.
 
@@ -889,8 +893,8 @@ because `100vh` exceeds the visible viewport on browsers with dynamic toolbars a
 taller than the screen.
 
 When diagnosing an unexpected scrollbar or overflow, measure `innerWidth`,
-`document.documentElement.scrollHeight`, the shell element's bounding height, and
-`CSS.supports('height', '100dvh')` before changing layout math,
+`document.documentElement.scrollHeight`, the shell element's bounding height,
+and `CSS.supports('height', '100dvh')` before changing layout math,
 because a media query that does not match and an unsupported unit both produce a page scrollbar.
 
 ## Resource Management
@@ -1008,9 +1012,9 @@ const CreateUserSchema = z.object({
 ### Path Traversal
 
 When server-side code resolves user-supplied file paths,
-resolve the path to an absolute path and verify the result is within the allowed
-root before accessing the file system, because a path traversal attack reads files outside the
-intended directory.
+resolve the path to an absolute path and verify the result is within the allowed root before
+accessing the file system, because a path traversal attack reads files outside
+the intended directory.
 
 ```typescript
 import * as path from 'node:path';
@@ -1043,8 +1047,8 @@ because a transitive dependency is a hidden attack surface.
 
 ## Performance
 
-Profile before optimising, because speculative optimisation adds complexity without measurable
-benefit.
+Profile before optimising, because speculative optimisation adds complexity
+without measurable benefit.
 
 Use `React.memo`, `useMemo`, and `useCallback` where measurable re-render cost exists.
 
@@ -1067,8 +1071,8 @@ Real-time timing deviations live in the
 
 Prettier is the single source of truth for formatting.
 
-No manual style decisions, because a formatter that is overridden by hand produces inconsistent
-style.
+No manual style decisions, because a formatter that is overridden by hand
+produces inconsistent style.
 
 Configure in `.prettierrc`.
 
@@ -1124,9 +1128,9 @@ export default defineConfig([
 
 ESLint with `eslint-plugin-react-hooks` and `@typescript-eslint` enforces the following.
 
-- Disallow unused variables.
-- Enforce strict TypeScript types on all exports.
-- Enforce hook dependency arrays, and require a `// REASON:` comment for exceptions.
+- Disallow unused variables
+- Enforce strict TypeScript types on all exports
+- Enforce hook dependency arrays, and require a `// REASON:` comment for exceptions
 - Disallow `any`.
 
 Both tools are enforced in CI.
@@ -1137,8 +1141,8 @@ A pull request that fails either check is not accepted.
 
 ### Framework
 
-- Vitest for unit testing of pure modules and domain logic.
-- React Testing Library for component tests.
+- Vitest for unit testing of pure modules and domain logic
+- React Testing Library for component tests
 
 ### Test Organisation
 
@@ -1217,15 +1221,15 @@ describe('Counter', () => {
 Every public function in pure logic modules has full unit test coverage: normal cases,
 boundary values, and error paths.
 
-Maintain at least 80 percent line, function, branch, and statement coverage where a coverage gate
-exists.
+Maintain at least 80 percent line, function, branch,
+and statement coverage where a coverage gate exists.
 
 A pull request that reduces test coverage of pure logic modules is not accepted.
 
 ### Service Layer Testing
 
-For companion services, test the service layer in isolation from the database and network using
-test doubles such as stubs, spies, and fakes.
+For companion services, test the service layer in isolation from the database and network using test
+doubles such as stubs, spies, and fakes.
 
 Do not mock the database for integration tests,
 and use a real test database or an in-memory equivalent instead,
@@ -1322,15 +1326,15 @@ Common dependencies:
 | `tailwindcss`                                              | Styling, optional      |
 | `zod`                                                      | Validation             |
 
-Prefer versions published at least 7 days ago - avoid floating ranges that auto-resolve to
-brand-new releases.
+Prefer versions published at least 7 days ago - avoid floating ranges that auto-resolve
+to brand-new releases.
 
 Add a dependency only when the need is concrete and the alternative is significantly more complex.
 
 Evaluate the maintenance status, license, and bundle size impact before adding a new library.
 
-Prefer libraries with active maintenance and a permissive license such as MIT, Apache 2.0, BSD,
-or ISC.
+Prefer libraries with active maintenance and a permissive license such as MIT,
+Apache 2.0, BSD, or ISC.
 
 ### Security and Updates
 
@@ -1369,9 +1373,9 @@ Comments are appropriate in the following cases.
 
 - A `// REASON:` comment on a non-obvious decision,
   such as a browser quirk or a deviation from the obvious approach.
-- A reference to an external specification when behaviour is derived from it.
-- JSDoc for public APIs and hooks.
-- A block comment at the top of each pure logic module stating its single responsibility.
+- A reference to an external specification when behaviour is derived from it
+- JSDoc for public APIs and hooks
+- A block comment at the top of each pure logic module stating its single responsibility
 
 Never use numbered comments.
 
@@ -1401,49 +1405,49 @@ Do not leave commented-out code, because version control preserves history.
 
 ### Correctness
 
-- `tsc --noEmit` produces no errors.
-- `eslint .` produces no errors.
-- No `any` type was introduced.
-- No `console.log` was introduced in production code.
-- No floating promise was introduced.
-- Tests cover normal cases, boundary values, and error paths.
+- `tsc --noEmit` produces no errors
+- `eslint .` produces no errors
+- No `any` type was introduced
+- No `console.log` was introduced in production code
+- No floating promise was introduced
+- Tests cover normal cases, boundary values, and error paths
 
 ### Structure
 
-- The project layout matches the confirmed project kind.
-- No circular dependency was introduced.
-- Pure logic modules have no React dependency.
-- Aim below approximately 500 lines per source file.
-- No file exceeds approximately 1000 lines without a recorded justification.
-- Every component is a function component.
+- The project layout matches the confirmed project kind
+- No circular dependency was introduced
+- Pure logic modules have no React dependency
+- Aim below approximately 500 lines per source file
+- No file exceeds approximately 1000 lines without a recorded justification
+- Every component is a function component
 
 ### Interface
 
-- Every public API has a typed signature.
-- Every props interface is named with the `Props` suffix.
+- Every public API has a typed signature
+- Every props interface is named with the `Props` suffix
 - Every hook starts with `use`.
 - Every error class ends with `Error`.
 
 ### Quality
 
-- `prettier --check .` produces no output.
-- No debugging output or commented-out code remains.
-- Comments explain reasons, not actions.
+- `prettier --check .` produces no output
+- No debugging output or commented-out code remains
+- Comments explain reasons, not actions
 
 ### Interaction
 
-- Every `useEffect` has a correct dependency array or a `// REASON:` comment.
-- Every event listener is removed in cleanup.
-- Every timer is cleared in cleanup.
-- Every `requestAnimationFrame` loop is cancelled in cleanup.
-- Every `async` call is awaited or explicitly voided with a comment.
+- Every `useEffect` has a correct dependency array or a `// REASON:` comment
+- Every event listener is removed in cleanup
+- Every timer is cleared in cleanup
+- Every `requestAnimationFrame` loop is cancelled in cleanup
+- Every `async` call is awaited or explicitly voided with a comment
 
 ### Hygiene
 
-- `node_modules/`, `dist/`, and `coverage/` are gitignored.
-- No secret, token, or credential was committed.
-- `.env` files are gitignored.
-- Documentation was updated when the change altered the public API, the build, or a project rule.
+- `node_modules/`, `dist/`, and `coverage/` are gitignored
+- No secret, token, or credential was committed
+- `.env` files are gitignored
+- Documentation was updated when the change altered the public API, the build, or a project rule
 
 ## General Principles
 
@@ -1466,8 +1470,8 @@ or dependency injection, because global mutable state makes tests order-dependen
 because modification breaks callers.
 
 **Dependency Inversion.** Core business logic does not depend on UI frameworks, database drivers,
-or network clients, because a dependency on a concrete implementation is a coupling that resists
-change.
+or network clients, because a dependency on a concrete implementation is a coupling
+that resists change.
 
 **Zero Warnings.** A TypeScript error or an ESLint error is either a defect or a rule the project
 does not want, and both cases require an action.
@@ -1476,47 +1480,56 @@ does not want, and both cases require an action.
 
 Patterns proven in projects that adopted this standard and evolved their own conventions.
 
-**Directories-only grouping.** When a source directory holds domain subdirectories, it holds no
-files directly - every file lives in a named domain subdirectory, and single-file directories are
-acceptable when a domain has one member. The `src/` root may keep its entry files (application
-entrypoint, root component, entry stylesheets) as the recorded exception.
+**Directories-only grouping.** When a source directory holds domain subdirectories,
+it holds no files directly - every file lives in a named domain subdirectory,
+and single-file directories are acceptable when a domain has one member.
+
+The `src/` root may keep its entry files (application entrypoint, root component, entry stylesheets)
+as the recorded exception.
 
 **Branded domain identifiers.** Domain identifier types (entity ids that are all `number` or
-`string` underneath) are branded so a song id can never bind to an instrument id. Factories accept
-the raw type or the brand and convert at boundaries - parsing, storage, IPC - so the interior stays
-strongly typed.
+`string` underneath) are branded so a song id can never bind to an instrument id.
+
+Factories accept the raw type or the brand and convert at boundaries - parsing, storage,
+IPC - so the interior stays strongly typed.
 
 **Repeated-action detection.** A store action that must notify subscribers even when the payload is
-unchanged (a dialog re-request, a repeated selection) carries a transient monotonic counter or
-version field excluded from the persisted slice, so subscribers detect the repeat without relying on
-reference equality.
+unchanged (a dialog re-request, a repeated selection)
+carries a transient monotonic counter or version field excluded from the persisted slice,
+so subscribers detect the repeat without relying on reference equality.
 
 **Hook extraction ordering.** A hook extracted out of an orchestrating component is called before
-the earliest consumer of its returned values - a `TS2448` block-scoped error is the symptom of a
-too-late call. Extraction parameters are typed to the source's real signatures, never a guessed
-shape - a wrapped setter may be `(value) => void`, not `Dispatch<SetStateAction>`.
+the earliest consumer of its returned values - a `TS2448` block-scoped error is the
+symptom of a too-late call.
 
-**Empty catch convention.** A deliberately empty catch is written `{ // ignore }`, stays rare, and
-marks an intentional discard rather than forgotten error handling.
+Extraction parameters are typed to the source's real signatures,
+never a guessed shape - a wrapped setter may be `(value) => void`, not `Dispatch<SetStateAction>`.
+
+**Empty catch convention.** A deliberately empty catch is written `{ // ignore }`, stays rare,
+and marks an intentional discard rather than forgotten error handling.
 
 **Test-hygiene contracts.** React Testing Library does not auto-clean rendered trees - every
-component test registers `afterEach(() => cleanup())` when no global setup does it. Spies attach
-to the installed object's own surface - `localStorage`, never `Storage.prototype`, because the
-installed mock may be a plain object without the prototype chain. `fetch` stubs return the full
-Response surface the code under test reads (`ok`, `headers.get()`, `text()`), and assertions on
-rendered markup expect escaped entity forms rather than assuming raw characters survive.
+component test registers `afterEach(() => cleanup())` when no global setup does it.
+
+Spies attach to the installed object's own surface - `localStorage`, never `Storage.prototype`,
+because the installed mock may be a plain object without the prototype chain.
+
+`fetch` stubs return the full Response surface the code under test reads (`ok`, `headers.get()`,
+`text()`), and assertions on rendered markup expect escaped entity forms rather than assuming
+raw characters survive.
 
 **Trusted markup boundary.** Content rendered through `dangerouslySetInnerHTML` is typed as a
-trusted brand produced only by the escaping renderer, and fetch sinks for bundled documents run
-behind an allowlist that rejects unexpected names and non-markup bodies.
+trusted brand produced only by the escaping renderer,
+and fetch sinks for bundled documents run behind an allowlist that rejects unexpected names
+and non-markup bodies.
 
 ## Sources
 
 The following authoritative references support the rules in this document.
 
 - [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html) and
-  [TSConfig Reference](https://www.typescriptlang.org/tsconfig) - the language rules and the strict
-  compiler settings.
+  [TSConfig Reference](https://www.typescriptlang.org/tsconfig) - the language rules and the
+  strict compiler settings.
 - [React Documentation](https://react.dev/) and
   [React API Reference](https://react.dev/reference/react) - components, hooks, and rendering.
 - [Vite Guide](https://vitejs.dev/guide/) - the dev server, build,
@@ -1525,8 +1538,8 @@ The following authoritative references support the rules in this document.
 - [Vitest](https://vitest.dev/) and
   [React Testing Library](https://testing-library.com/docs/react-testing-library/intro/) - the test
   runner and DOM testing approach.
-- [TanStack Query](https://tanstack.com/query/latest) - the server-state library conventions, when
-  adopted.
+- [TanStack Query](https://tanstack.com/query/latest) - the server-state library
+  conventions, when adopted.
 - [Zustand](https://docs.pmnd.rs/zustand/getting-started/introduction) - the client-state store
   conventions, when adopted.
 - [Tailwind CSS](https://tailwindcss.com/docs) - the utility-first styling rules, when adopted.

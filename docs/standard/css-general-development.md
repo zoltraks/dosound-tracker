@@ -1,28 +1,29 @@
 # CSS Engineering Standards
 
-<!-- Version: 0.1.5 | Date: 2026-10-31 -->
+<!-- Version: 0.1.6 | Date: 2026-11-08 -->
 
 ## Purpose
 
-This document defines the engineering standard for writing CSS and the HTML structure that CSS
-styles.
+This document defines the engineering standard for writing CSS and the HTML
+structure that CSS styles.
 
 It covers the architecture, the layout systems, the naming conventions, the design tokens,
 the accessibility, and the build.
 
-It is written to be executed directly by an AI coding agent and to be read without effort by a human
-reviewer.
+It is written to be executed directly by an AI coding agent and to be read without effort
+by a human reviewer.
 
 ## Scope
 
 A project is in scope when all of the following conditions hold.
 
-- The project styles user interfaces with CSS, with or without a CSS framework.
-- The project targets evergreen browsers.
-- The project is either a compiled single-page application with a build step or a single HTML file
-  with linked CSS.
+- The project styles user interfaces with CSS, with or without a CSS framework
+- The project targets evergreen browsers
+- The project is either a compiled single-page application with a build step or a single HTML
+  file with linked CSS.
 
 A project that uses a CSS-in-JS runtime such as styled-components or Emotion is partially in scope:
+
 the naming, layout, and accessibility sections apply,
 but the architecture sections assume static CSS files.
 
@@ -45,10 +46,10 @@ Follow these steps in order at the start of every task that touches CSS or HTML.
    because a project rule overrides this standard.
 2. Determine the project type, the CSS framework,
    and the browser baseline using the Agent Intake Protocol below.
-3. Confirm the conclusion with the user when the repository is ambiguous or empty.
-4. Apply the sections of this standard that match the confirmed project kind.
-5. Run every applicable row of the Verification section.
-6. Check the result against the Definition of Done before reporting the task complete.
+3. Confirm the conclusion with the user when the repository is ambiguous or empty
+4. Apply the sections of this standard that match the confirmed project kind
+5. Run every applicable row of the Verification section
+6. Check the result against the Definition of Done before reporting the task complete
 
 ### Precedence
 
@@ -76,12 +77,12 @@ Bring a deviation to the user as a proposal, not as an unrequested edit.
   because it breaks the cascade.
 - **No raw colour values in component CSS when a token exists.** `#3366ff` in a component rule is a
   defect when `--color-primary` is defined.
-- **No `float` for layout.** `float` is for text wrapping around images, not for layout.
+- **No `float` for layout.** `float` is for text wrapping around images, not for layout
 - **Visible focus indicators.** A missing `:focus-visible` style on an interactive element is an
   accessibility defect.
-- **`prefers-reduced-motion` is respected.** An animation that ignores reduced motion is an
+- ** `prefers-reduced-motion` is respected.** An animation that ignores reduced motion is an
   accessibility defect.
-- **Stylelint passes.** A Stylelint error is a defect.
+- **Stylelint passes.** A Stylelint error is a defect
 
 A violation of any of these rules is a defect, not a style preference.
 
@@ -131,16 +132,16 @@ When the repository is empty or the user declares a new project, ask the followi
 
 The following are the authoritative sources for CSS and HTML development.
 
-- [MDN CSS Reference](https://developer.mozilla.org/en-US/docs/Web/CSS) - comprehensive property and
-  selector reference.
-- [MDN HTML Reference](https://developer.mozilla.org/en-US/docs/Web/HTML) - element and attribute
-  reference.
+- [MDN CSS Reference](https://developer.mozilla.org/en-US/docs/Web/CSS) - comprehensive property
+  and selector reference.
+- [MDN HTML Reference](https://developer.mozilla.org/en-US/docs/Web/HTML) - element and
+  attribute reference.
 - [CSS Cascade and Inheritance](https://developer.mozilla.org/en-US/docs/Web/CSS/Cascade) - cascade
   behaviour and specificity.
 - [CSS Cascade Layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) - `@layer`
   reference.
-- [CSS Container Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries)
-  - `@container` reference.
+- [CSS Container Queries][a]
+  - `@container` reference
 - [Can I Use](https://caniuse.com/) - browser support verification.
 - [Web.dev CSS Guidance](https://web.dev/learn/css) - modern CSS guidance from Google Chrome team.
 
@@ -280,8 +281,8 @@ Layers combine with design tokens and native nesting:
 }
 ```
 
-Styles in later layers override styles in earlier layers regardless of selector specificity inside
-the layer.
+Styles in later layers override styles in earlier layers regardless of selector
+specificity inside the layer.
 
 This is the recommended approach for large compiled SPAs and when mixing custom styles with a CSS
 framework, because it eliminates specificity wars.
@@ -316,8 +317,8 @@ Use `:has()` for parent selection, because `:has()` replaces JavaScript-based pa
 
 ### Specificity Management Without Layers
 
-When cascade layers are not used, manage specificity through file loading order and shallow
-selectors.
+When cascade layers are not used, manage specificity through file loading order
+and shallow selectors.
 
 Load files from the most generic to the most specific.
 
@@ -404,8 +405,8 @@ because `inset: 0` is clearer than four separate properties.
 }
 ```
 
-Overlay expandable header regions below the header
-instead of letting them join the header flow and shift its content.
+Overlay expandable header regions below the header instead of letting them join the header flow
+and shift its content.
 
 ### Logical Properties
 
@@ -503,8 +504,8 @@ because content shows through transparent sticky areas.
 ```
 
 When a flex child must scroll internally, set `min-height: 0` on the child,
-because without it the flex child expands to fit its content instead of respecting the parent's
-overflow boundary.
+because without it the flex child expands to fit its content instead of respecting the
+parent's overflow boundary.
 
 ```css
 .middle-column {
@@ -562,13 +563,12 @@ Define layout containers with a class, not an element selector,
 because a class is reusable and an element selector is not.
 
 Keep container gutters in one shared rule,
-because a component `padding` shorthand on the same element erases the gutters through source
-order.
+because a component `padding` shorthand on the same element erases the gutters through source order.
 
 ## Selectors and Scoping
 
-Prefer class selectors for styling, because a class selector is reusable and has predictable
-specificity.
+Prefer class selectors for styling, because a class selector is reusable and has
+predictable specificity.
 
 Avoid unscoped element selectors such as `nav a { }` or `div { }`,
 because they leak into unrelated elements.
@@ -591,8 +591,8 @@ because an ID has high specificity and is not reusable.
 
 Element selectors are acceptable in two cases.
 
-- Global base styles on `html` and `body` for typography and reset.
-- Scoped descendants inside a component where the element is guaranteed to exist.
+- Global base styles on `html` and `body` for typography and reset
+- Scoped descendants inside a component where the element is guaranteed to exist
 
 ```css
 /* Acceptable: base styles */
@@ -643,14 +643,14 @@ A collapsed state reached two ways, through a class toggle and through a viewpor
 hides and shrinks identically.
 
 Write the rules once on a shared selector list or mirror them exactly,
-because a class state that only shrinks while its breakpoint twin also hides its labels produces
-a half-collapsed rail.
+because a class state that only shrinks while its breakpoint twin also hides its labels produces a
+half-collapsed rail.
 
 ### Inline Styles
 
 Inline styles via the HTML `style` attribute are acceptable for values that are computed at runtime,
-changed frequently, or cannot be expressed as discrete class-based states because the value space is
-continuous.
+changed frequently, or cannot be expressed as discrete class-based states because the value
+space is continuous.
 
 ```javascript
 // Acceptable: runtime-computed position
@@ -762,9 +762,8 @@ because a class override is explicit and testable.
 }
 ```
 
-Keep theme variants inside tokens,
-because a theme-attribute element selector outranks single-class component rules and leaks base
-colors onto component surfaces.
+Keep theme variants inside tokens, because a theme-attribute element selector outranks single-class
+component rules and leaks base colors onto component surfaces.
 
 Define foreground and background token pairs for every interactive state in every theme variant,
 because a hardcoded text color on a tokenized background is unreadable as soon as the theme remaps.
@@ -796,8 +795,8 @@ because `:focus-visible` avoids showing an outline on mouse clicks.
 Ensure touch targets are at least 44 by 44 CSS pixels for interactive elements,
 because smaller targets are hard to activate on touch devices.
 
-Respect `prefers-reduced-motion`, because an animation that ignores reduced motion causes
-discomfort.
+Respect `prefers-reduced-motion`, because an animation that ignores reduced
+motion causes discomfort.
 
 Gate animations and transitions behind it.
 
@@ -831,15 +830,12 @@ Use the `u-sr-only` utility class for visually hidden but screen-reader accessib
 ```
 
 Hover feedback changes surface such as background, border, or shadow,
-and never displaces the element,
-because a `translate` or `scale` lift on a card carrying a glyph moves the glyph with it and reads
-as
-jitter.
+and never displaces the element, because a `translate` or `scale` lift on a card carrying a glyph
+moves the glyph with it and reads as jitter.
 
 Chrome controls and decorative labels stay non-selectable with `user-select: none` plus the
 `-webkit-` prefix, while copy-worthy data text such as phone numbers, addresses,
-and prices opts back
-into `user-select: text`.
+and prices opts back into `user-select: text`.
 
 ## Property Order and Values
 
@@ -926,12 +922,12 @@ Use `::before` and `::after` for decorative effects such as shimmer sweeps.
 ```
 
 Use `-webkit-font-smoothing: antialiased` and `-moz-osx-font-smoothing: grayscale` for text elements
-that change colour during transitions, because this prevents visible text shimmer in Safari and
-Firefox.
+that change colour during transitions, because this prevents visible text shimmer
+in Safari and Firefox.
 
 Keep decorative layers within document bounds and move them through `background-position` or
-in-bounds transforms, because an overhang that grows the scrollable area leaves phantom scroll
-space.
+in-bounds transforms, because an overhang that grows the scrollable area leaves
+phantom scroll space.
 
 ## Formatting and Linting
 
@@ -940,13 +936,13 @@ because Stylelint catches errors that a human review misses.
 
 Enforce the following.
 
-- Property order.
-- Ban unscoped ID selectors.
-- Limit `!important` to utilities.
-- Require consistent custom property naming.
+- Property order
+- Ban unscoped ID selectors
+- Limit `!important` to utilities
+- Require consistent custom property naming
 
-A `.stylelintrc.json` on `stylelint-config-standard` pins the ruleset and forbids `!important` in
-component styles.
+A `.stylelintrc.json` on `stylelint-config-standard` pins the ruleset and forbids `!important`
+in component styles.
 
 Stylelint runs in CI.
 
@@ -958,16 +954,16 @@ CSS does not have a unit test framework in the traditional sense.
 
 Testing is performed through the following mechanisms.
 
-- **Stylelint**: catches syntax errors, invalid property values, and convention violations.
+- **Stylelint**: catches syntax errors, invalid property values, and convention violations
 - **Visual regression testing**: tools such as Playwright or Percy capture screenshots before and
-  after a change and diff them, because a CSS change can break layout in ways that linting cannot
-  detect.
+  after a change and diff them, because a CSS change can break layout in ways that
+  linting cannot detect.
 - **Cross-browser testing**: verify the application in all target browsers,
   because a property that works in Chrome may not work in Safari or Firefox.
 - **Responsive testing**: verify the application at all target breakpoints and container sizes,
   because a layout that works at one size may break at another.
-- **Measure before changing layout math**: for viewport and overflow bugs, capture
-  `innerWidth`, `document.documentElement.scrollHeight`, the element's bounding height,
+- **Measure before changing layout math**: for viewport and overflow bugs, capture `innerWidth`,
+  `document.documentElement.scrollHeight`, the element's bounding height,
   and `CSS.supports('height', '100dvh')` before editing styles,
   because a media query that does not match looks identical to a height bug.
 
@@ -983,8 +979,8 @@ and the build tool concatenates and minifies while the source architecture remai
 For single HTML SPAs, CSS is loaded via `<link>` tags with a documented order.
 
 When coexisting with a CSS framework, load framework styles first and custom styles last,
-or use `@layer` to isolate them, because a framework style that loads after custom styles overrides
-it.
+or use `@layer` to isolate them, because a framework style that loads after custom
+styles overrides it.
 
 Minification and bundling run through the PostCSS pipeline or Lightning CSS:
 
@@ -1008,7 +1004,7 @@ Comments are appropriate in two cases.
 
 - A `/* REASON: */` comment on a non-obvious decision,
   such as a browser quirk or a specificity workaround.
-- A block comment at the top of a file stating its layer and responsibility.
+- A block comment at the top of a file stating its layer and responsibility
 
 Do not comment what the rule does, because the rule itself states that.
 
@@ -1034,43 +1030,43 @@ Do not leave commented-out CSS, because version control preserves history.
 
 ### Correctness
 
-- Stylelint produces no errors.
-- No unscoped element selector was introduced.
-- No `!important` was introduced outside a utility class.
-- No raw colour value was introduced where a token exists.
-- No `float` was introduced for layout.
+- Stylelint produces no errors
+- No unscoped element selector was introduced
+- No `!important` was introduced outside a utility class
+- No raw colour value was introduced where a token exists
+- No `float` was introduced for layout
 
 ### Structure
 
-- The CSS file layout matches the confirmed project type.
-- Cascade layers are declared when the project uses them.
-- No selector nests deeper than three levels.
-- Each component owns its own styles.
+- The CSS file layout matches the confirmed project type
+- Cascade layers are declared when the project uses them
+- No selector nests deeper than three levels
+- Each component owns its own styles
 
 ### Quality
 
-- Stylelint reports zero errors and zero warnings.
-- No `!important` appears in a component definition.
-- Color contrast meets the documented accessibility threshold.
+- Stylelint reports zero errors and zero warnings
+- No `!important` appears in a component definition
+- Color contrast meets the documented accessibility threshold
 
 ### Accessibility
 
-- Every interactive element has a `:focus-visible` style.
+- Every interactive element has a `:focus-visible` style
 - Every animation is gated behind `prefers-reduced-motion`.
-- Touch targets are at least 44 by 44 CSS pixels.
-- Forced Colors Mode is supported.
+- Touch targets are at least 44 by 44 CSS pixels
+- Forced Colors Mode is supported
 
 ### Tokens
 
-- Every visual value is a token or a deliberate one-off.
-- Z-index values reference custom properties.
-- Dark mode is supported via `prefers-color-scheme` or a class toggle.
+- Every visual value is a token or a deliberate one-off
+- Z-index values reference custom properties
+- Dark mode is supported via `prefers-color-scheme` or a class toggle
 
 ### Hygiene
 
-- `node_modules/`, `dist/`, and `coverage/` are gitignored.
-- No commented-out CSS remains.
-- Documentation was updated when the change altered the architecture or the token set.
+- `node_modules/`, `dist/`, and `coverage/` are gitignored
+- No commented-out CSS remains
+- Documentation was updated when the change altered the architecture or the token set
 
 ## General Principles
 
@@ -1110,18 +1106,22 @@ The following authoritative references support the rules in this document.
 
 - [MDN CSS Reference](https://developer.mozilla.org/en-US/docs/Web/CSS) - the property, value,
   and at-rule reference.
-- [Introduction to the CSS Cascade](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Introduction)
-  - origin, importance, and specificity ordering.
+- [Introduction to the CSS Cascade][b]
+  - origin, importance, and specificity ordering
 - [Cascade Layers](https://developer.mozilla.org/en-US/docs/Web/CSS/Reference/At-rules/@layer) - the
   `@layer` mechanism and its precedence rules.
-- [Using Container Size and Style Queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_size_and_style_queries)
-  - the `container-type` setup and query conditions.
+- [Using Container Size and Style Queries][c]
+  - the `container-type` setup and query conditions
 - [CSS Specifications Index](https://www.w3.org/Style/CSS/specs.en.html) - the CSS Working Group's
   normative module list.
 - [Can I Use](https://caniuse.com/) - per-feature browser support tables for gate decisions.
 - [web.dev Learn CSS](https://web.dev/learn/css) - the maintained curriculum on modern layout,
   cascade, and selector behavior.
 - [Stylelint](https://stylelint.io/) - the linter and its rule reference.
+
+[a]: https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_containment/Container_queries [b]:
+https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Cascade/Introduction [c]:
+https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_size_and_style_queries
 
 ## Project Conventions
 

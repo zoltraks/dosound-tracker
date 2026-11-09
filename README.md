@@ -248,6 +248,8 @@ The primary entry point for development rules is [GUIDELINES.md](docs/GUIDELINES
 | [standard/performance-budgets-development.md](docs/standard/performance-budgets-development.md)       | Performance-budget engineering standard       |
 | [standard/standard-template-development.md](docs/standard/standard-template-development.md)           | Standard-authoring template                   |
 | [standard/typescript-refactoring-development.md](docs/standard/typescript-refactoring-development.md) | TypeScript refactoring engineering standard   |
+| [standard/typescript-audio-development.md](docs/standard/typescript-audio-development.md)             | TypeScript and real-time audio standard       |
+| [standard/bash-inline-development.md](docs/standard/bash-inline-development.md)                       | Bash and inline shell engineering standard    |
 
 **Document Templates**
 
