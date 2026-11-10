@@ -183,7 +183,19 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
 
   return (
     <div className="dump-panel">
-      <div className="dump-header" onClick={handleCopyDump}>
+      <div
+        className="dump-header"
+        role="button"
+        tabIndex={0}
+        aria-label="Copy register dump to clipboard"
+        onClick={handleCopyDump}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            handleCopyDump();
+          }
+        }}
+      >
         Dump
       </div>
       <div className="dump-content">
@@ -192,14 +204,24 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
             <React.Fragment key={index}>
               <div className="register-item">
                 <span className="register-name">{row.leftLabel}</span>
-                <span className="register-value" onClick={() => copyToClipboard(row.leftValue)}>
+                <span
+                  className="register-value"
+                  role="button"
+                  aria-label={`Copy ${row.leftLabel} value ${row.leftValue}`}
+                  onClick={() => copyToClipboard(row.leftValue)}
+                >
                   {row.leftValue}
                 </span>
               </div>
               {row.rightLabel && (
                 <div className="register-item">
                   <span className="register-name">{row.rightLabel}</span>
-                  <span className="register-value" onClick={() => copyToClipboard(row.rightValue)}>
+                  <span
+                    className="register-value"
+                    role="button"
+                    aria-label={`Copy ${row.rightLabel} value ${row.rightValue}`}
+                    onClick={() => copyToClipboard(row.rightValue)}
+                  >
                     {row.rightValue}
                   </span>
                 </div>

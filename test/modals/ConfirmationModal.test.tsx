@@ -22,6 +22,17 @@ describe('ConfirmationModal', () => {
     expect(container.querySelector('.modal-backdrop')).toBeNull();
   });
 
+  it('exposes dialog semantics with the title as accessible name', () => {
+    renderModal({ title: 'Delete song' });
+    const dialog = screen.getByRole('dialog', { name: 'Delete song' });
+    try {
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    } catch (error) {
+      console.log('dialog semantics mismatch');
+      throw error;
+    }
+  });
+
   it('renders title, message, and the default OK/Cancel labels', () => {
     renderModal({ title: 'Delete song', message: 'Are you sure?' });
     try {

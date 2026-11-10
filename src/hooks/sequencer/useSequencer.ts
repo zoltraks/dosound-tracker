@@ -100,7 +100,7 @@ export const useSequencer = (
   // Initialize Web Worker
   useEffect(() => {
     if (typeof Worker !== 'undefined') {
-      workerRef.current = new Worker(new URL('../../workers/sequencerWorker.ts', import.meta.url), {
+      workerRef.current = new Worker(new URL('../../workers/sequencer.ts', import.meta.url), {
         type: 'module',
       });
 

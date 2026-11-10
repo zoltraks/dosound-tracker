@@ -209,6 +209,8 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
     <div
       ref={panelRef}
       className={`envelope-panel mode ${isActive ? 'active' : ''}`}
+      role="group"
+      aria-label={getTitle()}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection(sectionName)}
@@ -224,6 +226,8 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
               style={{
                 backgroundColor: getBarColor(value),
               }}
+              role="button"
+              aria-label={`Position ${index}: ${getModeLabel(value)}`}
               onClick={() => handleBarClick(index)}
               title={`Pos: ${Formatter.hex(index, { padWidth: 0 })} Mode: ${getModeLabel(value)}`}
             >
@@ -237,6 +241,8 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
             <div
               key={index}
               className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
+              role="button"
+              aria-label={`Position ${index}: ${getModeLabel(value)}`}
               onClick={() => handlePositionClick(index)}
             >
               {value === 0 ? 'T' : value === 1 ? 'N' : 'B'}

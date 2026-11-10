@@ -78,7 +78,7 @@ export function formatPitchDelta(delta: number): string {
   return delta ? ` ${delta > 0 ? '+' : ''}${delta}` : '';
 }
 
-export function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): Song {
+function buildInstrumentPreviewSong(instrument: Instrument, sourceSong: Song): Song {
   const normalizedSong = normalizeSongForExport(sourceSong);
   const patternLength = normalizedSong.length || PATTERN_LENGTH;
   const speed = normalizedSong.speed || 6;

@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 // Importing the worker module registers its message listener once for the
 // whole file. Module state is shared across tests, so every test resets it by
 // dispatching messages - never re-import via vi.resetModules().
-import '../../src/workers/sequencerWorker.ts';
+import '../../src/workers/sequencer.ts';
 
 interface OutgoingData {
   isPlaying: boolean;
@@ -78,7 +78,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe('sequencerWorker start and tick emission', () => {
+describe('sequencer start and tick emission', () => {
   it('emits the first tick only after two intervals have elapsed', () => {
     dispatch({ type: 'start' });
     vi.advanceTimersByTime(20);
@@ -137,7 +137,7 @@ describe('sequencerWorker start and tick emission', () => {
   });
 });
 
-describe('sequencerWorker boundaries', () => {
+describe('sequencer boundaries', () => {
   it('advances the pattern after ticksPerRow * patternLength ticks', () => {
     dispatch({ type: 'setParams', data: { ticksPerRow: 2, patternLength: 2 } });
     dispatch({ type: 'start' });
@@ -213,7 +213,7 @@ describe('sequencerWorker boundaries', () => {
   });
 });
 
-describe('sequencerWorker stop and update', () => {
+describe('sequencer stop and update', () => {
   it('resets the tick but preserves line and pattern on stop', () => {
     dispatch({ type: 'setParams', data: { ticksPerRow: 2, patternLength: 8 } });
     dispatch({ type: 'start', data: { pattern: 1, line: 3 } });
@@ -260,7 +260,7 @@ describe('sequencerWorker stop and update', () => {
   });
 });
 
-describe('sequencerWorker setParams', () => {
+describe('sequencer setParams', () => {
   it('reschedules on a tickInterval change while playing without emitting stop', () => {
     dispatch({ type: 'start' });
     vi.advanceTimersByTime(40); // one tick emitted

@@ -1,8 +1,15 @@
 import { useEffect } from 'react';
 import type { ExtendedWindow } from '../../types/electronApi.ts';
 
-// Electron window-close interception: ask React whether to quit when song is dirty.
-export const useElectronCloseGuard = () => {
+// Electron window-close interception: prompt the quit-confirm modal when the
+// song is dirty, confirm immediately when it is clean.
+export const useElectronCloseGuard = ({
+  isSongDirty,
+  onQuitRequested,
+}: {
+  isSongDirty: boolean;
+  onQuitRequested: (open: boolean) => void;
+}) => {
   useEffect(() => {
     if (typeof window === 'undefined') {
       return;
@@ -15,6 +22,11 @@ export const useElectronCloseGuard = () => {
     }
 
     const handler = () => {
+      if (isSongDirty) {
+        onQuitRequested(true);
+        return;
+      }
+
       if (api.confirmAppClose) {
         api.confirmAppClose();
       }
@@ -26,5 +38,5 @@ export const useElectronCloseGuard = () => {
         api.removeAppCloseRequestedListener(handler);
       }
     };
-  }, []);
+  }, [isSongDirty, onQuitRequested]);
 };

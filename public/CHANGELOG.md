@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.4.6
+
+The desktop app now asks before quitting with unsaved changes, every Arp Loop instrument is pickable, and the interface is friendlier to assistive technology.
+
+- **Quit confirmation**: closing the desktop window with unsaved changes now shows the unsaved-changes prompt instead of exiting - confirming quits, cancelling keeps the app running, and clean songs close directly.
+- **Security**: the Electron app-origin check now admits only the packaged application file and the development server instead of any `file://` page, and `npm audit` reports zero vulnerabilities after pinning the dev-tooling `minimatch` chains.
+- **Instruments**: all nine Arp Loop instruments are now pickable - arp_quick, bass_smooth, hihat, slide_down, and slide_up join the repository, and every bundled instrument carries its song color.
+- **Interface**: the command buttons and the piano sit as boxes on the app background with even spacing, and the citation and row-number panels show the same hover frame as the other sections.
+- **Accessibility**: dialogs announce themselves as modals, controls and panels carry accessible names and roles, and the rotating message strip is a polite live region for screen readers.
+
 ## Version 1.4.5
 
 The app starts faster, exports run faster, and playback redraws less - plus a consistency fix for colliding instrument ids.

@@ -91,6 +91,11 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                   ? 'Disable track background colors'
                   : 'Enable track background colors'
               }
+              aria-label={
+                trackBackgroundEnabled
+                  ? 'Disable track background colors'
+                  : 'Enable track background colors'
+              }
             >
               <img
                 src={
@@ -112,6 +117,8 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
               <div
                 key={i}
                 className={`position-number ${i === sharedCurrentLine ? 'current' : ''}`}
+                role="button"
+                aria-label={`Go to position ${Formatter.hex(i)}`}
                 onClick={() => onLineChange(i)}
               >
                 {Formatter.hex(i)}

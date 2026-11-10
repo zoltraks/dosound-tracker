@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useKeyboardNavigation } from './hooks/keyboard/useKeyboardNavigation.ts';
+import { useNavigationSuspension } from './hooks/keyboard/useNavigationSuspension.ts';
 import { useTheme } from './hooks/ui/useTheme.ts';
 import { useDataManagement } from './hooks/song/useDataManagement.ts';
 import { usePlaybackControls } from './hooks/playback/usePlaybackControls.ts';
 import { useAudioSetup } from './hooks/audio/useAudioSetup.ts';
-import { useModalManager } from './hooks/modal/useModalManager.ts';
 import { useMidiHandling } from './hooks/midi/useMidiHandling.ts';
 import { useMidiActions } from './hooks/midi/useMidiActions.ts';
 import { useTrackOperations } from './hooks/song/useTrackOperations.ts';
@@ -33,12 +33,12 @@ import { TrackerSection } from './components/TrackerSection.tsx';
 import { EnvelopeSection } from './components/EnvelopeSection.tsx';
 import { SongSection } from './components/SongSection.tsx';
 import { FileInputs } from './components/FileInputs.tsx';
-import { ModalManager } from './components/ModalManager.tsx';
+import { useAppModals } from './hooks/modal/useAppModals.tsx';
 import { useFileOperations } from './hooks/file/useFileOperations.ts';
 import type { UiStore } from './hooks/ui/useUiStore.ts';
 import { useUiStore } from './hooks/ui/useUiStore.ts';
-import { useUiStatePersistence } from './hooks/ui/useUiStatePersistence.ts';
 import { useAppInfoDialogs } from './hooks/app/useAppInfoDialogs.ts';
+import { useStartupRestore } from './hooks/app/useStartupRestore.ts';
 import { useSongLifecycleDialogs } from './hooks/song/useSongLifecycleDialogs.ts';
 import { useInstrumentFileLoading } from './hooks/instrument/useInstrumentFileLoading.ts';
 import { useInstrumentDialogs } from './hooks/instrument/useInstrumentDialogs.ts';
@@ -69,58 +69,34 @@ const App: React.FC = () => {
   const setChannelMutes = useUiStore((state: UiStore) => state.setChannelMutes);
   const toggleChannelMute = useUiStore((state: UiStore) => state.toggleChannelMute);
 
+  const modalState = useModalState();
   const {
-    isNewSongConfirmOpen,
     setIsNewSongConfirmOpen,
-    isAboutOpen,
     setIsAboutOpen,
-    isChangelogOpen,
     setIsChangelogOpen,
-    changelogContent,
     setChangelogContent,
-    isManualOpen,
     setIsManualOpen,
-    manualContent,
     setManualContent,
-    isOptimizeConfirmOpen,
     setIsOptimizeConfirmOpen,
-    isRenumberConfirmOpen,
     setIsRenumberConfirmOpen,
-    isResetConfirmOpen,
     setIsResetConfirmOpen,
-    isQuitConfirmOpen,
     setIsQuitConfirmOpen,
-    optimizeSummary,
     setOptimizeSummary,
-    renumberSummary,
     setRenumberSummary,
-    isTransposeOpen,
     setIsTransposeOpen,
-    transposeSummary,
     setTransposeSummary,
-    instrumentOperationSummary,
     setInstrumentOperationSummary,
-    midiLoadError,
-    setMidiLoadError,
-    midiCopySummary,
-    setMidiCopySummary,
-    isDownloadOpen,
     setIsDownloadOpen,
     isMidiModalOpen,
     setIsMidiModalOpen,
-    isDebugInfoOpen,
     setIsDebugInfoOpen,
-    isInstrumentDeleteOpen,
     setIsInstrumentDeleteOpen,
     instrumentDeleteUsage,
     setInstrumentDeleteUsage,
-    isInstrumentMidiOpen,
     setIsInstrumentMidiOpen,
-    isInstrumentColorOpen,
     setIsInstrumentColorOpen,
-    isExportModalOpen,
     setIsExportModalOpen,
-  } = useModalState();
+  } = modalState;
 
   const {
     isInstrumentTypeWarningOpen,
@@ -222,36 +198,16 @@ const App: React.FC = () => {
     exportMaxWithContext,
   } = useFileOperations({ song: currentSong, exportStrategy });
 
-  const isNavigationSuspended =
-    !!songError ||
-    !!instrumentError ||
-    !!transposeSummary ||
-    !!optimizeSummary ||
-    !!soundExportSummary ||
-    !!dumpExportSummary ||
-    !!renumberSummary ||
-    !!instrumentOperationSummary ||
-    !!midiLoadError ||
-    !!midiCopySummary ||
-    isAboutOpen ||
-    isChangelogOpen ||
-    isManualOpen ||
-    isDownloadOpen ||
-    isDebugInfoOpen ||
-    isMidiModalOpen ||
-    isTransposeOpen ||
-    isOptimizeConfirmOpen ||
-    isRenumberConfirmOpen ||
-    isNewSongConfirmOpen ||
-    isResetConfirmOpen ||
-    isQuitConfirmOpen ||
-    isInstrumentDeleteOpen ||
-    isInstrumentTypeWarningOpen ||
-    isInstrumentMidiOpen ||
-    isInstrumentColorOpen ||
-    isExportModalOpen ||
-    isPasteTrackModalOpen ||
-    !!pendingSongImport;
+  const isNavigationSuspended = useNavigationSuspension({
+    modalState,
+    songError,
+    instrumentError,
+    soundExportSummary,
+    dumpExportSummary,
+    isInstrumentTypeWarningOpen,
+    isPasteTrackModalOpen,
+    pendingSongImport,
+  });
 
   const { activeSection, setActiveSection, setGlobalShortcut } =
     useKeyboardNavigation(isNavigationSuspended);
@@ -278,7 +234,7 @@ const App: React.FC = () => {
     setPatternLoopMode,
   } = usePlaybackControls({ currentSong });
 
-  useElectronCloseGuard();
+  useElectronCloseGuard({ isSongDirty, onQuitRequested: setIsQuitConfirmOpen });
 
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
 
@@ -399,42 +355,14 @@ const App: React.FC = () => {
     setIsQuitConfirmOpen,
   });
 
-  const { restoreView } = useUiStatePersistence(
-    {
-      isManualOpen,
-      isChangelogOpen,
-      isAboutOpen,
-      isDownloadOpen,
-      isDebugInfoOpen,
-      isMidiModalOpen,
-      isInstrumentMidiOpen,
-      isInstrumentColorOpen,
-      isExportModalOpen,
-    },
+  useStartupRestore({
+    modalState,
     sharedCurrentLine,
-    {
-      manual: handleShowManual,
-      changelog: handleShowChangelog,
-      about: handleShowAbout,
-      download: () => setIsDownloadOpen(true),
-      debugInfo: () => setIsDebugInfoOpen(true),
-      midi: () => setIsMidiModalOpen(true),
-      instrumentMidi: () => setIsInstrumentMidiOpen(true),
-      instrumentColor: () => setIsInstrumentColorOpen(true),
-      export: () => setIsExportModalOpen(true),
-    },
-  );
-
-  useEffect(() => {
-    restoreView();
-    // The startup test tone fires only after initialization and state
-    // restoration complete - two frames give restored-state reactions a
-    // full commit cycle. Panel section flips no longer reach the channel
-    // volume registers: the panel stopPreview calls are guarded by live
-    // preview state.
-    const raf = requestAnimationFrame(() => requestAnimationFrame(() => playTestTone()));
-    return () => cancelAnimationFrame(raf);
-  }, []);
+    handleShowAbout,
+    handleShowChangelog,
+    handleShowManual,
+    playTestTone,
+  });
 
   const {
     isDemoSongPickerOpen,
@@ -733,70 +661,107 @@ const App: React.FC = () => {
 
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
-  useModalManager({
+  const modals = useAppModals({
+    modalState,
+    aboutVersion: APP_VERSION,
     songError,
     setSongError,
     instrumentError,
     setInstrumentError,
-    transposeSummary,
-    handleCloseTransposeSummary,
     trackClipboardError,
     setTrackClipboardError,
-    optimizeSummary,
-    handleCloseOptimizeSummary,
     soundExportSummary,
     handleCloseSoundExportSummary,
     dumpExportSummary,
     handleCloseDumpExportSummary,
-    renumberSummary,
+    handleCloseTransposeSummary,
+    handleCloseOptimizeSummary,
     handleCloseRenumberSummary,
-    instrumentOperationSummary,
     handleCloseInstrumentOperationSummary,
-    midiLoadError,
-    setMidiLoadError,
-    midiCopySummary,
-    setMidiCopySummary,
-    isAboutOpen,
-    setIsAboutOpen,
-    isChangelogOpen,
+    aboutRuntimeLabel,
+    aboutRuntimeDetails,
+    handleShowChangelog,
     handleCloseChangelog,
-    isManualOpen,
+    handleShowManual,
     handleCloseManual,
-    isDownloadOpen,
-    setIsDownloadOpen,
-    isDebugInfoOpen,
-    setIsDebugInfoOpen,
-    isMidiModalOpen,
-    handleCloseMidi,
-    isTransposeOpen,
-    handleCancelTranspose,
-    handleConfirmTranspose,
-    isOptimizeConfirmOpen,
-    handleCancelOptimize,
-    handleConfirmOptimize,
-    isRenumberConfirmOpen,
-    handleCancelRenumber,
-    handleConfirmRenumber,
-    isNewSongConfirmOpen,
-    handleCancelNewSong,
-    handleConfirmNewSong,
-    isResetConfirmOpen,
-    handleCancelReset,
-    handleConfirmReset,
-    isQuitConfirmOpen,
-    handleCancelQuit,
     handleConfirmQuit,
-    isInstrumentDeleteOpen,
+    handleCancelQuit,
+    transposeScope,
+    setTransposeScope,
+    transposeTrackScope,
+    setTransposeTrackScope,
+    transposeInstrumentScope,
+    setTransposeInstrumentScope,
+    transposeAmount,
+    setTransposeAmount,
+    transposeAmountInput,
+    setTransposeAmountInput,
+    handleTransposeAmountChange,
+    handleConfirmTranspose,
+    handleCancelTranspose,
+    handleConfirmOptimize,
+    handleCancelOptimize,
+    handleConfirmRenumber,
+    handleCancelRenumber,
+    handleConfirmNewSong,
+    handleCancelNewSong,
+    handleConfirmReset,
+    handleCancelReset,
     handleCancelInstrumentDelete,
+    handleConfirmDeleteInstrumentAndNotes,
+    handleConfirmDeleteInstrumentOnly,
     isInstrumentTypeWarningOpen,
-    handleCancelInstrumentTypeWarning,
+    pendingInstrumentTypeInfo,
+    instrumentTypeWarningIgnoreChecked,
+    setInstrumentTypeWarningIgnoreChecked,
     handleConfirmInstrumentTypeWarning,
-    isExportOpen: isExportModalOpen,
-    handleCancelExport,
+    handleCancelInstrumentTypeWarning,
+    instrumentMidiTarget,
+    handleSaveInstrumentMidi,
+    handleCloseInstrumentMidi,
+    instrumentColorTarget,
+    handleSaveInstrumentColor,
+    handleClearInstrumentColor,
+    handleCloseInstrumentColor,
+    isMidiSupported,
+    midiAccessError,
+    midiConfiguration,
+    midiDevices,
+    midiInMonitor,
+    midiOutMonitor,
+    handleSaveMidiConfig,
+    handleCloseMidi,
+    handleClearMidiMonitors,
+    handleRescanMidiDevices,
+    handleLiveMidiConfigChange,
+    handleMidiSystemReset,
+    pendingSongImport,
+    configurationWarningMessage,
+    handleConfirmSongConfigurationWarning,
+    handleCancelSongConfigurationWarning,
+    isRepositoryInstrumentOpen,
+    setIsRepositoryInstrumentOpen,
+    handlePickRepositoryInstrument,
+    isDemoSongPickerOpen,
+    setIsDemoSongPickerOpen,
+    handlePickDemoSong,
+    pendingExportType,
+    pendingExportStrategy,
+    handleExportTypeChange,
+    handleExportStrategyChange,
+    handleExportDumpFromModal,
+    handleExportDataFromModal,
+    handleExportBinFromModal,
+    handleExportVgmFromModal,
+    handleExportMaxFromModal,
+    handleExportWavFromModal,
     handleConfirmExport,
-    isPasteTrackOptionsOpen: isPasteTrackModalOpen,
-    handleCancelPasteTrackOptions: handleCancelPasteTrackModal,
-    handleConfirmPasteTrackOptions: handleConfirmPasteTrackModal,
+    handleCancelExport,
+    isPasteTrackModalOpen,
+    pasteTrackPendingMode,
+    setPasteTrackPendingMode,
+    handleConfirmPasteTrackModal,
+    handleCancelPasteTrackModal,
   });
 
   return (
@@ -963,143 +928,7 @@ const App: React.FC = () => {
             setChannelMutes={setChannelMutes}
           />
         }
-        modals={
-          <ModalManager
-            // Error and summary states
-            songError={songError}
-            setSongError={setSongError}
-            instrumentError={instrumentError}
-            setInstrumentError={setInstrumentError}
-            trackClipboardError={trackClipboardError}
-            setTrackClipboardError={setTrackClipboardError}
-            optimizeSummary={optimizeSummary}
-            onCloseOptimizeSummary={handleCloseOptimizeSummary}
-            soundExportSummary={soundExportSummary}
-            onCloseSoundExportSummary={handleCloseSoundExportSummary}
-            dumpExportSummary={dumpExportSummary}
-            onCloseDumpExportSummary={handleCloseDumpExportSummary}
-            transposeSummary={transposeSummary}
-            onCloseTransposeSummary={handleCloseTransposeSummary}
-            renumberSummary={renumberSummary}
-            onCloseRenumberSummary={handleCloseRenumberSummary}
-            instrumentOperationSummary={instrumentOperationSummary}
-            onCloseInstrumentOperationSummary={handleCloseInstrumentOperationSummary}
-            isDebugInfoOpen={isDebugInfoOpen}
-            setIsDebugInfoOpen={setIsDebugInfoOpen}
-            isInstrumentTypeWarningOpen={isInstrumentTypeWarningOpen}
-            pendingInstrumentTypeInfo={pendingInstrumentTypeInfo}
-            instrumentTypeWarningIgnoreChecked={instrumentTypeWarningIgnoreChecked}
-            setInstrumentTypeWarningIgnoreChecked={setInstrumentTypeWarningIgnoreChecked}
-            onConfirmInstrumentTypeWarning={handleConfirmInstrumentTypeWarning}
-            onCancelInstrumentTypeWarning={handleCancelInstrumentTypeWarning}
-            isNewSongConfirmOpen={isNewSongConfirmOpen}
-            onConfirmNewSong={handleConfirmNewSong}
-            onCancelNewSong={handleCancelNewSong}
-            isOptimizeConfirmOpen={isOptimizeConfirmOpen}
-            onConfirmOptimize={handleConfirmOptimize}
-            onCancelOptimize={handleCancelOptimize}
-            isRenumberConfirmOpen={isRenumberConfirmOpen}
-            onConfirmRenumber={handleConfirmRenumber}
-            onCancelRenumber={handleCancelRenumber}
-            isResetConfirmOpen={isResetConfirmOpen}
-            onConfirmReset={handleConfirmReset}
-            onCancelReset={handleCancelReset}
-            isQuitConfirmOpen={isQuitConfirmOpen}
-            onConfirmQuit={handleConfirmQuit}
-            onCancelQuit={handleCancelQuit}
-            isInstrumentDeleteOpen={isInstrumentDeleteOpen}
-            instrumentDeleteUsage={instrumentDeleteUsage}
-            onConfirmDeleteInstrumentAndNotes={handleConfirmDeleteInstrumentAndNotes}
-            onConfirmDeleteInstrumentOnly={handleConfirmDeleteInstrumentOnly}
-            onCancelInstrumentDelete={handleCancelInstrumentDelete}
-            isInstrumentMidiOpen={isInstrumentMidiOpen}
-            instrumentMidiTarget={instrumentMidiTarget}
-            onSaveInstrumentMidi={handleSaveInstrumentMidi}
-            onCloseInstrumentMidi={handleCloseInstrumentMidi}
-            isInstrumentColorOpen={isInstrumentColorOpen}
-            instrumentColorTarget={instrumentColorTarget}
-            onSaveInstrumentColor={handleSaveInstrumentColor}
-            onClearInstrumentColor={handleClearInstrumentColor}
-            onCloseInstrumentColor={handleCloseInstrumentColor}
-            isTransposeOpen={isTransposeOpen}
-            transposeScope={transposeScope}
-            transposeTrackScope={transposeTrackScope}
-            transposeInstrumentScope={transposeInstrumentScope}
-            transposeAmount={transposeAmount}
-            transposeAmountInput={transposeAmountInput}
-            setTransposeScope={setTransposeScope}
-            setTransposeTrackScope={setTransposeTrackScope}
-            setTransposeInstrumentScope={setTransposeInstrumentScope}
-            onTransposeAmountChange={handleTransposeAmountChange}
-            onConfirmTranspose={handleConfirmTranspose}
-            onCancelTranspose={handleCancelTranspose}
-            setTransposeAmount={setTransposeAmount}
-            setTransposeAmountInput={setTransposeAmountInput}
-            isAboutOpen={isAboutOpen}
-            aboutVersion={APP_VERSION}
-            aboutRuntimeLabel={aboutRuntimeLabel}
-            aboutRuntimeDetails={aboutRuntimeDetails}
-            setIsAboutOpen={setIsAboutOpen}
-            isChangelogOpen={isChangelogOpen}
-            changelogContent={changelogContent}
-            onShowChangelog={handleShowChangelog}
-            onCloseChangelog={handleCloseChangelog}
-            isManualOpen={isManualOpen}
-            manualContent={manualContent}
-            onShowManual={handleShowManual}
-            onCloseManual={handleCloseManual}
-            isMidiModalOpen={isMidiModalOpen}
-            isMidiSupported={isMidiSupported}
-            midiAccessError={midiAccessError}
-            midiConfiguration={midiConfiguration}
-            midiDevices={midiDevices}
-            midiInMonitor={midiInMonitor}
-            midiOutMonitor={midiOutMonitor}
-            onSaveMidiConfiguration={handleSaveMidiConfig}
-            onCloseMidi={handleCloseMidi}
-            onClearMidiMonitors={handleClearMidiMonitors}
-            onRescanMidiDevices={handleRescanMidiDevices}
-            onLiveMidiConfigurationChange={handleLiveMidiConfigChange}
-            setMidiCopySummary={setMidiCopySummary}
-            setMidiLoadError={setMidiLoadError}
-            isDownloadOpen={isDownloadOpen}
-            setIsDownloadOpen={setIsDownloadOpen}
-            midiLoadError={midiLoadError}
-            midiCopySummary={midiCopySummary}
-            onMidiSystemReset={handleMidiSystemReset}
-            isSongConfigurationWarningOpen={!!pendingSongImport}
-            songConfigurationWarningMessage={
-              configurationWarningMessage ||
-              `Song YAML includes unsupported metadata values.\n\nLoad the song anyway?`
-            }
-            onConfirmSongConfigurationWarning={handleConfirmSongConfigurationWarning}
-            onCancelSongConfigurationWarning={handleCancelSongConfigurationWarning}
-            isRepositoryInstrumentOpen={isRepositoryInstrumentOpen}
-            setIsRepositoryInstrumentOpen={setIsRepositoryInstrumentOpen}
-            onPickRepositoryInstrument={handlePickRepositoryInstrument}
-            isDemoSongPickerOpen={isDemoSongPickerOpen}
-            setIsDemoSongPickerOpen={setIsDemoSongPickerOpen}
-            onPickDemoSong={handlePickDemoSong}
-            isExportModalOpen={isExportModalOpen}
-            pendingExportType={pendingExportType}
-            pendingExportStrategy={pendingExportStrategy}
-            onChangeExportType={handleExportTypeChange}
-            onChangeExportStrategy={handleExportStrategyChange}
-            onExportDumpFromModal={handleExportDumpFromModal}
-            onExportDataFromModal={handleExportDataFromModal}
-            onExportBinFromModal={handleExportBinFromModal}
-            onExportVgmFromModal={handleExportVgmFromModal}
-            onExportMaxFromModal={handleExportMaxFromModal}
-            onExportWavFromModal={handleExportWavFromModal}
-            onConfirmExport={handleConfirmExport}
-            onCancelExport={handleCancelExport}
-            isPasteTrackModalOpen={isPasteTrackModalOpen}
-            pasteTrackPendingMode={pasteTrackPendingMode}
-            setPasteTrackPendingMode={setPasteTrackPendingMode}
-            onConfirmPasteTrackModal={handleConfirmPasteTrackModal}
-            onCancelPasteTrackModal={handleCancelPasteTrackModal}
-          />
-        }
+        modals={modals}
       />
     </ErrorBoundary>
   );

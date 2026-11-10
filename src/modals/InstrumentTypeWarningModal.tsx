@@ -1,4 +1,5 @@
 import React from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 
 interface InstrumentTypeWarningModalProps {
   isOpen: boolean;
@@ -44,46 +45,44 @@ export const InstrumentTypeWarningModal: React.FC<InstrumentTypeWarningModalProp
       : '(missing or empty)';
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-dialog instrument-type-warning-modal">
-        <div className="modal-title">Instrument Format Warning</div>
-        <div className="modal-body">
-          {messageLines.map((line, index) => (
-            <React.Fragment key={index}>
-              {line}
-              {index < messageLines.length - 1 && <br />}
-            </React.Fragment>
-          ))}
-          {hasTypeField && (
-            <div style={{ marginTop: '8px' }}>
-              <strong>Detected type:</strong> {typeLabel}
-            </div>
-          )}
-          <label
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              marginTop: '12px',
-            }}
-          >
-            <input
-              type="checkbox"
-              checked={ignoreFuture}
-              onChange={(event) => onIgnoreChange(event.target.checked)}
-            />
-            <span>Don't show this warning again (until RESET)</span>
-          </label>
-        </div>
-        <div className="modal-actions">
-          <button className="command-btn" type="button" onClick={onConfirm}>
-            Continue
-          </button>
-          <button className="command-btn" type="button" onClick={onCancel}>
-            Abort
-          </button>
-        </div>
+    <DialogFrame label="Instrument Format Warning" className="instrument-type-warning-modal">
+      <div className="modal-title">Instrument Format Warning</div>
+      <div className="modal-body">
+        {messageLines.map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            {index < messageLines.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+        {hasTypeField && (
+          <div style={{ marginTop: '8px' }}>
+            <strong>Detected type:</strong> {typeLabel}
+          </div>
+        )}
+        <label
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '6px',
+            marginTop: '12px',
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={ignoreFuture}
+            onChange={(event) => onIgnoreChange(event.target.checked)}
+          />
+          <span>Don't show this warning again (until RESET)</span>
+        </label>
       </div>
-    </div>
+      <div className="modal-actions">
+        <button className="command-btn" type="button" onClick={onConfirm}>
+          Continue
+        </button>
+        <button className="command-btn" type="button" onClick={onCancel}>
+          Abort
+        </button>
+      </div>
+    </DialogFrame>
   );
 };

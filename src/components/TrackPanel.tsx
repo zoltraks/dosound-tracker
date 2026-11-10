@@ -461,6 +461,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     <div
       ref={trackRef}
       className={`track-panel track-${trackId.toLowerCase()} ${trackBackgroundEnabled ? 'track-colored' : ''} ${isActive ? 'active' : ''} ${!pattern ? 'disabled' : ''}`}
+      role="group"
+      aria-label={`Track ${trackId}`}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onKeyUp={handleKeyUp}

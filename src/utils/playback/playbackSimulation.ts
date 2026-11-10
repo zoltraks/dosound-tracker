@@ -356,7 +356,7 @@ export function simulateSong(
   }
 }
 
-export function applyInstrumentToRegisters(
+function applyInstrumentToRegisters(
   regs: { [register: number]: number },
   channel: number,
   note: { note: string; octave: number },

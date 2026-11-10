@@ -34,7 +34,7 @@ export default defineConfig({
       name: 'version-service-worker-cache',
       apply: 'build',
       closeBundle() {
-        const swPath = resolve(import.meta.dirname, 'dist', 'sw.js');
+        const swPath = resolve(import.meta.dirname, 'dist', 'worker.js');
         const source = readFileSync(swPath, 'utf8');
         writeFileSync(swPath, source.replaceAll('__APP_VERSION__', packageJson.version));
       },
@@ -55,21 +55,27 @@ export default defineConfig({
     rollupOptions: {
       output: {
         // Deterministic filenames without content hashes
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: 'js/[name].js',
+        chunkFileNames: 'js/[name].js',
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.names?.[0] ?? '';
+          if (name.endsWith('.css')) return 'css/[name][extname]';
+          if (name.endsWith('.svg')) return 'media/svg/[name][extname]';
+          if (name.endsWith('.png')) return 'media/png/[name][extname]';
+          if (/\.(woff2?|ttf|otf|eot)$/.test(name)) return 'media/font/[name][extname]';
+          return 'media/[name][extname]';
+        },
       },
     },
   },
   worker: {
-    // Ensure worker bundles (like sequencerWorker) also get stable filenames
+    // Ensure worker bundles (like sequencer) also get stable filenames
     // without random hashes.
     format: 'es',
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/[name].js',
-        chunkFileNames: 'assets/[name].js',
-        assetFileNames: 'assets/[name][extname]',
+        entryFileNames: 'js/[name].js',
+        chunkFileNames: 'js/[name].js',
       },
     },
   },

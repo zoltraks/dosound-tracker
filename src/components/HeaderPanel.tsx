@@ -181,7 +181,20 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     <>
       <header className="header-panel">
         <div className="header-left">
-          <div className="logo" onClick={onShowAbout} title="About DOSOUND Tracker">
+          <div
+            className="logo"
+            role="button"
+            tabIndex={0}
+            aria-label="About DOSOUND Tracker"
+            onClick={onShowAbout}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                onShowAbout();
+              }
+            }}
+            title="About DOSOUND Tracker"
+          >
             <img
               src={isDarkMode ? LogoDark : LogoLight}
               alt="DOSOUND Tracker logo"
@@ -203,6 +216,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
               className="theme-toggle download-toggle"
               onClick={onShowDownloads}
               title="Show available downloads"
+              aria-label="Show available downloads"
             >
               ⏬
             </button>
@@ -211,6 +225,8 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
           <div
             ref={octaveRef}
             className={`octave-selection ${isOctaveActive ? 'active' : ''}`}
+            role="group"
+            aria-label="Octave selection"
             tabIndex={0}
             onKeyDown={handleOctaveKeyDown}
             onKeyUp={handleOctaveKeyUp}
@@ -220,6 +236,8 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
               <button
                 key={i}
                 className={`octave-button ${currentOctave === i ? 'active' : ''}`}
+                aria-label={`Octave ${i}`}
+                aria-pressed={currentOctave === i}
                 onClick={() => {
                   onOctaveChange(i);
                   if (octaveRef.current) {
@@ -236,13 +254,26 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
             className="theme-toggle"
             onClick={onToggleTheme}
             title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode ? '☀️' : '🌑'}
           </button>
         </div>
       </header>
 
-      <div className="header-panel-song-mobile" onClick={onToggleCommandPanelMobile}>
+      <div
+        className="header-panel-song-mobile"
+        role="button"
+        tabIndex={0}
+        aria-label="Toggle command panel"
+        onClick={onToggleCommandPanelMobile}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            onToggleCommandPanelMobile();
+          }
+        }}
+      >
         <span className="song-title">{title}</span>
       </div>
     </>

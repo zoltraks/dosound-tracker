@@ -10,13 +10,13 @@ export type PlaylistEntry = {
 const normalizeValue = (value: string): PlaylistPatternId | '--' =>
   value === '--' ? '--' : asPlaylistPatternId(value);
 
-export const normalizePlaylistLineEntry = (entry: Song['line'][number]): PlaylistEntry => ({
+const normalizePlaylistLineEntry = (entry: Song['line'][number]): PlaylistEntry => ({
   A: normalizeValue(entry.A),
   B: normalizeValue(entry.B),
   C: normalizeValue(entry.C),
 });
 
-export const serializePlaylistEntry = (entry: PlaylistEntry): Song['line'][number] => ({
+const serializePlaylistEntry = (entry: PlaylistEntry): Song['line'][number] => ({
   A: entry.A,
   B: entry.B,
   C: entry.C,

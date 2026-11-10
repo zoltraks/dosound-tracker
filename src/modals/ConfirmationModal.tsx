@@ -1,4 +1,5 @@
 import React from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -24,30 +25,28 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   const lines = normalizedMessage.split('\n');
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-dialog">
-        <div className="modal-title">{title}</div>
-        <div className="modal-body">
-          {lines.map((line, index) => (
-            <React.Fragment key={index}>
-              {line}
-              {index < lines.length - 1 && <br />}
-            </React.Fragment>
-          ))}
+    <DialogFrame label={title}>
+      <div className="modal-title">{title}</div>
+      <div className="modal-body">
+        {lines.map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            {index < lines.length - 1 && <br />}
+          </React.Fragment>
+        ))}
+      </div>
+      <div className="modal-actions confirm-actions">
+        <div className="confirm-actions-left">
+          <button className="command-btn" onClick={onCancel}>
+            {cancelLabel}
+          </button>
         </div>
-        <div className="modal-actions confirm-actions">
-          <div className="confirm-actions-left">
-            <button className="command-btn" onClick={onCancel}>
-              {cancelLabel}
-            </button>
-          </div>
-          <div className="confirm-actions-right">
-            <button className="command-btn" onClick={onConfirm}>
-              {confirmLabel}
-            </button>
-          </div>
+        <div className="confirm-actions-right">
+          <button className="command-btn" onClick={onConfirm}>
+            {confirmLabel}
+          </button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 };

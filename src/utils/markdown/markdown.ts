@@ -1,6 +1,6 @@
 export type TrustedHtml = string & { readonly __brand: 'TrustedHtml' };
 
-export const escapeHtml = (str: string): string => {
+const escapeHtml = (str: string): string => {
   return str
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')

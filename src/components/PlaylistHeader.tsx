@@ -16,6 +16,8 @@ export const PlaylistHeader: React.FC<PlaylistHeaderProps> = ({
         <span
           key={track}
           className={`track-header ${targetTrack === track ? 'target-track' : ''}`}
+          role="button"
+          aria-label={`Select target track ${track}`}
           onClick={(event) => {
             event.stopPropagation();
             onTrackHeaderClick(track);

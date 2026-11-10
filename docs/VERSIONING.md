@@ -81,7 +81,31 @@ When bumping the version manually (outside the automated build script):
 
 Do **not** create a new directory in `docs/change/` when bumping versions.
 
-The AI assistant must **not** commit version changes. The user will commit manually after reviewing the changes.
+The AI assistant must **not** commit version changes or create release tags. The user commits the bump manually after reviewing the changes, then tags the release commit per the Release Tags section below.
+
+## Release Tags
+
+Every released version carries an annotated git tag on its release commit. The tag is the immutable anchor for the released state - reverting or bisecting a release no longer requires reconstructing it from bump commits and the CHANGELOG.
+
+**Naming**
+
+Tag names use the plain version number with no `v` prefix - `1.4.6`, not `v1.4.6`. The tag is annotated and the message matches the bump-commit convention.
+
+```bash
+git tag -a X.Y.Z -m "Version X.Y.Z"
+```
+
+**Timing**
+
+The tag is created on the release commit, after the user's manual commit, as part of the same manual close-out. `scripts/bump-version.mjs` does not create tags - commits, tags, and pushes all stay manual.
+
+**Release gate**
+
+`scripts/release-check.sh` does not check tag presence. The gate runs before the commit the tag anchors to, so a tag check could never pass at gate time. Tag completeness is a procedure step, not an enforced precondition.
+
+**Historical releases**
+
+Versions released before this convention carry no tags. They remain reconstructible from their version-bump commits. Backfilling historical tags is not required.
 
 ## CHANGELOG Conventions
 

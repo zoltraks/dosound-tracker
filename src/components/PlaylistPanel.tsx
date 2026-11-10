@@ -402,6 +402,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     <div
       ref={playlistRef}
       className={`playlist-panel ${isActive ? 'active' : ''}`}
+      role="group"
+      aria-label="Playlist"
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection('playlist')}

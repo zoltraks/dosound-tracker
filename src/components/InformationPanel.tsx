@@ -193,6 +193,8 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
   return (
     <div
       className={`information-panel ${isActive ? 'active' : ''}`}
+      role="group"
+      aria-label="Song information"
       onClick={() => setActiveSection('songInfo')}
     >
       <div className="information-header">Song</div>
@@ -208,6 +210,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
             onKeyDown={handleKeyDown}
             onFocus={() => setLastFocusedField('title')}
             className="information-input"
+            aria-label="Song title"
           />
           <ToggleValueButton
             value={song.frame ?? DEFAULT_SONG_FRAME}
@@ -228,6 +231,7 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
             onKeyDown={handleKeyDown}
             onFocus={() => setLastFocusedField('author')}
             className="information-input"
+            aria-label="Song author"
           />
           <ToggleValueButton
             value={song.clock ?? DEFAULT_SONG_CLOCK}

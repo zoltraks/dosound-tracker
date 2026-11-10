@@ -74,7 +74,7 @@ export function useFileOperations({
 
   const handleExportVgm = useCallback(async () => {
     try {
-      const { exportSongToVgm, downloadVgmFile } = await import('../../exports/vgm.ts');
+      const { exportSongToVgm, downloadVgmFile } = await import('../../exports/export.ts');
       const result = exportSongToVgm(song, exportStrategy);
       const filename = `${buildSongExportBaseName(song.title)}.vgm`;
       downloadVgmFile(result.buffer, filename);
@@ -99,7 +99,7 @@ export function useFileOperations({
 
   const handleExportWav = useCallback(async () => {
     try {
-      const { exportSongToWav, downloadWavFile } = await import('../../exports/wav.ts');
+      const { exportSongToWav, downloadWavFile } = await import('../../exports/export.ts');
       const result = exportSongToWav(song);
       const filename = `${buildSongExportBaseName(song.title)}.wav`;
 
@@ -134,7 +134,8 @@ export function useFileOperations({
 
   const handleExportDump = useCallback(async () => {
     try {
-      const { exportSongRegisterDump, downloadAssemblyFile } = await import('../../exports/asm.ts');
+      const { exportSongRegisterDump, downloadAssemblyFile } =
+        await import('../../exports/export.ts');
       const { content, cycleCount } = exportSongRegisterDump(song);
       const filename = `${buildDumpExportBaseName(song.title)}.s`;
 
@@ -167,7 +168,7 @@ export function useFileOperations({
     async (ctx: ExportContext) => {
       try {
         const { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile } =
-          await import('../../exports/asm.ts');
+          await import('../../exports/export.ts');
         let assemblyContent: string;
         let filenameBase: string;
 
@@ -227,7 +228,7 @@ export function useFileOperations({
     async (ctx: ExportContext) => {
       try {
         const { exportSongToMax, exportInstrumentToMax, downloadMaxFile } =
-          await import('../../exports/max.ts');
+          await import('../../exports/export.ts');
         if (ctx.type === 'instrument' && ctx.instrument) {
           const result = exportInstrumentToMax(ctx.instrument, song, ctx.strategy);
           const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.max`;
@@ -291,10 +292,12 @@ export function useFileOperations({
   const exportBinWithContext = useCallback(
     async (ctx: ExportContext) => {
       try {
-        const [
-          { exportToBinary, parseAssemblyToBinary, downloadBinaryFile },
-          { exportInstrumentToAssembly },
-        ] = await Promise.all([import('../../exports/bin.ts'), import('../../exports/asm.ts')]);
+        const {
+          exportToBinary,
+          parseAssemblyToBinary,
+          downloadBinaryFile,
+          exportInstrumentToAssembly,
+        } = await import('../../exports/export.ts');
         let bytes: Uint8Array;
         let filenameBase: string;
 
@@ -357,7 +360,7 @@ export function useFileOperations({
     async (ctx: ExportContext) => {
       try {
         const { exportSongToVgm, exportInstrumentToVgm, downloadVgmFile } =
-          await import('../../exports/vgm.ts');
+          await import('../../exports/export.ts');
         if (ctx.type === 'instrument' && ctx.instrument) {
           const result = exportInstrumentToVgm(ctx.instrument, song);
           const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.vgm`;
@@ -421,7 +424,7 @@ export function useFileOperations({
     async (ctx: ExportContext) => {
       try {
         const { exportSongToWav, exportInstrumentToWav, downloadWavFile } =
-          await import('../../exports/wav.ts');
+          await import('../../exports/export.ts');
         if (ctx.type === 'instrument' && ctx.instrument) {
           const result = exportInstrumentToWav(ctx.instrument, song);
           const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.wav`;

@@ -3,7 +3,7 @@
 ## Document Information
 
 | Field              | Value                                                                                  |
-|--------------------|----------------------------------------------------------------------------------------|
+| ------------------ | -------------------------------------------------------------------------------------- |
 | Report Style       | Audit                                                                                  |
 | Report Revision    | 1.5                                                                                    |
 | Report Date        | 2026-11-10                                                                             |
@@ -57,7 +57,7 @@
 ## Audit Coverage
 
 | Report type                                             | Status    | Rationale                                                                               |
-|---------------------------------------------------------|-----------|-----------------------------------------------------------------------------------------|
+| ------------------------------------------------------- | --------- | --------------------------------------------------------------------------------------- |
 | Software Architecture Review                            | Covered   | Source inspection covers structure, layering, and recorded decisions                    |
 | Code Quality Audit                                      | Covered   | Inspection plus commissioned typecheck and lint runs                                    |
 | Security Vulnerability Assessment                       | Covered   | Manual review, Electron surface model, executed npm audit                               |
@@ -74,7 +74,7 @@
 ## Glossary Index
 
 | Term   | Definition                                                             |
-|--------|------------------------------------------------------------------------|
+| ------ | ---------------------------------------------------------------------- |
 | ADR    | Architecture Decision Record, a documented design decision             |
 | ASM    | Motorola 68000 assembly export format                                  |
 | CSP    | Content Security Policy, browser directive set limiting resource loads |
@@ -101,7 +101,7 @@
 **Identifier triplets**
 
 | Triplet | Scope            | Description                             |
-|---------|------------------|-----------------------------------------|
+| ------- | ---------------- | --------------------------------------- |
 | FND     | Report-wide      | Technical finding identifier            |
 | EVD     | Report-wide      | Evidence ledger row identifier          |
 | TDR     | Report-wide      | Technical Debt Register entry           |
@@ -125,7 +125,7 @@
 ## Executive Summary
 
 | Dimension           | Score            |
-|---------------------|------------------|
+| ------------------- | ---------------- |
 | Product Quality     | 7.0/10 (Good)    |
 | Engineering Process | 6.0/10 (Average) |
 
@@ -133,7 +133,7 @@ Product Quality lowest dimension is Observability and Operational Safety at 5/10
 Engineering Process lowest is Delivery & Continuity at 3/10.
 
 | Field             | Value                                                         |
-|-------------------|---------------------------------------------------------------|
+| ----------------- | ------------------------------------------------------------- |
 | **Overall score** | **6.7/10** (Average)                                          |
 | System type       | Single-user desktop and web chiptune tracker                  |
 | Scope             | Full source, configuration, documentation, and history audit  |
@@ -167,7 +167,7 @@ composition-root concentration in `App.tsx`.
 ### Technology Stack
 
 | Layer        | Evidence                                                                    |
-|--------------|-----------------------------------------------------------------------------|
+| ------------ | --------------------------------------------------------------------------- |
 | Runtime      | React 19 SPA bundled by Vite 8 (rolldown), Electron 45 wrapper              |
 | Language     | TypeScript strict mode, no `any`, bundler module resolution                 |
 | State        | Single Zustand store plus hook-owned state and ref domains                  |
@@ -189,7 +189,7 @@ text. Runtime and declared development manifests only, transitive entries
 summarized.
 
 | Component         | Version  | License    | Risk   | Advisory        | Source   |
-|-------------------|----------|------------|--------|-----------------|----------|
+| ----------------- | -------- | ---------- | ------ | --------------- | -------- |
 | js-yaml           | ^4.3.2   | MIT        | None   | None identified | manifest |
 | lucide-react      | ^1.67.0  | ISC        | None   | None identified | manifest |
 | react             | ^19.3.1  | MIT        | None   | None identified | manifest |
@@ -213,7 +213,7 @@ The MPL-2.0 `Review` row reflects the license-policy gap per
 ## License Compliance
 
 | Class         | Count | Components                                     | Assessment              |
-|---------------|-------|------------------------------------------------|-------------------------|
+| ------------- | ----- | ---------------------------------------------- | ----------------------- |
 | Permissive    | 569   | MIT, ISC, Apache-2.0, BSD, BlueOak, CC0, WTFPL | Permitted list match    |
 | Weak copyleft | 12    | lightningcss family, MPL-2.0, dev-only         | Outside declared policy |
 | Copyleft      | 0     | None present                                   | Compliant               |
@@ -230,7 +230,7 @@ not a linking conflict, since they are build tooling only.
 **Risk Map**
 
 | Severity | Open findings                                                                                                                                                                                                                                                                                                                                |
-|----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Medium   | [FND-SEC-001](#fnd-sec-001-over-broad-file-origin-check), [FND-CQY-001](#fnd-cqy-001-dead-quit-confirm-modal-and-bypassed-guard), [FND-CQY-002](#fnd-cqy-002-thin-accessibility-surface), [FND-INF-001](#fnd-inf-001-moderate-dependency-advisories), [FND-ARC-001](#fnd-arc-001-composition-root-concentration)                             |
 | Low      | [FND-INF-002](#fnd-inf-002-no-release-tags), [FND-INF-003](#fnd-inf-003-no-ci-pipeline), [FND-INF-004](#fnd-inf-004-diverged-branch-accumulation), [FND-INF-005](#fnd-inf-005-single-author-concentration), [FND-CPR-001](#fnd-cpr-001-mpl-20-dev-packages-outside-policy), [FND-INF-006](#fnd-inf-006-performance-targets-lack-measurement) |
 
@@ -239,7 +239,7 @@ Severity derives from the impact-likelihood matrix, not CVSS.
 **Legend**
 
 | Band      | Score |
-|-----------|-------|
+| --------- | ----- |
 | Poor      | 1-3   |
 | Average   | 4-6   |
 | Good      | 7-8   |
@@ -248,7 +248,7 @@ Severity derives from the impact-likelihood matrix, not CVSS.
 **Scorecard Summary**
 
 | Dimension               | Score |
-|-------------------------|-------|
+| ----------------------- | ----- |
 | Functional Suitability  | 6/10  |
 | Testability             | 6/10  |
 | Design Soundness        | 7/10  |
@@ -280,7 +280,7 @@ documentation set.
 ## Delivery Practice
 
 | Metric                | Value                                  | Basis                          |
-|-----------------------|----------------------------------------|--------------------------------|
+| --------------------- | -------------------------------------- | ------------------------------ |
 | Deployment frequency  | Multiple release commits per week      | Git-derived proxy, commit scan |
 | Lead time for changes | Same-day for most changes              | Git-derived proxy              |
 | Change failure rate   | Not specified                          | Telemetry unavailable          |
@@ -333,7 +333,7 @@ React, Electron, and real-time audio standards adopted by the repository.
 **Criteria table**
 
 | Criteria      | Dimension               | Outcome |
-|---------------|-------------------------|---------|
+| ------------- | ----------------------- | ------- |
 | SEC-AUTHZ     | Security                | P50     |
 | FNC-STUB      | Functional Suitability  | FAIL    |
 | CNF-ACC       | Conformance             | P50     |
@@ -355,7 +355,7 @@ declared anchors.
 **Read depth**
 
 | Area            | Depth    | Justification                                   |
-|-----------------|----------|-------------------------------------------------|
+| --------------- | -------- | ----------------------------------------------- |
 | docs/ pillars   | Full     | Governing documents, all read                   |
 | src/ security   | Full     | Activated security probes                       |
 | src/ core paths | Full     | Parser, worker, storage, markdown, exports core |
@@ -366,7 +366,7 @@ declared anchors.
 **Evidence Ledger**
 
 | Evidence | Source                    | Result                                                                     | Type        | Basis     |
-|----------|---------------------------|----------------------------------------------------------------------------|-------------|-----------|
+| -------- | ------------------------- | -------------------------------------------------------------------------- | ----------- | --------- |
 | EVD-001  | scan-structure census     | 849 files: 177 prod, 103 test, 515 doc, 27k LOC src                        | Observation | Inspected |
 | EVD-002  | npm run typecheck         | exit 0, zero errors                                                        | Observation | Executed  |
 | EVD-003  | npm run lint              | exit 0, zero warnings emitted                                              | Observation | Executed  |
@@ -415,7 +415,7 @@ declared anchors.
 ## Scoring Rubrics
 
 | Band      | Range | Meaning                                          |
-|-----------|-------|--------------------------------------------------|
+| --------- | ----- | ------------------------------------------------ |
 | Poor      | 1-3   | Material gaps block reliance                     |
 | Average   | 4-6   | Usable with named limitations                    |
 | Good      | 7-8   | Sound with bounded reservations                  |
@@ -467,7 +467,7 @@ and `docs/decision/`.
 ## Structure Review
 
 | Area                       | Verdict   | Basis                                   |
-|----------------------------|-----------|-----------------------------------------|
+| -------------------------- | --------- | --------------------------------------- |
 | Directory organization     | Passed    | Domain-grouped src/, mirrored test/     |
 | Naming conventions         | Passed    | PascalCase components, camelCase others |
 | Component placement        | Partially | App.tsx outsized, recorded exception    |
@@ -487,7 +487,7 @@ deferred rather than a defect.
 ## Threat Model
 
 | Element     | Surface                              | Control                                     | Verdict  |
-|-------------|--------------------------------------|---------------------------------------------|----------|
+| ----------- | ------------------------------------ | ------------------------------------------- | -------- |
 | Spoofing    | Renderer loads non-app origin        | will-navigate block, [CSP](#glossary-index) | Partial  |
 | Tampering   | Malformed YAML/MAX import            | size bound, schema validation, clamps       | Covered  |
 | Repudiation | Local-only actions                   | git history, local logger                   | Adequate |
@@ -502,7 +502,7 @@ demonstrated in shipped code.
 ## Guidance Conformance
 
 | Artifact           | Status   | Baseline                                 |
-|--------------------|----------|------------------------------------------|
+| ------------------ | -------- | ---------------------------------------- |
 | README.md          | Conforms | Routes agents to GUIDELINES.md           |
 | docs/GUIDELINES.md | Conforms | Sources-of-truth map, owner declarations |
 | docs/WORKFLOW.md   | Conforms | Restricted-directory statements present  |
@@ -515,7 +515,7 @@ topic owners, and explicit read boundaries. Verdict: conforms.
 ## Standards Conformance
 
 | Standard                           | Status    | Evidence                                                                  |
-|------------------------------------|-----------|---------------------------------------------------------------------------|
+| ---------------------------------- | --------- | ------------------------------------------------------------------------- |
 | typescript-react-development       | Conforms  | Naming, layout, hook rules verified                                       |
 | typescript-general-development     | Conforms  | Strict mode, no any, type taxonomy                                        |
 | typescript-electron-development    | Partially | Origin check deviates, [EVD-013](#auditing-methodology)                   |
@@ -531,7 +531,7 @@ topic owners, and explicit read boundaries. Verdict: conforms.
 ## Requirements Conformance
 
 | Requirement | Status  | Evidence                                                                                                                             |         |                                                                                                    |
-|-------------|---------|--------------------------------------------------------------------------------------------------------------------------------------|---------|----------------------------------------------------------------------------------------------------|
+| ----------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ | ------- | -------------------------------------------------------------------------------------------------- |
 | F-01        | Pass    | [EVD-001](#auditing-methodology), [EVD-043](#auditing-methodology)                                                                   |         |                                                                                                    |
 | F-02        | Pass    | [EVD-001](#auditing-methodology), [EVD-018](#auditing-methodology)                                                                   |         |                                                                                                    |
 | F-03        | Pass    | [EVD-001](#auditing-methodology)                                                                                                     |         |                                                                                                    |
@@ -573,7 +573,7 @@ the file-origin check, and the composition-root concentration.
 ## Structure Conformance
 
 | Check                    | Status | Evidence                                                           |
-|--------------------------|--------|--------------------------------------------------------------------|
+| ------------------------ | ------ | ------------------------------------------------------------------ |
 | Domain grouping          | Pass   | [EVD-001](#auditing-methodology), [EVD-029](#auditing-methodology) |
 | Directories-only rule    | Pass   | [EVD-029](#auditing-methodology)                                   |
 | File-naming rules        | Pass   | [EVD-001](#auditing-methodology)                                   |
@@ -583,13 +583,13 @@ the file-origin check, and the composition-root concentration.
 ## Code Style
 
 | Lens             | Status |
-|------------------|--------|
+| ---------------- | ------ |
 | Code style score | Pass   |
 
 Resolved convention tier T1 (subject's own adopted standards plus Prettier enforcement).
 
 | Census row        | Result | Pattern and denominator                                            |
-|-------------------|--------|--------------------------------------------------------------------|
+| ----------------- | ------ | ------------------------------------------------------------------ |
 | Component naming  | Pass   | PascalCase 44/44 component files                                   |
 | Utility naming    | Pass   | camelCase dominant in non-component files                          |
 | `any` usage       | Pass   | 0 occurrences in 27028 src lines, [EVD-027](#auditing-methodology) |
@@ -612,7 +612,7 @@ Resolved convention tier T1 (subject's own adopted standards plus Prettier enfor
 ## Technical Findings
 
 | Finding                                                                | Pillar | Severity | Summary                                    | Status |
-|------------------------------------------------------------------------|--------|----------|--------------------------------------------|--------|
+| ---------------------------------------------------------------------- | ------ | -------- | ------------------------------------------ | ------ |
 | [FND-SEC-001](#fnd-sec-001-over-broad-file-origin-check)               | SEC    | Medium   | Over-broad file origin check               | Open   |
 | [FND-CQY-001](#fnd-cqy-001-dead-quit-confirm-modal-and-bypassed-guard) | CQY    | Medium   | Dead quit-confirm modal and bypassed guard | Open   |
 | [FND-CQY-002](#fnd-cqy-002-thin-accessibility-surface)                 | CQY    | Medium   | Thin accessibility surface                 | Open   |
@@ -630,6 +630,7 @@ Resolved convention tier T1 (subject's own adopted standards plus Prettier enfor
 The `isAppOrigin` check in `electron/permissions.cjs` treats every `file://` URL as an app origin.
 The `will-navigate` gate admits navigation to any local file.
 The [MIDI](#glossary-index) permission handler also grants it to any `file://` page.
+
 - **Pillar:** Security & Compliance
 - **Severity:** Medium
 - **Type:** Concern
@@ -637,15 +638,15 @@ The [MIDI](#glossary-index) permission handler also grants it to any `file://` p
 - **Basis:** Inspected
 - **Criteria:** SEC-AUTHZ
 - **Impact:** A local HTML page reached through renderer navigation inherits app-origin privileges
-the documented policy reserves for the bundle
+  the documented policy reserves for the bundle
 - **Method:** Origin check traced through permission and navigation handlers
 - **Confidence:** High
 - **Confirmation:** Yes - source trace confirms the scheme-only comparison
 - **Exploitability:** Theoretical - no navigation vector demonstrated in shipped code
 - **Mitigation:** contextIsolation, nodeIntegration off, [CSP](#glossary-index), windowOpen deny
-bound the blast radius
+  bound the blast radius
 - **Evidence:** [EVD-012](#auditing-methodology), [EVD-013](#auditing-methodology),
-[EVD-014](#auditing-methodology)
+  [EVD-014](#auditing-methodology)
 - **Recommendation:** [REC-002](#rec-002-narrow-file-origin-check)
 
 ### FND-CQY-001: Dead quit-confirm modal and bypassed guard
@@ -653,6 +654,7 @@ bound the blast radius
 A `setIsQuitConfirmOpen` is never called with `true` anywhere in `src`, so the unsaved-changes.
 Dialog defined in `src/constants/modal.ts` is unreachable, and the `app-close-requested`.
 Handler calls `confirmAppClose()` immediately.
+
 - **Pillar:** Code Quality
 - **Severity:** Medium
 - **Type:** Concern
@@ -672,6 +674,7 @@ Handler calls `confirmAppClose()` immediately.
 Only 27 `aria-*` attributes appear across 6 of 28 component files.
 The adopted accessibility standard is only partially realized.
 Full keyboard navigation does exist.
+
 - **Pillar:** Code Quality
 - **Severity:** Medium
 - **Type:** Concern
@@ -691,6 +694,7 @@ Full keyboard navigation does exist.
 Executed `npm audit` reports 15 moderate-severity `minimatch` advisories (GHSA-g3hv-75wg-m249).
 All inside devDependency chains for eslint, typescript-eslint, and electron-builder.
 Nothing ships to the runtime bundle.
+
 - **Pillar:** Infrastructure & CI/CD
 - **Severity:** Medium
 - **Type:** Concern
@@ -709,6 +713,7 @@ Nothing ships to the runtime bundle.
 
 Zero git tags exist across 741 commits and roughly 25 released versions, so no immutable VCS.
 Anchor marks released states.
+
 - **Pillar:** Infrastructure & CI/CD
 - **Severity:** Low
 - **Type:** Concern
@@ -727,6 +732,7 @@ Anchor marks released states.
 
 No pipeline or workflow configuration exists in the tree.
 Verification is enforced locally by the documented zero-error/zero-warning loop.
+
 - **Pillar:** Infrastructure & CI/CD
 - **Severity:** Low
 - **Type:** Concern
@@ -747,6 +753,7 @@ Verification is enforced locally by the documented zero-error/zero-warning loop.
 The tree holds 15 local branches beyond `main`.
 Roughly 20 remote `broken/*`, `repair/*`, and `refactoring/*` branches also remain.
 None carries a merge or deletion record.
+
 - **Pillar:** Infrastructure & CI/CD
 - **Severity:** Low
 - **Type:** Concern
@@ -765,6 +772,7 @@ None carries a merge or deletion record.
 
 All of the last 200 non-merge commits carry one author identity.
 Merge and review surfaces are minimal at 27 merges in 741 commits.
+
 - **Pillar:** Infrastructure & CI/CD
 - **Severity:** Low
 - **Type:** Concern
@@ -784,6 +792,7 @@ Merge and review surfaces are minimal at 27 merges in 741 commits.
 The tree carries 12 MPL-2.0 packages in the lightningcss family.
 All are dev-scoped build tooling.
 They sit outside the `COPYRIGHTS.md` permitted-license list.
+
 - **Pillar:** Copyrights & Originality
 - **Severity:** Low
 - **Type:** Observation
@@ -802,6 +811,7 @@ They sit outside the `COPYRIGHTS.md` permitted-license list.
 
 Declared quality targets - load under 2s, zero audio glitches, DOSOUND hardware compatibility -.
 Carry no measurement artifact.
+
 - **Pillar:** Infrastructure & CI/CD
 - **Severity:** Low
 - **Type:** Observation
@@ -821,6 +831,7 @@ Carry no measurement artifact.
 The `App.tsx` file concentrates orchestration at 1108 lines.
 It wires ~50 hooks with implicit cross-hook ordering.
 The concentration is a documented known limitation.
+
 - **Pillar:** Architecture & Design
 - **Severity:** Medium
 - **Type:** Concern
@@ -828,25 +839,26 @@ The concentration is a documented known limitation.
 - **Basis:** Inspected
 - **Criteria:** MNT-DEBT
 - **Impact:** Change navigation cost stays high and implicit hook ordering rules cause recorded
-rework
+  rework
 - **Method:** File-size and import census, architecture document cross-check
 - **Confidence:** High
 - **Confirmation:** Yes - sizes and structure verified
 - **Mitigation:** Documented trade-off, staged decomposition underway
 - **Evidence:** [EVD-001](#auditing-methodology), [EVD-029](#auditing-methodology),
-[EVD-037](#auditing-methodology)
+  [EVD-037](#auditing-methodology)
 - **Recommendation:** [REC-008](#rec-008-continue-composition-root-decomposition)
 
 ## Technical Debt Register
 
 | Entry                                     | Category        | Source                                                     | Cost                                          |
-|-------------------------------------------|-----------------|------------------------------------------------------------|-----------------------------------------------|
+| ----------------------------------------- | --------------- | ---------------------------------------------------------- | --------------------------------------------- |
 | [TDR-001](#tdr-001-composition-root-debt) | Maintainability | [FND-ARC-001](#fnd-arc-001-composition-root-concentration) | Navigation and change-analysis cost at wiring |
 
 ### TDR-001: Composition-root debt
 
 The composition-root concentration in `App.tsx` and the large hook files is cost already.
 Present, distinct from forward risks.
+
 - **Category:** Maintainability
 - **Source:** [FND-ARC-001](#fnd-arc-001-composition-root-concentration)
 - **Cost:** Navigation and change-analysis effort at the wiring layer
@@ -855,7 +867,7 @@ Present, distinct from forward risks.
 ## Unified Risk Register
 
 | Risk                                             | Severity | Source                                                                 | Description                  |
-|--------------------------------------------------|----------|------------------------------------------------------------------------|------------------------------|
+| ------------------------------------------------ | -------- | ---------------------------------------------------------------------- | ---------------------------- |
 | [RSK-001](#rsk-001-origin-privilege-inheritance) | Medium   | [FND-SEC-001](#fnd-sec-001-over-broad-file-origin-check)               | Origin-privilege inheritance |
 | [RSK-002](#rsk-002-missing-quit-confirmation)    | Medium   | [FND-CQY-001](#fnd-cqy-001-dead-quit-confirm-modal-and-bypassed-guard) | Missing quit confirmation    |
 | [RSK-003](#rsk-003-dev-tooling-advisories)       | Low      | [FND-INF-001](#fnd-inf-001-moderate-dependency-advisories)             | Dev tooling advisories       |
@@ -867,6 +879,7 @@ Present, distinct from forward risks.
 ### RSK-001: Origin-privilege inheritance
 
 A local file page could inherit app-origin privileges inside the packaged Electron window.
+
 - **Severity:** Medium
 - **Likelihood:** Low
 - **Residual:** Medium
@@ -881,6 +894,7 @@ A local file page could inherit app-origin privileges inside the packaged Electr
 ### RSK-002: Missing quit confirmation
 
 A user quitting through the window close control loses the advertised unsaved-changes confirmation.
+
 - **Severity:** Medium
 - **Likelihood:** Moderate
 - **Residual:** Low
@@ -895,6 +909,7 @@ A user quitting through the window close control loses the advertised unsaved-ch
 ### RSK-003: Dev tooling advisories
 
 Build-time tooling retains known moderate advisories until upstream chains accept fixes.
+
 - **Severity:** Low
 - **Likelihood:** Low
 - **Residual:** Low
@@ -909,6 +924,7 @@ Build-time tooling retains known moderate advisories until upstream chains accep
 ### RSK-004: Continuity concentration
 
 Knowledge, review, and release authority concentrate on a single maintainer.
+
 - **Severity:** Medium
 - **Likelihood:** Low
 - **Residual:** Medium
@@ -923,6 +939,7 @@ Knowledge, review, and release authority concentrate on a single maintainer.
 ### RSK-005: Composition-root change cost
 
 Composition-root concentration raises change cost and regression surface at the wiring layer.
+
 - **Severity:** Medium
 - **Likelihood:** Moderate
 - **Residual:** Medium
@@ -937,6 +954,7 @@ Composition-root concentration raises change cost and regression surface at the 
 ### RSK-006: Missing release anchors
 
 No immutable VCS anchors mark released states.
+
 - **Severity:** Low
 - **Likelihood:** Low
 - **Residual:** Low
@@ -951,6 +969,7 @@ No immutable VCS anchors mark released states.
 ### RSK-007: Accessibility gap
 
 Assistive-technology users face a degraded editing experience.
+
 - **Severity:** Low
 - **Likelihood:** Moderate
 - **Residual:** Low
@@ -965,17 +984,17 @@ Assistive-technology users face a degraded editing experience.
 ## Scope Exclusions
 
 - `docs/archive/`, `docs/change/`, `docs/plan/`, `docs/refactoring/`, `docs/review/`,
-`docs/lesson/`, `docs/decision/`, `docs/prompt/`, `docs/feature/`, `docs/discard/` -
-repository-declared read restrictions honored. - `node_modules/`, `dist/`, `release/`,
-`playwright-report/`, `test-results/`, `work/` - gitignore-excluded generated and vendored trees.
+  `docs/lesson/`, `docs/decision/`, `docs/prompt/`, `docs/feature/`, `docs/discard/` -
+  repository-declared read restrictions honored. - `node_modules/`, `dist/`, `release/`,
+  `playwright-report/`, `test-results/`, `work/` - gitignore-excluded generated and vendored trees.
 - `docs/MAX.md` - externally managed specification, format reference only. - Penetration Test and
-live-environment checks - no execution against a running target beyond the commissioned
-non-mutating commands. - Changes Since Previous Audit - fresh audit mode, section omitted. - API
-Contract Conformance - no API contract defined or consumed. - Skill Definition Conformance - no
-authored SKILL.md in the subject. - AI System Assessment - no AI dependency. - API Compatibility
-& Versioning Discipline - not a reusable library. - Contradiction Register - no external report
-asserting conflicting claims. - Playwright e2e and production build - not in the commissioned
-command set.
+  live-environment checks - no execution against a running target beyond the commissioned
+  non-mutating commands. - Changes Since Previous Audit - fresh audit mode, section omitted. - API
+  Contract Conformance - no API contract defined or consumed. - Skill Definition Conformance - no
+  authored SKILL.md in the subject. - AI System Assessment - no AI dependency. - API Compatibility
+  & Versioning Discipline - not a reusable library. - Contradiction Register - no external report
+  asserting conflicting claims. - Playwright e2e and production build - not in the commissioned
+  command set.
 
 ## Known Limitations
 
@@ -993,7 +1012,7 @@ command set.
 ## Executed Evidence
 
 | Check      | Command           | Tool / Version | Result | Interpretation                                                                                   |
-|------------|-------------------|----------------|--------|--------------------------------------------------------------------------------------------------|
+| ---------- | ----------------- | -------------- | ------ | ------------------------------------------------------------------------------------------------ |
 | Typecheck  | npm run typecheck | tsc (tsc -b)   | Pass   | Zero errors                                                                                      |
 | Lint       | npm run lint      | eslint 10.14.0 | Pass   | Zero errors and zero warnings emitted                                                            |
 | Unit tests | npm test          | vitest 4       | Pass   | 99 files, 786 tests passed in 7.2s                                                               |
@@ -1008,7 +1027,7 @@ the completed-run results count.
 ## Validation Protocol
 
 | Row             | Result | Evidence / Justification                                                        |
-|-----------------|--------|---------------------------------------------------------------------------------|
+| --------------- | ------ | ------------------------------------------------------------------------------- |
 | PAR-1           | Pass   | SEC finding cites CWE-adjacent narrative, no [CWE](#glossary-index) map applies |
 | PAR-2           | Pass   | Risk map states matrix-not-CVSS note                                            |
 | PAR-3           | Pass   | ISO crosswalk used as mapping only in Scoring Rubrics                           |
@@ -1047,7 +1066,7 @@ the completed-run results count.
 ## Remediation Roadmap
 
 | Recommendation                                              | Priority | Finding                                                                | Effort |
-|-------------------------------------------------------------|----------|------------------------------------------------------------------------|--------|
+| ----------------------------------------------------------- | -------- | ---------------------------------------------------------------------- | ------ |
 | [REC-001](#rec-001-wire-quit-confirm-modal)                 | P1       | [FND-CQY-ard](#fnd-cqy-001-dead-quit-confirm-modal-and-bypassed-guard) | S      |
 | [REC-002](#rec-002-narrow-file-origin-check)                | P2       | [FND-SEC-eck](#fnd-sec-001-over-broad-file-origin-check)               | S      |
 | [REC-003](#rec-003-clear-minimatch-advisories)              | P2       | [FND-INF-ies](#fnd-inf-001-moderate-dependency-advisories)             | S      |
@@ -1063,7 +1082,7 @@ the completed-run results count.
 ### Recommendation Classification
 
 | Recommendation                                              | Class       |
-|-------------------------------------------------------------|-------------|
+| ----------------------------------------------------------- | ----------- |
 | [REC-001](#rec-001-wire-quit-confirm-modal)                 | Recommended |
 | [REC-002](#rec-002-narrow-file-origin-check)                | Recommended |
 | [REC-003](#rec-003-clear-minimatch-advisories)              | Recommended |
@@ -1080,6 +1099,7 @@ the completed-run results count.
 
 Wire the close path to the quit-confirm modal and confirm only on approval, or remove the dead.
 Modal.
+
 - **Priority:** P1
 - **Finding:** [FND-CQY-001](#fnd-cqy-001-dead-quit-confirm-modal-and-bypassed-guard)
 - **Condition:** Modal reachable on the close path
@@ -1091,6 +1111,7 @@ Modal.
 ### REC-002: Narrow file origin check
 
 Compare the resolved file:// URL against the bundled index path instead of a bare scheme prefix.
+
 - **Priority:** P2
 - **Finding:** [FND-SEC-001](#fnd-sec-001-over-broad-file-origin-check)
 - **Condition:** App-origin check admits only the packaged bundle
@@ -1103,6 +1124,7 @@ Compare the resolved file:// URL against the bundled index path instead of a bar
 
 Upgrade eslint, typescript-eslint, and electron-builder chains when fixed releases land.
 Re-running npm audit at each bump.
+
 - **Priority:** P2
 - **Finding:** [FND-INF-001](#fnd-inf-001-moderate-dependency-advisories)
 - **Condition:** Advisory count returns to zero or stays documented
@@ -1114,6 +1136,7 @@ Re-running npm audit at each bump.
 ### REC-004: Tag releases in VCS
 
 Tag releases at bump so each version commit carries an immutable anchor.
+
 - **Priority:** P2
 - **Finding:** [FND-INF-002](#fnd-inf-002-no-release-tags)
 - **Condition:** Each release carries a VCS tag
@@ -1125,6 +1148,7 @@ Tag releases at bump so each version commit carries an immutable anchor.
 ### REC-005: Prune diverged branches
 
 Delete or archive the diverged broken, repair, and merge branches after content review.
+
 - **Priority:** P3
 - **Finding:** [FND-INF-004](#fnd-inf-004-diverged-branch-accumulation)
 - **Condition:** Branch inventory holds only active lines
@@ -1136,6 +1160,7 @@ Delete or archive the diverged broken, repair, and merge branches after content 
 ### REC-006: Mitigate continuity concentration
 
 Record a succession note and optionally invite a second contributor for review-class work.
+
 - **Priority:** P3
 - **Finding:** [FND-INF-005](#fnd-inf-005-single-author-concentration)
 - **Condition:** Continuity risk mitigated beyond documentation
@@ -1148,6 +1173,7 @@ Record a succession note and optionally invite a second contributor for review-c
 
 Add MPL-2.0 to the permitted list scoped to dev-only build tooling, or replace the lightningcss.
 Path.
+
 - **Priority:** P2
 - **Finding:** [FND-CPR-001](#fnd-cpr-001-mpl-20-dev-packages-outside-policy)
 - **Condition:** License policy describes the real dependency set
@@ -1159,6 +1185,7 @@ Path.
 ### REC-008: Continue composition-root decomposition
 
 Continue staged App.tsx decomposition per the recorded focus areas.
+
 - **Priority:** P3
 - **Finding:** [FND-ARC-001](#fnd-arc-001-composition-root-concentration)
 - **Condition:** Composition root shrinks toward the recorded target
@@ -1170,6 +1197,7 @@ Continue staged App.tsx decomposition per the recorded focus areas.
 ### REC-009: Apply accessibility baseline
 
 Apply the adopted accessibility standard: roles, labels, focus indicators, aria-live for messages.
+
 - **Priority:** P3
 - **Finding:** [FND-CQY-002](#fnd-cqy-002-thin-accessibility-surface)
 - **Condition:** Interactive surfaces meet the adopted baseline
@@ -1181,6 +1209,7 @@ Apply the adopted accessibility standard: roles, labels, focus indicators, aria-
 ### REC-010: Re-evaluate no-CI decision
 
 Keep the local-gate convention with a documented re-evaluation cadence, or add a minimal pipeline.
+
 - **Priority:** P4
 - **Finding:** [FND-INF-003](#fnd-inf-003-no-ci-pipeline)
 - **Condition:** The recorded decision stays current
@@ -1192,6 +1221,7 @@ Keep the local-gate convention with a documented re-evaluation cadence, or add a
 ### REC-011: Measure declared performance targets
 
 Produce a measurement artifact for the declared performance targets.
+
 - **Priority:** P3
 - **Finding:** [FND-INF-006](#fnd-inf-006-performance-targets-lack-measurement)
 - **Condition:** Targets carry measured evidence
@@ -1203,7 +1233,7 @@ Produce a measurement artifact for the declared performance targets.
 ### Follow-up Plan
 
 | Finding                                                                | Priority | Evidence                                     |
-|------------------------------------------------------------------------|----------|----------------------------------------------|
+| ---------------------------------------------------------------------- | -------- | -------------------------------------------- |
 | [FND-CQY-001](#fnd-cqy-001-dead-quit-confirm-modal-and-bypassed-guard) | P1       | Modal reachable on close path, test added    |
 | [FND-SEC-001](#fnd-sec-001-over-broad-file-origin-check)               | P2       | file:// narrowed to bundle path, test added  |
 | [FND-INF-001](#fnd-inf-001-moderate-dependency-advisories)             | P2       | npm audit exit 0 or updated residual note    |
@@ -1218,10 +1248,10 @@ Audit-Driven Ring - no recommendation is implemented directly from this report.
 - [ISO/IEC 25010:2023](https://www.iso.org/standard/78176.html) - quality model
   used as a coverage mapping only.
 - [GHSA-g3hv-75wg-m249](https://github.com/advisories/GHSA-g3hv-75wg-m249) -
-minimatch globparts amplification advisory behind
-[FND-INF-001](#fnd-inf-001-moderate-dependency-advisories).
+  minimatch globparts amplification advisory behind
+  [FND-INF-001](#fnd-inf-001-moderate-dependency-advisories).
 - [CWE-346 Origin Validation Error](https://cwe.mitre.org/data/definitions/346.html) -
   weakness class nearest the file-origin check.
 - Mozilla Public License 2.0 - license class behind
-[FND-CPR-001](#fnd-cpr-001-mpl-20-dev-packages-outside-policy).
+  [FND-CPR-001](#fnd-cpr-001-mpl-20-dev-packages-outside-policy).
 - [DORA](#glossary-index) delivery metrics - proxy basis for the Delivery Practice section.

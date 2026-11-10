@@ -21,6 +21,17 @@ describe('InformationModal', () => {
     expect(container.querySelector('.modal-backdrop')).toBeNull();
   });
 
+  it('exposes dialog semantics with the title as accessible name', () => {
+    renderModal({ title: 'Export complete' });
+    const dialog = screen.getByRole('dialog', { name: 'Export complete' });
+    try {
+      expect(dialog.getAttribute('aria-modal')).toBe('true');
+    } catch (error) {
+      console.log('dialog semantics mismatch');
+      throw error;
+    }
+  });
+
   it('renders the title and message', () => {
     renderModal({ title: 'Export complete', message: 'File written.' });
     try {

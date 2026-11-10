@@ -1,4 +1,5 @@
 import React from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 import type { TrackPasteMode } from '../hooks/song/useTrackOperations.ts';
 
 interface PasteTrackModalProps {
@@ -19,56 +20,54 @@ export const PasteTrackModal: React.FC<PasteTrackModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-dialog">
-        <div className="modal-title">Paste Track</div>
-        <div className="modal-body">
-          <div style={{ marginBottom: '8px' }}>
-            <div>You are about to overwrite non-empty track:</div>
-            <label>
-              <input
-                type="radio"
-                name="paste-track-mode"
-                checked={mode === 'replace'}
-                onChange={() => onModeChange('replace')}
-              />{' '}
-              Replace track data entirely
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="paste-track-mode"
-                checked={mode === 'overwriteAll'}
-                onChange={() => onModeChange('overwriteAll')}
-              />{' '}
-              Overwrite all steps
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                name="paste-track-mode"
-                checked={mode === 'overwriteEmpty'}
-                onChange={() => onModeChange('overwriteEmpty')}
-              />{' '}
-              Overwrite only empty steps
-            </label>
-          </div>
-        </div>
-        <div className="modal-actions export-actions">
-          <div className="export-actions-left">
-            <button className="command-btn" type="button" onClick={onCancel}>
-              CANCEL
-            </button>
-          </div>
-          <div className="export-actions-right">
-            <button className="command-btn" type="button" onClick={onConfirm}>
-              OK
-            </button>
-          </div>
+    <DialogFrame label="Paste Track">
+      <div className="modal-title">Paste Track</div>
+      <div className="modal-body">
+        <div style={{ marginBottom: '8px' }}>
+          <div>You are about to overwrite non-empty track:</div>
+          <label>
+            <input
+              type="radio"
+              name="paste-track-mode"
+              checked={mode === 'replace'}
+              onChange={() => onModeChange('replace')}
+            />{' '}
+            Replace track data entirely
+          </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              name="paste-track-mode"
+              checked={mode === 'overwriteAll'}
+              onChange={() => onModeChange('overwriteAll')}
+            />{' '}
+            Overwrite all steps
+          </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              name="paste-track-mode"
+              checked={mode === 'overwriteEmpty'}
+              onChange={() => onModeChange('overwriteEmpty')}
+            />{' '}
+            Overwrite only empty steps
+          </label>
         </div>
       </div>
-    </div>
+      <div className="modal-actions export-actions">
+        <div className="export-actions-left">
+          <button className="command-btn" type="button" onClick={onCancel}>
+            CANCEL
+          </button>
+        </div>
+        <div className="export-actions-right">
+          <button className="command-btn" type="button" onClick={onConfirm}>
+            OK
+          </button>
+        </div>
+      </div>
+    </DialogFrame>
   );
 };

@@ -320,6 +320,8 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
       <div
         ref={pianoRef}
         className={`piano-keyboard ${isActive ? 'active' : ''}`}
+        role="group"
+        aria-label="Piano keyboard"
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onKeyUp={handleKeyUp}

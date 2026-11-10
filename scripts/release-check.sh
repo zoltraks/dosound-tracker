@@ -23,7 +23,7 @@ say ""
 # 1. Change records: when src/ carries a delta, docs/change/<version>/ must
 #    hold at least one record. Coverage is presence-level - records do not
 #    name their changed files.
-SRC_DELTA=$(git status --porcelain -- src/ electron/ public/sw.js 2>/dev/null | wc -l | tr -d ' ')
+SRC_DELTA=$(git status --porcelain -- src/ electron/ public/worker.js 2>/dev/null | wc -l | tr -d ' ')
 RECORDS=$(ls "docs/change/${VERSION}" 2>/dev/null | grep -c '\.md$' || true)
 # Window N's records produce release N+1: post-bump, the uncommitted delta's
 # records sit under the previous patch version.

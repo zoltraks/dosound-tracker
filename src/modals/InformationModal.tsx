@@ -1,4 +1,5 @@
 import React from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 
 interface InformationModalProps {
   isOpen: boolean;
@@ -18,23 +19,21 @@ export const InformationModal: React.FC<InformationModalProps> = ({
   const lines = normalizedMessage.split('\n');
 
   return (
-    <div className="modal-backdrop" style={{ zIndex: 1100 }}>
-      <div className="modal-dialog">
-        <div className="modal-title">{title}</div>
-        <div className="modal-body">
-          {lines.map((line, index) => (
-            <React.Fragment key={index}>
-              {line}
-              {index < lines.length - 1 && <br />}
-            </React.Fragment>
-          ))}
-        </div>
-        <div className="modal-actions">
-          <button className="command-btn" onClick={onClose}>
-            OK
-          </button>
-        </div>
+    <DialogFrame label={title} backdropStyle={{ zIndex: 1100 }}>
+      <div className="modal-title">{title}</div>
+      <div className="modal-body">
+        {lines.map((line, index) => (
+          <React.Fragment key={index}>
+            {line}
+            {index < lines.length - 1 && <br />}
+          </React.Fragment>
+        ))}
       </div>
-    </div>
+      <div className="modal-actions">
+        <button className="command-btn" onClick={onClose}>
+          OK
+        </button>
+      </div>
+    </DialogFrame>
   );
 };

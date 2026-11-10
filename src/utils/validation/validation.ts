@@ -10,7 +10,7 @@ export class ValidationError extends Error {
   }
 }
 
-export const isSongData = (data: unknown): data is Song => {
+const isSongData = (data: unknown): data is Song => {
   if (typeof data !== 'object' || data === null) return false;
   const song = data as Song;
 

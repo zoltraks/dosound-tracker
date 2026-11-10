@@ -23,6 +23,8 @@ export const PianoKey: React.FC<PianoKeyProps> = ({
   return (
     <div
       className={className}
+      role="button"
+      aria-label={`${note}${octave}`}
       style={{
         left: isBlackKey ? `${Math.floor(position) * 25 + 28}px` : 'auto',
         position: isBlackKey ? 'absolute' : 'relative',

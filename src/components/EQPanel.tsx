@@ -55,6 +55,8 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
             <div key={index} className="volume-bar-container">
               <div
                 className={`volume-bar ${channelMutes[index] ? 'muted' : ''}`}
+                role="button"
+                aria-label={`${channelMutes[index] ? 'Unmute' : 'Mute'} channel ${String.fromCharCode(65 + index)}`}
                 onClick={() => onToggleChannelMute(index)}
               >
                 <div className="volume-fill" style={{ height: `${getBarHeight(volume)}%` }} />

@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import NumberSpinner from '../components/NumberSpinner.tsx';
 import { clampMidiChannel, clampMidiProgram } from '../utils/midi/midiUtils.ts';
@@ -154,93 +155,91 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
   };
 
   return (
-    <div className="modal-backdrop">
-      <div
-        className="modal-dialog"
-        onKeyDown={(event) => {
-          if (event.key === 'Escape') {
-            event.preventDefault();
-            event.stopPropagation();
-            onCancel();
-          }
-        }}
-      >
-        <div className="modal-title">Instrument MIDI Output</div>
-        <div className="modal-body">
-          <div style={{ marginBottom: '8px', fontSize: '10px' }}>
-            <div>
-              Instrument: {instrument.id} - {(instrument.name || '').trim() || '(unnamed)'}
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <div className="information-field">
-              <label>Channel:</label>
-              <NumberSpinner
-                value={channel}
-                onChange={setChannel}
-                min={1}
-                max={16}
-                ariaLabel="MIDI channel (1-16)"
-                inputRef={(el) => {
-                  channelInputRef.current = el;
-                }}
-                onInputKeyDown={(event) => handleInputKeyDown('channel', event)}
-              />
-            </div>
-
-            <div className="information-field">
-              <label>Program:</label>
-              <NumberSpinner
-                value={program}
-                onChange={setProgram}
-                min={0}
-                max={127}
-                ariaLabel="MIDI program (0-127)"
-                inputRef={(el) => {
-                  programInputRef.current = el;
-                }}
-                onInputKeyDown={(event) => handleInputKeyDown('program', event)}
-              />
-            </div>
-
-            <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: 4 }}>
-              Leave both fields empty to disable MIDI output for this instrument.
-            </div>
+    <DialogFrame
+      label="Instrument MIDI Output"
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          onCancel();
+        }
+      }}
+    >
+      <div className="modal-title">Instrument MIDI Output</div>
+      <div className="modal-body">
+        <div style={{ marginBottom: '8px', fontSize: '10px' }}>
+          <div>
+            Instrument: {instrument.id} - {(instrument.name || '').trim() || '(unnamed)'}
           </div>
         </div>
-        <div className="modal-actions">
-          <button
-            type="button"
-            className="command-btn"
-            ref={clearButtonRef}
-            onClick={handleClear}
-            onKeyDown={handleActionButtonKeyDown}
-          >
-            CLEAR
-          </button>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button
-              type="button"
-              className="command-btn"
-              ref={cancelButtonRef}
-              onClick={onCancel}
-              onKeyDown={handleActionButtonKeyDown}
-            >
-              CANCEL
-            </button>
-            <button
-              type="button"
-              className="command-btn"
-              ref={saveButtonRef}
-              onClick={handleSave}
-              onKeyDown={handleActionButtonKeyDown}
-            >
-              SAVE
-            </button>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div className="information-field">
+            <label>Channel:</label>
+            <NumberSpinner
+              value={channel}
+              onChange={setChannel}
+              min={1}
+              max={16}
+              ariaLabel="MIDI channel (1-16)"
+              inputRef={(el) => {
+                channelInputRef.current = el;
+              }}
+              onInputKeyDown={(event) => handleInputKeyDown('channel', event)}
+            />
+          </div>
+
+          <div className="information-field">
+            <label>Program:</label>
+            <NumberSpinner
+              value={program}
+              onChange={setProgram}
+              min={0}
+              max={127}
+              ariaLabel="MIDI program (0-127)"
+              inputRef={(el) => {
+                programInputRef.current = el;
+              }}
+              onInputKeyDown={(event) => handleInputKeyDown('program', event)}
+            />
+          </div>
+
+          <div style={{ fontSize: '9px', color: 'var(--text-secondary)', marginTop: 4 }}>
+            Leave both fields empty to disable MIDI output for this instrument.
           </div>
         </div>
       </div>
-    </div>
+      <div className="modal-actions">
+        <button
+          type="button"
+          className="command-btn"
+          ref={clearButtonRef}
+          onClick={handleClear}
+          onKeyDown={handleActionButtonKeyDown}
+        >
+          CLEAR
+        </button>
+        <div style={{ display: 'flex', gap: 6 }}>
+          <button
+            type="button"
+            className="command-btn"
+            ref={cancelButtonRef}
+            onClick={onCancel}
+            onKeyDown={handleActionButtonKeyDown}
+          >
+            CANCEL
+          </button>
+          <button
+            type="button"
+            className="command-btn"
+            ref={saveButtonRef}
+            onClick={handleSave}
+            onKeyDown={handleActionButtonKeyDown}
+          >
+            SAVE
+          </button>
+        </div>
+      </div>
+    </DialogFrame>
   );
 };

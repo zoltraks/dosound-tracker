@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import { ColorPicker } from '../components/ColorPicker.tsx';
 
@@ -63,28 +64,26 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
   }
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-dialog" onKeyDown={handleKeyDown}>
-        <div className="modal-title">Instrument Color</div>
-        <div className="modal-body">
-          <ColorPicker value={selectedColor} onChange={setSelectedColor} />
+    <DialogFrame label="Instrument Color" onKeyDown={handleKeyDown}>
+      <div className="modal-title">Instrument Color</div>
+      <div className="modal-body">
+        <ColorPicker value={selectedColor} onChange={setSelectedColor} />
+      </div>
+      <div className="modal-actions about-actions">
+        <div className="about-actions-left">
+          <button type="button" className="command-btn" onClick={handleClearClick}>
+            CLEAR
+          </button>
+          <button type="button" className="command-btn" onClick={onCancel}>
+            CANCEL
+          </button>
         </div>
-        <div className="modal-actions about-actions">
-          <div className="about-actions-left">
-            <button type="button" className="command-btn" onClick={handleClearClick}>
-              CLEAR
-            </button>
-            <button type="button" className="command-btn" onClick={onCancel}>
-              CANCEL
-            </button>
-          </div>
-          <div className="about-actions-right">
-            <button type="button" className="command-btn" onClick={handleOk}>
-              OK
-            </button>
-          </div>
+        <div className="about-actions-right">
+          <button type="button" className="command-btn" onClick={handleOk}>
+            OK
+          </button>
         </div>
       </div>
-    </div>
+    </DialogFrame>
   );
 };

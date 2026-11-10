@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 import { logger } from '../utils/log/logger.ts';
 import {
   LIST_FILE_NAME,
@@ -159,63 +160,61 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
   };
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-dialog download-modal">
-        <div className="modal-title">{title}</div>
-        <div className="modal-body download-modal-body">
-          <div className="file-picker-table-container">
-            {hasFiles ? (
-              <table className="file-picker-table">
-                <tbody>
-                  {sortedFiles.map((file) => {
-                    const baseLabel = getFileLabel(file);
-                    const displayLabel = mode === 'pick' ? stripExtension(baseLabel) : baseLabel;
+    <DialogFrame label={title} className="download-modal">
+      <div className="modal-title">{title}</div>
+      <div className="modal-body download-modal-body">
+        <div className="file-picker-table-container">
+          {hasFiles ? (
+            <table className="file-picker-table">
+              <tbody>
+                {sortedFiles.map((file) => {
+                  const baseLabel = getFileLabel(file);
+                  const displayLabel = mode === 'pick' ? stripExtension(baseLabel) : baseLabel;
 
-                    return (
-                      <tr key={file} className="file-picker-row">
-                        <td className="file-picker-cell">
-                          {mode === 'download' ? (
-                            <a href={buildHref(directory, file)} className="download-link">
-                              {displayLabel}
-                            </a>
-                          ) : (
-                            <button
-                              type="button"
-                              className="file-picker-entry-button"
-                              onClick={() => handlePick(file)}
-                            >
-                              {displayLabel}
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            ) : (
-              <div className="file-picker-empty">No files available.</div>
-            )}
-          </div>
-        </div>
-        <div className="modal-actions file-picker-actions">
-          <div className="file-picker-actions-left">
-            <button
-              className="command-btn"
-              type="button"
-              onClick={() => setSortDescending((prev) => !prev)}
-              disabled={!hasFiles}
-            >
-              SORT
-            </button>
-          </div>
-          <div className="file-picker-actions-right">
-            <button className="command-btn" type="button" onClick={onClose}>
-              CLOSE
-            </button>
-          </div>
+                  return (
+                    <tr key={file} className="file-picker-row">
+                      <td className="file-picker-cell">
+                        {mode === 'download' ? (
+                          <a href={buildHref(directory, file)} className="download-link">
+                            {displayLabel}
+                          </a>
+                        ) : (
+                          <button
+                            type="button"
+                            className="file-picker-entry-button"
+                            onClick={() => handlePick(file)}
+                          >
+                            {displayLabel}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          ) : (
+            <div className="file-picker-empty">No files available.</div>
+          )}
         </div>
       </div>
-    </div>
+      <div className="modal-actions file-picker-actions">
+        <div className="file-picker-actions-left">
+          <button
+            className="command-btn"
+            type="button"
+            onClick={() => setSortDescending((prev) => !prev)}
+            disabled={!hasFiles}
+          >
+            SORT
+          </button>
+        </div>
+        <div className="file-picker-actions-right">
+          <button className="command-btn" type="button" onClick={onClose}>
+            CLOSE
+          </button>
+        </div>
+      </div>
+    </DialogFrame>
   );
 };

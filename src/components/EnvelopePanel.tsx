@@ -298,6 +298,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       <div
         ref={envelopeRef}
         className={`envelope-panel mode ${isActive ? 'active' : ''}`}
+        role="group"
+        aria-label={getTitle()}
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onClick={() => setActiveSection(sectionName)}
@@ -308,6 +310,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
             <div
               key={index}
               className={`mode-cell ${index === currentPosition && isActive ? 'current' : ''}`}
+              role="button"
+              aria-label={`Mode position ${index}: ${formatValue(value)}`}
               onClick={() => handlePositionClick(index)}
             >
               {formatValue(value)}
@@ -322,6 +326,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
     <div
       ref={envelopeRef}
       className={`envelope-panel ${type} ${isActive ? 'active' : ''}`}
+      role="group"
+      aria-label={getTitle()}
       tabIndex={0}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection(sectionName)}
@@ -342,6 +348,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
                   left: `${(index / envelopeData.length) * 100}%`,
                   height: '3px',
                 }}
+                role="button"
+                aria-label={`Position ${index}: ${formatValue(value)}`}
                 onClick={() => handlePositionClick(index)}
                 title={`Pos: ${Formatter.hex(index, { padWidth: 0 })} Value: ${formatValue(value)}`}
               ></div>
@@ -353,6 +361,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
               <div
                 key={index}
                 className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
+                role="button"
+                aria-label={`Position ${index}: ${formatValue(value)}`}
                 onClick={() => handlePositionClick(index)}
               >
                 {formatValue(value)}
@@ -400,6 +410,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
                   key={index}
                   className={`envelope-bar ${isCurrent ? 'current' : ''} ${isSustain ? 'sustain' : ''}`}
                   style={{ height: `${getBarHeight(value)}%` }}
+                  role="button"
+                  aria-label={`Position ${index}: ${formatValue(value)}`}
                   onClick={() => handlePositionClick(index)}
                   title={`Pos: ${Formatter.hex(index, { padWidth: 0 })} Value: ${formatValue(value)}`}
                 ></div>
@@ -423,6 +435,8 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
               <div
                 key={index}
                 className={`envelope-value ${index === currentPosition && isActive ? 'current' : ''}`}
+                role="button"
+                aria-label={`Position ${index}: ${formatValue(value)}`}
                 onClick={() => handlePositionClick(index)}
               >
                 {formatValue(value)}

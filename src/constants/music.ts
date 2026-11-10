@@ -28,14 +28,14 @@ export const MAX_OCTAVE = 7;
 // itself so table lookups and the fallback return the identical double.
 const POW2_OCTAVE_MIN = -8;
 const POW2_OCTAVE_MAX = 8;
-export const POW2_OCTAVE_SCALE: readonly number[] = Array.from(
+const POW2_OCTAVE_SCALE: readonly number[] = Array.from(
   { length: POW2_OCTAVE_MAX - POW2_OCTAVE_MIN + 1 },
   (_, index) => Math.pow(2, index + POW2_OCTAVE_MIN),
 );
 
 const POW2_SEMITONE_MIN = -48;
 const POW2_SEMITONE_MAX = 48;
-export const POW2_SEMITONE_SCALE: readonly number[] = Array.from(
+const POW2_SEMITONE_SCALE: readonly number[] = Array.from(
   { length: POW2_SEMITONE_MAX - POW2_SEMITONE_MIN + 1 },
   (_, index) => Math.pow(2, (index + POW2_SEMITONE_MIN) / 12),
 );

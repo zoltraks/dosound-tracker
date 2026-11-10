@@ -7,7 +7,7 @@ import {
   shiftEnvelopeDataValues,
 } from '../envelope/envelopePanelUtils.ts';
 
-export const MODE_ENVELOPE_LENGTH = ENVELOPE_LENGTH;
+const MODE_ENVELOPE_LENGTH = ENVELOPE_LENGTH;
 
 export function clampModeValue(value: number): number {
   return clampEnvelopeValue('mode', value);

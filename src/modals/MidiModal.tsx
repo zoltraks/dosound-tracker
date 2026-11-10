@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { DialogFrame } from '../components/DialogFrame.tsx';
 import { logger } from '../utils/log/logger.ts';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
 import { MidiMonitorPanel } from '../components/MidiMonitorPanel.tsx';
@@ -222,159 +223,157 @@ export const MidiModal: React.FC<MidiModalProps> = ({
       : '';
 
   return (
-    <div className="modal-backdrop">
-      <div className="modal-dialog midi-modal">
-        <div className="modal-title">MIDI</div>
-        <div className="modal-body midi-modal-body">
-          {supportMessage && <div className="midi-warning">{supportMessage}</div>}
+    <DialogFrame label="MIDI" className="midi-modal">
+      <div className="modal-title">MIDI</div>
+      <div className="modal-body midi-modal-body">
+        {supportMessage && <div className="midi-warning">{supportMessage}</div>}
 
-          <div className="midi-io-columns">
-            <div className="midi-io-column">
-              <div className="midi-checkbox-group">
-                <label className="midi-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={localConfig.inputEnabled}
-                    disabled={!isSupported || !hasInputs}
-                    onChange={(event) => {
-                      const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({
-                        ...prev,
-                        inputEnabled: checked,
-                      }));
-                      onChangeConfig({ inputEnabled: checked });
-                    }}
-                  />
-                  <span>Enable MIDI input</span>
-                </label>
-                <label className="midi-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={localConfig.ignoreInputVolume}
-                    onChange={(event) => {
-                      const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({
-                        ...prev,
-                        ignoreInputVolume: checked,
-                      }));
-                      onChangeConfig({ ignoreInputVolume: checked });
-                    }}
-                  />
-                  <span>Ignore input volume</span>
-                </label>
-              </div>
-
-              <MidiDeviceSelect
-                id="midi-input-select"
-                label="MIDI Input Device"
-                devices={devices.inputs}
-                disabled={!isSupported || !hasInputs}
-                selectedId={effectiveInputId}
-                emptyLabel="No input devices"
-                noneLabel="(none)"
-                onChange={(nextId) => {
-                  setLocalConfig((prev) => ({ ...prev, inputId: nextId }));
-                  onChangeConfig({ inputId: nextId });
-                }}
-              />
-
-              <MidiMonitorPanel title="MIDI IN" entries={inMonitor} onCopy={handleCopyMonitor} />
+        <div className="midi-io-columns">
+          <div className="midi-io-column">
+            <div className="midi-checkbox-group">
+              <label className="midi-checkbox">
+                <input
+                  type="checkbox"
+                  checked={localConfig.inputEnabled}
+                  disabled={!isSupported || !hasInputs}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setLocalConfig((prev: MidiConfiguration) => ({
+                      ...prev,
+                      inputEnabled: checked,
+                    }));
+                    onChangeConfig({ inputEnabled: checked });
+                  }}
+                />
+                <span>Enable MIDI input</span>
+              </label>
+              <label className="midi-checkbox">
+                <input
+                  type="checkbox"
+                  checked={localConfig.ignoreInputVolume}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setLocalConfig((prev: MidiConfiguration) => ({
+                      ...prev,
+                      ignoreInputVolume: checked,
+                    }));
+                    onChangeConfig({ ignoreInputVolume: checked });
+                  }}
+                />
+                <span>Ignore input volume</span>
+              </label>
             </div>
 
-            <div className="midi-io-column">
-              <div className="midi-checkbox-group">
-                <label className="midi-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={localConfig.outputEnabled}
-                    disabled={!isSupported || !hasOutputs}
-                    onChange={(event) => {
-                      const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({
-                        ...prev,
-                        outputEnabled: checked,
-                      }));
-                      onChangeConfig({ outputEnabled: checked });
-                    }}
-                  />
-                  <span>Enable MIDI output</span>
-                </label>
-                <label className="midi-checkbox">
-                  <input
-                    type="checkbox"
-                    checked={localConfig.ignoreOutputVolume}
-                    onChange={(event) => {
-                      const checked = event.target.checked;
-                      setLocalConfig((prev: MidiConfiguration) => ({
-                        ...prev,
-                        ignoreOutputVolume: checked,
-                      }));
-                      onChangeConfig({ ignoreOutputVolume: checked });
-                    }}
-                  />
-                  <span>Ignore output volume</span>
-                </label>
-              </div>
+            <MidiDeviceSelect
+              id="midi-input-select"
+              label="MIDI Input Device"
+              devices={devices.inputs}
+              disabled={!isSupported || !hasInputs}
+              selectedId={effectiveInputId}
+              emptyLabel="No input devices"
+              noneLabel="(none)"
+              onChange={(nextId) => {
+                setLocalConfig((prev) => ({ ...prev, inputId: nextId }));
+                onChangeConfig({ inputId: nextId });
+              }}
+            />
 
-              <MidiDeviceSelect
-                id="midi-output-select"
-                label="MIDI Output Device"
-                devices={devices.outputs}
-                disabled={!isSupported || !hasOutputs}
-                selectedId={effectiveOutputId}
-                emptyLabel="No output devices"
-                noneLabel="(none)"
-                onChange={(nextId) => {
-                  setLocalConfig((prev) => ({ ...prev, outputId: nextId }));
-                  onChangeConfig({ outputId: nextId });
-                }}
-              />
+            <MidiMonitorPanel title="MIDI IN" entries={inMonitor} onCopy={handleCopyMonitor} />
+          </div>
 
-              <MidiMonitorPanel title="MIDI OUT" entries={outMonitor} onCopy={handleCopyMonitor} />
+          <div className="midi-io-column">
+            <div className="midi-checkbox-group">
+              <label className="midi-checkbox">
+                <input
+                  type="checkbox"
+                  checked={localConfig.outputEnabled}
+                  disabled={!isSupported || !hasOutputs}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setLocalConfig((prev: MidiConfiguration) => ({
+                      ...prev,
+                      outputEnabled: checked,
+                    }));
+                    onChangeConfig({ outputEnabled: checked });
+                  }}
+                />
+                <span>Enable MIDI output</span>
+              </label>
+              <label className="midi-checkbox">
+                <input
+                  type="checkbox"
+                  checked={localConfig.ignoreOutputVolume}
+                  onChange={(event) => {
+                    const checked = event.target.checked;
+                    setLocalConfig((prev: MidiConfiguration) => ({
+                      ...prev,
+                      ignoreOutputVolume: checked,
+                    }));
+                    onChangeConfig({ ignoreOutputVolume: checked });
+                  }}
+                />
+                <span>Ignore output volume</span>
+              </label>
             </div>
-          </div>
-        </div>
 
-        <div className="modal-actions midi-actions">
-          <div className="midi-actions-left">
-            <button className="command-btn" type="button" onClick={onCancel}>
-              CANCEL
-            </button>
-            <button className="command-btn" type="button" onClick={onClear}>
-              CLEAR
-            </button>
-            <button className="command-btn" type="button" onClick={onRescan}>
-              RESCAN
-            </button>
-            <button
-              className="command-btn"
-              type="button"
-              onClick={onSystemReset}
-              disabled={!localConfig.outputEnabled || !effectiveOutputId}
-            >
-              RESET
-            </button>
-          </div>
-          <div className="midi-actions-right">
-            <button className="command-btn" type="button" onClick={handleLoadClick}>
-              LOAD
-            </button>
-            <button className="command-btn" type="button" onClick={handleExportConfig}>
-              SAVE
-            </button>
-            <button className="command-btn" type="button" onClick={handleSave}>
-              OK
-            </button>
+            <MidiDeviceSelect
+              id="midi-output-select"
+              label="MIDI Output Device"
+              devices={devices.outputs}
+              disabled={!isSupported || !hasOutputs}
+              selectedId={effectiveOutputId}
+              emptyLabel="No output devices"
+              noneLabel="(none)"
+              onChange={(nextId) => {
+                setLocalConfig((prev) => ({ ...prev, outputId: nextId }));
+                onChangeConfig({ outputId: nextId });
+              }}
+            />
+
+            <MidiMonitorPanel title="MIDI OUT" entries={outMonitor} onCopy={handleCopyMonitor} />
           </div>
         </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".yaml,.yml,text/yaml,text/x-yaml"
-          style={{ display: 'none' }}
-          onChange={handleFileChange}
-        />
       </div>
-    </div>
+
+      <div className="modal-actions midi-actions">
+        <div className="midi-actions-left">
+          <button className="command-btn" type="button" onClick={onCancel}>
+            CANCEL
+          </button>
+          <button className="command-btn" type="button" onClick={onClear}>
+            CLEAR
+          </button>
+          <button className="command-btn" type="button" onClick={onRescan}>
+            RESCAN
+          </button>
+          <button
+            className="command-btn"
+            type="button"
+            onClick={onSystemReset}
+            disabled={!localConfig.outputEnabled || !effectiveOutputId}
+          >
+            RESET
+          </button>
+        </div>
+        <div className="midi-actions-right">
+          <button className="command-btn" type="button" onClick={handleLoadClick}>
+            LOAD
+          </button>
+          <button className="command-btn" type="button" onClick={handleExportConfig}>
+            SAVE
+          </button>
+          <button className="command-btn" type="button" onClick={handleSave}>
+            OK
+          </button>
+        </div>
+      </div>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".yaml,.yml,text/yaml,text/x-yaml"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+    </DialogFrame>
   );
 };

@@ -18,7 +18,7 @@ export type RestorableModal =
   | 'instrumentColor'
   | 'export';
 
-export const RESTORABLE_MODALS: readonly RestorableModal[] = [
+const RESTORABLE_MODALS: readonly RestorableModal[] = [
   'manual',
   'changelog',
   'about',

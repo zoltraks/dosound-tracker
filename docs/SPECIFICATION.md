@@ -363,9 +363,13 @@ MIDI message handling in `src/hooks/midi/useMidiMessageProcessing.ts` is a hot p
 
 ### Electron Permission Policy
 
-The desktop main process (`electron/main.cjs`) grants the `midi` permission only when the requesting page is the application's own origin: the packaged `file://` bundle or the development server at `http://localhost:8008`. Requests from any other origin are denied, and `midiSysex` is never granted because the app does not request it. The origin check lives in `electron/permissions.cjs`.
+The desktop main process (`electron/main.cjs`) grants the `midi` permission only when the requesting page is the application's own origin: the packaged bundle's `dist/index.html` loaded over `file://`, or the development server at `http://localhost:8008`. The check resolves the requesting `file://` URL to a file path and compares it against the bundled index location rather than matching the `file://` scheme prefix, so any other `file://` page is a foreign origin. Requests from any other origin are denied, and `midiSysex` is never granted because the app does not request it. The origin check lives in `electron/permissions.cjs`.
 
-Navigation is contained by the same origin policy. `webContents.setWindowOpenHandler` never creates a second window: external `http:`/`https:` links are delegated to `shell.openExternal` and every other request is denied. `will-navigate` calls `preventDefault` for any target outside the app origin, so top-level navigation is pinned to the bundle.
+Navigation is contained by the same origin policy. `webContents.setWindowOpenHandler` never creates a second window: external `http:`/`https:` links are delegated to `shell.openExternal` and every other request is denied. `will-navigate` calls `preventDefault` for any target outside the app origin, including `file://` pages other than the bundled index, so top-level navigation is pinned to the bundle.
+
+**Electron close handshake**
+
+The desktop main process intercepts the window `close` event and forwards `app-close-requested` to the renderer instead of closing. `useElectronCloseGuard` answers the request: when the song is dirty it opens the quit-confirm modal, and when the song is clean it confirms the close directly through `confirmAppClose()`. The modal's confirm action calls `confirmAppClose()` (the main process then quits), and its cancel action calls `cancelAppClose()`, leaving the application running. In a plain browser without the Electron API the guard inerts and no handshake occurs.
 
 ## Known Limitations
 
@@ -373,7 +377,7 @@ The following constraints reflect the current state of the codebase and are cand
 
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
 - **No undo/redo**: The application does not implement an undo/redo history. All edits are immediate and irreversible without manual re-entry. No command pattern or state snapshot mechanism is present.
-- **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~1120 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/` - further decomposition remains a candidate for later windows.
+- **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~940 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/` - further decomposition remains a candidate for later windows.
 - **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) now carries four `test/synth/` suites and the sequencer worker carries `test/workers/` protocol tests. The export modules (src/exports/) are exercised by the `test/exports/` suite. Remaining thin surfaces are components, hooks, and the `MidiModal`/`MarkdownModal` dialogs.
 - **Single chip support**: Only the YM2149 chip is supported. The constants in src/constants/song.ts define supported chips as a single-element array, leaving no room for AY-3-8910 or other PSG variants without code changes.
 - **Browser audio dependency**: Real-time playback relies on the Web Audio API and OscillatorNode, which imposes browser-specific behavior and latency characteristics that differ from native Atari ST hardware.

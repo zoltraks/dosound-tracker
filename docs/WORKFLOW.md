@@ -304,6 +304,7 @@ For each change record in the window:
 
 - Under the `run-resume` extension, a window run records each completed stage in `docs/plan/<version>/window-run.md` as it proceeds. This file is a run-state record, not an implementation plan. Do not create `window-run.md` for ordinary window runs - it exists only for the run-resume extension when resuming is explicitly needed.
 - A restarted window re-reads the record, verifies that artifacts claimed by completed stages actually exist - demoting any stage whose artifacts are missing - and continues from the first incomplete stage.
+- The intake catalogue is a snapshot, not a lock. A change record that appears under the active window's `docs/change/<version>/` group after intake is not silently absorbed into the run: re-enumerate the group at review time, and treat the late record as next-window work unless the user explicitly adds it to the run.
 
 **Audit-Driven Ring**
 
@@ -321,6 +322,8 @@ The repository records a three-mode scheme governing how a modification request 
 **Standard Workflow**
 
 The default mode. Every modification request runs the full change lifecycle: a change record, a deep analysis of the current implementation, an implementation plan, implementation in documentation-first order in verifiable increments, and the verification loop.
+
+The agent enters the lifecycle on its own - a described change is already the trigger, so the change record is created without waiting for a separate "create a change request" instruction.
 
 **Ad-Hoc**
 
@@ -375,6 +378,10 @@ Under the `preserve-before-reorganize` extension, a documentation reorganization
 **npm audit fix can no-op on peer-pinned chains**
 
 `npm audit fix` may report a fix as available yet leave the advisory in place when the vulnerable package is pinned by exact-version sibling packages (for example `@vitest/mocker` held by `vitest`, `@vitest/coverage-v8`, and `@vitest/ui`). When the declared range already admits the fixed version, upgrade every member of the chain explicitly with `npm install -D <pkg>@^<fixed-version>` and re-run `npm audit`.
+
+**Scoped overrides pin the fix when parents cap the range**
+
+When `npm audit` offers only a `--force` downgrade (a breaking change, for example eslint 10 to 9) and the vulnerable package's fix ships above the parents' declared ranges (`^10.x` caps while the fix is `11.0.1+`), direct upgrades cannot reach it. Add per-parent `overrides` entries in `package.json` (for example `"eslint": { "minimatch": "^11.0.5" }`), one entry per flagged chain from `npm ls <pkg>`, then `npm install` and re-audit. Dev-tooling majors are usually safe to pin this way; lint and the test suite are the regression net.
 
 **Rewrite every specifier in a moved file, not only inbound ones**
 
@@ -550,6 +557,8 @@ Under the `session-reporting` extension:
 When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local. Spawn freely for exploration: scouts are cheap, and a delegated survey is cheaper than a full read. Subagent titles name the task itself - never a role or agent-kind prefix such as "Scout". A delegated brief states the resolved version window explicitly when the task touches versioned directories - a scout inferring the window from `package.json` alone has reported the bump target instead of the active one.
 
 A delegated task that cannot meet its documented target returns to the orchestrator instead of widening scope on its own. A subagent executing a plan may fix what the plan's literal wording gets wrong, but structural additions beyond the plan's named moves go back through the plan before they land.
+
+Suite runs against the live tree wait for delegated writes to land. A `npm test` run that overlaps a subagent's in-flight writes can report a transient failure from a half-written file - re-run before treating it as a regression.
 
 **Clean and Purge**
 

@@ -19,6 +19,7 @@ The electron-builder `build.copyright` field in `package.json` mirrors the copyr
 ## Dependency Licensing
 
 - Permitted open-source licenses: MIT, Apache 2.0, BSD 2-Clause, BSD 3-Clause, ISC, Boost, BlueOak-1.0.0, CC-BY-4.0, CC0-1.0, WTFPL, MIT-0, Python-2.0.
+- MPL-2.0 is additionally permitted for dev-only build tooling that never ships inside the application bundle (currently the `lightningcss` family pulled in by the Vite toolchain). MPL-2.0 code may not be included in shipped application code.
 - Packages with no declared license field require a per-package review before adoption.
 - GPL-licensed libraries may **not** be used in this project without explicit written approval.
 - All dependencies are declared in `package.json`.

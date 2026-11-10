@@ -17,16 +17,20 @@ npm run build
 Creates the `dist/` directory with:
 
 - `index.html`, the entry HTML file.
-- `assets/`, JavaScript bundles, CSS, and fonts.
+- `js/`, JavaScript bundles - `index.js` entry, `sequencer.js` worker, `export.js` lazy export chunk.
+- `css/`, the bundled stylesheet.
+- `media/`, emitted assets grouped by type - `svg/`, `png/`, `font/`, plus `icon/` holding the application icons.
+- `worker.js`, the service worker at the bundle root.
+- Static assets from `public/`.
 - Static assets from `public/`.
 
 The build command does not bump the version. To bump the version and build, run `npm run bump` instead.
 
-The Vite build configuration in `vite.config.ts` emits deterministic asset filenames without content hashes - `assets/[name].js` and `assets/[name][extname]` for both the app and worker bundles - which keeps the packaged Electron file layout stable. The build also defines `__APP_VERSION__` from `package.json` for in-app display.
+The Vite build configuration in `vite.config.ts` emits deterministic asset filenames without content hashes - `js/[name].js` for app and worker bundles, `css/[name][extname]` for stylesheets, and `media/<type>/[name][extname]` for emitted assets routed by extension - which keeps the packaged Electron file layout stable. The build also defines `__APP_VERSION__` from `package.json` for in-app display.
 
 ## Service Worker Cache
 
-The production build registers a service worker at `/sw.js` that keeps the application available offline. The cache name carries the application version (`dosound-tracker-<version>`), baked into `dist/sw.js` during the build by the `version-service-worker-cache` plugin, so each deploy installs a fresh cache and the activate handler removes the previous version's entries.
+The production build registers a service worker at `/worker.js` that keeps the application available offline. The cache name carries the application version (`dosound-tracker-<version>`), baked into `dist/worker.js` during the build by the `version-service-worker-cache` plugin, so each deploy installs a fresh cache and the activate handler removes the previous version's entries.
 
 All same-origin requests use a network-first strategy: the worker fetches the deployed asset, updates the cache, and falls back to the cached copy only when the network is unavailable. Returning clients therefore always receive the current build. Navigation requests fall back to `/index.html` when offline.
 

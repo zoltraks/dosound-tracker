@@ -90,7 +90,13 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
         }}
       />
 
-      <div className="message-panel" aria-hidden="true" onClick={onNotesClick}>
+      <div
+        className="message-panel"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        onClick={onNotesClick}
+      >
         <div
           className={`notes-content${isNotesVisible ? '' : ' notes-hidden'}`}
           dangerouslySetInnerHTML={{

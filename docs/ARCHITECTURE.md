@@ -22,7 +22,7 @@ The diagram below shows the high-level data flow.
      |                |                     ^
      |                v                     |
      |     +--------------------+           |
-     |     |  sequencerWorker   | -- tick ->+
+     |     |  sequencer         | -- tick ->+
      |     |  Web Worker timing |
      |     +--------------------+
      |
@@ -47,7 +47,7 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 - **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip and `SoundDriver.ts` holds the song data-model interfaces (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) imported as types across the tree.
 - **types** - Shared TypeScript type definitions used across modules.
 - **utils** - Pure utility functions and stateless helpers. Every utility lives in a domain subdirectory (`instrument/`, `track/`, `song/`, `midi/`, `keyboard/`, `envelope/`, `playback/`, `file/`, `compression/`, `cursor/`, `export/`, `format/`, `log/`, `markdown/`, `panel/`, `pattern/`, `storage/`, `timer/`, `transpose/`, `validation/`, `yaml/`) - the folder holds no files directly, and single-file directories are allowed when a domain has one member.
-- **workers** - Web Workers. `sequencerWorker.ts` runs the 50Hz VBLANK timer in a dedicated thread to keep playback timing isolated from the React render loop.
+- **workers** - Web Workers. `sequencer.ts` runs the 50Hz VBLANK timer in a dedicated thread to keep playback timing isolated from the React render loop.
 - **assets** - Static assets such as icons and images bundled with the app.
 
 ## State Domains
@@ -89,7 +89,7 @@ The `YM2149` class is the hardware emulator. It owns 16 registers, three tone ch
 
 The song data model (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) is defined as interfaces in `src/synth/SoundDriver.ts` and consumed across the tree through type-only imports. Per-tick playback logic lives in `src/hooks/sequencer/useSequencerIntegration.ts` and `src/utils/playback/`, which translate instruments, envelopes, and mixer state into register writes on the `YM2149` instance. Timing is anchored to the song's frame rate (default 50 Hz, `DEFAULT_SONG_FRAME`), configurable per song via the `frame` field.
 
-The `sequencerWorker` Web Worker runs the frame-rate timer (`tickInterval = 1000 / frameRate`, 20 ms at 50 Hz, 16.66 ms at 60 Hz) in a dedicated thread. It maintains playback position (pattern, line, tick) and posts `tick`, `update`, and `stop` messages back to the main thread. This isolates timing from React's render cadence and from main-thread workloads.
+The `sequencer` Web Worker runs the frame-rate timer (`tickInterval = 1000 / frameRate`, 20 ms at 50 Hz, 16.66 ms at 60 Hz) in a dedicated thread. It maintains playback position (pattern, line, tick) and posts `tick`, `update`, and `stop` messages back to the main thread. This isolates timing from React's render cadence and from main-thread workloads.
 
 ## Export Pipeline
 
@@ -103,7 +103,7 @@ The export pipeline converts the in-memory song model into distributable file fo
 
 All format modules import shared helpers from `exports/core.ts`: `normalizeSongForExport` for safe defaults, `parseBaseKeyForExport` for base-key parsing, `formatNoteLabel` for note display, and `downloadFile` for file delivery. This keeps note handling, key parsing, and file writing consistent across every format.
 
-The format modules load on demand: `useFileOperations` resolves them through dynamic `import()` inside its export handlers, so `asm`, `bin`, `max`, `vgm`, `wav`, and their `playbackSimulation`/`zx0` dependencies stay out of the entry chunk until the first export request.
+The format modules load on demand: `useFileOperations` resolves them through dynamic `import()` inside its export handlers, so `asm`, `bin`, `max`, `vgm`, `wav`, and their `playbackSimulation`/`zx0` dependencies stay out of the entry chunk until the first export request. All handlers point at the single `exports/export.ts` barrel, so the build emits one consolidated lazy chunk (`js/export.js`) serving every format.
 
 ## Architectural Decisions
 
@@ -113,15 +113,15 @@ Several decisions in the codebase are deliberate trade-offs rather than oversigh
 
 **Single store vs domain stores.** The project uses one Zustand store (`uiStore`) for cross-component UI state only. Song, instrument, and pattern data stay in `useState` inside the domain hooks wired from App.tsx and travel as props. This avoids the overhead of synchronizing multiple stores and keeps the song model close to the orchestrator. The trade-off is a heavy App component and deep prop passing.
 
-**Web Worker for timing.** The 50Hz VBLANK clock runs in `sequencerWorker.ts` rather than on the main thread. This protects playback timing from React renders, garbage collection pauses, and UI event handlers. The worker owns the tick interval and playback position, posting messages back to the hook, which then drives the synth.
+**Web Worker for timing.** The 50Hz VBLANK clock runs in `sequencer.ts` rather than on the main thread. This protects playback timing from React renders, garbage collection pauses, and UI event handlers. The worker owns the tick interval and playback position, posting messages back to the hook, which then drives the synth.
 
-**App.tsx as central orchestrator.** App.tsx is the single composition root. It instantiates the domain and orchestration hooks, wires their inputs and outputs together, and renders the component tree through `AppLayout`. Dialog, persistence, and playback handler clusters live in dedicated orchestration hooks under `src/hooks/` (`useAppInfoDialogs`, `useSongLifecycleDialogs`, `useInstrumentFileLoading`, `usePasteTrackOptions`, `useInstrumentDialogs`, `useSongToolDialogs`, `useExportModal`, `useTransposeDialog`, `useMidiDialog`, `useResponsivePanels`, `useEditorPersistence`, `usePlaybackHandlers`, `useSongImportWarning`, `useInstrumentOctaves`, `useTrackFocus`, `useAudioContextResume`, `useElectronCloseGuard`, `useTrackPattern`), so App.tsx keeps the wiring visible in one file without carrying every handler body.
+**App.tsx as central orchestrator.** App.tsx is the single composition root. It instantiates the domain and orchestration hooks, wires their inputs and outputs together, and renders the component tree through `AppLayout`. Dialog, persistence, and playback handler clusters live in dedicated orchestration hooks under `src/hooks/` (`useAppInfoDialogs`, `useSongLifecycleDialogs`, `useInstrumentFileLoading`, `usePasteTrackOptions`, `useInstrumentDialogs`, `useSongToolDialogs`, `useExportModal`, `useTransposeDialog`, `useMidiDialog`, `useResponsivePanels`, `useEditorPersistence`, `usePlaybackHandlers`, `useSongImportWarning`, `useInstrumentOctaves`, `useTrackFocus`, `useAudioContextResume`, `useElectronCloseGuard`, `useTrackPattern`, `useNavigationSuspension`, `useStartupRestore`, `useAppModals`), so App.tsx keeps the wiring visible in one file without carrying every handler body. `useAppModals` assembles the modal layer - it calls `useModalManager` internally and returns the rendered `ModalManager` element - while `useNavigationSuspension` computes the aggregate flag that gates keyboard navigation and `useStartupRestore` owns the persisted-view restoration and startup test tone.
 
 ## Known Limitations
 
 The current architecture has several documented constraints.
 
-- **App.tsx is ~1120 lines.** The central orchestrator still holds all hook wiring and the JSX prop map. Staged decomposition moved the dialog, persistence, and playback handler bodies into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
+- **App.tsx is ~940 lines.** The central orchestrator still holds all hook wiring and the JSX prop map. Staged decomposition moved the dialog, persistence, playback handler bodies, and the modal layer into `src/hooks/`, but the file remains the largest in the tree and the main navigation cost.
 - **Business logic is scattered across hooks and utils.** Song management, MIDI, file operations, instrument actions, and sequencer integration each live in their own hook files, some of which are large (useSequencerIntegration at ~21KB, useSongManagement at ~19KB, useMidiMessageProcessing at ~19KB). Cross-hook dependencies are implicit and wired in App.tsx.
 - **No undo/redo.** There is no history stack and no snapshot mechanism. All edits apply directly to state. Recovering from a mistake requires manual re-entry or reloading the song.
 - **No Command pattern.** Mutations are free functions and setter calls, not encapsulated command objects. This blocks future undo/redo and makes edit auditing difficult.
