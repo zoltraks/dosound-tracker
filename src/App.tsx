@@ -23,7 +23,7 @@ import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
 import { normalizeInstrumentId } from './utils/instrument/instrumentSelection.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
 import { DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
-import type { Instrument, Pattern } from './synth/SoundDriver.ts';
+import type { Pattern } from './synth/SoundDriver.ts';
 import { HeaderPanel } from './components/HeaderPanel.tsx';
 import { CommandPanel } from './components/CommandPanel.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
@@ -268,19 +268,6 @@ const App: React.FC = () => {
     return map;
   }, [currentSong.pattern]);
 
-  const instrumentsById = useMemo(() => {
-    const map = new Map<string, Instrument>();
-    const instruments = currentSong.instrument;
-
-    for (const instrument of instruments) {
-      if (!instrument || !instrument.id) continue;
-      const key = normalizeInstrumentId(instrument.id);
-      if (key) {
-        map.set(key, instrument);
-      }
-    }
-    return map;
-  }, [currentSong.instrument]);
   const {
     sequencerState,
     stop,
@@ -355,7 +342,6 @@ const App: React.FC = () => {
   } = usePlaybackBridge({
     currentSong,
     patternsById,
-    instrumentsById,
     channelMutes,
     ym2149Ref,
     isDebugMode,

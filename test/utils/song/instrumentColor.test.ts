@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import type { Song, Step } from '../../../src/synth/SoundDriver.ts';
 import { normalizeInstrumentColor, parseSongFromYaml } from '../../../src/utils/song/songParser.ts';

@@ -15,6 +15,7 @@ import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { removeMirroredSnapshot } from '../../utils/storage/persistenceMirror.ts';
 import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
+import { normalizePatternId } from '../../utils/pattern/patternUtils.ts';
 
 export type StoredInstrumentForMigration = {
   volume?: unknown;
@@ -441,7 +442,7 @@ export function renumberSongData(
   const patternById = new Map<string, Pattern>();
   song.pattern.forEach((pattern) => {
     if (pattern && typeof pattern.id === 'string') {
-      patternById.set(pattern.id.trim().toUpperCase(), pattern);
+      patternById.set(normalizePatternId(pattern.id), pattern);
     }
   });
 
@@ -449,16 +450,16 @@ export function renumberSongData(
   const seenPatternIds = new Set<string>();
 
   const addPatternId = (rawId: string) => {
-    const trimmed = rawId.trim().toUpperCase();
-    if (!trimmed || trimmed === '--') {
+    const normalized = normalizePatternId(rawId);
+    if (!normalized || normalized === '--') {
       return;
     }
-    if (!patternById.has(trimmed) || seenPatternIds.has(trimmed)) {
+    if (!patternById.has(normalized) || seenPatternIds.has(normalized)) {
       return;
     }
 
-    seenPatternIds.add(trimmed);
-    orderedPatternIds.push(trimmed);
+    seenPatternIds.add(normalized);
+    orderedPatternIds.push(normalized);
   };
 
   song.line.forEach((entry) => {
@@ -470,7 +471,7 @@ export function renumberSongData(
 
   song.pattern.forEach((pattern) => {
     if (!pattern || typeof pattern.id !== 'string') return;
-    const idNorm = pattern.id.trim().toUpperCase();
+    const idNorm = normalizePatternId(pattern.id);
     if (!patternById.has(idNorm) || seenPatternIds.has(idNorm)) {
       return;
     }
@@ -487,7 +488,7 @@ export function renumberSongData(
     const trimmed = rawId.trim();
     if (!trimmed) return rawId;
     if (trimmed === '--') return trimmed;
-    const mapped = patternIdMap[trimmed.toUpperCase()];
+    const mapped = patternIdMap[normalizePatternId(trimmed)];
     return mapped || trimmed;
   };
 

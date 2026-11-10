@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, expect, it } from 'vitest';
 import { NAVIGATION_ORDER } from '../../../src/constants/navigation.ts';
 import {

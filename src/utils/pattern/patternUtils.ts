@@ -1,5 +1,20 @@
 import type { Step } from '../../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
+import { Formatter } from '../format/formatters.ts';
+import { asPatternId } from '../../types/branded.ts';
+import type { PatternId } from '../../types/branded.ts';
+
+export function normalizePatternId(value?: string | number | null): PatternId {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return asPatternId(Formatter.hex(value));
+  }
+
+  if (typeof value === 'string') {
+    return asPatternId(value.trim().toUpperCase());
+  }
+
+  return asPatternId('');
+}
 
 export function insertPatternStep(
   lines: Step[],

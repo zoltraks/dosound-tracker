@@ -1,5 +1,6 @@
 import type { Song, Step } from '../../synth/SoundDriver.ts';
 import { NOTES, MIN_OCTAVE, MAX_OCTAVE } from '../../constants/music.ts';
+import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export interface TransposeOptions {
   semitones: number;
@@ -9,7 +10,6 @@ export interface TransposeOptions {
   currentPatternIndex: number;
   targetTrackId: 'A' | 'B' | 'C';
   selectedInstrumentId: string;
-  normalizeInstrumentId: (value?: string | number | null) => string;
 }
 
 export interface TransposeResult {
@@ -32,7 +32,6 @@ export function performTranspose(
     currentPatternIndex,
     targetTrackId,
     selectedInstrumentId,
-    normalizeInstrumentId,
   } = options;
 
   const playlistLength = song.line.length;

@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { loadInitialSong, SONG_STORAGE_KEY } from '../../../src/hooks/song/useSongManagement.ts';
 import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../../src/constants/music.ts';

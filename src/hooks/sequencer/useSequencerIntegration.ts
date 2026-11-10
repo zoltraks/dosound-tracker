@@ -12,7 +12,6 @@ import { clampVolumeNibble } from '../../utils/panel/volumeUtils.ts';
 interface UseSequencerIntegrationArgs {
   currentSong: Song;
   patternsById: Map<string, Pattern>;
-  instrumentsById: Map<string, Instrument>;
   channelMutes: boolean[];
   ym2149Ref: React.MutableRefObject<YM2149 | null>;
   midiHelpersRef: React.MutableRefObject<{
@@ -37,7 +36,6 @@ interface UseSequencerIntegrationArgs {
 export function useSequencerIntegration({
   currentSong,
   patternsById,
-  instrumentsById,
   channelMutes,
   ym2149Ref,
   midiHelpersRef,
@@ -396,7 +394,7 @@ export function useSequencerIntegration({
                     activeNote && typeof activeNote.instrument === 'string'
                       ? normalizeInstrumentId(activeNote.instrument)
                       : '';
-                  const instrument = instrumentsById.get(instId);
+                  const instrument = instrumentLookup.get(instId);
                   const rawSustain = instrument?.sustain ?? null;
                   if (
                     typeof rawSustain === 'number' &&
@@ -508,7 +506,6 @@ export function useSequencerIntegration({
       playlistEntries,
       patternsById,
       channelMutes,
-      instrumentsById,
       channelSubTickRef,
       channelEnvelopeStepRef,
       lastNotesRef,

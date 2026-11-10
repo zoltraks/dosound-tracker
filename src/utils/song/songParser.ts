@@ -20,6 +20,7 @@ import {
   normalizeInstrumentColor,
 } from './songFormat.ts';
 import { Formatter } from '../format/formatters.ts';
+import { normalizePatternId } from '../pattern/patternUtils.ts';
 import { formatInstrumentSlotId } from '../instrument/instrumentSelection.ts';
 import {
   DEFAULT_SONG_CHIP,
@@ -226,7 +227,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     const rawNumber = patternNode.number;
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
-        ? rawNumber.trim().toUpperCase()
+        ? normalizePatternId(rawNumber)
         : Formatter.hex(patternIndex, { padWidth: 2, uppercase: true });
 
     const name =

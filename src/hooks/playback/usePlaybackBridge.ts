@@ -22,7 +22,6 @@ export interface PlaybackMidiHelpers {
 export interface UsePlaybackBridgeParams {
   currentSong: Song;
   patternsById: Map<string, Pattern>;
-  instrumentsById: Map<string, Instrument>;
   channelMutes: boolean[];
   ym2149Ref: MutableRefObject<YM2149 | null>;
   isDebugMode: boolean;
@@ -45,7 +44,6 @@ export interface UsePlaybackBridgeResult {
 export function usePlaybackBridge({
   currentSong,
   patternsById,
-  instrumentsById,
   channelMutes,
   ym2149Ref,
   isDebugMode,
@@ -70,7 +68,6 @@ export function usePlaybackBridge({
   const { sequencerCallback } = useSequencerIntegration({
     currentSong,
     patternsById,
-    instrumentsById,
     channelMutes,
     ym2149Ref,
     midiHelpersRef,

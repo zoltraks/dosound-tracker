@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { clearApplicationStorage } from '../../../src/utils/storage/applicationStorage.ts';
 import { StorageKeys } from '../../../src/utils/storage/storageKeys.ts';

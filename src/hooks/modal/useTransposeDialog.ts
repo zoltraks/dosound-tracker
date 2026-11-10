@@ -91,7 +91,6 @@ export function useTransposeDialog({
       currentPatternIndex,
       targetTrackId,
       selectedInstrumentId,
-      normalizeInstrumentId,
     });
 
     if (!result || result.patternCount === 0) {

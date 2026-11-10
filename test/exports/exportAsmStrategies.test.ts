@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { exportToAssembly } from '../../src/exports/asm.ts';
 import { ENVELOPE_LENGTH } from '../../src/constants/music.ts';

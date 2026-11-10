@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, expect, it } from 'vitest';
 import { matchKeyboardShortcut } from '../../../src/utils/keyboard/keyboardShortcutUtils.ts';
 

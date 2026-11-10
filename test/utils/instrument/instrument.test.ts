@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import type { Instrument } from '../../../src/synth/SoundDriver.ts';
 import { isInstrumentEmpty } from '../../../src/utils/instrument/instrument.ts';

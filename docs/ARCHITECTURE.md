@@ -103,6 +103,8 @@ The export pipeline converts the in-memory song model into distributable file fo
 
 All format modules import shared helpers from `exports/core.ts`: `normalizeSongForExport` for safe defaults, `parseBaseKeyForExport` for base-key parsing, `formatNoteLabel` for note display, and `downloadFile` for file delivery. This keeps note handling, key parsing, and file writing consistent across every format.
 
+The format modules load on demand: `useFileOperations` resolves them through dynamic `import()` inside its export handlers, so `asm`, `bin`, `max`, `vgm`, `wav`, and their `playbackSimulation`/`zx0` dependencies stay out of the entry chunk until the first export request.
+
 ## Architectural Decisions
 
 Several decisions in the codebase are deliberate trade-offs rather than oversights.

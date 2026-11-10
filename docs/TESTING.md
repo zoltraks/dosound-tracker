@@ -217,6 +217,8 @@ See `vitest.config.ts` for the Vitest configuration. The configuration includes:
 - Coverage provider v8 with 80% thresholds for lines, functions, branches, and statements.
 - Path alias `@/` resolving to `src/`.
 
+DOM-free suites opt into the node environment through a `// @vitest-environment node` docblock as the file's first line. This covers `test/electron/`, `test/exports/`, `test/synth/`, `test/constants/`, `test/hooks/song/loadInitialSong.test.ts`, and the `test/utils/` files that touch no DOM API - a new pure-logic test should carry the pragma. Anything using `document`, `window.*`, `self`, DOM events, or a testing-library `render` stays on the global jsdom environment.
+
 Node 26 prints `ExperimentalWarning: localStorage is not available` lines during `vitest` runs. This is host-runtime noise from the built-in localStorage module in worker threads, not a suite failure - the jsdom localStorage mock in `test/setup-localstorage.ts` is unaffected.
 
 **Type checking**

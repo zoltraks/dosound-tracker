@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.4.5
+
+The app starts faster, exports run faster, and playback redraws less - plus a consistency fix for colliding instrument ids.
+
+- **Startup**: the assembly, binary, VGM, WAV, and MAX export pipelines now load on demand instead of inside the initial download, trimming the entry bundle by roughly 15 KB of minified code.
+- **Exports**: the playback simulation resolves instruments and patterns through prebuilt lookup maps and scale tables instead of per-tick scans, so every export format runs faster on long songs while producing identical output.
+- **Playback**: pattern rows re-render only when their own state changes, cutting the reconciliation work each playing-row step causes on the tracker grid.
+- **Instruments**: when two instrument ids normalize to the same value - for example `a` and `A` - playback, sustain handling, and MIDI output now resolve the same instrument everywhere.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency `minimatch` chains inside eslint and electron-builder tooling - nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+
 ## Version 1.4.4
 
 File-operation keyboard shortcuts work again, song loading is more tolerant of loosely formatted instrument ids, and loaded metadata now matches the saved form.

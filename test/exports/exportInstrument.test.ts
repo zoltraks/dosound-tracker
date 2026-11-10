@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import type { Instrument, Song } from '../../src/synth/SoundDriver.ts';
 import { exportInstrumentToAssembly } from '../../src/exports/asm.ts';

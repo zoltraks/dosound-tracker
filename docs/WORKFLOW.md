@@ -391,6 +391,14 @@ Verbatim code that was clean in its origin file can warn in its new home: file-l
 
 `react-hooks/refs` errors on reading `ref.current` during render, so a hook or engine that holds audio-path state cannot accept `ym2149Ref.current` as an option. Pass a getter (`() => ref.current`) or mirror options into an internal options ref inside a `useEffect` - the value resolves at call time, which is also fresher than a render-time snapshot. The shared preview engine's `ym2149` option accepts `YM2149 | null | (() => YM2149 | null)` for this reason.
 
+**Choose the winner deliberately when a `Map` replaces a `find`**
+
+A plain `map.set` loop resolves duplicate keys last-wins by accident while `Array.find` resolves first-wins - two maps over the same list then diverge silently (the 1.4.4 `instrumentsById`/`instrumentLookup` split). State the intended winner and encode first-wins with `if (!map.has(key))` whenever parity with `find` is required.
+
+**Cut extractions on the column-0 terminator, not the first `};`**
+
+A scripted extraction that locates a function's end with `index('};')` stops at the first nested object literal's close - an indented `  };` inside the body - leaving a truncated helper and a dangling tail in the origin file. Find the closing `};` at column 0 (`\n};\n`) of the target declaration, then re-run lint plus tests on both files.
+
 **Check for a canonical implementation before moving a helper**
 
 A module-level helper slated for a move into `src/utils/` may already exist there under a different name - `App.tsx` carried `formatNoteKey` and `parseBaseKeyString`, exact duplicates of `formatBaseKey` and `parseBaseKey` in `src/utils/song/songFormat.ts`. Compare candidate helpers against the target module's exports first - injecting the canonical function avoids writing a duplicate.

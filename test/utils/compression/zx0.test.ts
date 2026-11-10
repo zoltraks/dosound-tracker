@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { compressZX0, decompressZX0 } from '../../../src/utils/compression/zx0.ts';
 

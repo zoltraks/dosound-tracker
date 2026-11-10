@@ -43,9 +43,9 @@ export function formatTrackNoteDisplay(noteData: Note | null): string {
   return `${formattedNote}${noteData.octave} ${noteData.instrument}`;
 }
 
-export function getTrackLineClass(lineIndex: number, currentLine: number): string {
+export function getTrackLineClass(lineIndex: number, isCurrent: boolean): string {
   const classes = ['track-line'];
-  if (lineIndex === currentLine) {
+  if (isCurrent) {
     classes.push('current');
   }
   if (lineIndex % 4 === 0) {

@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { parseSongFromYaml } from '../../src/utils/song/songParser.ts';
 import { exportToAssembly } from '../../src/exports/asm.ts';

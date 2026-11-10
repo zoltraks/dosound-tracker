@@ -1,5 +1,11 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
-import { insertPatternStep, deletePatternStep } from '../../../src/utils/pattern/patternUtils.ts';
+import {
+  insertPatternStep,
+  deletePatternStep,
+  normalizePatternId,
+} from '../../../src/utils/pattern/patternUtils.ts';
 import type { Step } from '../../../src/synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../../../src/constants/music.ts';
 
@@ -110,6 +116,47 @@ describe('deletePatternStep', () => {
       expect(result[1].note).toBeNull();
     } catch (error) {
       console.log('delete-clamp mismatch', result);
+      throw error;
+    }
+  });
+});
+
+describe('normalizePatternId', () => {
+  it.each([
+    ['ab', 'AB'],
+    ['  cd ', 'CD'],
+    ['a', 'A'],
+    ['--', '--'],
+    ['bass', 'BASS'],
+    ['$0f', '$0F'],
+    ['', ''],
+    ['   ', ''],
+  ])('normalizes %j to %j', (input, expected) => {
+    try {
+      expect(normalizePatternId(input)).toBe(expected);
+    } catch (error) {
+      console.log('pattern-id mismatch', { input, expected });
+      throw error;
+    }
+  });
+
+  it('formats finite numbers as two-digit uppercase hex', () => {
+    try {
+      expect(normalizePatternId(5)).toBe('05');
+      expect(normalizePatternId(255)).toBe('FF');
+    } catch (error) {
+      console.log('pattern-id number mismatch');
+      throw error;
+    }
+  });
+
+  it('returns an empty id for nullish and non-finite input', () => {
+    try {
+      expect(normalizePatternId(undefined)).toBe('');
+      expect(normalizePatternId(null)).toBe('');
+      expect(normalizePatternId(Number.NaN)).toBe('');
+    } catch (error) {
+      console.log('pattern-id nullish mismatch');
       throw error;
     }
   });

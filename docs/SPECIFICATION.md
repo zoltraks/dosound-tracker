@@ -197,7 +197,7 @@ Export scope can target the full song, a single pattern, or a single instrument.
 
 Application constants live in `src/constants/`, one file per domain. See those files for the actual values.
 
-- **music.ts** — note frequencies, octave bounds, default and maximum pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits.
+- **music.ts** — note frequencies, octave bounds, default and maximum pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits. Also holds the `POW2_OCTAVE_SCALE` and `POW2_SEMITONE_SCALE` lookup tables with their `pow2Octave`/`pow2Semitone` accessors - tables built from `Math.pow` itself so the frequency paths stay bit-identical, with a `Math.pow` fallback outside the integer domain.
 - **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
 - **song.ts** — chip, frame rate, and clock defaults and their supported values.
 - **export.ts** — the ExportType and ExportStrategy union types.
@@ -309,6 +309,7 @@ The following utilities were extracted to eliminate duplication and are the cano
 - **`src/hooks/storage/useLocalStorageState.ts`** — generic hook for localStorage-backed state with optional `read`/`write` serializers. Used by `useAppState`, `useTheme`, and `useInstrumentWarnings`.
 - **`src/exports/core.ts`** — `formatPitchDelta` for formatting signed pitch delta values in assembly export comments. `exportInstrumentWith` generic wrapper for instrument preview exports across VGM, MAX, and WAV formats.
 - **`src/utils/instrument/instrumentPanelUtils.ts`** — `createEmptyInstrument` factory accepting `number | InstrumentId`. Used by `createClearedInstrument` in `instrumentOperations.ts` and by `useDataManagement` for new song creation.
+- **`src/utils/pattern/patternUtils.ts`** — `normalizePatternId` is the canonical pattern-id contract: strings normalize to `trim().toUpperCase()`, finite numbers format through `Formatter.hex`, and everything else yields `''`. It deliberately diverges from `normalizeInstrumentId` - no leading `$` strip and no hex padding, so `'a'` normalizes to `'A'`, not `'0A'`. Used by the song parser and `renumberSongData`.
 - **`src/hooks/playback/usePreviewEnvelope.ts`** — the single ref-driven preview-envelope engine: per-key voices, sustain and release tracking, `window.setInterval` ticks through `advancePreviewEnvelopeTick`/`getPreviewEnvelopeApplyStep`, and auto-stop on a silent envelope tail or a caller-supplied `stopAfterStep` cap. The first envelope boundary is scheduled from the caller-supplied `tickIntervalMs` - the interval derived from the song's configured frame rate - so preview timing stays accurate at both 50 Hz and 60 Hz. Consumed by `TrackPanel`, `PianoKeyboard`, `HeaderPanel`, `useMidiActions`, and `useInstrumentActions` - per-start options reproduce each surface's reduced or extended semantics. MIDI preview surfaces wire `onAutoStop` to the outgoing MIDI noteOff path, so a released preview that reaches a silent envelope tail emits the matching noteOff on the connected device at the moment the channel is silenced.
 
 ### Branded Types

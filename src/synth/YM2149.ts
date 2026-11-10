@@ -21,7 +21,12 @@ export const YM_LOG_VOLUME_TABLE: number[] = [
   0.7071, // 14
   1.0, // 15: max
 ];
-import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../constants/music.ts';
+import {
+  NOTE_FREQUENCIES,
+  NOTE_BASE_OCTAVE,
+  pow2Octave,
+  pow2Semitone,
+} from '../constants/music.ts';
 import type { Instrument } from './SoundDriver.ts';
 
 export interface YMChannel {
@@ -235,20 +240,18 @@ export class YM2149 {
       }
     }
 
-    // Update noise gain based on any channel using noise
-    const anyNoiseActive = this.state.channels.some(
-      (channel) => channel.noiseEnabled && channel.volume > 0,
-    );
+    // Update noise gain based on any channel using noise - one accumulating
+    // pass, identical sum order to the filter/map/reduce it replaces.
+    let noiseGain = 0;
+    for (const channel of this.state.channels) {
+      if (channel.noiseEnabled && channel.volume > 0) {
+        const level = Math.max(0, Math.min(15, channel.volume | 0));
+        noiseGain += YM_LOG_VOLUME_TABLE[level];
+      }
+    }
 
-    if (anyNoiseActive) {
-      const noiseLevels = this.state.channels
-        .filter((channel) => channel.noiseEnabled && channel.volume > 0)
-        .map((channel) => Math.max(0, Math.min(15, channel.volume | 0)));
-      const combinedLevel = Math.min(
-        1,
-        noiseLevels.reduce((sum, level) => sum + YM_LOG_VOLUME_TABLE[level], 0),
-      );
-      const noiseVolume = combinedLevel * 0.4; // Slight boost so noise matches perceived tone loudness
+    if (noiseGain > 0) {
+      const noiseVolume = Math.min(1, noiseGain) * 0.4; // Slight boost so noise matches perceived tone loudness
       this.noiseGainNode.gain.setValueAtTime(noiseVolume, now);
     } else {
       this.noiseGainNode.gain.setValueAtTime(0, now);
@@ -433,7 +436,7 @@ export class YM2149 {
         const baseFreq = NOTE_FREQUENCIES[noteData.note];
         if (baseFreq) {
           // Start from plain note frequency
-          let frequency = baseFreq * Math.pow(2, noteData.octave - NOTE_BASE_OCTAVE);
+          let frequency = baseFreq * pow2Octave(noteData.octave - NOTE_BASE_OCTAVE);
 
           // Apply shift as semitone offsets on top of the note
           let shiftSemitones = 0;
@@ -446,7 +449,7 @@ export class YM2149 {
           }
 
           if (shiftSemitones !== 0) {
-            frequency = frequency * Math.pow(2, shiftSemitones / 12);
+            frequency = frequency * pow2Semitone(shiftSemitones);
           }
 
           // Convert to a base divider period using the YM clock

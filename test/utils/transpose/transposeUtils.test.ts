@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect, vi } from 'vitest';
 import {
   performTranspose,
@@ -29,7 +31,6 @@ const options = (overrides: Partial<TransposeOptions> = {}): TransposeOptions =>
   currentPatternIndex: 0,
   targetTrackId: 'A',
   selectedInstrumentId: '00',
-  normalizeInstrumentId: (value) => String(value ?? '00').toUpperCase(),
   ...overrides,
 });
 

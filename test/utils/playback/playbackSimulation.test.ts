@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import {
   simulateSong,
@@ -76,5 +78,21 @@ describe('simulateSong instrument-id normalization', () => {
   it('still leaves the channel silent when the id resolves to nothing', () => {
     const frames = collectFrames(songWithIds('09', '05'));
     expect(frames.every((f) => (f.registers[0x08] ?? 0) === 0)).toBe(true);
+  });
+
+  it('resolves duplicate normalized ids first-wins like Array.find did', () => {
+    try {
+      const loud = inst('0a');
+      const silent = { ...inst('0A'), volume: new Array(ENVELOPE_LENGTH).fill(0) };
+      const base = songWithIds('0A', '05');
+      const frames = collectFrames({ ...base, instrument: [loud, silent] });
+      expect(frames.some((f) => (f.registers[0x08] ?? 0) > 0)).toBe(true);
+
+      const reversed = collectFrames({ ...base, instrument: [silent, loud] });
+      expect(reversed.every((f) => (f.registers[0x08] ?? 0) === 0)).toBe(true);
+    } catch (error) {
+      console.log('duplicate-id resolution mismatch');
+      throw error;
+    }
   });
 });

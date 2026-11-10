@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect, vi } from 'vitest';
 import { updateChannelWithInstrument } from '../../../src/utils/playback/playbackUtils.ts';
 import type { YM2149 } from '../../../src/synth/YM2149.ts';

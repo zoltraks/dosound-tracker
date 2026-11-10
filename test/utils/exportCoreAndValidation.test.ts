@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { parseBaseKeyForExport, formatNoteLabel } from '../../src/exports/core.ts';
 import { parseAssemblyToBinary, exportToBinary } from '../../src/exports/bin.ts';

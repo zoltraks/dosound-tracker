@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import type { MidiConfiguration } from '../../../src/hooks/midi/useMidi.ts';
 import {

@@ -1,5 +1,11 @@
-import type { Song, Instrument } from '../../synth/SoundDriver.ts';
-import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../../constants/music.ts';
+import type { Song, Instrument, Pattern } from '../../synth/SoundDriver.ts';
+import type { InstrumentId } from '../../types/branded.ts';
+import {
+  NOTE_FREQUENCIES,
+  NOTE_BASE_OCTAVE,
+  pow2Octave,
+  pow2Semitone,
+} from '../../constants/music.ts';
 import { YM_CLOCK } from '../../synth/YM2149.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
@@ -52,6 +58,26 @@ export function simulateSong(
   const { retriggerBehavior = 'always', clock = YM_CLOCK } = options;
   const ticksPerRow = song.speed || 6;
 
+  // Lookup maps built once per simulation. First-wins insertion mirrors the
+  // Array.find resolution these replace, including the degenerate '' key an
+  // empty-normalizing instrument id would have matched.
+  const instrumentsByNormId = new Map<string, Instrument>();
+  for (const inst of song.instrument) {
+    if (!inst) continue;
+    const key = normalizeInstrumentId(inst.id);
+    if (!instrumentsByNormId.has(key)) {
+      instrumentsByNormId.set(key, inst);
+    }
+  }
+
+  const patternsByIdMap = new Map<string, Pattern>();
+  for (const pattern of song.pattern) {
+    if (!pattern) continue;
+    if (!patternsByIdMap.has(pattern.id)) {
+      patternsByIdMap.set(pattern.id, pattern);
+    }
+  }
+
   // Initialize register state
   let currentRegs: RegisterState = {
     0x07: 0x38, // Mixer: all tones enabled, noise disabled
@@ -90,6 +116,10 @@ export function simulateSong(
     },
   ];
 
+  // Normalized instrument id of each channel's active note, maintained at the
+  // same sites that assign channelState.note - the held note keeps its id.
+  const channelInstrumentIds: (InstrumentId | '')[] = ['', '', ''];
+
   let globalLineIndex = 0;
   let hasEmittedFrame = false;
 
@@ -97,9 +127,9 @@ export function simulateSong(
   for (let playlistIdx = 0; playlistIdx < song.line.length; playlistIdx++) {
     const playlistEntry = song.line[playlistIdx];
     const patterns = [
-      song.pattern.find((p) => p.id === playlistEntry.A),
-      song.pattern.find((p) => p.id === playlistEntry.B),
-      song.pattern.find((p) => p.id === playlistEntry.C),
+      patternsByIdMap.get(playlistEntry.A),
+      patternsByIdMap.get(playlistEntry.B),
+      patternsByIdMap.get(playlistEntry.C),
     ];
 
     // Reset channel state if needed
@@ -116,6 +146,7 @@ export function simulateSong(
       }
       const channelState = channels[ch];
       channelState.note = null;
+      channelInstrumentIds[ch] = '';
       channelState.envelopeStep = 0;
       channelState.subTick = 0;
       channelState.isNewNote = false;
@@ -168,6 +199,7 @@ export function simulateSong(
               ) {
                 // No sustain defined (or no active note) - treat as hard mute
                 channelState.note = null;
+                channelInstrumentIds[ch] = '';
                 channelState.envelopeStep = 0;
                 channelState.subTick = 0;
                 channelState.isNewNote = false;
@@ -190,21 +222,19 @@ export function simulateSong(
                   !channelState.note ||
                   channelState.note.note !== noteOnRow.note ||
                   channelState.note.octave !== noteOnRow.octave ||
-                  normalizeInstrumentId(channelState.note.instrument) !==
-                    normalizeInstrumentId(noteOnRow.instrument);
+                  channelInstrumentIds[ch] !== normalizeInstrumentId(noteOnRow.instrument);
                 shouldRetrigger = isNew;
               }
 
               if (shouldRetrigger) {
+                const noteInstrumentId = normalizeInstrumentId(noteOnRow.instrument);
                 channelState.note = noteOnRow;
+                channelInstrumentIds[ch] = noteInstrumentId;
                 channelState.envelopeStep = 0;
                 channelState.subTick = 0;
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
 
-                const noteInstrumentId = normalizeInstrumentId(noteOnRow.instrument);
-                const instrument = song.instrument.find(
-                  (i) => normalizeInstrumentId(i.id) === noteInstrumentId,
-                );
+                const instrument = instrumentsByNormId.get(noteInstrumentId);
                 const rawSustain = instrument?.sustain ?? null;
                 if (
                   typeof rawSustain === 'number' &&
@@ -231,10 +261,7 @@ export function simulateSong(
 
           // Update channel with current envelope step
           if (channelState.note) {
-            const noteInstrumentId = normalizeInstrumentId(channelState.note.instrument);
-            const instrument = song.instrument.find(
-              (i) => normalizeInstrumentId(i.id) === noteInstrumentId,
-            );
+            const instrument = instrumentsByNormId.get(channelInstrumentIds[ch]);
             if (instrument) {
               const rawStep = channelState.envelopeStep;
               const sustainIndex = channelState.sustainIndex;
@@ -371,9 +398,9 @@ export function applyInstrumentToRegisters(
 
   // Calculate frequency with shift (NOTE_FREQUENCIES are defined for NOTE_BASE_OCTAVE)
   const baseFreq = NOTE_FREQUENCIES[note.note] || 440.0;
-  let frequency = baseFreq * Math.pow(2, note.octave - NOTE_BASE_OCTAVE);
+  let frequency = baseFreq * pow2Octave(note.octave - NOTE_BASE_OCTAVE);
   if (shift !== 0) {
-    frequency = frequency * Math.pow(2, shift / 12);
+    frequency = frequency * pow2Semitone(shift);
   }
   let period = Math.floor(clock / (16 * frequency)) & 0x0fff;
   if (pitch !== 0) {

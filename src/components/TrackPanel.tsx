@@ -12,7 +12,6 @@ import {
   buildInstrumentColorMap,
   formatTrackNoteDisplay,
   getInstrumentColorForNote,
-  getTrackLineClass,
   getTrackNotes as getTrackNotesForPattern,
 } from '../utils/track/trackRendering.ts';
 import { stepInstrumentId } from '../utils/instrument/instrumentSelection.ts';
@@ -458,13 +457,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     return formatTrackNoteDisplay(noteData);
   }, []);
 
-  const getLineClass = useCallback(
-    (lineIndex: number) => {
-      return getTrackLineClass(lineIndex, currentLine);
-    },
-    [currentLine],
-  );
-
   return (
     <div
       ref={trackRef}
@@ -492,20 +484,14 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
             const instrumentColor = getInstrumentColorForNote(noteData, instrumentColorMap);
 
-            const lineClassName =
-              `${getLineClass(lineIndex)}${instrumentColor ? ' track-line-colored' : ''}`.trim();
-            const lineStyle = instrumentColor
-              ? ({ ['--track-line-color' as string]: instrumentColor } as React.CSSProperties)
-              : undefined;
-
             return (
               <TrackLine
                 key={lineIndex}
                 lineIndex={lineIndex}
                 noteData={noteData}
                 volume={volume}
-                lineClassName={lineClassName}
-                lineStyle={lineStyle}
+                isCurrent={lineIndex === currentLine}
+                instrumentColor={instrumentColor}
                 noteIsActive={noteIsActive}
                 volumeIsActive={volumeIsActive}
                 onLineClick={handleLineClick}

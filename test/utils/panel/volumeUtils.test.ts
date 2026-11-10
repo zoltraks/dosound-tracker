@@ -1,3 +1,5 @@
+// @vitest-environment node
+
 import { describe, it, expect } from 'vitest';
 import { clampVolumeNibble } from '../../../src/utils/panel/volumeUtils.ts';
 

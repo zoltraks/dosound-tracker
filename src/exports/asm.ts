@@ -1,5 +1,11 @@
 import type { Song, Instrument } from '../synth/SoundDriver.ts';
-import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../constants/music.ts';
+import {
+  NOTE_FREQUENCIES,
+  NOTE_BASE_OCTAVE,
+  PATTERN_LENGTH,
+  pow2Octave,
+  pow2Semitone,
+} from '../constants/music.ts';
 import { YM_CLOCK } from '../synth/YM2149.ts';
 import type { ExportStrategy } from '../constants/export.ts';
 import {
@@ -270,7 +276,7 @@ function periodToNoteAndPitch(
 
   for (const noteName of Object.keys(NOTE_FREQUENCIES)) {
     for (let octave = 0; octave <= 8; octave++) {
-      const freq = NOTE_FREQUENCIES[noteName] * Math.pow(2, octave - NOTE_BASE_OCTAVE);
+      const freq = NOTE_FREQUENCIES[noteName] * pow2Octave(octave - NOTE_BASE_OCTAVE);
       const diff = Math.abs(freq - targetFrequency);
       if (diff < minDiff) {
         minDiff = diff;
@@ -334,7 +340,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
 
   // Base frequency for the instrument's root note
   const baseFreq = NOTE_FREQUENCIES[base.note] || 440.0;
-  const baseFrequency = baseFreq * Math.pow(2, base.octave - 4);
+  const baseFrequency = baseFreq * pow2Octave(base.octave - 4);
 
   const volumeEnv =
     instrument.volume && instrument.volume.length
@@ -417,7 +423,7 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       const shiftVal = typeof shiftEnv[idx] === 'number' ? (shiftEnv[idx] as number) : 0;
       semitone = shiftVal | 0;
       if (semitone !== 0) {
-        frequency = frequency * Math.pow(2, semitone / 12);
+        frequency = frequency * pow2Semitone(semitone);
       }
     }
     // Base divider from frequency

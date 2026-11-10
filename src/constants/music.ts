@@ -24,6 +24,36 @@ export const DEFAULT_OCTAVE = 3;
 export const MIN_OCTAVE = 0;
 export const MAX_OCTAVE = 7;
 
+// Precomputed 2^x scales for the frequency paths. Entries come from Math.pow
+// itself so table lookups and the fallback return the identical double.
+const POW2_OCTAVE_MIN = -8;
+const POW2_OCTAVE_MAX = 8;
+export const POW2_OCTAVE_SCALE: readonly number[] = Array.from(
+  { length: POW2_OCTAVE_MAX - POW2_OCTAVE_MIN + 1 },
+  (_, index) => Math.pow(2, index + POW2_OCTAVE_MIN),
+);
+
+const POW2_SEMITONE_MIN = -48;
+const POW2_SEMITONE_MAX = 48;
+export const POW2_SEMITONE_SCALE: readonly number[] = Array.from(
+  { length: POW2_SEMITONE_MAX - POW2_SEMITONE_MIN + 1 },
+  (_, index) => Math.pow(2, (index + POW2_SEMITONE_MIN) / 12),
+);
+
+export function pow2Octave(exponent: number): number {
+  return Number.isInteger(exponent) && exponent >= POW2_OCTAVE_MIN && exponent <= POW2_OCTAVE_MAX
+    ? POW2_OCTAVE_SCALE[exponent - POW2_OCTAVE_MIN]
+    : Math.pow(2, exponent);
+}
+
+export function pow2Semitone(semitones: number): number {
+  return Number.isInteger(semitones) &&
+    semitones >= POW2_SEMITONE_MIN &&
+    semitones <= POW2_SEMITONE_MAX
+    ? POW2_SEMITONE_SCALE[semitones - POW2_SEMITONE_MIN]
+    : Math.pow(2, semitones / 12);
+}
+
 // Controls whether the piano keyboard should render an extra highest C key
 // at the right end of the keyboard. By default this is disabled so the
 // layout matches the original design without the extra key.
