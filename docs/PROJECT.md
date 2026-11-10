@@ -160,6 +160,18 @@ The system must remember the editor cursor across application reloads. This incl
 
 The system must mirror autosaved song and instrument data into an IndexedDB snapshot store so compositions survive a cleared local storage. On startup, when the local storage song is absent and a snapshot exists, the system must restore the snapshot through the same schema migration used for local storage and mark the song dirty. The system must request persistent storage where the platform supports it, must clear the mirror when the user performs a full reset, and must surface the file-save recommendation unobtrusively through the rotating message panel.
 
+**F-17: Settings Modal**
+
+The system must provide a settings modal opened by a gear button in the header, placed directly after the theme toggle. The gear button uses the `⚙` glyph and the same icon-button treatment as the theme toggle, and stays out of the section navigation order.
+
+The modal presents named categories in a left sidebar, the active category's settings as label and control rows in a scrollable property pane, and a footer action bar. The initial categories are GENERAL (theme, track background, startup test tone) and EDITOR (restore editor cursor, restore open view, default paste mode).
+
+The modal edits a draft copy of the settings. OK commits the draft, Cancel and ESC discard it, and ENTER confirms like OK. The footer holds CANCEL and RESET on the left and LOAD, SAVE, and OK on the right. RESET replaces the draft with the default values behind a confirmation. SAVE writes the current draft to a `settings.yaml` file and LOAD reads a `settings.yaml` file into the draft; both leave the draft uncommitted until OK.
+
+The application restores its state on page reload. This convention applies to every view: persisted state, including the open view, survives a reload exactly. The settings modal follows the same rule - when the page reloads with the modal open, the modal re-opens with the same active category and the same uncommitted draft contents.
+
+Committed settings persist under the per-key `dosound-tracker-*` storage. The new options - startup test tone, restore editor cursor, and restore open view - each get their own key and default to on, preserving the behaviour that existed before the setting was introduced.
+
 ## Non-Functional Requirements
 
 **N-01: Audio Performance**

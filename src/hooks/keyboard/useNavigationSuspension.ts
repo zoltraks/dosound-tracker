@@ -49,6 +49,7 @@ export function useNavigationSuspension({
     isInstrumentMidiOpen,
     isInstrumentColorOpen,
     isExportModalOpen,
+    isSettingsOpen,
   } = modalState;
 
   return (
@@ -79,6 +80,7 @@ export function useNavigationSuspension({
     isInstrumentMidiOpen ||
     isInstrumentColorOpen ||
     isExportModalOpen ||
+    isSettingsOpen ||
     isPasteTrackModalOpen ||
     !!pendingSongImport
   );

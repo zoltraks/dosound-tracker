@@ -123,7 +123,7 @@ After finishing the current version, the version number is bumped per the rules 
 
 Create implementation plans in `docs/plan/<version>/` based on the change request descriptions. Each plan outlines what files will change, what new files are needed, and the test approach.
 
-When asked to make an implementation plan for a specific change request pointing to a document source (for example `midi-support.md`), create the plan in `docs/plan/<current_version>/`, where `<current_version>` is the current program version from `package.json`. Name the plan document to match the change request file (for example `midi-support-implementation.md` for `midi-support.md`). Use the current version regardless of the version mentioned in the change request or the document location.
+When asked to make an implementation plan for a specific change request pointing to a document source (for example `midi-support.md`), create the plan in `docs/plan/<current_version>/`, where `<current_version>` is the current program version from `package.json`. Name the plan document to match the change request file (for example `midi-support-implementation.md` for `midi-support.md`). Use the current version regardless of the version mentioned in the change request or the document location. When the change record itself sits in a different group through a declared dependency, the plan joins that same group.
 
 **Implementation**
 
@@ -192,7 +192,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 
 ## Document Directory Access
 
-- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. Otherwise never automatically scan or gather change requests from this directory - the user will manually request implementation plans for individual changes.
+- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. A request that names a specific record as a dependency or integration target authorizes reading that record - never the whole group. Otherwise never automatically scan or gather change requests from this directory - the user will manually request implementation plans for individual changes.
 - Do not read any document from `docs/plan/` unless specifically instructed by the user or a named window request authorizes the window's plan group. Implementation plans are written to this directory only when the user explicitly requests them or a window run requires them.
 - Do not read any document from `docs/archive/` or `docs/refactoring/` unless specifically instructed by the user. These directories contain historical documents and refactoring proposals that are not part of the active documentation set.
 - Do not read any document from `docs/report/` unless the user explicitly requests it. This directory is for custom reports generated on demand and is not part of the active documentation set.
@@ -337,6 +337,10 @@ A collection mode that analyzes requests without implementing them. Each request
 
 `improvement` named as a mode on a work request is a working mode, not the review operation. After the described development operation finishes, the agent applies adjustments, fixes, and optimizations on the fly inside the same change set - small repairs do not route through the change-record lifecycle. Improvements that alter observable behavior or exceed the request's scope still split into their own record. This mode never triggers the Session Review on its own.
 
+**Intake Standby**
+
+A work request that names modes but describes no operation is intake standby - the agent reads the guidelines set, reports the boundary state, and waits for the described change rather than editing on assumption.
+
 ## Memorisation Convention
 
 When the user says "memorise" or "remember", adjust the relevant guideline file or files in the project with the new rule - memorisation means updating project guidelines. A memorisation request that also names a correction applies the correction in the same task.
@@ -451,9 +455,17 @@ A scripted extraction that locates a function's end with `index('};')` stops at 
 
 A module-level helper slated for a move into `src/utils/` may already exist there under a different name - `App.tsx` carried `formatNoteKey` and `parseBaseKeyString`, exact duplicates of `formatBaseKey` and `parseBaseKey` in `src/utils/song/songFormat.ts`. Compare candidate helpers against the target module's exports first - injecting the canonical function avoids writing a duplicate.
 
+**Proof generated records before delivery**
+
+A generated record written in one pass can carry drafting artifacts - half-edited sentences, self-correction notes, or stray fragments left inside prose. Re-read the emitted file end to end after writing it, before presenting it as done - the specification audit for the ayumi engine shipped a self-correction note mid-paragraph that a proof pass caught.
+
+**Scripted sweeps must cover inline literals too**
+
+A find-and-replace driven on line-end patterns misses single-line call sites - a `windowScroll: 0,$` pass fixed every block-style `saveUiState` literal but skipped two inline calls until a grep for the unchanged pattern caught them. Enumerate both the block and inline shapes of the target, or verify leftovers after the sweep.
+
 **Table formatting and Prettier**
 
-When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate - `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
+When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate - `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`). Generated documents are checked before presentation - a newly authored record, plan, or report that fails `npx prettier --check` costs a rewrite cycle, so the check runs before the file is presented as a stage product, not only on swept files.
 
 ## Session Review
 
@@ -464,6 +476,8 @@ The documentation set heals and improves itself through this session-review loop
 **Trigger**
 
 - `improve dosound-tracker` runs the session review. The trigger phrase is recorded, never implied - ordinary task requests do not invoke it.
+- A request that paraphrases the review without the recorded phrase resolves to standby - the agent asks the user to invoke `improve dosound-tracker` rather than running the review on an implied trigger.
+- The request may select a gate mode: `autonomous` applies the routed lessons directly - the improvements land without an acceptance step. `human-in-the-loop` proposes the improvements for acceptance first. An unspecified mode follows the recorded default `human-in-the-loop`.
 
 **Procedure**
 

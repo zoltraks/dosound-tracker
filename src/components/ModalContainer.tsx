@@ -9,7 +9,9 @@ import { InstrumentMidiModal } from '../modals/InstrumentMidiModal.tsx';
 import { InstrumentTypeWarningModal } from '../modals/InstrumentTypeWarningModal.tsx';
 import { MarkdownModal } from '../modals/MarkdownModal.tsx';
 import { MidiModal } from '../modals/MidiModal.tsx';
+import { SettingsModal } from '../modals/SettingsModal.tsx';
 import { TransposeModal } from '../modals/TransposeModal.tsx';
+import type { SettingsCategory, SettingsValues } from '../types/settings.ts';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import { CONFIRM_MODAL_TEXT } from '../constants/modal.ts';
@@ -132,6 +134,14 @@ export interface ModalContainerProps {
   midiLoadError: string;
   midiCopySummary: string;
   onMidiSystemReset: () => void;
+  isSettingsOpen: boolean;
+  settingsCategory: SettingsCategory;
+  settingsDraft: SettingsValues;
+  onSettingsCategoryChange: (category: SettingsCategory) => void;
+  onSettingsDraftChange: (draft: SettingsValues) => void;
+  onCommitSettings: () => void;
+  onCancelSettings: () => void;
+  onSettingsLoadError: (message: string) => void;
 }
 
 export const ModalContainer: React.FC<ModalContainerProps> = ({
@@ -240,6 +250,14 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   midiLoadError,
   midiCopySummary,
   onMidiSystemReset,
+  isSettingsOpen,
+  settingsCategory,
+  settingsDraft,
+  onSettingsCategoryChange,
+  onSettingsDraftChange,
+  onCommitSettings,
+  onCancelSettings,
+  onSettingsLoadError,
 }) => {
   const infoModals = buildInfoModals({
     songError,
@@ -431,6 +449,18 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onLoadError={setMidiLoadError}
         onSystemReset={onMidiSystemReset}
       />
+
+      {isSettingsOpen && (
+        <SettingsModal
+          category={settingsCategory}
+          onCategoryChange={onSettingsCategoryChange}
+          draft={settingsDraft}
+          onDraftChange={onSettingsDraftChange}
+          onCommit={onCommitSettings}
+          onCancel={onCancelSettings}
+          onLoadError={onSettingsLoadError}
+        />
+      )}
 
       <DownloadModal isOpen={isDownloadOpen} onClose={() => setIsDownloadOpen(false)} />
     </>

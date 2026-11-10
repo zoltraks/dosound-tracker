@@ -4,6 +4,7 @@ import { FilePickerModal } from '../modals/FilePickerModal.tsx';
 import { ExportModal } from '../modals/ExportModal.tsx';
 import { PasteTrackModal } from '../modals/PasteTrackModal.tsx';
 import type { ExportType, ExportStrategy } from '../constants/export.ts';
+import type { SettingsCategory, SettingsValues } from '../types/settings.ts';
 import type { TrackPasteMode } from '../hooks/song/useTrackOperations.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
@@ -154,6 +155,16 @@ interface ModalManagerProps {
   setPasteTrackPendingMode: (mode: TrackPasteMode) => void;
   onConfirmPasteTrackModal: () => void;
   onCancelPasteTrackModal: () => void;
+
+  // Settings modal
+  isSettingsOpen: boolean;
+  settingsCategory: SettingsCategory;
+  settingsDraft: SettingsValues;
+  onSettingsCategoryChange: (category: SettingsCategory) => void;
+  onSettingsDraftChange: (draft: SettingsValues) => void;
+  onCommitSettings: () => void;
+  onCancelSettings: () => void;
+  onSettingsLoadError: (message: string) => void;
 }
 
 export const ModalManager: React.FC<ModalManagerProps> = ({
@@ -287,6 +298,14 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
   setPasteTrackPendingMode,
   onConfirmPasteTrackModal,
   onCancelPasteTrackModal,
+  isSettingsOpen,
+  settingsCategory,
+  settingsDraft,
+  onSettingsCategoryChange,
+  onSettingsDraftChange,
+  onCommitSettings,
+  onCancelSettings,
+  onSettingsLoadError,
 }) => {
   return (
     <>
@@ -396,6 +415,14 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
         songConfigurationWarningMessage={songConfigurationWarningMessage}
         onConfirmSongConfigurationWarning={onConfirmSongConfigurationWarning}
         onCancelSongConfigurationWarning={onCancelSongConfigurationWarning}
+        isSettingsOpen={isSettingsOpen}
+        settingsCategory={settingsCategory}
+        settingsDraft={settingsDraft}
+        onSettingsCategoryChange={onSettingsCategoryChange}
+        onSettingsDraftChange={onSettingsDraftChange}
+        onCommitSettings={onCommitSettings}
+        onCancelSettings={onCancelSettings}
+        onSettingsLoadError={onSettingsLoadError}
       />
       <FilePickerModal
         isOpen={isRepositoryInstrumentOpen}

@@ -10,12 +10,15 @@ import { useMidiHandling } from './hooks/midi/useMidiHandling.ts';
 import { useMidiActions } from './hooks/midi/useMidiActions.ts';
 import { useTrackOperations } from './hooks/song/useTrackOperations.ts';
 import { usePasteTrackOptions } from './hooks/modal/usePasteTrackOptions.ts';
+import { useSettingsDialog } from './hooks/modal/useSettingsDialog.ts';
 import { usePlaylistOperations } from './hooks/song/usePlaylistOperations.ts';
 import { useScrollSync } from './hooks/ui/useScrollSync.ts';
 import { useAppState } from './hooks/app/useAppState.ts';
 import { useKeyboardShortcuts } from './hooks/keyboard/useKeyboardShortcuts.ts';
 import { useMessageSystem } from './hooks/ui/useMessageSystem.ts';
 import { useModalState } from './hooks/modal/useModalState.ts';
+import { loadSettings, writeSettingFlags } from './utils/settings/settingsState.ts';
+import { updateSettingsView } from './utils/storage/uiState.ts';
 import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.ts';
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
@@ -131,6 +134,8 @@ const App: React.FC = () => {
   const hasDownloads = useDownloadAvailability();
 
   const {
+    pasteTrackMode,
+    setPasteTrackMode,
     pasteTrackPendingMode,
     setPasteTrackPendingMode,
     isPasteTrackModalOpen,
@@ -139,7 +144,7 @@ const App: React.FC = () => {
     handleCancelPasteTrackModal,
   } = usePasteTrackOptions();
 
-  const { isDarkMode, toggleTheme } = useTheme();
+  const { isDarkMode, setIsDarkMode, toggleTheme } = useTheme();
   const {
     currentSong,
     currentInstrument,
@@ -261,6 +266,7 @@ const App: React.FC = () => {
     instrumentPanelFocusRevision,
     setInstrumentPanelFocusRevision,
     trackBackgroundEnabled,
+    setTrackBackgroundEnabled,
     handleToggleTrackBackground,
     targetTrackId,
     previewChannel,
@@ -661,6 +667,29 @@ const App: React.FC = () => {
 
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
+  // Settings dialog: committed snapshot, working draft, and session restore
+  const committedSettings = useMemo(
+    () => loadSettings(),
+    [isDarkMode, trackBackgroundEnabled, pasteTrackMode, modalState.isSettingsOpen],
+  );
+  const { settingsCategory, setSettingsCategory, settingsDraft, setSettingsDraft } =
+    useSettingsDialog(modalState.isSettingsOpen, committedSettings);
+
+  const handleCommitSettings = () => {
+    const next = settingsDraft;
+    setIsDarkMode(next.general.theme === 'dark');
+    setTrackBackgroundEnabled(next.general.trackBackground);
+    writeSettingFlags(next);
+    setPasteTrackMode(next.editor.pasteTrackMode);
+    updateSettingsView(null);
+    modalState.setIsSettingsOpen(false);
+  };
+
+  const handleCancelSettings = () => {
+    updateSettingsView(null);
+    modalState.setIsSettingsOpen(false);
+  };
+
   const modals = useAppModals({
     modalState,
     aboutVersion: APP_VERSION,
@@ -762,6 +791,12 @@ const App: React.FC = () => {
     setPasteTrackPendingMode,
     handleConfirmPasteTrackModal,
     handleCancelPasteTrackModal,
+    settingsCategory,
+    settingsDraft,
+    onSettingsCategoryChange: setSettingsCategory,
+    onSettingsDraftChange: setSettingsDraft,
+    handleCommitSettings,
+    handleCancelSettings,
   });
 
   return (
@@ -792,6 +827,7 @@ const App: React.FC = () => {
               }
               setIsCommandPanelMobileCollapsed((prev) => !prev);
             }}
+            onShowSettings={() => modalState.setIsSettingsOpen(true)}
           />
         }
         commandPanel={

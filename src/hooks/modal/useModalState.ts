@@ -60,6 +60,8 @@ export interface UseModalStateResult {
   setIsInstrumentColorOpen: (open: boolean) => void;
   isExportModalOpen: boolean;
   setIsExportModalOpen: (open: boolean) => void;
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
 }
 
 export function useModalState(): UseModalStateResult {
@@ -93,6 +95,7 @@ export function useModalState(): UseModalStateResult {
   const [isInstrumentMidiOpen, setIsInstrumentMidiOpen] = useState(false);
   const [isInstrumentColorOpen, setIsInstrumentColorOpen] = useState(false);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   return {
     isNewSongConfirmOpen,
@@ -145,5 +148,7 @@ export function useModalState(): UseModalStateResult {
     setIsInstrumentColorOpen,
     isExportModalOpen,
     setIsExportModalOpen,
+    isSettingsOpen,
+    setIsSettingsOpen,
   };
 }

@@ -23,6 +23,7 @@ export interface UiStatePersistenceFlags {
   isInstrumentMidiOpen: boolean;
   isInstrumentColorOpen: boolean;
   isExportModalOpen: boolean;
+  isSettingsOpen: boolean;
 }
 
 export interface UiStatePersistenceActions {
@@ -39,6 +40,7 @@ const deriveOpenModal = (f: UiStatePersistenceFlags): RestorableModal | null => 
   if (f.isInstrumentMidiOpen) return 'instrumentMidi';
   if (f.isInstrumentColorOpen) return 'instrumentColor';
   if (f.isExportModalOpen) return 'export';
+  if (f.isSettingsOpen) return 'settings';
   return null;
 };
 
@@ -77,6 +79,7 @@ export function useUiStatePersistence(
         sharedCurrentLine,
         markdownScroll: current.markdownScroll,
         windowScroll: window.scrollY,
+        settingsView: current.settingsView,
       });
     }, 300);
     return () => clearTimeout(timer);

@@ -5,6 +5,7 @@ import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../mid
 import type { InstrumentTypeInfo } from '../instrument/useInstrumentWarnings.ts';
 import type { PendingSongImport } from '../song/useDataManagement.ts';
 import type { TrackPasteMode } from '../song/useTrackOperations.ts';
+import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
 import { ModalManager } from '../../components/ModalManager.tsx';
 import { useModalManager } from './useModalManager.ts';
 import type { UseModalStateResult } from './useModalState.ts';
@@ -137,6 +138,14 @@ export interface UseAppModalsParams {
   setPasteTrackPendingMode: (mode: TrackPasteMode) => void;
   handleConfirmPasteTrackModal: () => void;
   handleCancelPasteTrackModal: () => void;
+
+  // Settings modal
+  settingsCategory: SettingsCategory;
+  settingsDraft: SettingsValues;
+  onSettingsCategoryChange: (category: SettingsCategory) => void;
+  onSettingsDraftChange: (draft: SettingsValues) => void;
+  handleCommitSettings: () => void;
+  handleCancelSettings: () => void;
 }
 
 /**
@@ -245,6 +254,12 @@ export function useAppModals({
   setPasteTrackPendingMode,
   handleConfirmPasteTrackModal,
   handleCancelPasteTrackModal,
+  settingsCategory,
+  settingsDraft,
+  onSettingsCategoryChange,
+  onSettingsDraftChange,
+  handleCommitSettings,
+  handleCancelSettings,
 }: UseAppModalsParams): ReactElement {
   const {
     isNewSongConfirmOpen,
@@ -277,6 +292,7 @@ export function useAppModals({
     isInstrumentMidiOpen,
     isInstrumentColorOpen,
     isExportModalOpen,
+    isSettingsOpen,
   } = modalState;
 
   useModalManager({
@@ -340,6 +356,9 @@ export function useAppModals({
     isExportOpen: isExportModalOpen,
     handleCancelExport,
     handleConfirmExport,
+    isSettingsOpen,
+    handleCancelSettings,
+    handleConfirmSettings: handleCommitSettings,
     isPasteTrackOptionsOpen: isPasteTrackModalOpen,
     handleCancelPasteTrackOptions: handleCancelPasteTrackModal,
     handleConfirmPasteTrackOptions: handleConfirmPasteTrackModal,
@@ -480,6 +499,14 @@ export function useAppModals({
       setPasteTrackPendingMode={setPasteTrackPendingMode}
       onConfirmPasteTrackModal={handleConfirmPasteTrackModal}
       onCancelPasteTrackModal={handleCancelPasteTrackModal}
+      isSettingsOpen={isSettingsOpen}
+      settingsCategory={settingsCategory}
+      settingsDraft={settingsDraft}
+      onSettingsCategoryChange={onSettingsCategoryChange}
+      onSettingsDraftChange={onSettingsDraftChange}
+      onCommitSettings={handleCommitSettings}
+      onCancelSettings={handleCancelSettings}
+      onSettingsLoadError={setSongError}
     />
   );
 }

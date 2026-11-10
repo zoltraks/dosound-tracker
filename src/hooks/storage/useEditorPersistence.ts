@@ -2,6 +2,7 @@
 import { useEffect, useRef } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
+import { readFlag } from '../../utils/settings/settingsState.ts';
 import {
   parseEditorCursor,
   clampEditorCursor,
@@ -81,6 +82,10 @@ export function useEditorPersistence({
   const hasRestoredCursorRef = useRef(false);
 
   useEffect(() => {
+    if (!readFlag(StorageKeys.RESTORE_CURSOR, true)) {
+      hasRestoredCursorRef.current = true;
+      return;
+    }
     const stored = parseEditorCursor(localStorage.getItem(StorageKeys.EDITOR_CURSOR));
     if (stored) {
       const clamped = clampEditorCursor(stored, currentSong.line.length, currentSong.length);

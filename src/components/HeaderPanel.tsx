@@ -33,6 +33,7 @@ interface HeaderPanelProps {
   ) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   onToggleCommandPanelMobile: () => void;
+  onShowSettings: () => void;
 }
 
 export const HeaderPanel: React.FC<HeaderPanelProps> = ({
@@ -53,6 +54,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   onPreviewMidiNoteOn,
   onPreviewMidiNoteOff,
   onToggleCommandPanelMobile,
+  onShowSettings,
 }) => {
   const octaveRef = useRef<HTMLDivElement | null>(null);
   const isOctaveActive = activeSection === 'octave';
@@ -257,6 +259,14 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
             aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
           >
             {isDarkMode ? '☀️' : '🌑'}
+          </button>
+          <button
+            className="theme-toggle"
+            onClick={onShowSettings}
+            title="Settings"
+            aria-label="Settings"
+          >
+            ⚙
           </button>
         </div>
       </header>

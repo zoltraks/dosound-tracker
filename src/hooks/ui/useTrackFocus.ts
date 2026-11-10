@@ -66,6 +66,7 @@ export const useTrackFocus = ({ activeSection }: { activeSection: NavigationSect
     instrumentPanelFocusRevision,
     setInstrumentPanelFocusRevision,
     trackBackgroundEnabled,
+    setTrackBackgroundEnabled,
     handleToggleTrackBackground,
     targetTrackId,
     previewChannel,

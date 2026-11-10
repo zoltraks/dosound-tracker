@@ -2,10 +2,16 @@
  * UI view-state snapshot persisted to localStorage. Restores the exact view
  * the user left after a page reload: the open modal (view/configuration
  * modals only - pending destructive-confirmation dialogs never restore),
- * the sequencer cursor line, channel mutes, and the markdown scroll offset.
+ * the sequencer cursor line, channel mutes, the markdown scroll offset, and
+ * the settings modal session (active category and uncommitted draft).
  * Fire-and-forget semantics: corrupt or missing data degrades to null.
  */
 import { StorageKeys } from './storageKeys.ts';
+import {
+  SETTINGS_CATEGORIES,
+  type SettingsCategory,
+  type SettingsSession,
+} from '../../types/settings.ts';
 
 export type RestorableModal =
   | 'manual'
@@ -16,7 +22,8 @@ export type RestorableModal =
   | 'midi'
   | 'instrumentMidi'
   | 'instrumentColor'
-  | 'export';
+  | 'export'
+  | 'settings';
 
 const RESTORABLE_MODALS: readonly RestorableModal[] = [
   'manual',
@@ -28,6 +35,7 @@ const RESTORABLE_MODALS: readonly RestorableModal[] = [
   'instrumentMidi',
   'instrumentColor',
   'export',
+  'settings',
 ];
 
 export interface UiState {
@@ -35,6 +43,7 @@ export interface UiState {
   sharedCurrentLine: number;
   markdownScroll: number;
   windowScroll: number;
+  settingsView: SettingsSession | null;
 }
 
 export const DEFAULT_UI_STATE: UiState = {
@@ -42,6 +51,7 @@ export const DEFAULT_UI_STATE: UiState = {
   sharedCurrentLine: 0,
   markdownScroll: 0,
   windowScroll: 0,
+  settingsView: null,
 };
 
 export const loadUiState = (): UiState => {
@@ -54,12 +64,23 @@ export const loadUiState = (): UiState => {
     const openModal = RESTORABLE_MODALS.includes(parsed.openModal as RestorableModal)
       ? (parsed.openModal as RestorableModal)
       : null;
+    const storedView = parsed.settingsView;
+    const settingsView: SettingsSession | null =
+      storedView && typeof storedView === 'object'
+        ? {
+            category: SETTINGS_CATEGORIES.includes(storedView.category as SettingsCategory)
+              ? (storedView.category as SettingsCategory)
+              : 'general',
+            draft: storedView.draft,
+          }
+        : null;
     return {
       openModal,
       sharedCurrentLine:
         typeof parsed.sharedCurrentLine === 'number' ? parsed.sharedCurrentLine : 0,
       markdownScroll: typeof parsed.markdownScroll === 'number' ? parsed.markdownScroll : 0,
       windowScroll: typeof parsed.windowScroll === 'number' ? parsed.windowScroll : 0,
+      settingsView,
     };
   } catch {
     return { ...DEFAULT_UI_STATE };
@@ -85,6 +106,12 @@ export const updateMarkdownScroll = (markdownScroll: number): void => {
 export const updateWindowScroll = (windowScroll: number): void => {
   const state = loadUiState();
   saveUiState({ ...state, windowScroll });
+};
+
+/** Read-modify-write the settings modal session - the SettingsModal owns it. */
+export const updateSettingsView = (settingsView: SettingsSession | null): void => {
+  const state = loadUiState();
+  saveUiState({ ...state, settingsView });
 };
 
 export const clearUiState = (): void => {

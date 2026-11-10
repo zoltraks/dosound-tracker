@@ -4,6 +4,7 @@ import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 
 export interface UsePasteTrackOptionsResult {
   pasteTrackMode: TrackPasteMode;
+  setPasteTrackMode: (mode: TrackPasteMode) => void;
   pasteTrackPendingMode: TrackPasteMode;
   setPasteTrackPendingMode: (mode: TrackPasteMode) => void;
   isPasteTrackModalOpen: boolean;
@@ -74,6 +75,7 @@ export function usePasteTrackOptions(): UsePasteTrackOptionsResult {
 
   return {
     pasteTrackMode,
+    setPasteTrackMode,
     pasteTrackPendingMode,
     setPasteTrackPendingMode,
     isPasteTrackModalOpen,

@@ -61,6 +61,9 @@ interface UseModalManagerOptions {
   isExportOpen: boolean;
   handleCancelExport: () => void;
   handleConfirmExport: () => void;
+  isSettingsOpen: boolean;
+  handleCancelSettings: () => void;
+  handleConfirmSettings: () => void;
   isPasteTrackOptionsOpen: boolean;
   handleCancelPasteTrackOptions: () => void;
   handleConfirmPasteTrackOptions: () => void;
@@ -128,6 +131,9 @@ export function useModalManager(options: UseModalManagerOptions): void {
     isExportOpen,
     handleCancelExport,
     handleConfirmExport,
+    isSettingsOpen,
+    handleCancelSettings,
+    handleConfirmSettings,
     isPasteTrackOptionsOpen,
     handleCancelPasteTrackOptions,
     handleConfirmPasteTrackOptions,
@@ -164,6 +170,7 @@ export function useModalManager(options: UseModalManagerOptions): void {
         isInstrumentDeleteOpen ||
         isInstrumentTypeWarningOpen ||
         isExportOpen ||
+        isSettingsOpen ||
         isPasteTrackOptionsOpen;
 
       if (!hasInfoModal && !hasConfirmModal) {
@@ -181,6 +188,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
       }
 
       if (key === 'Escape' || key === 'Esc') {
+        if (isSettingsOpen) {
+          handleCancelSettings();
+          return;
+        }
         if (isMidiModalOpen) {
           handleCloseMidi();
           return;
@@ -352,6 +363,10 @@ export function useModalManager(options: UseModalManagerOptions): void {
           return;
         }
 
+        if (isSettingsOpen) {
+          handleConfirmSettings();
+          return;
+        }
         if (isTransposeOpen) {
           handleConfirmTranspose();
           return;
@@ -456,6 +471,9 @@ export function useModalManager(options: UseModalManagerOptions): void {
     isExportOpen,
     handleCancelExport,
     handleConfirmExport,
+    isSettingsOpen,
+    handleCancelSettings,
+    handleConfirmSettings,
     isPasteTrackOptionsOpen,
     handleCancelPasteTrackOptions,
     handleConfirmPasteTrackOptions,

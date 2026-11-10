@@ -197,6 +197,7 @@ When asked to describe a change (feature, fix, refactor, chore):
 - Analyze current implementation to understand the existing code
 - Use the template at `docs/template/change-request-template.md`
 - Create the document in `docs/change/<version>/` where `<version>` is the current version from `package.json`
+- When the request binds the change to a record in a different version group - a declared dependency or integration target - the record joins the dependency's group instead of the `package.json` version
 - Name the document using kebab-case to briefly describe the change (for example `midi-support.md`, `export-dump-fix.md`)
 - The user may want to relocate the file after creation
 

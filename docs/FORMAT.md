@@ -509,3 +509,35 @@ midi:
 - Boolean values can be specified as `true`/`false`, `yes`/`no`, `y`/`n`, `1`/`0`, or numeric values.
 - Device identifiers are optional strings that identify specific MIDI devices.
 - The `agnostic` flag determines whether volume information should be ignored when processing MIDI events.
+
+## SETTINGS
+
+### Output file
+
+- Text format: **YAML**.
+- Typical extension: `.yaml`.
+- Root key: `settings`.
+- Produced by the settings modal SAVE action and consumed by its LOAD action.
+
+### Root structure
+
+```yaml
+settings:
+  version: 1 # required format version
+  general:
+    theme: 'dark' # 'dark' or 'light'
+    trackBackground: true # per-track row backgrounds
+    startupTone: true # startup test tone
+  editor:
+    restoreCursor: true # restore the editor cursor on reload
+    restoreView: true # restore the open view on reload
+    pasteTrackMode: 'replace' # 'replace', 'overwriteAll', or 'overwriteEmpty'
+```
+
+Loader rules (from `parseSettingsFromYaml`):
+
+- Input text larger than `MAX_IMPORT_BYTES` (1 MiB) is rejected before parsing.
+- Non-YAML input, a missing `settings` root, and a `version` other than `1` raise `SettingsFormatError`.
+- Missing, unknown, or malformed members fall back to the settings defaults - recognized members round-trip.
+
+The file represents a draft: LOAD fills the modal's draft and the values commit only when OK is pressed.

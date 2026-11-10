@@ -281,6 +281,14 @@ Two destructive paths drop the mirror together with local storage: the legacy-sc
 
 `public/MESSAGES.md` carries a rotation entry reminding composers that browser storage can be cleared and that a file copy of the song is the durable record.
 
+**Settings persistence**
+
+The application restores its state on page reload - persisted state, including the open view, survives exactly. The `UI_STATE` snapshot records the open restorable modal in `openModal` and, for the settings modal, the `settingsView` member holding the active category and the uncommitted draft. `updateSettingsView` writes the member whenever either changes while the modal is open, and the settings modal clears it on both close paths.
+
+Three keys hold the settings toggles introduced with the modal: `STARTUP_TONE`, `RESTORE_CURSOR`, and `RESTORE_VIEW`, each storing `'on'` or `'off'` and defaulting to on. `STARTUP_TONE` gates the startup test tone. `RESTORE_VIEW` gates the whole view-snapshot restore, including the window scroll. `RESTORE_CURSOR` gates the application of the persisted editor cursor - cursor recording continues regardless.
+
+The settings modal's committed values persist under the per-key storage: `THEME`, `TRACK_BACKGROUND_ENABLED`, and `PASTE_TRACK_MODE` cover the reused options.
+
 ## Markdown Rendering Security
 
 Bundled Markdown documents are rendered into HTML by `src/utils/markdown/markdown.ts`. The renderer escapes every source byte and emits tags only from fixed templates, so markup outside the allowed grammar can never reach the DOM unescaped.
@@ -370,6 +378,10 @@ Navigation is contained by the same origin policy. `webContents.setWindowOpenHan
 **Electron close handshake**
 
 The desktop main process intercepts the window `close` event and forwards `app-close-requested` to the renderer instead of closing. `useElectronCloseGuard` answers the request: when the song is dirty it opens the quit-confirm modal, and when the song is clean it confirms the close directly through `confirmAppClose()`. The modal's confirm action calls `confirmAppClose()` (the main process then quits), and its cancel action calls `cancelAppClose()`, leaving the application running. In a plain browser without the Electron API the guard inerts and no handshake occurs.
+
+### Modal Working State
+
+A modal whose contents must respond to the global Enter and ESC handler keeps its working state in an orchestration hook owned above the modal pipeline. Component-internal state is invisible to `useModalManager` - the handler attaches to `window` in the capture phase and cannot read a draft or a selection held inside the modal component. `useSettingsDialog` holds the settings draft and category for this reason.
 
 ## Known Limitations
 

@@ -29,6 +29,9 @@ export class StorageKeys {
   static readonly COMMAND_PANEL_MOBILE = 'dosound-tracker-command-panel-mobile' as const;
   static readonly DEBUG_INFO_SHOWN = 'dosound-tracker-debug-info-shown' as const;
   static readonly IGNORE_INST_TYPE_WARNING = 'dosound-tracker-ignore-inst-type-warning' as const;
+  static readonly STARTUP_TONE = 'dosound-tracker-startup-tone' as const;
+  static readonly RESTORE_CURSOR = 'dosound-tracker-restore-cursor' as const;
+  static readonly RESTORE_VIEW = 'dosound-tracker-restore-view' as const;
 
   // View-state snapshot
   static readonly UI_STATE = 'dosound-tracker-ui-state' as const;
