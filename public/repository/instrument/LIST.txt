@@ -1,5 +1,10 @@
 LIST.txt
+arp_quick.yaml
 bass_flat.yaml
+bass_smooth.yaml
 double_pim.yaml
+hihat.yaml
 kick.yaml
+slide_down.yaml
+slide_up.yaml
 snare.yaml

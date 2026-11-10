@@ -535,16 +535,22 @@ body {
 }
 
 /* Command Panel */
+.command-panel-container {
+  background-color: var(--bg-primary);
+  padding: 4px 4px 0;
+  box-shadow: var(--shadow-medium);
+}
+
 .command-panel {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
   padding-top: 3px;
   padding-bottom: 3px;
   padding-left: 6px;
   padding-right: 6px;
   background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  border-bottom: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
   box-shadow: var(--shadow-small);
   transition:
     background-color 0.6s ease,
@@ -557,14 +563,14 @@ body {
 }
 
 .command-panel:hover {
-  border-bottom-color: var(--section-hover-border);
+  border-color: var(--section-hover-border);
   background-image: linear-gradient(180deg, var(--section-hover-bg) 0%, var(--bg-tertiary) 100%);
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .command-row {
   display: flex;
-  gap: 4px;
+  gap: 3px;
   justify-content: center;
 }
 
@@ -1189,6 +1195,7 @@ body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-right: 4px;
 }
 
 .modal-body.download-modal-body {
@@ -1455,6 +1462,16 @@ body {
   width: 35px;
   height: 100%;
   box-shadow: var(--shadow-medium);
+  transition:
+    background-color 0.6s ease,
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+
+.position-block:hover {
+  border-color: var(--section-hover-border);
+  background-image: linear-gradient(180deg, var(--section-hover-bg) 0%, var(--bg-tertiary) 100%);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .position-header {
@@ -2045,6 +2062,16 @@ body {
   box-shadow: var(--shadow-small);
   overflow: hidden;
   cursor: pointer;
+  transition:
+    background-color 0.6s ease,
+    border-color 0.6s ease,
+    box-shadow 0.6s ease;
+}
+
+.message-panel:hover {
+  border-color: var(--section-hover-border);
+  background-color: var(--section-hover-bg);
+  box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
 .notes-content {
@@ -2108,7 +2135,7 @@ body {
 .information-panel {
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
-  padding: 4px;
+  padding: 4px 4px 6px;
   cursor: pointer;
   transition:
     background-color 0.6s ease,
@@ -3089,9 +3116,8 @@ body {
 
 /* Piano Keyboard */
 .piano-keyboard-container {
-  background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
-  border-top: 2px solid var(--border-color);
-  padding: 4px;
+  background-color: var(--bg-primary);
+  padding: 0 4px 4px;
   box-shadow: var(--shadow-medium);
 }
 
@@ -3146,7 +3172,6 @@ body {
   outline: none;
   cursor: pointer;
   background: linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%);
-  border-radius: 4px;
   padding: 7px; /* leave a 1px gap for the focus border */
   border: 1px solid var(--border-color);
   box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);

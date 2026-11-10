@@ -1,0 +1,7 @@
+instrument:
+  name: 'Bass Smooth'
+  type: dosound
+  version: 1
+  base: 'C-2'
+  color: '#3b3'
+  volume: [14, 13, 9, 4, 3, 2, 1, 0]

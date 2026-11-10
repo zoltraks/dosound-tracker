@@ -1,0 +1,9 @@
+instrument:
+  name: 'Hihat'
+  type: dosound
+  version: 1
+  base: 'C-4'
+  color: '#5d5'
+  mode: [1, 1, 1, 0]
+  volume: [10, 8, 7, 0]
+  noise: [2, 1, 0]
