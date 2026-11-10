@@ -2,11 +2,11 @@
 
 ## Document Information
 
-|             |                                                                        |
-| ----------- | ---------------------------------------------------------------------- |
-| Version     | 1.4.4 (window closing into 1.4.5)                                      |
+|             |                                                                      |
+| ----------- | -------------------------------------------------------------------- |
+| Version     | 1.4.4 (window closing into 1.4.5)                                    |
 | Review Date | 2026-11-10                                                           |
-| Commands    | git status, git diff, npm run typecheck, lint, build, test, test:e2e   |
+| Commands    | git status, git diff, npm run typecheck, lint, build, test, test:e2e |
 
 ## Scope
 
@@ -19,18 +19,18 @@ window's own refactoring cycle. Nothing outside the window was touched.
 
 ## Recorded Work
 
-| Document                                                   | Kind        | Result                                                |
-| ---------------------------------------------------------- | ----------- | ----------------------------------------------------- |
-| change/1.4.4/merge-instrument-id-lookup-maps.md            | Fix         | Single first-wins map; sustain/MIDI aligned to `find` |
-| change/1.4.4/extract-pattern-id-normalization.md           | Enhancement | `normalizePatternId`; five sites routed               |
-| change/1.4.4/hoist-simulation-lookup-maps.md               | Enhancement | Per-tick finds replaced by first-wins maps            |
-| change/1.4.4/trim-audio-path-allocations.md                | Enhancement | Single-loop noise gain; `pow2` tables in `music.ts`   |
-| change/1.4.4/review-transpose-normalizer-injection.md      | Chore       | Injection removed; canonical contract adopted         |
-| change/1.4.4/lazy-load-export-pipelines.md                 | Enhancement | Dynamic imports; entry chunk 565 -> 550 kB            |
-| change/1.4.4/memoize-track-rows.md                         | Enhancement | `React.memo` row; ~2/64 rows reconcile per tick       |
-| change/1.4.4/cover-remaining-modals.md                     | Chore       | MidiModal 14 tests, MarkdownModal 10 tests            |
-| change/1.4.4/run-pure-tests-in-node-env.md                 | Chore       | 60 files stamped; environment 48 -> 15 s              |
-| refactoring/1.4.4/REFACTORING.md + ASSESSMENT.md           | Refactoring | Shared AudioContext stub; `asm.ts` pow routing        |
+| Document                                              | Kind        | Result                                                |
+| ----------------------------------------------------- | ----------- | ----------------------------------------------------- |
+| change/1.4.4/merge-instrument-id-lookup-maps.md       | Fix         | Single first-wins map; sustain/MIDI aligned to `find` |
+| change/1.4.4/extract-pattern-id-normalization.md      | Enhancement | `normalizePatternId`; five sites routed               |
+| change/1.4.4/hoist-simulation-lookup-maps.md          | Enhancement | Per-tick finds replaced by first-wins maps            |
+| change/1.4.4/trim-audio-path-allocations.md           | Enhancement | Single-loop noise gain; `pow2` tables in `music.ts`   |
+| change/1.4.4/review-transpose-normalizer-injection.md | Chore       | Injection removed; canonical contract adopted         |
+| change/1.4.4/lazy-load-export-pipelines.md            | Enhancement | Dynamic imports; entry chunk 565 -> 550 kB            |
+| change/1.4.4/memoize-track-rows.md                    | Enhancement | `React.memo` row; ~2/64 rows reconcile per tick       |
+| change/1.4.4/cover-remaining-modals.md                | Chore       | MidiModal 14 tests, MarkdownModal 10 tests            |
+| change/1.4.4/run-pure-tests-in-node-env.md            | Chore       | 60 files stamped; environment 48 -> 15 s              |
+| refactoring/1.4.4/REFACTORING.md + ASSESSMENT.md      | Refactoring | Shared AudioContext stub; `asm.ts` pow routing        |
 
 ## Repository Analysis
 
@@ -44,9 +44,9 @@ working tree and the verification evidence below, not the commit log.
 
 ## Findings
 
-| Severity | Finding                                                              | Evidence                          | Action              |
-| -------- | -------------------------------------------------------------------- | --------------------------------- | ------------------- |
-| none     | -                                                                    | -                                 | -                   |
+| Severity | Finding | Evidence | Action |
+| -------- | ------- | -------- | ------ |
+| none     | -       | -        | -      |
 
 ## Verification Evidence
 
