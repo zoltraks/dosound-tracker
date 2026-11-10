@@ -64,7 +64,7 @@ After the refactoring is complete, create the assessment document:
 
 - `ASSESSMENT.md` for the evaluation of results.
 
-The existing `docs/refactoring/` directory already contains versioned proposals and assessments from versions 1.0.21 through 1.4.2. These are preserved and serve as templates for structure and content.
+Versioned proposals and assessments from earlier families live under `docs/archive/refactoring/` - the current family's entries in `docs/refactoring/` and the archived ones are preserved and serve as templates for structure and content.
 
 If the current version is not specified when requesting an assessment, the AI agent must use the refactoring proposal for the current version from `docs/refactoring/<version>/REFACTORING.md`.
 

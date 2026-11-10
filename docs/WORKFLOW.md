@@ -180,7 +180,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 | Decision records       | `docs/decision/`                    | Durable dated decisions, restricted              |
 | Window run state       | `docs/plan/<version>/window-run.md` | Run-resume stage record, not a plan              |
 | Reports                | `docs/report/`                      | On-demand generated reports, restricted          |
-| Archive                | `docs/archive/`                     | Retired documents, non-active history            |
+| Archive                | `docs/archive/`                     | Retired documents, mirrored role grouping        |
 | Historical directories | `docs/feature/`, `docs/prompt/`     | Restricted, not part of the active set           |
 | Templates              | `docs/template/`                    | Document templates                               |
 | Standards              | `docs/standard/`                    | Engineering standards, one per technology stack  |
@@ -201,6 +201,47 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - Do not read any document from `docs/discard/` unless specifically instructed by the user. This directory holds abandoned change records and is not part of the active documentation set.
 - Do not read any document from `docs/review/` or `docs/lesson/` unless specifically instructed by the user. These directories hold generated reviews and recorded lessons - they are outputs and records, not active rules.
 - Do not read any document from `docs/decision/` unless specifically instructed by the user or a session review routes a decision there.
+
+## Document Retention
+
+Retention sweeps retired document families out of the active directories into `docs/archive/`, preserving each role's grouping. A request to "archive old documents", "archive documents", or "run retention" runs the sweep. The sweep moves files only - nothing is deleted - and the result lands as working-tree changes until a commit is requested.
+
+**Covered roles**
+
+| Role                  | Live directory      | Archive grouping                      |
+| --------------------- | ------------------- | ------------------------------------- |
+| Change requests       | `docs/change/`      | `docs/archive/change/<version>/`      |
+| Implementation plans  | `docs/plan/`        | `docs/archive/plan/<version>/`        |
+| Refactoring documents | `docs/refactoring/` | `docs/archive/refactoring/<version>/` |
+| Abandoned records     | `docs/discard/`     | `docs/archive/discard/<version>/`     |
+| Reports               | `docs/report/`      | `docs/archive/report/<version>/`      |
+| Window reviews        | `docs/review/`      | `docs/archive/review/<version>/`      |
+| Decision records      | `docs/decision/`    | `docs/archive/decision/<YYYY-MM>/`    |
+| Lessons               | `docs/lesson/`      | `docs/archive/lesson/<YYYY-MM>/`      |
+
+**Move boundary**
+
+The boundary is the current minor version family. With `X.Y.Z` read from `package.json`, the current family is `X.Y.*` and every version below `X.Y.0` is a candidate - every completed minor family. At `1.4.5`, all `1.3.x` and earlier material retires while `1.4.0` and later stays. The current family and the in-flight window always stay.
+
+**Versioned roles**
+
+A versioned directory moves whole with all contents - `docs/change/1.2.8/` moves to `docs/archive/change/1.2.8/`. A directory name that carries a version token plus a suffix, such as `1.2.4-configuration` under `docs/report/`, moves unchanged and resolves its family from the leading token. A stray document sitting directly inside a versioned role follows the flat-file rule - a `.gitkeep` marker is not a document and is reconciled per the sweep procedure.
+
+**Flat roles**
+
+`docs/decision/` and `docs/lesson/` hold date-named files. A flat file retires when it belongs to a completed family: an embedded version token such as `window-1.3.9` attributes the file to that family, and a file without a token retires when its date falls before the current family's start - the day family `X.Y` began, read from the `X.Y.0` bump and the earliest dated current-family artifact in version-control history. Retired files move to `docs/archive/<role>/<YYYY-MM>/`, grouped by the file's own month.
+
+**Sweep procedure**
+
+- Compute the boundary from `package.json` and resolve the current family's start date.
+- Enumerate the candidates per role and run a link check - scan the active document set for references to candidate paths, and repoint or report each one before moving.
+- Move every candidate to its archived location, preserving names and contents.
+- Reconcile `.gitkeep` markers - remove every marker from a directory that holds other content, and place one in a swept role directory the moves leave empty.
+- Report what moved and what stayed per role, leaving the result uncommitted for review.
+
+**Access**
+
+Archived documents are historical, not active rules - the Document Directory Access gate on `docs/archive/` applies unchanged.
 
 ## Version Window SDLC
 
@@ -500,13 +541,13 @@ Replace each removed code block with a short reference such as `See src/synth/So
 
 Under the `session-reporting` extension:
 
-- A request to "print usage" writes the session usage report as markdown tables: agent identity (software name, version, and the language model when known), conversation summary (prompt requests, reply blocks, sentence and token counts, marking estimated values), context-window usage and remaining headroom, fulfillment of each requested item against its delivered result, and the boundary state (uncommitted files, branch position, reserved decisions). Counters the host does not expose are reported unknown.
+- A request to "print usage" writes the session usage report as markdown tables: agent identity (software name, version, and the language model when known), conversation summary (prompt requests, reply blocks, sentence and token counts, marking estimated values), context-window usage as one table whose rows are the session's operations in execution order, each carrying its fulfillment share, with remaining headroom reported alongside, fulfillment of each requested item against its delivered result, and the boundary state (uncommitted files, branch position, reserved decisions). Counters the host does not expose are reported unknown. A descriptive context-usage note answers only a direct context question - the ordered table stays the default report shape.
 - Operation timing is armed by default. The agent captures the clock before starting an operation's work and ends the response with `<subject> took <m:ss>`. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table before the timing sentence. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
 - In verbose mode the final response additionally writes the usage report as markdown tables - the same content a `print usage` request produces, with unavailable counters marked unknown - plus a short description of the change, immediately before the timing line.
 
 **Context Management**
 
-When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local. Spawn freely for exploration: scouts are cheap, and a delegated survey is cheaper than a full read. Subagent titles name the task itself - never a role or agent-kind prefix such as "Scout".
+When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local. Spawn freely for exploration: scouts are cheap, and a delegated survey is cheaper than a full read. Subagent titles name the task itself - never a role or agent-kind prefix such as "Scout". A delegated brief states the resolved version window explicitly when the task touches versioned directories - a scout inferring the window from `package.json` alone has reported the bump target instead of the active one.
 
 A delegated task that cannot meet its documented target returns to the orchestrator instead of widening scope on its own. A subagent executing a plan may fix what the plan's literal wording gets wrong, but structural additions beyond the plan's named moves go back through the plan before they land.
 

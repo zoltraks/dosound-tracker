@@ -80,7 +80,7 @@ The Playwright E2E test infrastructure is in place but the test coverage for cri
 
 ## Deferred Dependency Upgrades
 
-Recorded during the 1.3.6 dependency upgrade (see `docs/change/1.3.6/dependency-upgrade-majors.md`).
+Recorded during the 1.3.6 dependency upgrade (see `docs/archive/change/1.3.6/dependency-upgrade-majors.md`).
 
 - **`vitest` 5** (`@vitest/ui`, `@vitest/coverage-v8` together): evaluated 5.1.0 and reverted - the full suite failed under the new runner on rolldown-vite 7. Re-evaluate when vitest 5 stabilizes on this stack.
 - **`js-yaml` 5**: evaluated 5.5.0 and reverted - 77 tests failed on YAML serialization drift. Song and instrument files must round-trip byte-identically - upgrade needs a format-equivalence pass first.

@@ -98,17 +98,17 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Testing and verification owner: `TESTING.md`.
 - Workflow owner: `WORKFLOW.md`.
 - Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request - the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
-- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`.
+- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`, `version-family-retention`.
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
-- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
+- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md` - `archive old documents`, `archive documents`, or `run retention` runs the Document Retention sweep recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
 - A window review or audit report that was never produced for a released version is abandoned, not repaired - change records that propose retroactively writing past-version reports are discarded.
 - Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined - none are planned.
 - A CI pipeline (`.github/workflows/`) was evaluated and declined - the verification loop is enforced locally and no CI configuration is planned.
 - Repository profile: `Software`. Topology: `single-project`. Guidelines topology: `Distributed` - `GUIDELINES.md` plus topic owners.
 - Environment-readiness owner: `README.md` for the development environment, `DEPLOYMENT.md` for build and deployment prerequisites.
-- An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/plan/1.3.1/remove-ci-workflow.md`).
-- `COMPARISATION` filenames and `docs/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
+- An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/archive/plan/1.3.1/remove-ci-workflow.md`).
+- `COMPARISATION` filenames and `docs/archive/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
 
 ## General Workflow
 
@@ -129,6 +129,7 @@ When starting work on a request, include a table reporting the guidelines files 
 - One row per guidelines file read or re-read for the current request.
 - One row per directory scanned for the current request.
 - List only items actually inspected - a file carried over from earlier in the session is marked `carried over`, not counted as read.
+- A guideline file surveyed through a delegated scout digest is marked `scout digest`, not `read` - the orchestrator reads the file itself whenever the digest covered it incompletely.
 - Restricted directories kept closed by the Document Directory Access rules in `WORKFLOW.md` are not listed.
 
 Example:
