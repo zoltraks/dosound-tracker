@@ -16,13 +16,13 @@ Any warning from linting, including React Hook dependency warnings, must be reso
 
 **Audio-Critical Linting Exception**
 
-The `GUIDELINES.md` document identifies specific linting warnings that are intentional and must not be fixed because they preserve audio timing stability. These warnings are accepted as part of the clean build:
+The `SPECIFICATION.md` document identifies specific linting warnings that are intentional and must not be fixed because they preserve audio timing stability. These warnings are accepted as part of the clean build:
 
 - React Hook dependency warnings in audio-critical paths
 - `setState` in effect warnings in audio-critical paths
 - `useCallback` wrapping warnings in audio-critical paths
 
-These exceptions apply only to code paths documented in `GUIDELINES.md`. All other linting warnings must be resolved.
+These exceptions apply only to code paths documented in `SPECIFICATION.md`. All other linting warnings must be resolved.
 
 ## Security Audit
 
@@ -126,7 +126,7 @@ Recorded substitutions: the smoke suite substitutes a manual launch for routine 
 
 ## Lessons Loop
 
-Under the `lessons-loop` extension, the lessons record is `docs/lesson/` plus the rules institutionalized into the owning documents per the Session Review convention in `GUIDELINES.md`. The record is consulted before implementation and before verification planning - a wound that produced a rule is honored by following that rule.
+Under the `lessons-loop` extension, the lessons record is `docs/lesson/` plus the rules institutionalized into the owning documents per the Session Review convention in `WORKFLOW.md`. The record is consulted before implementation and before verification planning - a wound that produced a rule is honored by following that rule.
 
 ## Test Data Locations
 
@@ -233,6 +233,7 @@ Node 26 prints `ExperimentalWarning: localStorage is not available` lines during
 - `localStorage` enumeration in both source and tests must use `length` and `key(index)`, never `Object.keys(localStorage)` - the installed mock is a plain object whose own enumerable keys are method names, so `Object.keys` yields `getItem`, `setItem`, and friends instead of stored data keys.
 - `fetch` stubs must return the full Response surface the code under test reads - `ok`, `headers.get()`, and `text()` - not only the fields an older consumer used. A stub that omits `headers` turns a new header read into a TypeError that only surfaces as an empty-state test failure.
 - Assertions on rendered or generated HTML must distinguish escaped entities from raw markup - `&quot;` inside an attribute value is safe text, not an attribute breakout. Assert on the unescaped pattern (a real quote followed by an attribute name), not on substring scans that match entity bodies.
+- Synthetic keyboard and DOM events must carry `bubbles: true` and be dispatched on a real element such as `document.body` - a `new KeyboardEvent` defaults to non-bubbling, so a `window` listener never fires, and dispatching on `window` makes `event.target` an object without `closest` or `tagName`, which breaks handlers that inspect the target.
 - Assertions on expansion, truncation, or filtering must prove the code path actually ran - assert the expanded output's content, not only its bounded shape. Input that never triggers the mechanism can satisfy a bounds assertion vacuously: a step node carrying a sibling `instrument` key is not a run and never expands, so asserting "at most N steps" proves nothing.
 - Assertions on serialized YAML must account for scalar normalization on round-trip - `yaml.load` strips plain-scalar surrounding whitespace, so a parse-back assertion can pass while the emitted text is still wrong. Assert on the raw output text for unquoted scalars (for example `toContain('author: Writer')`), and use the parsed document only for values the emitter guarantees to quote.
 
@@ -267,8 +268,10 @@ Tests are organised under `test/` by domain:
 - `test/electron/` — main-process module tests
 - `test/exports/` — export format module tests, mirroring `src/exports/`
 - `test/hooks/` — custom hook tests
+- `test/modals/` — modal dialog tests, mirroring `src/modals/`
 - `test/synth/` — audio synthesis engine tests
 - `test/utils/` — utility function tests
+- `test/workers/` — Web Worker protocol tests
 - `test/fixtures/` — committed test fixtures (song YAML files, VGM files)
 
 `test/hooks/` and `test/utils/` mirror the domain subdirectories of `src/hooks/` and `src/utils/`: a test whose subject is one source file lives in the matching domain subdirectory, while a test covering several subjects keeps a flat name in the directory root.
@@ -285,8 +288,7 @@ Remaining coverage gaps that may be addressed in future work:
 
 - `src/components/` — several components still lack dedicated tests
 - `src/hooks/` — a number of hooks have thin branch coverage
-- `src/workers/` — no Web Worker tests
-- `src/modals/` — thin coverage beyond `FilePickerModal`
+- `src/modals/` — `AboutModal`, `DownloadModal`, `MarkdownModal`, and `MidiModal` lack dedicated tests
 
 `npm run test:coverage` passes the configured 80% thresholds and is an enforceable gate.
 

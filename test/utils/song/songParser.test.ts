@@ -215,4 +215,56 @@ song:
     expect((metadata as { hasClockField: boolean }).hasClockField).toBe(false);
     expect((metadata as { normalizedClock: number }).normalizedClock).toBe(2000000);
   });
+
+  it('trims surrounding whitespace from title and author on load', () => {
+    const yamlContent = `
+song:
+  title: "  Padded Song  "
+  author: "  Padded Author  "
+  length: 4
+  speed: 4
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlContent);
+
+    expect(song.title).toBe('Padded Song');
+    expect(song.author).toBe('Padded Author');
+  });
+
+  it('defaults title and author when the values are whitespace only', () => {
+    const yamlContent = `
+song:
+  title: "   "
+  author: "   "
+  length: 4
+  speed: 4
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlContent);
+
+    expect(song.title).toBe('New Song');
+    expect(song.author).toBe('Author Name');
+  });
 });

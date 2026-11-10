@@ -2,10 +2,8 @@ import { useCallback, useRef, useMemo } from 'react';
 import type { Song, Pattern, Note, Instrument } from '../../synth/SoundDriver.ts';
 import { YM2149 } from '../../synth/YM2149.ts';
 import type { SequencerState } from './useSequencer.ts';
-import {
-  updateChannelWithInstrument,
-  normalizeInstrumentId,
-} from '../../utils/playback/playbackUtils.ts';
+import { updateChannelWithInstrument } from '../../utils/playback/playbackUtils.ts';
+import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import { Formatter } from '../../utils/format/formatters.ts';
 import type { PlaybackSimulationState } from '../playback/usePlaybackSimulation.ts';
 import { mapSongLineToPlaylistEntries } from '../../types/playlist.ts';
@@ -261,22 +259,7 @@ export function useSequencerIntegration({
                 const formattedNote = baseNote.includes('#') ? baseNote : `${baseNote}-`;
                 const noteText = `${formattedNote}${noteOnRow.octave}`;
                 const rawInst = noteOnRow.instrument as unknown;
-                let instText = '';
-
-                if (typeof rawInst === 'number' && Number.isFinite(rawInst)) {
-                  instText = Formatter.hex(rawInst, { padWidth: 2, uppercase: true });
-                } else if (typeof rawInst === 'string') {
-                  const trimmed = rawInst.trim();
-                  if (trimmed) {
-                    const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-                    const upper = sanitized.toUpperCase();
-                    if (/^[0-9A-F]{1,2}$/.test(upper)) {
-                      instText = upper.padStart(2, '0');
-                    } else {
-                      instText = upper;
-                    }
-                  }
-                }
+                const instText = normalizeInstrumentId(rawInst as string | number | null);
 
                 const safeInst = instText && instText.trim().length > 0 ? instText : '--';
                 return `${noteText} ${safeInst} ${volText}`;
@@ -411,7 +394,7 @@ export function useSequencerIntegration({
                   // Resolve sustain position for the instrument used by this note.
                   const instId =
                     activeNote && typeof activeNote.instrument === 'string'
-                      ? activeNote.instrument
+                      ? normalizeInstrumentId(activeNote.instrument)
                       : '';
                   const instrument = instrumentsById.get(instId);
                   const rawSustain = instrument?.sustain ?? null;
@@ -548,7 +531,7 @@ export function useSequencerIntegration({
       currentInstrument,
       ym2149Ref,
       midiHelpersRef,
-      instrumentLookup, // added dependency
+      instrumentLookup,
     ],
   );
 

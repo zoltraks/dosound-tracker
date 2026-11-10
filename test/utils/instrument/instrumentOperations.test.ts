@@ -7,7 +7,6 @@ import {
   clearInstrumentAndNotes,
   clearInstrumentOnly,
 } from '../../../src/utils/instrument/instrumentOperations.ts';
-import { normalizeInstrumentId } from '../../../src/utils/playback/playbackUtils.ts';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../../../src/constants/music.ts';
 import type { Instrument, Pattern } from '../../../src/synth/SoundDriver.ts';
 import { asInstrumentId } from '../../../src/types/branded.ts';
@@ -55,7 +54,7 @@ describe('countInstrumentUsage', () => {
         patternWithNotes('02'),
         { ...patternWithNotes('01'), id: '02' },
       ];
-      const result = countInstrumentUsage(patterns, asInstrumentId('01'), normalizeInstrumentId);
+      const result = countInstrumentUsage(patterns, asInstrumentId('01'));
       expect(result.usageCount).toBe(4);
       expect(result.patternCount).toBe(2);
     } catch (error) {
@@ -70,7 +69,7 @@ describe('countInstrumentUsage', () => {
         null as unknown as Pattern,
         { id: 'x', name: 'x', step: [null, { note: null, volume: null }] } as unknown as Pattern,
       ];
-      const result = countInstrumentUsage(patterns, asInstrumentId('01'), normalizeInstrumentId);
+      const result = countInstrumentUsage(patterns, asInstrumentId('01'));
       expect(result).toEqual({ usageCount: 0, patternCount: 0 });
     } catch (error) {
       console.log('null-safety mismatch');
@@ -161,12 +160,7 @@ describe('clearInstrumentAndNotes', () => {
       const instruments = [usedInst('00'), usedInst('01')];
       instruments[1].name = 'Lead';
       const patterns = [patternWithNotes('01'), patternWithNotes('00')];
-      const result = clearInstrumentAndNotes(
-        instruments,
-        patterns,
-        asInstrumentId('01'),
-        normalizeInstrumentId,
-      );
+      const result = clearInstrumentAndNotes(instruments, patterns, asInstrumentId('01'));
       expect(result).not.toBeNull();
       expect(result!.notesCleared).toBe(2);
       expect(result!.patternsTouched).toBe(1);
@@ -182,9 +176,7 @@ describe('clearInstrumentAndNotes', () => {
 
   it('returns null when the id is not found', () => {
     try {
-      expect(
-        clearInstrumentAndNotes([usedInst('00')], [], asInstrumentId('09'), normalizeInstrumentId),
-      ).toBeNull();
+      expect(clearInstrumentAndNotes([usedInst('00')], [], asInstrumentId('09'))).toBeNull();
     } catch (error) {
       console.log('not-found mismatch');
       throw error;
@@ -196,7 +188,7 @@ describe('clearInstrumentOnly', () => {
   it('replaces the slot without touching patterns', () => {
     try {
       const instruments = [usedInst('00'), usedInst('01')];
-      const result = clearInstrumentOnly(instruments, asInstrumentId('00'), normalizeInstrumentId);
+      const result = clearInstrumentOnly(instruments, asInstrumentId('00'));
       expect(result).not.toBeNull();
       expect(result!.clearedInstrument.id).toBe('00');
       expect(result!.instruments[1].volume[0]).toBe(15);
@@ -208,31 +200,9 @@ describe('clearInstrumentOnly', () => {
 
   it('returns null when the id is missing', () => {
     try {
-      expect(
-        clearInstrumentOnly([usedInst('00')], asInstrumentId('03'), normalizeInstrumentId),
-      ).toBeNull();
+      expect(clearInstrumentOnly([usedInst('00')], asInstrumentId('03'))).toBeNull();
     } catch (error) {
       console.log('clear-only null mismatch');
-      throw error;
-    }
-  });
-});
-
-describe('normalizeInstrumentId', () => {
-  it.each([
-    [15, '0F'],
-    ['1a', '1A'],
-    ['$0c', '0C'],
-    ['  7  ', '07'],
-    ['bass', 'BASS'],
-    [undefined, ''],
-    [null, ''],
-    ['', ''],
-  ])('normalizes %s to %s', (input, expected) => {
-    try {
-      expect(normalizeInstrumentId(input as number | string | null | undefined)).toBe(expected);
-    } catch (error) {
-      console.log('normalize mismatch', input);
       throw error;
     }
   });

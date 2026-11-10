@@ -1,27 +1,6 @@
-import { Formatter } from '../format/formatters.ts';
 import { YM2149 } from '../../synth/YM2149.ts';
 import type { Instrument, Note } from '../../synth/SoundDriver.ts';
-import { asInstrumentId } from '../../types/branded.ts';
-import type { InstrumentId } from '../../types/branded.ts';
-
-export function normalizeInstrumentId(value?: string | number | null): InstrumentId {
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return asInstrumentId(Formatter.hex(value));
-  }
-
-  if (typeof value === 'string') {
-    const trimmed = value.trim();
-    if (!trimmed) return asInstrumentId('');
-    const sanitized = trimmed.startsWith('$') ? trimmed.slice(1) : trimmed;
-    const upper = sanitized.toUpperCase();
-    if (/^[0-9A-F]{1,2}$/.test(upper)) {
-      return asInstrumentId(upper.padStart(2, '0'));
-    }
-    return asInstrumentId(upper);
-  }
-
-  return asInstrumentId('');
-}
+import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export function updateChannelWithInstrument(
   ym2149: YM2149,

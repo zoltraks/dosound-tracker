@@ -6,6 +6,7 @@ import { assertImportSize } from '../validation/importSize.ts';
 import { expandRunNodes } from '../yaml/runLength.ts';
 import { quoteYamlValues, YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';
 import { createNoteOff } from './trackPanelUtils.ts';
+import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export type TrackClipboardStep = {
   wait?: boolean | number;
@@ -221,7 +222,7 @@ export function applyClipboardToLines(
 
       const instId =
         typeof ln.instrument === 'string' && ln.instrument.trim()
-          ? ln.instrument.trim().toUpperCase()
+          ? normalizeInstrumentId(ln.instrument)
           : '00';
 
       const noteObj = {

@@ -72,7 +72,7 @@ The current optimized dump strategy merges consecutive delays. Further optimizat
 
 **Synth test coverage**
 
-The YM2149 emulator (`src/synth/YM2149.ts`) and sound driver (`src/synth/SoundDriver.ts`) have minimal automated test coverage - `test/synth/` holds a single file while the export modules are exercised by the `test/exports/` suite. Core audio synthesis paths should be fully exercised by the test suite.
+The YM2149 emulator (`src/synth/YM2149.ts`) now carries four `test/synth/` suites and the sequencer worker carries `test/workers/` protocol tests - landed in 1.4.3. `SoundDriver.ts` is types-only. Remaining thin surfaces are components, hooks, and the `MidiModal`/`MarkdownModal` dialogs - tracked in `docs/change/1.4.4/cover-remaining-modals.md`.
 
 **End-to-end test suite**
 

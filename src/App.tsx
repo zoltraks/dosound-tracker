@@ -20,7 +20,7 @@ import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
 import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
-import { normalizeInstrumentId } from './utils/playback/playbackUtils.ts';
+import { normalizeInstrumentId } from './utils/instrument/instrumentSelection.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
 import { DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
 import type { Instrument, Pattern } from './synth/SoundDriver.ts';
@@ -273,8 +273,10 @@ const App: React.FC = () => {
     const instruments = currentSong.instrument;
 
     for (const instrument of instruments) {
-      if (instrument && instrument.id) {
-        map.set(instrument.id, instrument);
+      if (!instrument || !instrument.id) continue;
+      const key = normalizeInstrumentId(instrument.id);
+      if (key) {
+        map.set(key, instrument);
       }
     }
     return map;
@@ -600,6 +602,10 @@ const App: React.FC = () => {
     handleStartLineFromBeginning,
     handleStartLine: handleStartLinePlayback,
     handleStop,
+    handleNewSong: handleRequestNewSong,
+    handleLoadSong: triggerFileLoad,
+    handleSaveSong: saveSong,
+    handleNewInstrument: createNewInstrument,
   });
 
   const handleLineChange = useCallback((lineIndex: number) => {

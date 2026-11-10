@@ -21,15 +21,19 @@ export function matchKeyboardShortcut(
     switch (keyUpper) {
       case 'N':
         shortcut = 'CTRL+N';
+        preventDefault = true;
         break;
       case 'O':
         shortcut = 'CTRL+O';
+        preventDefault = true;
         break;
       case 'S':
         shortcut = 'CTRL+S';
+        preventDefault = true;
         break;
       case 'I':
         shortcut = 'CTRL+I';
+        preventDefault = true;
         break;
       case '5':
         shortcut = 'CTRL+5';

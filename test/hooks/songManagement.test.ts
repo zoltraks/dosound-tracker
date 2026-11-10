@@ -204,6 +204,34 @@ describe('optimizeSongData', () => {
       throw error;
     }
   });
+
+  it('keeps an instrument referenced by a loose note id', () => {
+    try {
+      const s = song({
+        pattern: [pattern('00', '5')],
+        instrument: [usedInst('05'), usedInst('01')],
+      });
+      const { optimizedSong } = optimizeSongData(s);
+      expect(optimizedSong.instrument.map((i) => i.id)).toEqual(['05']);
+    } catch (error) {
+      console.log('optimize loose-note-id mismatch');
+      throw error;
+    }
+  });
+
+  it('keeps a loose instrument id referenced by a canonical note id', () => {
+    try {
+      const s = song({
+        pattern: [pattern('00', '05')],
+        instrument: [usedInst('5'), usedInst('01')],
+      });
+      const { optimizedSong } = optimizeSongData(s);
+      expect(optimizedSong.instrument.map((i) => i.id)).toEqual(['5']);
+    } catch (error) {
+      console.log('optimize loose-inst-id mismatch');
+      throw error;
+    }
+  });
 });
 
 describe('renumberSongData', () => {
@@ -236,6 +264,41 @@ describe('renumberSongData', () => {
       expect(nextCurrentInstrument).toBeNull();
     } catch (error) {
       console.log('null-current mismatch');
+      throw error;
+    }
+  });
+
+  it('remaps notes carrying loose instrument ids', () => {
+    try {
+      const s = song({
+        pattern: [pattern('00', '5')],
+        instrument: [usedInst('00', 'B'), usedInst('05', 'A')],
+      });
+      const { renumberedSong } = renumberSongData(s, null);
+      // Sorted by name: A(id '05') -> slot '00', B(id '00') -> slot '01'.
+      // The loose note id '5' normalizes to '05' and remaps to '00'.
+      expect(renumberedSong.instrument.map((i) => i.id)).toEqual(['00', '01']);
+      expect(renumberedSong.instrument[0].name).toBe('A');
+      expect(renumberedSong.pattern[0].step[0].note?.instrument).toBe('00');
+    } catch (error) {
+      console.log('renumber loose-note-id mismatch');
+      throw error;
+    }
+  });
+
+  it('remaps notes and the current instrument against a loose instrument id', () => {
+    try {
+      const s = song({
+        pattern: [pattern('00', '05')],
+        instrument: [usedInst('5', 'A'), usedInst('00', 'B')],
+      });
+      const { renumberedSong, nextCurrentInstrument } = renumberSongData(s, s.instrument[0]);
+      // The loose instrument id '5' normalizes to '05' in the map; the
+      // canonical note id '05' hits the same key and remaps to '00'.
+      expect(renumberedSong.pattern[0].step[0].note?.instrument).toBe('00');
+      expect(nextCurrentInstrument?.id).toBe('00');
+    } catch (error) {
+      console.log('renumber loose-inst-id mismatch');
       throw error;
     }
   });

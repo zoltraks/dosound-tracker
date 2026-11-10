@@ -42,7 +42,7 @@ Before creating the proposal, determine the primary focus of the refactoring. Th
 - **Custom hook extraction**: move cross-component logic from `App.tsx` into named hooks under `src/hooks/`. Hooks must name what they do, not how.
 - **Business logic separation**: extract business logic from `utils/` and `hooks/` into dedicated service or domain modules. Separate pure data transformation from React lifecycle concerns.
 - **Store boundary cleanup**: evaluate whether the single `uiStore` should be split into domain stores (song, instrument, playback, UI). Tighten store responsibilities.
-- **Audio-critical constraint preservation**: ensure all refactoring preserves the audio timing constraints documented in `GUIDELINES.md`. Never apply React "best practices" that break audio timing.
+- **Audio-critical constraint preservation**: ensure all refactoring preserves the audio timing constraints documented in `SPECIFICATION.md`. Never apply React "best practices" that break audio timing.
 - **Export module isolation**: keep `src/exports/` modules self-contained and individually testable. Each format (asm, bin, max, vgm, wav) should be independently testable.
 - **Synth module isolation**: separate pure YM2149 emulation logic from Web Audio API integration in `src/synth/`. Keep the emulator testable as plain functions.
 - **Test coverage and testability**: add missing unit tests, characterisation-test untested logic before restructuring it, refactor for testability when modules can only be exercised through the UI.
@@ -106,7 +106,7 @@ These constraints apply to every refactoring in this codebase. They are non-nego
 
 **Audio Timing Must Not Break**
 
-All refactoring must preserve the audio timing constraints documented in `GUIDELINES.md`. The following patterns are intentional and must not be "fixed":
+All refactoring must preserve the audio timing constraints documented in `SPECIFICATION.md`. The following patterns are intentional and must not be "fixed":
 
 - Prop mirroring (local state synced with props for stable timing)
 - Sparse dependency arrays (minimal dependencies to prevent unnecessary re-renders)
@@ -150,4 +150,4 @@ The assessment document must be created after the refactoring implementation is 
 - Focus on measurable improvements in type safety, testing, performance, and maintainability.
 - Document both completed work and remaining gaps.
 - Update version numbers and dates appropriately.
-- Before making any code changes, especially linting fixes or React optimisations, consult `GUIDELINES.md` for audio-critical development principles.
+- Before making any code changes, especially linting fixes or React optimisations, consult `SPECIFICATION.md` for the audio-critical development principles.

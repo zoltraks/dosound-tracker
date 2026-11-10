@@ -14,6 +14,7 @@ import { normalizeSongSpeed } from '../../utils/song/songSpeed.ts';
 import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { removeMirroredSnapshot } from '../../utils/storage/persistenceMirror.ts';
+import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 
 export type StoredInstrumentForMigration = {
   volume?: unknown;
@@ -352,9 +353,9 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
       if (note && note.instrument !== undefined && note.instrument !== null) {
         let id = '';
         if (typeof note.instrument === 'string') {
-          id = note.instrument.trim().toUpperCase();
+          id = normalizeInstrumentId(note.instrument);
         } else if (typeof note.instrument === 'number') {
-          id = Formatter.hex(Math.floor(note.instrument), { padWidth: 2, uppercase: true });
+          id = normalizeInstrumentId(Math.floor(note.instrument));
         }
         if (id) {
           usedInstrumentIds.add(id);
@@ -369,7 +370,7 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
   song.instrument.forEach((inst) => {
     if (!inst) return;
 
-    const idNorm = (inst.id || '').trim().toUpperCase();
+    const idNorm = normalizeInstrumentId(inst.id);
     if (idNorm && usedInstrumentIds.has(idNorm)) {
       newInstruments.push(inst);
     } else {
@@ -526,15 +527,15 @@ export function renumberSongData(
     const nameB = (b?.name || '').toLowerCase();
     if (nameA < nameB) return -1;
     if (nameA > nameB) return 1;
-    const idA = parseInt(a?.id || '0', 16);
-    const idB = parseInt(b?.id || '0', 16);
+    const idA = parseInt(normalizeInstrumentId(a?.id) || '0', 16);
+    const idB = parseInt(normalizeInstrumentId(b?.id) || '0', 16);
     return idA - idB;
   });
 
   const instrumentIdMap: Record<string, string> = {};
 
   const newInstruments: Instrument[] = instrumentsSorted.map((inst, index) => {
-    const oldIdNorm = (inst.id || '').trim().toUpperCase();
+    const oldIdNorm = normalizeInstrumentId(inst.id);
     const newId = formatInstrumentSlotId(index);
     if (oldIdNorm) {
       instrumentIdMap[oldIdNorm] = newId;
@@ -551,7 +552,7 @@ export function renumberSongData(
 
       const note = newLine.note;
       if (note && typeof note.instrument === 'string') {
-        const raw = note.instrument.trim().toUpperCase();
+        const raw = normalizeInstrumentId(note.instrument);
         const mapped = instrumentIdMap[raw];
         if (mapped) {
           newLine.note = {
@@ -572,7 +573,7 @@ export function renumberSongData(
 
   let nextCurrentInstrument = currentInstrument;
   if (currentInstrument) {
-    const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
+    const currentIdNorm = normalizeInstrumentId(currentInstrument.id);
     const mappedId = instrumentIdMap[currentIdNorm];
     if (mappedId) {
       const updatedFromList = newInstruments.find((inst) => inst.id === mappedId);
@@ -605,7 +606,7 @@ export function renumberSongData(
   const instrumentMappingLines: string[] = [];
   instrumentsSorted.forEach((inst) => {
     const oldIdRaw = inst.id || '';
-    const oldIdNorm = oldIdRaw.trim().toUpperCase();
+    const oldIdNorm = normalizeInstrumentId(oldIdRaw);
     const mapped = oldIdNorm ? instrumentIdMap[oldIdNorm] : '';
     if (!mapped || mapped === oldIdNorm) {
       return;

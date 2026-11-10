@@ -48,19 +48,19 @@ describe('keyboardShortcutUtils', () => {
   it('matches ctrl shortcuts', () => {
     expect(matchKeyboardShortcut('N', true, false)).toEqual({
       shortcut: 'CTRL+N',
-      preventDefault: false,
+      preventDefault: true,
     });
     expect(matchKeyboardShortcut('O', true, false)).toEqual({
       shortcut: 'CTRL+O',
-      preventDefault: false,
+      preventDefault: true,
     });
     expect(matchKeyboardShortcut('S', true, false)).toEqual({
       shortcut: 'CTRL+S',
-      preventDefault: false,
+      preventDefault: true,
     });
     expect(matchKeyboardShortcut('I', true, false)).toEqual({
       shortcut: 'CTRL+I',
-      preventDefault: false,
+      preventDefault: true,
     });
     expect(matchKeyboardShortcut('5', true, false)).toEqual({
       shortcut: 'CTRL+5',

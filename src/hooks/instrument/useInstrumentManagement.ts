@@ -3,7 +3,7 @@ import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../../constants/music.ts';
 import { DEFAULT_BASE_KEY } from '../../utils/song/songParser.ts';
 import { isInstrumentEmpty } from '../../utils/instrument/instrument.ts';
 import { formatInstrumentSlotId } from '../../utils/instrument/instrumentSelection.ts';
-import { normalizeInstrumentId } from '../../utils/playback/playbackUtils.ts';
+import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 
 export interface InstrumentCreationResult {

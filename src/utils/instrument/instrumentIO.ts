@@ -15,7 +15,7 @@ import {
   trimEnvelope,
 } from '../envelope/envelopeUtils.ts';
 import { quoteYamlValues, coerceYamlNumber } from '../yaml/yamlUtils.ts';
-import { normalizeInstrumentId } from '../playback/playbackUtils.ts';
+import { normalizeInstrumentId } from './instrumentSelection.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 
 export const buildInstrumentYamlForExport = (currentInstrument: Instrument): string => {

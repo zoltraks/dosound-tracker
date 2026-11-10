@@ -34,7 +34,7 @@ export default defineConfig({
       name: 'version-service-worker-cache',
       apply: 'build',
       closeBundle() {
-        const swPath = resolve(__dirname, 'dist', 'sw.js');
+        const swPath = resolve(import.meta.dirname, 'dist', 'sw.js');
         const source = readFileSync(swPath, 'utf8');
         writeFileSync(swPath, source.replaceAll('__APP_VERSION__', packageJson.version));
       },
@@ -75,7 +75,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': resolve(import.meta.dirname, './src'),
     },
   },
 });

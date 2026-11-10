@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.4.4
+
+File-operation keyboard shortcuts work again, song loading is more tolerant of loosely formatted instrument ids, and loaded metadata now matches the saved form.
+
+- **Keyboard**: CTRL+N, CTRL+O, CTRL+S, and CTRL+I run new song, load song, save song, and new instrument through the same command paths as their buttons, claiming the keys back from browser defaults.
+- **Song loading**: instrument ids written as `5`, `$0F`, or `0f` normalize to the same `05`-`0F` form everywhere - the parser, clipboard paste, color lookup, playback, and exports share one accepted-input contract, and title and author values load trimmed of surrounding whitespace.
+- **Coverage**: the YM2149 emulator, the sequencer worker, and the modal dialogs gained characterization test suites.
+- **Documentation**: the always-loaded intake documents were slimmed to their context budgets, with reference material relocated to the documents that own it.
+- **Security**: `npm audit` reports 15 moderate advisories confined to devDependency `minimatch` chains inside eslint and electron-builder tooling - nothing ships to end users, and the residual stays documented until upstream chains accept fixes.
+
 ## Version 1.4.3
 
 Saved songs no longer keep stray whitespace in their metadata.

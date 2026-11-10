@@ -145,11 +145,7 @@ export function useInstrumentActions({
       return;
     }
 
-    const { usageCount, patternCount } = countInstrumentUsage(
-      currentSong.pattern,
-      targetIdNorm,
-      normalizeInstrumentId,
-    );
+    const { usageCount, patternCount } = countInstrumentUsage(currentSong.pattern, targetIdNorm);
 
     if (usageCount === 0) {
       const slot = instruments[index];
@@ -207,7 +203,7 @@ export function useInstrumentActions({
 
       let nextCurrentInstrument = currentInstrument;
       if (currentInstrument) {
-        const currentIdNorm = (currentInstrument.id || '').trim().toUpperCase();
+        const currentIdNorm = normalizeInstrumentId(currentInstrument.id);
         const mappedId = moved.instrumentIdMap[currentIdNorm];
         if (mappedId) {
           const updatedFromList = moved.instruments.find((inst) => inst && inst.id === mappedId);
@@ -232,6 +228,7 @@ export function useInstrumentActions({
       currentSong.instrument,
       currentSong.pattern,
       currentInstrument,
+      normalizeInstrumentId,
       updateSong,
       setCurrentInstrument,
       setActiveSection,
@@ -257,12 +254,7 @@ export function useInstrumentActions({
     const instruments = currentSong.instrument;
     const patterns = currentSong.pattern;
 
-    const cleared = clearInstrumentAndNotes(
-      instruments,
-      patterns,
-      targetIdNorm,
-      normalizeInstrumentId,
-    );
+    const cleared = clearInstrumentAndNotes(instruments, patterns, targetIdNorm);
     if (!cleared) {
       setIsInstrumentDeleteOpen(false);
       setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');
@@ -323,7 +315,7 @@ export function useInstrumentActions({
 
     const instruments = currentSong.instrument;
 
-    const cleared = clearInstrumentOnly(instruments, targetIdNorm, normalizeInstrumentId);
+    const cleared = clearInstrumentOnly(instruments, targetIdNorm);
     if (!cleared) {
       setIsInstrumentDeleteOpen(false);
       setInstrumentOperationSummary('Instrument no longer found. No changes were applied.');

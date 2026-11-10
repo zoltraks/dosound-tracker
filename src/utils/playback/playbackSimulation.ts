@@ -2,6 +2,7 @@ import type { Song, Instrument } from '../../synth/SoundDriver.ts';
 import { NOTE_FREQUENCIES, NOTE_BASE_OCTAVE } from '../../constants/music.ts';
 import { YM_CLOCK } from '../../synth/YM2149.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
+import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export interface RegisterState {
   [register: number]: number;
@@ -189,7 +190,8 @@ export function simulateSong(
                   !channelState.note ||
                   channelState.note.note !== noteOnRow.note ||
                   channelState.note.octave !== noteOnRow.octave ||
-                  channelState.note.instrument !== noteOnRow.instrument;
+                  normalizeInstrumentId(channelState.note.instrument) !==
+                    normalizeInstrumentId(noteOnRow.instrument);
                 shouldRetrigger = isNew;
               }
 
@@ -199,7 +201,10 @@ export function simulateSong(
                 channelState.subTick = 0;
                 channelState.isNewNote = true; // Mark as new note to ensure tone registers are written
 
-                const instrument = song.instrument.find((i) => i.id === noteOnRow.instrument);
+                const noteInstrumentId = normalizeInstrumentId(noteOnRow.instrument);
+                const instrument = song.instrument.find(
+                  (i) => normalizeInstrumentId(i.id) === noteInstrumentId,
+                );
                 const rawSustain = instrument?.sustain ?? null;
                 if (
                   typeof rawSustain === 'number' &&
@@ -226,7 +231,10 @@ export function simulateSong(
 
           // Update channel with current envelope step
           if (channelState.note) {
-            const instrument = song.instrument.find((i) => i.id === channelState.note!.instrument);
+            const noteInstrumentId = normalizeInstrumentId(channelState.note.instrument);
+            const instrument = song.instrument.find(
+              (i) => normalizeInstrumentId(i.id) === noteInstrumentId,
+            );
             if (instrument) {
               const rawStep = channelState.envelopeStep;
               const sustainIndex = channelState.sustainIndex;

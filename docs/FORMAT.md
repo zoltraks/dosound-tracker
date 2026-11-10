@@ -48,7 +48,7 @@ Loader rules (from `parseSongFromYaml`):
 
 - Input text larger than `MAX_IMPORT_BYTES` (1 MiB) is rejected before parsing.
 - Run-length counts (`wait`, `space`, `off` numerics) expand only up to the remaining pattern length - counts beyond capacity are truncated.
-- `title`, `author`: empty or missing → defaults.
+- `title`, `author`: string values load trimmed of surrounding whitespace - empty or missing → defaults.
 - `speed`: invalid or ≤0 → defaults to 6, then clamped to ≥2 and forced even.
 - `length`: invalid → defaults to `PATTERN_LENGTH` (64), then clamped to `[4, 256]`.
 - `loop`: numeric or numeric string - clamped to `[0, playlist.length-1]` - otherwise `null`.
@@ -109,7 +109,7 @@ Each logical row in `trackA` is encoded as a **step** with these fields:
 - `note: string` (optional)
   - Note in `C-4` or `C#4` style (dash before octave unless there is `#`).
 - `instrument: string` (optional)
-  - Instrument number (e.g. `"00"`, `"1A"`), uppercased internally.
+  - Instrument number (e.g. `"00"`, `"1A"`) - string values load trimmed and uppercased, an optional leading `$` is stripped, and a one-character hex id pads to two digits.
 - `wait: boolean | number` (optional)
   - `true` → single empty row.
   - integer `N > 0` → run of `N` consecutive empty rows.
@@ -182,7 +182,7 @@ Saver (`saveSong`) rules:
 
 Loader (`parseSongFromYaml`) rules:
 
-- `number` interpreted as hex slot index where possible - otherwise index-based fallback.
+- `number` interpreted as hex slot index where possible - otherwise index-based fallback. String values load trimmed and uppercased, an optional leading `$` is stripped, and a one-character hex id pads to two digits.
 - `base` parsed via `parseBaseKey` and normalized via `formatBaseKey`.
 - `octave` read from number or numeric string, then clamped.
 - `volume` / `shift` / `pitch` / `noise` / `mode` expanded to `ENVELOPE_LENGTH` values, padding with the last value. The `arpeggio` alias expands with looping semantics.

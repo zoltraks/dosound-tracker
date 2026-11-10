@@ -1,4 +1,5 @@
 import type { Instrument, Note, Pattern } from '../../synth/SoundDriver.ts';
+import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export function buildInstrumentColorMap(instruments: Instrument[]): Map<string, string> {
   const map = new Map<string, string>();
@@ -6,7 +7,7 @@ export function buildInstrumentColorMap(instruments: Instrument[]): Map<string, 
     if (!inst || typeof inst.id !== 'string') {
       continue;
     }
-    const id = inst.id.trim().toUpperCase();
+    const id = normalizeInstrumentId(inst.id);
     if (!id) {
       continue;
     }
@@ -61,16 +62,16 @@ export function getInstrumentColorForNote(
     return null;
   }
 
-  const rawInst = noteData.instrument.trim();
-  if (!rawInst) {
+  const normalized = normalizeInstrumentId(noteData.instrument);
+  if (!normalized) {
     return null;
   }
 
-  const sanitized = rawInst.startsWith('$') ? rawInst.slice(1) : rawInst;
-  const upper = sanitized.toUpperCase();
-  if (!/^[0-9A-F]{1,2}$/.test(upper)) {
+  // The {1,2} hex gate is the deliberate divergence from the shared
+  // normalizeInstrumentId contract: non-hex ids never color.
+  if (!/^[0-9A-F]{1,2}$/.test(normalized)) {
     return null;
   }
 
-  return instrumentColorMap.get(upper) ?? null;
+  return instrumentColorMap.get(normalized) ?? null;
 }

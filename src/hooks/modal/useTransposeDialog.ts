@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { normalizeInstrumentId } from '../../utils/playback/playbackUtils.ts';
+import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import type { TransposeOptions, TransposeResult } from '../song/useTrackOperations.ts';
 
 export interface UseTransposeDialogParams {
@@ -143,7 +143,6 @@ export function useTransposeDialog({
     currentPatternIndex,
     targetTrackId,
     currentInstrumentId,
-    normalizeInstrumentId,
     applyTranspose,
   ]);
 

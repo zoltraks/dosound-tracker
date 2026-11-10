@@ -10,7 +10,99 @@ See `package.json` for the dependency list and exact versions. The application i
 
 ## Audio-Critical Development
 
-This project is a real-time audio application where timing is critical. The audio-critical development principles - prop mirroring, sparse dependency arrays, direct setState calls, manual memoization, and the accepted linting warnings - are owned by `GUIDELINES.md` and override the general standards on audio-critical code paths. Consult `GUIDELINES.md` before applying any linting fixes or React optimisations to audio-related code.
+This section owns the audio-critical development principles for this real-time audio application. These principles override the general standards and standard React best practices on audio-critical code paths - consult them before applying any linting fixes or React optimisations to audio-related code.
+
+**Critical: Audio Performance Trade-offs**
+
+This is a real-time audio application where timing is critical. Some React "anti-patterns" are intentionally maintained for audio stability.
+
+**Do Not Apply These Linting Fixes**
+
+1. **Dependency Array Additions** — Adding missing dependencies to `useCallback` or `useMemo` can cause re-renders during audio processing.
+   - Example: `currentInstrumentData?.id`, `onHardStopLivePreview` in dependency arrays.
+   - Reason: Re-renders interrupt audio timing and cause glitches.
+
+2. **useCallback Wrapping** — Wrapping functions in `useCallback` for dependency arrays can affect render timing.
+   - Example: Wrapping `stopPreview` in `useCallback`.
+   - Reason: Memoization changes render cycle timing.
+
+3. **State Synchronization Removal** — Removing prop mirroring (local state syncing with props) can break audio timing.
+   - Example: `EnvelopePanel` local `envelopeData` state, `TrackPanel` local `currentInstrument` state.
+   - Reason: Local state provides stable timing vs prop-driven updates.
+
+4. **setState-in-effect "Fixes"** — Using `setTimeout` to defer setState in effects causes race conditions.
+   - Example: `setTimeout(() => setState(value), 0)`.
+   - Reason: Async state updates cause stale data during audio rendering.
+
+**Safe to Apply**
+
+1. **Type Safety Fixes**
+   - Replacing `any` types with proper TypeScript types.
+   - Adding explicit type annotations.
+   - Example: `Record<string, unknown>` instead of `any`.
+
+2. **Unused Code Removal**
+   - Removing unused imports.
+   - Removing unused variables.
+   - Removing dead code.
+
+3. **Non-Functional Improvements**
+   - Code formatting.
+   - Comment improvements.
+   - Test setup fixes.
+
+**Development Workflow**
+
+1. **Always Test Audio After Changes**
+   - Any change to React hooks, state management, or component lifecycle must be audio-tested.
+   - Use git stash to isolate changes and test incrementally.
+
+2. **Prefer Manual Reverts Over Automated Fixes**
+   - If audio glitches occur, revert changes manually rather than applying more "fixes".
+   - The original codebase was carefully tuned for audio performance.
+
+3. **Accept Linting Warnings**
+   - React hooks dependency warnings are acceptable in audio-critical paths.
+   - setState-in-effect warnings are acceptable in audio-critical paths.
+   - These warnings indicate intentional performance optimizations.
+
+4. **Focus on Audio-First Development**
+   - Audio stability is the highest priority.
+   - React best practices are secondary to performance.
+   - Test with real audio playback, not just visual rendering.
+
+**Red Flags for Audio Issues**
+
+If these occur after applying linting fixes:
+
+- Audio glitches, pops, or timing issues.
+- Stuttering or delayed audio response.
+- Inconsistent envelope or instrument behavior.
+
+Immediate action: revert the changes using git stash or git checkout.
+
+**Code Review Checklist**
+
+When reviewing changes, ask:
+
+- Does this affect React render timing?
+- Does this change `useCallback` or `useMemo` dependencies?
+- Does this modify state management patterns?
+- Does this remove local state (prop mirroring)?
+- Has this been audio-tested?
+
+**Architecture Notes**
+
+The codebase uses several patterns that may appear "wrong" from a React perspective but are essential for audio:
+
+- **Prop mirroring**: local state synced with props for stable timing.
+- **Sparse dependency arrays**: minimal dependencies to prevent unnecessary re-renders.
+- **Direct setState calls**: synchronous state updates for predictable timing.
+- **Manual memoization**: carefully controlled memoization vs React's automatic optimizations.
+
+These patterns ensure that audio processing occurs at consistent intervals without interruption from React's render cycle.
+
+In real-time audio applications, performance trumps purity. The "wrong" way that works is better than the "right" way that glitches.
 
 ## Source Directory Structure
 
@@ -149,6 +241,13 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - ENTER in a track plays the current line from the cursor row and toggles playback, restoring the cursor on stop
 - CTRL+ENTER in a track plays the current line from its first row and toggles playback, restoring the cursor on stop
 
+**File operation shortcuts:**
+
+- CTRL+N runs NEW SONG
+- CTRL+O runs LOAD SONG
+- CTRL+S runs SAVE SONG
+- CTRL+I runs NEW INSTRUMENT
+
 **Modal shortcuts:**
 
 - ESCAPE cancels or closes the open modal dialog
@@ -216,6 +315,39 @@ The following utilities were extracted to eliminate duplication and are the cano
 
 Branded identifier types (`InstrumentId`, `PatternId`, `TrackId`, `PlaylistPatternId`) are defined in `src/types/branded.ts`. Factory functions that create domain objects accept `number | BrandedType` so callers can pass either a numeric slot index or a pre-branded ID string. Use `asInstrumentId`, `asPatternId`, and `asPlaylistPatternId` constructor functions to convert plain strings to branded types at system boundaries (file parsing, user input).
 
+### Naming Conventions
+
+The baseline naming conventions live in `standard/typescript-react-development.md`. The project deltas are:
+
+- **CSS classes**: `kebab-case` or BEM notation.
+- **Config and data files**: `snake_case`.
+- **Version numbers**: use just the number (for example `1.2.7`). Do not prefix with `v`.
+
+**File naming rules**
+
+- React component files must use `PascalCase` (for example `TrackPanel.tsx`, `CommandPanel.tsx`).
+- All other TypeScript files must use `camelCase` (for example `songParser.ts`, `envelopeUtils.ts`).
+- This distinction aligns with Vite, create-react-app, and modern React ecosystem standards.
+
+### Date and Time Format
+
+All timestamps in project metadata, logs, and data files use a modified ISO 8601 format in local time.
+
+**Format: `YYYY-MM-DD hh:mm:ss`**
+
+Examples:
+
+- `2024-01-15 10:30:00`
+- `2026-04-27 14:22:15`
+
+**Rules**
+
+- Use 24-hour time, from `00:00:00` to `23:59:59`.
+- No `T` separator between date and time.
+- No timezone indicator - local time only.
+- Month and day are zero-padded, `01` to `12` and `01` to `31`.
+- Hours, minutes, and seconds are zero-padded, `00` to `59`.
+
 ### Export Output Stability
 
 Export modules in `src/exports/` must produce byte-identical output for the same input across refactoring changes. The test fixtures in `test/fixtures/` and the export test suite (`exportVgm.test.ts`, `exportMax.test.ts`, `exportWav.test.ts`, `exportAssemblyOptimized.test.ts`) verify zero diff in export output. Any change to export output is a behaviour change, not a refactoring, and must be routed through `docs/change/<version>/`.
@@ -241,6 +373,6 @@ The following constraints reflect the current state of the codebase and are cand
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
 - **No undo/redo**: The application does not implement an undo/redo history. All edits are immediate and irreversible without manual re-entry. No command pattern or state snapshot mechanism is present.
 - **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map (~1120 lines after the staged decomposition). Bounded concerns live in dedicated orchestration hooks under `src/hooks/` - further decomposition remains a candidate for later windows.
-- **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) has minimal automated test coverage - `test/synth/` holds a single file. The export modules (src/exports/) are exercised by the `test/exports/` suite. Core audio synthesis paths are not fully exercised by the test suite.
+- **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) now carries four `test/synth/` suites and the sequencer worker carries `test/workers/` protocol tests. The export modules (src/exports/) are exercised by the `test/exports/` suite. Remaining thin surfaces are components, hooks, and the `MidiModal`/`MarkdownModal` dialogs.
 - **Single chip support**: Only the YM2149 chip is supported. The constants in src/constants/song.ts define supported chips as a single-element array, leaving no room for AY-3-8910 or other PSG variants without code changes.
 - **Browser audio dependency**: Real-time playback relies on the Web Audio API and OscillatorNode, which imposes browser-specific behavior and latency characteristics that differ from native Atari ST hardware.

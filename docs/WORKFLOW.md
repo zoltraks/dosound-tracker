@@ -164,6 +164,44 @@ Do not modify these directories unless explicitly instructed.
 
 Existing `docs/report/<version>/` contents are historical, but the directory itself remains the live report role - new audits and generated reports land there per the Audit-Driven Ring and the repository layout map.
 
+## Repository Layout
+
+The resolved role-to-path map for the documentation set and its workflow directories.
+
+| Role                   | Path                                | Notes                                            |
+| ---------------------- | ----------------------------------- | ------------------------------------------------ |
+| Documentation root     | `docs/`                             | All active documents                             |
+| Change requests        | `docs/change/<version>/`            | Versioned per release                            |
+| Implementation plans   | `docs/plan/<version>/`              | Versioned per release                            |
+| Refactoring documents  | `docs/refactoring/<version>/`       | Versioned per release                            |
+| Abandoned records      | `docs/discard/<version>/`           | Abandoned change records and optional plans      |
+| Window reviews         | `docs/review/<version>/`            | Version-window reviews, feeds the bump decision  |
+| Lessons                | `docs/lesson/`                      | Per-session findings files, restricted           |
+| Decision records       | `docs/decision/`                    | Durable dated decisions, restricted              |
+| Window run state       | `docs/plan/<version>/window-run.md` | Run-resume stage record, not a plan              |
+| Reports                | `docs/report/`                      | On-demand generated reports, restricted          |
+| Archive                | `docs/archive/`                     | Retired documents, non-active history            |
+| Historical directories | `docs/feature/`, `docs/prompt/`     | Restricted, not part of the active set           |
+| Templates              | `docs/template/`                    | Document templates                               |
+| Standards              | `docs/standard/`                    | Engineering standards, one per technology stack  |
+| Media                  | `docs/media/`                       | Documentation images                             |
+| Changelog              | `public/CHANGELOG.md`               | Written only at version bump                     |
+| Bundled documents      | `public/`                           | MANUAL.md, MESSAGES.md rendered in-app           |
+| Local workspace        | `work/`                             | Gitignored scratch, shell-access only            |
+| Agent entry            | `README.md`                         | Routes agents to `GUIDELINES.md`; no `AGENTS.md` |
+
+## Document Directory Access
+
+- Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. Otherwise never automatically scan or gather change requests from this directory - the user will manually request implementation plans for individual changes.
+- Do not read any document from `docs/plan/` unless specifically instructed by the user or a named window request authorizes the window's plan group. Implementation plans are written to this directory only when the user explicitly requests them or a window run requires them.
+- Do not read any document from `docs/archive/` or `docs/refactoring/` unless specifically instructed by the user. These directories contain historical documents and refactoring proposals that are not part of the active documentation set.
+- Do not read any document from `docs/report/` unless the user explicitly requests it. This directory is for custom reports generated on demand and is not part of the active documentation set.
+- Do not read any document from `docs/prompt/` unless specifically instructed by the user. This directory contains historical AI prompt logs from versions 1.0, 1.1, and 1.2 and is not part of the active documentation set.
+- Do not read any document from `docs/feature/` unless specifically instructed by the user. This directory contains feature proposals that are not part of the active documentation set.
+- Do not read any document from `docs/discard/` unless specifically instructed by the user. This directory holds abandoned change records and is not part of the active documentation set.
+- Do not read any document from `docs/review/` or `docs/lesson/` unless specifically instructed by the user. These directories hold generated reviews and recorded lessons - they are outputs and records, not active rules.
+- Do not read any document from `docs/decision/` unless specifically instructed by the user or a session review routes a decision there.
+
 ## Version Window SDLC
 
 The repository adopts the `version-window` extension and the `audit-driven-development` convention. A named window request - "run the SDLC for `<version>`" or "process the `<version>` window" - executes the whole window as one operation instead of one change request at a time.
@@ -211,7 +249,7 @@ For each change record in the window:
 **Improvement**
 
 - After the review and before the bump, the window heals itself. Gather the lessons the run's operations produced - failures, surprises, workarounds, and repeated corrections - and check which problems appeared while the window worked.
-- Each lesson lands as a durable rule or record, routed per the Session Review table in `GUIDELINES.md`, before the bump closes the window.
+- Each lesson lands as a durable rule or record, routed per the Session Review table in this document, before the bump closes the window.
 - Small adjustments, fixes, and optimizations discovered during the window apply on the fly inside the same run. Larger work is never silently absorbed - it defers to a change record under a later window per the Deferral rule.
 - Any code touched by an improvement fix re-enters the verification loop before the window closes.
 - The step follows the evidence-gated repair convention: a problem is healed only after its real state is verified, never on a guessed finding.
@@ -254,6 +292,22 @@ A collection mode that analyzes requests without implementing them. Each request
 **Improvement**
 
 `improvement` named as a mode on a work request is a working mode, not the review operation. After the described development operation finishes, the agent applies adjustments, fixes, and optimizations on the fly inside the same change set - small repairs do not route through the change-record lifecycle. Improvements that alter observable behavior or exceed the request's scope still split into their own record. This mode never triggers the Session Review on its own.
+
+## Memorisation Convention
+
+When the user says "memorise" or "remember", adjust the relevant guideline file or files in the project with the new rule - memorisation means updating project guidelines. A memorisation request that also names a correction applies the correction in the same task.
+
+| Rule About                          | Goes To            |
+| ----------------------------------- | ------------------ |
+| Documentation structure or language | `GUIDELINES.md`    |
+| Project scope or requirements       | `PROJECT.md`       |
+| Architecture or patterns            | `ARCHITECTURE.md`  |
+| Implementation details              | `SPECIFICATION.md` |
+| Workflows                           | `WORKFLOW.md`      |
+| Testing                             | `TESTING.md`       |
+| Refactoring                         | `REFACTORING.md`   |
+
+If no specialised file is appropriate, update `GUIDELINES.md`. Always confirm the rule has been added to the correct file.
 
 ## Stage Gates
 
@@ -345,9 +399,23 @@ A module-level helper slated for a move into `src/utils/` may already exist ther
 
 When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate - `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`).
 
-## Session Improvement
+## Session Review
 
-The documentation set heals and improves itself through a session-review loop. At the end of a development session - or on request - the agent gathers durable lessons from the session's conversation history and routes each one to its owning document.
+The project records a session-review convention. When the user says "improve dosound-tracker", run the session review: collect the wounds the session produced and land each one as a durable rule or record before reporting the review done.
+
+The documentation set heals and improves itself through this session-review loop. At the end of a development session - or on request - the agent gathers durable lessons from the session's conversation history and routes each one to its owning document.
+
+**Trigger**
+
+- `improve dosound-tracker` runs the session review. The trigger phrase is recorded, never implied - ordinary task requests do not invoke it.
+
+**Procedure**
+
+- Review the conversation history of the current session and gather its wounds: failures, surprises, workarounds, and repeated corrections.
+- Verify the real state before recording a lesson - a guessed finding poisons the index.
+- For each wound, check whether an existing rule already covers it. If no rule covers the lesson, add the rule to the owning document's body first, then index it in the lesson file.
+- Owning documents are the project guidelines, workflow and process documents, and the engineering standards under `docs/standard/` - the review updates documentation, not source code.
+- Record the session's findings in `docs/lesson/lessons-<date>-<theme>.md` using `docs/template/session-findings.md`. Entries use titles, never ordinal numbers.
 
 **Gather lessons**
 
@@ -358,9 +426,17 @@ Mine the session for anything that cost effort, surprised, or would help the nex
 - Tooling and environment facts discovered on the way (a CLI flag, a port, a schema field that moved).
 - A failed approach worth recording so it is not retried (the vitest 5 and js-yaml 5 reverts live in `FUTURE.md` for this reason).
 
-**Route each lesson**
+**Routing**
 
-Routing follows the table recorded in `GUIDELINES.md` under Session Review: wounds land in the owning standard or document, the lesson file indexes rather than hosts rules, deferred work goes to `FUTURE.md`, and durable one-off decisions become dated records in `docs/decision/`.
+| Lesson kind              | Owning destination                                                                       |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| Engineering wound        | The relevant standard's findings, for example `standard/typescript-react-development.md` |
+| Testing or tooling wound | The owning section of `TESTING.md`                                                       |
+| Versioning wound         | The owning section of `VERSIONING.md`                                                    |
+| Workflow wound           | A rule in this file plus a dated record in `docs/decision/` when the decision is durable |
+| Machine or tooling quirk | Environment notes in `DEPLOYMENT.md` or `WORKFLOW.md`                                    |
+
+The lesson file indexes rules that live in the owning documents - it does not hold the rules themselves. Deferred work goes to `FUTURE.md`, and durable one-off decisions become dated records in `docs/decision/`.
 
 **Apply and verify**
 
@@ -377,6 +453,62 @@ Run periodically and before a version bump:
 - Stale-figure sweep: README/toolchain numbers, hook counts, file sizes, standard versions (`diff -w -B` against the canonical library), and path references inside `docs/template/` against the real tree.
 - `git status --short` confirms only the intended change set remains.
 
+## Documentation Distillation
+
+Distillation keeps the documentation lean by removing content that is obvious from the source code and replacing it with cross-references. It is triggered on request, when the user says "distil" or "distill" in relation to documentation.
+
+Distillation is a documentation-only change and bypasses the verification loop.
+
+**Scope**
+
+Distil `SPECIFICATION.md` and `GUIDELINES.md`. Do not remove sections from `PROJECT.md`, `ARCHITECTURE.md`, or `WORKFLOW.md` unless they also contain raw code duplication.
+
+**What to remove**
+
+- Technology stack tables that duplicate `package.json`.
+- Directory trees that mirror the filesystem.
+- Store-to-file mapping tables obvious from the store directory.
+- Raw type interface blocks that duplicate `src/types/` or other source files.
+- Build configuration that duplicates config files.
+- Development script listings that duplicate `package.json` scripts.
+- Constants tables that duplicate `src/constants/`.
+
+**What to keep**
+
+- Behavioural rules and semantics not obvious from interfaces alone.
+- Extensibility contracts and design rationales.
+- Algorithm descriptions and interaction rules.
+- Error handling policies and severity behaviour.
+- Lifecycle and startup explanations.
+- Cross-references to the source files where definitions live.
+
+**Process**
+
+Replace each removed code block with a short reference such as `See src/synth/SoundDriver.ts for the Song, Pattern, and Instrument types`. Preserve all prose that explains why a type exists or how it behaves. Verify each cross-reference points to a file that exists before removing the duplicated content.
+
+## Agent Operations
+
+**Session Reporting**
+
+Under the `session-reporting` extension:
+
+- A request to "print usage" writes the session usage report as markdown tables: agent identity (software name, version, and the language model when known), conversation summary (prompt requests, reply blocks, sentence and token counts, marking estimated values), context-window usage and remaining headroom, fulfillment of each requested item against its delivered result, and the boundary state (uncommitted files, branch position, reserved decisions). Counters the host does not expose are reported unknown.
+- Operation timing is armed by default. The agent captures the clock before starting an operation's work and ends the response with `<subject> took <m:ss>`. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table before the timing sentence. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
+- In verbose mode the final response additionally writes the usage report as markdown tables - the same content a `print usage` request produces, with unavailable counters marked unknown - plus a short description of the change, immediately before the timing line.
+
+**Context Management**
+
+When the context window approaches its limit, the agent divides the remaining work into discrete tasks and delegates them to spawned subagents rather than continuing degraded. Each delegated task carries its own context, file scope, and verification expectations. The agent keeps orchestration - the division, the merge, and the final verification - local. Spawn freely for exploration: scouts are cheap, and a delegated survey is cheaper than a full read. Subagent titles name the task itself - never a role or agent-kind prefix such as "Scout".
+
+A delegated task that cannot meet its documented target returns to the orchestrator instead of widening scope on its own. A subagent executing a plan may fix what the plan's literal wording gets wrong, but structural additions beyond the plan's named moves go back through the plan before they land.
+
+**Clean and Purge**
+
+Under the `clean` and `purge` extensions:
+
+- A request to "clean project" or "clean the project" runs `scripts/clean.sh`, which removes only build artifacts and temporary files that are not under version control - `dist/`, `coverage/`, `playwright-report/`, `test-results/`, and temp residue such as `*.log`, `*.tmp`, `*.bak`, and `.DS_Store` files. Each target is verified ignored and untracked before deletion, a locked file is reported and skipped rather than failing the run, and `--dry-run` lists targets without deleting.
+- A request to "purge project" or "purge the project" removes everything `clean` removes plus `node_modules/` and `work/` - all restorable through `npm install` and session recreation. The script names the restore procedure when it finishes.
+
 ## Working With AI Coding Agents
 
 When delegating implementation to an AI coding agent, provide the following context:
@@ -385,10 +517,10 @@ When delegating implementation to an AI coding agent, provide the following cont
 - `ARCHITECTURE.md` for architecture and patterns.
 - `SPECIFICATION.md` for implementation details.
 - `standard/typescript-react-development.md` for TypeScript and React coding standards.
-- `GUIDELINES.md` for audio-critical development principles.
+- `SPECIFICATION.md` for the audio-critical development principles.
 - The specific source files being modified.
 
-Verify agent output against the build-test-fix loop. Never accept code that breaks audio timing or violates the audio-critical principles in `GUIDELINES.md`.
+Verify agent output against the build-test-fix loop. Never accept code that breaks audio timing or violates the audio-critical principles in `SPECIFICATION.md`.
 
 Commits carry no AI-assisted markers: neither the commit description nor a trailer records the tool used.
 

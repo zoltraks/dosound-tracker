@@ -34,6 +34,7 @@ import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeSongSpeed } from './songSpeed.ts';
 import { clampMidiChannel, clampMidiProgram } from '../midi/midiUtils.ts';
 import { createNoteOff } from '../track/trackPanelUtils.ts';
+import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 type SongYamlRoot = {
   song?: unknown;
@@ -168,11 +169,11 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
   const title =
     typeof songNode.title === 'string' && songNode.title.trim()
-      ? songNode.title
+      ? songNode.title.trim()
       : DEFAULT_SONG_TITLE;
   const author =
     typeof songNode.author === 'string' && songNode.author.trim()
-      ? songNode.author
+      ? songNode.author.trim()
       : DEFAULT_SONG_AUTHOR;
 
   const speed = normalizeSongSpeed(songNode.speed);
@@ -274,7 +275,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
           const instId =
             typeof ln.instrument === 'string' && ln.instrument.trim()
-              ? ln.instrument.trim().toUpperCase()
+              ? normalizeInstrumentId(ln.instrument)
               : '00';
 
           line.note = {
@@ -320,7 +321,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     const rawNumber = nodeObj.number;
     const number =
       typeof rawNumber === 'string' && rawNumber.trim()
-        ? rawNumber.trim().toUpperCase()
+        ? normalizeInstrumentId(rawNumber)
         : formatInstrumentSlotId(index);
 
     const slotIndex = parseInt(number, 16);

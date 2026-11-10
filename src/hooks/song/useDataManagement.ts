@@ -18,7 +18,7 @@ import {
 import { downloadFile } from '../../utils/file/fileOperations.ts';
 import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
-import { normalizeInstrumentId } from '../../utils/playback/playbackUtils.ts';
+import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import {
   asInstrumentId,
   asPatternId,

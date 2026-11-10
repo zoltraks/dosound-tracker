@@ -1,7 +1,7 @@
 import type { Instrument, Pattern, Step } from '../../synth/SoundDriver.ts';
 import { ENVELOPE_LENGTH, MAX_INSTRUMENTS } from '../../constants/music.ts';
 import { isInstrumentEmpty } from './instrument.ts';
-import { formatInstrumentSlotId } from './instrumentSelection.ts';
+import { formatInstrumentSlotId, normalizeInstrumentId } from './instrumentSelection.ts';
 import { createEmptyInstrument } from './instrumentPanelUtils.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 
@@ -28,7 +28,6 @@ export function createClearedInstrument(slotId: InstrumentId): Instrument {
 export function countInstrumentUsage(
   patterns: Pattern[],
   targetInstrumentIdNorm: InstrumentId,
-  normalizeInstrumentId: (value?: string | number | null) => InstrumentId,
 ): InstrumentUsageCounts {
   let usageCount = 0;
   let patternCount = 0;
@@ -168,7 +167,7 @@ export function moveInstrumentAndRemapPatterns(
     }
 
     const newId = formatInstrumentSlotId(newIndex);
-    const oldIdNorm = (inst.id || '').trim().toUpperCase();
+    const oldIdNorm = normalizeInstrumentId(inst.id);
     if (oldIdNorm) {
       instrumentIdMap[oldIdNorm] = newId;
     }
@@ -185,7 +184,7 @@ export function moveInstrumentAndRemapPatterns(
 
       const note = newLine.note;
       if (note && typeof note.instrument === 'string') {
-        const raw = note.instrument.trim().toUpperCase();
+        const raw = normalizeInstrumentId(note.instrument);
         const mapped = instrumentIdMap[raw];
         if (mapped) {
           newLine.note = {
@@ -225,7 +224,6 @@ export function clearInstrumentAndNotes(
   instruments: Instrument[],
   patterns: Pattern[],
   targetInstrumentIdNorm: InstrumentId,
-  normalizeInstrumentId: (value?: string | number | null) => InstrumentId,
 ): ClearInstrumentAndNotesResult | null {
   const index = instruments.findIndex(
     (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm,
@@ -305,7 +303,6 @@ export interface ClearInstrumentOnlyResult {
 export function clearInstrumentOnly(
   instruments: Instrument[],
   targetInstrumentIdNorm: InstrumentId,
-  normalizeInstrumentId: (value?: string | number | null) => InstrumentId,
 ): ClearInstrumentOnlyResult | null {
   const index = instruments.findIndex(
     (inst) => normalizeInstrumentId(inst?.id) === targetInstrumentIdNorm,

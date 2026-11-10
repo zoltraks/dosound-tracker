@@ -126,6 +126,7 @@ The system must support keyboard input for:
 - Navigation between sections using TAB and Shift+TAB.
 - Note entry, clearing (Space/Backspace), and note off (Ctrl+Space).
 - Instrument selection (Ctrl+/-).
+- File operations (Ctrl+N new song, Ctrl+O load song, Ctrl+S save song, Ctrl+I new instrument).
 
 **F-11: MIDI Support**
 

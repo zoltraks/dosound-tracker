@@ -245,6 +245,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - **ARROW** movement
 - **ENTER** for editing
 - **ESCAPE** for cancel
+- **CTRL + N / CTRL + O / CTRL + S / CTRL + I** for new song, load song, save song, and new instrument
 - Hotkey support for all functions
 
 **Visual Feedback:**
@@ -505,7 +506,7 @@ The following settings persist across sessions via localStorage:
 - Vitest test runner
 - Playwright end-to-end tests
 
-## 4. Core Concepts
+## Core Concepts
 
 This section describes core concepts used by this tool for both musicians and coders.
 
@@ -939,7 +940,78 @@ DOSOUND Tracker follows this convention in assembly export:
 - `dc.b $FF, N` for **delay N frames** (at the song's configured frame rate).
 - `dc.b $FF, 0` at the end → **STOP marker**.
 
-The example in `README.md` illustrates this, with comments such as `TA D-4`, `VA`, etc. With the **COMPLEX DUMP** and **OPTIMIZED DUMP** strategies, only **changed registers** are written to keep data compact.
+The following example illustrates this, with comments such as `TA D-4`, `VA`, etc.
+
+```assembly
+music:
+
+    ; === LINE 00 ===
+
+    ; --- PART 00 ---
+
+    dc.b $7,$1c       ; MX T+T+N
+    dc.b $1,$1,$0,$aa ; TA D-4
+    dc.b $8,$C        ; VA
+    dc.b $9,$0        ; VB
+    dc.b $A,$0        ; VC
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$8        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$4        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$2        ; VA
+    dc.b $ff,1        ; DL 2
+
+    ; --- PART 01 ---
+
+    dc.b $1,$1,$0,$1c ; TA A-4
+    dc.b $8,$C        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$8        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$4        ; VA
+    dc.b $ff,3        ; DL 4
+
+    ; --- PART 02 ---
+
+    dc.b $1,$0,$0,$d5 ; TA D-5
+    dc.b $8,$E        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$A        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$6        ; VA
+    dc.b $ff,3        ; DL 4
+
+    ; --- PART 03 ---
+
+    dc.b $1,$1,$0,$aa ; TA D-4
+    dc.b $8,$C        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$8        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$4        ; VA
+    dc.b $ff,3        ; DL 4
+
+    ; --- PART 04 ---
+
+    dc.b $1,$1,$0,$1c ; TA A-4
+    dc.b $8,$C        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$8        ; VA
+    dc.b $ff,1        ; DL 2
+    dc.b $8,$4        ; VA
+    dc.b $ff,3        ; DL 4
+
+    ; === END OF SONG ===
+
+    dc.b $8,$0        ; VA
+    dc.b $9,$0        ; VB
+    dc.b $A,$0        ; VC
+
+    dc.b $ff,0
+```
+
+With the **COMPLEX DUMP** and **OPTIMIZED DUMP** strategies, only **changed registers** are written to keep data compact.
 
 ### Export Strategies: Simple vs Complex vs Optimized
 

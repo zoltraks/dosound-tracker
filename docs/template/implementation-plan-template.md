@@ -36,7 +36,7 @@ This section is mandatory for changes that affect audio playback, timing, or the
 - Does this modify the YM2149 emulator or SoundDriver?
 - Must audio playback be manually tested after the change?
 
-Consult `GUIDELINES.md` for the audio-critical development principles before making any changes to audio-related code.
+Consult `SPECIFICATION.md` for the audio-critical development principles before making any changes to audio-related code.
 
 ## Documentation Updates
 
@@ -135,6 +135,7 @@ Run the verification loop in this order. The implementation is complete only whe
 
 - Run `npm run typecheck`
 - Run `npm run lint`
+- Run `npm run format`
 - Run `npm run build`
 - Run `npm test`
 - Manually verify the specific feature behaviour and confirm no regressions in consumer modules

@@ -190,6 +190,67 @@ song:
       throw error;
     }
   });
+
+  it.each([
+    ['5', '05'],
+    ['$0F', '0F'],
+    ['0f', '0F'],
+    ['0F ', '0F'],
+  ])('normalizes the loose step instrument %s to %s', (input, expected) => {
+    try {
+      const yaml = base().replace('instrument: "00"', `instrument: "${input}"`);
+      const song = parseSongFromYaml(yaml);
+      expect(song.pattern[0].step[0].note?.instrument).toBe(expected);
+    } catch (error) {
+      console.log('loose step instrument mismatch', input);
+      throw error;
+    }
+  });
+
+  it.each([
+    ['5', '05', 5],
+    ['$05', '05', 5],
+    ['0f', '0F', 15],
+    ['05 ', '05', 5],
+  ])('loads the loose instrument number %s as %s in slot %i', (input, expected, slot) => {
+    try {
+      const yaml = base().replace(
+        'number: "00"\n      volume: [15]',
+        `number: "${input}"\n      volume: [15]`,
+      );
+      const song = parseSongFromYaml(yaml);
+      expect(song.instrument[slot].id).toBe(expected);
+      expect(song.instrument[slot].volume[0]).toBe(15);
+    } catch (error) {
+      console.log('loose instrument number mismatch', input);
+      throw error;
+    }
+  });
+
+  it('still rejects an instrument number that has no hex prefix', () => {
+    const yaml = base().replace(
+      'number: "00"\n      volume: [15]',
+      'number: "XYZ"\n      volume: [15]',
+    );
+    expect(() => parseSongFromYaml(yaml)).toThrow('Invalid instrument number');
+  });
+
+  it('loads a hex-prefixed non-hex number at the truncated hex slot', () => {
+    // Real behavior: parseInt("BASS", 16) truncates to 0xBA = 186, which is
+    // below MAX_INSTRUMENTS, so the id passes through instead of throwing.
+    try {
+      const yaml = base().replace(
+        'number: "00"\n      volume: [15]',
+        'number: "BASS"\n      volume: [15]',
+      );
+      const song = parseSongFromYaml(yaml);
+      expect(song.instrument[0xba].id).toBe('BASS');
+      expect(song.instrument[0xba].volume[0]).toBe(15);
+    } catch (error) {
+      console.log('hex-prefix number mismatch');
+      throw error;
+    }
+  });
 });
 
 describe('parseSongFromYaml bounded expansion', () => {

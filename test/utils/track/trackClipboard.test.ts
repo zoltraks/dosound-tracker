@@ -458,6 +458,27 @@ describe('applyClipboardToLines replace mode', () => {
     expect(out[0].note).toEqual({ note: 'C', octave: 4, instrument: '0A' });
   });
 
+  it.each([
+    ['5', '05'],
+    ['$0F', '0F'],
+    ['0f', '0F'],
+    ['0F ', '0F'],
+  ])('normalizes the loose instrument id %s to %s', (input, expected) => {
+    try {
+      const out = applyClipboardToLines(
+        [],
+        [{ note: 'C-4', instrument: input }],
+        'replace',
+        1,
+        parseBaseKey,
+      );
+      expect(out[0].note).toEqual({ note: 'C', octave: 4, instrument: expected });
+    } catch (error) {
+      console.log('loose-instrument mismatch', input);
+      throw error;
+    }
+  });
+
   it('defaults a non-string instrument to 00', () => {
     const steps = [{ note: 'C-4', instrument: 7 } as unknown as TrackClipboardStep];
     const out = applyClipboardToLines([], steps, 'replace', 1, parseBaseKey);
