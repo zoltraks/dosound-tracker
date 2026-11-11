@@ -61,6 +61,7 @@ The active documentation set is composed of the following files. Each file is th
 | `SPECIFICATION.md` | Project-specific implementation details and conventions - owns the audio-critical development principles                                     |
 | `COPYRIGHTS.md`    | Copyright and licensing rules                                                                                                                |
 | `WORKFLOW.md`      | Day-to-day development workflow - owns repository layout, session review, memorisation, distillation, directory access, and agent operations |
+| `TOOLING.md`       | Tooling and environment notes - conditional reads for shell, server, build, audit, extraction, sweep, and validation work                    |
 | `REFACTORING.md`   | Refactoring proposal and assessment process                                                                                                  |
 | `TESTING.md`       | Testing strategy, test types, fixtures, and verification                                                                                     |
 | `DEPLOYMENT.md`    | Deployment targets and hosting                                                                                                               |
@@ -97,7 +98,7 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Testing and verification owner: `TESTING.md`.
 - Workflow owner: `WORKFLOW.md`.
 - Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request - the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
-- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`, `version-family-retention`.
+- Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`, `version-family-retention`, `scout-delegation`.
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
 - Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md` - `archive old documents`, `archive documents`, or `run retention` runs the Document Retention sweep recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
@@ -108,18 +109,25 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - A CI pipeline (`.github/workflows/`) was evaluated and declined - the verification loop is enforced locally and no CI configuration is planned.
 - Repository profile: `Software`. Topology: `single-project`. Guidelines topology: `Distributed` - `GUIDELINES.md` plus topic owners.
 - Environment-readiness owner: `README.md` for the development environment, `DEPLOYMENT.md` for build and deployment prerequisites.
-- An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/archive/plan/1.3.1/remove-ci-workflow.md`).
+- Context budget: the session-start intake is `GUIDELINES.md` and `WORKFLOW.md` - every other Sources-of-Truth document is a task-conditional read per the tiered mandate.
+- An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/plan/<version>/remove-ci-workflow.md`).
 - `COMPARISATION` filenames and `docs/archive/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
 - ASE reference: adjustments to this document set consult the `compass-skill` canonical corpus - `references/PREPARATION.md` and the `conventions/` registry - for expected structure and semantics before editing.
 
 ## General Workflow
 
-**Read all guidelines before any change**
+**Read guidelines by tier**
 
-This rule is mandatory and unconditional. Before making any change in this codebase, read every file in the active documentation set. Never assume a subset is sufficient. No matter how small the change, every guideline file must be reviewed first.
+Every request reads `GUIDELINES.md` and `WORKFLOW.md` - mode selection, intake rules, and directory access live there. Every other Sources-of-Truth document loads when the task touches its domain, before the matching edit runs. Never assume a subset is sufficient for the domains the request actually touches.
 
-- Always read all guideline files before making changes. The required files are the per-document rows of the Sources of Truth table - `MAX.md`, `FUTURE.md`, `standard/`, and `template/` excluded - plus `standard/README.md` as the index for the matching standard file.
-- Never assume a subset of these files is sufficient.
+- Documentation and generated-record edits read `STYLE.md` first.
+- A described change reads the pillar owning it - `PROJECT.md`, `ARCHITECTURE.md`, or `SPECIFICATION.md` - before documentation-first edits.
+- Verification planning and loop runs read `TESTING.md`.
+- Save, load, and export-format work reads `FORMAT.md`.
+- Dependency and licensing work reads `COPYRIGHTS.md`.
+- Bump, release, and deployment work reads `VERSIONING.md` and `DEPLOYMENT.md`.
+- Refactoring proposals and assessments read `REFACTORING.md`.
+- Tooling, environment, and shell work reads `TOOLING.md` when a note's domain is hit.
 - For any implementation task, consult the corresponding standard in `standard/` before writing code - the index is `standard/README.md`. These standards are generalized - project-specific conventions and code organization live in `SPECIFICATION.md` and in each standard's `Project Conventions` section.
 - Ask for clarification when requirements are missing or ambiguous.
 - When a guideline file is added, removed, or its purpose changes, update this file accordingly.

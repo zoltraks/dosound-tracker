@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { TrackPasteMode } from '../song/useTrackOperations.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
+import { readFlag } from '../../utils/settings/settingsState.ts';
 
 export interface UsePasteTrackOptionsResult {
   pasteTrackMode: TrackPasteMode;
   setPasteTrackMode: (mode: TrackPasteMode) => void;
+  confirmPaste: boolean;
+  setConfirmPaste: (confirm: boolean) => void;
   pasteTrackPendingMode: TrackPasteMode;
   setPasteTrackPendingMode: (mode: TrackPasteMode) => void;
   isPasteTrackModalOpen: boolean;
@@ -26,6 +29,9 @@ export function usePasteTrackOptions(): UsePasteTrackOptionsResult {
     return 'replace';
   });
 
+  const [confirmPaste, setConfirmPaste] = useState<boolean>(() =>
+    readFlag(StorageKeys.PASTE_CONFIRM, false),
+  );
   const [pasteTrackPendingMode, setPasteTrackPendingMode] =
     useState<TrackPasteMode>(pasteTrackMode);
   const [isPasteTrackModalOpen, setIsPasteTrackModalOpen] = useState(false);
@@ -39,11 +45,23 @@ export function usePasteTrackOptions(): UsePasteTrackOptionsResult {
     }
   }, [pasteTrackMode]);
 
+  useEffect(() => {
+    try {
+      localStorage.setItem(StorageKeys.PASTE_CONFIRM, confirmPaste ? 'on' : 'off');
+    } catch {
+      // ignore
+    }
+  }, [confirmPaste]);
+
   const getPasteTrackMode = useCallback(
     (_options: { hasExistingData: boolean }): Promise<TrackPasteMode | null> => {
       // Explicitly reference _options so it is considered used by lint, even
       // though the current implementation does not depend on its value.
       void _options;
+
+      if (!confirmPaste) {
+        return Promise.resolve(pasteTrackMode);
+      }
 
       return new Promise((resolve) => {
         pasteTrackModalResolveRef.current = resolve;
@@ -51,7 +69,7 @@ export function usePasteTrackOptions(): UsePasteTrackOptionsResult {
         setIsPasteTrackModalOpen(true);
       });
     },
-    [pasteTrackMode],
+    [pasteTrackMode, confirmPaste],
   );
 
   const handleConfirmPasteTrackModal = useCallback(() => {
@@ -76,6 +94,8 @@ export function usePasteTrackOptions(): UsePasteTrackOptionsResult {
   return {
     pasteTrackMode,
     setPasteTrackMode,
+    confirmPaste,
+    setConfirmPaste,
     pasteTrackPendingMode,
     setPasteTrackPendingMode,
     isPasteTrackModalOpen,

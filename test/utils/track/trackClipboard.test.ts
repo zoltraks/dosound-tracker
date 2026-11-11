@@ -618,3 +618,103 @@ describe('applyClipboardToLines overwriteEmpty mode', () => {
     expect(out[0].note).toBeNull();
   });
 });
+
+describe('generateClipboardData row ranges', () => {
+  const rangedPattern = (): Pattern =>
+    makePattern([
+      { note: makeNote('C', 4), volume: 15 },
+      { note: makeNote('D', 4), volume: 14 },
+      { note: makeNote('E', 4), volume: 13 },
+      { note: null, volume: null },
+    ]);
+
+  it('serializes only the selected row range', () => {
+    const yaml = generateClipboardData(rangedPattern(), 4, formatBaseKey, { start: 1, end: 2 });
+    const steps = parseClipboardData(yaml);
+    expect(steps).toHaveLength(2);
+    expect(steps[0].note).toBe('D-4');
+    expect(steps[1].note).toBe('E-4');
+  });
+
+  it('keeps the full track when no range is given', () => {
+    const yaml = generateClipboardData(rangedPattern(), 4, formatBaseKey);
+    const steps = parseClipboardData(yaml);
+    expect(steps).toHaveLength(3);
+    expect(steps[0].note).toBe('C-4');
+  });
+
+  it('clamps the range to the pattern length', () => {
+    const yaml = generateClipboardData(rangedPattern(), 4, formatBaseKey, { start: 2, end: 99 });
+    const steps = parseClipboardData(yaml);
+    expect(steps).toHaveLength(2);
+    expect(steps[0].note).toBe('E-4');
+    expect(steps[1]).toEqual({ wait: true });
+  });
+
+  it('keeps trailing empty rows inside the range', () => {
+    const yaml = generateClipboardData(rangedPattern(), 4, formatBaseKey, { start: 0, end: 3 });
+    const steps = parseClipboardData(yaml);
+    expect(steps).toHaveLength(4);
+    expect(steps[3]).toEqual({ wait: true });
+  });
+
+  it('serializes a fully empty range as a wait run of the same length', () => {
+    const emptyPattern = makePattern([
+      { note: null, volume: null },
+      { note: null, volume: null },
+      { note: null, volume: null },
+    ]);
+    const yaml = generateClipboardData(emptyPattern, 3, formatBaseKey, { start: 0, end: 2 });
+    const steps = parseClipboardData(yaml);
+    expect(steps).toHaveLength(3);
+    expect(steps.every((step) => step.wait === true)).toBe(true);
+  });
+});
+
+describe('applyClipboardToLines start offset', () => {
+  it('applies pasted steps at the anchor row and keeps other rows', () => {
+    const existing: Step[] = [
+      { note: makeNote('C', 4) },
+      { note: null },
+      { note: makeNote('A', 2), volume: 9 },
+    ];
+    const out = applyClipboardToLines(
+      existing,
+      [{ note: 'G-3', instrument: '04' }],
+      'replace',
+      3,
+      parseBaseKey,
+      1,
+    );
+    expect(out[0].note).toEqual(makeNote('C', 4));
+    expect(out[1].note).toEqual({ note: 'G', octave: 3, instrument: '04' });
+    expect(out[2].note).toEqual(makeNote('A', 2));
+    expect(out[2].volume).toBe(9);
+  });
+
+  it('clips the pasted fragment at the pattern length', () => {
+    const existing: Step[] = [{ note: null }, { note: null }];
+    const out = applyClipboardToLines(
+      existing,
+      [{ note: 'C-4' }, { note: 'D-4' }, { note: 'E-4' }],
+      'replace',
+      2,
+      parseBaseKey,
+      1,
+    );
+    expect(out).toHaveLength(2);
+    expect(out[1].note?.note).toBe('C');
+  });
+
+  it('does not blank rows outside a fragment window under replace', () => {
+    const existing: Step[] = [
+      { note: makeNote('C', 4) },
+      { note: null },
+      { note: makeNote('A', 2) },
+    ];
+    const out = applyClipboardToLines(existing, [{ wait: true }], 'replace', 3, parseBaseKey, 1);
+    expect(out[0].note).toEqual(makeNote('C', 4));
+    expect(out[1].note).toBeNull();
+    expect(out[2].note).toEqual(makeNote('A', 2));
+  });
+});

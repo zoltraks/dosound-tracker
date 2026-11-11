@@ -19,6 +19,7 @@ describe('settingsYaml', () => {
         restoreCursor: false,
         restoreView: true,
         pasteTrackMode: 'overwriteAll' as const,
+        confirmPaste: true,
       },
       sound: { engine: 'ayumi' as const },
     };
@@ -80,6 +81,7 @@ describe('settingsYaml', () => {
         restoreCursor: false,
         restoreView: true,
         pasteTrackMode: 'overwriteEmpty' as const,
+        confirmPaste: true,
       },
       sound: { engine: 'ayumi' as const },
     };

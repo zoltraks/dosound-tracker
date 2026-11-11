@@ -139,6 +139,7 @@ const edgeSettings = (): SettingsValues => ({
     restoreCursor: false,
     restoreView: true,
     pasteTrackMode: 'overwriteAll',
+    confirmPaste: true,
   },
   sound: { engine: 'ayumi' },
 });

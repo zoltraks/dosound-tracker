@@ -190,6 +190,12 @@ The selected chip drives the per-variant amplitude curve on both sound engines: 
 
 The system must provide an edit history covering the composition data: pattern steps, instrument parameters, playlist lines, and song information fields. CTRL+Z steps the history backwards, and CTRL+Y or CTRL+SHIFT+Z re-applies reverted steps. A new edit after undo discards the redo branch. Composite operations such as paste, transpose, renumber, and optimize record as single entries, and the history is bounded and session-scoped - it never travels with the saved song file and starts empty on application reload. Undo applies through the ordinary song state setters, so restoring during playback must not recreate audio callbacks or write on the audio path.
 
+**F-21: Track Fragment Selection**
+
+The system must provide a keyboard-driven row selection inside a track. While a track section is the active section, SHIFT+UP and SHIFT+DOWN extend a selection range over whole pattern rows (note, instrument, and volume cells) and move the cursor with it. A single selection exists at a time, bound to the track where it was created, and it is session state persisted to local storage - it survives cursor moves, playlist position changes, and page reloads, restored clamped to the current pattern.
+
+While a track section is active, CTRL+C copies the selected fragment to the system clipboard in the `step:` YAML format shared with COPY TRACK - with no selection it copies the whole track. CTRL+X cuts the fragment: it copies the range, clears the covered notes and volumes, and drops the selection. CTRL+V pastes the clipboard fragment starting at the cursor row, clipped at the pattern length, applying the stored paste-track mode. A new EDITOR settings option enables the paste-mode confirmation modal for fragment pastes over existing data. Copy, cut, and paste record in the edit history like every other composition edit.
+
 ## Non-Functional Requirements
 
 **N-01: Audio Performance**

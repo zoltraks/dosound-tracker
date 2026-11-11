@@ -1,6 +1,6 @@
 # TypeScript Real-Time Audio Engineering Standards
 
-<!-- Version: 0.1.2 | Date: 2026-11-10 -->
+<!-- Version: 0.1.2 | Date: 2026-11-11 -->
 
 ## Purpose
 
@@ -75,9 +75,6 @@ src/
   no `Array.from()` - use indexed `Uint8Array` / `Float32Array` access and in-place updates.
 - Musical position travels as engine ticks or step indices,
   converting to milliseconds only at display time.
-- A cadence start emits the starting step immediately - a loop that waits one full
-  interval and posts only after advancing skips the starting step's attack on every start.
-  The first posted state is the pre-advance position.
 
 ## Audio-Path State Rules
 
@@ -90,28 +87,6 @@ src/
   - manual memoization in place of `useMemo`/`useCallback` when identity churn hurts
 - Lint rules that flag these patterns (`react-hooks/exhaustive-deps`, `set-state-in-effect`)
   are disabled locally with a recorded reason - never "fixed" by changing the code.
-- Playback runs only while the rendering context is running - start paths await the
-  context's running transition. Parameter writes issued against a suspended context pile
-  at a frozen time base and land all at once on resume: dropped attacks, audio joining
-  mid-position, and a position view ahead of sound.
-- A context transition away from running mid-playback pauses the schedule at its
-  position and restarts it when the context returns - the position view may never
-  advance while the context renders nothing.
-- Playback-facing indicators flip only when playback actually begins, never at the
-  interaction that requested it, and a stop request cancels a pending asynchronous start.
-- Asynchronously-constructed engines expose a readiness gate that playback callers
-  await - register writes and silence requests issued before the engine lands are
-  silently dropped. Synchronously-constructible engines land synchronously.
-- A post function that only exists after an asynchronously-created node lands drops
-  every message sent in the gap - mount-time parameter posts vanish and the node
-  runs on its defaults. Give the post function a stable first-render identity that
-  buffers into a queue, and flush the queue when the node is created so no message
-  ordering is lost.
-- A reply to a superseded asynchronous command updates resources, never state. A worker
-  or worklet answer that arrives after a newer command replaced it - a `stop` reply
-  landing after a `start` - must not merge into playback state. Track whether a newer
-  command superseded the one the reply answers, skip the state write, and still fire
-  the cleanup the reply exists for.
 
 ## Worker Isolation
 
@@ -141,12 +116,6 @@ src/
 - Timing tests assert ordering and counts, not wall-clock durations
 - Component tests on audio-adjacent components stub the clock or worker boundary,
   never the DOM-visible output.
-- Audio-path tests assert the audible outcome - output gain values, context-state
-  timelines, rendered buffers - not only call timestamps: call timing alone proves
-  nothing about what renders.
-- Level and headroom claims are measured on rendered output, never derived by
-  arithmetic on component peaks - fold-down mixing and engine ceilings defeat
-  hand-computed worst cases.
 
 ## Verification
 
@@ -154,9 +123,6 @@ src/
   not a `--noEmit` pass against a solution-style tsconfig.
 - Audio behavior is verified by running the application - static checks cannot hear timing
   Record manual audio verification as the final human gate on any change touching the audio path.
-- Verify on more than one browser engine - implementations that auto-resume the audio
-  context on first gesture (Chromium) cannot reproduce the suspended-state failure
-  class; engines that preserve the suspended startup state (WebKit) expose it.
 
 ## General Principles
 
@@ -166,6 +132,45 @@ src/
   while abstractions that hide allocation or per-tick work are rejected on the audio path.
 - The audio path is documented as such - a reader can tell which functions run inside the cadence
   without tracing the call graph.
+
+## Fed Patterns
+
+Material fed back from a consuming repository's evolved copy.
+
+- A cadence start emits the starting step immediately - a loop that waits one full
+  interval and posts only after advancing skips the starting step's attack on every start.
+  The first posted state is the pre-advance position.
+- Playback runs only while the rendering context is running - start paths await the
+  context's running transition. Parameter writes issued against a suspended context pile
+  at a frozen time base and land all at once on resume: dropped attacks, audio joining
+  mid-position, and a position view ahead of sound.
+- A context transition away from running mid-playback pauses the schedule at its
+  position and restarts it when the context returns - the position view may never
+  advance while the context renders nothing.
+- Playback-facing indicators flip only when playback actually begins, never at the
+  interaction that requested it, and a stop request cancels a pending asynchronous start.
+- Asynchronously-constructed engines expose a readiness gate that playback callers
+  await - register writes and silence requests issued before the engine lands are
+  silently dropped. Synchronously-constructible engines land synchronously.
+- A post function that only exists after an asynchronously-created node lands drops
+  every message sent in the gap - mount-time parameter posts vanish and the node
+  runs on its defaults. Give the post function a stable first-render identity that
+  buffers into a queue, and flush the queue when the node is created so no message
+  ordering is lost.
+- A reply to a superseded asynchronous command updates resources, never state. A worker
+  or worklet answer that arrives after a newer command replaced it - a `stop` reply
+  landing after a `start` - must not merge into playback state. Track whether a newer
+  command superseded the one the reply answers, skip the state write, and still fire
+  the cleanup the reply exists for.
+- Audio-path tests assert the audible outcome - output gain values, context-state
+  timelines, rendered buffers - not only call timestamps: call timing alone proves
+  nothing about what renders.
+- Level and headroom claims are measured on rendered output, never derived by
+  arithmetic on component peaks - fold-down mixing and engine ceilings defeat
+  hand-computed worst cases.
+- Verify on more than one browser engine - implementations that auto-resume the audio
+  context on first gesture (Chromium) cannot reproduce the suspended-state failure
+  class; engines that preserve the suspended startup state (WebKit) expose it.
 
 ## Sources
 

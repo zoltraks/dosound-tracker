@@ -36,6 +36,11 @@ export const KEYBOARD_SHORTCUTS = {
   'CTRL+-': 'previousInstrument',
   'CTRL+PLUS': 'nextInstrument',
 
+  // Track clipboard
+  'CTRL+C': 'copyTrack',
+  'CTRL+X': 'cutTrack',
+  'CTRL+V': 'pasteTrack',
+
   // History
   'CTRL+Z': 'undo',
   'CTRL+Y': 'redo',

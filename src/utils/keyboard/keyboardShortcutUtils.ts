@@ -71,6 +71,18 @@ export function matchKeyboardShortcut(
         shortcut = 'CTRL+I';
         preventDefault = true;
         break;
+      case 'C':
+        shortcut = 'CTRL+C';
+        preventDefault = true;
+        break;
+      case 'X':
+        shortcut = 'CTRL+X';
+        preventDefault = true;
+        break;
+      case 'V':
+        shortcut = 'CTRL+V';
+        preventDefault = true;
+        break;
       case ' ':
         preventDefault = true;
         shortcut = 'CTRL+SPACE';

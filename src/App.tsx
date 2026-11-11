@@ -138,6 +138,8 @@ const App: React.FC = () => {
   const {
     pasteTrackMode,
     setPasteTrackMode,
+    confirmPaste,
+    setConfirmPaste,
     pasteTrackPendingMode,
     setPasteTrackPendingMode,
     isPasteTrackModalOpen,
@@ -425,8 +427,13 @@ const App: React.FC = () => {
   const {
     trackClipboardError,
     setTrackClipboardError,
+    trackSelection,
+    handleExtendSelection,
     handleCopyTrack,
     handlePasteTrack,
+    handleCopyTrackShortcut,
+    handleCutTrackShortcut,
+    handlePasteTrackShortcut,
     handleInsertStep,
     handleDeleteStep,
     applyTranspose,
@@ -439,6 +446,7 @@ const App: React.FC = () => {
     parseBaseKeyString: parseBaseKey,
     updateSong,
     sharedCurrentLine,
+    setSharedCurrentLine,
     sequencerPatternIndex: sequencerState.currentPattern,
     setActiveSection,
     setTrackFocusRevision,
@@ -539,6 +547,9 @@ const App: React.FC = () => {
     handleNewInstrument: createNewInstrument,
     handleUndo: undo,
     handleRedo: redo,
+    handleCopyTrack: handleCopyTrackShortcut,
+    handleCutTrack: handleCutTrackShortcut,
+    handlePasteTrack: handlePasteTrackShortcut,
   });
 
   const handleLineChange = useCallback((lineIndex: number) => {
@@ -699,6 +710,8 @@ const App: React.FC = () => {
     setTrackBackgroundEnabled,
     pasteTrackMode,
     setPasteTrackMode,
+    confirmPaste,
+    setConfirmPaste,
     soundEngineId,
     setSoundEngineId,
   });
@@ -911,6 +924,8 @@ const App: React.FC = () => {
             onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
             onHardStopLivePreview={handleHardStopLivePreview}
             onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
+            trackSelection={trackSelection}
+            onExtendSelection={handleExtendSelection}
             trackBackgroundEnabled={trackBackgroundEnabled}
             onToggleTrackBackground={handleToggleTrackBackground}
             isDarkMode={isDarkMode}

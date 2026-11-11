@@ -426,7 +426,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         currentLine={5}
         patternLength={64}
@@ -456,7 +477,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         patternLength={0}
         onLineChange={onLineChange}
@@ -481,7 +523,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         setActiveSection={setActiveSection}
         currentColumn="note"
@@ -504,7 +567,28 @@ describe('TrackPanel', () => {
 
     const again = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         setActiveSection={setActiveSection}
         currentColumn="volume"
@@ -541,7 +625,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         onLineChange={onLineChange}
@@ -569,7 +674,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         onLineChange={onLineChange}
@@ -598,7 +724,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         onLineChange={onLineChange}
@@ -633,7 +780,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         currentColumn="note"
@@ -659,7 +827,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         currentColumn="note"
@@ -683,7 +872,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         currentColumn="note"
@@ -707,7 +917,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         currentColumn="note"
       />,
@@ -732,7 +963,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'piano' as NavigationSection}
         currentColumn="note"
       />,
@@ -945,7 +1197,28 @@ describe('TrackPanel', () => {
 
     const { container, rerender } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         currentColumn="note"
       />,
@@ -957,7 +1230,28 @@ describe('TrackPanel', () => {
 
       rerender(
         <TrackPanel
-          {...createPanelProps(pattern, instrument, null)}
+          {...{
+            trackId: 'A' as const,
+            setActiveSection: vi.fn(),
+            currentOctave: 4,
+            currentLine: 0,
+            patternLength: pattern.step.length,
+            onLineChange: vi.fn(),
+            pattern,
+            onPatternChange: vi.fn(),
+            ym2149: null,
+            currentInstrumentData: instrument,
+            instruments: [instrument],
+            trackBackgroundEnabled: true,
+            isTargetTrack: true,
+            onToggleLineFromCursor: vi.fn(),
+            onToggleLineFromStart: vi.fn(),
+            onToggleSongFromCursor: vi.fn(),
+            onToggleSongFromStart: vi.fn(),
+            currentColumn: 'note' as const,
+            setCurrentColumn: vi.fn(),
+            focusRevision: 0,
+          }}
           activeSection={'trackA' as NavigationSection}
           currentColumn="volume"
         />,
@@ -968,7 +1262,28 @@ describe('TrackPanel', () => {
 
       rerender(
         <TrackPanel
-          {...createPanelProps(pattern, instrument, null)}
+          {...{
+            trackId: 'A' as const,
+            setActiveSection: vi.fn(),
+            currentOctave: 4,
+            currentLine: 0,
+            patternLength: pattern.step.length,
+            onLineChange: vi.fn(),
+            pattern,
+            onPatternChange: vi.fn(),
+            ym2149: null,
+            currentInstrumentData: instrument,
+            instruments: [instrument],
+            trackBackgroundEnabled: true,
+            isTargetTrack: true,
+            onToggleLineFromCursor: vi.fn(),
+            onToggleLineFromStart: vi.fn(),
+            onToggleSongFromCursor: vi.fn(),
+            onToggleSongFromStart: vi.fn(),
+            currentColumn: 'note' as const,
+            setCurrentColumn: vi.fn(),
+            focusRevision: 0,
+          }}
           activeSection={'piano' as NavigationSection}
           currentColumn="note"
         />,
@@ -987,7 +1302,28 @@ describe('TrackPanel', () => {
 
     const { container } = render(
       <TrackPanel
-        {...createPanelProps(pattern, instrument, null)}
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
         activeSection={'trackA' as NavigationSection}
         onPatternChange={onPatternChange}
         currentColumn="note"
@@ -1001,6 +1337,108 @@ describe('TrackPanel', () => {
       expect(next.step[0]?.note).toEqual({ note: 'C', octave: 4, instrument: '' });
     } catch (error) {
       console.log('missing id mismatch', onPatternChange.mock.calls);
+      throw error;
+    }
+  });
+});
+
+describe('track selection', () => {
+  afterEach(() => cleanup());
+
+  it('routes Shift+Arrow keys to selection extension instead of plain movement', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+    const onLineChange = vi.fn();
+    const onExtendSelection = vi.fn();
+
+    const { container } = render(
+      <TrackPanel
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
+        activeSection={'trackA' as NavigationSection}
+        currentLine={5}
+        patternLength={64}
+        onLineChange={onLineChange}
+        onExtendSelection={onExtendSelection}
+      />,
+    );
+
+    const panel = container.querySelector('.track-panel') as HTMLElement;
+    fireEvent.keyDown(panel, { key: 'ArrowDown', shiftKey: true });
+    fireEvent.keyDown(panel, { key: 'ArrowUp', shiftKey: true });
+    fireEvent.keyDown(panel, { key: 'ArrowDown' });
+    try {
+      expect(onExtendSelection.mock.calls.map((call) => call[0])).toEqual([1, -1]);
+      expect(onLineChange).toHaveBeenCalledWith(6);
+      expect(onLineChange).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      console.log('selection keys mismatch', onExtendSelection.mock.calls);
+      throw error;
+    }
+  });
+
+  it('marks rows inside the selection range as selected', () => {
+    const pattern = createTestPattern();
+    const instrument = createTestInstrument();
+
+    const { container } = render(
+      <TrackPanel
+        {...{
+          trackId: 'A' as const,
+          setActiveSection: vi.fn(),
+          currentOctave: 4,
+          currentLine: 0,
+          patternLength: pattern.step.length,
+          onLineChange: vi.fn(),
+          pattern,
+          onPatternChange: vi.fn(),
+          ym2149: null,
+          currentInstrumentData: instrument,
+          instruments: [instrument],
+          trackBackgroundEnabled: true,
+          isTargetTrack: true,
+          onToggleLineFromCursor: vi.fn(),
+          onToggleLineFromStart: vi.fn(),
+          onToggleSongFromCursor: vi.fn(),
+          onToggleSongFromStart: vi.fn(),
+          currentColumn: 'note' as const,
+          setCurrentColumn: vi.fn(),
+          focusRevision: 0,
+        }}
+        activeSection={'trackA' as NavigationSection}
+        patternLength={64}
+        selection={{ start: 2, end: 4 }}
+      />,
+    );
+
+    const lines = container.querySelectorAll('.track-line');
+    try {
+      expect(lines[1].classList.contains('selected')).toBe(false);
+      expect(lines[2].classList.contains('selected')).toBe(true);
+      expect(lines[4].classList.contains('selected')).toBe(true);
+      expect(lines[5].classList.contains('selected')).toBe(false);
+    } catch (error) {
+      console.log('selection render mismatch', lines.length);
       throw error;
     }
   });

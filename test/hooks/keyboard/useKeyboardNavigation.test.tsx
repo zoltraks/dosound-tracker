@@ -2,9 +2,15 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useKeyboardNavigation } from '../../../src/hooks/keyboard/useKeyboardNavigation.ts';
 
-const pressKey = (key: string, ctrl: boolean, alt: boolean = false): KeyboardEvent => {
+const pressKey = (
+  key: string,
+  ctrl: boolean,
+  alt: boolean = false,
+  code?: string,
+): KeyboardEvent => {
   const event = new KeyboardEvent('keydown', {
     key,
+    code,
     ctrlKey: ctrl,
     altKey: alt,
     cancelable: true,
@@ -77,6 +83,19 @@ describe('useKeyboardNavigation', () => {
       pressKey('3', false, true);
     });
     expect(result.current.activeSection).toBe('trackC');
+  });
+
+  it('matches Alt+digit on macOS where Option emits symbol characters', () => {
+    const { result } = renderHook(() => useKeyboardNavigation());
+
+    act(() => {
+      pressKey('¡', false, true, 'Digit1');
+    });
+    expect(result.current.activeSection).toBe('trackA');
+    act(() => {
+      pressKey('™', false, true, 'Digit2');
+    });
+    expect(result.current.activeSection).toBe('trackB');
   });
 
   it('does not focus a track when Ctrl or Cmd is used instead of Alt', () => {

@@ -1,6 +1,6 @@
 # Clean Code Engineering Standards
 
-<!-- Version: 0.1.2 | Date: 2026-11-10 -->
+<!-- Version: 0.1.2 | Date: 2026-11-11 -->
 
 ## Purpose
 
@@ -67,9 +67,6 @@ Intentional duplication that exists to decouple is documented as such.
   demonstrated need, not a predicted one.
 - Build what the change record asks for - speculative generality and premature abstraction are
   refactoring anti-patterns, not foresight.
-- Removing a behavior removes its setup - configuration, initialization writes, and state
-  that exist only to serve that behavior leave with it. Vestigial setup outlives its
-  feature and reads as an active rule to the next reader.
 
 ## Naming And Functions
 
@@ -104,3 +101,11 @@ Silent catch is a defect.
 Code that resists a test resists reading - seams exist where tests need them,
 pure functions take their inputs as parameters,
 and text parsers stay testable against recorded fixtures.
+
+## Fed Patterns
+
+Material fed back from a consuming repository's evolved copy.
+
+- Removing a behavior removes its setup - configuration, initialization writes, and state
+  that exist only to serve that behavior leave with it. Vestigial setup outlives its
+  feature and reads as an active rule to the next reader.

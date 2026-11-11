@@ -140,7 +140,6 @@ describe('keyboardShortcutUtils', () => {
 
   it('returns null for unsupported shortcuts', () => {
     expect(matchKeyboardShortcut('X', false, false, false)).toBeNull();
-    expect(matchKeyboardShortcut('X', true, false, false)).toBeNull();
     expect(matchKeyboardShortcut('X', true, true, false)).toBeNull();
     expect(matchKeyboardShortcut('TAB', true, true, false)).toBeNull();
     expect(matchKeyboardShortcut('1', true, false, false)).toBeNull();
@@ -158,5 +157,27 @@ describe('isModifierChord', () => {
 
   it('reports a bare key as no chord', () => {
     expect(isModifierChord({ ctrlKey: false, metaKey: false, altKey: false })).toBe(false);
+  });
+});
+
+describe('track clipboard shortcuts', () => {
+  it('matches the ctrl clipboard chords', () => {
+    expect(matchKeyboardShortcut('C', true, false, false)).toEqual({
+      shortcut: 'CTRL+C',
+      preventDefault: true,
+    });
+    expect(matchKeyboardShortcut('X', true, false, false)).toEqual({
+      shortcut: 'CTRL+X',
+      preventDefault: true,
+    });
+    expect(matchKeyboardShortcut('V', true, false, false)).toEqual({
+      shortcut: 'CTRL+V',
+      preventDefault: true,
+    });
+  });
+
+  it('does not match the clipboard chords without ctrl', () => {
+    expect(matchKeyboardShortcut('C', false, false, false)).toBeNull();
+    expect(matchKeyboardShortcut('V', false, true, false)).toBeNull();
   });
 });

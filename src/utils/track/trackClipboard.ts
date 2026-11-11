@@ -24,12 +24,18 @@ export function generateClipboardData(
   pattern: Pattern,
   patternLength: number,
   formatNoteKey: (note: string, octave: number) => string,
+  range?: { start: number; end: number },
 ): string {
   const targetLength = patternLength || PATTERN_LENGTH;
   const rawLines = pattern.step || [];
   const steps: TrackClipboardStep[] = [];
 
-  for (let i = 0; i < targetLength; i++) {
+  const rangeStart = range ? Math.max(0, Math.min(range.start, range.end)) : 0;
+  const rangeEnd = range
+    ? Math.min(Math.max(range.start, range.end), targetLength - 1)
+    : targetLength - 1;
+
+  for (let i = rangeStart; i <= rangeEnd; i++) {
     const line: Step = rawLines[i] || { note: null };
 
     const cell = line.note;
@@ -70,7 +76,10 @@ export function generateClipboardData(
     }
   }
 
-  const trimmedSteps = steps.slice(0, lastNonSpace + 1);
+  // A ranged copy keeps its trailing empty rows - they are real content that
+  // clears the destination on paste, and the fragment length must match the
+  // selection size.
+  const trimmedSteps = range ? steps : steps.slice(0, lastNonSpace + 1);
   const compressedSteps: TrackClipboardStep[] = [];
 
   type RunType = 'none' | 'space' | 'volume-space';
@@ -167,6 +176,7 @@ export function applyClipboardToLines(
   mode: TrackPasteMode,
   patternLength: number,
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null,
+  startOffset = 0,
 ): Step[] {
   const targetLength = patternLength || PATTERN_LENGTH;
 
@@ -251,13 +261,15 @@ export function applyClipboardToLines(
   for (let i = 0; i < targetLength; i++) {
     const baseLine = existingLines[i] || { note: null };
 
-    const rawStep = i < steps.length ? steps[i] : undefined;
+    const rawStep = i >= startOffset ? steps[i - startOffset] : undefined;
 
     if (mode === 'replace') {
       if (rawStep && typeof rawStep === 'object') {
         newLines.push(applyClipboardStepToLine(baseLine, rawStep, i));
-      } else {
+      } else if (startOffset === 0) {
         newLines.push({ ...baseLine, note: null, volume: undefined });
+      } else {
+        newLines.push({ ...baseLine });
       }
     } else if (mode === 'overwriteAll') {
       if (!rawStep || isStepEmpty(rawStep)) {

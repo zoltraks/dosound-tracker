@@ -25,6 +25,7 @@ describe('settingsState', () => {
     localStorage.setItem(StorageKeys.STARTUP_TONE, 'off');
     localStorage.setItem(StorageKeys.RESTORE_CURSOR, 'off');
     localStorage.setItem(StorageKeys.RESTORE_VIEW, 'off');
+    localStorage.setItem(StorageKeys.PASTE_CONFIRM, 'on');
     localStorage.setItem(StorageKeys.SOUND_ENGINE, 'ayumi');
 
     const settings = loadSettings();
@@ -36,7 +37,12 @@ describe('settingsState', () => {
           trackBackground: false,
           startupTone: false,
         },
-        editor: { restoreCursor: false, restoreView: false, pasteTrackMode: 'overwriteAll' },
+        editor: {
+          restoreCursor: false,
+          restoreView: false,
+          pasteTrackMode: 'overwriteAll',
+          confirmPaste: true,
+        },
         sound: { engine: 'ayumi' },
       });
     } catch (error) {
@@ -83,13 +89,19 @@ describe('settingsState', () => {
         trackBackground: true,
         startupTone: false,
       },
-      editor: { restoreCursor: true, restoreView: false, pasteTrackMode: 'replace' },
+      editor: {
+        restoreCursor: true,
+        restoreView: false,
+        pasteTrackMode: 'replace',
+        confirmPaste: false,
+      },
       sound: { engine: 'ayumi' },
     });
     try {
       expect(localStorage.getItem(StorageKeys.STARTUP_TONE)).toBe('off');
       expect(localStorage.getItem(StorageKeys.RESTORE_CURSOR)).toBe('on');
       expect(localStorage.getItem(StorageKeys.RESTORE_VIEW)).toBe('off');
+      expect(localStorage.getItem(StorageKeys.PASTE_CONFIRM)).toBe('off');
       expect(localStorage.getItem(StorageKeys.SOUND_ENGINE)).toBe('ayumi');
     } catch (error) {
       console.log('flag keys:', localStorage.getItem(StorageKeys.STARTUP_TONE));
@@ -122,6 +134,7 @@ describe('settingsState', () => {
         restoreCursor: false,
         restoreView: false,
         pasteTrackMode: 'overwriteEmpty' as const,
+        confirmPaste: true,
       },
       sound: { engine: 'ayumi' as const },
     };

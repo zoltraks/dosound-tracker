@@ -5,6 +5,7 @@ import type { Pattern, Instrument, Song } from '../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../constants/music.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import { TrackPanel } from './TrackPanel.tsx';
+import { selectionRangeForTrack, type TrackSelection } from '../utils/track/trackSelection.ts';
 import type { SoundEngine } from '../synth/soundEngine.ts';
 import RainbowModeLight from '../assets/svg/rainbow-mode-light.svg';
 import RainbowModeDark from '../assets/svg/rainbow-mode-dark.svg';
@@ -40,6 +41,8 @@ interface TrackerSectionProps {
   onPreviewMidiNoteOff: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
   onRegisterTrackStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  trackSelection: TrackSelection | null;
+  onExtendSelection: (trackId: 'A' | 'B' | 'C', delta: number) => void;
   trackBackgroundEnabled: boolean;
   onToggleTrackBackground: () => void;
   isDarkMode: boolean;
@@ -69,6 +72,8 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   onPreviewMidiNoteOff,
   onHardStopLivePreview,
   onRegisterTrackStopPreview,
+  trackSelection,
+  onExtendSelection,
   trackBackgroundEnabled,
   onToggleTrackBackground,
   isDarkMode,
@@ -166,6 +171,8 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 onPreviewMidiNoteOff={onPreviewMidiNoteOff}
                 onHardStopLivePreview={onHardStopLivePreview}
                 onRegisterStopPreview={onRegisterTrackStopPreview}
+                selection={selectionRangeForTrack(trackSelection, trackId, patternLength)}
+                onExtendSelection={(delta) => onExtendSelection(trackId, delta)}
                 tickIntervalMs={tickIntervalMs}
               />
             ))}

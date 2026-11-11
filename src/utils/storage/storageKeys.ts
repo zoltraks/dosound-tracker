@@ -33,6 +33,8 @@ export class StorageKeys {
   static readonly RESTORE_CURSOR = 'dosound-tracker-restore-cursor' as const;
   static readonly RESTORE_VIEW = 'dosound-tracker-restore-view' as const;
   static readonly SOUND_ENGINE = 'dosound-tracker-sound-engine' as const;
+  static readonly TRACK_SELECTION = 'dosound-tracker-track-selection' as const;
+  static readonly PASTE_CONFIRM = 'dosound-tracker-paste-confirm' as const;
 
   static readonly UI_STATE = 'dosound-tracker-ui-state' as const;
 

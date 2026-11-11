@@ -329,6 +329,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       ))}
                     </select>
                   </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-confirm-paste" className="settings-label">
+                      Confirm paste overwrite
+                    </label>
+                    <input
+                      id="settings-confirm-paste"
+                      type="checkbox"
+                      checked={draft.editor.confirmPaste}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          editor: { ...draft.editor, confirmPaste: e.target.checked },
+                        })
+                      }
+                    />
+                  </div>
                 </>
               )}
 

@@ -23,6 +23,7 @@ export interface SettingsValues {
     restoreCursor: boolean;
     restoreView: boolean;
     pasteTrackMode: TrackPasteMode;
+    confirmPaste: boolean;
   };
   sound: {
     engine: SoundEngineId;
@@ -50,6 +51,7 @@ export const DEFAULT_SETTINGS: SettingsValues = {
     restoreCursor: true,
     restoreView: true,
     pasteTrackMode: 'replace',
+    confirmPaste: false,
   },
   sound: {
     engine: DEFAULT_SOUND_ENGINE_ID,

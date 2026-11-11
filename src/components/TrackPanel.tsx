@@ -61,6 +61,8 @@ interface TrackPanelProps {
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
   onRegisterStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  selection?: { start: number; end: number } | null;
+  onExtendSelection?: (delta: number) => void;
   tickIntervalMs?: number;
 }
 
@@ -91,6 +93,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onPreviewMidiNoteOff,
     onHardStopLivePreview,
     onRegisterStopPreview,
+    selection,
+    onExtendSelection,
     tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
   } = props;
 
@@ -236,12 +240,23 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         return;
       }
 
+      const isSelectionModifier =
+        event.shiftKey && !event.ctrlKey && !event.metaKey && !event.altKey;
+
       if (key === 'ARROWUP') {
         event.preventDefault();
-        onLineChange(stepLineIndex(currentLine, patternLength, -1));
+        if (isSelectionModifier && onExtendSelection) {
+          onExtendSelection(-1);
+        } else {
+          onLineChange(stepLineIndex(currentLine, patternLength, -1));
+        }
       } else if (key === 'ARROWDOWN') {
         event.preventDefault();
-        onLineChange(stepLineIndex(currentLine, patternLength, 1));
+        if (isSelectionModifier && onExtendSelection) {
+          onExtendSelection(1);
+        } else {
+          onLineChange(stepLineIndex(currentLine, patternLength, 1));
+        }
       } else if (key === 'PAGEUP') {
         event.preventDefault();
         const step = 16;
@@ -408,6 +423,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       currentColumn,
       setCurrentColumn,
       setActiveSection,
+      onExtendSelection,
     ],
   );
 
@@ -497,6 +513,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             const isCurrentLine = lineIndex === currentLine && isActive;
             const volumeIsActive = isCurrentLine && currentColumn === 'volume';
             const noteIsActive = isCurrentLine && currentColumn === 'note';
+            const isSelected =
+              selection != null && lineIndex >= selection.start && lineIndex <= selection.end;
 
             const instrumentColor = getInstrumentColorForNote(noteData, instrumentColorMap);
 
@@ -507,6 +525,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
                 noteData={noteData}
                 volume={volume}
                 isCurrent={lineIndex === currentLine}
+                isSelected={isSelected}
                 instrumentColor={instrumentColor}
                 noteIsActive={noteIsActive}
                 volumeIsActive={volumeIsActive}

@@ -118,6 +118,8 @@
 
   --track-inactive-bg: #324569;
   --track-active-bg: #182833;
+  --track-selection-bg: #3f3f6e;
+  --track-selection-current-bg: #574e96;
   --track-active-border: #8678b9;
 
   /* Shadows and Effects */
@@ -284,6 +286,8 @@
 
   --track-inactive-bg: #fef3c7;
   --track-active-bg: #dfd7b4;
+  --track-selection-bg: #b9c8ee;
+  --track-selection-current-bg: #93a9dd;
   --track-active-border: #f59e0b;
 
   /* Light mode shadows */
@@ -443,6 +447,8 @@
 
   --track-inactive-bg: #1a2440;
   --track-active-bg: #001a1a;
+  --track-selection-bg: #0d3314;
+  --track-selection-current-bg: #145a1e;
   --track-active-border: #00ffff;
 
   /* Contrast mode shadows stay dark - borders carry the separation */
@@ -2158,6 +2164,37 @@ body {
     in srgb,
     var(--track-active-bg) 60%,
     var(--track-line-color, var(--track-active-bg)) 40%
+  );
+}
+
+/* Row range selected with SHIFT+ARROWUP/SHIFT+ARROWDOWN */
+.track-line.selected {
+  background-color: var(--track-selection-bg);
+}
+
+.track-panel.track-colored .track-line.selected {
+  background-color: color-mix(
+    in srgb,
+    var(--track-selection-bg) 70%,
+    var(--track-line-color, var(--track-selection-bg)) 30%
+  );
+}
+
+/* The cursor row inside the selection keeps its own tint */
+.track-line.current.selected {
+  background-color: var(--track-selection-current-bg);
+}
+
+.track-panel.active .track-line.current.selected {
+  background-color: var(--track-selection-current-bg);
+}
+
+.track-panel.track-colored .track-line.current.selected,
+.track-panel.track-colored.active .track-line.current.selected {
+  background-color: color-mix(
+    in srgb,
+    var(--track-selection-current-bg) 60%,
+    var(--track-line-color, var(--track-selection-current-bg)) 40%
   );
 }
 

@@ -623,6 +623,7 @@ settings:
     restoreCursor: true # restore the editor cursor on reload
     restoreView: true # restore the open view on reload
     pasteTrackMode: 'replace' # 'replace', 'overwriteAll', or 'overwriteEmpty'
+    confirmPaste: false # confirm before fragment pastes overwrite data
   sound:
     engine: 'internal' # 'internal' or 'ayumi'
 ```

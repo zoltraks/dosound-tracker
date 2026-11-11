@@ -9,5 +9,6 @@ settings:
     restoreCursor: true
     restoreView: true
     pasteTrackMode: replace
+    confirmPaste: false
   sound:
     engine: internal

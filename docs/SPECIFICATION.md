@@ -287,6 +287,19 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - ALT+ENTER inside the playlist pattern-id input finishes editing and focuses the track
 - Section editing keys require bare keys - an event carrying Ctrl, Cmd, or Alt never mutates envelope or playlist data, and no section handler swallows a global chord
 
+**Selection and clipboard shortcuts:**
+
+- SHIFT+ARROWUP extends the track selection one row upward and moves the cursor with it
+- SHIFT+ARROWDOWN extends the track selection one row downward and moves the cursor with it
+- The selection covers the rows between the anchor and the cursor, inclusive of the anchor and exclusive of the cursor row - the first step selects only the origin row
+- Extension continues an existing selection only while the cursor sits on its moving edge - from anywhere else it anchors a fresh selection at the cursor
+- Collapsing the range back onto its anchor clears the selection - extending back past the origin row is the way to drop it
+- CTRL+C copies the selected row range to the clipboard - with no selection it copies the whole track like COPY TRACK
+- A fragment copy keeps its trailing empty rows so the pasted fragment spans the full selection size; the whole-track copy trims them as before
+- CTRL+X cuts the selected row range to the clipboard, clears the covered cells, and drops the selection
+- CTRL+V pastes the clipboard fragment at the cursor row, clipped at the pattern length, then moves the cursor one row below the last pasted row - wrapping to the first row when the fragment reaches the pattern end
+- The clipboard bindings fire only while a track section is the active section
+
 **Playback shortcuts:**
 
 - F2 plays the current line
@@ -357,6 +370,8 @@ Additional cursor state is persisted at its source of truth to avoid duplicate s
 
 Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type, and the per-instrument octave selection under `INSTRUMENT_OCTAVES` through `src/hooks/instrument/useInstrumentOctaves.ts`. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
 
+The track selection is stored under `TRACK_SELECTION` as a JSON object carrying the track id and the anchor and head rows. It is written whenever the selection changes, restored on startup normalized to a start and end range clamped to the current pattern length, and stays bound to the track where it was created - one selection exists at a time.
+
 **Snapshot mirror**
 
 Every scheduled save also mirrors the song and instrument payloads into an IndexedDB database named `dosound-tracker-backup`, store `snapshots`, through `src/utils/storage/persistenceMirror.ts`. The mirror write happens inside the same idle slot as the local storage write, is fully asynchronous, and degrades to a logged warning when IndexedDB is unavailable, so autosave latency and UX are unchanged.
@@ -377,11 +392,11 @@ Two destructive paths drop the mirror together with local storage: the legacy-sc
 
 The application restores its state on page reload - persisted state, including the open view, survives exactly. The `UI_STATE` snapshot records the open restorable modal in `openModal` and, for the settings modal, the `settingsView` member holding the active category, the uncommitted draft, the focused control's element id, the property-pane scroll offset, and the reset-confirmation state. `updateSettingsView` writes the member whenever either changes while the modal is open, and the settings modal clears it on both close paths.
 
-Three keys hold the settings toggles introduced with the modal: `STARTUP_TONE`, `RESTORE_CURSOR`, and `RESTORE_VIEW`, each storing `'on'` or `'off'` and defaulting to on. `STARTUP_TONE` gates the startup test tone. `RESTORE_VIEW` gates the whole view-snapshot restore, including the window scroll. `RESTORE_CURSOR` gates the application of the persisted editor cursor - cursor recording continues regardless.
+Three keys hold the settings toggles introduced with the modal: `STARTUP_TONE`, `RESTORE_CURSOR`, and `RESTORE_VIEW`, each storing `'on'` or `'off'` and defaulting to on. `STARTUP_TONE` gates the startup test tone. `RESTORE_VIEW` gates the whole view-snapshot restore, including the window scroll. `RESTORE_CURSOR` gates the application of the persisted editor cursor - cursor recording continues regardless. `PASTE_CONFIRM` gates the paste-mode confirmation modal for fragment pastes over existing data and defaults to `'off'` - paste confirmations apply the stored paste-track mode directly.
 
 Content modals size by layout: on the desktop layout the settings dialog takes only the height its controls need, capped at 80% of the viewport and centered inside the backdrop, while in the mobile layout the sized modals - settings, text display, MIDI, download - expand to fill the screen and keep their own internal scrolling regions.
 
-The settings modal's committed values persist under the per-key storage: `THEME`, `TEXT_SCALE`, `TRACK_BACKGROUND_ENABLED`, `PASTE_TRACK_MODE`, and `SOUND_ENGINE` cover the reused options. The `SOUND` category holds the engine selector (`Internal`, `Ayumi`); committing it applies the engine swap live through `useAudioSetup`, silencing and disposing the previous engine without a reload.
+The settings modal's committed values persist under the per-key storage: `THEME`, `TEXT_SCALE`, `TRACK_BACKGROUND_ENABLED`, `PASTE_TRACK_MODE`, `PASTE_CONFIRM`, and `SOUND_ENGINE` cover the reused options. The `SOUND` category holds the engine selector (`Internal`, `Ayumi`); committing it applies the engine swap live through `useAudioSetup`, silencing and disposing the previous engine without a reload.
 
 **Theme and text scale**
 

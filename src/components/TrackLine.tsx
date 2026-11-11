@@ -10,6 +10,7 @@ interface TrackLineProps {
   noteData: Note | null;
   volume: number | null | undefined;
   isCurrent: boolean;
+  isSelected?: boolean;
   instrumentColor: string | null;
   noteIsActive: boolean;
   volumeIsActive: boolean;
@@ -22,6 +23,7 @@ export const TrackLine: React.FC<TrackLineProps> = React.memo(function TrackLine
   noteData,
   volume,
   isCurrent,
+  isSelected,
   instrumentColor,
   noteIsActive,
   volumeIsActive,
@@ -48,7 +50,7 @@ export const TrackLine: React.FC<TrackLineProps> = React.memo(function TrackLine
       : Formatter.hex(clampVolumeNibble(volume), { padWidth: 0 });
 
   const lineClassName =
-    `${getTrackLineClass(lineIndex, isCurrent)}${instrumentColor ? ' track-line-colored' : ''}`.trim();
+    `${getTrackLineClass(lineIndex, isCurrent)}${isSelected ? ' selected' : ''}${instrumentColor ? ' track-line-colored' : ''}`.trim();
   const lineStyle = instrumentColor
     ? ({ ['--track-line-color' as string]: instrumentColor } as CSSProperties)
     : undefined;

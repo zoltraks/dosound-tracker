@@ -98,7 +98,14 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
 
   const handleKeyDown = useCallback(
     (event: KeyboardEvent) => {
-      const key = event.key.toUpperCase();
+      // Option+digit on macOS emits symbol characters (¡, £, ﬁ, ﬂ, •) - read
+      // the physical digit from event.code so the ALT+digit bindings fire on
+      // every platform.
+      const code = (event.code || '').toUpperCase();
+      const key =
+        event.altKey && (code.startsWith('DIGIT') || code.startsWith('NUMPAD'))
+          ? code.slice(-1)
+          : event.key.toUpperCase();
       const target = event.target as HTMLElement | null;
       const tagName = target?.tagName;
       const isInPianoKeyboard = target?.closest('.piano-keyboard') != null;

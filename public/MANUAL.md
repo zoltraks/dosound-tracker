@@ -246,6 +246,8 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - **ALT + 1 / ALT + 2 / ALT + 3** to focus tracks A, B, and C (OPTION on macOS)
 - **CTRL + SPACE** to focus the on-screen piano, and again to return to the previous section
 - **SHIFT + SPACE** to write a note-off, or to clear a position that already holds one
+- **SHIFT + UP / SHIFT + DOWN** to select a row range in the focused track
+- **CTRL + C** to copy the selected fragment or the whole track, **CTRL + X** to cut the fragment, **CTRL + V** to paste at the cursor row
 - **ENTER** for editing
 - **ESCAPE** for cancel
 - **F2** plays the current line, **ALT + 5** plays the song from the start of the current line, **ALT + 6** plays the current line, **ALT + 8** or **ESCAPE** stops playback
@@ -469,7 +471,7 @@ Application supports several export formats. Each format can target the full son
 
 - Opened with the gear button in the header panel
 - **GENERAL**: theme selection, the High Contrast variant, text size scaling (100%, 125%, 150%), and the startup test tone
-- **EDITOR**: track backgrounds, cursor and view restore, default paste mode
+- **EDITOR**: track backgrounds, cursor and view restore, default paste mode, paste confirmation
 - **SOUND**: sound engine selection - **Internal** or the precise **Ayumi** emulation core
 - OK applies the changes immediately, RESET restores defaults, and SAVE/LOAD exchange a settings file
 

@@ -20,6 +20,8 @@ export interface UseSettingsSessionParams {
   setTrackBackgroundEnabled: Dispatch<SetStateAction<boolean>>;
   pasteTrackMode: TrackPasteMode;
   setPasteTrackMode: (mode: TrackPasteMode) => void;
+  confirmPaste: boolean;
+  setConfirmPaste: (confirm: boolean) => void;
   soundEngineId: SoundEngineId;
   setSoundEngineId: Dispatch<SetStateAction<SoundEngineId>>;
 }
@@ -47,6 +49,8 @@ export function useSettingsSession({
   setTrackBackgroundEnabled,
   pasteTrackMode,
   setPasteTrackMode,
+  confirmPaste,
+  setConfirmPaste,
   soundEngineId,
   setSoundEngineId,
 }: UseSettingsSessionParams): UseSettingsSessionResult {
@@ -56,7 +60,15 @@ export function useSettingsSession({
     // loadSettings re-reads storage whenever a committed value or the open
     // flag changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [theme, textScale, trackBackgroundEnabled, pasteTrackMode, soundEngineId, isSettingsOpen],
+    [
+      theme,
+      textScale,
+      trackBackgroundEnabled,
+      pasteTrackMode,
+      confirmPaste,
+      soundEngineId,
+      isSettingsOpen,
+    ],
   );
 
   const {
@@ -91,6 +103,7 @@ export function useSettingsSession({
     setTrackBackgroundEnabled(next.general.trackBackground);
     writeSettingKeys(next);
     setPasteTrackMode(next.editor.pasteTrackMode);
+    setConfirmPaste(next.editor.confirmPaste);
     setSoundEngineId(next.sound.engine);
     closeSettingsSession(next);
     setIsSettingsOpen(false);

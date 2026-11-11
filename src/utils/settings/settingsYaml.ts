@@ -25,6 +25,7 @@ export const buildSettingsYaml = (settings: SettingsValues): string => {
         restoreCursor: settings.editor.restoreCursor,
         restoreView: settings.editor.restoreView,
         pasteTrackMode: settings.editor.pasteTrackMode,
+        confirmPaste: settings.editor.confirmPaste,
       },
       sound: {
         engine: settings.sound.engine,

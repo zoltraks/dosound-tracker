@@ -82,7 +82,12 @@ describe('SettingsModal', () => {
         trackBackground: false,
         startupTone: false,
       },
-      editor: { restoreCursor: false, restoreView: false, pasteTrackMode: 'overwriteAll' },
+      editor: {
+        restoreCursor: false,
+        restoreView: false,
+        pasteTrackMode: 'overwriteAll',
+        confirmPaste: false,
+      },
       sound: { engine: 'internal' },
     };
     const onDraftChange = vi.fn();

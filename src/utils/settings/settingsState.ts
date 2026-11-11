@@ -69,6 +69,8 @@ export const normalizeSettings = (
       pasteTrackMode: PASTE_MODES.includes(editor.pasteTrackMode as TrackPasteMode)
         ? (editor.pasteTrackMode as TrackPasteMode)
         : base.editor.pasteTrackMode,
+      confirmPaste:
+        typeof editor.confirmPaste === 'boolean' ? editor.confirmPaste : base.editor.confirmPaste,
     },
     sound: {
       engine: normalizeSoundEngineId(sound.engine, base.sound.engine),
@@ -118,6 +120,7 @@ export const loadSettings = (): SettingsValues => {
       restoreCursor: readFlag(StorageKeys.RESTORE_CURSOR, DEFAULT_SETTINGS.editor.restoreCursor),
       restoreView: readFlag(StorageKeys.RESTORE_VIEW, DEFAULT_SETTINGS.editor.restoreView),
       pasteTrackMode,
+      confirmPaste: readFlag(StorageKeys.PASTE_CONFIRM, DEFAULT_SETTINGS.editor.confirmPaste),
     },
     sound: { engine: loadSoundEngineId() },
   };
@@ -138,6 +141,10 @@ export const writeSettingKeys = (settings: SettingsValues): void => {
     window.localStorage.setItem(
       StorageKeys.RESTORE_VIEW,
       settings.editor.restoreView ? 'on' : 'off',
+    );
+    window.localStorage.setItem(
+      StorageKeys.PASTE_CONFIRM,
+      settings.editor.confirmPaste ? 'on' : 'off',
     );
     window.localStorage.setItem(StorageKeys.SOUND_ENGINE, settings.sound.engine);
   } catch {
