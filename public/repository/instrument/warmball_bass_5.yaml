@@ -1,0 +1,7 @@
+instrument:
+  name: 'Warmball Bass 5'
+  type: dosound
+  version: 1
+  base: 'C-2'
+  color: '#99f'
+  volume: [11, 11, 11, 11, 7, 0]

@@ -273,12 +273,14 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - TAB cycles to the next UI section
 - SHIFT+TAB cycles to the previous UI section
 - ARROW keys move the cursor between lines and columns in the pattern editor
+- CTRL+1 focuses track A, CTRL+2 focuses track B, CTRL+3 focuses track C
+- CTRL+SPACE focuses the on-screen piano, or returns focus to the section that was active before the piano
 
 **Editing shortcuts:**
 
 - SPACE clears the current cursor position
 - BACKSPACE clears the current cursor position
-- CTRL+SPACE inserts a note-off event
+- SHIFT+SPACE inserts a note-off event, or clears the position when it already holds a note-off
 - CTRL+Minus selects the previous instrument
 - CTRL+Plus selects the next instrument
 
@@ -289,8 +291,12 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - CTRL+6 plays the current line
 - CTRL+8 stops playback
 - ESC stops playback
-- ENTER in a track plays the current line from the cursor row and toggles playback, restoring the cursor on stop
-- CTRL+ENTER in a track plays the current line from its first row and toggles playback, restoring the cursor on stop
+- ENTER in a track or the piano plays the current line from the cursor row and toggles playback
+- CTRL+ENTER in a track or the piano plays the current line from its first row and toggles playback
+- SHIFT+ENTER in a track or the piano plays the song from the cursor row and toggles playback
+- CTRL+SHIFT+ENTER in a track or the piano plays the song from its first row and toggles playback
+- Pressing an Enter binding while playback is running stops playback
+- Playback started with an Enter binding restores the playlist position and the track row held before playback started when it stops, whichever control stops it
 
 **File operation shortcuts:**
 

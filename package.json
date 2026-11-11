@@ -147,5 +147,9 @@
     "app-builder-lib": {
       "minimatch": "^11.0.5"
     }
+  },
+  "allowScripts": {
+    "electron-winstaller": false,
+    "fsevents": false
   }
 }

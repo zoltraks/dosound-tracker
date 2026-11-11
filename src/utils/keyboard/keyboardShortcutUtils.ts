@@ -46,6 +46,18 @@ export function matchKeyboardShortcut(
         shortcut = 'CTRL+I';
         preventDefault = true;
         break;
+      case '1':
+        shortcut = 'CTRL+1';
+        preventDefault = true;
+        break;
+      case '2':
+        shortcut = 'CTRL+2';
+        preventDefault = true;
+        break;
+      case '3':
+        shortcut = 'CTRL+3';
+        preventDefault = true;
+        break;
       case '5':
         shortcut = 'CTRL+5';
         break;
@@ -74,6 +86,9 @@ export function matchKeyboardShortcut(
   if (shift) {
     if (keyUpper === 'TAB') {
       return { shortcut: 'SHIFT+TAB', preventDefault: true };
+    }
+    if (keyUpper === ' ') {
+      return { shortcut: 'SHIFT+SPACE', preventDefault: true };
     }
 
     return null;

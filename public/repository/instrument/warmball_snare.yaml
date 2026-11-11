@@ -1,0 +1,10 @@
+instrument:
+  name: 'Warmball Snare'
+  type: dosound
+  version: 1
+  base: 'A-2'
+  octave: 2
+  color: '#e66'
+  volume: [11, 15, 13, 10, 9, 8, 6, 5, 0]
+  noise: [9, 0, 0, 8, 6, 4, 3, 2, 0]
+  mode: [1, 0, 1, 1, 1, 1, 1, 1, 0]

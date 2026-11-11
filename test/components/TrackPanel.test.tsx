@@ -61,6 +61,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={vi.fn()}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -101,6 +103,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={vi.fn()}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -142,6 +146,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={vi.fn()}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -185,6 +191,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={vi.fn()}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="volume"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -229,6 +237,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={vi.fn()}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -272,6 +282,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={vi.fn()}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={setCurrentColumn}
         focusRevision={0}
@@ -311,6 +323,8 @@ describe('TrackPanel', () => {
         isTargetTrack={true}
         onToggleLineFromCursor={handleToggleLineFromCursor}
         onToggleLineFromStart={handleToggleLineFromStart}
+        onToggleSongFromCursor={vi.fn()}
+        onToggleSongFromStart={vi.fn()}
         currentColumn="note"
         setCurrentColumn={vi.fn()}
         focusRevision={0}
@@ -353,6 +367,8 @@ describe('TrackPanel', () => {
     isTargetTrack: true,
     onToggleLineFromCursor: vi.fn(),
     onToggleLineFromStart: vi.fn(),
+    onToggleSongFromCursor: vi.fn(),
+    onToggleSongFromStart: vi.fn(),
     currentColumn: 'note' as const,
     setCurrentColumn: vi.fn(),
     focusRevision: 0,
@@ -574,7 +590,7 @@ describe('TrackPanel', () => {
     }
   });
 
-  it('writes a note-off with Ctrl+Space and a plain dash', () => {
+  it('writes a note-off with Shift+Space and a plain dash', () => {
     const pattern = createTestPattern();
     const instrument = createTestInstrument();
     const onPatternChange = vi.fn();
@@ -591,12 +607,12 @@ describe('TrackPanel', () => {
     );
 
     const panel = container.querySelector('.track-panel') as HTMLElement;
-    fireEvent.keyDown(panel, { key: ' ', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: ' ', shiftKey: true });
     try {
       const next = onPatternChange.mock.calls[0]?.[0] as Pattern;
       expect(next.step[0]?.note).toEqual({ note: '===', octave: 0, instrument: '00' });
     } catch (error) {
-      console.log('ctrl space mismatch', onPatternChange.mock.calls);
+      console.log('shift space mismatch', onPatternChange.mock.calls);
       throw error;
     }
     fireEvent.keyDown(panel, { key: '-' });
@@ -755,7 +771,7 @@ describe('TrackPanel', () => {
     }
     fireEvent.keyDown(panel, { key: 'Delete' });
     fireEvent.keyDown(panel, { key: ' ' });
-    fireEvent.keyDown(panel, { key: ' ', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: ' ', shiftKey: true });
     fireEvent.keyDown(panel, { key: '-' });
     fireEvent.keyDown(panel, { key: 'z' });
     try {

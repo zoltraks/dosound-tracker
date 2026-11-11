@@ -48,6 +48,8 @@ const renderPanel = (overrides: Record<string, unknown> = {}) => {
     isTargetTrack: true,
     onToggleLineFromCursor: vi.fn(),
     onToggleLineFromStart: vi.fn(),
+    onToggleSongFromCursor: vi.fn(),
+    onToggleSongFromStart: vi.fn(),
     currentColumn: 'note' as const,
     setCurrentColumn,
     focusRevision: 0,
@@ -178,15 +180,39 @@ describe('TrackPanel editing', () => {
     }
   });
 
-  it('Ctrl+Space writes a rest without advancing', () => {
+  it('Shift+Space writes a rest without advancing', () => {
     const { panel, onPatternChange, onLineChange } = renderPanel();
     try {
-      fireEvent.keyDown(panel, { key: ' ', ctrlKey: true });
+      fireEvent.keyDown(panel, { key: ' ', shiftKey: true });
       const updated = onPatternChange.mock.calls[0][0] as Pattern;
       expect(updated.step[0].note?.note).toBe('===');
       expect(onLineChange).not.toHaveBeenCalled();
     } catch (error) {
-      console.log('ctrl-space mismatch');
+      console.log('shift-space mismatch');
+      throw error;
+    }
+  });
+
+  it('Shift+Space clears a position that already holds a note-off', () => {
+    const offPattern: Pattern = {
+      id: '00',
+      name: 'P',
+      step: [
+        { note: { note: '===', octave: 0, instrument: '00' }, volume: 9 },
+        { note: null, volume: null },
+        { note: null, volume: null },
+        { note: null, volume: null },
+      ],
+    };
+    const { panel, onPatternChange, onLineChange } = renderPanel({ pattern: offPattern });
+    try {
+      fireEvent.keyDown(panel, { key: ' ', shiftKey: true });
+      const cleared = onPatternChange.mock.calls[0][0] as Pattern;
+      expect(cleared.step[0].note).toBeNull();
+      expect(cleared.step[0].volume).toBeUndefined();
+      expect(onLineChange).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('note-off toggle mismatch', onPatternChange.mock.calls);
       throw error;
     }
   });

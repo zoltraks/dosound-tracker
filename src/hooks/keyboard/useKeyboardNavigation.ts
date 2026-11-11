@@ -14,6 +14,7 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
   );
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
+  const nonPianoSectionRef = useRef<NavigationSection>('octave');
   const navigationSuspendedRef = useRef<boolean>(isNavigationSuspended);
 
   useEffect(() => {
@@ -24,6 +25,9 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
     setActiveSectionInternal(section);
     if (section === 'trackA' || section === 'trackB' || section === 'trackC') {
       setLastTrackSection(section);
+    }
+    if (section !== 'piano') {
+      nonPianoSectionRef.current = section;
     }
   }, []);
 
@@ -68,6 +72,18 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
         case 'previousSection':
           navigateToPrevious();
           break;
+        case 'focusTrackA':
+          setActiveSection('trackA');
+          break;
+        case 'focusTrackB':
+          setActiveSection('trackB');
+          break;
+        case 'focusTrackC':
+          setActiveSection('trackC');
+          break;
+        case 'togglePianoFocus':
+          setActiveSection(activeSection === 'piano' ? nonPianoSectionRef.current : 'piano');
+          break;
         default: {
           const callback = callbacksRef.current[activeSection];
           if (callback) {
@@ -77,7 +93,7 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
         }
       }
     },
-    [activeSection, navigateToNext, navigateToPrevious],
+    [activeSection, navigateToNext, navigateToPrevious, setActiveSection],
   );
 
   const handleKeyDown = useCallback(

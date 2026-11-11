@@ -46,6 +46,8 @@ interface TrackPanelProps {
   isTargetTrack: boolean;
   onToggleLineFromCursor: (lineIndex: number) => void;
   onToggleLineFromStart: (lineIndex: number) => void;
+  onToggleSongFromCursor: (lineIndex: number) => void;
+  onToggleSongFromStart: (lineIndex: number) => void;
   currentColumn: 'note' | 'volume';
   setCurrentColumn: (column: 'note' | 'volume') => void;
   focusRevision: number;
@@ -79,6 +81,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     isTargetTrack,
     onToggleLineFromCursor,
     onToggleLineFromStart,
+    onToggleSongFromCursor,
+    onToggleSongFromStart,
     currentColumn,
     setCurrentColumn,
     focusRevision,
@@ -272,7 +276,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         }
       } else if (key === 'ENTER') {
         event.preventDefault();
-        if (event.ctrlKey) {
+        if (event.ctrlKey && event.shiftKey) {
+          onToggleSongFromStart(currentLine);
+        } else if (event.shiftKey) {
+          onToggleSongFromCursor(currentLine);
+        } else if (event.ctrlKey) {
           onToggleLineFromStart(currentLine);
         } else {
           onToggleLineFromCursor(currentLine);
@@ -290,17 +298,20 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         });
 
         onPatternChange(newPattern);
-      } else if (event.ctrlKey && key === ' ') {
+      } else if (event.shiftKey && !event.ctrlKey && !event.metaKey && key === ' ') {
         event.preventDefault();
-        // Note off (set to rest)
+        // Note off (set to rest); pressed on a note-off, clears the position
         if (pattern) {
           const noteOff: Note = createNoteOff();
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
+            if (step.note?.note === '===') {
+              return { ...step, note: null, volume: undefined };
+            }
             return { ...step, note: noteOff };
           });
           onPatternChange(newPattern);
         }
-      } else if (key === ' ') {
+      } else if (!event.ctrlKey && !event.metaKey && !event.shiftKey && key === ' ') {
         event.preventDefault();
         if (pattern) {
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
@@ -391,6 +402,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onPatternChange,
       onToggleLineFromCursor,
       onToggleLineFromStart,
+      onToggleSongFromCursor,
+      onToggleSongFromStart,
       currentColumn,
       setCurrentColumn,
       setActiveSection,

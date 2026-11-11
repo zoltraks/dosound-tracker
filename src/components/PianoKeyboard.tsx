@@ -28,6 +28,11 @@ interface PianoKeyboardProps {
   ) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   ensureAudioContextResumed?: () => Promise<void> | void;
+  sharedCurrentLine: number;
+  onToggleLineFromCursor: (lineIndex: number) => void;
+  onToggleLineFromStart: (lineIndex: number) => void;
+  onToggleSongFromCursor: (lineIndex: number) => void;
+  onToggleSongFromStart: (lineIndex: number) => void;
 }
 
 export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
@@ -43,6 +48,11 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   onPreviewMidiNoteOn,
   onPreviewMidiNoteOff,
   ensureAudioContextResumed,
+  sharedCurrentLine,
+  onToggleLineFromCursor,
+  onToggleLineFromStart,
+  onToggleSongFromCursor,
+  onToggleSongFromStart,
 }) => {
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
@@ -176,7 +186,21 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     (event: React.KeyboardEvent) => {
       if (!isActive) return;
 
-      if (event.key === ' ') {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        if (event.ctrlKey && event.shiftKey) {
+          onToggleSongFromStart(sharedCurrentLine);
+        } else if (event.shiftKey) {
+          onToggleSongFromCursor(sharedCurrentLine);
+        } else if (event.ctrlKey) {
+          onToggleLineFromStart(sharedCurrentLine);
+        } else {
+          onToggleLineFromCursor(sharedCurrentLine);
+        }
+        return;
+      }
+
+      if (event.key === ' ' && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
         if (baseKeyData) {
           event.preventDefault();
           event.stopPropagation();
@@ -211,7 +235,19 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         onOctaveChange(Math.max(MIN_OCTAVE, currentOctave - 1));
       }
     },
-    [isActive, currentOctave, onOctaveChange, playNoteWithAudioUnlock, pressedKeys, baseKeyData],
+    [
+      isActive,
+      currentOctave,
+      onOctaveChange,
+      playNoteWithAudioUnlock,
+      pressedKeys,
+      baseKeyData,
+      sharedCurrentLine,
+      onToggleLineFromCursor,
+      onToggleLineFromStart,
+      onToggleSongFromCursor,
+      onToggleSongFromStart,
+    ],
   );
 
   const handleKeyUp = useCallback(

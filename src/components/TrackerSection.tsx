@@ -26,6 +26,8 @@ interface TrackerSectionProps {
   targetTrackId: 'A' | 'B' | 'C';
   onToggleLineFromCursor: (lineIndex: number) => void;
   onToggleLineFromStart: (lineIndex: number) => void;
+  onToggleSongFromCursor: (lineIndex: number) => void;
+  onToggleSongFromStart: (lineIndex: number) => void;
   currentTrackColumn: 'note' | 'volume';
   setCurrentTrackColumn: (column: 'note' | 'volume') => void;
   trackFocusRevision: number;
@@ -58,6 +60,8 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   targetTrackId,
   onToggleLineFromCursor,
   onToggleLineFromStart,
+  onToggleSongFromCursor,
+  onToggleSongFromStart,
   currentTrackColumn,
   setCurrentTrackColumn,
   trackFocusRevision,
@@ -153,6 +157,8 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 isTargetTrack={targetTrackId === trackId}
                 onToggleLineFromCursor={onToggleLineFromCursor}
                 onToggleLineFromStart={onToggleLineFromStart}
+                onToggleSongFromCursor={onToggleSongFromCursor}
+                onToggleSongFromStart={onToggleSongFromStart}
                 currentColumn={currentTrackColumn}
                 setCurrentColumn={setCurrentTrackColumn}
                 focusRevision={trackFocusRevision}

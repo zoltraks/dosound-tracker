@@ -37,6 +37,8 @@ export interface UsePlaybackHandlersResult {
   handleStartLineFromCurrentLine: (overrideLine?: number) => void;
   handleToggleLineFromCursor: (lineIndex: number) => void;
   handleToggleLineFromStart: (lineIndex: number) => void;
+  handleToggleSongFromCursor: (lineIndex: number) => void;
+  handleToggleSongFromStart: (lineIndex: number) => void;
 }
 
 export function usePlaybackHandlers({
@@ -93,19 +95,6 @@ export function usePlaybackHandlers({
     stopInstrumentPreview();
 
     handleStopPlayback();
-  }, [stop, handleStopPlayback, stopInstrumentPreview, ensureAudioContextResumed]);
-
-  const handleStopLinePlayback = useCallback(() => {
-    playbackGenerationRef.current += 1;
-    void ensureAudioContextResumed();
-
-    stop();
-
-    setIsLinePlaying(false);
-
-    stopInstrumentPreview();
-
-    handleStopPlayback();
     const returnPos = patternReturnPositionRef.current;
     if (returnPos) {
       setPosition(returnPos.pattern, returnPos.line, 0);
@@ -113,6 +102,8 @@ export function usePlaybackHandlers({
       patternReturnPositionRef.current = null;
     }
   }, [stop, handleStopPlayback, setPosition, stopInstrumentPreview, ensureAudioContextResumed]);
+
+  const handleStopLinePlayback = handleStop;
 
   const handleStartSong = useCallback(() => {
     if (currentSong.line.length === 0) {
@@ -136,11 +127,6 @@ export function usePlaybackHandlers({
       return;
     }
 
-    patternReturnPositionRef.current = {
-      pattern: clampedIndex,
-      line: sharedCurrentLine,
-    };
-
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
 
@@ -152,7 +138,6 @@ export function usePlaybackHandlers({
     sequencerState.currentLine,
     sequencerState.isPlaying,
     currentSong.line,
-    sharedCurrentLine,
     setPatternLoopMode,
     startWhenReady,
   ]);
@@ -391,26 +376,21 @@ export function usePlaybackHandlers({
 
   const handleToggleLineFromCursor = useCallback(
     (lineIndex: number) => {
-      if (isLinePlaying && sequencerState.isPlaying) {
+      if (sequencerState.isPlaying) {
         handleStopLinePlayback();
         return;
       }
 
       handleStartLineFromCurrentLine(lineIndex);
     },
-    [
-      isLinePlaying,
-      sequencerState.isPlaying,
-      handleStopLinePlayback,
-      handleStartLineFromCurrentLine,
-    ],
+    [sequencerState.isPlaying, handleStopLinePlayback, handleStartLineFromCurrentLine],
   );
 
   // Ctrl+Enter in a track: play the line from its first row like the PLAY LINE
   // menu command, remembering the cursor position so Enter restores it on stop.
   const handleToggleLineFromStart = useCallback(
     (lineIndex: number) => {
-      if (isLinePlaying && sequencerState.isPlaying) {
+      if (sequencerState.isPlaying) {
         handleStopLinePlayback();
         return;
       }
@@ -427,12 +407,96 @@ export function usePlaybackHandlers({
       handleStartLinePlayback();
     },
     [
-      isLinePlaying,
       sequencerState.isPlaying,
       sequencerState.currentPattern,
       currentSong.line.length,
       handleStopLinePlayback,
       handleStartLinePlayback,
+    ],
+  );
+
+  // Shift+Enter in a track or the piano: play the song from the cursor row at
+  // the current playlist position, remembering the position so any stop
+  // restores it. Pressed while playback runs, it stops with restore.
+  const handleToggleSongFromCursor = useCallback(
+    (lineIndex: number) => {
+      if (sequencerState.isPlaying) {
+        handleStop();
+        return;
+      }
+
+      const playlistLength = currentSong.line.length;
+      if (playlistLength === 0) {
+        return;
+      }
+
+      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+      const startLine = Math.max(
+        0,
+        Math.min(lineIndex, (currentSong.length || PATTERN_LENGTH) - 1),
+      );
+
+      patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
+
+      if (isLinePlaying) {
+        setIsLinePlaying(false);
+      }
+
+      // Clear position ref to ensure first tick detection works
+      lastSequencerPositionRef.current = null;
+
+      startWhenReady(() => startSong(clampedIndex, startLine));
+    },
+    [
+      sequencerState.isPlaying,
+      sequencerState.currentPattern,
+      isLinePlaying,
+      currentSong.line.length,
+      currentSong.length,
+      handleStop,
+      startSong,
+      setIsLinePlaying,
+      startWhenReady,
+    ],
+  );
+
+  // Ctrl+Shift+Enter in a track or the piano: play the song from its first row
+  // at the current playlist position, remembering the cursor so any stop
+  // restores it. Pressed while playback runs, it stops with restore.
+  const handleToggleSongFromStart = useCallback(
+    (lineIndex: number) => {
+      if (sequencerState.isPlaying) {
+        handleStop();
+        return;
+      }
+
+      const playlistLength = currentSong.line.length;
+      if (playlistLength === 0) {
+        return;
+      }
+
+      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
+
+      patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
+
+      if (isLinePlaying) {
+        setIsLinePlaying(false);
+      }
+
+      // Clear position ref to ensure first tick detection works
+      lastSequencerPositionRef.current = null;
+
+      startWhenReady(() => startSong(clampedIndex, 0));
+    },
+    [
+      sequencerState.isPlaying,
+      sequencerState.currentPattern,
+      isLinePlaying,
+      currentSong.line.length,
+      handleStop,
+      startSong,
+      setIsLinePlaying,
+      startWhenReady,
     ],
   );
 
@@ -488,5 +552,7 @@ export function usePlaybackHandlers({
     handleStartLineFromCurrentLine,
     handleToggleLineFromCursor,
     handleToggleLineFromStart,
+    handleToggleSongFromCursor,
+    handleToggleSongFromStart,
   };
 }

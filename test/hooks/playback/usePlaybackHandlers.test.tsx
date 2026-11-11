@@ -483,18 +483,18 @@ describe('usePlaybackHandlers', () => {
     }
   });
 
-  it('restores the shared line saved by handleStartSong on stop', async () => {
+  it('does not restore a playback that was not started with an Enter binding', async () => {
     const params = makeParams({ sharedCurrentLine: 4 });
     const { result } = renderHook(() => usePlaybackHandlers(params));
 
     act(() => result.current.handleStartSong());
     await flush();
-    act(() => result.current.handleStopLinePlayback());
+    act(() => result.current.handleStop());
     try {
-      expect(params.setPosition).toHaveBeenCalledWith(0, 4, 0);
-      expect(params.setSharedCurrentLine).toHaveBeenCalledWith(4);
+      expect(params.setPosition).not.toHaveBeenCalled();
+      expect(params.setSharedCurrentLine).not.toHaveBeenCalled();
     } catch (error) {
-      console.log('song return mismatch', vi.mocked(params.setPosition).mock.calls);
+      console.log('non-enter restore mismatch', vi.mocked(params.setPosition).mock.calls);
       throw error;
     }
   });
@@ -567,6 +567,164 @@ describe('usePlaybackHandlers', () => {
       expect(params.setPosition).toHaveBeenCalledWith(0, 0, 0);
     } catch (error) {
       console.log('nan loop mismatch', vi.mocked(params.setPosition).mock.calls);
+      throw error;
+    }
+  });
+
+  it('restores the cursor row when Enter line playback stops through the generic stop', async () => {
+    const params = makeParams();
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleLineFromCursor(5));
+    await flush();
+    try {
+      expect(params.startPatternLoop).toHaveBeenCalledWith(0, 5);
+    } catch (error) {
+      console.log('enter loop mismatch', vi.mocked(params.startPatternLoop).mock.calls);
+      throw error;
+    }
+    act(() => result.current.handleStop());
+    try {
+      expect(params.setPosition).toHaveBeenCalledWith(0, 5, 0);
+      expect(params.setSharedCurrentLine).toHaveBeenCalledWith(5);
+    } catch (error) {
+      console.log('generic restore mismatch', vi.mocked(params.setPosition).mock.calls);
+      throw error;
+    }
+  });
+
+  it('starts the song from the cursor row through the song toggle', async () => {
+    const params = makeParams();
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromCursor(5));
+    await flush();
+    try {
+      expect(params.startSong).toHaveBeenCalledWith(0, 5);
+    } catch (error) {
+      console.log('song cursor mismatch', vi.mocked(params.startSong).mock.calls);
+      throw error;
+    }
+  });
+
+  it('clamps the song start line inside the song length', async () => {
+    const song = { ...makeSong(), length: 8 };
+    const params = makeParams({ currentSong: song });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromCursor(40));
+    await flush();
+    try {
+      expect(params.startSong).toHaveBeenCalledWith(0, 7);
+    } catch (error) {
+      console.log('song clamp mismatch', vi.mocked(params.startSong).mock.calls);
+      throw error;
+    }
+  });
+
+  it('starts the song from row zero and restores the cursor on stop', async () => {
+    const params = makeParams();
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromStart(7));
+    await flush();
+    try {
+      expect(params.startSong).toHaveBeenCalledWith(0, 0);
+    } catch (error) {
+      console.log('song start mismatch', vi.mocked(params.startSong).mock.calls);
+      throw error;
+    }
+    act(() => result.current.handleStop());
+    try {
+      expect(params.setPosition).toHaveBeenCalledWith(0, 7, 0);
+      expect(params.setSharedCurrentLine).toHaveBeenCalledWith(7);
+    } catch (error) {
+      console.log('song restore mismatch', vi.mocked(params.setPosition).mock.calls);
+      throw error;
+    }
+  });
+
+  it('toggles a running song playback off through the song toggle', async () => {
+    const params = makeParams({
+      sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
+    });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromCursor(3));
+    await flush();
+    try {
+      expect(params.stop).toHaveBeenCalledTimes(1);
+      expect(params.handleStopPlayback).toHaveBeenCalled();
+      expect(params.startSong).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('song toggle mismatch');
+      throw error;
+    }
+  });
+
+  it('stops a running line loop through the song toggle', async () => {
+    const params = makeParams({
+      isLinePlaying: true,
+      sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
+    });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromCursor(2));
+    await flush();
+    try {
+      expect(params.stop).toHaveBeenCalledTimes(1);
+      expect(params.handleStopPlayback).toHaveBeenCalled();
+      expect(params.startSong).not.toHaveBeenCalled();
+      expect(params.startPatternLoop).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('loop stop mismatch');
+      throw error;
+    }
+  });
+
+  it('stops a running song playback through the line toggle', async () => {
+    const params = makeParams({
+      sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
+    });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleLineFromCursor(5));
+    await flush();
+    try {
+      expect(params.stop).toHaveBeenCalledTimes(1);
+      expect(params.handleStopPlayback).toHaveBeenCalled();
+      expect(params.startPatternLoop).not.toHaveBeenCalled();
+      expect(params.startSong).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('song stop mismatch');
+      throw error;
+    }
+  });
+
+  it('restores the cursor when Enter stops a song started with Shift+Enter', async () => {
+    const idle = makeParams();
+    const playing = makeParams({
+      sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
+    });
+    const { result, rerender } = renderHook(({ params }) => usePlaybackHandlers(params), {
+      initialProps: { params: idle },
+    });
+
+    act(() => result.current.handleToggleSongFromCursor(5));
+    await flush();
+    try {
+      expect(idle.startSong).toHaveBeenCalledWith(0, 5);
+    } catch (error) {
+      console.log('song start mismatch', vi.mocked(idle.startSong).mock.calls);
+      throw error;
+    }
+    rerender({ params: playing });
+    act(() => result.current.handleToggleLineFromCursor(5));
+    try {
+      expect(playing.setPosition).toHaveBeenCalledWith(0, 5, 0);
+      expect(playing.setSharedCurrentLine).toHaveBeenCalledWith(5);
+    } catch (error) {
+      console.log('enter stop restore mismatch', vi.mocked(playing.setPosition).mock.calls);
       throw error;
     }
   });

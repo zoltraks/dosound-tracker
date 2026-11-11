@@ -75,7 +75,7 @@ When asked to implement a new feature, follow this sequence:
 5. Create implementation plan.
 6. Ask for confirmation to implement.
 
-Do not begin implementation until the user confirms the plan. This sequence is owned here - `GUIDELINES.md` references it rather than restating it.
+Do not begin implementation until the user confirms the plan. This sequence is owned here - `GUIDELINES.md` references it rather than restating it. The confirmation is asked through the host's interactive question mechanics, the same way the mode-selection question is asked: `Implement` approves the plan as written, `Adjust` returns the plan for changes, and `Discard` drops the request - a free-text reply resolves the same way.
 
 **Update project documentation**
 
@@ -325,6 +325,19 @@ For each change record in the window, in intake order:
 ## Work Modes
 
 The repository records a three-mode scheme governing how a modification request enters the change lifecycle.
+
+**Mode Selection**
+
+A work request names its mode or the agent asks before proceeding - the selection is resolved per request and never assumed. A request that names no mode - a bare `work on dosound-tracker`, or any described change carrying no mode - presents the recorded options through the host's interactive question mechanics:
+
+| Option                                                   | Resolves to                                        |
+| -------------------------------------------------------- | -------------------------------------------------- |
+| `Usage (default)`                                        | Standard Workflow                                  |
+| `Development (verbose + development)`                    | Standard Workflow with `verbose` reporting         |
+| `Improvement mode (verbose + development + improvement)` | Development plus the `improvement` working mode    |
+| `Wait (skip for now)`                                    | Intake standby - wait for commands before any work |
+
+A request that names its mode skips the question - mode words resolve from the request text, `verbose` arming the report mode and `improvement` the working mode on top of Development. `Wait (skip for now)` follows the Intake standby convention below.
 
 **Standard Workflow**
 

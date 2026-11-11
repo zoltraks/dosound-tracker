@@ -58,6 +58,11 @@ export const useSequencer = (
       pendingMessagesRef.current.push(message);
     }
   });
+
+  // A start posted after the most recent stop means the stop's worklet reply
+  // describes a superseded state: it lands after the restart and applying it
+  // would latch isPlaying off while the clock keeps ticking.
+  const startAfterStopRef = useRef(false);
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
   const frameRateRef = useRef(frameRate);
@@ -164,7 +169,16 @@ export const useSequencer = (
           }
           break;
         }
-        case 'stop':
+        case 'stop': {
+          if (startAfterStopRef.current) {
+            // Stale reply: keep the restarted playing state but still fire
+            // the callback so the engine releases the notes the old
+            // playback left ringing.
+            if (callbackRef.current) {
+              callbackRef.current({ ...playbackStateRef.current, isPlaying: false });
+            }
+            break;
+          }
           playbackStateRef.current = {
             ...playbackStateRef.current,
             ...data,
@@ -174,6 +188,7 @@ export const useSequencer = (
           }
           setSequencerState((prev) => ({ ...prev, ...data }));
           break;
+        }
       }
     };
 
@@ -240,6 +255,8 @@ export const useSequencer = (
       setSequencerState(nextState);
       playbackStateRef.current = nextState;
 
+      startAfterStopRef.current = true;
+
       postRef.current?.({
         type: 'start',
         data: {
@@ -264,6 +281,8 @@ export const useSequencer = (
 
     setSequencerState(stoppedState);
     playbackStateRef.current = stoppedState;
+
+    startAfterStopRef.current = false;
 
     postRef.current?.({ type: 'stop' });
   }, [sequencerState]);

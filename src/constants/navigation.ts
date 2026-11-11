@@ -25,10 +25,14 @@ export const KEYBOARD_SHORTCUTS = {
   ARROW_DOWN: 'nextLine',
   ARROW_LEFT: 'previousColumn',
   ARROW_RIGHT: 'nextColumn',
+  'CTRL+1': 'focusTrackA',
+  'CTRL+2': 'focusTrackB',
+  'CTRL+3': 'focusTrackC',
+  'CTRL+SPACE': 'togglePianoFocus',
 
   // Editing
   SPACE: 'clearPosition',
-  'CTRL+SPACE': 'noteOff',
+  'SHIFT+SPACE': 'noteOff',
   'CTRL+-': 'previousInstrument',
   'CTRL+PLUS': 'nextInstrument',
 

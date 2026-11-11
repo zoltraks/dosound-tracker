@@ -1,0 +1,10 @@
+instrument:
+  name: 'Warmball Kick'
+  type: dosound
+  version: 1
+  base: 'D-2'
+  octave: 2
+  color: '#b33'
+  volume: [11, 15, 11, 7, 4, 2, 0]
+  noise: [9, 0, 0, 6, 5, 4, 0]
+  mode: [1, 0, 0, 1, 1, 1, 0]

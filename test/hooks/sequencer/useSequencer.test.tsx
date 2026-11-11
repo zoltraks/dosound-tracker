@@ -99,4 +99,85 @@ describe('useSequencer', () => {
       throw error;
     }
   });
+
+  it('ignores a stop reply that a newer start superseded', async () => {
+    const context = fakeAudioContext();
+    const { result } = renderHook(() => useSequencer(64, 50, context));
+
+    await waitFor(() => {
+      expect(nodes.length).toBe(1);
+    });
+
+    act(() => {
+      result.current.startSong(0, 0);
+    });
+    act(() => {
+      result.current.stop();
+    });
+    act(() => {
+      result.current.startSong(0, 0);
+    });
+
+    const port = nodes[0].port;
+    // The worklet processed stop before start, but its stop reply reaches
+    // the main thread only after the restart already ran.
+    act(() => {
+      port.onmessage?.({
+        data: {
+          type: 'stop',
+          data: { isPlaying: false, currentPattern: 9, currentLine: 9, currentTick: 0 },
+        },
+      } as MessageEvent);
+    });
+    act(() => {
+      port.onmessage?.({
+        data: {
+          type: 'tick',
+          data: { isPlaying: true, currentPattern: 0, currentLine: 1, currentTick: 0 },
+        },
+      } as MessageEvent);
+    });
+
+    try {
+      expect(result.current.sequencerState.isPlaying).toBe(true);
+      expect(result.current.sequencerState.currentLine).toBe(1);
+    } catch (error) {
+      console.log('stale stop state:', JSON.stringify(result.current.sequencerState));
+      throw error;
+    }
+  });
+
+  it('applies a stop reply when no start superseded it', async () => {
+    const context = fakeAudioContext();
+    const { result } = renderHook(() => useSequencer(64, 50, context));
+
+    await waitFor(() => {
+      expect(nodes.length).toBe(1);
+    });
+
+    act(() => {
+      result.current.startSong(0, 0);
+    });
+    act(() => {
+      result.current.stop();
+    });
+
+    act(() => {
+      nodes[0].port.onmessage?.({
+        data: {
+          type: 'stop',
+          data: { isPlaying: false, currentPattern: 3, currentLine: 4, currentTick: 0 },
+        },
+      } as MessageEvent);
+    });
+
+    try {
+      expect(result.current.sequencerState.isPlaying).toBe(false);
+      expect(result.current.sequencerState.currentPattern).toBe(3);
+      expect(result.current.sequencerState.currentLine).toBe(4);
+    } catch (error) {
+      console.log('stop reply state:', JSON.stringify(result.current.sequencerState));
+      throw error;
+    }
+  });
 });

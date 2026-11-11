@@ -1,0 +1,9 @@
+instrument:
+  name: 'Warmball Hihat'
+  type: dosound
+  version: 1
+  base: 'C-4'
+  color: '#f99'
+  volume: [10, 2, 0]
+  noise: [2, 1, 0]
+  mode: [1, 1, 1, 0]

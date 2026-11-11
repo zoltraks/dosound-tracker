@@ -44,6 +44,10 @@ describe('keyboardShortcutUtils', () => {
       shortcut: 'SHIFT+TAB',
       preventDefault: true,
     });
+    expect(matchKeyboardShortcut(' ', false, true)).toEqual({
+      shortcut: 'SHIFT+SPACE',
+      preventDefault: true,
+    });
     expect(matchKeyboardShortcut('X', false, true)).toBeNull();
   });
 
@@ -87,6 +91,18 @@ describe('keyboardShortcutUtils', () => {
     expect(matchKeyboardShortcut('=', true, false)).toEqual({
       shortcut: 'CTRL+PLUS',
       preventDefault: false,
+    });
+    expect(matchKeyboardShortcut('1', true, false)).toEqual({
+      shortcut: 'CTRL+1',
+      preventDefault: true,
+    });
+    expect(matchKeyboardShortcut('2', true, false)).toEqual({
+      shortcut: 'CTRL+2',
+      preventDefault: true,
+    });
+    expect(matchKeyboardShortcut('3', true, false)).toEqual({
+      shortcut: 'CTRL+3',
+      preventDefault: true,
     });
     expect(matchKeyboardShortcut(' ', true, false)).toEqual({
       shortcut: 'CTRL+SPACE',

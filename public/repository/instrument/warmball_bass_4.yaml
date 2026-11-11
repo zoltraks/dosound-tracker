@@ -1,0 +1,8 @@
+instrument:
+  name: 'Warmball Bass 4'
+  type: dosound
+  version: 1
+  base: 'C-3'
+  octave: 1
+  color: '#55d'
+  volume: [14, 14, 12, 12, 0]

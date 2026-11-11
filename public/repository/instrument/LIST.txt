@@ -8,3 +8,10 @@ kick.yaml
 slide_down.yaml
 slide_up.yaml
 snare.yaml
+warmball_bass_4.yaml
+warmball_bass_5.yaml
+warmball_hihat.yaml
+warmball_kick.yaml
+warmball_pim_1.yaml
+warmball_pim_2.yaml
+warmball_snare.yaml

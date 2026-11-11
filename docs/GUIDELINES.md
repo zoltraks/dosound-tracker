@@ -101,6 +101,8 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
 - Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md` - `archive old documents`, `archive documents`, or `run retention` runs the Document Retention sweep recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
+- Mode selection: a work request that names no mode asks the recorded mode-selection question in `WORKFLOW.md` - `Usage (default)`, `Development (verbose + development)`, `Improvement mode (verbose + development + improvement)`, or `Wait (skip for now)` - and a request that names its mode skips the question.
+- Plan confirmation: the confirmation step in `WORKFLOW.md` asks through the host's interactive question mechanics - `Implement`, `Adjust`, or `Discard` - matching the mode-selection convention.
 - A window review or audit report that was never produced for a released version is abandoned, not repaired - change records that propose retroactively writing past-version reports are discarded.
 - Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined - none are planned.
 - A CI pipeline (`.github/workflows/`) was evaluated and declined - the verification loop is enforced locally and no CI configuration is planned.

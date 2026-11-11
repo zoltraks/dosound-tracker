@@ -504,6 +504,8 @@ const App: React.FC = () => {
     handleStartLineFromBeginning,
     handleToggleLineFromCursor,
     handleToggleLineFromStart,
+    handleToggleSongFromCursor,
+    handleToggleSongFromStart,
   } = usePlaybackHandlers({
     stop,
     startSong,
@@ -900,6 +902,8 @@ const App: React.FC = () => {
             targetTrackId={targetTrackId}
             onToggleLineFromCursor={handleToggleLineFromCursor}
             onToggleLineFromStart={handleToggleLineFromStart}
+            onToggleSongFromCursor={handleToggleSongFromCursor}
+            onToggleSongFromStart={handleToggleSongFromStart}
             currentTrackColumn={currentTrackColumn}
             setCurrentTrackColumn={setCurrentTrackColumn}
             trackFocusRevision={trackFocusRevision}
@@ -961,6 +965,11 @@ const App: React.FC = () => {
             onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}
             onPreviewMidiNoteOff={previewInstrumentMidiNoteOff}
             ensureAudioContextResumed={ensureAudioContextResumed}
+            sharedCurrentLine={sharedCurrentLine}
+            onToggleLineFromCursor={handleToggleLineFromCursor}
+            onToggleLineFromStart={handleToggleLineFromStart}
+            onToggleSongFromCursor={handleToggleSongFromCursor}
+            onToggleSongFromStart={handleToggleSongFromStart}
           />
         }
         fileInputs={
