@@ -1,7 +1,11 @@
 import type { Instrument, Song } from '../synth/SoundDriver.ts';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
 import type { ExportStrategy } from '../constants/export.ts';
-import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core.ts';
+import {
+  downloadFile,
+  exportInstrumentWith,
+  normalizeSongForExport,
+  resolveExportTiming,
+} from './core.ts';
 import { simulateSong } from '../utils/playback/playbackSimulation.ts';
 import { compressZX0 } from '../utils/compression/zx0.ts';
 
@@ -189,15 +193,15 @@ function buildMaxStream(
   }
 
   const reg7Data = buildReg7Stream(frames);
-  const streamData = strategy === 'optimized' ? optimizeReg7Delays(reg7Data) : reg7Data;
+  const streamData =
+    strategy === 'optimized' || strategy === 'compact' ? optimizeReg7Delays(reg7Data) : reg7Data;
 
   return { streamFormat: 0x07, streamData, frameCount };
 }
 
 export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple'): MaxExportResult {
   const normalizedSong = normalizeSongForExport(song);
-  const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
-  const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
+  const { frameRate, chipClock } = resolveExportTiming(normalizedSong);
   const { streamFormat, streamData, frameCount } = buildMaxStream(
     normalizedSong,
     strategy,
@@ -227,7 +231,9 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
   }
 
   const chipData: number[] = [];
-  chipData.push(0xa9);
+  // Chip model id per MAX.md: A9 = YM2149, A0 = AY-8910. Any other song
+  // chip keeps the YM id, matching the engines' fallback curve.
+  chipData.push(normalizedSong.chip === 'AY' ? 0xa0 : 0xa9);
   chipData.push(0x00);
   chipData.push((frameRate >>> 8) & 0xff, frameRate & 0xff);
 

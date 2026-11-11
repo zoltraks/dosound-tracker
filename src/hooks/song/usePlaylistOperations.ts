@@ -8,12 +8,12 @@ import {
   mapSongLineToPlaylistEntries,
   mapPlaylistEntriesToSongLine,
 } from '../../types/playlist.ts';
+import { createPatternForSong } from './usePatternManagement.ts';
 
 interface UsePlaylistOperationsArgs {
   song: Song;
   targetTrackId: 'A' | 'B' | 'C';
   currentPatternIndex: number;
-  createNewPattern: (patternId: PatternId) => void;
   updateSong: (patch: Partial<Song>) => void;
   setActiveSection: (section: NavigationSection) => void;
   setSharedCurrentLine: (line: number) => void;
@@ -40,7 +40,6 @@ export function usePlaylistOperations({
   song,
   targetTrackId,
   currentPatternIndex,
-  createNewPattern,
   updateSong,
   setActiveSection,
   setSharedCurrentLine,
@@ -75,7 +74,7 @@ export function usePlaylistOperations({
       }
 
       const patternId = generateUniquePatternId();
-      createNewPattern(patternId);
+      const { newPattern } = createPatternForSong(song, patternId);
 
       const newPlaylist = mapSongLineToPlaylistEntries(song.line);
       const entry = { ...newPlaylist[lineIndex] };
@@ -93,9 +92,14 @@ export function usePlaylistOperations({
       }
 
       newPlaylist[lineIndex] = entry;
-      updateSong({ line: mapPlaylistEntriesToSongLine(newPlaylist) });
+      // One updateSong call keeps pattern creation and playlist assignment
+      // together as a single undo entry.
+      updateSong({
+        line: mapPlaylistEntriesToSongLine(newPlaylist),
+        pattern: [...song.pattern, newPattern],
+      });
     },
-    [song.line, createNewPattern, updateSong, generateUniquePatternId],
+    [song, updateSong, generateUniquePatternId],
   );
 
   const handleCreateNewTrack = useCallback(() => {
@@ -106,7 +110,7 @@ export function usePlaylistOperations({
 
     const targetLine = Math.max(0, Math.min(currentPatternIndex, playlist.length - 1));
     const patternId = generateUniquePatternId();
-    createNewPattern(patternId);
+    const { newPattern } = createPatternForSong(song, patternId);
 
     const entry = { ...playlist[targetLine] };
     switch (targetTrackId) {
@@ -122,18 +126,22 @@ export function usePlaylistOperations({
     }
 
     playlist[targetLine] = entry;
-    updateSong({ line: mapPlaylistEntriesToSongLine(playlist) });
+    // One updateSong call keeps pattern creation and playlist assignment
+    // together as a single undo entry.
+    updateSong({
+      line: mapPlaylistEntriesToSongLine(playlist),
+      pattern: [...song.pattern, newPattern],
+    });
 
     const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
     setActiveSection(section);
     setSharedCurrentLine(0);
     setPosition(targetLine, 0, 0);
   }, [
-    song.line,
+    song,
     currentPatternIndex,
     targetTrackId,
     generateUniquePatternId,
-    createNewPattern,
     updateSong,
     setActiveSection,
     setSharedCurrentLine,

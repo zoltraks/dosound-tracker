@@ -71,7 +71,8 @@ function formatFramesToAssembly(
     return asm;
   }
 
-  if (strategy === 'complex' || strategy === 'optimized') {
+  if (strategy === 'complex' || strategy === 'optimized' || strategy === 'compact') {
+    const compact = strategy === 'compact';
     const lastRegs: { [register: number]: number } = {};
     let lastLineIndex = -1;
 
@@ -82,26 +83,40 @@ function formatFramesToAssembly(
       const toneMeta = frame.toneMeta || {};
 
       // Add beat marker after each completed playlist position (every patternLength lines).
-      // Also force tone registers to be re-emitted after the marker so that each
-      // playlist position starts with explicit TA/TB/TC writes, even if the
-      // underlying period value did not change.
+      // Under complex and optimized the marker also forces tone registers to be
+      // re-emitted so that each playlist position starts with explicit TA/TB/TC
+      // writes, even if the underlying period value did not change. Compact
+      // keeps the marker comment but drops the forced rewrite.
       const patternLength = song.length ?? 64;
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
 
-        // Clear cached tone registers (R0-R5) so next frame writes them again.
-        for (let r = 0; r <= 5; r++) {
-          delete lastRegs[r];
+        if (!compact) {
+          // Clear cached tone registers (R0-R5) so next frame writes them again.
+          for (let r = 0; r <= 5; r++) {
+            delete lastRegs[r];
+          }
         }
       }
       lastLineIndex = lineIndex;
 
-      if (i === 0 || (regs[0x07] || 0x38) !== (lastRegs[0x07] || 0x38)) {
-        asm += formatAsmLine(
-          [0x07, regs[0x07] || 0x38],
-          getRegisterComment(0x07, regs[0x07] || 0x38),
-        );
-        lastRegs[0x07] = regs[0x07] || 0x38;
+      const mixer = regs[0x07] || 0x38;
+      const lastMixer = lastRegs[0x07] || 0x38;
+      let emitMixer = i === 0 || mixer !== lastMixer;
+      if (emitMixer && compact && i !== 0) {
+        // Compact keys mixer writes on audible bits: a channel whose volume
+        // nibble is zero cannot sound, so enable-bit changes on it are
+        // inaudible until its volume returns. The I/O bits (0xC0) always count.
+        const diff = mixer ^ lastMixer;
+        emitMixer =
+          (diff & 0xc0) !== 0 ||
+          [0, 1, 2].some(
+            (ch) => ((regs[0x08 + ch] ?? 0) & 0x0f) !== 0 && (diff & (0x09 << ch)) !== 0,
+          );
+      }
+      if (emitMixer) {
+        asm += formatAsmLine([0x07, mixer], getRegisterComment(0x07, mixer));
+        lastRegs[0x07] = mixer;
       }
 
       for (let ch = 0; ch < 3; ch++) {
@@ -126,7 +141,20 @@ function formatFramesToAssembly(
           const meta = toneMeta[ch];
           const comment = buildToneComment(channelLabel, meta, period, chipClock);
 
-          asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
+          if (compact && i !== 0) {
+            // Emit only the changed half of the period pair, keeping the
+            // coarse-then-fine write order of the four-byte form.
+            const bytes: number[] = [];
+            if (coarse !== lastCoarse) {
+              bytes.push(coarseReg, coarse);
+            }
+            if (fine !== lastFine) {
+              bytes.push(fineReg, fine);
+            }
+            asm += formatAsmLine(bytes, comment);
+          } else {
+            asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
+          }
           lastRegs[fineReg] = fine;
           lastRegs[coarseReg] = coarse;
         }
@@ -196,29 +224,51 @@ function formatFramesToAssembly(
   }
 
   asm += '\n\t; END\n\n';
-  asm += formatAsmLine([0x08, 0x00], 'VA 0');
-  asm += formatAsmLine([0x09, 0x00], 'VB 0');
-  asm += formatAsmLine([0x0a, 0x00], 'VC 0');
+  if (strategy === 'compact') {
+    // Silence only channels whose last written volume is non-zero. Every
+    // strategy emits all three volume registers at frame 0, so the final
+    // frame's snapshot equals the last written values.
+    const lastFrameRegs = frames[frames.length - 1].registers;
+    for (let ch = 0; ch < 3; ch++) {
+      const lastVolume = lastFrameRegs[0x08 + ch] ?? 0;
+      if (lastVolume !== 0) {
+        const channelLabel = String.fromCharCode(65 + ch); // A, B, C
+        asm += formatAsmLine([0x08 + ch, 0x00], `V${channelLabel} 0`);
+      }
+    }
+  } else {
+    asm += formatAsmLine([0x08, 0x00], 'VA 0');
+    asm += formatAsmLine([0x09, 0x00], 'VB 0');
+    asm += formatAsmLine([0x0a, 0x00], 'VC 0');
+  }
   asm += '\n';
   asm += formatAsmLine([0xff, 0x00], 'STOP');
 
-  if (strategy === 'optimized') {
-    asm = combineDelayLines(asm);
+  if (strategy === 'optimized' || strategy === 'compact') {
+    // The delay count is one byte ($FF,N delays N+1 frames), so a merged
+    // run may not exceed 256 frames per command. Compact splits longer
+    // runs; optimized keeps its unbounded merge for byte identity.
+    asm = combineDelayLines(asm, {
+      maxFramesPerCommand: strategy === 'compact' ? 256 : Infinity,
+    });
   }
 
   return asm;
 }
 
-function combineDelayLines(asm: string): string {
+function combineDelayLines(
+  asm: string,
+  { maxFramesPerCommand = Infinity }: { maxFramesPerCommand?: number } = {},
+): string {
   const lines = asm.split('\n');
   const out: string[] = [];
   let pendingFrames = 0;
 
   const flush = () => {
-    if (pendingFrames > 0) {
-      const merged = formatDelayLine(pendingFrames).trimEnd();
-      out.push(merged);
-      pendingFrames = 0;
+    while (pendingFrames > 0) {
+      const chunk = Math.min(pendingFrames, maxFramesPerCommand);
+      out.push(formatDelayLine(chunk).trimEnd());
+      pendingFrames -= chunk;
     }
   };
 

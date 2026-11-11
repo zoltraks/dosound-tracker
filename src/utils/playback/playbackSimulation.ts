@@ -1,4 +1,4 @@
-import type { Song, Instrument, Pattern } from '../../synth/SoundDriver.ts';
+import type { Song, Instrument } from '../../synth/SoundDriver.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 import {
   NOTE_FREQUENCIES,
@@ -9,6 +9,7 @@ import {
 import { YM_CLOCK } from '../../synth/YM2149.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
+import { buildPatternLookup, isPatternTrackId } from '../song/songLookup.ts';
 
 export interface RegisterState {
   [register: number]: number;
@@ -70,13 +71,7 @@ export function simulateSong(
     }
   }
 
-  const patternsByIdMap = new Map<string, Pattern>();
-  for (const pattern of song.pattern) {
-    if (!pattern) continue;
-    if (!patternsByIdMap.has(pattern.id)) {
-      patternsByIdMap.set(pattern.id, pattern);
-    }
-  }
+  const patternsByIdMap = buildPatternLookup(song.pattern);
 
   let currentRegs: RegisterState = {
     0x07: 0x38, // Mixer: all tones enabled, noise disabled
@@ -138,7 +133,7 @@ export function simulateSong(
     const trackIds = [playlistEntry.A, playlistEntry.B, playlistEntry.C];
     for (let ch = 0; ch < channels.length; ch++) {
       const id = trackIds[ch];
-      const hasPattern = typeof id === 'string' && id.trim() !== '' && id !== '--';
+      const hasPattern = isPatternTrackId(id);
       if (!hasPattern) {
         continue;
       }

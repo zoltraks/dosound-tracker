@@ -311,6 +311,161 @@
   --markdown-table-row-bg-even: rgba(0, 0, 0, 0);
 }
 
+.contrast {
+  /* High-Contrast Mode Color Palette - black base, white text, vivid accents */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-tertiary: #141414;
+  --bg-hover: #1f1f1f;
+  --bg-active: #2a2a00;
+
+  --text-primary: #ffffff;
+  --text-secondary: #f0f0f0;
+  --text-dim: #d8d8d8;
+  --text-muted: #b0b0b0;
+
+  --border-color: #ffffff;
+  --border-dim: #909090;
+  --border-bright: #ffff00;
+  --section-hover-border: #00ffff;
+  --section-hover-glow: rgba(0, 255, 255, 0.6);
+  --section-hover-bg: #1a1a1a;
+  --track-hover-bg: #242424;
+
+  --active-bg: #222200;
+  --active-border: #ffff00;
+  --active-glow: rgba(255, 255, 0, 0.55);
+
+  --playback-position-bg: #2a002a;
+  --playback-position-border: #ff00ff;
+  --playback-position-active-bg: #3d003d;
+  --playback-position-active-border: #ff66ff;
+
+  --hover-bg: #333333;
+  --hover-glow: rgba(255, 255, 0, 0.3);
+
+  --button-bg: #000000;
+  --button-border: #ffffff;
+  --button-text: #ffffff;
+  --button-hover: #1f1f1f;
+  --button-active: #2a2a00;
+  --button-border-hover: #ffff00;
+
+  --debug-btn-bg-left: #2a1500;
+  --debug-btn-bg-right: #1a0d00;
+  --debug-btn-border: #ff9f1a;
+  --debug-btn-active-bg-left: #2a1a4d;
+  --debug-btn-active-bg-right: #1a0f33;
+  --debug-btn-active-border: #b980ff;
+  --debug-btn-active-glow: rgba(185, 128, 255, 0.6);
+
+  --pick-inst-btn-bg-left: #003322;
+  --pick-inst-btn-bg-right: #001a22;
+  --pick-inst-btn-border: #00e6a8;
+
+  --reset-btn-bg-left: #330000;
+  --reset-btn-bg-right: #1a0000;
+  --reset-btn-border: #ff4d4d;
+
+  --load-song-btn-bg-left: #00222a;
+  --load-song-btn-bg-right: #001418;
+  --load-song-btn-border: #33d6ff;
+
+  --export-btn-bg-left: #223300;
+  --export-btn-bg-right: #111a00;
+  --export-btn-border: #b8e62e;
+
+  --save-song-btn-bg-left: #332200;
+  --save-song-btn-bg-right: #1a1100;
+  --save-song-btn-border: #ffb833;
+
+  --new-song-btn-bg-left: #2a0f33;
+  --new-song-btn-bg-right: #180a1f;
+  --new-song-btn-border: #c56bff;
+
+  --demo-song-btn-bg-left: #241040;
+  --demo-song-btn-bg-right: #14082a;
+  --demo-song-btn-border: #9f7bff;
+
+  --play-song-btn-idle-bg-left: #00331a;
+  --play-song-btn-idle-bg-right: #001a10;
+  --play-song-btn-idle-border: #33ff99;
+
+  --play-line-idle-bg: #2a1a00;
+  --play-line-idle-border: #ffaa00;
+
+  --stop-btn-idle-bg-left: #330f14;
+  --stop-btn-idle-bg-right: #1a080a;
+  --stop-btn-idle-border: #ff5c6e;
+
+  /* Playback button accent colors (contrast theme) */
+  --play-song-bg: #00331f;
+  --play-song-border: #33ff99;
+  --play-song-glow: rgba(51, 255, 153, 0.6);
+  --play-line-bg: #332200;
+  --play-line-border: #ffaa00;
+  --play-line-glow: rgba(255, 170, 0, 0.6);
+  --stop-bg: #330d12;
+  --stop-border: #ff5c6e;
+  --stop-glow: rgba(255, 92, 110, 0.6);
+
+  --piano-white: #ffffff;
+  --piano-black: #000000;
+  --piano-pressed: #ffff00;
+  --piano-shadow: rgba(255, 255, 255, 0.4);
+
+  --envelope-bar: #66aaff;
+  --envelope-glow: rgba(102, 170, 255, 0.6);
+  --envelope-bar-hover: #cc66ff;
+  --envelope-bar-current: #ff6655;
+  --volume-bar: #66aaff;
+  --track-cell-active-bg: #22224d;
+  --track-a-bg: #330d14;
+  --track-b-bg: #0d3314;
+  --track-c-bg: #0d0d33;
+
+  --track-inactive-bg: #1a2440;
+  --track-active-bg: #001a1a;
+  --track-active-border: #00ffff;
+
+  /* Contrast mode shadows stay dark - borders carry the separation */
+  --shadow-small: 0 1px 2px rgba(0, 0, 0, 0.7);
+  --shadow-medium: 0 4px 8px rgba(0, 0, 0, 0.8);
+  --shadow-large: 0 10px 18px rgba(0, 0, 0, 0.9);
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.7);
+
+  --logo-outline: rgba(255, 255, 255, 0.6);
+
+  --glow-primary: 0 0 10px rgba(255, 255, 0, 0.6);
+  --glow-secondary: 0 0 6px rgba(255, 255, 0, 0.35);
+
+  --midi-input-enabled-bg-left: #00331f;
+  --midi-input-enabled-bg-right: #001a10;
+  --midi-input-enabled-border: #33ff99;
+  --midi-output-enabled-bg-left: #332b00;
+  --midi-output-enabled-bg-right: #1a1600;
+  --midi-output-enabled-border: #ffdd00;
+  --midi-both-enabled-bg-left: #2a0f4d;
+  --midi-both-enabled-bg-right: #180a33;
+  --midi-both-enabled-border: #b980ff;
+  --midi-disabled-bg-left: #1a1a1a;
+  --midi-disabled-bg-right: #0d0d0d;
+  --midi-disabled-border: #808080;
+
+  --link-color: #b980ff;
+  --link-hover-color: #ff66ff;
+  --code-text-color: #ffb3b3;
+  --inline-code-color: #ffff66;
+  --markdown-h1-color: #ffff99;
+  --markdown-h2-color: #99ffcc;
+  --markdown-h3-color: #66ccff;
+  --markdown-strong-color: #ff99ff;
+  --markdown-em-color: #ffcc66;
+  --markdown-table-header-bg: rgba(255, 255, 255, 0.15);
+  --markdown-table-row-bg-odd: rgba(255, 255, 255, 0.07);
+  --markdown-table-row-bg-even: rgba(0, 0, 0, 0);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -341,8 +496,10 @@ body {
 }
 
 .app {
-  width: 100vw;
-  height: 100vh;
+  --app-zoom: 1;
+  width: calc(100% / var(--app-zoom));
+  height: calc(100% / var(--app-zoom));
+  zoom: var(--app-zoom);
   display: flex;
   flex-direction: column;
   background-color: var(--bg-primary);
@@ -376,6 +533,35 @@ body {
 
 .app-initial-overlay-light {
   background-color: #ffffff;
+}
+
+/* Text-size scaling: --app-zoom scales the whole grid uniformly while the
+   compensated app dimensions keep the window exactly app-sized */
+.app-scale-125 {
+  --app-zoom: 1.25;
+}
+
+.app-scale-150 {
+  --app-zoom: 1.5;
+}
+
+/* Keep every dialog inside the window under text scaling */
+.app[class*='app-scale-'] .modal-dialog {
+  max-width: calc(96vw / var(--app-zoom));
+  max-height: calc(96vh / var(--app-zoom));
+}
+
+/* Visually hidden but exposed to assistive technology (live regions) */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 @keyframes app-initial-overlay-fade-out {
@@ -2397,6 +2583,13 @@ body {
   flex: 0 0 auto;
 }
 
+/* The stereo layout toggle displays up to six characters (`CUSTOM`). */
+.stereo-toggle-button {
+  width: auto;
+  min-width: 38px;
+  padding: 0 4px;
+}
+
 /* Color Picker (compact, modal-friendly) */
 .color-picker {
   display: flex;
@@ -3230,6 +3423,31 @@ body {
   color: var(--text-secondary);
 }
 
+.channel-pan-button {
+  width: 26px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: var(--font-mono);
+  font-size: 8px;
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.channel-pan-button:hover {
+  border-color: var(--active-border);
+}
+
+.channel-pan-button:focus-visible {
+  outline: none;
+  border-color: var(--active-border);
+}
+
 /* Piano Keyboard */
 .piano-keyboard-container {
   background-color: var(--bg-primary);
@@ -3531,9 +3749,9 @@ body {
   }
 
   .app {
-    width: 100%;
+    width: calc(100% / var(--app-zoom));
     height: auto;
-    min-height: 100vh;
+    min-height: calc(100vh / var(--app-zoom));
     padding-top: 36px;
   }
 

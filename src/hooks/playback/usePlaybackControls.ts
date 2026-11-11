@@ -7,6 +7,7 @@ import { mapSongLineToPlaylistEntries } from '../../types/playlist.ts';
 
 interface UsePlaybackControlsArgs {
   currentSong: Song;
+  audioContext: AudioContext | null;
 }
 
 interface UsePlaybackControlsResult {
@@ -21,6 +22,7 @@ interface UsePlaybackControlsResult {
 
 export function usePlaybackControls({
   currentSong,
+  audioContext,
 }: UsePlaybackControlsArgs): UsePlaybackControlsResult {
   const {
     sequencerState,
@@ -34,7 +36,11 @@ export function usePlaybackControls({
     updateFrameRate,
     updateSongLoop,
     setPatternLoopMode,
-  } = useSequencer(currentSong.length || PATTERN_LENGTH, currentSong.frame ?? DEFAULT_SONG_FRAME);
+  } = useSequencer(
+    currentSong.length || PATTERN_LENGTH,
+    currentSong.frame ?? DEFAULT_SONG_FRAME,
+    audioContext,
+  );
   const playlistEntries = useMemo(
     () => mapSongLineToPlaylistEntries(currentSong.line),
     [currentSong.line],

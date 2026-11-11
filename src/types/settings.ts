@@ -8,9 +8,14 @@ import { DEFAULT_SOUND_ENGINE_ID } from '../constants/sound.ts';
  */
 export type SettingsCategory = 'general' | 'editor' | 'sound';
 
+export type ThemeVariant = 'dark' | 'light' | 'contrast';
+
+export type TextScale = '100' | '125' | '150';
+
 export interface SettingsValues {
   general: {
-    theme: 'dark' | 'light';
+    theme: ThemeVariant;
+    textScale: TextScale;
     trackBackground: boolean;
     startupTone: boolean;
   };
@@ -37,6 +42,7 @@ export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = ['general', 'edi
 export const DEFAULT_SETTINGS: SettingsValues = {
   general: {
     theme: 'dark',
+    textScale: '100',
     trackBackground: true,
     startupTone: true,
   },

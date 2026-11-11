@@ -26,6 +26,7 @@ export const FileInputs: React.FC<FileInputsProps> = ({
     <>
       <input
         ref={fileInputRef}
+        id="song-file-input"
         type="file"
         accept=".yaml,.yml"
         style={{ display: 'none' }}
@@ -42,6 +43,7 @@ export const FileInputs: React.FC<FileInputsProps> = ({
       />
       <input
         ref={instrumentFileInputRef}
+        id="instrument-file-input"
         type="file"
         accept=".yaml,.yml"
         style={{ display: 'none' }}

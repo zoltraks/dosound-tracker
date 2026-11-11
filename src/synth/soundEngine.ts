@@ -20,6 +20,8 @@ export interface SoundEngine {
   reset(): void;
   setClock(clock: number): void;
   getClock(): number;
+  setChip(chip: string): void;
+  setChannelPans(pans: number[]): void;
   getRegisters(): YMRegisters;
   getRegistersArray(): number[];
   getState(): YMState;

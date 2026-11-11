@@ -1,4 +1,6 @@
 import type { Instrument, Note, Pattern } from '../../synth/SoundDriver.ts';
+import { Formatter } from '../format/formatters.ts';
+import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export function buildInstrumentColorMap(instruments: Instrument[]): Map<string, string> {
@@ -52,6 +54,33 @@ export function getTrackLineClass(lineIndex: number, isCurrent: boolean): string
     classes.push('beat-line');
   }
   return classes.join(' ');
+}
+
+/**
+ * Builds the designed row announcement for a track's live region: row index,
+ * the column holding the cursor, then the row's cell contents with the active
+ * column first. Keeps the dense grid out of flat reading while still giving a
+ * screen reader full context on every cursor move.
+ */
+export function buildTrackRowAnnouncement(
+  trackId: 'A' | 'B' | 'C',
+  lineIndex: number,
+  column: 'note' | 'volume',
+  noteData: Note | null,
+  volume: number | null | undefined,
+): string {
+  const row = Formatter.hex(lineIndex);
+  const noteText = noteData
+    ? noteData.note === '==='
+      ? 'note off'
+      : `${noteData.note}-${noteData.octave} instrument ${noteData.instrument}`
+    : 'no note';
+  const volumeText =
+    volume === null || volume === undefined
+      ? 'no volume'
+      : `volume ${Formatter.hex(clampVolumeNibble(volume))}`;
+  const cell = column === 'volume' ? `${volumeText}, ${noteText}` : `${noteText}, ${volumeText}`;
+  return `Track ${trackId} row ${row}, ${column} column, ${cell}`;
 }
 
 export function getInstrumentColorForNote(

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Instrument, Pattern, Song } from '../../synth/SoundDriver.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
@@ -21,7 +21,6 @@ export interface PlaybackMidiHelpers {
 
 export interface UsePlaybackBridgeParams {
   currentSong: Song;
-  patternsById: Map<string, Pattern>;
   channelMutes: boolean[];
   ym2149Ref: MutableRefObject<SoundEngine | null>;
   isDebugMode: boolean;
@@ -43,7 +42,6 @@ export interface UsePlaybackBridgeResult {
 
 export function usePlaybackBridge({
   currentSong,
-  patternsById,
   channelMutes,
   ym2149Ref,
   isDebugMode,
@@ -61,6 +59,18 @@ export function usePlaybackBridge({
   const midiHelpersRef = useRef<PlaybackMidiHelpers | null>(null);
 
   const midiConfigurationRef = useRef<MidiConfiguration | null>(null);
+
+  const patternsById = useMemo(() => {
+    const map = new Map<string, Pattern>();
+    const patterns = currentSong.pattern;
+
+    for (const pattern of patterns) {
+      if (pattern && pattern.id) {
+        map.set(pattern.id, pattern);
+      }
+    }
+    return map;
+  }, [currentSong.pattern]);
 
   const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
   const { resetPlaybackState: handleStopPlayback, lastSequencerPositionRef } = playbackState;

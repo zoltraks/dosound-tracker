@@ -109,6 +109,7 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Environment-readiness owner: `README.md` for the development environment, `DEPLOYMENT.md` for build and deployment prerequisites.
 - An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/archive/plan/1.3.1/remove-ci-workflow.md`).
 - `COMPARISATION` filenames and `docs/archive/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
+- ASE reference: adjustments to this document set consult the `compass-skill` canonical corpus - `references/PREPARATION.md` and the `conventions/` registry - for expected structure and semantics before editing.
 
 ## General Workflow
 
@@ -201,6 +202,8 @@ When asked to describe a change (feature, fix, refactor, chore):
 - Name the document using kebab-case to briefly describe the change (for example `midi-support.md`, `export-dump-fix.md`)
 - The user may want to relocate the file after creation
 - Change records are reviewed by experienced designers - keep each record precise, verified against the current tree, and free of drafting artifacts
+- Verify every fact a record asserts against the current tree before authoring - a stale claim in the documentation set is fixed in its owning document first, never copied into a record
+- Named external references - hardware boards, machine models, format specifications - are verified against their source material before a record cites them; a recalled example is a claim, not a fact
 
 ## Applying a Change
 

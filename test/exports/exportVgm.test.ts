@@ -400,4 +400,20 @@ describe('exportSongToVgm', () => {
     expect(period1MHz!).toBeLessThan(period2MHz!);
     expect(Math.round(period2MHz! / period1MHz!)).toBe(2);
   });
+
+  it('writes the AY chip-type byte per song chip', () => {
+    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const song = parseSongFromYaml(yamlContent);
+
+    const ymBytes = new Uint8Array(exportSongToVgm({ ...song, chip: 'YM' }).buffer);
+    const ayBytes = new Uint8Array(exportSongToVgm({ ...song, chip: 'AY' }).buffer);
+
+    try {
+      expect(ymBytes[0x78]).toBe(0x10); // YM2149
+      expect(ayBytes[0x78]).toBe(0x00); // AY8910
+    } catch (error) {
+      console.log('chip-type bytes:', ymBytes[0x78], ayBytes[0x78]);
+      throw error;
+    }
+  });
 });

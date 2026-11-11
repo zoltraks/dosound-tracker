@@ -37,6 +37,8 @@ interface UseFileOperationsResult {
   exportVgmWithContext: (ctx: ExportContext) => void;
   exportWavWithContext: (ctx: ExportContext) => void;
   exportMaxWithContext: (ctx: ExportContext) => void;
+  exportMidiWithContext: (ctx: ExportContext) => void;
+  exportModWithContext: (ctx: ExportContext) => void;
   exportDumpWithContext: (ctx: ExportContext) => void;
   handleCloseSoundExportSummary: () => void;
   handleCloseDumpExportSummary: () => void;
@@ -289,6 +291,142 @@ export function useFileOperations({
     [song, getScopedSongForPattern],
   );
 
+  const exportMidiWithContext = useCallback(
+    async (ctx: ExportContext) => {
+      try {
+        const { exportSongToMidi, exportInstrumentToMidi, downloadMidiFile } =
+          await import('../../exports/export.ts');
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          const result = exportInstrumentToMidi(ctx.instrument, song);
+          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.mid`;
+          downloadMidiFile(result.buffer, filename);
+
+          const lines: string[] = [];
+          lines.push('MIDI export completed.');
+          lines.push('');
+          lines.push(`File: ${filename}`);
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          for (const warning of result.warnings) {
+            lines.push(`Note: ${warning}`);
+          }
+
+          setSoundExportSummary(lines.join('\n'));
+          return;
+        }
+
+        let scopedSong: Song = song;
+        if (ctx.type === 'pattern') {
+          const scoped = getScopedSongForPattern(ctx.playlistIndex);
+          if (scoped) {
+            scopedSong = scoped;
+          }
+        }
+
+        const result = exportSongToMidi(scopedSong);
+        const filenameBase =
+          ctx.type === 'pattern'
+            ? buildPatternExportBaseName(song.title)
+            : buildSongExportBaseName(song.title);
+        const filename = `${filenameBase}.mid`;
+        downloadMidiFile(result.buffer, filename);
+
+        const lines: string[] = [];
+        lines.push('MIDI export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else {
+          lines.push('Scope: Song');
+        }
+        for (const warning of result.warnings) {
+          lines.push(`Note: ${warning}`);
+        }
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        logger.error('Context-aware MIDI export failed', error);
+        const lines: string[] = [];
+        lines.push('MIDI export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
+    },
+    [song, getScopedSongForPattern],
+  );
+
+  const exportModWithContext = useCallback(
+    async (ctx: ExportContext) => {
+      try {
+        const { exportSongToMod, exportInstrumentToMod, downloadModFile } =
+          await import('../../exports/export.ts');
+        if (ctx.type === 'instrument' && ctx.instrument) {
+          const result = exportInstrumentToMod(ctx.instrument, song);
+          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.mod`;
+          downloadModFile(result.buffer, filename);
+
+          const lines: string[] = [];
+          lines.push('MOD export completed.');
+          lines.push('');
+          lines.push(`File: ${filename}`);
+          lines.push('Scope: Instrument');
+          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          for (const warning of result.warnings) {
+            lines.push(`Note: ${warning}`);
+          }
+
+          setSoundExportSummary(lines.join('\n'));
+          return;
+        }
+
+        let scopedSong: Song = song;
+        if (ctx.type === 'pattern') {
+          const scoped = getScopedSongForPattern(ctx.playlistIndex);
+          if (scoped) {
+            scopedSong = scoped;
+          }
+        }
+
+        const result = exportSongToMod(scopedSong);
+        const filenameBase =
+          ctx.type === 'pattern'
+            ? buildPatternExportBaseName(song.title)
+            : buildSongExportBaseName(song.title);
+        const filename = `${filenameBase}.mod`;
+        downloadModFile(result.buffer, filename);
+
+        const lines: string[] = [];
+        lines.push('MOD export completed.');
+        lines.push('');
+        lines.push(`File: ${filename}`);
+        if (ctx.type === 'pattern') {
+          lines.push('Scope: Pattern (current playlist position)');
+          lines.push(`Playlist index: ${ctx.playlistIndex}`);
+        } else {
+          lines.push('Scope: Song');
+        }
+        for (const warning of result.warnings) {
+          lines.push(`Note: ${warning}`);
+        }
+
+        setSoundExportSummary(lines.join('\n'));
+      } catch (error) {
+        logger.error('Context-aware MOD export failed', error);
+        const lines: string[] = [];
+        lines.push('MOD export failed.');
+        if (error instanceof Error) {
+          lines.push(`Error: ${error.message}`);
+        }
+        setSoundExportSummary(lines.join('\n'));
+      }
+    },
+    [song, getScopedSongForPattern],
+  );
+
   const exportBinWithContext = useCallback(
     async (ctx: ExportContext) => {
       try {
@@ -529,6 +667,8 @@ export function useFileOperations({
     exportVgmWithContext,
     exportWavWithContext,
     exportMaxWithContext,
+    exportMidiWithContext,
+    exportModWithContext,
     exportDumpWithContext,
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,

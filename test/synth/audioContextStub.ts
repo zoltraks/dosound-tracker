@@ -13,7 +13,12 @@ const createParam = (): ParamStub => ({
 });
 
 const createAudioContextStub = () => {
-  const createdGains: { gain: ParamStub }[] = [];
+  const createdGains: {
+    gain: ParamStub;
+    connect: ReturnType<typeof vi.fn>;
+    disconnect: ReturnType<typeof vi.fn>;
+  }[] = [];
+  const createdPanners: { pan: ParamStub; connect: ReturnType<typeof vi.fn> }[] = [];
   const createdOscillators: {
     type: string;
     frequency: ParamStub;
@@ -28,8 +33,13 @@ const createAudioContextStub = () => {
     sampleRate: 44100,
     destination: {},
     createGain() {
-      const node = { gain: createParam(), connect: vi.fn() };
+      const node = { gain: createParam(), connect: vi.fn(), disconnect: vi.fn() };
       createdGains.push(node);
+      return node;
+    },
+    createStereoPanner() {
+      const node = { pan: createParam(), connect: vi.fn(), disconnect: vi.fn() };
+      createdPanners.push(node);
       return node;
     },
     createOscillator() {
@@ -63,6 +73,7 @@ const createAudioContextStub = () => {
   return {
     context: context as unknown as AudioContext,
     createdGains,
+    createdPanners,
     createdOscillators,
     buffers,
   };

@@ -11,6 +11,7 @@ import {
 } from '../../utils/song/songParser.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
 import { normalizeSongSpeed } from '../../utils/song/songSpeed.ts';
+import { normalizeSongStereo } from '../../utils/song/songStereo.ts';
 import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { removeMirroredSnapshot } from '../../utils/storage/persistenceMirror.ts';
@@ -122,6 +123,8 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
     ? Math.floor(clockCandidate)
     : DEFAULT_SONG_CLOCK;
 
+  const stereo = normalizeSongStereo(song.stereo);
+
   return {
     ...(song as unknown as Song),
     length,
@@ -131,6 +134,7 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
     chip: normalizedChip,
     frame: normalizedFrame,
     clock: normalizedClock,
+    ...(stereo ? { stereo } : { stereo: undefined }),
   };
 }
 

@@ -58,6 +58,27 @@ describe('parseSongFromYaml loader rules', () => {
     }
   });
 
+  it('marks AY as supported and an unknown chip as unsupported', () => {
+    try {
+      let ayMeta: { isChipSupported?: boolean } = {};
+      const aySong = parseSongFromYaml(base().replace('length: 4', "length: 4\n  chip: 'ay'"), {
+        onMetadata: (metadata) => (ayMeta = metadata),
+      });
+      expect(aySong.chip).toBe('AY');
+      expect(ayMeta.isChipSupported).toBe(true);
+
+      let sidMeta: { isChipSupported?: boolean } = {};
+      const sidSong = parseSongFromYaml(base().replace('length: 4', "length: 4\n  chip: 'SID'"), {
+        onMetadata: (metadata) => (sidMeta = metadata),
+      });
+      expect(sidSong.chip).toBe('SID');
+      expect(sidMeta.isChipSupported).toBe(false);
+    } catch (error) {
+      console.log('chip support mismatch');
+      throw error;
+    }
+  });
+
   it('treats missing playlist tracks as empty slots', () => {
     try {
       const song = parseSongFromYaml(base('  loop: 0\n'));

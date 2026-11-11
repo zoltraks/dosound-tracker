@@ -112,7 +112,9 @@ Source is organised by responsibility under `src/`, with folders for components,
 
 The core data models represent the musical content of a song. See src/synth/SoundDriver.ts for Song, Instrument, Pattern, Note, Step, and Line type definitions.
 
-**Song** is the top-level container. It holds metadata (title, author, year, speed, length, loop point, chip type, frame rate, chip clock), an array of Pattern objects, an array of Line objects forming the playlist, and an array of Instrument objects.
+**Song** is the top-level container. It holds metadata (title, author, year, speed, length, loop point, chip type, frame rate, chip clock), an optional `stereo` output setting, an array of Pattern objects, an array of Line objects forming the playlist, and an array of Instrument objects.
+
+**SongStereo** declares the per-channel pan configuration. It carries an optional `layout` id and optional `A`, `B`, `C` channel pans on a 0..1 scale (0 left, 0.5 centre, 1 right). Resolution starts from the layout's canonical positions and applies each channel override. A missing `stereo` node resolves to all-centre pans - the mono mixdown. The layout catalog and helpers live in `src/constants/song.ts` and `src/utils/song/songStereo.ts`.
 
 **Instrument** defines a synthesized voice. Each instrument contains arrays for volume, shift, pitch, noise, and mode envelopes of length ENVELOPE_LENGTH (32 steps). Optional fields include a base key, default octave, sustain position, display color, and MIDI metadata. See src/synth/SoundDriver.ts for the Instrument interface.
 
@@ -159,7 +161,7 @@ where YM_CLOCK is the configured chip clock (2000000 Hz by default, 1000000 Hz a
 
 The mixer register (R7) uses active-low bits: a bit value of 0 means the corresponding tone or noise generator is enabled. Bits 0-2 control tone for channels A, B, C and bits 3-5 control noise for channels A, B, C.
 
-Volume uses a 16-level logarithmic scale defined by YM_LOG_VOLUME_TABLE in src/synth/YM2149.ts, approximating -2 dB per step from silence (0) to full amplitude (15).
+Volume uses a 16-level logarithmic scale defined by YM_LOG_VOLUME_TABLE in src/synth/YM2149.ts, approximating -2 dB per step from silence (0) to full amplitude (15). The song's `chip` field selects the variant's curve: `AY` uses AY_LOG_VOLUME_TABLE - the 16-level AY-3-8910 amplitude curve derived from the odd-index entries of the vendored AY_DAC_TABLE in src/synth/ayumiCore.ts - and every other value uses YM_LOG_VOLUME_TABLE. The volumeTableForChip helper in src/synth/YM2149.ts resolves the selection.
 
 The register write path supports batch updates via beginBatch and endBatch to avoid redundant audio node recalculations when multiple registers change in a single frame.
 
@@ -172,7 +174,19 @@ Two engines render YM2149 audio behind the shared `SoundEngine` contract in `src
 | `internal` | `src/synth/YM2149.ts` - Web Audio oscillators, noise buffer, and gain nodes        |
 | `ayumi`    | `src/synth/AyumiEngine.ts` driving `ayumiCore.ts` inside `workers/ayumiWorklet.ts` |
 
-The `SoundEngine` surface covers `writeRegister`, `beginBatch`, `endBatch`, `updateChannelWithInstrument`, `silenceAll`, `reset`, `setClock`, `getClock`, `getRegisters`, `getRegistersArray`, `getState`, and `dispose`. The instrument-to-register helpers shared by both engines live in `src/synth/channelInstrument.ts`.
+The `SoundEngine` surface covers `writeRegister`, `beginBatch`, `endBatch`, `updateChannelWithInstrument`, `silenceAll`, `reset`, `setClock`, `getClock`, `setChip`, `setChannelPans`, `getRegisters`, `getRegistersArray`, `getState`, and `dispose`. The instrument-to-register helpers shared by both engines live in `src/synth/channelInstrument.ts`.
+
+**Chip variant**
+
+The song's `chip` field declares the PSG variant - `YM` (YM2149, the default) or `AY` (AY-3-8910 family), the `SUPPORTED_SONG_CHIPS` list in src/constants/song.ts. `useAudioSetup` mirrors the value into a ref, applies it on engine land after `setClock`, and pushes it to the live engine through `setChip` when it changes. Both engines model the variant as the amplitude curve alone - the register model, tone, noise, and envelope machinery stay shared. The internal engine swaps its stored volume table; the Ayumi worklet maps `AY` to `isYm = false` on its `configure` call so the core selects the AY_DAC_TABLE, and any other value keeps YM. An unrecognised chip resolves to the YM curve at every boundary.
+
+**Stereo routing**
+
+`setChannelPans` takes three pan values on the 0..1 scale (0 left, 0.5 centre, 1 right), one per channel A/B/C. `useAudioSetup` resolves the song's `stereo` node through `resolveChannelPans` and pushes the result to the engine - on engine land after `setClock` and again whenever the resolved pans change. Every preview and playback surface writes through the same engine instance, so pan applies uniformly.
+
+The internal engine creates three `StereoPannerNode`s and three per-channel noise gains at construction but wires them only while stereo is active (any pan off centre). In mono mode the graph is the original one - channel gains straight to the destination and the summed noise gain - so default output is bit-identical to the pre-stereo path. In stereo mode each channel's tone and noise contributions route through its own panner, which maps the 0..1 domain onto the node's -1..1 equal-power pan law.
+
+The Ayumi engine renders two output channels in `workers/ayumiWorklet.ts` (`outputChannelCount: [2]`). A `pans` message carries the three values to the worklet, which applies them through `AyumiCore.setPan` and keeps them across `configure` calls so clock changes and resets preserve the routing. When every pan sits at centre the worklet keeps emitting the folded mono sample `(left + right) * 0.5 * AYUMI_OUTPUT_GAIN` through the soft-knee limiter on both channels - the exact value the mono node produced; with any channel off centre each side renders `side * AYUMI_OUTPUT_GAIN` through the same limiter. The Ayumi pan law is the native linear mode (`isEqp = false`), so mid-pan weighting differs slightly from the internal engine's equal-power law - centre and the extremes agree exactly.
 
 The engine selection persists under the `dosound-tracker-sound-engine` local storage key (`StorageKeys.SOUND_ENGINE`). `loadSoundEngineId` in `src/utils/storage/soundEngine.ts` validates the stored value against the id set and falls back to `internal` when the key is missing or holds an unrecognised value. Switching the engine disposes the active instance and creates the replacement inside `useAudioSetup` without a page reload - sounding notes are silenced and playback does not carry over.
 
@@ -189,11 +203,15 @@ The Ayumi core is setter-based rather than register-based. `workers/ayumiWorklet
 | R11-R12  | Envelope period - `setEnvelope(16-bit period)`                         |
 | R13      | Envelope shape - `setEnvelopeShape(shape & 0x0f)`                      |
 
-The worklet renders one output block by looping `process()` plus `removeDc()` into a single channel. All three Ayumi channels are panned centre so the voices merge into one mono path, matching the Atari ST. `AyumiEngine` keeps a main-thread mirror of the register file so `getRegisters`, `getRegistersArray`, and `getState` stay synchronous for the Dump and EQ panels. A clock change reconfigures the core and replays the mirrored registers because `configure` resets tone and envelope state.
+The worklet renders one output block by looping `process()` plus `removeDc()` into the node's two output channels. While every channel pan sits at centre both sides carry the folded mono mixdown, matching the Atari ST; an off-centre pan renders the left and right taps separately. A stage gain (`AYUMI_OUTPUT_GAIN = 1.2`) scales the rendered stream to the measured loudness-parity point with the internal engine, followed by a soft-knee limiter (`AYUMI_SOFT_KNEE = 0.9`) that keeps the path linear for ordinary material and saturates the extreme tail smoothly - the folded peak reaches ~1.33 at three in-phase full-volume channels, so the limiter, not the gain alone, keeps output under `1.0`. `AyumiEngine` keeps a main-thread mirror of the register file so `getRegisters`, `getRegistersArray`, and `getState` stay synchronous for the Dump and EQ panels. A clock change reconfigures the core and replays the mirrored registers because `configure` resets tone and envelope state.
 
 ## Sequencer Timing
 
 Playback is driven by the song's frame rate (default 50 Hz, DEFAULT_SONG_FRAME = 50, defined in src/constants/song.ts). The frame rate is configurable per song via the `frame` field. Each tick corresponds to 1000 / frameRate milliseconds (20 ms at 50 Hz, 16.66 ms at 60 Hz).
+
+The tick clock is an `AudioWorkletProcessor` in src/workers/sequencerWorklet.ts, registered as `sequencer-processor` on the app's shared `AudioContext`. It counts rendered samples inside `process()` - one invocation per 128-sample render quantum - and posts a `tick` message for every interval boundary crossed, catching up inside a single quantum when several boundaries passed. The processor owns the playback position (pattern, line, tick) and the playlist wrap logic. `useSequencer` loads the module through a static `?worker&url` import, creates the node with one silent output channel connected to the destination so the render graph pulls it, and queues protocol messages until the asynchronous `addModule` resolves.
+
+The message contract is unchanged from the worker implementation: `start`, `stop`, `update`, and `setParams` travel in, `tick`, `update`, and `stop` travel out. `start` posts the starting tick immediately from the message handler because tick 0 carries the first note's attack and cannot wait for the first render quantum. While the `AudioContext` is suspended `process()` does not run and no ticks flow - the position view can never advance while the context renders nothing, the same invariant `useAudioContextPlaybackSync` maintains across `statechange` transitions.
 
 Envelope progression advances every 2 ticks (40 ms at 50 Hz, 33.33 ms at 60 Hz). This means instrument envelope arrays (volume, shift, pitch, noise, mode) step forward at half the frame rate.
 
@@ -201,25 +219,29 @@ Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in 
 
 The playback speed parameter controls how many ticks elapse between sequencer steps. The minimum speed is 2 and only even values are used: an odd value is normalized down to the previous even value, and non-positive or non-numeric input falls back to 6. The normalization is implemented by `normalizeSongSpeed` in src/utils/song/songSpeed.ts and is applied on the song load and restore paths.
 
-The song speed field on the Song object determines the global tempo. The frame rate field (default 50), chip field (default "YM"), and chip clock field (default 2000000) are defined in src/constants/song.ts. Supported frame rates are 50 and 60 Hz. Supported chip clocks are 2000000 (2 MHz) and 1000000 (1 MHz).
+The song speed field on the Song object determines the global tempo. The frame rate field (default 50), chip field (default "YM"), and chip clock field (default 2000000) are defined in src/constants/song.ts. Supported frame rates are 50 and 60 Hz. Supported chips are `YM` and `AY`. Supported chip clocks are 2000000 (2 MHz) and 1000000 (1 MHz).
 
 ## Export Formats
 
-DOSOUND Tracker supports six export formats. Each format produces a downloadable file from the browser environment. See FORMAT.md for detailed file layout specifications.
+DOSOUND Tracker supports eight export formats. Each format produces a downloadable file from the browser environment. See FORMAT.md for detailed file layout specifications. Pan is a live-render property - no export format reads the `stereo` node: the register-stream formats carry the same YM2149 register data, the MAX chip-panning byte stays `0x00` (Not Specified, per `MAX.md` it positions a whole chip rather than per-channel wiring), the WAV export keeps its mono software mixdown, and the MOD and MIDI exports carry no pan data.
 
-**DOSOUND Assembly** generates Motorola 68000 assembly source compatible with the DOSOUND XBIOS playback routine. The export simulates song playback, collects register states per frame, and emits optimized dc.b directives with register/value pairs and delay markers. Three strategies are available: simple, complex, and optimized. See src/exports/asm.ts.
+**DOSOUND Assembly** generates Motorola 68000 assembly source compatible with the DOSOUND XBIOS playback routine. The export simulates song playback, collects register states per frame, and emits optimized dc.b directives with register/value pairs and delay markers. Four strategies are available: simple, complex, optimized, and compact. Compact extends the optimized path with byte-level tone dedup, audible-channel-keyed mixer dedup, merged delays split at the 256-frame single-command maximum, and conditional END silences - the emitted stream stays replay-equivalent for the stock routine. See src/exports/asm.ts.
 
 **Binary** parses the generated assembly output and extracts raw byte data from dc.b directives, producing a compact binary file suitable for direct memory loading. See src/exports/bin.ts.
 
 **Register Dump** writes the raw YM2149 register stream as a 68k assembly listing (typical extension `_dump.s`), produced by `exportSongRegisterDump` in src/exports/asm.ts. The dump is intended for debugging and analysis of the per-frame register data rather than for compact inclusion. See FORMAT.md for the dump layout.
 
-**MAX** produces a MAX-format binary file (MAX specification v1.7) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The chip setup chunk records the song's frame rate and chip clock. The export captures one register snapshot per tick and writes all 14 YM2149 registers (R0–R13). Three strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/compression/zx0.ts.
+**MAX** produces a MAX-format binary file (MAX specification v1.7) with chunk-based structure, including info chunks for song metadata, a chip setup chunk for the YM2149, a stream definition chunk specifying the stream format and compression, and a data chunk containing the compressed register stream. The chip setup chunk records the song's frame rate and chip clock. The export captures one register snapshot per tick and writes all 14 YM2149 registers (R0–R13). Strategies map to stream formats: simple produces a RAW8 dump (14 bytes per frame), complex produces a REG7 differential stream with single-byte frame delimiters, and optimized produces a REG7 stream with coalesced multi-frame delays - compact selects the same optimized REG7 stream, as REG7 already dedups registers per byte. All strategies apply ZX0 compression with a 1024-byte ring-buffer window (maxOffset 1023) and include the uncompressed stream size in the stream definition chunk. See src/exports/max.ts and src/utils/compression/zx0.ts.
 
-**VGM** generates a VGM (Video Game Music) file, a standard chiptune logging format. The export converts register writes and delays into VGM command stream with delay optimization and loop point preservation. The VGM header records the song's frame rate (offset 0x24) and chip clock (offset 0x74). Wait commands use 0x63 for 50 Hz, 0x62 for 60 Hz, and 0x61 with explicit sample counts for other rates. See src/exports/vgm.ts.
+**VGM** generates a VGM (Video Game Music) file, a standard chiptune logging format. The export converts register writes and delays into VGM command stream with delay optimization and loop point preservation. The optimized and compact strategies select the same delay-optimized command stream. The VGM header records the song's frame rate (offset 0x24) and chip clock (offset 0x74). Wait commands use 0x63 for 50 Hz, 0x62 for 60 Hz, and 0x61 with explicit sample counts for other rates. See src/exports/vgm.ts.
 
 **WAV** renders the song to a 16-bit PCM WAV file at 44100 Hz sample rate. The export uses a software YM2149 simulation including a noise LFSR to produce the final audio samples. The samples-per-tick is derived from the song's frame rate (882 at 50 Hz, 735 at 60 Hz) and the frequency calculation uses the song's chip clock. See src/exports/wav.ts.
 
-Export scope can target the full song, a single pattern, or a single instrument. The `ExportType` and `ExportStrategy` (simple, complex, optimized) unions are typed in src/constants/export.ts - the six formats dispatch through the export modal's per-format handlers.
+**MOD** produces a ProTracker 31-sample module (`M.K.` tag) from the simulated register stream at row granularity. Each tracker row becomes one MOD row: tone periods convert to Amiga periods snapped to the finetune-0 table, channel volumes become `Cxx` set-volume effects, release rows become `EC0` note cuts, and the song's speed and frame-derived BPM land as `F` effects on the always-empty fourth channel's first two rows. Two generated samples carry all instruments - a 32-byte square wave for tone and a 512-byte deterministic noise block for noise - so envelope and timbre detail is approximated and reported through the result's warning list. See src/exports/mod.ts.
+
+**MIDI** produces a Standard MIDI File type 1 at note level for DAW import. One tracker row maps to 24 ticks at a 96 PPQ division, so the tempo meta event encodes the song's speed and frame rate directly (speed 6 at 50 Hz is 125 BPM). Each tracker channel becomes one SMF track on its own MIDI channel unless `instrument.midi.channel` overrides it; `instrument.midi.program` emits program changes, and the volume column arrives as note velocity plus CC7 on held notes. Envelope, noise, pitch, and sustain semantics have no MIDI representation and are reported as dropped in the result's warning list. See src/exports/midi.ts.
+
+Export scope can target the full song, a single pattern, or a single instrument. The `ExportType` and `ExportStrategy` (simple, complex, optimized, compact) unions are typed in src/constants/export.ts - the eight formats dispatch through the export modal's per-format handlers. MOD and MIDI ignore the strategy selector since neither format defines strategies.
 
 ## Constants
 
@@ -227,7 +249,7 @@ Application constants live in `src/constants/`, one file per domain. See those f
 
 - **music.ts** — note frequencies, octave bounds, default and maximum pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits. Also holds the `POW2_OCTAVE_SCALE` and `POW2_SEMITONE_SCALE` lookup tables with their `pow2Octave`/`pow2Semitone` accessors - tables built from `Math.pow` itself so the frequency paths stay bit-identical, with a `Math.pow` fallback outside the integer domain.
 - **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
-- **song.ts** — chip, frame rate, and clock defaults and their supported values.
+- **song.ts** — chip, frame rate, and clock defaults and their supported values, plus the stereo vocabulary (`STEREO_LAYOUTS`, `STEREO_LAYOUT_ORDER`, `CHANNEL_PAN_STEPS`, `DEFAULT_CHANNEL_PANS`).
 - **export.ts** — the ExportType and ExportStrategy union types.
 - **sound.ts** — the sound-engine vocabulary (SOUND_ENGINE_IDS, SoundEngineId, DEFAULT_SOUND_ENGINE_ID, SOUND_ENGINE_LABELS).
 - **navigation.ts** — NAVIGATION_ORDER and the KEYBOARD_SHORTCUTS map.
@@ -277,12 +299,44 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - CTRL+S runs SAVE SONG
 - CTRL+I runs NEW INSTRUMENT
 
+**History shortcuts:**
+
+- CTRL+Z undoes the last recorded edit
+- CTRL+Y redoes the last undone edit
+- CTRL+SHIFT+Z redoes the last undone edit
+
 **Modal shortcuts:**
 
 - ESCAPE cancels or closes the open modal dialog
 - ENTER confirms the open modal dialog
 
 The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
+
+## Edit History
+
+The application keeps a bounded undo/redo history over the composition data: pattern steps, instrument parameters, playlist lines, and song information fields. The model is snapshot-based, not command-based - see `src/utils/song/editHistory.ts` for the stack logic and `src/hooks/song/useDataManagement.ts` for the recording boundary.
+
+**Recording boundary**
+
+`useDataManagement` holds the undo and redo stacks in a ref and snapshots the `{song, instrument}` pair before every recorded mutation. Every recorded mutator - `updateSong`, `updateInstrument`, `createNewSong`, `createNewInstrument`, `loadInstrument`, `createNewPattern`, `addPlaylistEntry`, `optimizeSong`, `renumberSong`, and `applyParsedSong` - pushes one entry before applying its change, so composite operations such as paste, transpose, renumber, and optimize land as single history entries. Snapshots hold object references because every mutation helper produces fresh objects through spreads; nothing is deep-copied.
+
+**Non-recorded paths**
+
+`setCurrentInstrument` alone is instrument selection, not a composition edit, and stays out of the history. The startup mirror restore, the instrument-sync effect, and the lazy pattern materialization in `getCurrentPatternForTrack` are also silent - the last runs `updateSong` with `{ record: false }`.
+
+**Coalescing**
+
+`updateSong` accepts a `coalesceKey` option. A second recorded edit carrying the same key inside `EDIT_COALESCE_MS` (1000 ms) joins the previous entry instead of pushing a new one. Only the song information fields pass a key (`song-info:<field>`), so a typing burst or a toggle cycle merges while every other edit stays one entry per gesture.
+
+**Restore**
+
+`undo` pops the undo stack, pushes the live pair onto the redo stack, and restores both setters with the song marked dirty; `redo` mirrors it. A recorded edit clears the redo stack, so a new edit after undo discards the redo branch. The stacks are bounded by `EDIT_HISTORY_LIMIT` (100 entries, oldest evicted) and are session state - they never persist to storage or the song file and start empty on reload.
+
+**Audio path**
+
+Restore applies through the ordinary `setCurrentSong`/`setCurrentInstrument` setters only. No engine call, worker message, or callback re-creation happens on undo, so an undo during playback re-syncs the sequencer through the existing `usePlaybackControls` effects exactly like a normal edit.
+
+The history shortcuts fire from the global key handler, which skips editable targets. Inside a song information text input CTRL+Z therefore runs the browser's native text undo, not the song history.
 
 ## Session Persistence
 
@@ -304,7 +358,7 @@ On startup the application requests persistent storage and checks `StorageKeys.S
 
 **Mirror invalidation**
 
-Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action removes every `dosound-tracker-*` local storage key except the preserved theme and debug-mode settings, then awaits the mirror clear and reloads only after the clear commits. Without this, intentionally deleted data would resurrect on the next load.
+Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action removes every `dosound-tracker-*` local storage key except the preserved theme, text-scale, and debug-mode settings, then awaits the mirror clear and reloads only after the clear commits. Without this, intentionally deleted data would resurrect on the next load.
 
 **Persistence reminder**
 
@@ -318,7 +372,17 @@ Three keys hold the settings toggles introduced with the modal: `STARTUP_TONE`, 
 
 Content modals size by layout: on the desktop layout the settings dialog takes only the height its controls need, capped at 80% of the viewport and centered inside the backdrop, while in the mobile layout the sized modals - settings, text display, MIDI, download - expand to fill the screen and keep their own internal scrolling regions.
 
-The settings modal's committed values persist under the per-key storage: `THEME`, `TRACK_BACKGROUND_ENABLED`, `PASTE_TRACK_MODE`, and `SOUND_ENGINE` cover the reused options. The `SOUND` category holds the engine selector (`Internal`, `Ayumi`); committing it applies the engine swap live through `useAudioSetup`, silencing and disposing the previous engine without a reload.
+The settings modal's committed values persist under the per-key storage: `THEME`, `TEXT_SCALE`, `TRACK_BACKGROUND_ENABLED`, `PASTE_TRACK_MODE`, and `SOUND_ENGINE` cover the reused options. The `SOUND` category holds the engine selector (`Internal`, `Ayumi`); committing it applies the engine swap live through `useAudioSetup`, silencing and disposing the previous engine without a reload.
+
+**Theme and text scale**
+
+`THEME` stores one of three values - `'dark'`, `'light'`, or `'contrast'` - with `'dark'` as the default and the fallback for unrecognised values. The selected value applies as a class on `.app`: `dark` uses the `:root` custom-property palette, `light` and `contrast` override the same palette surface through their own blocks in `src/App.css`. The header toggle keeps day/night semantics and flips only between `dark` and `light`; `contrast` is reachable through the settings modal. `useTheme` returns the variant directly and `isDarkMode` is derived as `theme !== 'light'`, so dark-based assets (logo, rainbow-mode icon, initial overlay) serve both dark variants.
+
+`TEXT_SCALE` stores one of three steps - `'100'`, `'125'`, or `'150'` - with `'100'` as the default. A non-default step applies an `app-scale-<n>` class on `.app` that sets a `--app-zoom` factor; `.app` renders at `zoom: var(--app-zoom)` with `width` and `height` divided by the same factor, so the grid scales uniformly while the window keeps exactly the app size. Panels keep their own scroll regions under scaling, and `.modal-dialog` bounds are capped by the inverse factor so dialogs stay inside the window. Both keys join `THEME` and `DEBUG_MODE` in the RESET-preserved set.
+
+**Assistive-technology semantics**
+
+The landmark structure is a `<main>` element for `.main-content`, the existing `<header>` banner, and labelled `role="region"` landmarks on the command panel (`Commands`) and the three columns (`Pattern editor`, `Instrument envelopes`, `Song and instruments`). The application intercepts TAB globally for section navigation, so a native skip link can never receive focus - the landmark map carries the skip-to-content role instead. Inside the pattern editor each `TrackPanel` renders a visually-hidden `role="status"` live region that announces the cursor row with column context (`Track A row 0A, note column, C-4 instrument 00, volume 0F`), populated only while the track is the active section, which gives a designed row announcement without exposing sixty-four cells per track to flat reading.
 
 ## Markdown Rendering Security
 
@@ -412,15 +476,15 @@ The desktop main process intercepts the window `close` event and forwards `app-c
 
 ### Modal Working State
 
-A modal whose contents must respond to the global Enter and ESC handler keeps its working state in an orchestration hook owned above the modal pipeline. Component-internal state is invisible to `useModalManager` - the handler attaches to `window` in the capture phase and cannot read a draft or a selection held inside the modal component. `useSettingsDialog` holds the settings draft, category, and reset-confirmation state for this reason.
+A modal whose contents must respond to the global Enter and ESC handler keeps its working state in an orchestration hook owned above the modal pipeline. Component-internal state is invisible to `useModalManager` - the handler attaches to `window` in the capture phase and cannot read a draft or a selection held inside the modal component. `useSettingsSession` owns the settings session at the composition root - the committed-settings reload and the commit and cancel handlers - and delegates the working state to `useSettingsDialog`, which holds the settings draft, category, and reset-confirmation state for this reason.
 
 ## Known Limitations
 
 The following constraints reflect the current state of the codebase and are candidates for future improvement.
 
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
-- **No undo/redo**: The application does not implement an undo/redo history. All edits are immediate and irreversible without manual re-entry. No command pattern or state snapshot mechanism is present.
-- **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map and remains the largest file in the tree. Bounded concerns live in dedicated orchestration hooks under `src/hooks/` - further decomposition remains a candidate for later windows.
-- **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) and the Ayumi engine now carry dedicated `test/synth/` suites, and the sequencer worker carries `test/workers/` protocol tests. The export modules (src/exports/) are exercised by the `test/exports/` suite. Remaining thin surfaces are components, hooks, and the `AboutModal`/`DownloadModal` dialogs.
-- **Single chip support**: Only the YM2149 chip is supported. The constants in src/constants/song.ts define supported chips as a single-element array, leaving no room for AY-3-8910 or other PSG variants without code changes.
+- **Session-only undo/redo**: The undo/redo history described in the Edit History section is session state. It is not written to the song file, to localStorage, or to the persistence mirror, so history starts empty on every reload and does not survive a song switch through `createNewSong` boundaries beyond a single undo step.
+- **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map and remains the largest file in the tree. Bounded concerns live in dedicated orchestration hooks under `src/hooks/`, including the store-selector bundle, the stereo pan cluster, and the settings session - further decomposition remains a candidate for later windows.
+- **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) and the Ayumi engine now carry dedicated `test/synth/` suites, and the sequencer worklet carries `test/workers/` protocol tests. The export modules (src/exports/) are exercised by the `test/exports/` suite. Remaining thin surfaces are components, hooks, and the `AboutModal`/`DownloadModal` dialogs.
+- **Single chip instance**: A song drives one PSG instance. The `chip` field selects the variant (YM, AY) and the `stereo` node routes its three channels, but dual-chip configurations such as TurboSound have no representation in the song model.
 - **Browser audio dependency**: Real-time playback relies on the Web Audio API and OscillatorNode, which imposes browser-specific behavior and latency characteristics that differ from native Atari ST hardware.

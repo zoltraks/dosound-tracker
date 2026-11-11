@@ -33,6 +33,7 @@ import {
 import { expandEnvelope, expandLoopingEnvelope } from '../envelope/envelopeUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeSongSpeed } from './songSpeed.ts';
+import { normalizeSongStereo } from './songStereo.ts';
 import { clampMidiChannel, clampMidiProgram } from '../midi/midiUtils.ts';
 import { createNoteOff } from '../track/trackPanelUtils.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
@@ -52,6 +53,7 @@ interface SongYamlNode {
   chip?: unknown;
   frame?: unknown;
   clock?: unknown;
+  stereo?: unknown;
   line?: unknown;
   playlist?: unknown;
   pattern?: unknown;
@@ -446,6 +448,8 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
   const normalizedClock = Number.isFinite(clockRaw) ? Math.floor(clockRaw) : DEFAULT_SONG_CLOCK;
   const hasClockField = Object.prototype.hasOwnProperty.call(songNode, 'clock');
 
+  const stereo = normalizeSongStereo(songNode.stereo);
+
   const song: Song = {
     title,
     author,
@@ -459,6 +463,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     chip: normalizedChip,
     frame: normalizedFrame,
     clock: normalizedClock,
+    ...(stereo ? { stereo } : {}),
   };
 
   if (options?.onMetadata) {

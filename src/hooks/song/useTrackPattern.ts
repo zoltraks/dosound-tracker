@@ -2,11 +2,12 @@ import { useCallback } from 'react';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
 import { logger } from '../../utils/log/logger.ts';
 import type { Pattern, Song } from '../../synth/SoundDriver.ts';
+import type { UpdateSongOptions } from './useDataManagement.ts';
 
 type UseTrackPatternParams = {
   currentSong: Song;
   sequencerPatternIndex: number;
-  updateSong: (updates: Partial<Song>) => void;
+  updateSong: (updates: Partial<Song>, options?: UpdateSongOptions) => void;
 };
 
 export const useTrackPattern = ({
@@ -60,7 +61,9 @@ export const useTrackPattern = ({
         };
 
         const updatedPatterns = [...currentSong.pattern, newPattern];
-        updateSong({ pattern: updatedPatterns });
+        // Lazy fix-up of a missing pattern, not a user edit - keep it out
+        // of the undo history.
+        updateSong({ pattern: updatedPatterns }, { record: false });
 
         foundPattern = newPattern;
       }

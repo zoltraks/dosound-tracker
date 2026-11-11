@@ -246,6 +246,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - **ENTER** for editing
 - **ESCAPE** for cancel
 - **CTRL + N / CTRL + O / CTRL + S / CTRL + I** for new song, load song, save song, and new instrument
+- **CTRL + Z** to undo the last edit and **CTRL + Y** or **CTRL + SHIFT + Z** to redo it
 - Hotkey support for all functions
 
 **Visual Feedback:**
@@ -328,7 +329,7 @@ Application supports several export formats. Each format can target the full son
 - `dc.b` directive stream
 - XBIOS compatible
 - 68k assembly integration
-- Three strategies: simple, complex, optimized
+- Four strategies: simple, complex, optimized, compact
 
 **Register Dump (DUMP):**
 
@@ -358,7 +359,7 @@ Application supports several export formats. Each format can target the full son
 - Info chunks for song metadata
 - Chip setup chunk recording frame rate and chip clock
 - Stream definition chunk with compression info
-- Three strategies: simple (RAW8 dump, 14 bytes per frame), complex (REG7 differential stream with single-byte frame delimiters), optimized (REG7 stream with coalesced multi-frame delays)
+- Four strategies: simple (RAW8 dump, 14 bytes per frame), complex (REG7 differential stream with single-byte frame delimiters), optimized and compact (REG7 stream with coalesced multi-frame delays)
 - ZX0 compression with 1024-byte ring-buffer window applied to all strategies
 - All 14 YM2149 registers (R0 through R13) captured per frame
 
@@ -375,7 +376,8 @@ Application supports several export formats. Each format can target the full son
 
 - **SIMPLE DUMP**: All registers every frame
 - **COMPLEX DUMP**: Changed registers only
-- **OPTIMIZED DUMP**: Maximum compression with coalesced delays
+- **OPTIMIZED DUMP**: Coalesced delays on top of complex
+- **COMPACT DUMP**: Maximum packing - changed tone bytes only, audible-keyed mixer writes, chunked delays
 
 ### Advanced Features
 
@@ -480,7 +482,7 @@ The following settings persist across sessions via localStorage:
 **Performance:**
 
 - Real-time synthesis at configurable frame rate (50 Hz or 60 Hz)
-- Low-latency Web Audio rendering through a dedicated sequencer worker
+- Low-latency Web Audio rendering through an AudioWorklet sequencer clock
 
 **File Formats:**
 
@@ -569,7 +571,7 @@ Conceptually:
 - `loop`: Optional. 0‑based playlist index where playback loops (for exports that support looping).
 - `frame`: Optional. Replay rate in Hz. Supported values: `50` (default) or `60`.
 - `clock`: Optional. Chip clock in Hz. Supported values: `2000000` (2 MHz, default) or `1000000` (1 MHz).
-- `chip`: Optional. Chip type. Currently only `"YM"` is supported.
+- `chip`: Optional. Chip type: `"YM"` (YM2149, default) or `"AY"` (AY-3-8910 family). Toggle in the Song information panel.
 - `line`: Required list of rows (arrangement).
   - Loader also accepts the legacy key `playlist`.
 - `pattern` / `patterns`: Required list of pattern definitions.
@@ -887,7 +889,7 @@ Use the UI commands corresponding to:
 - **SAVE INST** – single instrument YAML.
 - **EXPORT** – opens the Export dialog where you pick:
   - What: **Song**, **Pattern (current playlist position)**, or **Instrument (current)**.
-  - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, or **OPTIMIZED DUMP**.
+  - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, **OPTIMIZED DUMP**, or **COMPACT DUMP**.
   - Format: **DATA**, **DUMP**, **BIN**, **VGM**, **MAX**, **WAV**.
 
 Then:
@@ -1011,9 +1013,9 @@ music:
     dc.b $ff,0
 ```
 
-With the **COMPLEX DUMP** and **OPTIMIZED DUMP** strategies, only **changed registers** are written to keep data compact.
+With the **COMPLEX DUMP**, **OPTIMIZED DUMP**, and **COMPACT DUMP** strategies, only **changed registers** are written to keep data compact.
 
-### Export Strategies: Simple vs Complex vs Optimized
+### Export Strategies: Simple vs Complex vs Optimized vs Compact
 
 In the UI this is chosen as **Strategy** in the Export dialog.
 
@@ -1028,6 +1030,13 @@ In the UI this is chosen as **Strategy** in the Export dialog.
 - **OPTIMIZED DUMP** (`strategy: optimized`):
   - Same register-diff approach as complex dump.
   - Additionally merges consecutive delay commands to reduce size.
+- **COMPACT DUMP** (`strategy: compact`):
+  - Same register-diff approach with tighter packing.
+  - Emits only the changed byte of a tone-period pair (`dc.b $00,$ll` or `dc.b $01,$hh` instead of the four-byte pair).
+  - Skips mixer writes that only change the enable bits of silent (volume 0) channels.
+  - Does not force tone-register rewrites after playlist-position markers.
+  - Splits merged delays into commands of at most 256 frames so every delay count fits one byte.
+  - Silences only the channels not already muted at the end of the stream.
 
 In both cases, the stream ends by silencing channels (volumes to 0) and appending `dc.b $FF,0`.
 

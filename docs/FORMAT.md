@@ -11,6 +11,8 @@ This document describes the data formats produced by the following commands:
 - `EXPORT MAX`
 - `EXPORT VGM`
 - `EXPORT WAV`
+- `EXPORT MOD`
+- `EXPORT MID`
 - `SAVE MIDI CONFIG`
 
 Examples of the YAML formats can be found under:
@@ -36,9 +38,14 @@ song:
   speed: 6 # required, positive integer (clamped and forced even)
   length: 64 # required, pattern length in rows (4..256)
   loop: 0 # optional, 0-based playlist index
-  chip: 'YM' # optional, chip type (default "YM")
+  chip: 'YM' # optional, chip type: YM or AY (default "YM")
   frame: 50 # optional, replay rate in Hz (default 50)
   clock: 2000000 # optional, chip clock in Hz (default 2000000)
+  stereo: # optional stereo output settings
+    layout: 'abc' # optional named layout: mono, abc, acb
+    A: 0.0 # optional channel A pan 0..1 (0 left, 0.5 centre, 1 right)
+    B: 0.5 # optional channel B pan
+    C: 1.0 # optional channel C pan
   line: [...] # required playlist list (or `playlist` alias when loading)
   pattern: [...] # required list (or `patterns` alias when loading)
   instrument: [...] # required list (or `instruments` alias when loading)
@@ -52,15 +59,27 @@ Loader rules (from `parseSongFromYaml`):
 - `speed`: invalid or ≤0 → defaults to 6, then clamped to ≥2 and forced even.
 - `length`: invalid → defaults to `PATTERN_LENGTH` (64), then clamped to `[4, 256]`.
 - `loop`: numeric or numeric string - clamped to `[0, playlist.length-1]` - otherwise `null`.
-- `chip`: missing or non-string → defaults to `"YM"` - string values are trimmed and uppercased.
+- `chip`: missing or non-string → defaults to `"YM"` - string values are trimmed and uppercased. Supported values are `YM` (YM2149) and `AY` (AY-3-8910 family); an unsupported value is kept on the song and raises the import warning.
 - `frame`: missing or non-numeric → defaults to `50` - numeric values are floored to integers.
 - `clock`: missing or non-numeric → defaults to `2000000` - numeric values are floored to integers.
+- `stereo`: missing or malformed → absent (mono). A mapping carries an optional `layout` and optional `A`, `B`, `C` channel keys. A bare string is accepted as shorthand for `{layout: <value>}`. `layout` is trimmed and lowercased. Channel values coerce to numbers and clamp to `[0, 1]` - invalid values are dropped.
+
+Resolved channel pans start from the layout's canonical positions (`mono` all-centre, `abc` A left / B centre / C right, `acb` A left / C centre / B right) and each channel key overrides its own slot. An unknown layout id resolves as `mono` while still honouring channel overrides.
 
 Saver rules (from `buildSongYamlForExport`):
 
 - `title` and `author` are written only when non-empty after trimming, and the stored value is trimmed of surrounding whitespace.
 - `chip`, `frame`, and `clock` are always written. `chip` is normalised to uppercase (default `"YM"`). `frame` defaults to `50` when missing. `clock` defaults to `2000000` when missing.
+- `stereo` is written only when the song carries stereo settings - `layout` and each channel key are emitted only when set.
 - The saver emits `line`, `pattern`, and `instrument` lists only. `playlist`, `patterns`, `instruments`, `steps`, `lines`, `space`, `off`, and `arpeggio` are loader-accepted input aliases and never appear in emitted output.
+
+### Stereo output
+
+The `stereo` node is a live-render property: it places each channel in the stereo field during real-time playback and instrument previews. It never changes the exported data - the assembly, binary, dump, VGM, and MAX exports carry the same YM2149 register stream regardless of pan, the WAV export renders the same mono mixdown, and the MOD and MIDI exports carry no pan data.
+
+The `layout` catalog is data-driven. `mono` maps to centre pans, `abc` to A left / B centre / C right, and `acb` to A left / C centre / B right - the canonical machine wirings. Channel keys give the free per-channel case; a `stereo` node without `layout` uses centre pans for channels it does not override.
+
+Channel keys name the chip's outputs by letter. A future dual-chip song model can extend the node (for example with D/E/F channels or a per-chip node) without changing the single-chip schema.
 
 ### Playlist
 
@@ -299,6 +318,14 @@ Details:
 - Comments describe the logical meaning (mixer, tone period, volume, delay, etc.).
 - In **simple dump** mode, all relevant registers are written every frame.
 - In **complex dump** mode, unchanged registers are skipped for compactness.
+- In **optimized dump** mode, complex-mode output additionally merges consecutive delay commands into one longer delay.
+- In **compact dump** mode, the stream shrinks further while staying replay-equivalent:
+  - tone-period writes emit only the changed byte of the coarse/fine pair, as a single-register `dc.b` when one half is unchanged;
+  - the mixer byte emits only when the change touches an audible channel's enable bits or the I/O bits - a channel is audible while its volume nibble is non-zero;
+  - playlist-position markers no longer force tone-register rewrites;
+  - merged delays split into commands of at most 256 frames each, so every delay count fits the single delay byte;
+  - the END block emits a zero-volume write only for channels whose last written volume is non-zero.
+- The DOSOUND formats (assembly, binary, and register dump) carry no chip declaration - the register stream is identical for every supported chip variant.
 - Ends with lines that silence all channels and a STOP marker, for example:
 
   ```asm
@@ -368,7 +395,7 @@ Details:
 - File header: magic `"MAX "` (4 bytes).
 - Version chunk: `'V'` + size + version number (currently 1).
 - Optional info chunk: `'I'` + metadata (title, author, year).
-- Chip definition chunk: `'C'` + YM2149 chip id (`A9`), panning, VBlank rate (from `song.frame`, default 50 Hz), and clock speed (from `song.clock`, default 2 MHz).
+- Chip definition chunk: `'C'` + chip id from `song.chip` (`A9` YM2149, `A0` AY-8910 - the default is `A9`), panning, VBlank rate (from `song.frame`, default 50 Hz), and clock speed (from `song.clock`, default 2 MHz).
 - Stream definition chunk: `'S'` + stream format, compression byte, 3-byte uncompressed stream size, and optional frame size.
 - Data chunk: `'d'` + ZX0-compressed register stream.
 
@@ -424,6 +451,7 @@ The uncompressed stream is compressed with the ZX0 v2 optimal parser (Einar Sauk
   - VBlank rate at 0x24 (from `song.frame`, default 50).
   - Data offset (relative) at 0x34.
   - YM clock at 0x74 (from `song.clock`, default 2000000).
+  - AY chip-type byte at 0x78: `0x10` (YM2149) for `YM` songs - the default - and `0x00` (AY8910) for `AY` songs.
 - Data block starts at offset 0x100 and is a stream of commands:
   - `0xA0, reg, value` → AY/YM register write.
   - `0x63` → wait for 1/50 s (882 samples at 44100 Hz), used when frame rate is 50 Hz.
@@ -474,9 +502,71 @@ The exporter builds a standard PCM 16‑bit, mono WAV header using:
     - Tone periods and volumes for channels A/B/C.
     - Noise generator state.
     - Mixer (tone/noise enable per channel).
+    - The amplitude curve matching the song's `chip` field - the AY table for `AY` songs, the YM table otherwise.
 - Samples are clamped to [-1, 1] and written as signed 16-bit values.
 
 The resulting WAV file is suitable for direct playback in standard audio players and provides a rendered version of the tracker song.
+
+## EXPORT MOD
+
+### Output file
+
+- Binary format: **ProTracker module** (31-sample `M.K.` variant).
+- Typical extension: `.mod`.
+- Produced by `exportSongToMod(song)` or `exportInstrumentToMod(instrument, song)`.
+
+### Header
+
+- Bytes 0-19: song title, NUL padded.
+- Bytes 20-949: 31 sample records of 30 bytes each. Slot 1 is `DSND SQUARE` - a 32-byte (16-word) looped square wave, volume 64. Slot 2 is `DSND NOISE` - a 512-byte (256-word) looped noise block from a fixed-seed LFSR, volume 64. Slots 3-31 are empty records.
+- Byte 950: song length in positions, equal to the number of MOD patterns used.
+- Byte 951: restart byte. When `song.loop` resolves, it holds the MOD pattern index containing the loop row - the restart lands on that pattern's first row. Otherwise it holds `0x7F`, the ProTracker filler convention, since MOD has no play-once mode.
+- Bytes 952-1079: pattern order table - positions play patterns in sequence.
+- Bytes 1080-1083: magic `M.K.`.
+- Patterns from offset 1084, 1024 bytes each (64 rows x 4 channels x 4 bytes). Sample data follows the last pattern.
+
+### Song mapping
+
+- The exporter runs `simulateSong` at the song's chip clock and keeps the first tick of every row, so one tracker row becomes one MOD row.
+- Tracker rows pack contiguously into 64-row MOD patterns. Positions are not padded - padding would alter the song's timing.
+- Channels A, B, and C map to MOD channels 1-3. Channel 4 stays silent.
+- A note event emits a cell: sample 2 when the channel is noise-only in that row, sample 1 otherwise. The tone period converts to an Amiga period through `modPeriod = 7093789.2 / (64 * freq)` with `freq = clock / (16 * ymPeriod)`, snapped to the nearest finetune-0 table entry (856..113). The 32-byte square loop makes each table period sound at the note's frequency. Noise notes use the fixed period 428.
+- Every row emits `Cxx` set-volume from the channel volume register scaled `round(v * 64 / 15)` - always on note rows, on held rows only when the value changed.
+- Release rows (`OFF`) emit effect `EC0` (note cut).
+- Channel D, the always-empty fourth MOD channel, carries the `F` effects: row 0 sets the tick speed (clamped to 31), row 1 sets the BPM (`round(frame * 2.5)`, so 125 at 50 Hz and 150 at 60 Hz, clamped to 255).
+- Songs producing more than 128 MOD positions are truncated.
+
+### Reported losses
+
+The export result's `warnings` list reports what the format cannot carry: all instruments approximate to the two generated samples, intra-row envelope movement drops, periods outside the Amiga range clamp, the fourth channel and song metadata are not carried, and any truncation is named.
+
+## EXPORT MID
+
+### Output file
+
+- Binary format: **Standard MIDI File** (SMF type 1).
+- Typical extension: `.mid`.
+- Produced by `exportSongToMidi(song)` or `exportInstrumentToMidi(instrument, song)`.
+
+### Header
+
+- `MThd` chunk: format 1, division 96 PPQ, one conductor track plus one track per tracker channel.
+- The conductor track holds a tempo meta event and a 4/4 time signature.
+
+### Song mapping
+
+- The exporter walks the playlist and patterns directly at note level.
+- One tracker row equals 24 MIDI ticks - a sixteenth note at division 96.
+- Tempo is `round(4 * speed * 1000000 / frame)` microseconds per quarter, clamped to `0xFFFFFF` - speed 6 at 50 Hz gives 125 BPM, at 60 Hz 150 BPM.
+- A step note emits note-on and closes the channel's held note at the same tick. A release row (`OFF`) emits a note-off. A playlist position referencing a real pattern cuts the held note at its first row; `--` slots let the note sustain, matching playback simulation.
+- Note numbers are `(octave + 1) * 12 + semitone`, clamped to 0..127 with a recorded warning.
+- Velocity comes from the row's volume column: `max(1, round(v * 127 / 15))` with `v` defaulting to 15. Volume-column changes on a held note emit CC7.
+- The MIDI channel is `instrument.midi.channel - 1` when valid (1-16), otherwise the tracker channel index. `instrument.midi.program` emits a program change on first use per channel.
+- Events sort by tick with a fixed same-tick order - program change, CC, note-off, note-on - and encode as variable-length delta times.
+
+### Reported losses
+
+The export result's `warnings` list reports what MIDI cannot carry: volume, shift, pitch, noise, and mode envelopes drop, sustain and release rows become plain note-offs, out-of-range notes clamp, and chip, clock, and stereo metadata are not carried.
 
 ## MIDI CONFIGURATION
 

@@ -1,9 +1,18 @@
 import { StorageKeys } from '../storage/storageKeys.ts';
 import type { TrackPasteMode } from '../track/trackClipboard.ts';
 import { loadSoundEngineId, normalizeSoundEngineId } from '../storage/soundEngine.ts';
-import { DEFAULT_SETTINGS, type SettingsValues } from '../../types/settings.ts';
+import {
+  DEFAULT_SETTINGS,
+  type SettingsValues,
+  type TextScale,
+  type ThemeVariant,
+} from '../../types/settings.ts';
 
 const PASTE_MODES: readonly TrackPasteMode[] = ['replace', 'overwriteAll', 'overwriteEmpty'];
+
+const THEME_VARIANTS: readonly ThemeVariant[] = ['dark', 'light', 'contrast'];
+
+const TEXT_SCALES: readonly TextScale[] = ['100', '125', '150'];
 
 /** Reads an 'on'/'off' flag key, tolerant of absent or corrupt values. */
 export const readFlag = (key: string, fallback: boolean): boolean => {
@@ -37,8 +46,12 @@ export const normalizeSettings = (
 
   return {
     general: {
-      theme:
-        general.theme === 'dark' || general.theme === 'light' ? general.theme : base.general.theme,
+      theme: THEME_VARIANTS.includes(general.theme as ThemeVariant)
+        ? (general.theme as ThemeVariant)
+        : base.general.theme,
+      textScale: TEXT_SCALES.includes(general.textScale as TextScale)
+        ? (general.textScale as TextScale)
+        : base.general.textScale,
       trackBackground:
         typeof general.trackBackground === 'boolean'
           ? general.trackBackground
@@ -66,13 +79,19 @@ export const normalizeSettings = (
 /** Composes the committed settings from the per-key storage. */
 export const loadSettings = (): SettingsValues => {
   let theme = DEFAULT_SETTINGS.general.theme;
+  let textScale = DEFAULT_SETTINGS.general.textScale;
   let trackBackground = DEFAULT_SETTINGS.general.trackBackground;
   let pasteTrackMode = DEFAULT_SETTINGS.editor.pasteTrackMode;
 
   try {
     const storedTheme = window.localStorage.getItem(StorageKeys.THEME);
-    if (storedTheme === 'dark' || storedTheme === 'light') {
-      theme = storedTheme;
+    if (THEME_VARIANTS.includes(storedTheme as ThemeVariant)) {
+      theme = storedTheme as ThemeVariant;
+    }
+
+    const storedTextScale = window.localStorage.getItem(StorageKeys.TEXT_SCALE);
+    if (TEXT_SCALES.includes(storedTextScale as TextScale)) {
+      textScale = storedTextScale as TextScale;
     }
 
     const storedBackground = window.localStorage.getItem(StorageKeys.TRACK_BACKGROUND_ENABLED);
@@ -91,6 +110,7 @@ export const loadSettings = (): SettingsValues => {
   return {
     general: {
       theme,
+      textScale,
       trackBackground,
       startupTone: readFlag(StorageKeys.STARTUP_TONE, DEFAULT_SETTINGS.general.startupTone),
     },

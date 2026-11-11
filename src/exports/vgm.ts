@@ -1,8 +1,12 @@
 import type { Instrument, Song } from '../synth/SoundDriver.ts';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
 import type { ExportStrategy } from '../constants/export.ts';
 import { simulateSong } from '../utils/playback/playbackSimulation.ts';
-import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core.ts';
+import {
+  downloadFile,
+  exportInstrumentWith,
+  normalizeSongForExport,
+  resolveExportTiming,
+} from './core.ts';
 
 export interface VgmExportResult {
   buffer: ArrayBuffer;
@@ -152,8 +156,7 @@ function buildGd3Tag(song: Song): Uint8Array | null {
 
 export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple'): VgmExportResult {
   const normalizedSong = normalizeSongForExport(song);
-  const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
-  const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
+  const { frameRate, chipClock } = resolveExportTiming(normalizedSong);
   let commands: number[] = [];
   const SAMPLES_PER_TICK = Math.round(44100 / frameRate);
   // VGM wait command: 0x63 for 50 Hz, 0x62 for 60 Hz, 0x61 (explicit samples) for other rates
@@ -218,7 +221,7 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
 
   commands.push(0x66);
 
-  if (strategy === 'optimized') {
+  if (strategy === 'optimized' || strategy === 'compact') {
     const optimized = optimizeVgmDelays(commands, loopCommandOffset, waitCommand, SAMPLES_PER_TICK);
     commands = optimized.commands;
     loopCommandOffset = optimized.loopCommandOffset;
@@ -274,6 +277,10 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
   writeUint32LE(0x34, relativeDataOffset);
 
   writeUint32LE(0x74, chipClock);
+
+  // AY chip-type byte (VGM spec): 0x00 = AY8910, 0x10 = YM2149. Any
+  // other song chip keeps the YM declaration.
+  header[0x78] = normalizedSong.chip === 'AY' ? 0x00 : 0x10;
 
   const fileBytes = new Uint8Array(fileSize);
   fileBytes.set(header, 0);

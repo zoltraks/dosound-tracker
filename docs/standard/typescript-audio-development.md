@@ -134,6 +134,9 @@ src/
 - Audio-path tests assert the audible outcome - output gain values, context-state
   timelines, rendered buffers - not only call timestamps: call timing alone proves
   nothing about what renders.
+- Level and headroom claims are measured on rendered output, never derived by
+  arithmetic on component peaks - fold-down mixing and engine ceilings defeat
+  hand-computed worst cases.
 
 ## Verification
 
@@ -163,8 +166,10 @@ src/
 
 Project-specific values for the DOSOUND Tracker codebase.
 
-- The audio cadence is a 50 Hz tick driven by `src/workers/sequencer.ts` - the worker
-  URL is `new URL('../../workers/sequencer.ts', import.meta.url)`.
+- The audio cadence is a 50 Hz tick driven by the `AudioWorkletProcessor` in
+  `src/workers/sequencerWorklet.ts` - the processor counts render quanta on the
+  app's shared `AudioContext` and the module loads through a static `?worker&url`
+  import in `useSequencer`.
 - Playback start gates on `ensureAudioContextResumed()` plus the engine readiness
   promise in `usePlaybackHandlers`; `useAudioContextPlaybackSync` freezes and restarts
   the sequencer across `statechange` transitions.

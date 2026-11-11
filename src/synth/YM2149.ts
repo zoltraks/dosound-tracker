@@ -21,6 +21,35 @@ export const YM_LOG_VOLUME_TABLE: number[] = [
   0.7071, // 14
   1.0, // 15: max
 ];
+
+// AY-3-8910 amplitude curve (16 levels) - the odd-index entries of the
+// vendored AY_DAC_TABLE in ayumiCore.ts, which the Ayumi core indexes as
+// volume * 2 + 1. AY and YM share the register model; the amplitude
+// curve is the variant difference the engines model.
+export const AY_LOG_VOLUME_TABLE: number[] = [
+  0.0, // 0: silence
+  0.00999465934234, // 1
+  0.0144502937362, // 2
+  0.0210574502174, // 3
+  0.0307011520562, // 4
+  0.0455481803616, // 5
+  0.0644998855573, // 6
+  0.107362478065, // 7
+  0.126588845655, // 8
+  0.20498970016, // 9
+  0.292210269322, // 10
+  0.372838941024, // 11
+  0.492530708782, // 12
+  0.635324635691, // 13
+  0.805584802014, // 14
+  1.0, // 15: max
+];
+
+// 'AY' selects the AY-3-8910 curve; every other chip id keeps the YM
+// curve - the same fallback the loader and exports apply.
+export const volumeTableForChip = (chip: string | undefined): number[] =>
+  chip === 'AY' ? AY_LOG_VOLUME_TABLE : YM_LOG_VOLUME_TABLE;
+
 import type { Instrument } from './SoundDriver.ts';
 import type { SoundEngine } from './soundEngine.ts';
 import { RegisterFile } from './registerFile.ts';
@@ -63,6 +92,16 @@ export class YM2149 implements SoundEngine {
   private noiseGainNode: GainNode;
   private envelopeGainNode: GainNode;
   private lastNoisePeriod: number = -1;
+  // Per-variant amplitude curve, swapped by setChip - the AY-3-8910
+  // table for 'AY', the YM2149 table otherwise.
+  private volumeTable: number[] = YM_LOG_VOLUME_TABLE;
+  // Stereo routing: per-channel pans on the 0..1 scale (0.5 centre).
+  // Panners and per-channel noise gains exist up front but carry signal
+  // only while stereo is active - the mono graph stays the original one.
+  private channelPans: number[] = [0.5, 0.5, 0.5];
+  private pannerNodes: StereoPannerNode[];
+  private noiseChannelGainNodes: GainNode[];
+  private stereoActive: boolean = false;
 
   constructor(audioContext: AudioContext, clock: number = YM_CLOCK) {
     this.audioContext = audioContext;
@@ -97,10 +136,30 @@ export class YM2149 implements SoundEngine {
 
     this.noiseGainNode.connect(audioContext.destination);
     this.envelopeGainNode.connect(audioContext.destination);
+
+    this.pannerNodes = [];
+    this.noiseChannelGainNodes = [];
+    for (let i = 0; i < 3; i++) {
+      const panner = audioContext.createStereoPanner();
+      panner.connect(audioContext.destination);
+      this.pannerNodes.push(panner);
+
+      // Per-channel noise tap feeding that channel's panner. It stays
+      // silent in mono mode; updateAudioNodes drives its gain.
+      const noiseChannelGain = audioContext.createGain();
+      noiseChannelGain.gain.setValueAtTime(0, audioContext.currentTime);
+      noiseChannelGain.connect(panner);
+      this.noiseChannelGainNodes.push(noiseChannelGain);
+    }
   }
 
   setClock(clock: number): void {
     this.clock = clock;
+  }
+
+  setChip(chip: string): void {
+    this.volumeTable = volumeTableForChip(chip);
+    this.updateAudioNodes();
   }
 
   getClock(): number {
@@ -153,9 +212,9 @@ export class YM2149 implements SoundEngine {
         // Update frequency IMMEDIATELY (no glide/portamento)
         oscillator.frequency.setValueAtTime(clampedFrequency, now);
 
-        // Calculate volume using AY/YM logarithmic curve (0-15, where 15 is LOUDEST)
+        // Calculate volume using the chip's logarithmic curve (0-15, where 15 is LOUDEST)
         const level = Math.max(0, Math.min(15, channel.volume | 0));
-        const volume = YM_LOG_VOLUME_TABLE[level] * 0.3; // Scale for headroom
+        const volume = this.volumeTable[level] * 0.3; // Scale for headroom
 
         gainNode.gain.setValueAtTime(volume, now);
       } else {
@@ -166,19 +225,69 @@ export class YM2149 implements SoundEngine {
     // Update noise gain based on any channel using noise - one accumulating
     // pass, identical sum order to the filter/map/reduce it replaces.
     let noiseGain = 0;
-    for (const channel of this.state.channels) {
+    for (let i = 0; i < 3; i++) {
+      const channel = this.state.channels[i];
+      let channelNoise = 0;
       if (channel.noiseEnabled && channel.volume > 0) {
         const level = Math.max(0, Math.min(15, channel.volume | 0));
-        noiseGain += YM_LOG_VOLUME_TABLE[level];
+        channelNoise = this.volumeTable[level];
+      }
+      noiseGain += channelNoise;
+      if (this.stereoActive) {
+        // Per-channel noise level follows that channel's panner.
+        this.noiseChannelGainNodes[i].gain.setValueAtTime(channelNoise * 0.4, now);
       }
     }
 
-    if (noiseGain > 0) {
+    if (this.stereoActive) {
+      this.noiseGainNode.gain.setValueAtTime(0, now);
+    } else if (noiseGain > 0) {
       const noiseVolume = Math.min(1, noiseGain) * 0.4; // Slight boost so noise matches perceived tone loudness
       this.noiseGainNode.gain.setValueAtTime(noiseVolume, now);
     } else {
       this.noiseGainNode.gain.setValueAtTime(0, now);
     }
+  }
+
+  // Rewire the tone path between the mono graph (gain -> destination) and
+  // the stereo graph (gain -> panner -> destination). The panner chain is
+  // entered only while any pan sits off centre, because a StereoPannerNode
+  // at centre applies equal-power attenuation and would change the mono
+  // output level.
+  private applyStereoRouting(): void {
+    const next = this.channelPans.some((pan) => pan !== 0.5);
+    const now = this.audioContext.currentTime;
+
+    for (let i = 0; i < 3; i++) {
+      this.pannerNodes[i].pan.setValueAtTime(this.channelPans[i] * 2 - 1, now);
+    }
+
+    if (next === this.stereoActive) {
+      return;
+    }
+
+    this.stereoActive = next;
+    for (let i = 0; i < 3; i++) {
+      this.gainNodes[i].disconnect();
+      this.gainNodes[i].connect(next ? this.pannerNodes[i] : this.audioContext.destination);
+    }
+    if (!next) {
+      for (const noiseChannelGain of this.noiseChannelGainNodes) {
+        noiseChannelGain.gain.setValueAtTime(0, now);
+      }
+    }
+  }
+
+  setChannelPans(pans: number[]): void {
+    this.channelPans = [0, 1, 2].map((i) => {
+      const value = pans?.[i];
+      if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return 0.5;
+      }
+      return Math.min(1, Math.max(0, value));
+    });
+    this.applyStereoRouting();
+    this.updateAudioNodes();
   }
 
   private updateNoiseGenerator(): void {
@@ -201,6 +310,9 @@ export class YM2149 implements SoundEngine {
     this.noiseNode.buffer = noiseBuffer;
     this.noiseNode.loop = true;
     this.noiseNode.connect(this.noiseGainNode);
+    for (const noiseChannelGain of this.noiseChannelGainNodes) {
+      this.noiseNode.connect(noiseChannelGain);
+    }
     this.noiseNode.start();
   }
 
@@ -271,6 +383,9 @@ export class YM2149 implements SoundEngine {
       gainNode.gain.setValueAtTime(0, now);
     });
     this.noiseGainNode.gain.setValueAtTime(0, now);
+    this.noiseChannelGainNodes.forEach((gainNode) => {
+      gainNode.gain.setValueAtTime(0, now);
+    });
     this.envelopeGainNode.gain.setValueAtTime(0, now);
   }
 

@@ -51,6 +51,17 @@ export interface Line {
   C: string;
 }
 
+// Per-channel stereo output settings. `layout` names a catalog wiring
+// (see STEREO_LAYOUTS in constants/song.ts); `A`/`B`/`C` are free pan
+// overrides on the 0..1 scale (0 left, 0.5 centre, 1 right). Resolution
+// starts from the layout's canonical pans and applies each override.
+export interface SongStereo {
+  layout?: string;
+  A?: number;
+  B?: number;
+  C?: number;
+}
+
 export interface Song {
   title: string;
   author: string;
@@ -61,6 +72,7 @@ export interface Song {
   chip?: string;
   frame?: number;
   clock?: number;
+  stereo?: SongStereo;
   pattern: Pattern[];
   line: Line[];
   instrument: Instrument[];

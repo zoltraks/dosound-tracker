@@ -115,6 +115,10 @@ Follow the same sequence as adding a new feature. Ensure backward compatibility 
 
 Change requests, including features, bug fixes, and enhancements, are organised by version in `docs/change/<version>/` when needed. The implementation follows a complete cycle for each version.
 
+**Record distribution**
+
+A batch of candidates promoted to change records in one request distributes across windows by readiness: unblocked records join the current version group, and records with a recorded blocker land in later windows ordered by how early each blocker can resolve.
+
 **Version Bump**
 
 After finishing the current version, the version number is bumped per the rules in `VERSIONING.md`. See `VERSIONING.md` for the complete version bump procedure including CHANGELOG updates.
@@ -263,10 +267,11 @@ The request may select a gate mode: `autonomous` runs every stage without pausin
 
 **Request Iteration**
 
-For each change record in the window:
+For each change record in the window, in intake order:
 
-- Perform a new implementation analysis of the current implementation and the project documentation - each record gets its own analysis, never carried over.
-- Write the implementation plan into `docs/plan/<version>/` before touching code.
+- Perform a new implementation analysis of the current implementation and the project documentation, plus the additional research the record's domain requires - external format specifications, upstream dependency state, or measured behaviour. Each record gets its own analysis and research, never carried over.
+- Findings may correct the change record itself. When analysis or research shows the record's premises are stale or wrong, amend the record in place against the verified state before planning, and refresh its summary block.
+- Write the implementation plan into `docs/plan/<version>/` only when that record's analysis and research are complete. Implementation follows the plan as the next stage - one record's pipeline completes before the next record's begins, and plans are never written ahead for the whole window.
 - Follow the Documentation-First Approach: the specification update is the first implementation step of each record - it runs when that record's implementation begins, never ahead of it.
 - Work in verifiable increments and run the verification loop until typecheck, lint, format, build, and test all pass. A failure returns to fix and re-verify until clean.
 - A request is fulfilled only when its acceptance criteria hold and verification is clean.

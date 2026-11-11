@@ -54,6 +54,8 @@ const makeEngine = (name: string) =>
     getState: vi.fn(),
     reset: vi.fn(),
     getClock: vi.fn(() => 2000000),
+    setChip: vi.fn(),
+    setChannelPans: vi.fn(),
     updateChannelWithInstrument: vi.fn(),
     getModeValueForTick: vi.fn(),
     getToneNoiseState: vi.fn(),
@@ -114,6 +116,38 @@ describe('useAudioSetup', () => {
     expect(first.silenceAll).toHaveBeenCalledTimes(1);
     expect(first.dispose).toHaveBeenCalledTimes(1);
     expect(createSoundEngine).toHaveBeenLastCalledWith('ayumi', audioContextStub, 2_000_000);
+  });
+
+  it('applies channel pans to the landed engine and re-pans in place', async () => {
+    const engine = makeEngine('internal');
+    YM2149Mock.mockReturnValue(engine);
+
+    const { result, rerender } = renderHook(
+      ({ pans }: { pans: number[] }) => useAudioSetup(2_000_000, 'internal', pans),
+      { initialProps: { pans: [0, 0.5, 1] } },
+    );
+
+    await waitFor(() => expect(result.current.ym2149).toBe(engine));
+    expect(engine.setChannelPans).toHaveBeenLastCalledWith([0, 0.5, 1]);
+
+    rerender({ pans: [0.5, 0.5, 0.5] });
+    expect(engine.setChannelPans).toHaveBeenLastCalledWith([0.5, 0.5, 0.5]);
+  });
+
+  it('applies the song chip to the landed engine and re-applies on change', async () => {
+    const engine = makeEngine('internal');
+    YM2149Mock.mockReturnValue(engine);
+
+    const { result, rerender } = renderHook(
+      ({ chip }: { chip: string }) => useAudioSetup(2_000_000, 'internal', undefined, chip),
+      { initialProps: { chip: 'AY' } },
+    );
+
+    await waitFor(() => expect(result.current.ym2149).toBe(engine));
+    expect(engine.setChip).toHaveBeenLastCalledWith('AY');
+
+    rerender({ chip: 'YM' });
+    expect(engine.setChip).toHaveBeenLastCalledWith('YM');
   });
 
   it('disposes a stale engine when an older resolve lands after a newer run', async () => {

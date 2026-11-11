@@ -4,7 +4,7 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { createSoundEngine } from '../../synth/soundEngine.ts';
 import { YM2149 } from '../../synth/YM2149.ts';
 import type { SoundEngineId } from '../../constants/sound.ts';
-import { DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
 import { loadSoundEngineId } from '../../utils/storage/soundEngine.ts';
 import { logger } from '../../utils/log/logger.ts';
 
@@ -24,11 +24,15 @@ export interface UseAudioSetupResult {
 export function useAudioSetup(
   chipClock: number = DEFAULT_SONG_CLOCK,
   engineId?: SoundEngineId,
+  channelPans?: number[],
+  songChip: string = DEFAULT_SONG_CHIP,
 ): UseAudioSetupResult {
   const { audioContext, error } = useAudioContext();
   const ym2149Ref = useRef<SoundEngine | null>(null);
   const testToneRef = useRef<(() => void) | null>(null);
   const chipClockRef = useRef(chipClock);
+  const songChipRef = useRef(songChip);
+  const channelPansRef = useRef<number[]>(channelPans ?? [0.5, 0.5, 0.5]);
   const readyWaitersRef = useRef<Array<(engine: SoundEngine | null) => void>>([]);
   // The persisted key is only a mount-time fallback - a caller-provided
   // engineId wins and switching it re-runs the creation effect below.
@@ -59,6 +63,8 @@ export function useAudioSetup(
 
       // The song clock may have moved while the engine resolved.
       engine.setClock(chipClockRef.current);
+      engine.setChip(songChipRef.current);
+      engine.setChannelPans(channelPansRef.current);
 
       readyWaitersRef.current.splice(0).forEach((resolve) => resolve(engine));
     };
@@ -147,6 +153,29 @@ export function useAudioSetup(
       ym2149Ref.current.setClock(chipClock);
     }
   }, [chipClock]);
+
+  // Song chip mirrors the clock handling: the ref keeps a mid-flight
+  // engine creation consistent; the live engine reconfigures in place.
+  useEffect(() => {
+    songChipRef.current = songChip;
+    if (ym2149Ref.current) {
+      ym2149Ref.current.setChip(songChip);
+    }
+  }, [songChip]);
+
+  // Channel pans mirror the song's resolved stereo settings. The ref keeps
+  // a mid-flight engine creation consistent; the live engine is re-panned
+  // in place so routing changes never recreate the audio path.
+  useEffect(() => {
+    const pans = channelPans ?? [0.5, 0.5, 0.5];
+    const changed =
+      channelPansRef.current.length !== pans.length ||
+      channelPansRef.current.some((pan, i) => pan !== pans[i]);
+    channelPansRef.current = pans;
+    if (changed && ym2149Ref.current) {
+      ym2149Ref.current.setChannelPans(pans);
+    }
+  }, [channelPans]);
 
   const playTestTone = useCallback(() => testToneRef.current?.(), []);
 

@@ -19,6 +19,7 @@ describe('settingsState', () => {
 
   it('loadSettings maps stored values to the committed settings', () => {
     localStorage.setItem(StorageKeys.THEME, 'light');
+    localStorage.setItem(StorageKeys.TEXT_SCALE, '150');
     localStorage.setItem(StorageKeys.TRACK_BACKGROUND_ENABLED, '0');
     localStorage.setItem(StorageKeys.PASTE_TRACK_MODE, 'overwriteAll');
     localStorage.setItem(StorageKeys.STARTUP_TONE, 'off');
@@ -29,7 +30,12 @@ describe('settingsState', () => {
     const settings = loadSettings();
     try {
       expect(settings).toEqual({
-        general: { theme: 'light', trackBackground: false, startupTone: false },
+        general: {
+          theme: 'light',
+          textScale: '150',
+          trackBackground: false,
+          startupTone: false,
+        },
         editor: { restoreCursor: false, restoreView: false, pasteTrackMode: 'overwriteAll' },
         sound: { engine: 'ayumi' },
       });
@@ -39,8 +45,20 @@ describe('settingsState', () => {
     }
   });
 
+  it('loadSettings accepts the contrast theme', () => {
+    localStorage.setItem(StorageKeys.THEME, 'contrast');
+    const settings = loadSettings();
+    try {
+      expect(settings.general.theme).toBe('contrast');
+    } catch (error) {
+      console.log('loaded theme:', settings.general.theme);
+      throw error;
+    }
+  });
+
   it('loadSettings falls back on corrupt values', () => {
     localStorage.setItem(StorageKeys.THEME, 'banana');
+    localStorage.setItem(StorageKeys.TEXT_SCALE, '999');
     localStorage.setItem(StorageKeys.TRACK_BACKGROUND_ENABLED, 'yes');
     localStorage.setItem(StorageKeys.PASTE_TRACK_MODE, 'nothing');
     localStorage.setItem(StorageKeys.STARTUP_TONE, 'junk');
@@ -59,7 +77,12 @@ describe('settingsState', () => {
 
   it('writeSettingKeys writes the three toggle keys and the engine key', () => {
     writeSettingKeys({
-      general: { theme: 'dark', trackBackground: true, startupTone: false },
+      general: {
+        theme: 'dark',
+        textScale: '100',
+        trackBackground: true,
+        startupTone: false,
+      },
       editor: { restoreCursor: true, restoreView: false, pasteTrackMode: 'replace' },
       sound: { engine: 'ayumi' },
     });
@@ -89,7 +112,12 @@ describe('settingsState', () => {
 
   it('normalizeSettings rejects malformed members and honors a custom base', () => {
     const base = {
-      general: { theme: 'light' as const, trackBackground: false, startupTone: false },
+      general: {
+        theme: 'light' as const,
+        textScale: '125' as const,
+        trackBackground: false,
+        startupTone: false,
+      },
       editor: {
         restoreCursor: false,
         restoreView: false,
@@ -99,7 +127,7 @@ describe('settingsState', () => {
     };
     const normalized = normalizeSettings(
       {
-        general: { theme: 'neon' },
+        general: { theme: 'neon', textScale: 'huge' },
         editor: { pasteTrackMode: 'sideways' },
         sound: { engine: 'bogus' },
       },

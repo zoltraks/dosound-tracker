@@ -30,6 +30,8 @@ interface SongSectionProps {
   ym2149: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (index: number) => void;
+  channelPans: number[];
+  onChannelPanChange: (index: number) => void;
 }
 
 export const SongSection: React.FC<SongSectionProps> = ({
@@ -52,11 +54,13 @@ export const SongSection: React.FC<SongSectionProps> = ({
   ym2149,
   channelMutes,
   onToggleChannelMute,
+  channelPans,
+  onChannelPanChange,
 }) => {
   const playlistEntries = mapSongLineToPlaylistEntries(song.line);
 
   return (
-    <div className="right-column">
+    <div className="right-column" role="region" aria-label="Song and instruments">
       <InformationPanel
         song={song}
         activeSection={activeSection}
@@ -94,6 +98,8 @@ export const SongSection: React.FC<SongSectionProps> = ({
           ym2149={ym2149}
           channelMutes={channelMutes}
           onToggleChannelMute={onToggleChannelMute}
+          channelPans={channelPans}
+          onChannelPanChange={onChannelPanChange}
         />
       </div>
     </div>

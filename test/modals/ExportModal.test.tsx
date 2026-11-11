@@ -18,6 +18,8 @@ const renderModal = (overrides: Partial<Parameters<typeof ExportModal>[0]> = {})
       onExportVgm={vi.fn()}
       onExportMax={vi.fn()}
       onExportWav={vi.fn()}
+      onExportMod={vi.fn()}
+      onExportMidi={vi.fn()}
       onConfirm={vi.fn()}
       onCancel={vi.fn()}
       {...overrides}
@@ -30,7 +32,7 @@ describe('ExportModal', () => {
     expect(container.querySelector('.modal-backdrop')).toBeNull();
   });
 
-  it('routes each of the six format buttons to its own handler', () => {
+  it('routes each of the eight format buttons to its own handler', () => {
     const handlers = {
       onExportData: vi.fn(),
       onExportDump: vi.fn(),
@@ -38,6 +40,8 @@ describe('ExportModal', () => {
       onExportVgm: vi.fn(),
       onExportMax: vi.fn(),
       onExportWav: vi.fn(),
+      onExportMod: vi.fn(),
+      onExportMidi: vi.fn(),
     };
     renderModal(handlers);
     const cases: [string, () => void][] = [
@@ -47,6 +51,8 @@ describe('ExportModal', () => {
       ['VGM', handlers.onExportVgm],
       ['MAX', handlers.onExportMax],
       ['WAV', handlers.onExportWav],
+      ['MOD', handlers.onExportMod],
+      ['MID', handlers.onExportMidi],
     ];
     for (const [label, handler] of cases) {
       fireEvent.click(screen.getByRole('button', { name: label }));
@@ -90,7 +96,7 @@ describe('ExportModal', () => {
       container.querySelectorAll<HTMLInputElement>('input[name="export-strategy"]'),
     );
     try {
-      expect(radios).toHaveLength(3);
+      expect(radios).toHaveLength(4);
       expect(radios[0].checked).toBe(true);
     } catch (error) {
       console.log('strategy radios', radios.length);
@@ -98,9 +104,11 @@ describe('ExportModal', () => {
     }
     fireEvent.click(radios[1]);
     fireEvent.click(radios[2]);
+    fireEvent.click(radios[3]);
     try {
       expect(onChangeStrategy).toHaveBeenNthCalledWith(1, 'complex');
       expect(onChangeStrategy).toHaveBeenNthCalledWith(2, 'optimized');
+      expect(onChangeStrategy).toHaveBeenNthCalledWith(3, 'compact');
     } catch (error) {
       console.log('strategy dispatch', onChangeStrategy.mock.calls);
       throw error;

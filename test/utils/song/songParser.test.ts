@@ -263,4 +263,88 @@ song:
     expect(song.title).toBe('New Song');
     expect(song.author).toBe('Author Name');
   });
+
+  it('parses a stereo mapping with layout and channel overrides', () => {
+    const yamlContent = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  stereo:
+    layout: ABC
+    B: 0.25
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlContent);
+
+    expect(song.stereo).toEqual({ layout: 'abc', B: 0.25 });
+  });
+
+  it('accepts a bare stereo string as layout shorthand', () => {
+    const yamlContent = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  stereo: acb
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const song = parseSongFromYaml(yamlContent);
+
+    expect(song.stereo).toEqual({ layout: 'acb' });
+  });
+
+  it('drops a malformed stereo node and clamps channel values', () => {
+    const base = `
+song:
+  title: Test
+  author: X
+  length: 4
+  speed: 4
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Test
+      volume: [15]
+`;
+
+    const withoutStereo = parseSongFromYaml(base);
+    expect(withoutStereo.stereo).toBeUndefined();
+
+    const malformed = parseSongFromYaml(`${base}  stereo: [1, 2]\n`);
+    expect(malformed.stereo).toBeUndefined();
+
+    const clamped = parseSongFromYaml(`${base}  stereo: { A: -2, C: 5 }\n`);
+    expect(clamped.stereo).toEqual({ A: 0, C: 1 });
+  });
 });

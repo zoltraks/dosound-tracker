@@ -1,5 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
+import sequencerWorkletUrl from '../../workers/sequencerWorklet.ts?worker&url';
+import type { SequencerWorkletIncomingMessage } from '../../workers/sequencerWorklet.ts';
+import { logger } from '../../utils/log/logger.ts';
 
 export interface SequencerState {
   isPlaying: boolean;
@@ -9,21 +12,22 @@ export interface SequencerState {
   currentTick: number;
 }
 
-interface SequencerWorkerTickData {
+interface SequencerWorkletTickData {
   isPlaying: boolean;
   currentPattern: number;
   currentLine: number;
   currentTick: number;
 }
 
-type SequencerWorkerMessage =
-  | { type: 'tick'; data: SequencerWorkerTickData }
-  | { type: 'update'; data: SequencerWorkerTickData }
-  | { type: 'stop'; data: SequencerWorkerTickData };
+type SequencerWorkletMessage =
+  | { type: 'tick'; data: SequencerWorkletTickData }
+  | { type: 'update'; data: SequencerWorkletTickData }
+  | { type: 'stop'; data: SequencerWorkletTickData };
 
 export const useSequencer = (
   patternLength: number = 64,
   frameRate: number = DEFAULT_SONG_FRAME,
+  audioContext: AudioContext | null = null,
 ) => {
   const [sequencerState, setSequencerState] = useState<SequencerState>({
     isPlaying: false,
@@ -41,7 +45,12 @@ export const useSequencer = (
     currentTick: 0,
   });
 
-  const workerRef = useRef<Worker | null>(null);
+  const nodeRef = useRef<AudioWorkletNode | null>(null);
+  // Outgoing messages route through postRef: until the worklet node
+  // lands (addModule is asynchronous) messages queue in arrival order
+  // and flush on readiness - the same ordering the worker saw, since
+  // its creation effect always ran before the control effects.
+  const postRef = useRef<((message: SequencerWorkletIncomingMessage) => void) | null>(null);
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
   const frameRateRef = useRef(frameRate);
@@ -64,16 +73,14 @@ export const useSequencer = (
       nextHasLoop = true;
     }
 
-    if (workerRef.current) {
-      workerRef.current.postMessage({
-        type: 'setParams',
-        data: {
-          playlistLength: clampedLength,
-          loopIndex: nextHasLoop ? nextLoopIndex : 0,
-          hasLoop: nextHasLoop,
-        },
-      });
-    }
+    postRef.current?.({
+      type: 'setParams',
+      data: {
+        playlistLength: clampedLength,
+        loopIndex: nextHasLoop ? nextLoopIndex : 0,
+        hasLoop: nextHasLoop,
+      },
+    });
   }, []);
 
   const setPatternLoopMode = useCallback((patternLoop: boolean) => {
@@ -87,101 +94,133 @@ export const useSequencer = (
       isPatternLoop: patternLoop,
     };
 
-    if (workerRef.current) {
-      workerRef.current.postMessage({
-        type: 'setParams',
-        data: { patternLoop },
-      });
-    }
+    postRef.current?.({
+      type: 'setParams',
+      data: { patternLoop },
+    });
   }, []);
 
   useEffect(() => {
-    if (typeof Worker !== 'undefined') {
-      workerRef.current = new Worker(new URL('../../workers/sequencer.ts', import.meta.url), {
-        type: 'module',
-      });
+    if (!audioContext?.audioWorklet) {
+      return;
+    }
 
-      workerRef.current.addEventListener(
-        'message',
-        (event: MessageEvent<SequencerWorkerMessage>) => {
-          const { type, data } = event.data;
+    let cancelled = false;
+    const pending: SequencerWorkletIncomingMessage[] = [];
 
-          switch (type) {
-            case 'tick':
-            case 'update': {
-              const prevPlayback = playbackStateRef.current;
-              const safeIsPlaying = prevPlayback.isPlaying ? data.isPlaying : false;
+    const handleMessage = (event: MessageEvent<SequencerWorkletMessage>) => {
+      const { type, data } = event.data;
 
-              const mergedState: SequencerState = {
-                ...prevPlayback,
-                ...data,
-                isPlaying: safeIsPlaying,
-              };
+      switch (type) {
+        case 'tick':
+        case 'update': {
+          const prevPlayback = playbackStateRef.current;
+          const safeIsPlaying = prevPlayback.isPlaying ? data.isPlaying : false;
 
-              playbackStateRef.current = mergedState;
+          const mergedState: SequencerState = {
+            ...prevPlayback,
+            ...data,
+            isPlaying: safeIsPlaying,
+          };
 
-              if (type === 'tick') {
-                // Fire audio callbacks only on regular timing ticks so that
-                // instantaneous position updates (e.g. from setPosition during
-                // song loop wrap-around) do not cause the same logical row to be
-                // processed twice, which can introduce audible stutters.
-                if (callbackRef.current) {
-                  callbackRef.current(mergedState);
-                }
-              }
+          playbackStateRef.current = mergedState;
 
-              if (type === 'tick') {
-                setSequencerState((prev) => {
-                  const rowChanged =
-                    data.currentLine !== prev.currentLine ||
-                    data.currentPattern !== prev.currentPattern;
-                  if (rowChanged || mergedState.isPlaying !== prev.isPlaying) {
-                    return {
-                      ...prev,
-                      ...data,
-                      isPlaying: mergedState.isPlaying,
-                    };
-                  }
-                  return prev;
-                });
-              } else {
-                setSequencerState((prev) => ({
+          if (type === 'tick') {
+            // Fire audio callbacks only on regular timing ticks so that
+            // instantaneous position updates (e.g. from setPosition during
+            // song loop wrap-around) do not cause the same logical row to be
+            // processed twice, which can introduce audible stutters.
+            if (callbackRef.current) {
+              callbackRef.current(mergedState);
+            }
+          }
+
+          if (type === 'tick') {
+            setSequencerState((prev) => {
+              const rowChanged =
+                data.currentLine !== prev.currentLine ||
+                data.currentPattern !== prev.currentPattern;
+              if (rowChanged || mergedState.isPlaying !== prev.isPlaying) {
+                return {
                   ...prev,
                   ...data,
                   isPlaying: mergedState.isPlaying,
-                }));
+                };
               }
-              break;
-            }
-            case 'stop':
-              playbackStateRef.current = {
-                ...playbackStateRef.current,
-                ...data,
-              };
-              if (callbackRef.current) {
-                callbackRef.current(playbackStateRef.current);
-              }
-              setSequencerState((prev) => ({ ...prev, ...data }));
-              break;
+              return prev;
+            });
+          } else {
+            setSequencerState((prev) => ({
+              ...prev,
+              ...data,
+              isPlaying: mergedState.isPlaying,
+            }));
           }
-        },
-      );
-
-      workerRef.current.postMessage({
-        type: 'setParams',
-        data: {
-          tickInterval: calculateTickInterval(),
-          patternLength: patternLengthRef.current,
-        },
-      });
-    }
-
-    return () => {
-      if (workerRef.current) {
-        workerRef.current.terminate();
+          break;
+        }
+        case 'stop':
+          playbackStateRef.current = {
+            ...playbackStateRef.current,
+            ...data,
+          };
+          if (callbackRef.current) {
+            callbackRef.current(playbackStateRef.current);
+          }
+          setSequencerState((prev) => ({ ...prev, ...data }));
+          break;
       }
     };
-  }, [calculateTickInterval]);
+
+    postRef.current = (message) => {
+      if (nodeRef.current) {
+        nodeRef.current.port.postMessage(message);
+      } else {
+        pending.push(message);
+      }
+    };
+
+    postRef.current({
+      type: 'setParams',
+      data: {
+        tickInterval: calculateTickInterval(),
+        patternLength: patternLengthRef.current,
+      },
+    });
+
+    void audioContext.audioWorklet
+      .addModule(sequencerWorkletUrl)
+      .then(() => {
+        if (cancelled) {
+          return;
+        }
+        const node = new AudioWorkletNode(audioContext, 'sequencer-processor', {
+          outputChannelCount: [1],
+        });
+        // The node emits silence - it sits in the render graph only so the
+        // audio thread pulls process() every quantum.
+        node.connect(audioContext.destination);
+        node.port.onmessage = handleMessage;
+        nodeRef.current = node;
+        for (const message of pending.splice(0)) {
+          node.port.postMessage(message);
+        }
+      })
+      .catch((error: unknown) => {
+        logger.error('Sequencer worklet initialization failed', error);
+      });
+
+    return () => {
+      cancelled = true;
+      postRef.current = null;
+      pending.length = 0;
+      if (nodeRef.current) {
+        nodeRef.current.port.onmessage = null;
+        nodeRef.current.port.close();
+        nodeRef.current.disconnect();
+        nodeRef.current = null;
+      }
+    };
+  }, [audioContext, calculateTickInterval]);
 
   // Keep the playback ref in sync whenever external callers mutate the
   // sequencer state via helpers like stop, setPosition, updateSpeed, etc.
@@ -205,17 +244,15 @@ export const useSequencer = (
       setSequencerState(nextState);
       playbackStateRef.current = nextState;
 
-      if (workerRef.current) {
-        workerRef.current.postMessage({
-          type: 'start',
-          data: {
-            pattern: initialPattern !== undefined ? initialPattern : sequencerState.currentPattern,
-            line: initialLine !== undefined ? initialLine : sequencerState.currentLine,
-            tick: initialTick !== undefined ? initialTick : 0,
-            patternLoop,
-          },
-        });
-      }
+      postRef.current?.({
+        type: 'start',
+        data: {
+          pattern: initialPattern !== undefined ? initialPattern : sequencerState.currentPattern,
+          line: initialLine !== undefined ? initialLine : sequencerState.currentLine,
+          tick: initialTick !== undefined ? initialTick : 0,
+          patternLoop,
+        },
+      });
     },
     [sequencerState],
   );
@@ -232,9 +269,7 @@ export const useSequencer = (
     setSequencerState(stoppedState);
     playbackStateRef.current = stoppedState;
 
-    if (workerRef.current) {
-      workerRef.current.postMessage({ type: 'stop' });
-    }
+    postRef.current?.({ type: 'stop' });
   }, [sequencerState]);
 
   const setPosition = useCallback(
@@ -249,12 +284,10 @@ export const useSequencer = (
       setSequencerState(newState);
       playbackStateRef.current = newState;
 
-      if (workerRef.current) {
-        workerRef.current.postMessage({
-          type: 'update',
-          data: { pattern, line, tick },
-        });
-      }
+      postRef.current?.({
+        type: 'update',
+        data: { pattern, line, tick },
+      });
     },
     [sequencerState],
   );
@@ -263,12 +296,10 @@ export const useSequencer = (
     // Use song speed directly as number of VBLANK frames per row (50 Hz)
     const newTicksPerRow = Math.max(1, newSpeed | 0);
 
-    if (workerRef.current) {
-      workerRef.current.postMessage({
-        type: 'setParams',
-        data: { ticksPerRow: newTicksPerRow },
-      });
-    }
+    postRef.current?.({
+      type: 'setParams',
+      data: { ticksPerRow: newTicksPerRow },
+    });
   }, []);
 
   const startPatternLoop = useCallback(
@@ -298,12 +329,10 @@ export const useSequencer = (
       currentLine: Math.min(prev.currentLine, clamped - 1),
     }));
 
-    if (workerRef.current) {
-      workerRef.current.postMessage({
-        type: 'setParams',
-        data: { patternLength: clamped },
-      });
-    }
+    postRef.current?.({
+      type: 'setParams',
+      data: { patternLength: clamped },
+    });
   }, []);
 
   const updateFrameRate = useCallback(
@@ -311,12 +340,10 @@ export const useSequencer = (
       const clamped = Math.max(1, newFrameRate | 0);
       frameRateRef.current = clamped;
 
-      if (workerRef.current) {
-        workerRef.current.postMessage({
-          type: 'setParams',
-          data: { tickInterval: calculateTickInterval() },
-        });
-      }
+      postRef.current?.({
+        type: 'setParams',
+        data: { tickInterval: calculateTickInterval() },
+      });
     },
     [calculateTickInterval],
   );

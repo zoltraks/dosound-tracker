@@ -69,7 +69,7 @@ export default defineConfig({
     },
   },
   worker: {
-    // Ensure worker bundles (like sequencer) also get stable filenames
+    // Ensure worker bundles (like the sequencer worklet) also get stable filenames
     // without random hashes.
     format: 'es',
     rollupOptions: {

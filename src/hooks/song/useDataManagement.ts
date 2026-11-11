@@ -50,6 +50,13 @@ import {
   readMirroredSnapshot,
   requestPersistentStorage,
 } from '../../utils/storage/persistenceMirror.ts';
+import {
+  createEditHistory,
+  recordEdit,
+  takeUndoSnapshot,
+  takeRedoSnapshot,
+  type EditHistory,
+} from '../../utils/song/editHistory.ts';
 
 const INSTRUMENT_STORAGE_KEY = StorageKeys.INSTRUMENT;
 
@@ -57,6 +64,18 @@ export type PendingSongImport = {
   song: Song;
   metadata: SongParseMetadata;
 };
+
+// One undo entry restores the song and the current instrument together -
+// the pair every recorded mutation can touch.
+export interface EditSnapshot {
+  song: Song;
+  instrument: Instrument;
+}
+
+export interface UpdateSongOptions {
+  record?: boolean;
+  coalesceKey?: string;
+}
 
 const shouldWarnForSongConfiguration = (metadata: SongParseMetadata | null): boolean => {
   if (!metadata) {
@@ -120,6 +139,61 @@ export const useDataManagement = () => {
 
   const songSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
   const instrumentSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
+
+  const historyRef = useRef<EditHistory<EditSnapshot>>(createEditHistory());
+  const [historySize, setHistorySize] = useState({ undo: 0, redo: 0 });
+
+  // Recording boundary: every recorded mutator snapshots the live pair
+  // through this helper before applying its change. The stacks stay in a
+  // ref, so history work adds no render-time cost on the audio path.
+  const recordHistory = useCallback(
+    (coalesceKey?: string) => {
+      recordEdit(
+        historyRef.current,
+        { song: currentSong, instrument: currentInstrument },
+        coalesceKey,
+      );
+      setHistorySize({
+        undo: historyRef.current.undo.length,
+        redo: historyRef.current.redo.length,
+      });
+    },
+    [currentSong, currentInstrument],
+  );
+
+  const undo = useCallback(() => {
+    const snapshot = takeUndoSnapshot(historyRef.current, {
+      song: currentSong,
+      instrument: currentInstrument,
+    });
+    if (snapshot === null) {
+      return;
+    }
+    setCurrentSong(snapshot.song);
+    setCurrentInstrument(snapshot.instrument);
+    setIsSongDirty(true);
+    setHistorySize({
+      undo: historyRef.current.undo.length,
+      redo: historyRef.current.redo.length,
+    });
+  }, [currentSong, currentInstrument]);
+
+  const redo = useCallback(() => {
+    const snapshot = takeRedoSnapshot(historyRef.current, {
+      song: currentSong,
+      instrument: currentInstrument,
+    });
+    if (snapshot === null) {
+      return;
+    }
+    setCurrentSong(snapshot.song);
+    setCurrentInstrument(snapshot.instrument);
+    setIsSongDirty(true);
+    setHistorySize({
+      undo: historyRef.current.undo.length,
+      redo: historyRef.current.redo.length,
+    });
+  }, [currentSong, currentInstrument]);
 
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
@@ -234,20 +308,22 @@ export const useDataManagement = () => {
       clock: DEFAULT_SONG_CLOCK,
     };
 
+    recordHistory();
     setCurrentSong(newSong);
     setCurrentInstrument(newCurrentInstrument);
     setIsSongDirty(false);
 
     return newSong;
-  }, []);
+  }, [recordHistory]);
 
   const createNewInstrument = useCallback(() => {
     const { updatedSong, newInstrument } = createNewInstrumentForSong(currentSong);
+    recordHistory();
     setCurrentSong(updatedSong);
     setCurrentInstrument(newInstrument);
     setIsSongDirty(true);
     return newInstrument;
-  }, [currentSong]);
+  }, [currentSong, recordHistory]);
 
   const saveSong = useCallback(() => {
     try {
@@ -265,6 +341,7 @@ export const useDataManagement = () => {
   const applyParsedSong = useCallback(
     (newSong: Song) => {
       setPendingSongImport(null);
+      recordHistory();
       setCurrentSong(newSong);
 
       const firstInstrument = newSong.instrument.find(
@@ -275,7 +352,7 @@ export const useDataManagement = () => {
       }
       setIsSongDirty(false);
     },
-    [setCurrentInstrument],
+    [recordHistory],
   );
 
   const loadSongFromText = useCallback(
@@ -349,6 +426,7 @@ export const useDataManagement = () => {
         const targetInstrumentId = normalizeInstrumentId(currentInstrument.id);
         const newInstrument = parseInstrumentFromText(content, targetInstrumentId);
 
+        recordHistory();
         setCurrentInstrument(newInstrument);
         setCurrentSong((prev) =>
           applyLoadedInstrumentToSong(prev, targetInstrumentId, newInstrument),
@@ -361,6 +439,7 @@ export const useDataManagement = () => {
     },
     [
       currentInstrument.id,
+      recordHistory,
       setCurrentInstrument,
       setCurrentSong,
       setIsSongDirty,
@@ -369,7 +448,15 @@ export const useDataManagement = () => {
   );
 
   const updateSong = useCallback(
-    (updates: Partial<Song>) => {
+    (updates: Partial<Song>, options?: UpdateSongOptions) => {
+      // An update that changes no top-level key still applies (it can carry
+      // normalization side effects) but records no history entry.
+      const changed = (Object.keys(updates) as (keyof Song)[]).some(
+        (key) => !Object.is(currentSong[key], updates[key]),
+      );
+      if (changed && options?.record !== false) {
+        recordHistory(options?.coalesceKey);
+      }
       setIsSongDirty(true);
       setCurrentSong((prev) => {
         const next: Song = { ...prev, ...updates } as Song;
@@ -401,11 +488,17 @@ export const useDataManagement = () => {
         return next;
       });
     },
-    [setIsSongDirty],
+    [currentSong, recordHistory, setIsSongDirty],
   );
 
   const updateInstrument = useCallback(
     (updates: Partial<Instrument>) => {
+      const changed = (Object.keys(updates) as (keyof Instrument)[]).some(
+        (key) => !Object.is(currentInstrument[key], updates[key]),
+      );
+      if (changed) {
+        recordHistory();
+      }
       setIsSongDirty(true);
       setCurrentInstrument((prev) => ({ ...prev, ...updates }));
 
@@ -414,34 +507,37 @@ export const useDataManagement = () => {
         return updatedSong;
       });
     },
-    [currentInstrument],
+    [currentInstrument, recordHistory],
   );
 
   const createNewPattern = useCallback(
     (patternId: PatternId) => {
       const { updatedSong, newPattern } = createPatternForSong(currentSong, patternId);
+      recordHistory();
       setCurrentSong(updatedSong);
       setIsSongDirty(true);
       return newPattern;
     },
-    [currentSong],
+    [currentSong, recordHistory],
   );
 
   const addPlaylistEntry = useCallback(
     (entry: PlaylistEntry) => {
       const updatedSong = addPlaylistEntryToSong(currentSong, entry);
+      recordHistory();
       setCurrentSong(updatedSong);
       setIsSongDirty(true);
     },
-    [currentSong],
+    [currentSong, recordHistory],
   );
 
   const optimizeSong = useCallback((): string => {
     const { optimizedSong, summary } = optimizeSongData(currentSong);
+    recordHistory();
     setCurrentSong(optimizedSong);
     setIsSongDirty(true);
     return summary;
-  }, [currentSong]);
+  }, [currentSong, recordHistory]);
 
   const renumberSong = useCallback((): string => {
     const { renumberedSong, nextCurrentInstrument, summary } = renumberSongData(
@@ -449,6 +545,7 @@ export const useDataManagement = () => {
       currentInstrument,
     );
 
+    recordHistory();
     setCurrentSong(renumberedSong);
     if (nextCurrentInstrument) {
       setCurrentInstrument(nextCurrentInstrument);
@@ -456,7 +553,7 @@ export const useDataManagement = () => {
     setIsSongDirty(true);
 
     return summary;
-  }, [currentSong, currentInstrument]);
+  }, [currentSong, currentInstrument, recordHistory]);
 
   const triggerFileLoad = useCallback(() => {
     if (!fileInputRef.current) {
@@ -495,5 +592,9 @@ export const useDataManagement = () => {
     pendingSongImport,
     confirmPendingSongImport,
     cancelPendingSongImport,
+    undo,
+    redo,
+    canUndo: historySize.undo > 0,
+    canRedo: historySize.redo > 0,
   };
 };

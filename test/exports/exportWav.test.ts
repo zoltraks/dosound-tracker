@@ -88,4 +88,24 @@ describe('WAV export context', () => {
     const ratio = result60Hz.totalSamples / result50Hz.totalSamples;
     expect(ratio).toBeCloseTo(50 / 60, 1);
   });
+
+  it('renders the AY amplitude curve for an AY song', () => {
+    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const song = parseSongFromYaml(yamlContent);
+
+    const ym = exportSongToWav({ ...song, chip: 'YM' });
+    const ay = exportSongToWav({ ...song, chip: 'AY' });
+
+    try {
+      expect(ay.totalSamples).toBe(ym.totalSamples);
+      const ymBytes = new Uint8Array(ym.buffer);
+      const ayBytes = new Uint8Array(ay.buffer);
+      // The PCM payload differs - the AY curve is louder at mid levels.
+      const differs = ymBytes.some((value, index) => value !== ayBytes[index]);
+      expect(differs).toBe(true);
+    } catch (error) {
+      console.log('AY wav render mismatch');
+      throw error;
+    }
+  });
 });

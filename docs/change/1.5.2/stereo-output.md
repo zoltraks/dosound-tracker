@@ -4,15 +4,17 @@
 
 ## Summary
 
-| Field         | Value                                                                      |
-| ------------- | -------------------------------------------------------------------------- |
-| Intent        | Give each of the three channels a pan position instead of the fixed mono   |
-|               | mix                                                                        |
-| Key decisions | Mono remains the default and the faithful Atari ST behaviour - stereo is   |
-|               | opt-in; the pan model is designed so a second compatible chip's channels   |
-|               | can join it later                                                          |
-| Open risks    | Panning changes the rendered output - default mono must stay bit-identical |
-|               | to today                                                                   |
+| Field         | Value                                                                     |
+| ------------- | ------------------------------------------------------------------------- |
+| Intent        | Give each of the three channels a pan position instead of the fixed mono  |
+|               | mix                                                                       |
+| Key decisions | Mono remains the default and the faithful Atari ST behaviour - stereo is  |
+|               | opt-in; the song carries a `stereo` node (named layout plus per-channel   |
+|               | pans) resolved to `setChannelPans` on the `SoundEngine` contract; letter- |
+|               | addressed channel keys leave room for a second compatible chip            |
+| Open risks    | None open - the internal engine enters the panner chain only while a pan  |
+|               | sits off centre, so default mono is bit-identical; Ayumi emits the folded |
+|               | mono sample on both outputs at centre; exports carry the same bytes       |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
@@ -38,11 +40,17 @@ set three free pans - free per-channel pan remains the general case.
 
 The pan model is designed with headroom: compatible hardware exists that
 pairs two AY-family chips in a stereo configuration (for example the
-PETAY sound board on the Commodore PET and PokeyMax in the Atari XL/XE),
-and each chip in such a pair may wire its A/B/C layout differently.
+PETAY sound board on the Commodore PET and the TurboSound dual-AY
+configuration on the ZX Spectrum), and each chip in such a pair may wire
+its A/B/C layout differently.
 Nothing in this change should preclude a future song model with six
 channels across two chips - pan positions, channel addressing, and the
 layout catalog are specified so that extension lands without a redesign.
+
+Pan is a live-render property only. The register-stream exports
+(assembly, binary, dump, VGM, MAX) carry the same YM2149 register data
+regardless of pan, and the WAV export keeps its mono mixdown - no export
+format changes.
 
 ## Use Cases
 

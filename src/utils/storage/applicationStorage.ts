@@ -3,7 +3,11 @@
 // expose stored keys as enumerable own properties.
 import { APPLICATION_STORAGE_PREFIX, StorageKeys } from './storageKeys.ts';
 
-const PRESERVED_KEYS = new Set<string>([StorageKeys.THEME, StorageKeys.DEBUG_MODE]);
+const PRESERVED_KEYS = new Set<string>([
+  StorageKeys.THEME,
+  StorageKeys.TEXT_SCALE,
+  StorageKeys.DEBUG_MODE,
+]);
 
 export const clearApplicationStorage = (): void => {
   const keys: string[] = [];

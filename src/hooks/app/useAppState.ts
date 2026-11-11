@@ -48,7 +48,12 @@ export function useAppState(): UseAppStateResult {
     'complex',
     {
       read: (stored) =>
-        stored === 'simple' || stored === 'complex' || stored === 'optimized' ? stored : 'complex',
+        stored === 'simple' ||
+        stored === 'complex' ||
+        stored === 'optimized' ||
+        stored === 'compact'
+          ? stored
+          : 'complex',
       write: (value) => value,
     },
   );

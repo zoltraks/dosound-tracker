@@ -1,7 +1,13 @@
 // @vitest-environment node
 
 import { describe, it, expect } from 'vitest';
-import { YM2149, YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../../src/synth/YM2149.ts';
+import {
+  YM2149,
+  YM_CLOCK,
+  YM_LOG_VOLUME_TABLE,
+  AY_LOG_VOLUME_TABLE,
+  volumeTableForChip,
+} from '../../src/synth/YM2149.ts';
 import { deriveYmState } from '../../src/synth/channelInstrument.ts';
 import type { Instrument } from '../../src/synth/SoundDriver.ts';
 import { createAudioContextStub } from './audioContextStub.ts';
@@ -407,6 +413,39 @@ describe('updateChannelWithInstrument', () => {
   });
 });
 
+describe('chip variant', () => {
+  it('selects the AY curve for AY and the YM curve for every other id', () => {
+    try {
+      expect(volumeTableForChip('AY')).toBe(AY_LOG_VOLUME_TABLE);
+      expect(volumeTableForChip('YM')).toBe(YM_LOG_VOLUME_TABLE);
+      expect(volumeTableForChip('SID')).toBe(YM_LOG_VOLUME_TABLE);
+      expect(volumeTableForChip(undefined)).toBe(YM_LOG_VOLUME_TABLE);
+    } catch (error) {
+      console.log('table selection mismatch');
+      throw error;
+    }
+  });
+
+  it('switches the channel gain to the AY curve on setChip', () => {
+    const { context, createdGains } = createAudioContextStub();
+    const ym = new YM2149(context);
+    ym.writeRegister(0x00, 0x1c);
+    ym.writeRegister(0x01, 0x01);
+    ym.writeRegister(0x07, 0x3e);
+    ym.writeRegister(0x08, 0x07);
+    try {
+      expect(createdGains[2].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[7] * 0.3, 5);
+      ym.setChip('AY');
+      expect(createdGains[2].gain.value).toBeCloseTo(AY_LOG_VOLUME_TABLE[7] * 0.3, 5);
+      ym.setChip('YM');
+      expect(createdGains[2].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[7] * 0.3, 5);
+    } catch (error) {
+      console.log('chip gain', createdGains[2].gain.value);
+      throw error;
+    }
+  });
+});
+
 describe('dispose', () => {
   it('stops every oscillator and the noise source', () => {
     const { context, createdOscillators } = createAudioContextStub();
@@ -419,6 +458,95 @@ describe('dispose', () => {
       expect(createdOscillators.every((o) => o.stop.mock.calls.length >= 1)).toBe(true);
     } catch (error) {
       console.log('dispose mismatch');
+      throw error;
+    }
+  });
+});
+
+describe('stereo routing', () => {
+  // createdGains order: 0 noise mix, 1 envelope, 2-4 channel gains,
+  // 5-7 per-channel noise taps. createdPanners holds the 3 stereo panners.
+  it('keeps the mono graph and silent panner chain by default', () => {
+    const { context, createdGains, createdPanners } = createAudioContextStub();
+    new YM2149(context);
+    try {
+      expect(createdPanners).toHaveLength(3);
+      for (let channel = 0; channel < 3; channel++) {
+        expect(createdGains[2 + channel].connect).toHaveBeenCalledTimes(1);
+        expect(createdGains[2 + channel].connect).toHaveBeenCalledWith(context.destination);
+        expect(createdGains[2 + channel].disconnect).not.toHaveBeenCalled();
+        expect(createdGains[5 + channel].gain.value).toBe(0);
+      }
+    } catch (error) {
+      console.log('mono-routing mismatch');
+      throw error;
+    }
+  });
+
+  it('routes the channel gains through the panners while a pan sits off centre', () => {
+    const { context, createdGains, createdPanners } = createAudioContextStub();
+    const ym = new YM2149(context);
+    ym.setChannelPans([0, 0.5, 1]);
+    try {
+      expect(createdPanners[0].pan.value).toBe(-1);
+      expect(createdPanners[1].pan.value).toBe(0);
+      expect(createdPanners[2].pan.value).toBe(1);
+      for (let channel = 0; channel < 3; channel++) {
+        expect(createdGains[2 + channel].disconnect).toHaveBeenCalledTimes(1);
+        expect(createdGains[2 + channel].connect).toHaveBeenLastCalledWith(createdPanners[channel]);
+      }
+    } catch (error) {
+      console.log('stereo-routing mismatch');
+      throw error;
+    }
+  });
+
+  it('restores the mono graph when every pan returns to centre', () => {
+    const { context, createdGains } = createAudioContextStub();
+    const ym = new YM2149(context);
+    ym.setChannelPans([0, 0.5, 1]);
+    ym.setChannelPans([0.5, 0.5, 0.5]);
+    try {
+      for (let channel = 0; channel < 3; channel++) {
+        expect(createdGains[2 + channel].connect).toHaveBeenLastCalledWith(context.destination);
+        expect(createdGains[5 + channel].gain.value).toBe(0);
+      }
+    } catch (error) {
+      console.log('mono-restore mismatch');
+      throw error;
+    }
+  });
+
+  it('clamps pans into [0, 1] and centres non-finite values', () => {
+    const { context, createdPanners } = createAudioContextStub();
+    const ym = new YM2149(context);
+    ym.setChannelPans([-2, Number.NaN, 3]);
+    try {
+      expect(createdPanners[0].pan.value).toBe(-1);
+      expect(createdPanners[1].pan.value).toBe(0);
+      expect(createdPanners[2].pan.value).toBe(1);
+    } catch (error) {
+      console.log('pan-clamp mismatch');
+      throw error;
+    }
+  });
+
+  it('moves the noise mix into the per-channel taps while stereo is active', () => {
+    const { context, createdGains } = createAudioContextStub();
+    const ym = new YM2149(context);
+    ym.setChannelPans([0, 0.5, 1]);
+    // Channel A noise at full volume: mixer 0x37 keeps only noise A enabled.
+    ym.writeRegister(0x07, 0x37);
+    ym.writeRegister(0x08, 0x0f);
+    ym.writeRegister(0x06, 0x10);
+    try {
+      const expected = YM_LOG_VOLUME_TABLE[0x0f] * 0.4;
+      expect(createdGains[5].gain.value).toBeCloseTo(expected, 5);
+      expect(createdGains[6].gain.value).toBe(0);
+      expect(createdGains[7].gain.value).toBe(0);
+      expect(createdGains[0].gain.value).toBe(0);
+    } catch (error) {
+      console.log('stereo-noise mismatch', JSON.stringify(createdGains.map((g) => g.gain.value)));
       throw error;
     }
   });

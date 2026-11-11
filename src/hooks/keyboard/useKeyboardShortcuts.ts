@@ -8,7 +8,9 @@ export type GlobalShortcutName =
   | 'newSong'
   | 'loadSong'
   | 'saveSong'
-  | 'newInstrument';
+  | 'newInstrument'
+  | 'undo'
+  | 'redo';
 
 interface UseKeyboardShortcutsArgs {
   setGlobalShortcut: (name: GlobalShortcutName, handler: () => void) => void;
@@ -20,6 +22,8 @@ interface UseKeyboardShortcutsArgs {
   handleLoadSong: () => void;
   handleSaveSong: () => void;
   handleNewInstrument: () => void;
+  handleUndo: () => void;
+  handleRedo: () => void;
 }
 
 export function useKeyboardShortcuts({
@@ -32,6 +36,8 @@ export function useKeyboardShortcuts({
   handleLoadSong,
   handleSaveSong,
   handleNewInstrument,
+  handleUndo,
+  handleRedo,
 }: UseKeyboardShortcutsArgs): void {
   useEffect(() => {
     setGlobalShortcut('playSong', handleStartSong);
@@ -42,6 +48,8 @@ export function useKeyboardShortcuts({
     setGlobalShortcut('loadSong', handleLoadSong);
     setGlobalShortcut('saveSong', handleSaveSong);
     setGlobalShortcut('newInstrument', handleNewInstrument);
+    setGlobalShortcut('undo', handleUndo);
+    setGlobalShortcut('redo', handleRedo);
   }, [
     setGlobalShortcut,
     handleStartSong,
@@ -52,5 +60,7 @@ export function useKeyboardShortcuts({
     handleLoadSong,
     handleSaveSong,
     handleNewInstrument,
+    handleUndo,
+    handleRedo,
   ]);
 }

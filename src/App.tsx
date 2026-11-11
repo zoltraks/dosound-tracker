@@ -3,6 +3,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useKeyboardNavigation } from './hooks/keyboard/useKeyboardNavigation.ts';
 import { useNavigationSuspension } from './hooks/keyboard/useNavigationSuspension.ts';
 import { useTheme } from './hooks/ui/useTheme.ts';
+import { useTextScale } from './hooks/ui/useTextScale.ts';
 import { useDataManagement } from './hooks/song/useDataManagement.ts';
 import { usePlaybackControls } from './hooks/playback/usePlaybackControls.ts';
 import { useAudioSetup } from './hooks/audio/useAudioSetup.ts';
@@ -10,26 +11,22 @@ import { useMidiHandling } from './hooks/midi/useMidiHandling.ts';
 import { useMidiActions } from './hooks/midi/useMidiActions.ts';
 import { useTrackOperations } from './hooks/song/useTrackOperations.ts';
 import { usePasteTrackOptions } from './hooks/modal/usePasteTrackOptions.ts';
-import { useSettingsDialog } from './hooks/modal/useSettingsDialog.ts';
+import { useSettingsSession } from './hooks/modal/useSettingsSession.ts';
 import { usePlaylistOperations } from './hooks/song/usePlaylistOperations.ts';
 import { useScrollSync } from './hooks/ui/useScrollSync.ts';
 import { useAppState } from './hooks/app/useAppState.ts';
 import { useKeyboardShortcuts } from './hooks/keyboard/useKeyboardShortcuts.ts';
 import { useMessageSystem } from './hooks/ui/useMessageSystem.ts';
 import { useModalState } from './hooks/modal/useModalState.ts';
-import { loadSettings, writeSettingKeys } from './utils/settings/settingsState.ts';
 import { loadSoundEngineId } from './utils/storage/soundEngine.ts';
 import type { SoundEngineId } from './constants/sound.ts';
-import { updateSettingsView } from './utils/storage/uiState.ts';
-import { DEFAULT_SETTINGS, type SettingsValues } from './types/settings.ts';
 import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.ts';
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
 import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
 import { normalizeInstrumentId } from './utils/instrument/instrumentSelection.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
-import { DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
-import type { Pattern } from './synth/SoundDriver.ts';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
 import { HeaderPanel } from './components/HeaderPanel.tsx';
 import { CommandPanel } from './components/CommandPanel.tsx';
 import { ErrorBoundary } from './components/ErrorBoundary.tsx';
@@ -41,8 +38,7 @@ import { SongSection } from './components/SongSection.tsx';
 import { FileInputs } from './components/FileInputs.tsx';
 import { useAppModals } from './hooks/modal/useAppModals.tsx';
 import { useFileOperations } from './hooks/file/useFileOperations.ts';
-import type { UiStore } from './hooks/ui/useUiStore.ts';
-import { useUiStore } from './hooks/ui/useUiStore.ts';
+import { useAppUiState } from './hooks/ui/useAppUiState.ts';
 import { useAppInfoDialogs } from './hooks/app/useAppInfoDialogs.ts';
 import { useStartupRestore } from './hooks/app/useStartupRestore.ts';
 import { useSongLifecycleDialogs } from './hooks/song/useSongLifecycleDialogs.ts';
@@ -62,19 +58,22 @@ import { useAudioContextResume } from './hooks/audio/useAudioContextResume.ts';
 import { useAudioContextPlaybackSync } from './hooks/audio/useAudioContextPlaybackSync.ts';
 import { useElectronCloseGuard } from './hooks/app/useElectronCloseGuard.ts';
 import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
+import { useChannelPans } from './hooks/song/useChannelPans.ts';
 import './App.css';
 
 declare const __APP_VERSION__: string;
 const APP_VERSION = __APP_VERSION__;
 
 const App: React.FC = () => {
-  const currentOctave = useUiStore((state: UiStore) => state.currentOctave);
-  const sharedCurrentLine = useUiStore((state: UiStore) => state.sharedCurrentLine);
-  const channelMutes = useUiStore((state: UiStore) => state.channelMutes);
-  const setCurrentOctave = useUiStore((state: UiStore) => state.setCurrentOctave);
-  const setSharedCurrentLine = useUiStore((state: UiStore) => state.setSharedCurrentLine);
-  const setChannelMutes = useUiStore((state: UiStore) => state.setChannelMutes);
-  const toggleChannelMute = useUiStore((state: UiStore) => state.toggleChannelMute);
+  const {
+    currentOctave,
+    sharedCurrentLine,
+    channelMutes,
+    setCurrentOctave,
+    setSharedCurrentLine,
+    setChannelMutes,
+    toggleChannelMute,
+  } = useAppUiState();
 
   const modalState = useModalState();
   const {
@@ -147,7 +146,9 @@ const App: React.FC = () => {
     handleCancelPasteTrackModal,
   } = usePasteTrackOptions();
 
-  const { isDarkMode, setIsDarkMode, toggleTheme } = useTheme();
+  const { theme, setTheme, toggleTheme } = useTheme();
+  const { textScale, setTextScale } = useTextScale();
+  const isDarkMode = theme !== 'light';
   const {
     currentSong,
     currentInstrument,
@@ -158,7 +159,6 @@ const App: React.FC = () => {
     saveSong,
     createNewInstrument,
     saveInstrument,
-    createNewPattern,
     fileInputRef,
     triggerFileLoad,
     loadSong,
@@ -175,6 +175,8 @@ const App: React.FC = () => {
     pendingSongImport,
     confirmPendingSongImport,
     cancelPendingSongImport,
+    undo,
+    redo,
   } = useDataManagement();
 
   const {
@@ -204,6 +206,8 @@ const App: React.FC = () => {
     handleCloseSoundExportSummary,
     handleCloseDumpExportSummary,
     exportMaxWithContext,
+    exportMidiWithContext,
+    exportModWithContext,
   } = useFileOperations({ song: currentSong, exportStrategy });
 
   const isNavigationSuspended = useNavigationSuspension({
@@ -220,17 +224,17 @@ const App: React.FC = () => {
   const { activeSection, setActiveSection, setGlobalShortcut } =
     useKeyboardNavigation(isNavigationSuspended);
 
-  const patternsById = useMemo(() => {
-    const map = new Map<string, Pattern>();
-    const patterns = currentSong.pattern;
-
-    for (const pattern of patterns) {
-      if (pattern && pattern.id) {
-        map.set(pattern.id, pattern);
-      }
-    }
-    return map;
-  }, [currentSong.pattern]);
+  const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
+  const { channelPans, handleChannelPanChange } = useChannelPans({
+    stereo: currentSong.stereo,
+    updateSong,
+  });
+  const { audioContext, ym2149Ref, ym2149, waitForEngine, playTestTone } = useAudioSetup(
+    currentSong.clock ?? DEFAULT_SONG_CLOCK,
+    soundEngineId,
+    channelPans,
+    currentSong.chip ?? DEFAULT_SONG_CHIP,
+  );
 
   const {
     sequencerState,
@@ -240,7 +244,7 @@ const App: React.FC = () => {
     startPatternLoop,
     startSong,
     setPatternLoopMode,
-  } = usePlaybackControls({ currentSong });
+  } = usePlaybackControls({ currentSong, audioContext });
 
   useElectronCloseGuard({ isSongDirty, onQuitRequested: setIsQuitConfirmOpen });
 
@@ -251,11 +255,6 @@ const App: React.FC = () => {
     [mirrorRestoreNotice, messages],
   );
 
-  const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
-  const { audioContext, ym2149Ref, ym2149, waitForEngine, playTestTone } = useAudioSetup(
-    currentSong.clock ?? DEFAULT_SONG_CLOCK,
-    soundEngineId,
-  );
   const previewTickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
 
   useAudioContextPlaybackSync({
@@ -316,7 +315,6 @@ const App: React.FC = () => {
     lastSequencerPositionRef,
   } = usePlaybackBridge({
     currentSong,
-    patternsById,
     channelMutes,
     ym2149Ref,
     isDebugMode,
@@ -348,7 +346,6 @@ const App: React.FC = () => {
     song: currentSong,
     targetTrackId,
     currentPatternIndex: sequencerState.currentPattern,
-    createNewPattern,
     updateSong,
     setActiveSection,
     setSharedCurrentLine,
@@ -541,6 +538,8 @@ const App: React.FC = () => {
     handleLoadSong: triggerFileLoad,
     handleSaveSong: saveSong,
     handleNewInstrument: createNewInstrument,
+    handleUndo: undo,
+    handleRedo: redo,
   });
 
   const handleLineChange = useCallback((lineIndex: number) => {
@@ -599,6 +598,8 @@ const App: React.FC = () => {
     handleExportVgmFromModal,
     handleExportWavFromModal,
     handleExportMaxFromModal,
+    handleExportModFromModal,
+    handleExportMidiFromModal,
   } = useExportModal({
     exportType,
     setExportType,
@@ -614,6 +615,8 @@ const App: React.FC = () => {
     exportWavWithContext,
     exportDumpWithContext,
     exportMaxWithContext,
+    exportMidiWithContext,
+    exportModWithContext,
   });
 
   const {
@@ -682,10 +685,6 @@ const App: React.FC = () => {
 
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
-  const committedSettings = useMemo(
-    () => loadSettings(),
-    [isDarkMode, trackBackgroundEnabled, pasteTrackMode, soundEngineId, modalState.isSettingsOpen],
-  );
   const {
     settingsCategory,
     setSettingsCategory,
@@ -695,41 +694,22 @@ const App: React.FC = () => {
     setConfirmingReset,
     recordFocus,
     recordPaneScroll,
-  } = useSettingsDialog(modalState.isSettingsOpen, committedSettings);
-
-  const closeSettingsSession = (draft: SettingsValues) =>
-    updateSettingsView({
-      category: settingsCategory,
-      draft,
-      confirmingReset: false,
-      focus: null,
-      paneScroll: 0,
-    });
-
-  const handleCommitSettings = () => {
-    if (confirmingReset) {
-      setSettingsDraft(DEFAULT_SETTINGS);
-      setConfirmingReset(false);
-      return;
-    }
-    const next = settingsDraft;
-    setIsDarkMode(next.general.theme === 'dark');
-    setTrackBackgroundEnabled(next.general.trackBackground);
-    writeSettingKeys(next);
-    setPasteTrackMode(next.editor.pasteTrackMode);
-    setSoundEngineId(next.sound.engine);
-    closeSettingsSession(next);
-    modalState.setIsSettingsOpen(false);
-  };
-
-  const handleCancelSettings = () => {
-    if (confirmingReset) {
-      setConfirmingReset(false);
-      return;
-    }
-    closeSettingsSession(committedSettings);
-    modalState.setIsSettingsOpen(false);
-  };
+    handleCommitSettings,
+    handleCancelSettings,
+  } = useSettingsSession({
+    isSettingsOpen: modalState.isSettingsOpen,
+    setIsSettingsOpen: modalState.setIsSettingsOpen,
+    theme,
+    setTheme,
+    textScale,
+    setTextScale,
+    trackBackgroundEnabled,
+    setTrackBackgroundEnabled,
+    pasteTrackMode,
+    setPasteTrackMode,
+    soundEngineId,
+    setSoundEngineId,
+  });
 
   const modals = useAppModals({
     modalState,
@@ -825,6 +805,8 @@ const App: React.FC = () => {
     handleExportVgmFromModal,
     handleExportMaxFromModal,
     handleExportWavFromModal,
+    handleExportModFromModal,
+    handleExportMidiFromModal,
     handleConfirmExport,
     handleCancelExport,
     isPasteTrackModalOpen,
@@ -847,7 +829,8 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AppLayout
-        isDarkMode={isDarkMode}
+        theme={theme}
+        textScale={textScale}
         header={
           <HeaderPanel
             title={currentSong.title}
@@ -979,6 +962,8 @@ const App: React.FC = () => {
             ym2149={ym2149}
             channelMutes={channelMutes}
             onToggleChannelMute={toggleChannelMute}
+            channelPans={channelPans}
+            onChannelPanChange={handleChannelPanChange}
           />
         }
         pianoKeyboard={

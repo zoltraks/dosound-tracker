@@ -32,7 +32,7 @@ export const EnvelopeSection: React.FC<EnvelopeSectionProps> = ({
   }, [messages, currentMessageIndex]);
 
   return (
-    <div className="middle-column">
+    <div className="middle-column" role="region" aria-label="Instrument envelopes">
       <ToneNoisePanel
         activeSection={activeSection}
         setActiveSection={setActiveSection}

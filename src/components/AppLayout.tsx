@@ -1,7 +1,9 @@
 import React from 'react';
+import type { TextScale, ThemeVariant } from '../types/settings.ts';
 
 interface AppLayoutProps {
-  isDarkMode: boolean;
+  theme: ThemeVariant;
+  textScale: TextScale;
   header: React.ReactNode;
   commandPanel: React.ReactNode;
   trackerSection: React.ReactNode;
@@ -13,7 +15,8 @@ interface AppLayoutProps {
 }
 
 export const AppLayout: React.FC<AppLayoutProps> = ({
-  isDarkMode,
+  theme,
+  textScale,
   header,
   commandPanel,
   trackerSection,
@@ -23,21 +26,22 @@ export const AppLayout: React.FC<AppLayoutProps> = ({
   fileInputs,
   modals,
 }) => {
+  const scaleClass = textScale === '100' ? '' : ` app-scale-${textScale}`;
   return (
-    <div className={`app ${isDarkMode ? 'dark' : 'light'}`}>
+    <div className={`app ${theme}${scaleClass}`}>
       <div
         className={`app-initial-overlay ${
-          isDarkMode ? 'app-initial-overlay-dark' : 'app-initial-overlay-light'
+          theme === 'light' ? 'app-initial-overlay-light' : 'app-initial-overlay-dark'
         }`}
       />
       {header}
       {commandPanel}
 
-      <div className="main-content">
+      <main className="main-content">
         {trackerSection}
         {envelopeSection}
         {songSection}
-      </div>
+      </main>
 
       {pianoKeyboard}
       {fileInputs}

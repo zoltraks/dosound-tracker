@@ -9,7 +9,12 @@ import { DEFAULT_SETTINGS } from '../../../src/types/settings.ts';
 describe('settingsYaml', () => {
   it('round-trips all settings values', () => {
     const settings = {
-      general: { theme: 'light' as const, trackBackground: false, startupTone: false },
+      general: {
+        theme: 'contrast' as const,
+        textScale: '150' as const,
+        trackBackground: false,
+        startupTone: false,
+      },
       editor: {
         restoreCursor: false,
         restoreView: true,
@@ -65,7 +70,12 @@ describe('settingsYaml', () => {
 
   it('keeps fallback members for missing fields and normalizes unknown ones', () => {
     const fallback = {
-      general: { theme: 'light' as const, trackBackground: false, startupTone: true },
+      general: {
+        theme: 'light' as const,
+        textScale: '125' as const,
+        trackBackground: false,
+        startupTone: true,
+      },
       editor: {
         restoreCursor: false,
         restoreView: true,
@@ -79,7 +89,7 @@ describe('settingsYaml', () => {
     );
     try {
       expect(parsed).toEqual({
-        general: { theme: 'dark', trackBackground: false, startupTone: true },
+        general: { theme: 'dark', textScale: '125', trackBackground: false, startupTone: true },
         editor: fallback.editor,
         sound: fallback.sound,
       });

@@ -14,11 +14,22 @@ export function matchKeyboardShortcut(
   let preventDefault = false;
 
   if (ctrl && shift) {
+    if (keyUpper === 'Z') {
+      return { shortcut: 'CTRL+SHIFT+Z', preventDefault: true };
+    }
     return null;
   }
 
   if (ctrl) {
     switch (keyUpper) {
+      case 'Z':
+        shortcut = 'CTRL+Z';
+        preventDefault = true;
+        break;
+      case 'Y':
+        shortcut = 'CTRL+Y';
+        preventDefault = true;
+        break;
       case 'N':
         shortcut = 'CTRL+N';
         preventDefault = true;

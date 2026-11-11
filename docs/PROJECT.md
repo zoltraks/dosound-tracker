@@ -18,14 +18,14 @@ The application's core feature is its ability to export music data directly into
 - Provide a pattern-based playlist system for song arrangement.
 - Offer 256 instrument slots with full parameter control.
 - Emulate the YM2149 chip with bit-perfect register simulation.
-- Support multiple export formats (assembly, register dump, binary, VGM, WAV, MAX).
+- Support multiple export formats (assembly, register dump, binary, VGM, WAV, MAX, MOD, MIDI).
 - Provide real-time audio playback with sub-millisecond timing.
 - Support MIDI input for live recording and instrument control.
 - Deploy as both a web application and a cross-platform desktop application via Electron.
 
 **Non-Goals**
 
-- Multi-chip support (only YM2149, no support for other sound chips).
+- Multi-chip support beyond the AY/YM register family (chips such as SID or POKEY stay unsupported - variants sharing the YM2149 register model are admitted per F-19).
 - Multi-track beyond three channels (hardware limitation of the YM2149).
 - Modern audio synthesis techniques (the focus is authentic retro chip sound).
 - Server-side processing (all synthesis happens client-side).
@@ -102,6 +102,7 @@ The system must export music data as DOSOUND-compatible assembly code with:
 - Automatic delay insertion for proper timing resolution.
 - Volume-based optimization (remove unnecessary data when channels are silent).
 - Pattern boundary markers with comments.
+- Selectable strategies (simple, complex, optimized, compact), with compact packing the command stream tighter while staying replay-equivalent.
 
 **F-08: Multiple Export Formats**
 
@@ -114,6 +115,8 @@ The system must support the following export formats:
 - Binary export.
 - VGM (Video Game Music) format.
 - MAX (Music Audio eXchange) format.
+- ProTracker MOD format (tracker-native module with documented mapping losses).
+- Standard MIDI File format (note-level interchange with documented mapping losses).
 
 **F-09: File I/O**
 
@@ -135,7 +138,7 @@ The system must support MIDI input for live recording and instrument control, in
 
 **F-12: Theme Support**
 
-The system must support both a night mode (dark, default) and a day mode (light) with a theme toggle in the top-right corner.
+The system must support a night mode (dark, default), a day mode (light), and a high-contrast mode (contrast). The theme toggle in the top-right corner switches between the dark and light modes; the high-contrast mode is selected through the settings modal. The system must also offer a bounded text-size scaling option (100%, 125%, 150%) that enlarges the interface without breaking the fixed-grid layout - panels scroll their own content under scaling.
 
 **F-13: Cross-Platform Deployment**
 
@@ -149,9 +152,9 @@ The system must deploy as:
 
 The system must provide toggle buttons in the Song information panel for selecting the replay rate (50 Hz or 60 Hz) and the YM2149 chip clock (2 MHz or 1 MHz). The Rate button is placed in the Title row and the Clock button in the Author row. Both buttons match the combined width of the two number-spinner buttons used elsewhere in the panel. New songs default to 50 Hz and 2 MHz. Songs loaded without these settings fall back to the same defaults. Both values are persisted in the song YAML file format.
 
-The selected replay rate drives the sequencer worker tick interval (20 ms at 50 Hz, 16.66 ms at 60 Hz) and all instrument preview envelope timers. The selected chip clock drives the YM2149 emulator frequency calculation and the tone period register values. At 1 MHz, period values are half of the 2 MHz values for the same note, preserving the composed pitch. Noise period register values are set directly from instrument envelopes and are not recalculated - the noise timbre change at 1 MHz is expected.
+The selected replay rate drives the sequencer worklet tick interval (20 ms at 50 Hz, 16.66 ms at 60 Hz) and all instrument preview envelope timers. The selected chip clock drives the YM2149 emulator frequency calculation and the tone period register values. At 1 MHz, period values are half of the 2 MHz values for the same note, preserving the composed pitch. Noise period register values are set directly from instrument envelopes and are not recalculated - the noise timbre change at 1 MHz is expected.
 
-All export formats (VGM, MAX, WAV, ASM, BIN) read the configured frame rate and chip clock from the song. VGM uses the appropriate wait command (0x63 for 50 Hz, 0x62 for 60 Hz) and writes the clock and rate to the header. MAX writes the frame rate and clock to the chip setup chunk. WAV renders at the correct samples-per-tick for the frame rate. ASM and BIN use the configured clock for period calculations.
+All export formats (VGM, MAX, WAV, ASM, BIN, MOD, MIDI) read the configured frame rate and chip clock from the song. VGM uses the appropriate wait command (0x63 for 50 Hz, 0x62 for 60 Hz) and writes the clock and rate to the header. MAX writes the frame rate and clock to the chip setup chunk. WAV renders at the correct samples-per-tick for the frame rate. ASM and BIN use the configured clock for period calculations. MOD uses the configured clock for tone-to-Amiga period conversion and derives its BPM from the frame rate. MIDI derives its tempo from the frame rate and ignores the chip clock, since note pitch is chip-independent.
 
 **F-15: Editor Cursor Persistence**
 
@@ -165,13 +168,27 @@ The system must mirror autosaved song and instrument data into an IndexedDB snap
 
 The system must provide a settings modal opened by a gear button in the header, placed directly after the theme toggle. The gear button uses the `⚙` glyph and the same icon-button treatment as the theme toggle, and stays out of the section navigation order.
 
-The modal presents named categories in a left sidebar, the active category's settings as label and control rows in a scrollable property pane, and a footer action bar. The dialog sizes to its content up to a bounded fraction of the viewport and stays centered on the desktop layout; in the mobile layout it fills the screen and the property pane scrolls inside it. The categories are GENERAL (theme, track background, startup test tone), EDITOR (restore editor cursor, restore open view, default paste mode), and SOUND (sound engine).
+The modal presents named categories in a left sidebar, the active category's settings as label and control rows in a scrollable property pane, and a footer action bar. The dialog sizes to its content up to a bounded fraction of the viewport and stays centered on the desktop layout; in the mobile layout it fills the screen and the property pane scrolls inside it. The categories are GENERAL (theme, text size, track background, startup test tone), EDITOR (restore editor cursor, restore open view, default paste mode), and SOUND (sound engine).
 
 The modal edits a draft copy of the settings. OK commits the draft, Cancel and ESC discard it, and ENTER confirms like OK. The footer holds CANCEL and RESET on the left and LOAD, SAVE, and OK on the right. RESET replaces the draft with the default values behind a confirmation. SAVE writes the current draft to a `settings.yaml` file and LOAD reads a `settings.yaml` file into the draft; both leave the draft uncommitted until OK.
 
 The application restores its state on page reload. This convention applies to every view: persisted state, including the open view, survives a reload exactly. The settings modal follows the same rule - when the page reloads with the modal open, the modal re-opens with the same active category, the same uncommitted draft contents, the same focused control, the same property-pane scroll offset, and the same reset-confirmation state.
 
 Committed settings persist under the per-key `dosound-tracker-*` storage. The new options - startup test tone, restore editor cursor, and restore open view - each get their own key and default to on, preserving the behaviour that existed before the setting was introduced. The SOUND category's engine selector persists `internal` or `ayumi` under `dosound-tracker-sound-engine`, defaults to `internal` on an unrecognised value, and applies the switch live on OK - the old engine is silenced and disposed, playback does not carry over.
+
+**F-18: Per-Channel Stereo Output**
+
+The system must provide optional per-channel stereo output on both sound engines. A song may declare a named stereo layout (`mono`, `ABC`, `ACB` - the canonical machine wirings) or free per-channel pan positions on a 0..1 scale, persisted in the song file format. Mono remains the default: a song without stereo settings renders the faithful Atari ST mono mixdown exactly as before. A `Stereo` toggle in the Song information panel cycles the named layouts, and a per-channel pan control in the EQ panel cycles each channel through left, centre, and right positions. Panning applies to live playback and instrument previews. All export formats are unchanged - the register-stream formats carry the same YM2149 register data, the WAV export renders the mono mixdown, and the MOD and MIDI exports carry no pan data.
+
+**F-19: Chip Variant Selection**
+
+The system must allow each song to declare its PSG variant from a supported list: `YM` (YM2149, the default) or `AY` (AY-3-8910 family). A `Chip` toggle in the Song information panel cycles the supported variants. New songs default to `YM`; songs loaded without a chip fall back to `YM`, and a loaded value outside the supported list is kept on the song and raises the import warning. The value is persisted in the song YAML file format.
+
+The selected chip drives the per-variant amplitude curve on both sound engines: the internal engine selects between its YM and AY volume tables and the Ayumi engine selects the matching DAC table in the emulation core. Chip-aware exports carry the variant: MAX writes the chip id in the chip setup chunk, VGM writes the chip-type byte in the header, and WAV renders with the variant's amplitude curve. The DOSOUND assembly, binary, register-dump, MOD, and MIDI formats carry no chip declaration.
+
+**F-20: Undo and Redo History**
+
+The system must provide an edit history covering the composition data: pattern steps, instrument parameters, playlist lines, and song information fields. CTRL+Z steps the history backwards, and CTRL+Y or CTRL+SHIFT+Z re-applies reverted steps. A new edit after undo discards the redo branch. Composite operations such as paste, transpose, renumber, and optimize record as single entries, and the history is bounded and session-scoped - it never travels with the saved song file and starts empty on application reload. Undo applies through the ordinary song state setters, so restoring during playback must not recreate audio callbacks or write on the audio path.
 
 ## Non-Functional Requirements
 
@@ -221,6 +238,10 @@ A user saves the current song to a YAML file, closes the application, reopens it
 
 A user connects a MIDI keyboard, selects the device in the application, plays notes on the MIDI keyboard to enter them into the current track, and adjusts velocity sensitivity.
 
+**C-06: Undo an Edit**
+
+A user enters a wrong note, presses CTRL+Z to restore the previous step content, edits further, then presses CTRL+Y to re-apply a reverted step where the redo branch still exists.
+
 ## Quality Targets
 
 - Audio playback with zero glitches during normal operation.
@@ -268,7 +289,7 @@ The note C sharp is written as "C#".
 **Layout Requirements**
 
 - The application screen should fit entirely within the browser tab so that using the scroll bar is not necessary.
-- The application should support both a night mode (dark, default) and a day mode (light).
+- The application should support a night mode (dark, default), a day mode (light), and a high-contrast mode (contrast).
 - In the top-right corner, there should be an icon to switch the theme.
 - Place the application logo in the top-left corner.
 - Keyboard support is required. The active section should be highlighted, and navigation between sections should use the TAB key clockwise or Shift+TAB in reverse.

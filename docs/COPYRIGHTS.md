@@ -42,6 +42,12 @@ The ZX0 compressor implementation in `src/utils/compression/zx0.ts` is a TypeScr
 compressor by Einar Saukas, distributed under the BSD 3-Clause license.
 The original copyright notice and license terms are retained in the source file header.
 
+## Export Format Provenance
+
+The ProTracker MOD and Standard MIDI File exporters in `src/exports/` are original code written
+against publicly available format documentation (the ProTracker module layout and the SMF 1.0
+specification). No third-party module or MIDI code is vendored.
+
 ## Ayumi Emulation
 
 The Ayumi emulation core in `src/synth/ayumiCore.ts` is a TypeScript port of the Ayumi AY-3-8910/YM2149

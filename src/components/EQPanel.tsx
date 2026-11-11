@@ -1,13 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { SoundEngine } from '../synth/soundEngine.ts';
+import { DEFAULT_CHANNEL_PANS } from '../constants/song.ts';
+import { formatChannelPan } from '../utils/song/songStereo.ts';
 
 interface EQPanelProps {
   ym2149?: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (channelIndex: number) => void;
+  channelPans?: number[];
+  onChannelPanChange?: (channelIndex: number) => void;
 }
 
-export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggleChannelMute }) => {
+export const EQPanel: React.FC<EQPanelProps> = ({
+  ym2149,
+  channelMutes,
+  onToggleChannelMute,
+  channelPans = DEFAULT_CHANNEL_PANS,
+  onChannelPanChange,
+}) => {
   const [volumes, setVolumes] = useState<number[]>([0, 0, 0]);
 
   const ym2149Ref = useRef<SoundEngine | null | undefined>(null);
@@ -69,6 +79,14 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
               <span className={`channel-label ${channelMutes[index] ? 'muted' : ''}`}>
                 {String.fromCharCode(65 + index)} {/* A, B, C */}
               </span>
+              <button
+                type="button"
+                className="channel-pan-button"
+                aria-label={`Pan channel ${String.fromCharCode(65 + index)}`}
+                onClick={() => onChannelPanChange?.(index)}
+              >
+                {formatChannelPan(channelPans[index] ?? 0.5)}
+              </button>
             </div>
           ))}
         </div>

@@ -8,10 +8,12 @@
 | ------------- | ----------------------------------------------------------------------- |
 | Intent        | Widen the export pipeline with tracker-native and interchange formats - |
 |               | ProTracker MOD, Impulse Tracker IT, and MIDI are the candidates         |
-| Key decisions | One format per module in `src/exports/`, each with its own fixtures -   |
-|               | formats are evaluated and land individually                             |
+| Key decisions | MOD and MIDI ship; IT is deferred - its fidelity gain over MOD covers   |
+|               | only the volume envelope while the format surface is the largest of     |
+|               | the three. Each shipped format reports its mapping losses in the        |
+|               | export summary                                                          |
 | Open risks    | The three-channel YM2149 model maps imperfectly onto wider tracker      |
-|               | formats - mapping losses must be explicit, never silent                 |
+|               | formats - shipped losses are explicit and surfaced to the user          |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
@@ -35,6 +37,29 @@ existing lazy export chunk, with fixtures in `test/fixtures/` and
 coverage in `test/exports/`. Formats land individually - the window may
 deliver a subset when evaluation finds one format's mapping too lossy to
 ship honestly.
+
+## Evaluation
+
+Each candidate was evaluated against the codebase and the public format
+specifications. Results recorded per the record's subset rule.
+
+- **ProTracker MOD** - ships. The simulated register stream maps onto
+  the MOD cell grid at row granularity: tone periods become Amiga
+  periods through two generated samples (square wave for tone, noise
+  block for noise), volumes become `Cxx` set-volume effects, and
+  release rows become `EC0` note cuts. Losses are intra-row envelope
+  movement, notes outside the Amiga period range, and timbre detail -
+  all reported in the export summary.
+- **Impulse Tracker IT** - deferred. Its only fidelity gain over MOD is
+  the volume-envelope node model - shift, pitch, noise, and mode
+  envelopes still drop - while the format surface (instrument headers,
+  envelope nodes, packed patterns) is the largest of the three. It
+  returns through its own change record when justified.
+- **MIDI** - ships. Note events map cleanly onto SMF type 1 note-on /
+  note-off pairs with the volume column carried as velocity and CC7,
+  and `instrument.midi` supplying channel and program. Envelope, noise,
+  and sustain semantics have no MIDI representation and are reported
+  as dropped.
 
 ## Use Cases
 

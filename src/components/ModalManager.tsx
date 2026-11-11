@@ -142,6 +142,8 @@ interface ModalManagerProps {
   onExportVgmFromModal: () => void;
   onExportMaxFromModal: () => void;
   onExportWavFromModal: () => void;
+  onExportModFromModal: () => void;
+  onExportMidiFromModal: () => void;
   onConfirmExport: () => void;
   onCancelExport: () => void;
 
@@ -288,6 +290,8 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
   onExportVgmFromModal,
   onExportMaxFromModal,
   onExportWavFromModal,
+  onExportModFromModal,
+  onExportMidiFromModal,
   onConfirmExport,
   onCancelExport,
   isPasteTrackModalOpen,
@@ -459,6 +463,8 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
         onExportVgm={onExportVgmFromModal}
         onExportMax={onExportMaxFromModal}
         onExportWav={onExportWavFromModal}
+        onExportMod={onExportModFromModal}
+        onExportMidi={onExportMidiFromModal}
         onConfirm={onConfirmExport}
         onCancel={onCancelExport}
       />

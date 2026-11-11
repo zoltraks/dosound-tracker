@@ -99,6 +99,32 @@ describe('buildSongYamlForExport', () => {
       throw error;
     }
   });
+
+  it('round-trips the AY chip through save and load', () => {
+    try {
+      const s = song({ chip: 'AY' });
+      const loaded = parseSongFromYaml(buildSongYamlForExport(s));
+      expect(loaded.chip).toBe('AY');
+      const reSaved = buildSongYamlForExport(loaded);
+      expect(reSaved).toContain('chip: AY');
+    } catch (error) {
+      console.log('chip round-trip mismatch');
+      throw error;
+    }
+  });
+
+  it('defaults the chip to YM when the song omits it', () => {
+    try {
+      const s = song({ chip: undefined });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { chip: string };
+      };
+      expect(doc.song.chip).toBe('YM');
+    } catch (error) {
+      console.log('chip default mismatch');
+      throw error;
+    }
+  });
 });
 
 describe('buildInstrumentYamlForExport / parseInstrumentFromText', () => {
@@ -290,6 +316,49 @@ describe('buildSongYamlForExport pattern names', () => {
       expect(parsed.pattern[0].name).toBe('Chorus');
     } catch (error) {
       console.log('pattern-name roundtrip mismatch');
+      throw error;
+    }
+  });
+});
+
+describe('buildSongYamlForExport stereo node', () => {
+  it('writes no stereo node for a mono song', () => {
+    try {
+      const doc = yaml.load(buildSongYamlForExport(song())) as {
+        song: Record<string, unknown>;
+      };
+      expect(doc.song.stereo).toBeUndefined();
+    } catch (error) {
+      console.log('mono-omission mismatch');
+      throw error;
+    }
+  });
+
+  it('round-trips layout and channel overrides through the parser', () => {
+    try {
+      const s = song({ stereo: { layout: 'abc', B: 0.25 } });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { stereo?: Record<string, unknown> };
+      };
+      expect(doc.song.stereo).toEqual({ layout: 'abc', B: 0.25 });
+
+      const parsed = parseSongFromYaml(buildSongYamlForExport(s));
+      expect(parsed.stereo).toEqual({ layout: 'abc', B: 0.25 });
+    } catch (error) {
+      console.log('stereo roundtrip mismatch');
+      throw error;
+    }
+  });
+
+  it('emits only the stereo members that are set', () => {
+    try {
+      const s = song({ stereo: { C: 0.9 } });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { stereo?: Record<string, unknown> };
+      };
+      expect(doc.song.stereo).toEqual({ C: 0.9 });
+    } catch (error) {
+      console.log('stereo member mismatch');
       throw error;
     }
   });

@@ -118,6 +118,8 @@ export interface UseAppModalsParams {
   handleExportVgmFromModal: () => void;
   handleExportMaxFromModal: () => void;
   handleExportWavFromModal: () => void;
+  handleExportModFromModal: () => void;
+  handleExportMidiFromModal: () => void;
   handleConfirmExport: () => void;
   handleCancelExport: () => void;
 
@@ -238,6 +240,8 @@ export function useAppModals({
   handleExportVgmFromModal,
   handleExportMaxFromModal,
   handleExportWavFromModal,
+  handleExportModFromModal,
+  handleExportMidiFromModal,
   handleConfirmExport,
   handleCancelExport,
   isPasteTrackModalOpen,
@@ -486,6 +490,8 @@ export function useAppModals({
       onExportVgmFromModal={handleExportVgmFromModal}
       onExportMaxFromModal={handleExportMaxFromModal}
       onExportWavFromModal={handleExportWavFromModal}
+      onExportModFromModal={handleExportModFromModal}
+      onExportMidiFromModal={handleExportMidiFromModal}
       onConfirmExport={handleConfirmExport}
       onCancelExport={handleCancelExport}
       isPasteTrackModalOpen={isPasteTrackModalOpen}

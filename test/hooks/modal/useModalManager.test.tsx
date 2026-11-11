@@ -141,4 +141,149 @@ describe('useModalManager', () => {
     expect(options.handleConfirmQuit).not.toHaveBeenCalled();
     expect(options.handleCloseInstrumentOperationSummary).not.toHaveBeenCalled();
   });
+
+  it('ignores keys other than Escape and Enter', () => {
+    const options = createOptions({ isAboutOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('a');
+    dispatchKey('Tab');
+    expect(options.setIsAboutOpen).not.toHaveBeenCalled();
+  });
+
+  it('routes Escape to settings before any error summary', () => {
+    const options = createOptions({ isSettingsOpen: true, songError: 'load failed' });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Escape');
+    try {
+      expect(options.handleCancelSettings).toHaveBeenCalledTimes(1);
+      expect(options.setSongError).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('settings Escape priority violated');
+      throw error;
+    }
+  });
+
+  it('confirms settings on Enter', () => {
+    const options = createOptions({ isSettingsOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Enter');
+    expect(options.handleConfirmSettings).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes Escape to the midi modal before confirmation modals', () => {
+    const options = createOptions({ isMidiModalOpen: true, isTransposeOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Escape');
+    try {
+      expect(options.handleCloseMidi).toHaveBeenCalledTimes(1);
+      expect(options.handleCancelTranspose).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('midi Escape priority violated');
+      throw error;
+    }
+  });
+
+  it('confirms transpose on Enter and cancels it on Escape', () => {
+    const options = createOptions({ isTransposeOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Enter');
+    try {
+      expect(options.handleConfirmTranspose).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      console.log('transpose Enter mismatch');
+      throw error;
+    }
+    dispatchKey('Escape');
+    try {
+      expect(options.handleCancelTranspose).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      console.log('transpose Escape mismatch');
+      throw error;
+    }
+  });
+
+  it('confirms export on Enter and cancels it on Escape', () => {
+    const options = createOptions({ isExportOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Enter');
+    expect(options.handleConfirmExport).toHaveBeenCalledTimes(1);
+    dispatchKey('Escape');
+    expect(options.handleCancelExport).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes Escape through the renumber confirmation', () => {
+    const options = createOptions({ isRenumberConfirmOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Escape');
+    expect(options.handleCancelRenumber).toHaveBeenCalledTimes(1);
+    dispatchKey('Enter');
+    expect(options.handleConfirmRenumber).toHaveBeenCalledTimes(1);
+  });
+
+  it('clears a song error on Escape and Enter', () => {
+    const options = createOptions({ songError: 'load failed' });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Escape');
+    try {
+      expect(options.setSongError).toHaveBeenCalledWith('');
+    } catch (error) {
+      console.log('songError Escape mismatch');
+      throw error;
+    }
+    dispatchKey('Enter');
+    try {
+      expect(options.setSongError).toHaveBeenCalledTimes(2);
+    } catch (error) {
+      console.log('songError Enter mismatch');
+      throw error;
+    }
+  });
+
+  it('closes the about and download modals', () => {
+    const options = createOptions({ isAboutOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Enter');
+    try {
+      expect(options.setIsAboutOpen).toHaveBeenCalledWith(false);
+    } catch (error) {
+      console.log('about Enter mismatch');
+      throw error;
+    }
+  });
+
+  it('closes the download modal on Escape', () => {
+    const options = createOptions({ isDownloadOpen: true });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Escape');
+    expect(options.setIsDownloadOpen).toHaveBeenCalledWith(false);
+  });
+
+  it('closes the changelog and manual modals', () => {
+    const options = createOptions({ isChangelogOpen: true, isManualOpen: false });
+
+    render(<ManagerHarness options={options} />);
+
+    dispatchKey('Escape');
+    expect(options.handleCloseChangelog).toHaveBeenCalledTimes(1);
+  });
 });

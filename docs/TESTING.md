@@ -165,7 +165,7 @@ Cover pure functions and isolated classes.
 
 - Song YAML parsing and serialisation round-trip.
 - YM2149 register calculation and frequency conversion.
-- Export format generation (assembly, binary, VGM, WAV, MAX).
+- Export format generation (assembly, binary, VGM, WAV, MAX, MOD, MIDI).
 - Instrument utility functions.
 - Keyboard note mapping.
 - MIDI configuration parsing.
@@ -173,6 +173,7 @@ Cover pure functions and isolated classes.
 - Envelope panel utilities.
 - Track panel utilities.
 - File picker utilities.
+- Edit history stack operations.
 
 **Component Tests**
 
@@ -192,10 +193,11 @@ Verify hook and engine interactions.
 - MIDI hook: device selection and message processing.
 - Modal state hook: open and close transitions.
 - Message system: user feedback flow.
+- Edit history: undo and redo restore the song and instrument pair through the data management hook.
 
 **End-to-end Tests**
 
-Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spec.ts` with shared interactions in `e2e/helpers.ts`. Each of the six documented flows is one independent `test`.
+Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spec.ts` with shared interactions in `e2e/helpers.ts`. Each documented flow is one independent `test`.
 
 - First launch shows the bundled song with the default instrument selected.
 - Enter notes in track A and play the song.
@@ -203,10 +205,21 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 - Export song to DOSOUND assembly format.
 - Save and load a song file.
 - Switch theme between dark and light.
+- Open settings, change the theme, and verify persistence across a reload.
+- Apply the contrast theme and text scaling from settings and verify persistence across a reload.
+- Switch the sound engine to Ayumi, play, and verify playback advances.
+- Switch the stereo layout and pan a channel, verifying the control labels update.
+- Switch the chip variant and verify the control label updates.
+- Export song to VGM format.
+- Export song to MAX format.
+- Export song to MOD format.
+- Export song to MIDI format.
+- Open the About modal and render the changelog document.
+- Enter a note, undo it with CTRL+Z, and redo it with CTRL+Y.
 
 `npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/` - the `pretest:e2e` script builds first, so the preview always serves the current code. The suite runs on the chromium and webkit projects - the firefox project is excluded because headless launch fails under the current macOS sandbox.
 
-The `saves and loads a song file` webkit case can flake under parallel workers - the file-input assertion observes a pre-upload value under load. It is timing-dependent, not a regression: rerun it in isolation (`npx playwright test --project=webkit e2e/smoke.spec.ts`) before treating it as a failure, and prefer making the test deterministic over accepting repeats.
+File flows wait on staged input state, not ordering: `uploadSongFile` in `e2e/helpers.ts` proves the file landed on `#song-file-input` before the spec asserts the loaded value, and downloads go through `clickAndDownload`, which arms `waitForEvent` before the triggering click. The two hidden YAML inputs are disambiguated by `id` (`song-file-input`, `instrument-file-input`) - positional selectors on `accept` attributes are ambiguous because both share `accept=".yaml,.yml"`. Post-upload value assertions carry a widened polling window for parallel-worker load; fixed `waitForTimeout` delays are not used.
 
 **Audio-path verification requires the webkit project**
 
@@ -248,6 +261,7 @@ Node 26 prints `ExperimentalWarning: localStorage is not available` lines during
 - Synthetic keyboard and DOM events must carry `bubbles: true` and be dispatched on a real element such as `document.body` - a `new KeyboardEvent` defaults to non-bubbling, so a `window` listener never fires, and dispatching on `window` makes `event.target` an object without `closest` or `tagName`, which breaks handlers that inspect the target.
 - Assertions on expansion, truncation, or filtering must prove the code path actually ran - assert the expanded output's content, not only its bounded shape. Input that never triggers the mechanism can satisfy a bounds assertion vacuously: a step node carrying a sibling `instrument` key is not a run and never expands, so asserting "at most N steps" proves nothing.
 - Assertions on serialized YAML must account for scalar normalization on round-trip - `yaml.load` strips plain-scalar surrounding whitespace, so a parse-back assertion can pass while the emitted text is still wrong. Assert on the raw output text for unquoted scalars (for example `toContain('author: Writer')`), and use the parsed document only for values the emitter guarantees to quote.
+- Commit-style inputs buffer typed text locally and emit `onChange` only on a committing event - blur, Enter, or a spin-button step. A `fireEvent.change` alone exercises the buffer and never the commit; assertions on the emitted value dispatch the committing event.
 
 **Playwright**
 
@@ -284,7 +298,7 @@ Tests are organised under `test/` by domain:
 - `test/modals/` — modal dialog tests, mirroring `src/modals/`
 - `test/synth/` — audio synthesis engine tests
 - `test/utils/` — utility function tests
-- `test/workers/` — Web Worker protocol tests
+- `test/workers/` — Worker and AudioWorklet protocol tests
 - `test/fixtures/` — committed test fixtures (song YAML files, VGM files)
 
 `test/hooks/` and `test/utils/` mirror the domain subdirectories of `src/hooks/` and `src/utils/`: a test whose subject is one source file lives in the matching domain subdirectory, while a test covering several subjects keeps a flat name in the directory root.
@@ -299,9 +313,12 @@ The project targets 80% coverage for lines, functions, branches, and statements.
 
 Remaining coverage gaps that may be addressed in future work:
 
-- `src/components/` — several components still lack dedicated tests
-- `src/hooks/` — a number of hooks have thin branch coverage
-- `src/modals/` — `AboutModal` and `DownloadModal` lack dedicated tests
+- `src/components/` — the header and tracker shells are the thinnest surfaces
+- `src/hooks/` — a number of hooks still have thin branch coverage
+
+The remaining uncovered branches are mostly defensive guards unreachable through the public surface (absent optional callbacks, unreachable `typeof` fallbacks, and fetch cancellation races).
+
+The gap list is a claim about the tree - a change that adds or retires suites updates it in the same change set, so a later record never plans against stale gaps.
 
 `npm run test:coverage` passes the configured 80% thresholds and is an enforceable gate.
 

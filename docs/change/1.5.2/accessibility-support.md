@@ -8,9 +8,11 @@
 | ------------- | ----------------------------------------------------------------------- |
 | Intent        | Build on the applied accessibility baseline with screen-reader support, |
 |               | contrast options beyond the two themes, and text size scaling           |
-| Key decisions | Scope lands in three independent slices so each can ship on its own     |
-| Open risks    | A tracker UI is dense and keyboard-first - screen-reader semantics need |
-|               | a designed reading order, not a blanket ARIA pass                       |
+| Key decisions | Theme became a three-value union with a `contrast` variant, text scale  |
+|               | ships as three zoom steps on `.app`, and each track panel announces the |
+|               | cursor row with column context through a hidden live region             |
+| Open risks    | Screen-reader verification stays attribute-level - no AT session has    |
+|               | been run; `zoom` relies on baseline engine support                      |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

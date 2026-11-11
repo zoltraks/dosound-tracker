@@ -5,6 +5,7 @@ import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './son
 import { Formatter } from '../format/formatters.ts';
 import { formatInstrumentSlotId } from '../instrument/instrumentSelection.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
+import { normalizeSongStereo } from './songStereo.ts';
 import { isEnvelopeZeroDefault, trimEnvelope } from '../envelope/envelopeUtils.ts';
 import { quoteYamlValues, YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
@@ -278,6 +279,26 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   songNode.chip = normalizedChip;
   songNode.frame = normalizedFrame;
   songNode.clock = normalizedClock;
+
+  // Stereo settings persist only when the song carries them - a mono song
+  // writes no `stereo` node and each member is emitted only when set.
+  const stereo = normalizeSongStereo(currentSong.stereo);
+  const stereoNode: Record<string, unknown> = {};
+  if (stereo) {
+    if (stereo.layout !== undefined) {
+      stereoNode.layout = stereo.layout;
+    }
+    if (stereo.A !== undefined) {
+      stereoNode.A = stereo.A;
+    }
+    if (stereo.B !== undefined) {
+      stereoNode.B = stereo.B;
+    }
+    if (stereo.C !== undefined) {
+      stereoNode.C = stereo.C;
+    }
+  }
+
   songNode.speed = currentSong.speed;
   songNode.length = currentSong.length;
   if (hasLoop) {
@@ -357,6 +378,20 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   const quoteColorValues = (text: string): string => quoteYamlValues(text, 'color');
 
   yamlContent = quoteColorValues(yamlContent);
+
+  // The stereo node is appended after the quoting transforms: its `A`/`B`/`C`
+  // keys must stay numeric, and `quoteLineValues` targets every matching key
+  // in the document. Dumped separately, indented into the song node, and
+  // spliced ahead of the always-present `line:` list.
+  if (stereo) {
+    const stereoYaml = yaml
+      .dump({ stereo: stereoNode }, YAML_DUMP_OPTIONS)
+      .split('\n')
+      .filter((yamlLine) => yamlLine.length > 0)
+      .map((yamlLine) => `  ${yamlLine}`)
+      .join('\n');
+    yamlContent = yamlContent.replace(/^ {2}line:$/m, `${stereoYaml}\n  line:`);
+  }
 
   return yamlContent;
 };

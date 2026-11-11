@@ -227,6 +227,8 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       <div
         ref={panelRef}
         className={`command-panel ${isActive ? 'active' : ''}`}
+        role="region"
+        aria-label="Commands"
         tabIndex={0}
         onFocus={(event) => {
           if (!isActive) {

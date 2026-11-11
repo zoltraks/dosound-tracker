@@ -8,8 +8,9 @@
 | ------------- | ---------------------------------------------------------------------- |
 | Intent        | Bring the Ayumi engine's live output level to parity with the internal |
 |               | engine so switching engines does not change perceived loudness         |
-| Key decisions | Raise `AYUMI_OUTPUT_GAIN` in `src/workers/ayumiWorklet.ts` toward the  |
-|               | measured parity point while keeping headroom against clipping          |
+| Key decisions | `AYUMI_OUTPUT_GAIN` moves to the measured `1.2` parity point followed  |
+|               | by a soft-knee limiter - the folded peak is ~1.33 worst case, so a     |
+|               | linear `1.2` would clip                                                |
 | Open risks    | Perceived loudness varies with material and output device - acceptance |
 |               | requires an owner listening check                                      |
 
@@ -26,10 +27,19 @@ channels at full volume. A stage gain measured near `1.2` was recorded as
 the parity point.
 
 Raising the constant makes engine switching level-neutral for live
-playback. The change is a one-line mechanism, but acceptance is perceptual
-rather than numerical: perceived loudness varies with the song material
-and the output device, so the final value is confirmed by a listening
-check rather than fixed from the measurement alone.
+playback. Acceptance is perceptual rather than numerical: perceived
+loudness varies with the song material and the output device, so the
+final value is confirmed by a listening check rather than fixed from the
+measurement alone.
+
+Amended on verification: the folded `(left + right) * 0.5` peak measures
+~1.33 at three full-volume in-phase channels (theoretical ~1.5), and the
+internal engine's own ceiling is ~0.9 (three channels at `0.3` gain). A
+linear `1.2` multiplier therefore peaks near `1.8` and clips - the
+recorded headroom arithmetic was wrong. The shipped mechanism is the
+`1.2` parity gain followed by a soft-knee limiter: linear below the knee
+so loudness parity holds for ordinary material, smoothly saturated to
+stay under `1.0` at the extreme tail.
 
 ## Use Cases
 

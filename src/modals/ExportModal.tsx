@@ -14,6 +14,8 @@ interface ExportModalProps {
   onExportVgm: () => void;
   onExportMax: () => void;
   onExportWav: () => void;
+  onExportMod: () => void;
+  onExportMidi: () => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -30,6 +32,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onExportVgm,
   onExportMax,
   onExportWav,
+  onExportMod,
+  onExportMidi,
   onConfirm,
   onCancel,
 }) => {
@@ -61,6 +65,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   const handleWavClick = () => {
     onExportWav();
+  };
+
+  const handleModClick = () => {
+    onExportMod();
+  };
+
+  const handleMidiClick = () => {
+    onExportMidi();
   };
 
   return (
@@ -131,6 +143,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             />{' '}
             OPTIMIZED DUMP
           </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              name="export-strategy"
+              checked={exportStrategy === 'compact'}
+              onChange={() => onChangeStrategy('compact')}
+            />{' '}
+            COMPACT DUMP
+          </label>
         </div>
 
         <div style={{ marginBottom: '8px' }}>
@@ -138,7 +160,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(6, minmax(0, 1fr))',
+              gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
               gap: '4px',
               marginTop: '4px',
             }}
@@ -190,6 +212,22 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               onClick={handleWavClick}
             >
               WAV
+            </button>
+            <button
+              type="button"
+              className="command-btn"
+              style={{ width: '100%' }}
+              onClick={handleModClick}
+            >
+              MOD
+            </button>
+            <button
+              type="button"
+              className="command-btn"
+              style={{ width: '100%' }}
+              onClick={handleMidiClick}
+            >
+              MID
             </button>
           </div>
         </div>

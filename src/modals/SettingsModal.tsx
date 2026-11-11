@@ -6,6 +6,8 @@ import {
   DEFAULT_SETTINGS,
   type SettingsCategory,
   type SettingsValues,
+  type TextScale,
+  type ThemeVariant,
 } from '../types/settings.ts';
 import type { TrackPasteMode } from '../utils/track/trackClipboard.ts';
 import { SOUND_ENGINE_IDS, SOUND_ENGINE_LABELS, type SoundEngineId } from '../constants/sound.ts';
@@ -41,6 +43,18 @@ const PASTE_MODE_OPTIONS: { value: TrackPasteMode; label: string }[] = [
   { value: 'replace', label: 'Replace track data entirely' },
   { value: 'overwriteAll', label: 'Overwrite all steps' },
   { value: 'overwriteEmpty', label: 'Overwrite only empty steps' },
+];
+
+const THEME_OPTIONS: { value: ThemeVariant; label: string }[] = [
+  { value: 'dark', label: 'Dark' },
+  { value: 'light', label: 'Light' },
+  { value: 'contrast', label: 'High Contrast' },
+];
+
+const TEXT_SCALE_OPTIONS: { value: TextScale; label: string }[] = [
+  { value: '100', label: 'Standard (100%)' },
+  { value: '125', label: 'Large (125%)' },
+  { value: '150', label: 'Extra large (150%)' },
 ];
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -186,13 +200,40 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           ...draft,
                           general: {
                             ...draft.general,
-                            theme: e.target.value === 'light' ? 'light' : 'dark',
+                            theme: e.target.value as ThemeVariant,
                           },
                         })
                       }
                     >
-                      <option value="dark">Dark</option>
-                      <option value="light">Light</option>
+                      {THEME_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-text-scale" className="settings-label">
+                      Text size
+                    </label>
+                    <select
+                      id="settings-text-scale"
+                      value={draft.general.textScale}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          general: {
+                            ...draft.general,
+                            textScale: e.target.value as TextScale,
+                          },
+                        })
+                      }
+                    >
+                      {TEXT_SCALE_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
                     </select>
                   </div>
                   <div className="settings-row">

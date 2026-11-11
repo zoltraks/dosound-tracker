@@ -32,6 +32,11 @@ export const KEYBOARD_SHORTCUTS = {
   'CTRL+-': 'previousInstrument',
   'CTRL+PLUS': 'nextInstrument',
 
+  // History
+  'CTRL+Z': 'undo',
+  'CTRL+Y': 'redo',
+  'CTRL+SHIFT+Z': 'redo',
+
   // Playback
   F2: 'playLine',
   'CTRL+5': 'playLineFromStart',

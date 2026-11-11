@@ -147,6 +147,30 @@ describe('AyumiEngine register mirror and messaging', () => {
     }
   });
 
+  it('setChip posts a chip message', () => {
+    const { node, messages } = makeNode();
+    const engine = new AyumiEngine(node);
+    engine.setChip('AY');
+    try {
+      expect(messages).toEqual([{ type: 'chip', chip: 'AY' }]);
+    } catch (error) {
+      console.log('chip mismatch:', JSON.stringify(messages));
+      throw error;
+    }
+  });
+
+  it('setChannelPans posts a pans message', () => {
+    const { node, messages } = makeNode();
+    const engine = new AyumiEngine(node);
+    engine.setChannelPans([0, 0.5, 1, 0.75]);
+    try {
+      expect(messages).toEqual([{ type: 'pans', pans: [0, 0.5, 1] }]);
+    } catch (error) {
+      console.log('pans mismatch:', JSON.stringify(messages));
+      throw error;
+    }
+  });
+
   it('getState derives the channel view from the mirror', () => {
     const { node } = makeNode();
     const engine = new AyumiEngine(node);

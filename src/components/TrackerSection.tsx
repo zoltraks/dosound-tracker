@@ -77,7 +77,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   }, [patternLength]);
 
   return (
-    <div className="left-column">
+    <div className="left-column" role="region" aria-label="Pattern editor">
       <div className="left-column-content">
         <div className="position-block">
           <div className="position-header">
@@ -112,7 +112,12 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
               />
             </button>
           </div>
-          <div className="position-content" onScroll={onPositionScroll}>
+          <div
+            className="position-content"
+            role="group"
+            aria-label="Pattern row positions"
+            onScroll={onPositionScroll}
+          >
             {positionIndices.map((i) => (
               <div
                 key={i}
@@ -128,7 +133,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
         </div>
 
         <div className="track-container">
-          <div className="tracks-row">
+          <div className="tracks-row" role="group" aria-label="Pattern tracks">
             {(['A', 'B', 'C'] as const).map((trackId) => (
               <TrackPanel
                 key={trackId}

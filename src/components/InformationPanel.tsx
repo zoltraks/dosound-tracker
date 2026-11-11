@@ -2,22 +2,28 @@ import React, { useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
 import type { Song } from '../synth/SoundDriver.ts';
 import {
+  DEFAULT_SONG_CHIP,
   DEFAULT_SONG_FRAME,
   DEFAULT_SONG_CLOCK,
+  SUPPORTED_SONG_CHIPS,
   SUPPORTED_SONG_FRAMES,
   SUPPORTED_SONG_CLOCKS,
+  SONG_CHIP_LABELS,
+  STEREO_LAYOUT_ORDER,
 } from '../constants/song.ts';
+import { resolveStereoLayoutId } from '../utils/song/songStereo.ts';
 import NumberSpinner from './NumberSpinner.tsx';
 import ToggleValueButton from './ToggleValueButton.tsx';
 import { useLocalStorageState } from '../hooks/storage/useLocalStorageState.ts';
 import { StorageKeys } from '../utils/storage/storageKeys.ts';
 import { readSongInfoField, type SongInfoField } from '../utils/cursor/panelCursorFields.ts';
+import type { UpdateSongOptions } from '../hooks/song/useDataManagement.ts';
 
 interface InformationPanelProps {
   song: Song;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
-  onChange: (updates: Partial<Song>) => void;
+  onChange: (updates: Partial<Song>, options?: UpdateSongOptions) => void;
 }
 
 export const InformationPanel: React.FC<InformationPanelProps> = ({
@@ -59,7 +65,9 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
 
   const handleFieldChange = useCallback(
     (field: keyof Song, value: string | number | null) => {
-      onChange({ [field]: value });
+      // Coalesce bursts (typing, toggle cycling) in one field into a single
+      // undo entry.
+      onChange({ [field]: value }, { coalesceKey: `song-info:${String(field)}` });
     },
     [onChange],
   );
@@ -190,6 +198,29 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
     [handleFieldChange],
   );
 
+  // The chip toggle cycles the supported PSG variants; an unrecognized
+  // stored value shows its raw id and the next click resets to YM.
+  const chipValue = (song.chip ?? DEFAULT_SONG_CHIP).trim().toUpperCase();
+  const chipLabel = SONG_CHIP_LABELS[chipValue] ?? chipValue;
+
+  const handleChipToggle = useCallback(() => {
+    const index = SUPPORTED_SONG_CHIPS.indexOf(chipValue);
+    const next = SUPPORTED_SONG_CHIPS[(index + 1) % SUPPORTED_SONG_CHIPS.length];
+    onChange({ chip: next });
+  }, [chipValue, onChange]);
+
+  // The resolved pans either match a catalog layout or are custom; cycling
+  // starts from mono for a custom configuration.
+  const stereoLayoutId = resolveStereoLayoutId(song.stereo);
+  const stereoLabel = stereoLayoutId ? stereoLayoutId.toUpperCase() : 'CUSTOM';
+
+  const handleStereoToggle = useCallback(() => {
+    const currentId = stereoLayoutId ?? 'mono';
+    const index = STEREO_LAYOUT_ORDER.indexOf(currentId);
+    const nextId = STEREO_LAYOUT_ORDER[(index + 1) % STEREO_LAYOUT_ORDER.length];
+    onChange({ stereo: { layout: nextId } });
+  }, [stereoLayoutId, onChange]);
+
   return (
     <div
       className={`information-panel ${isActive ? 'active' : ''}`}
@@ -277,6 +308,18 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
                 onInputFocus={() => setLastFocusedField('speed')}
               />
             </div>
+
+            <div className="information-field">
+              <label>Chip:</label>
+              <button
+                type="button"
+                className="toggle-value-button stereo-toggle-button"
+                aria-label="Chip variant"
+                onClick={handleChipToggle}
+              >
+                {chipLabel}
+              </button>
+            </div>
           </div>
 
           <div className="song-info-column song-info-column-right">
@@ -295,6 +338,18 @@ export const InformationPanel: React.FC<InformationPanelProps> = ({
                 onInputKeyDown={handleKeyDown}
                 onInputFocus={() => setLastFocusedField('length')}
               />
+            </div>
+
+            <div className="information-field">
+              <label>Stereo:</label>
+              <button
+                type="button"
+                className="toggle-value-button stereo-toggle-button"
+                aria-label="Stereo layout"
+                onClick={handleStereoToggle}
+              >
+                {stereoLabel}
+              </button>
             </div>
 
             <div className="information-field">

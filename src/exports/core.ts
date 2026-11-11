@@ -1,7 +1,7 @@
 import type { Song, Instrument, Pattern, Step } from '../synth/SoundDriver.ts';
 import { NOTES, PATTERN_LENGTH } from '../constants/music.ts';
 import { YM_CLOCK } from '../synth/YM2149.ts';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
 import { parseBaseKey } from '../utils/panel/pianoUtils.ts';
 import { formatBaseKey } from '../utils/song/songFormat.ts';
 
@@ -14,8 +14,21 @@ export function normalizeSongForExport(song: Song): Song {
     line: song.line ?? [],
     pattern: song.pattern ?? [],
     instrument: song.instrument ?? [],
+    chip: song.chip ?? DEFAULT_SONG_CHIP,
     frame: song.frame ?? DEFAULT_SONG_FRAME,
     clock: song.clock ?? DEFAULT_SONG_CLOCK,
+  };
+}
+
+export function resolveExportTiming(song: Song): {
+  frameRate: number;
+  chipClock: number;
+  speed: number;
+} {
+  return {
+    frameRate: song.frame ?? DEFAULT_SONG_FRAME,
+    chipClock: song.clock ?? DEFAULT_SONG_CLOCK,
+    speed: song.speed || 6,
   };
 }
 

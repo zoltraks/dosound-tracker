@@ -1,8 +1,12 @@
 import type { Instrument, Song } from '../synth/SoundDriver.ts';
-import { YM_LOG_VOLUME_TABLE } from '../synth/YM2149.ts';
-import { DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../constants/song.ts';
+import { volumeTableForChip } from '../synth/YM2149.ts';
 import { simulateSong } from '../utils/playback/playbackSimulation.ts';
-import { downloadFile, exportInstrumentWith, normalizeSongForExport } from './core.ts';
+import {
+  downloadFile,
+  exportInstrumentWith,
+  normalizeSongForExport,
+  resolveExportTiming,
+} from './core.ts';
 
 const WAV_SAMPLE_RATE = 44100;
 
@@ -58,6 +62,7 @@ function synthTickSamples(
   samplesPerTick: number,
   noiseState: YmNoiseState,
   clock: number,
+  volumeTable: number[],
 ): void {
   const mixer = regs[0x07] !== undefined ? regs[0x07] : 0x38;
 
@@ -115,7 +120,7 @@ function synthTickSamples(
       }
 
       const levelIndex = Math.max(0, Math.min(15, vol | 0));
-      const baseLevel = YM_LOG_VOLUME_TABLE[levelIndex];
+      const baseLevel = volumeTable[levelIndex];
       let chValue = 0;
 
       if (toneEnabled[ch] && freqs[ch] > 0) {
@@ -145,8 +150,7 @@ function synthTickSamples(
 
 export function exportSongToWav(song: Song): WavExportResult {
   const normalizedSong = normalizeSongForExport(song);
-  const frameRate = normalizedSong.frame ?? DEFAULT_SONG_FRAME;
-  const chipClock = normalizedSong.clock ?? DEFAULT_SONG_CLOCK;
+  const { frameRate, chipClock } = resolveExportTiming(normalizedSong);
   const samples: number[] = [];
   const phases = [0, 0, 0];
   const noiseState: YmNoiseState = {
@@ -154,11 +158,20 @@ export function exportSongToWav(song: Song): WavExportResult {
     phase: 0,
   };
   const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / frameRate));
+  const volumeTable = volumeTableForChip(normalizedSong.chip);
 
   simulateSong(
     normalizedSong,
     (frame) => {
-      synthTickSamples(samples, frame.registers, phases, samplesPerTick, noiseState, chipClock);
+      synthTickSamples(
+        samples,
+        frame.registers,
+        phases,
+        samplesPerTick,
+        noiseState,
+        chipClock,
+        volumeTable,
+      );
     },
     { clock: chipClock },
   );

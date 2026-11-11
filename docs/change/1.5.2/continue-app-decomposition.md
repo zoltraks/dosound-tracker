@@ -8,10 +8,12 @@
 | ------------- | ------------------------------------------------------------------------- |
 | Intent        | Continue splitting `App.tsx` so the composition root shrinks and each     |
 |               | concern lives in a dedicated hook or component                            |
-| Key decisions | Behaviour-preserving extraction only - follow the staged pattern the      |
-|               | earlier decomposition established                                         |
-| Open risks    | Audio-critical patterns (prop mirroring, sparse dependencies, direct      |
-|               | setState) must survive untouched or the change causes audible regressions |
+| Key decisions | Landed `useAppUiState` (store slice), `useChannelPans` (stereo pan        |
+|               | cluster), and `useSettingsSession` (settings commit and cancel);          |
+|               | `patternsById` derives inside `usePlaybackBridge`; the JSX prop map stays |
+|               | as the composition table                                                  |
+| Open risks    | none - the moves are verbatim and the full loop plus the e2e smoke suite  |
+|               | verify clean                                                              |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

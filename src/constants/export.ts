@@ -1,3 +1,3 @@
 export type ExportType = 'song' | 'pattern' | 'instrument';
 
-export type ExportStrategy = 'simple' | 'complex' | 'optimized';
+export type ExportStrategy = 'simple' | 'complex' | 'optimized' | 'compact';

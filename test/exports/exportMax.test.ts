@@ -87,6 +87,22 @@ describe('exportSongToMax', () => {
     expect(clock >>> 0).toBe(YM_CLOCK);
   });
 
+  it('writes the AY chip id for an AY song', () => {
+    const song = loadSongYaml('song-vgm-tone.yaml');
+    const { buffer } = exportSongToMax({ ...song, chip: 'AY' }, 'simple');
+    const bytes = new Uint8Array(buffer);
+
+    const chip = findChunk(bytes, 0x43); // 'C'
+    try {
+      expect(chip).not.toBeNull();
+      if (!chip) return;
+      expect(bytes[chip.dataOffset]).toBe(0xa0); // AY-8910 chip id
+    } catch (error) {
+      console.log('AY chip chunk mismatch');
+      throw error;
+    }
+  });
+
   it('writes ZX0 compression (0x08) in the stream definition for simple strategy', () => {
     const song = loadSongYaml('song-vgm-tone.yaml');
     const { buffer } = exportSongToMax(song, 'simple');

@@ -10,6 +10,7 @@ import { TrackLine } from './TrackLine.tsx';
 import { computeEffectiveVolume } from '../utils/track/trackUtils.ts';
 import {
   buildInstrumentColorMap,
+  buildTrackRowAnnouncement,
   formatTrackNoteDisplay,
   getInstrumentColorForNote,
   getTrackNotes as getTrackNotesForPattern,
@@ -339,6 +340,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
           onLineChange(stepLineIndex(currentLine, patternLength, 1));
         }
       } else {
+        // Modifier chords belong to global shortcuts (undo, redo, file
+        // ops) - they must never fall through to note entry.
+        if (event.ctrlKey || event.metaKey || event.altKey) {
+          return;
+        }
+
         const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
         if (!mapped) {
           return;
@@ -447,6 +454,20 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       onKeyUp={handleKeyUp}
       onClick={() => setActiveSection(sectionName)}
     >
+      <div className="visually-hidden" role="status" aria-live="polite" aria-atomic="true">
+        {isActive
+          ? pattern
+            ? buildTrackRowAnnouncement(
+                trackId,
+                currentLine,
+                currentColumn,
+                trackNotes[currentLine] ?? null,
+                pattern.step?.[currentLine]?.volume,
+              )
+            : `Track ${trackId}, no pattern loaded`
+          : ''}
+      </div>
+
       <div className={`track-header ${isTargetTrack ? 'target-track' : ''}`}>
         <span className="track-header-title">{trackId}</span>
         <span className="track-header-volume">

@@ -92,11 +92,27 @@ describe('keyboardShortcutUtils', () => {
       shortcut: 'CTRL+SPACE',
       preventDefault: true,
     });
+    expect(matchKeyboardShortcut('Z', true, false)).toEqual({
+      shortcut: 'CTRL+Z',
+      preventDefault: true,
+    });
+    expect(matchKeyboardShortcut('Y', true, false)).toEqual({
+      shortcut: 'CTRL+Y',
+      preventDefault: true,
+    });
+  });
+
+  it('matches ctrl+shift shortcuts', () => {
+    expect(matchKeyboardShortcut('Z', true, true)).toEqual({
+      shortcut: 'CTRL+SHIFT+Z',
+      preventDefault: true,
+    });
   });
 
   it('returns null for unsupported shortcuts', () => {
     expect(matchKeyboardShortcut('X', false, false)).toBeNull();
     expect(matchKeyboardShortcut('X', true, false)).toBeNull();
+    expect(matchKeyboardShortcut('X', true, true)).toBeNull();
     expect(matchKeyboardShortcut('TAB', true, true)).toBeNull();
   });
 });

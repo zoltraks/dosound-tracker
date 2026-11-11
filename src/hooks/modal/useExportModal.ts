@@ -20,6 +20,8 @@ export interface UseExportModalParams {
   exportWavWithContext: (ctx: ExportContext) => void;
   exportDumpWithContext: (ctx: ExportContext) => void;
   exportMaxWithContext: (ctx: ExportContext) => void;
+  exportMidiWithContext: (ctx: ExportContext) => void;
+  exportModWithContext: (ctx: ExportContext) => void;
 }
 
 export interface UseExportModalResult {
@@ -36,6 +38,8 @@ export interface UseExportModalResult {
   handleExportVgmFromModal: () => void;
   handleExportWavFromModal: () => void;
   handleExportMaxFromModal: () => void;
+  handleExportMidiFromModal: () => void;
+  handleExportModFromModal: () => void;
 }
 
 export function useExportModal({
@@ -53,6 +57,8 @@ export function useExportModal({
   exportWavWithContext,
   exportDumpWithContext,
   exportMaxWithContext,
+  exportMidiWithContext,
+  exportModWithContext,
 }: UseExportModalParams): UseExportModalResult {
   const [pendingExportType, setPendingExportType] = useState<ExportType>(exportType);
   const [pendingExportStrategy, setPendingExportStrategy] =
@@ -123,6 +129,14 @@ export function useExportModal({
     exportMaxWithContext(buildExportContext());
   }, [buildExportContext, exportMaxWithContext]);
 
+  const handleExportMidiFromModal = useCallback(() => {
+    exportMidiWithContext(buildExportContext());
+  }, [buildExportContext, exportMidiWithContext]);
+
+  const handleExportModFromModal = useCallback(() => {
+    exportModWithContext(buildExportContext());
+  }, [buildExportContext, exportModWithContext]);
+
   return {
     pendingExportType,
     pendingExportStrategy,
@@ -137,5 +151,7 @@ export function useExportModal({
     handleExportVgmFromModal,
     handleExportWavFromModal,
     handleExportMaxFromModal,
+    handleExportMidiFromModal,
+    handleExportModFromModal,
   };
 }

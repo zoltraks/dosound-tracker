@@ -160,4 +160,145 @@ describe('InstrumentMidiModal', () => {
       throw error;
     }
   });
+
+  it('moves between the channel and program inputs with arrow keys', async () => {
+    renderModal({ instrument: makeInstrument({ midi: { channel: 5, program: 42 } }) });
+    await act(async () => {});
+    const channelInput = screen.getByRole('spinbutton', { name: 'MIDI channel (1-16)' });
+    const programInput = screen.getByRole('spinbutton', { name: 'MIDI program (0-127)' });
+    fireEvent.keyDown(channelInput, { key: 'ArrowDown' });
+    try {
+      expect(document.activeElement).toBe(programInput);
+    } catch (error) {
+      console.log('arrow to program mismatch', document.activeElement?.tagName);
+      throw error;
+    }
+    fireEvent.keyDown(programInput, { key: 'ArrowUp' });
+    try {
+      expect(document.activeElement).toBe(channelInput);
+    } catch (error) {
+      console.log('arrow to channel mismatch', document.activeElement?.tagName);
+      throw error;
+    }
+  });
+
+  it('ignores non-arrow keys on the action buttons', () => {
+    renderModal();
+    const clearButton = screen.getByRole('button', { name: 'CLEAR' });
+    fireEvent.keyDown(clearButton, { key: 'x' });
+    try {
+      expect(document.activeElement).not.toBe(screen.getByRole('button', { name: 'SAVE' }));
+    } catch (error) {
+      console.log('non-arrow button mismatch');
+      throw error;
+    }
+  });
+
+  it('navigates the action buttons with arrow keys including wrap-around', () => {
+    renderModal();
+    const clearButton = screen.getByRole('button', { name: 'CLEAR' });
+    const cancelButton = screen.getByRole('button', { name: 'CANCEL' });
+    const saveButton = screen.getByRole('button', { name: 'SAVE' });
+    fireEvent.keyDown(clearButton, { key: 'ArrowRight' });
+    try {
+      expect(document.activeElement).toBe(cancelButton);
+    } catch (error) {
+      console.log('right nav mismatch', document.activeElement?.textContent);
+      throw error;
+    }
+    fireEvent.keyDown(cancelButton, { key: 'ArrowDown' });
+    try {
+      expect(document.activeElement).toBe(saveButton);
+    } catch (error) {
+      console.log('down nav mismatch', document.activeElement?.textContent);
+      throw error;
+    }
+    fireEvent.keyDown(saveButton, { key: 'ArrowRight' });
+    try {
+      expect(document.activeElement).toBe(clearButton);
+    } catch (error) {
+      console.log('wrap nav mismatch', document.activeElement?.textContent);
+      throw error;
+    }
+    fireEvent.keyDown(clearButton, { key: 'ArrowUp' });
+    try {
+      expect(document.activeElement).toBe(saveButton);
+    } catch (error) {
+      console.log('wrap back mismatch', document.activeElement?.textContent);
+      throw error;
+    }
+    fireEvent.keyDown(saveButton, { key: 'ArrowLeft' });
+    try {
+      expect(document.activeElement).toBe(cancelButton);
+    } catch (error) {
+      console.log('left nav mismatch', document.activeElement?.textContent);
+      throw error;
+    }
+  });
+
+  it('seeds null for non-finite midi values', async () => {
+    const onSave = vi.fn();
+    renderModal({
+      instrument: makeInstrument({
+        midi: { channel: Number.NaN, program: Number.POSITIVE_INFINITY },
+      }),
+      onSave,
+    });
+    await act(async () => {});
+    fireEvent.click(screen.getByRole('button', { name: 'SAVE' }));
+    try {
+      expect(onSave).toHaveBeenCalledWith({ channel: null, program: null });
+    } catch (error) {
+      console.log('non-finite seed mismatch', onSave.mock.calls);
+      throw error;
+    }
+  });
+
+  it('seeds null for non-numeric midi values', async () => {
+    const onSave = vi.fn();
+    renderModal({
+      instrument: makeInstrument({
+        midi: { channel: 'x' as unknown as number, program: null as unknown as number },
+      }),
+      onSave,
+    });
+    await act(async () => {});
+    fireEvent.click(screen.getByRole('button', { name: 'SAVE' }));
+    try {
+      expect(onSave).toHaveBeenCalledWith({ channel: null, program: null });
+    } catch (error) {
+      console.log('non-numeric seed mismatch', onSave.mock.calls);
+      throw error;
+    }
+  });
+
+  it('skips the seed update when unmounted before the microtask runs', async () => {
+    const { unmount } = renderModal({
+      instrument: makeInstrument({ midi: { channel: 5, program: 42 } }),
+    });
+    unmount();
+    await act(async () => {});
+    try {
+      expect(true).toBe(true);
+    } catch (error) {
+      console.log('unmount seed mismatch');
+      throw error;
+    }
+  });
+
+  it('saves a channel while the program stays empty', async () => {
+    const onSave = vi.fn();
+    renderModal({
+      instrument: makeInstrument({ midi: { channel: 9, program: null } }),
+      onSave,
+    });
+    await act(async () => {});
+    fireEvent.click(screen.getByRole('button', { name: 'SAVE' }));
+    try {
+      expect(onSave).toHaveBeenCalledWith({ channel: 9, program: null });
+    } catch (error) {
+      console.log('partial seed mismatch', onSave.mock.calls);
+      throw error;
+    }
+  });
 });

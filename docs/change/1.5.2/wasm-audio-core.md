@@ -6,56 +6,86 @@
 
 | Field         | Value                                                                   |
 | ------------- | ----------------------------------------------------------------------- |
-| Intent        | Evaluate moving the YM2149 emulation and sequencer computation into a   |
+| Intent        | Evaluate moving the YM2149 register computation and DSP into a          |
 |               | WebAssembly core to cut CPU use and tighten timing on lower-end devices |
-| Key decisions | Evaluation produces a feasibility answer and, if favourable, a staged   |
-|               | migration - not a big-bang rewrite                                      |
-| Open risks    | WASM tooling enters the build pipeline; the emulation must stay         |
-|               | bit-identical to the TypeScript implementation or exports diverge       |
+| Key decisions | Evaluation complete, migration declined: measured compute sits at       |
+|               | fractions of a percent of each budget, the internal engine runs no      |
+|               | TypeScript DSP at all, and the timing goal was already delivered by the |
+|               | AudioWorklet sequencer clock in this window                             |
+| Open risks    | none - the question reopens only on measured CPU evidence from a real   |
+|               | target device                                                           |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
 
 ## Description
 
-The YM2149 emulation and per-tick envelope/sequencer computation run in
-TypeScript on the main thread and in the sequencer worker. Moving the
-hot DSP and register-simulation path into WebAssembly could reduce CPU
-usage on lower-end devices and allow tighter timing.
+The record proposed moving the hot DSP and register-simulation path into
+WebAssembly. Analysis against the current tree corrects the premises.
 
-This record starts with an evaluation: whether a WASM core can reproduce
-the current emulation bit-identically (register sequences and PCM
-output), what toolchain the build pipeline would need, and how the WASM
-module bridges to the existing Web Audio integration and export
-simulation. The two engines share the instrument-to-register logic in
-`channelInstrument.ts`, so the boundary for a WASM core is already drawn
-in the architecture.
+The internal engine runs no TypeScript DSP. `YM2149.ts` maps register
+writes to Web Audio node parameters - oscillators, gain nodes, a noise
+buffer - and the browser renders samples natively. The only sample-rate
+DSP in the project is the vendored `ayumiCore.ts`, which already runs
+inside `ayumiWorklet.ts` on the audio render thread. The remaining
+TypeScript compute is the per-tick instrument-to-register path in
+`channelInstrument.ts`, driven by `useSequencerIntegration`, plus the WAV
+export synthesizer `synthTickSamples`, a cold path.
 
-If the evaluation is favourable, migration proceeds in stages that keep
-the TypeScript path working until parity is proven - the parallel-change
-pattern, not a flag day.
+The record also predates this window's sequencer change: the
+`setTimeout` worker it calls "the sequencer worker" was replaced by
+`sequencerWorklet.ts`, an `AudioWorkletProcessor` that only counts
+rendered samples and posts position messages - no compute lives there
+to move.
+
+Measured on the bundled song (harness under `work/wasm-eval/`, Node
+host): the three-channel per-tick register update costs about 0.0001 ms
+inside a 20 ms window, roughly 0.001 percent of the frame budget. A full
+`simulateSong` pass produces the register stream in about 0.1 ms. An
+Ayumi 128-sample render quantum costs about 0.04 ms, roughly 1.3 percent
+of the 2.9 ms render budget. A 15-second WAV export completes in about
+7 ms. No surface shows a CPU problem a WASM core could measurably fix.
+
+Timing cannot tighten either. The sequencer clock is already
+sample-accurate on the audio render thread, and tick delivery still
+crosses `postMessage` and the main-thread event loop - a limit a WASM
+core does not remove.
+
+The costs stand unchanged. A WASM core needs a Rust, AssemblyScript, or
+C toolchain in the build pipeline, a new contributor prerequisite, a
+licensing review under `COPYRIGHTS.md`, and byte-identical parity proof
+across engines, chip variants, and stereo against the TypeScript path.
+Paying that for sub-percent CPU relief is not justified.
+
+Decision: migration declined. The boundary stays drawn at
+`channelInstrument.ts` and the `SoundEngine` contract - if measured CPU
+evidence on a real target device ever appears, a WASM core slots behind
+that seam under the parallel-change pattern, keeping the TypeScript path
+until parity is proven.
 
 ## Use Cases
 
-- When the evaluation runs, it reports measured parity (register streams
-  and sample output) between the WASM core and the TypeScript path.
-- When the WASM core lands behind the engine contract, exports produce
-  byte-identical output to today.
+- When the evaluation runs, it reports the measured cost of every
+  compute surface the record named.
+- When a measured CPU shortfall appears on a real device, the WASM
+  question reopens with the seam already drawn.
 
 ## Hints
 
 - `src/synth/channelInstrument.ts` and the `SoundEngine` contract in
-  `src/synth/soundEngine.ts` mark the seam - a WASM core slots behind
-  the same contract.
+  `src/synth/soundEngine.ts` mark the seam - a WASM core would slot
+  behind the same contract.
 - The export simulation (`simulateSong`, `synthTickSamples`) is the
   parity harness: identical register frames and PCM in both paths.
-- Toolchain choice affects every contributor - the plan evaluates Rust,
-  AssemblyScript, or C-to-WASM against the build and licensing rules in
-  `COPYRIGHTS.md`.
+- Toolchain choice affects every contributor - any future revisit
+  evaluates Rust, AssemblyScript, or C-to-WASM against the build and
+  licensing rules in `COPYRIGHTS.md`.
+- The measurement harness lives under `work/wasm-eval/` - scratch
+  evidence, not shipped code.
 
 ## Out of Scope
 
-- Replacing the Web Audio output layer - WASM computes, Web Audio
+- Replacing the Web Audio output layer - WASM would compute, Web Audio
   renders.
 - The Ayumi engine - it already runs a dedicated DSP core in a worklet;
-  this record targets the internal path.
+  the record targets the internal path.

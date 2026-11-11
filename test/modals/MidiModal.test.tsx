@@ -374,6 +374,273 @@ describe('MidiModal', () => {
     }
   });
 
+  it('clicks the hidden file input when LOAD is pressed', () => {
+    const { container } = renderModal();
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const clickSpy = vi.spyOn(input, 'click');
+    fireEvent.click(screen.getByRole('button', { name: 'LOAD' }));
+    try {
+      expect(clickSpy).toHaveBeenCalledTimes(1);
+    } catch (error) {
+      console.log('load click mismatch', clickSpy.mock.calls.length);
+      throw error;
+    }
+  });
+
+  it('ignores a file change with no file selected', () => {
+    const onLoadError = vi.fn();
+    const { container } = renderModal({ onLoadError });
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    fireEvent.change(input, { target: { files: [] } });
+    try {
+      expect(onLoadError).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('empty change mismatch', onLoadError.mock.calls);
+      throw error;
+    }
+  });
+
+  it('clears the file input on oversize even without an error callback', () => {
+    const { container } = renderModal();
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const oversized = new File([new Uint8Array(MAX_IMPORT_BYTES + 1)], 'big.yaml', {
+      type: 'text/yaml',
+    });
+    fireEvent.change(input, { target: { files: [oversized] } });
+    try {
+      expect(input.value).toBe('');
+    } catch (error) {
+      console.log('oversize no-callback mismatch');
+      throw error;
+    }
+  });
+
+  it('reports a generic error when applying the config fails', async () => {
+    const onLoadError = vi.fn();
+    const onChangeConfig = vi.fn(() => {
+      throw new Error('apply boom');
+    });
+    const errorSpy = vi.spyOn(logger, 'error').mockImplementation(() => {});
+    try {
+      const { container } = renderModal({ onChangeConfig, onLoadError });
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const yaml = ['midi:', '  version: 1', '  input:', '    enable: true', ''].join('\n');
+      const file = new File([yaml], 'config.yaml', { type: 'text/yaml' });
+      fireEvent.change(input, { target: { files: [file] } });
+      try {
+        await waitFor(() =>
+          expect(onLoadError).toHaveBeenCalledWith(
+            'Failed to load MIDI configuration file: apply boom',
+          ),
+        );
+      } catch (error) {
+        console.log('generic error mismatch', onLoadError.mock.calls);
+        throw error;
+      }
+    } finally {
+      errorSpy.mockRestore();
+    }
+  });
+
+  it('reports a read failure from the file reader', async () => {
+    const onLoadError = vi.fn();
+    class ErrorReader {
+      error: Error | null = new Error('read boom');
+      onload: ((event: unknown) => void) | null = null;
+      onerror: (() => void) | null = null;
+      readAsText() {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+    vi.stubGlobal('FileReader', ErrorReader);
+    try {
+      const { container } = renderModal({ onLoadError });
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const file = new File(['x'], 'config.yaml', { type: 'text/yaml' });
+      fireEvent.change(input, { target: { files: [file] } });
+      try {
+        await waitFor(() =>
+          expect(onLoadError).toHaveBeenCalledWith(
+            'Failed to read MIDI configuration file: read boom',
+          ),
+        );
+      } catch (error) {
+        console.log('reader error mismatch', onLoadError.mock.calls);
+        throw error;
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('reports an unknown read failure when the reader error is missing', async () => {
+    const onLoadError = vi.fn();
+    class SilentErrorReader {
+      error: Error | null = null;
+      onload: ((event: unknown) => void) | null = null;
+      onerror: (() => void) | null = null;
+      readAsText() {
+        queueMicrotask(() => this.onerror?.());
+      }
+    }
+    vi.stubGlobal('FileReader', SilentErrorReader);
+    try {
+      const { container } = renderModal({ onLoadError });
+      const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+      const file = new File(['x'], 'config.yaml', { type: 'text/yaml' });
+      fireEvent.change(input, { target: { files: [file] } });
+      try {
+        await waitFor(() =>
+          expect(onLoadError).toHaveBeenCalledWith(
+            'Failed to read MIDI configuration file: Unknown error',
+          ),
+        );
+      } catch (error) {
+        console.log('unknown reader error mismatch', onLoadError.mock.calls);
+        throw error;
+      }
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('does nothing when COPY is pressed without clipboard support', () => {
+    const onCopySummary = vi.fn();
+    renderModal({ inMonitor: [makeEntry()], onCopySummary });
+    const panel = screen.getByText('MIDI IN').closest('.midi-monitor-panel');
+    fireEvent.click(within(panel as HTMLElement).getByRole('button', { name: 'COPY' }));
+    try {
+      expect(onCopySummary).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('no clipboard mismatch', onCopySummary.mock.calls);
+      throw error;
+    }
+  });
+
+  it('uses the singular form for a single copied event', async () => {
+    const clipboard = stubClipboard();
+    const onCopySummary = vi.fn();
+    try {
+      renderModal({ inMonitor: [makeEntry({ value: null })], onCopySummary });
+      const panel = screen.getByText('MIDI IN').closest('.midi-monitor-panel');
+      fireEvent.click(within(panel as HTMLElement).getByRole('button', { name: 'COPY' }));
+      await act(async () => {});
+      try {
+        expect(onCopySummary).toHaveBeenCalledWith('Copied 1 MIDI IN event to clipboard.');
+      } catch (error) {
+        console.log('singular summary', onCopySummary.mock.calls);
+        throw error;
+      }
+    } finally {
+      clipboard.restore();
+    }
+  });
+
+  it('truncates long monitor fields when copying', async () => {
+    const clipboard = stubClipboard();
+    try {
+      renderModal({
+        inMonitor: [
+          makeEntry({
+            time: '12:34:56.7890123',
+            data: '90 3C 7F 90 3C 7F 90 3C 7F',
+            device: 'A device name that is far too long',
+            channel: '123',
+            type: 'averylongtype',
+            note: 'C#10',
+            value: 12345678,
+          }),
+        ],
+      });
+      const panel = screen.getByText('MIDI IN').closest('.midi-monitor-panel');
+      fireEvent.click(within(panel as HTMLElement).getByRole('button', { name: 'COPY' }));
+      await act(async () => {});
+      try {
+        expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+        const text = clipboard.writeText.mock.calls[0]?.[0] as string;
+        expect(text).toContain('12345');
+        expect(text).not.toContain('12345678');
+      } catch (error) {
+        console.log('truncate copy', clipboard.writeText.mock.calls);
+        throw error;
+      }
+    } finally {
+      clipboard.restore();
+    }
+  });
+
+  it('swallows clipboard rejection without reporting a summary', async () => {
+    const clipboard = stubClipboard();
+    clipboard.writeText.mockRejectedValue(new Error('denied'));
+    const onCopySummary = vi.fn();
+    try {
+      renderModal({ inMonitor: [makeEntry()], onCopySummary });
+      const panel = screen.getByText('MIDI IN').closest('.midi-monitor-panel');
+      fireEvent.click(within(panel as HTMLElement).getByRole('button', { name: 'COPY' }));
+      await act(async () => {});
+      try {
+        expect(onCopySummary).not.toHaveBeenCalled();
+      } catch (error) {
+        console.log('rejected copy mismatch', onCopySummary.mock.calls);
+        throw error;
+      }
+    } finally {
+      clipboard.restore();
+    }
+  });
+
+  it('copies without a summary callback', async () => {
+    const clipboard = stubClipboard();
+    try {
+      renderModal({ inMonitor: [makeEntry()] });
+      const panel = screen.getByText('MIDI IN').closest('.midi-monitor-panel');
+      fireEvent.click(within(panel as HTMLElement).getByRole('button', { name: 'COPY' }));
+      await act(async () => {});
+      try {
+        expect(clipboard.writeText).toHaveBeenCalledTimes(1);
+      } catch (error) {
+        console.log('summary-free copy', clipboard.writeText.mock.calls);
+        throw error;
+      }
+    } finally {
+      clipboard.restore();
+    }
+  });
+
+  it('toggles the output checkboxes through onChangeConfig', () => {
+    const onChangeConfig = vi.fn();
+    renderModal({
+      onChangeConfig,
+      devices: { inputs: [], outputs: [{ id: 'out-1', name: 'Output One' }] },
+    });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Enable MIDI output' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Ignore output volume' }));
+    try {
+      expect(onChangeConfig).toHaveBeenCalledWith({ outputEnabled: true });
+      expect(onChangeConfig).toHaveBeenCalledWith({ ignoreOutputVolume: false });
+    } catch (error) {
+      console.log('output toggles', onChangeConfig.mock.calls);
+      throw error;
+    }
+  });
+
+  it('changes the output device through onChangeConfig', () => {
+    const onChangeConfig = vi.fn();
+    renderModal({
+      onChangeConfig,
+      devices: { inputs: [], outputs: [{ id: 'out-1', name: 'Output One' }] },
+    });
+    fireEvent.change(screen.getByRole('combobox', { name: 'MIDI Output Device' }), {
+      target: { value: 'out-1' },
+    });
+    try {
+      expect(onChangeConfig).toHaveBeenCalledWith({ outputId: 'out-1' });
+    } catch (error) {
+      console.log('output select', onChangeConfig.mock.calls);
+      throw error;
+    }
+  });
+
   it('re-seeds the local configuration when the prop changes while open', async () => {
     const onSave = vi.fn();
     const props = makeProps({

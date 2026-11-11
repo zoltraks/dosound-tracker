@@ -41,7 +41,7 @@ export class AyumiEngine implements SoundEngine, RegisterIo {
   static async create(audioContext: AudioContext, clock: number = YM_CLOCK): Promise<AyumiEngine> {
     await audioContext.audioWorklet.addModule(workletUrl);
     const node = new AudioWorkletNode(audioContext, 'ayumi-processor', {
-      outputChannelCount: [1],
+      outputChannelCount: [2],
     });
     node.connect(audioContext.destination);
     const engine = new AyumiEngine(node, clock);
@@ -60,6 +60,14 @@ export class AyumiEngine implements SoundEngine, RegisterIo {
 
   getClock(): number {
     return this.clock;
+  }
+
+  setChip(chip: string): void {
+    this.post({ type: 'chip', chip });
+  }
+
+  setChannelPans(pans: number[]): void {
+    this.post({ type: 'pans', pans: pans.slice(0, 3) });
   }
 
   readRegister(register: number): number {

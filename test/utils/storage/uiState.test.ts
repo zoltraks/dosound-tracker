@@ -64,7 +64,7 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'editor',
         draft: {
-          general: { theme: 'light', trackBackground: false, startupTone: true },
+          general: { theme: 'light', textScale: '125', trackBackground: false, startupTone: true },
           editor: { restoreCursor: true, restoreView: false, pasteTrackMode: 'overwriteAll' },
           sound: { engine: 'internal' },
         },
@@ -93,7 +93,7 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'bogus' as never,
         draft: {
-          general: { theme: 'dark', trackBackground: true, startupTone: true },
+          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
           editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
           sound: { engine: 'internal' },
         },
@@ -114,7 +114,7 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'editor',
         draft: {
-          general: { theme: 'dark', trackBackground: true, startupTone: true },
+          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
           editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
           sound: { engine: 'internal' },
         },
@@ -138,7 +138,7 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'editor',
         draft: {
-          general: { theme: 'dark', trackBackground: true, startupTone: true },
+          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
           editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
           sound: { engine: 'internal' },
         },
@@ -159,7 +159,7 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'sound',
         draft: {
-          general: { theme: 'dark', trackBackground: true, startupTone: true },
+          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
           editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
           sound: { engine: 'internal' },
         },

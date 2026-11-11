@@ -83,4 +83,24 @@ describe('EQPanel', () => {
     fireEvent.click(container.querySelectorAll('.volume-bar')[1]);
     expect(onToggleChannelMute).toHaveBeenCalledWith(1);
   });
+
+  it('shows the channel pans and reports pan clicks', () => {
+    vi.useFakeTimers();
+    const onChannelPanChange = vi.fn();
+    const { container } = render(
+      <EQPanel
+        ym2149={null}
+        channelMutes={[false, false, false]}
+        onToggleChannelMute={() => {}}
+        channelPans={[0, 0.5, 1]}
+        onChannelPanChange={onChannelPanChange}
+      />,
+    );
+    const panButtons = Array.from(container.querySelectorAll('.channel-pan-button')).map(
+      (el) => el.textContent,
+    );
+    expect(panButtons).toEqual(['L100', 'C', 'R100']);
+    fireEvent.click(container.querySelectorAll('.channel-pan-button')[2]);
+    expect(onChannelPanChange).toHaveBeenCalledWith(2);
+  });
 });

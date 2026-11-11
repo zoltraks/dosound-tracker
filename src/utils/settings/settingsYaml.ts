@@ -17,6 +17,7 @@ export const buildSettingsYaml = (settings: SettingsValues): string => {
       version: 1,
       general: {
         theme: settings.general.theme,
+        textScale: settings.general.textScale,
         trackBackground: settings.general.trackBackground,
         startupTone: settings.general.startupTone,
       },
