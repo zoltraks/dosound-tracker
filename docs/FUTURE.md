@@ -40,6 +40,10 @@ Replacing the current setTimeout-based sequencer with an AudioWorklet node would
 
 The YM2149 has three channels but the current mix is mono. Stereo panning per channel would require adding a pan control per track and using stereo gain nodes in the Web Audio API integration.
 
+**Ayumi output loudness parity**
+
+The Ayumi engine renders noticeably quieter than the internal engine - `AYUMI_OUTPUT_GAIN` in `src/synth/AyumiEngine.ts` currently sits at `0.5` against a stage gain measured near 1.2 for parity. Raising it is a one-line change but was deferred pending a listening check, since perceived loudness varies with material and output device.
+
 ## User Interface Enhancements
 
 **Undo and redo**

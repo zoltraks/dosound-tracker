@@ -1,6 +1,6 @@
 # Clean Code Engineering Standards
 
-<!-- Version: 0.1.1 | Date: 2026-11-08 -->
+<!-- Version: 0.1.2 | Date: 2026-11-10 -->
 
 ## Purpose
 
@@ -67,6 +67,9 @@ Intentional duplication that exists to decouple is documented as such.
   demonstrated need, not a predicted one.
 - Build what the change record asks for - speculative generality and premature abstraction are
   refactoring anti-patterns, not foresight.
+- Removing a behavior removes its setup - configuration, initialization writes, and state
+  that exist only to serve that behavior leave with it. Vestigial setup outlives its
+  feature and reads as an active rule to the next reader.
 
 ## Naming And Functions
 

@@ -1,6 +1,6 @@
 # Performance Budgets Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-11-08 -->
+<!-- Version: 0.1.5 | Date: 2026-11-10 -->
 
 ## Purpose
 
@@ -512,5 +512,5 @@ and round-trip tests assert equality on the full buffer, not on sampled fields.
 
 Project-specific values for the DOSOUND Tracker codebase.
 
-- The audio tick runs at 50 Hz (20 ms per step) through `src/workers/sequencerWorker.ts`.
+- The audio tick runs at 50 Hz (20 ms per step) through `src/workers/sequencer.ts`.
   no React re-render may occur inside the tick path.

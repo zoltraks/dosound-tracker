@@ -1,6 +1,6 @@
 # TypeScript Real-Time Audio Engineering Standards
 
-<!-- Version: 0.1.1 | Date: 2026-11-08 -->
+<!-- Version: 0.1.2 | Date: 2026-11-10 -->
 
 ## Purpose
 
@@ -75,6 +75,9 @@ src/
   no `Array.from()` - use indexed `Uint8Array` / `Float32Array` access and in-place updates.
 - Musical position travels as engine ticks or step indices,
   converting to milliseconds only at display time.
+- A cadence start emits the starting step immediately - a loop that waits one full
+  interval and posts only after advancing skips the starting step's attack on every start.
+  The first posted state is the pre-advance position.
 
 ## Audio-Path State Rules
 
@@ -87,6 +90,18 @@ src/
   - manual memoization in place of `useMemo`/`useCallback` when identity churn hurts
 - Lint rules that flag these patterns (`react-hooks/exhaustive-deps`, `set-state-in-effect`)
   are disabled locally with a recorded reason - never "fixed" by changing the code.
+- Playback runs only while the rendering context is running - start paths await the
+  context's running transition. Parameter writes issued against a suspended context pile
+  at a frozen time base and land all at once on resume: dropped attacks, audio joining
+  mid-position, and a position view ahead of sound.
+- A context transition away from running mid-playback pauses the schedule at its
+  position and restarts it when the context returns - the position view may never
+  advance while the context renders nothing.
+- Playback-facing indicators flip only when playback actually begins, never at the
+  interaction that requested it, and a stop request cancels a pending asynchronous start.
+- Asynchronously-constructed engines expose a readiness gate that playback callers
+  await - register writes and silence requests issued before the engine lands are
+  silently dropped. Synchronously-constructible engines land synchronously.
 
 ## Worker Isolation
 
@@ -116,6 +131,9 @@ src/
 - Timing tests assert ordering and counts, not wall-clock durations
 - Component tests on audio-adjacent components stub the clock or worker boundary,
   never the DOM-visible output.
+- Audio-path tests assert the audible outcome - output gain values, context-state
+  timelines, rendered buffers - not only call timestamps: call timing alone proves
+  nothing about what renders.
 
 ## Verification
 
@@ -123,6 +141,9 @@ src/
   not a `--noEmit` pass against a solution-style tsconfig.
 - Audio behavior is verified by running the application - static checks cannot hear timing
   Record manual audio verification as the final human gate on any change touching the audio path.
+- Verify on more than one browser engine - implementations that auto-resume the audio
+  context on first gesture (Chromium) cannot reproduce the suspended-state failure
+  class; engines that preserve the suspended startup state (WebKit) expose it.
 
 ## General Principles
 
@@ -142,8 +163,11 @@ src/
 
 Project-specific values for the DOSOUND Tracker codebase.
 
-- The audio cadence is a 50 Hz tick driven by `src/workers/sequencerWorker.ts` - the worker
-  URL is `new URL('../../workers/sequencerWorker.ts', import.meta.url)`.
+- The audio cadence is a 50 Hz tick driven by `src/workers/sequencer.ts` - the worker
+  URL is `new URL('../../workers/sequencer.ts', import.meta.url)`.
+- Playback start gates on `ensureAudioContextResumed()` plus the engine readiness
+  promise in `usePlaybackHandlers`; `useAudioContextPlaybackSync` freezes and restarts
+  the sequencer across `statechange` transitions.
 - `GUIDELINES.md` owns the audio-critical principles - the accepted lint warnings
   (`react-hooks/exhaustive-deps`, `set-state-in-effect`) live there, not here.
 - The MIDI hot path is `src/hooks/midi/useMidiMessageProcessing.ts` - direct `Uint8Array`

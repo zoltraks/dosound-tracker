@@ -208,6 +208,14 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 
 The `saves and loads a song file` webkit case can flake under parallel workers - the file-input assertion observes a pre-upload value under load. It is timing-dependent, not a regression: rerun it in isolation (`npx playwright test --project=webkit e2e/smoke.spec.ts`) before treating it as a failure, and prefer making the test deterministic over accepting repeats.
 
+**Audio-path verification requires the webkit project**
+
+Chromium auto-resumes the `AudioContext` on the first gesture, so chromium-only runs always observe a `running` context and cannot reproduce suspended-context behavior - playback starting before `resume()` resolves, writes piling at a frozen `currentTime`, view/audio desync. Any change touching the audio path (play/stop, sequencer sync, engine startup) must also be verified under `--project=webkit`, which preserves the suspended startup state.
+
+**Assert the audible outcome, not call timing**
+
+Timestamps on `writeRegister` or parameter-setter calls prove a call happened, not that anything rendered. Audio-path assertions check the audible result: gain-node values after stop, the `AudioContext` state timeline, `currentTime` progression during writes, and position/view agreement - a probe that counts calls can pass while the user hears silence.
+
 ## Test Configuration
 
 **Vitest**

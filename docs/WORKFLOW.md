@@ -429,6 +429,14 @@ Nothing in the repository stages files - no hooks, no `git add` in scripts, no l
 
 Every moved fragment orphans its imports in the origin file (`yaml`, `js-yaml`, utility helpers, type-only imports). Run `npm run lint` after each slice and delete the orphaned imports it reports - each one costs a build cycle if left for `tsc -b` to find.
 
+**Rule out the environment before bisecting a regression**
+
+A defect that reproduces identically on old and new revisions is not a code regression - bisection can only find a code change, so check the axis that differs between the reporter's environment and the verifier's first: browser, OS, output device, autoplay and permissions policy, dev server versus built bundle. The audio-playback desync of 2026-11-10 survived six commits of bisect because the cause was WebKit's suspended-context behavior, present in every revision.
+
+**Hot-module reloads can recreate audio state mid-session**
+
+HMR updates that touch audio-path code re-run the audio effects, which closes the `AudioContext` and constructs a fresh suspended one seconds before a manual test - the symptom (late start, dropped first notes) then mimics a regression that does not exist. After HMR churn on audio-path files, reload the page or restart the dev server before judging timing behavior.
+
 **Untracked files survive `git stash`**
 
 `git stash` leaves untracked files in place, so a stash-based "clean tree" lint or build check still sees newly created files. Use `git stash -u` when the check must exclude uncommitted new files, or move them aside explicitly.
