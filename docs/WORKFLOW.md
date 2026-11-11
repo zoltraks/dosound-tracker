@@ -26,6 +26,7 @@ The project specification update is the first step of implementation, taken when
 - `ARCHITECTURE.md` for architectural or structural changes.
 - `SPECIFICATION.md` for implementation-specific details.
 - `FORMAT.md` for changes to save or export file formats.
+- `public/MANUAL.md` and `public/MESSAGES.md` for user-facing behaviour the bundled documents describe - a changed shortcut, playback semantic, or visible feature updates the bundled text in the same change set.
 
 **Follow the implementation plan, if one exists**
 

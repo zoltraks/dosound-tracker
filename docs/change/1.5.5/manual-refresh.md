@@ -4,11 +4,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                                                                              |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Intent        | `public/MANUAL.md` documents this session's input and repository changes plus the 1.5.x features it never covered                                   |
+| Field         | Value                                                                                                                                                                                 |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Intent        | `public/MANUAL.md` documents this session's input and repository changes plus the 1.5.x features it never covered                                                                     |
 | Key decisions | Playback and navigation shortcuts join the existing Keyboard Navigation list; note-off gets its binding named; settings, stereo, and the sound engine get their first manual coverage |
-| Open risks    | none                                                                                                                                               |
+| Open risks    | none                                                                                                                                                                                  |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

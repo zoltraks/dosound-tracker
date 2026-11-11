@@ -339,3 +339,7 @@ Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep wit
 **Scratch vitest probes must live under `test/`**
 
 The vitest include glob is `test/**/*.{test,spec}.{ts,tsx}`, so a throwaway probe placed in `work/` is silently skipped. Put probe files under `test/` temporarily and delete them in the same session.
+
+**Fakes consumed through dependency arrays must be referentially stable**
+
+A fake object built fresh on every render - `fakeAudioContext()` returned inline, for example - re-runs the effect that depends on it. The hook tears down and recreates its worker or node, and messages dispatched in the test land on a dead instance. Hoist the fake to module scope or a `useRef` so the effect binds once and the test's port stays live.

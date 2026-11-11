@@ -103,7 +103,7 @@ In the pattern editor:
 
 4. **PLAY INST** tests just the selected instrument
 
-**Quick tip:** You may press **ENTER** key while editing a track to start playing current pattern.
+**Quick tip:** Press **ENTER** while editing a track or playing the on-screen piano to loop the current pattern from the cursor row. **CTRL + ENTER** loops it from the first row, **SHIFT + ENTER** plays the song from the cursor row, and **CTRL + SHIFT + ENTER** plays the song from the first row. Pressing an **ENTER** binding while playback runs stops it, and stopping an ENTER-started playback restores the playlist position and track row.
 
 ### Building the Playlist
 
@@ -243,8 +243,13 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 
 - **TAB** and **SHIFT + TAB** section cycling
 - **ARROW** movement
+- **CTRL + 1 / CTRL + 2 / CTRL + 3** to focus tracks A, B, and C
+- **CTRL + SPACE** to focus the on-screen piano, and again to return to the previous section
+- **SHIFT + SPACE** to write a note-off, or to clear a position that already holds one
 - **ENTER** for editing
 - **ESCAPE** for cancel
+- **F2** plays the current line, **CTRL + 5** plays the song from the start of the current line, **CTRL + 6** plays the current line, **CTRL + 8** or **ESCAPE** stops playback
+- **ENTER / CTRL + ENTER / SHIFT + ENTER / CTRL + SHIFT + ENTER** to play a line or the song as described in the playback quick tip
 - **CTRL + N / CTRL + O / CTRL + S / CTRL + I** for new song, load song, save song, and new instrument
 - **CTRL + Z** to undo the last edit and **CTRL + Y** or **CTRL + SHIFT + Z** to redo it
 - Hotkey support for all functions
@@ -256,6 +261,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - Playback position tracking
 - Volume level visualization
 - EQ display with channel muting
+- Section frames tint on mouse hover, and a hovered section that is also active shows its own frame color - lime in the dark theme
 
 ### Envelope Editor
 
@@ -299,6 +305,7 @@ For whole-envelope operations, the editor treats the envelope as fully defined f
 - **ADD INST**: Create new instrument
 - **LOAD INST**: Import individual instrument
 - **SAVE INST**: Export single instrument
+- **PICK INST**: Choose from the bundled instrument repository - it includes the Warmball instruments colored by role: red drums, blue basses, green leads, yellow effects
 - **DELETE INST**: Remove instrument
 - **CLONE INST**: Duplicate instrument
 - **PLAY INST**: Test sound
@@ -456,9 +463,17 @@ Application supports several export formats. Each format can target the full son
 - In-app changelog viewer
 - Built-in manual viewer
 
+**Settings Dialog:**
+
+- Opened with the gear button in the header panel
+- **GENERAL**: theme selection, the High Contrast variant, text size scaling (100%, 125%, 150%), and the startup test tone
+- **EDITOR**: track backgrounds, cursor and view restore, default paste mode
+- **SOUND**: sound engine selection - **Internal** or the precise **Ayumi** emulation core
+- OK applies the changes immediately, RESET restores defaults, and SAVE/LOAD exchange a settings file
+
 **Theme:**
 
-- Dark theme (default) and light theme
+- Dark theme (default), light theme, and high contrast variant
 - Toggle button in header panel
 - Persists to localStorage
 
@@ -466,7 +481,9 @@ Application supports several export formats. Each format can target the full son
 
 The following settings persist across sessions via localStorage:
 
-- Theme preference (dark or light)
+- Theme preference (dark, light, or high contrast)
+- Text size scaling
+- Sound engine selection (Internal or Ayumi)
 - MIDI configuration (input/output enable, device selection, volume ignore)
 - Transpose settings (scope, track, instrument, amount)
 - Export type and strategy
@@ -571,6 +588,7 @@ Conceptually:
 - `frame`: Optional. Replay rate in Hz. Supported values: `50` (default) or `60`.
 - `clock`: Optional. Chip clock in Hz. Supported values: `2000000` (2 MHz, default) or `1000000` (1 MHz).
 - `chip`: Optional. Chip type: `"YM"` (YM2149, default) or `"AY"` (AY-3-8910 family).
+- `stereo`: Optional. Channel placement for live playback and previews - a `layout` of `mono`, `abc`, or `acb`, or free per-channel `A`/`B`/`C` pan positions.
 - `line`: Required list of rows (arrangement).
   - Loader also accepts the legacy key `playlist`.
 - `pattern` / `patterns`: Required list of pattern definitions.
@@ -760,6 +778,7 @@ Symbols (conceptually):
 - `C-3` – play C in octave 3 with the selected instrument.
 - `---` – no event (space; continue whatever is already sounding).
 - `===` – explicit note‑off: stop or release the current note.
+  - In the tracker, **SHIFT + SPACE** writes `===` at the cursor, and pressing it again on a note‑off position clears the row.
 
 In YAML steps:
 

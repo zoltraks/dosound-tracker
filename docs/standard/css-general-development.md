@@ -1128,3 +1128,4 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_si
 - The UI is monospaced and DOS-like: avoid complex modern styling where text rendering suffices.
 - Dark (default) and light themes are token-driven - classes use `kebab-case` or BEM.
 - A `border-color` rule without a visible border is dead code - the base rule must declare the border (or a transparent placeholder) before a state rule changes its color.
+- `App.css` resolves equal-specificity contests by source order, and generic rules such as `*:focus` and `X:hover` sit late in the file - a section state that must win takes a compound selector (`.active:hover`) or a dedicated override (`X:focus { outline: none }`), never a reliance on being declared earlier.

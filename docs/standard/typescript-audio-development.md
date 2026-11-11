@@ -107,6 +107,11 @@ src/
   runs on its defaults. Give the post function a stable first-render identity that
   buffers into a queue, and flush the queue when the node is created so no message
   ordering is lost.
+- A reply to a superseded asynchronous command updates resources, never state. A worker
+  or worklet answer that arrives after a newer command replaced it - a `stop` reply
+  landing after a `start` - must not merge into playback state. Track whether a newer
+  command superseded the one the reply answers, skip the state write, and still fire
+  the cleanup the reply exists for.
 
 ## Worker Isolation
 
