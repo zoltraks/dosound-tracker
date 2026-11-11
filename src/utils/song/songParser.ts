@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import type { Instrument, Song, Pattern, Step } from '../../synth/SoundDriver.ts';
 import {
   MAX_INSTRUMENTS,

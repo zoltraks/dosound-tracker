@@ -93,7 +93,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       return;
     }
 
-    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>('.command-btn'));
+    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>('.command-button'));
     if (buttons.length === 0) {
       return;
     }
@@ -104,7 +104,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       return;
     }
 
-    const playButton = panel.querySelector<HTMLButtonElement>('.play-song-btn');
+    const playButton = panel.querySelector<HTMLButtonElement>('.play-song-button');
     if (playButton) {
       playButton.focus();
     } else {
@@ -120,7 +120,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   }, [isActive]);
 
   const getMidiButtonClassName = () => {
-    const classes = ['command-btn', 'midi-btn'];
+    const classes = ['command-button', 'midi-button'];
 
     if (midiInputEnabled && midiOutputEnabled) {
       classes.push('midi-both-enabled');
@@ -150,7 +150,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
       return;
     }
 
-    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>('.command-btn'));
+    const buttons = Array.from(panel.querySelectorAll<HTMLButtonElement>('.command-button'));
     if (buttons.length === 0) {
       return;
     }
@@ -246,16 +246,16 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           <div className="command-row">
             <button
               onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
-              className={`command-btn play-song-btn ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
+              className={`command-button play-song-button ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
             >
               PLAY
             </button>
-            <button onClick={onDemoSong} className="command-btn demo-song-btn">
+            <button onClick={onDemoSong} className="command-button demo-song-button">
               DEMO
             </button>
             <button
               onClick={onStop}
-              className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
+              className={`command-button stop-button ${isPlaying ? 'playing' : ''}`}
             >
               STOP
             </button>
@@ -265,38 +265,38 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
             <div className="command-row">
               <button
                 onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
-                className={`command-btn play-song-btn ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
+                className={`command-button play-song-button ${isPlaying && !isLinePlaying ? 'playing' : ''}`}
               >
                 PLAY SONG
               </button>
               <button
                 onClick={isLinePlaying ? onStop : onPlayLine}
-                className={`command-btn play-line-btn ${isLinePlaying ? 'playing' : ''}`}
+                className={`command-button play-line-button ${isLinePlaying ? 'playing' : ''}`}
               >
                 PLAY LINE
               </button>
               <button
                 onClick={onStop}
-                className={`command-btn stop-btn ${isPlaying ? 'playing' : ''}`}
+                className={`command-button stop-button ${isPlaying ? 'playing' : ''}`}
               >
                 STOP
               </button>
-              <button onClick={onNewSong} className="command-btn new-song-btn">
+              <button onClick={onNewSong} className="command-button new-song-button">
                 NEW SONG
               </button>
-              <button onClick={onLoadSong} className="command-btn load-song-btn">
+              <button onClick={onLoadSong} className="command-button load-song-button">
                 LOAD SONG
               </button>
-              <button onClick={onSaveSong} className="command-btn save-song-btn">
+              <button onClick={onSaveSong} className="command-button save-song-button">
                 SAVE SONG
               </button>
-              <button onClick={onOptimize} className="command-btn">
+              <button onClick={onOptimize} className="command-button">
                 OPTIMIZE
               </button>
-              <button onClick={onRenumber} className="command-btn">
+              <button onClick={onRenumber} className="command-button">
                 RENUMBER
               </button>
-              <button onClick={onTranspose} className="command-btn">
+              <button onClick={onTranspose} className="command-button">
                 TRANSPOSE
               </button>
               <button
@@ -310,38 +310,38 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
               </button>
               <button
                 onClick={onToggleDebug}
-                className={`command-btn debug-btn ${isDebugMode ? 'active' : ''}`}
+                className={`command-button debug-button ${isDebugMode ? 'active' : ''}`}
               >
                 BUG
               </button>
-              <button onClick={onReset} className="command-btn reset-btn">
+              <button onClick={onReset} className="command-button reset-button">
                 RESET
               </button>
             </div>
 
             <div className="command-row">
-              <button onClick={onAddLine} className="command-btn">
+              <button onClick={onAddLine} className="command-button">
                 ADD LINE
               </button>
-              <button onClick={onDuplicateLine} className="command-btn">
+              <button onClick={onDuplicateLine} className="command-button">
                 DUPLICATE LINE
               </button>
-              <button onClick={onCloneLine} className="command-btn">
+              <button onClick={onCloneLine} className="command-button">
                 CLONE LINE
               </button>
-              <button onClick={onDeleteLine} className="command-btn">
+              <button onClick={onDeleteLine} className="command-button">
                 DELETE LINE
               </button>
-              <button onClick={onNewTrack} className="command-btn">
+              <button onClick={onNewTrack} className="command-button">
                 ADD TRACK
               </button>
-              <button onClick={onCopyTrack} className="command-btn">
+              <button onClick={onCopyTrack} className="command-button">
                 COPY TRACK
               </button>
-              <button onClick={onPasteTrack} className="command-btn">
+              <button onClick={onPasteTrack} className="command-button">
                 PASTE TRACK
               </button>
-              <button onClick={onDeleteTrack} className="command-btn">
+              <button onClick={onDeleteTrack} className="command-button">
                 DELETE TRACK
               </button>
               <button
@@ -349,7 +349,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
                   event.stopPropagation();
                   onInsertStep();
                 }}
-                className="command-btn"
+                className="command-button"
               >
                 INSERT STEP
               </button>
@@ -358,35 +358,35 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
                   event.stopPropagation();
                   onDeleteStep();
                 }}
-                className="command-btn"
+                className="command-button"
               >
                 DELETE STEP
               </button>
             </div>
 
             <div className="command-row">
-              <button onClick={onNewInstrument} className="command-btn">
+              <button onClick={onNewInstrument} className="command-button">
                 ADD INST
               </button>
-              <button onClick={onLoadInstrument} className="command-btn">
+              <button onClick={onLoadInstrument} className="command-button">
                 LOAD INST
               </button>
-              <button onClick={onSaveInstrument} className="command-btn">
+              <button onClick={onSaveInstrument} className="command-button">
                 SAVE INST
               </button>
-              <button onClick={onPlayInstrument} className="command-btn">
+              <button onClick={onPlayInstrument} className="command-button">
                 PLAY INST
               </button>
-              <button onClick={onCloneInstrument} className="command-btn">
+              <button onClick={onCloneInstrument} className="command-button">
                 CLONE INST
               </button>
-              <button onClick={onDeleteInstrument} className="command-btn">
+              <button onClick={onDeleteInstrument} className="command-button">
                 DELETE INST
               </button>
-              <button onClick={onPickInstrument} className="command-btn pick-inst-btn">
+              <button onClick={onPickInstrument} className="command-button pick-inst-button">
                 PICK INST
               </button>
-              <button onClick={onDemoSong} className="command-btn demo-song-btn">
+              <button onClick={onDemoSong} className="command-button demo-song-button">
                 DEMO SONG
               </button>
               <button
@@ -394,7 +394,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
                   event.stopPropagation();
                   onOpenExport();
                 }}
-                className="command-btn export-btn"
+                className="command-button export-button"
               >
                 EXPORT
               </button>

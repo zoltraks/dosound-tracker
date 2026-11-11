@@ -203,7 +203,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
       {!showCustomInput ? (
         <button
           type="button"
-          className="command-btn color-picker-hex-toggle"
+          className="command-button color-picker-hex-toggle"
           onClick={() => setShowCustomInput(true)}
         >
           HEX
@@ -225,7 +225,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             </div>
             <button
               type="button"
-              className="command-btn color-picker-apply-btn"
+              className="command-button color-picker-apply-button"
               onClick={handleCustomSubmit}
               disabled={customValue.length !== 3}
             >
@@ -233,7 +233,7 @@ export const ColorPicker: React.FC<ColorPickerProps> = ({ value, onChange, class
             </button>
             <button
               type="button"
-              className="command-btn color-picker-cancel-btn"
+              className="command-button color-picker-cancel-button"
               onClick={handleCancelCustom}
             >
               Cancel

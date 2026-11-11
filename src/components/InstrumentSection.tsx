@@ -203,7 +203,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
             const isCurrent = slotIndex === currentIndex;
             const midiEnabled = isMidiEnabled(instrument);
 
-            const midiButtonClassNames = ['instrument-midi-btn'];
+            const midiButtonClassNames = ['instrument-midi-button'];
             midiButtonClassNames.push(
               midiEnabled ? 'instrument-midi-enabled' : 'instrument-midi-disabled',
             );
@@ -253,7 +253,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                 <div className="instrument-actions" onClick={(e) => e.stopPropagation()}>
                   <button
                     type="button"
-                    className="instrument-color-btn"
+                    className="instrument-color-button"
                     onClick={() => {
                       const instForSlot = getInstrumentForSlot(slotIndex);
                       handleInstrumentClick(slotIndex);

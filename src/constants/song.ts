@@ -31,6 +31,5 @@ export const STEREO_LAYOUTS: Record<string, [number, number, number]> = {
 };
 
 export const STEREO_LAYOUT_ORDER = ['mono', 'abc', 'acb'];
-
-// Pan positions offered by the per-channel pan control, cycled in order.
-export const CHANNEL_PAN_STEPS = [0, 0.25, 0.5, 0.75, 1];
+// STEREO_LAYOUT_ORDER is retained for the Song-information stereo toggle
+// planned with the pan controls.

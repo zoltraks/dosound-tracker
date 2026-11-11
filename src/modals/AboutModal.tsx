@@ -49,15 +49,15 @@ export const AboutModal: React.FC<AboutModalProps> = ({
       </div>
       <div className="modal-actions about-actions">
         <div className="about-actions-left">
-          <button className="command-btn" onClick={onShowChangelog}>
+          <button className="command-button" onClick={onShowChangelog}>
             CHANGES
           </button>
-          <button className="command-btn" onClick={onShowManual}>
+          <button className="command-button" onClick={onShowManual}>
             MANUAL
           </button>
         </div>
         <div className="about-actions-right">
-          <button className="command-btn" onClick={onClose}>
+          <button className="command-button" onClick={onClose}>
             OK
           </button>
         </div>

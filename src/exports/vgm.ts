@@ -221,7 +221,7 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
 
   commands.push(0x66);
 
-  if (strategy === 'optimized' || strategy === 'compact') {
+  if (strategy === 'tight') {
     const optimized = optimizeVgmDelays(commands, loopCommandOffset, waitCommand, SAMPLES_PER_TICK);
     commands = optimized.commands;
     loopCommandOffset = optimized.loopCommandOffset;

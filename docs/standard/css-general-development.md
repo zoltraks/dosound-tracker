@@ -900,12 +900,12 @@ Write hexadecimal colors lowercase and shorten to three digits whenever every ch
 Use `::before` and `::after` for decorative effects such as shimmer sweeps.
 
 ```css
-.command-btn {
+.command-button {
   position: relative;
   overflow: hidden;
 }
 
-.command-btn::before {
+.command-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -916,7 +916,7 @@ Use `::before` and `::after` for decorative effects such as shimmer sweeps.
   transition: left 0.5s ease;
 }
 
-.command-btn:hover::before {
+.command-button:hover::before {
   left: 100%;
 }
 ```

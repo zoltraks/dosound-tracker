@@ -329,7 +329,7 @@ Application supports several export formats. Each format can target the full son
 - `dc.b` directive stream
 - XBIOS compatible
 - 68k assembly integration
-- Four strategies: simple, complex, optimized, compact
+- Three strategies: simple, complex, tight
 
 **Register Dump (DUMP):**
 
@@ -359,7 +359,7 @@ Application supports several export formats. Each format can target the full son
 - Info chunks for song metadata
 - Chip setup chunk recording frame rate and chip clock
 - Stream definition chunk with compression info
-- Four strategies: simple (RAW8 dump, 14 bytes per frame), complex (REG7 differential stream with single-byte frame delimiters), optimized and compact (REG7 stream with coalesced multi-frame delays)
+- Three strategies: simple (RAW8 dump, 14 bytes per frame), complex (REG7 differential stream with single-byte frame delimiters), tight (REG7 stream with coalesced multi-frame delays)
 - ZX0 compression with 1024-byte ring-buffer window applied to all strategies
 - All 14 YM2149 registers (R0 through R13) captured per frame
 
@@ -376,8 +376,7 @@ Application supports several export formats. Each format can target the full son
 
 - **SIMPLE DUMP**: All registers every frame
 - **COMPLEX DUMP**: Changed registers only
-- **OPTIMIZED DUMP**: Coalesced delays on top of complex
-- **COMPACT DUMP**: Maximum packing - changed tone bytes only, audible-keyed mixer writes, chunked delays
+- **TIGHT DUMP**: Maximum packing - coalesced delays, changed tone bytes only, audible-keyed mixer writes
 
 ### Advanced Features
 
@@ -571,7 +570,7 @@ Conceptually:
 - `loop`: Optional. 0‑based playlist index where playback loops (for exports that support looping).
 - `frame`: Optional. Replay rate in Hz. Supported values: `50` (default) or `60`.
 - `clock`: Optional. Chip clock in Hz. Supported values: `2000000` (2 MHz, default) or `1000000` (1 MHz).
-- `chip`: Optional. Chip type: `"YM"` (YM2149, default) or `"AY"` (AY-3-8910 family). Toggle in the Song information panel.
+- `chip`: Optional. Chip type: `"YM"` (YM2149, default) or `"AY"` (AY-3-8910 family).
 - `line`: Required list of rows (arrangement).
   - Loader also accepts the legacy key `playlist`.
 - `pattern` / `patterns`: Required list of pattern definitions.
@@ -889,7 +888,7 @@ Use the UI commands corresponding to:
 - **SAVE INST** – single instrument YAML.
 - **EXPORT** – opens the Export dialog where you pick:
   - What: **Song**, **Pattern (current playlist position)**, or **Instrument (current)**.
-  - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, **OPTIMIZED DUMP**, or **COMPACT DUMP**.
+  - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, or **TIGHT DUMP**.
   - Format: **DATA**, **DUMP**, **BIN**, **VGM**, **MAX**, **WAV**.
 
 Then:
@@ -1013,9 +1012,9 @@ music:
     dc.b $ff,0
 ```
 
-With the **COMPLEX DUMP**, **OPTIMIZED DUMP**, and **COMPACT DUMP** strategies, only **changed registers** are written to keep data compact.
+With the **COMPLEX DUMP** and **TIGHT DUMP** strategies, only **changed registers** are written to keep the output small.
 
-### Export Strategies: Simple vs Complex vs Optimized vs Compact
+### Export Strategies: Simple vs Complex vs Tight
 
 In the UI this is chosen as **Strategy** in the Export dialog.
 
@@ -1027,11 +1026,9 @@ In the UI this is chosen as **Strategy** in the Export dialog.
   - Writes only registers that **changed** since the previous frame.
   - Inserts markers between playlist positions.
   - Forces tone registers (`R0..R5`) to be rewritten after markers so every playlist line starts well‑defined.
-- **OPTIMIZED DUMP** (`strategy: optimized`):
-  - Same register-diff approach as complex dump.
-  - Additionally merges consecutive delay commands to reduce size.
-- **COMPACT DUMP** (`strategy: compact`):
+- **TIGHT DUMP** (`strategy: tight`):
   - Same register-diff approach with tighter packing.
+  - Merges consecutive delay commands to reduce size, splitting runs longer than 256 frames so every delay count fits one byte.
   - Emits only the changed byte of a tone-period pair (`dc.b $00,$ll` or `dc.b $01,$hh` instead of the four-byte pair).
   - Skips mixer writes that only change the enable bits of silent (volume 0) channels.
   - Does not force tone-register rewrites after playlist-position markers.

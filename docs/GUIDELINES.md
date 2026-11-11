@@ -216,7 +216,7 @@ These rules apply to every change made in this project. Follow them in order - d
 
 **Create or confirm the plan**
 
-- When asked to perform a change, first create an implementation plan - location, naming, and version-directory rules are owned by `WORKFLOW.md` under Implementation Planning.
+- When asked to perform a change, first create a change record and implementation plan - location, naming, and version-directory rules are owned by `WORKFLOW.md` under Implementation Planning. The record precedes the code no matter how small the request, and a refactoring proposal precedes the first structural edit.
 - If a plan already exists, ensure it is consistent with the current request.
 - Present the plan and ask for review before proceeding when one does not already exist.
 - Do not start any implementation work until the plan is approved.
@@ -295,7 +295,7 @@ See `TESTING.md` for the canonical verification loop, test types, fixtures, and 
 - Do not add generated files to the repository unless explicitly required.
 - Do not change version numbers in project artefacts unless explicitly instructed.
 - **Header versions**: do not bump version numbers in document headers unless explicitly instructed by the user.
-- **CHANGELOG.md**: do not modify `public/CHANGELOG.md` outside the version bump procedure described in `VERSIONING.md`. Feature and fix entries accumulate in the codebase and are recorded only when the version is actually bumped. Never delete or truncate older version entries when adding new versions - the complete historical record must be preserved.
+- **CHANGELOG.md**: `public/CHANGELOG.md` is updated only during the version bump procedure described in `VERSIONING.md` or on the user's specific request - routine feature, fix, and refactor work leaves the file untouched, including any entry pending for the current window. Entries are written from the current window's review, change records, implementation plans, and the actual implementation. Never delete or truncate older version entries when adding new versions - the complete historical record must be preserved.
 - **Binary output location**: all compiled output must go to a dedicated `dist/` or `build/` directory. Never build to the repository root, source directories, or outside the project. The `dist/` directory must be gitignored.
 - **Temporary files**: always use the `work` directory at the repository root for temporary files, test data, local-only configurations, and generated artifacts. Never create `work/` subdirectories inside component directories. Tests that generate files on disk must write them inside `work/` and must clean them up afterward using `try/finally` so no generated file is left behind inside or outside `work/`.
 - **Agent entry files**: do not create `AGENTS.md` or equivalent agent entry files. `README.md` routes agents to `GUIDELINES.md` as the documented entry point. Do not propose adding such files during documentation evaluations, supplements, or reorganizations.

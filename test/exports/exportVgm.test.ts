@@ -267,13 +267,13 @@ describe('exportSongToVgm', () => {
     expect(loopSamples).toBe(0);
   });
 
-  it('preserves total samples when using optimized strategy', () => {
+  it('preserves total samples when using tight strategy', () => {
     const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
 
     const simple = exportSongToVgm(song, 'simple');
-    const optimized = exportSongToVgm(song, 'optimized');
+    const optimized = exportSongToVgm(song, 'tight');
 
     expect(simple.totalSamples).toBeGreaterThan(0);
     expect(optimized.totalSamples).toBeGreaterThan(0);
@@ -304,13 +304,13 @@ describe('exportSongToVgm', () => {
     }
   });
 
-  it('uses merged delay commands for optimized strategy', () => {
+  it('uses merged delay commands for tight strategy', () => {
     const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
 
     const simple = exportSongToVgm(song, 'simple');
-    const optimized = exportSongToVgm(song, 'optimized');
+    const optimized = exportSongToVgm(song, 'tight');
 
     const simpleBytes = new Uint8Array(simple.buffer);
     const optimizedBytes = new Uint8Array(optimized.buffer);

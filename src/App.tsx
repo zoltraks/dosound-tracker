@@ -225,10 +225,7 @@ const App: React.FC = () => {
     useKeyboardNavigation(isNavigationSuspended);
 
   const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
-  const { channelPans, handleChannelPanChange } = useChannelPans({
-    stereo: currentSong.stereo,
-    updateSong,
-  });
+  const { channelPans } = useChannelPans({ stereo: currentSong.stereo });
   const { audioContext, ym2149Ref, ym2149, waitForEngine, playTestTone } = useAudioSetup(
     currentSong.clock ?? DEFAULT_SONG_CLOCK,
     soundEngineId,
@@ -962,8 +959,6 @@ const App: React.FC = () => {
             ym2149={ym2149}
             channelMutes={channelMutes}
             onToggleChannelMute={toggleChannelMute}
-            channelPans={channelPans}
-            onChannelPanChange={handleChannelPanChange}
           />
         }
         pianoKeyboard={

@@ -71,15 +71,15 @@ export const InstrumentColorModal: React.FC<InstrumentColorModalProps> = ({
       </div>
       <div className="modal-actions about-actions">
         <div className="about-actions-left">
-          <button type="button" className="command-btn" onClick={handleClearClick}>
+          <button type="button" className="command-button" onClick={handleClearClick}>
             CLEAR
           </button>
-          <button type="button" className="command-btn" onClick={onCancel}>
+          <button type="button" className="command-button" onClick={onCancel}>
             CANCEL
           </button>
         </div>
         <div className="about-actions-right">
-          <button type="button" className="command-btn" onClick={handleOk}>
+          <button type="button" className="command-button" onClick={handleOk}>
             OK
           </button>
         </div>

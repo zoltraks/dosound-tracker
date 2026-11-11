@@ -40,52 +40,52 @@
   --button-active: #3b425b;
   --button-border-hover: #b5d6f1;
 
-  --debug-btn-bg-left: #774b26;
-  --debug-btn-bg-right: #36230a;
-  --debug-btn-border: #af7239;
-  --debug-btn-active-bg-left: #7d4ba0;
-  --debug-btn-active-bg-right: #5b2f7b;
-  --debug-btn-active-border: #a855f7;
-  --debug-btn-active-glow: rgba(168, 85, 247, 0.6);
+  --debug-button-bg-left: #774b26;
+  --debug-button-bg-right: #36230a;
+  --debug-button-border: #af7239;
+  --debug-button-active-bg-left: #7d4ba0;
+  --debug-button-active-bg-right: #5b2f7b;
+  --debug-button-active-border: #a855f7;
+  --debug-button-active-glow: rgba(168, 85, 247, 0.6);
 
-  --pick-inst-btn-bg-left: #2b745e;
-  --pick-inst-btn-bg-right: #0c3c4e;
-  --pick-inst-btn-border: #328f82;
+  --pick-inst-button-bg-left: #2b745e;
+  --pick-inst-button-bg-right: #0c3c4e;
+  --pick-inst-button-border: #328f82;
 
-  --reset-btn-bg-left: #702c31;
-  --reset-btn-bg-right: #411919;
-  --reset-btn-border: #ac3e3e;
+  --reset-button-bg-left: #702c31;
+  --reset-button-bg-right: #411919;
+  --reset-button-border: #ac3e3e;
 
-  --load-song-btn-bg-left: #186375;
-  --load-song-btn-bg-right: #1b313f;
-  --load-song-btn-border: #2d8d9c;
+  --load-song-button-bg-left: #186375;
+  --load-song-button-bg-right: #1b313f;
+  --load-song-button-border: #2d8d9c;
 
-  --export-btn-bg-left: #5d6b20;
-  --export-btn-bg-right: #30380b;
-  --export-btn-border: #83973b;
+  --export-button-bg-left: #5d6b20;
+  --export-button-bg-right: #30380b;
+  --export-button-border: #83973b;
 
-  --save-song-btn-bg-left: #7d4709;
-  --save-song-btn-bg-right: #472c0a;
-  --save-song-btn-border: #af6a29;
+  --save-song-button-bg-left: #7d4709;
+  --save-song-button-bg-right: #472c0a;
+  --save-song-button-border: #af6a29;
 
-  --new-song-btn-bg-left: #763783;
-  --new-song-btn-bg-right: #41254d;
-  --new-song-btn-border: #9e58e0;
+  --new-song-button-bg-left: #763783;
+  --new-song-button-bg-right: #41254d;
+  --new-song-button-border: #9e58e0;
 
-  --demo-song-btn-bg-left: #4c218d;
-  --demo-song-btn-bg-right: #342446;
-  --demo-song-btn-border: #8a4ec2;
+  --demo-song-button-bg-left: #4c218d;
+  --demo-song-button-bg-right: #342446;
+  --demo-song-button-border: #8a4ec2;
 
-  --play-song-btn-idle-bg-left: #1a5a35;
-  --play-song-btn-idle-bg-right: #20362a;
-  --play-song-btn-idle-border: #27916a;
+  --play-song-button-idle-bg-left: #1a5a35;
+  --play-song-button-idle-bg-right: #20362a;
+  --play-song-button-idle-border: #27916a;
 
   --play-line-idle-bg: #3a3024;
   --play-line-idle-border: #91663c;
 
-  --stop-btn-idle-bg-left: #5e383e;
-  --stop-btn-idle-bg-right: #27181a;
-  --stop-btn-idle-border: #a4535a;
+  --stop-button-idle-bg-left: #5e383e;
+  --stop-button-idle-bg-right: #27181a;
+  --stop-button-idle-border: #a4535a;
 
   /* Playback button accent colors (dark theme) */
   --play-song-bg: #1f4730;
@@ -201,52 +201,52 @@
   --button-active: #fef3c7;
   --button-border-hover: #38393a;
 
-  --debug-btn-bg-left: #f6d2fd;
-  --debug-btn-bg-right: #eca4fa;
-  --debug-btn-border: #b143c7;
-  --debug-btn-active-bg-left: #e9d5ff;
-  --debug-btn-active-bg-right: #ddd6fe;
-  --debug-btn-active-border: #7c3aed;
-  --debug-btn-active-glow: rgba(124, 58, 237, 0.45);
+  --debug-button-bg-left: #f6d2fd;
+  --debug-button-bg-right: #eca4fa;
+  --debug-button-border: #b143c7;
+  --debug-button-active-bg-left: #e9d5ff;
+  --debug-button-active-bg-right: #ddd6fe;
+  --debug-button-active-border: #7c3aed;
+  --debug-button-active-glow: rgba(124, 58, 237, 0.45);
 
-  --pick-inst-btn-bg-left: #f0e2d7;
-  --pick-inst-btn-bg-right: #fad19b;
-  --pick-inst-btn-border: #9c8607;
+  --pick-inst-button-bg-left: #f0e2d7;
+  --pick-inst-button-bg-right: #fad19b;
+  --pick-inst-button-border: #9c8607;
 
-  --reset-btn-bg-left: #fee2e2;
-  --reset-btn-bg-right: #fecaca;
-  --reset-btn-border: #b91c1c;
+  --reset-button-bg-left: #fee2e2;
+  --reset-button-bg-right: #fecaca;
+  --reset-button-border: #b91c1c;
 
-  --load-song-btn-bg-left: #e0faff;
-  --load-song-btn-bg-right: #ffffff;
-  --load-song-btn-border: #06b6d4;
+  --load-song-button-bg-left: #e0faff;
+  --load-song-button-bg-right: #ffffff;
+  --load-song-button-border: #06b6d4;
 
-  --export-btn-bg-left: #e0faff;
-  --export-btn-bg-right: #b2e1f7;
-  --export-btn-border: #06b6d4;
+  --export-button-bg-left: #e0faff;
+  --export-button-bg-right: #b2e1f7;
+  --export-button-border: #06b6d4;
 
-  --save-song-btn-bg-left: #bbf7d0;
-  --save-song-btn-bg-right: #ffffff;
-  --save-song-btn-border: #16a34a;
+  --save-song-button-bg-left: #bbf7d0;
+  --save-song-button-bg-right: #ffffff;
+  --save-song-button-border: #16a34a;
 
-  --new-song-btn-bg-left: #e9d5ff;
-  --new-song-btn-bg-right: #ffffff;
-  --new-song-btn-border: #7c3aed;
+  --new-song-button-bg-left: #e9d5ff;
+  --new-song-button-bg-right: #ffffff;
+  --new-song-button-border: #7c3aed;
 
-  --demo-song-btn-bg-left: #fceccb;
-  --demo-song-btn-bg-right: #ffe48b;
-  --demo-song-btn-border: #af9e3e;
+  --demo-song-button-bg-left: #fceccb;
+  --demo-song-button-bg-right: #ffe48b;
+  --demo-song-button-border: #af9e3e;
 
-  --play-song-btn-idle-bg-left: #e8f8ed;
-  --play-song-btn-idle-bg-right: #617768;
-  --play-song-btn-idle-border: #6cc896;
+  --play-song-button-idle-bg-left: #e8f8ed;
+  --play-song-button-idle-bg-right: #617768;
+  --play-song-button-idle-border: #6cc896;
 
   --play-line-idle-bg: #fff3e6;
   --play-line-idle-border: #ea9a3a;
 
-  --stop-btn-idle-bg-left: #ffe6ea;
-  --stop-btn-idle-bg-right: #747474;
-  --stop-btn-idle-border: #f97373;
+  --stop-button-idle-bg-left: #ffe6ea;
+  --stop-button-idle-bg-right: #747474;
+  --stop-button-idle-border: #f97373;
 
   /* Playback button accent colors (light theme) */
   --play-song-bg: #bbf7d0;
@@ -351,52 +351,52 @@
   --button-active: #2a2a00;
   --button-border-hover: #ffff00;
 
-  --debug-btn-bg-left: #2a1500;
-  --debug-btn-bg-right: #1a0d00;
-  --debug-btn-border: #ff9f1a;
-  --debug-btn-active-bg-left: #2a1a4d;
-  --debug-btn-active-bg-right: #1a0f33;
-  --debug-btn-active-border: #b980ff;
-  --debug-btn-active-glow: rgba(185, 128, 255, 0.6);
+  --debug-button-bg-left: #2a1500;
+  --debug-button-bg-right: #1a0d00;
+  --debug-button-border: #ff9f1a;
+  --debug-button-active-bg-left: #2a1a4d;
+  --debug-button-active-bg-right: #1a0f33;
+  --debug-button-active-border: #b980ff;
+  --debug-button-active-glow: rgba(185, 128, 255, 0.6);
 
-  --pick-inst-btn-bg-left: #003322;
-  --pick-inst-btn-bg-right: #001a22;
-  --pick-inst-btn-border: #00e6a8;
+  --pick-inst-button-bg-left: #003322;
+  --pick-inst-button-bg-right: #001a22;
+  --pick-inst-button-border: #00e6a8;
 
-  --reset-btn-bg-left: #330000;
-  --reset-btn-bg-right: #1a0000;
-  --reset-btn-border: #ff4d4d;
+  --reset-button-bg-left: #330000;
+  --reset-button-bg-right: #1a0000;
+  --reset-button-border: #ff4d4d;
 
-  --load-song-btn-bg-left: #00222a;
-  --load-song-btn-bg-right: #001418;
-  --load-song-btn-border: #33d6ff;
+  --load-song-button-bg-left: #00222a;
+  --load-song-button-bg-right: #001418;
+  --load-song-button-border: #33d6ff;
 
-  --export-btn-bg-left: #223300;
-  --export-btn-bg-right: #111a00;
-  --export-btn-border: #b8e62e;
+  --export-button-bg-left: #223300;
+  --export-button-bg-right: #111a00;
+  --export-button-border: #b8e62e;
 
-  --save-song-btn-bg-left: #332200;
-  --save-song-btn-bg-right: #1a1100;
-  --save-song-btn-border: #ffb833;
+  --save-song-button-bg-left: #332200;
+  --save-song-button-bg-right: #1a1100;
+  --save-song-button-border: #ffb833;
 
-  --new-song-btn-bg-left: #2a0f33;
-  --new-song-btn-bg-right: #180a1f;
-  --new-song-btn-border: #c56bff;
+  --new-song-button-bg-left: #2a0f33;
+  --new-song-button-bg-right: #180a1f;
+  --new-song-button-border: #c56bff;
 
-  --demo-song-btn-bg-left: #241040;
-  --demo-song-btn-bg-right: #14082a;
-  --demo-song-btn-border: #9f7bff;
+  --demo-song-button-bg-left: #241040;
+  --demo-song-button-bg-right: #14082a;
+  --demo-song-button-border: #9f7bff;
 
-  --play-song-btn-idle-bg-left: #00331a;
-  --play-song-btn-idle-bg-right: #001a10;
-  --play-song-btn-idle-border: #33ff99;
+  --play-song-button-idle-bg-left: #00331a;
+  --play-song-button-idle-bg-right: #001a10;
+  --play-song-button-idle-border: #33ff99;
 
   --play-line-idle-bg: #2a1a00;
   --play-line-idle-border: #ffaa00;
 
-  --stop-btn-idle-bg-left: #330f14;
-  --stop-btn-idle-bg-right: #1a080a;
-  --stop-btn-idle-border: #ff5c6e;
+  --stop-button-idle-bg-left: #330f14;
+  --stop-button-idle-bg-right: #1a080a;
+  --stop-button-idle-border: #ff5c6e;
 
   /* Playback button accent colors (contrast theme) */
   --play-song-bg: #00331f;
@@ -760,7 +760,7 @@ body {
   justify-content: center;
 }
 
-.command-btn {
+.command-button {
   background: linear-gradient(135deg, var(--button-bg) 0%, var(--bg-hover) 100%);
   border: 1px solid var(--button-border);
   color: var(--button-text);
@@ -779,43 +779,43 @@ body {
   outline: none;
 }
 
-.command-btn,
-.command-btn:link,
-.command-btn:visited,
-.command-btn:hover,
-.command-btn:active,
-.command-btn:focus {
+.command-button,
+.command-button:link,
+.command-button:visited,
+.command-button:hover,
+.command-button:active,
+.command-button:focus {
   text-decoration: none;
 }
 
-.command-btn:focus {
+.command-button:focus {
   outline: none;
 }
 
-.command-btn.play-song-btn {
+.command-button.play-song-button {
   background: linear-gradient(
     135deg,
-    var(--play-song-btn-idle-bg-left) 0%,
-    var(--play-song-btn-idle-bg-right) 100%
+    var(--play-song-button-idle-bg-left) 0%,
+    var(--play-song-button-idle-bg-right) 100%
   );
-  border-color: var(--play-song-btn-idle-border);
+  border-color: var(--play-song-button-idle-border);
 }
 
-.command-btn.play-line-btn {
+.command-button.play-line-button {
   background: linear-gradient(135deg, var(--play-line-idle-bg) 0%, var(--button-bg) 100%);
   border-color: var(--play-line-idle-border);
 }
 
-.command-btn.stop-btn {
+.command-button.stop-button {
   background: linear-gradient(
     135deg,
-    var(--stop-btn-idle-bg-left) 0%,
-    var(--stop-btn-idle-bg-right) 100%
+    var(--stop-button-idle-bg-left) 0%,
+    var(--stop-button-idle-bg-right) 100%
   );
-  border-color: var(--stop-btn-idle-border);
+  border-color: var(--stop-button-idle-border);
 }
 
-.command-btn::before {
+.command-button::before {
   content: '';
   position: absolute;
   top: 0;
@@ -826,22 +826,22 @@ body {
   transition: left 0.5s ease;
 }
 
-.command-btn:hover {
+.command-button:hover {
   background: linear-gradient(135deg, var(--button-hover) 0%, var(--button-active) 100%);
   border-color: var(--border-bright);
   box-shadow: var(--shadow-medium), var(--glow-secondary);
 }
 
-.command-btn:hover::before {
+.command-button:hover::before {
   left: 100%;
 }
 
-.command-btn:active {
+.command-button:active {
   transform: translateY(0);
   box-shadow: var(--shadow-inset);
 }
 
-.command-btn:focus-visible {
+.command-button:focus-visible {
   background: linear-gradient(135deg, var(--active-bg) 0%, var(--button-active) 100%);
   border-color: var(--active-border);
   color: var(--text-primary);
@@ -849,8 +849,8 @@ body {
   transform: none;
 }
 
-.command-btn.playing,
-.command-btn.active {
+.command-button.playing,
+.command-button.active {
   background-color: var(--active-bg);
   border-color: var(--active-border);
   color: var(--text-primary);
@@ -858,8 +858,8 @@ body {
 }
 
 /* Playback-specific emphasis: make active/playing states more colorful */
-.command-btn.play-song-btn.playing,
-.command-btn.play-song-btn.active {
+.command-button.play-song-button.playing,
+.command-button.play-song-button.active {
   background: linear-gradient(135deg, var(--play-song-bg) 0%, var(--bg-active) 100%);
   border-color: var(--play-song-border);
   color: var(--text-primary);
@@ -868,8 +868,8 @@ body {
     0 0 8px var(--play-song-glow);
 }
 
-.command-btn.play-line-btn.playing,
-.command-btn.play-line-btn.active {
+.command-button.play-line-button.playing,
+.command-button.play-line-button.active {
   background: linear-gradient(135deg, var(--play-line-bg) 0%, var(--bg-active) 100%);
   border-color: var(--play-line-border);
   color: var(--text-primary);
@@ -878,8 +878,8 @@ body {
     0 0 8px var(--play-line-glow);
 }
 
-.command-btn.stop-btn.playing,
-.command-btn.stop-btn.active {
+.command-button.stop-button.playing,
+.command-button.stop-button.active {
   background: linear-gradient(135deg, var(--stop-bg) 0%, var(--bg-active) 100%);
   border-color: var(--stop-border);
   color: var(--text-primary);
@@ -888,153 +888,185 @@ body {
     0 0 8px var(--stop-glow);
 }
 
-.command-btn.new-song-btn {
+.command-button.new-song-button {
   background: linear-gradient(
     135deg,
-    var(--new-song-btn-bg-left) 0%,
-    var(--new-song-btn-bg-right) 100%
+    var(--new-song-button-bg-left) 0%,
+    var(--new-song-button-bg-right) 100%
   );
-  border-color: var(--new-song-btn-border);
+  border-color: var(--new-song-button-border);
 }
 
-.command-btn.new-song-btn:hover {
+.command-button.new-song-button:hover {
   background: linear-gradient(
     135deg,
-    var(--new-song-btn-bg-right) 0%,
-    var(--new-song-btn-bg-left) 100%
+    var(--new-song-button-bg-right) 0%,
+    var(--new-song-button-bg-left) 100%
   );
-  border-color: color-mix(in srgb, var(--new-song-btn-border) 50%, var(--button-border-hover) 50%);
+  border-color: color-mix(
+    in srgb,
+    var(--new-song-button-border) 50%,
+    var(--button-border-hover) 50%
+  );
 }
 
-.command-btn.demo-song-btn {
+.command-button.demo-song-button {
   background: linear-gradient(
     135deg,
-    var(--demo-song-btn-bg-left) 0%,
-    var(--demo-song-btn-bg-right) 100%
+    var(--demo-song-button-bg-left) 0%,
+    var(--demo-song-button-bg-right) 100%
   );
-  border-color: var(--demo-song-btn-border);
+  border-color: var(--demo-song-button-border);
 }
 
-.command-btn.demo-song-btn:hover {
+.command-button.demo-song-button:hover {
   background: linear-gradient(
     135deg,
-    var(--demo-song-btn-bg-right) 0%,
-    var(--demo-song-btn-bg-left) 100%
+    var(--demo-song-button-bg-right) 0%,
+    var(--demo-song-button-bg-left) 100%
   );
-  border-color: color-mix(in srgb, var(--demo-song-btn-border) 30%, var(--button-border-hover) 70%);
+  border-color: color-mix(
+    in srgb,
+    var(--demo-song-button-border) 30%,
+    var(--button-border-hover) 70%
+  );
 }
 
-.command-btn.load-song-btn {
+.command-button.load-song-button {
   background: linear-gradient(
     135deg,
-    var(--load-song-btn-bg-left) 0%,
-    var(--load-song-btn-bg-right) 100%
+    var(--load-song-button-bg-left) 0%,
+    var(--load-song-button-bg-right) 100%
   );
-  border-color: var(--load-song-btn-border);
+  border-color: var(--load-song-button-border);
 }
 
-.command-btn.load-song-btn:hover {
+.command-button.load-song-button:hover {
   background: linear-gradient(
     135deg,
-    var(--load-song-btn-bg-right) 0%,
-    var(--load-song-btn-bg-left) 100%
+    var(--load-song-button-bg-right) 0%,
+    var(--load-song-button-bg-left) 100%
   );
-  border-color: color-mix(in srgb, var(--load-song-btn-border) 50%, var(--button-border-hover) 50%);
+  border-color: color-mix(
+    in srgb,
+    var(--load-song-button-border) 50%,
+    var(--button-border-hover) 50%
+  );
 }
 
-.command-btn.export-btn {
+.command-button.export-button {
   background: linear-gradient(
     135deg,
-    var(--export-btn-bg-left) 0%,
-    var(--export-btn-bg-right) 100%
+    var(--export-button-bg-left) 0%,
+    var(--export-button-bg-right) 100%
   );
-  border-color: var(--export-btn-border);
+  border-color: var(--export-button-border);
 }
 
-.command-btn.export-btn:hover {
+.command-button.export-button:hover {
   background: linear-gradient(
     135deg,
-    var(--export-btn-bg-right) 0%,
-    var(--export-btn-bg-left) 100%
+    var(--export-button-bg-right) 0%,
+    var(--export-button-bg-left) 100%
   );
-  border-color: color-mix(in srgb, var(--export-btn-border) 30%, var(--button-border-hover) 70%);
+  border-color: color-mix(in srgb, var(--export-button-border) 30%, var(--button-border-hover) 70%);
 }
 
-.command-btn.save-song-btn {
+.command-button.save-song-button {
   background: linear-gradient(
     135deg,
-    var(--save-song-btn-bg-left) 0%,
-    var(--save-song-btn-bg-right) 100%
+    var(--save-song-button-bg-left) 0%,
+    var(--save-song-button-bg-right) 100%
   );
-  border-color: var(--save-song-btn-border);
+  border-color: var(--save-song-button-border);
 }
 
-.command-btn.save-song-btn:hover {
+.command-button.save-song-button:hover {
   background: linear-gradient(
     135deg,
-    var(--save-song-btn-bg-right) 0%,
-    var(--save-song-btn-bg-left) 100%
+    var(--save-song-button-bg-right) 0%,
+    var(--save-song-button-bg-left) 100%
   );
-  border-color: color-mix(in srgb, var(--save-song-btn-border) 50%, var(--button-border-hover) 50%);
+  border-color: color-mix(
+    in srgb,
+    var(--save-song-button-border) 50%,
+    var(--button-border-hover) 50%
+  );
 }
 
-.command-btn.debug-btn {
-  background: linear-gradient(135deg, var(--debug-btn-bg-left) 0%, var(--debug-btn-bg-right) 100%);
-  border-color: var(--debug-btn-border);
-}
-
-.command-btn.debug-btn:hover {
-  background: linear-gradient(135deg, var(--debug-btn-bg-right) 0%, var(--debug-btn-bg-left) 100%);
-  border-color: var(--debug-btn-border);
-  box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
-}
-
-.command-btn.debug-btn.active {
+.command-button.debug-button {
   background: linear-gradient(
     135deg,
-    var(--debug-btn-active-bg-left) 0%,
-    var(--debug-btn-active-bg-right) 100%
+    var(--debug-button-bg-left) 0%,
+    var(--debug-button-bg-right) 100%
   );
-  border-color: var(--debug-btn-active-border);
+  border-color: var(--debug-button-border);
+}
+
+.command-button.debug-button:hover {
+  background: linear-gradient(
+    135deg,
+    var(--debug-button-bg-right) 0%,
+    var(--debug-button-bg-left) 100%
+  );
+  border-color: var(--debug-button-border);
+  box-shadow: var(--shadow-medium), var(--debug-button-active-glow);
+}
+
+.command-button.debug-button.active {
+  background: linear-gradient(
+    135deg,
+    var(--debug-button-active-bg-left) 0%,
+    var(--debug-button-active-bg-right) 100%
+  );
+  border-color: var(--debug-button-active-border);
   color: var(--text-primary);
-  box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
+  box-shadow: var(--shadow-medium), var(--debug-button-active-glow);
 }
 
-.command-btn.pick-inst-btn {
+.command-button.pick-inst-button {
   background: linear-gradient(
     135deg,
-    var(--pick-inst-btn-bg-left) 0%,
-    var(--pick-inst-btn-bg-right) 100%
+    var(--pick-inst-button-bg-left) 0%,
+    var(--pick-inst-button-bg-right) 100%
   );
-  border-color: var(--pick-inst-btn-border);
+  border-color: var(--pick-inst-button-border);
 }
 
-.command-btn.pick-inst-btn:hover {
+.command-button.pick-inst-button:hover {
   background: linear-gradient(
     135deg,
-    var(--pick-inst-btn-bg-right) 0%,
-    var(--pick-inst-btn-bg-left) 100%
+    var(--pick-inst-button-bg-right) 0%,
+    var(--pick-inst-button-bg-left) 100%
   );
-  border-color: var(--pick-inst-btn-border);
-  box-shadow: var(--shadow-medium), var(--debug-btn-active-glow);
+  border-color: var(--pick-inst-button-border);
+  box-shadow: var(--shadow-medium), var(--debug-button-active-glow);
 }
 
-.command-btn.reset-btn {
-  background: linear-gradient(135deg, var(--reset-btn-bg-left) 0%, var(--reset-btn-bg-right) 100%);
-  border-color: var(--reset-btn-border);
+.command-button.reset-button {
+  background: linear-gradient(
+    135deg,
+    var(--reset-button-bg-left) 0%,
+    var(--reset-button-bg-right) 100%
+  );
+  border-color: var(--reset-button-border);
 }
 
-.command-btn.reset-btn:hover {
-  background: linear-gradient(135deg, var(--reset-btn-bg-right) 0%, var(--reset-btn-bg-left) 100%);
-  border-color: var(--reset-btn-border);
+.command-button.reset-button:hover {
+  background: linear-gradient(
+    135deg,
+    var(--reset-button-bg-right) 0%,
+    var(--reset-button-bg-left) 100%
+  );
+  border-color: var(--reset-button-border);
 }
 
 /* MIDI button states */
-.command-btn.midi-btn {
+.command-button.midi-button {
   min-width: 56px;
 }
 
-.command-btn.midi-btn.midi-disabled {
+.command-button.midi-button.midi-disabled {
   background: linear-gradient(
     135deg,
     var(--midi-disabled-bg-left) 0%,
@@ -1044,7 +1076,7 @@ body {
   color: var(--text-secondary);
 }
 
-.command-btn.midi-btn.midi-input-enabled {
+.command-button.midi-button.midi-input-enabled {
   background: linear-gradient(
     135deg,
     var(--midi-input-enabled-bg-left) 0%,
@@ -1057,7 +1089,7 @@ body {
     0 0 6px rgba(52, 211, 153, 0.55);
 }
 
-.command-btn.midi-btn.midi-output-enabled {
+.command-button.midi-button.midi-output-enabled {
   background: linear-gradient(
     135deg,
     var(--midi-output-enabled-bg-left) 0%,
@@ -1070,7 +1102,7 @@ body {
     0 0 6px rgba(245, 158, 11, 0.55);
 }
 
-.command-btn.midi-btn.midi-both-enabled {
+.command-button.midi-button.midi-both-enabled {
   background: linear-gradient(
     135deg,
     var(--midi-both-enabled-bg-left) 0%,
@@ -1138,6 +1170,10 @@ body {
 .modal-dialog.export-modal {
   min-width: 396px;
   max-width: 396px;
+}
+
+.modal-dialog.export-modal .modal-body {
+  line-height: 1.2rem;
 }
 
 /* MIDI configuration modal (90% of the screen) */
@@ -1262,7 +1298,7 @@ body {
   border-bottom: 1px solid var(--border-color);
 }
 
-.midi-monitor-copy-btn {
+.midi-monitor-copy-button {
   background-color: var(--button-bg);
   border: 1px solid var(--button-border);
   color: var(--button-text);
@@ -1273,7 +1309,7 @@ body {
   cursor: pointer;
 }
 
-.midi-monitor-copy-btn:disabled {
+.midi-monitor-copy-button:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -1391,7 +1427,7 @@ body {
   gap: 4px;
 }
 
-.settings-category-btn {
+.settings-category-button {
   background: none;
   border: 1px solid transparent;
   color: var(--text-secondary);
@@ -1402,11 +1438,11 @@ body {
   cursor: pointer;
 }
 
-.settings-category-btn:hover {
+.settings-category-button:hover {
   border-color: var(--border-color);
 }
 
-.settings-category-btn.active {
+.settings-category-button.active {
   background-color: var(--button-bg);
   color: var(--text-primary);
   border-color: var(--border-color);
@@ -2583,13 +2619,6 @@ body {
   flex: 0 0 auto;
 }
 
-/* The stereo layout toggle displays up to six characters (`CUSTOM`). */
-.stereo-toggle-button {
-  width: auto;
-  min-width: 38px;
-  padding: 0 4px;
-}
-
 /* Color Picker (compact, modal-friendly) */
 .color-picker {
   display: flex;
@@ -2699,8 +2728,8 @@ body {
   font-family: var(--font-mono);
 }
 
-.color-picker-apply-btn,
-.color-picker-cancel-btn {
+.color-picker-apply-button,
+.color-picker-cancel-button {
   padding-left: 6px;
   padding-right: 6px;
 }
@@ -2947,7 +2976,7 @@ body {
   gap: 4px;
 }
 
-.nav-btn {
+.nav-button {
   background-color: var(--button-bg);
   border: 1px solid var(--button-border);
   color: var(--button-text);
@@ -2957,11 +2986,11 @@ body {
   font-size: 8px;
 }
 
-.nav-btn:hover:not(:disabled) {
+.nav-button:hover:not(:disabled) {
   background-color: var(--button-hover);
 }
 
-.nav-btn:disabled {
+.nav-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
@@ -3165,7 +3194,7 @@ body {
   );
 }
 
-.instrument-color-btn {
+.instrument-color-button {
   width: 16px;
   height: 16px;
   padding: 0;
@@ -3177,7 +3206,7 @@ body {
   cursor: pointer;
 }
 
-.instrument-color-btn:disabled {
+.instrument-color-button:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -3206,7 +3235,7 @@ body {
   gap: 4px;
 }
 
-.instrument-midi-btn {
+.instrument-midi-button {
   min-width: 30px;
   height: 14px;
   padding: 0 4px;
@@ -3219,13 +3248,13 @@ body {
   cursor: pointer;
 }
 
-.instrument-midi-btn.instrument-midi-disabled {
+.instrument-midi-button.instrument-midi-disabled {
   background-color: var(--bg-tertiary);
   border-color: var(--border-color);
   color: var(--text-secondary);
 }
 
-.instrument-midi-btn.instrument-midi-enabled {
+.instrument-midi-button.instrument-midi-enabled {
   background: linear-gradient(135deg, var(--midi-output-enabled-bg) 0%, var(--bg-active) 100%);
   border-color: #f59e0b;
   color: var(--text-primary);
@@ -3234,7 +3263,7 @@ body {
     0 0 4px rgba(245, 158, 11, 0.7);
 }
 
-.instrument-midi-btn:disabled {
+.instrument-midi-button:disabled {
   opacity: 0.5;
   cursor: default;
 }
@@ -3423,31 +3452,6 @@ body {
   color: var(--text-secondary);
 }
 
-.channel-pan-button {
-  width: 26px;
-  height: 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: var(--font-mono);
-  font-size: 8px;
-  background-color: var(--bg-tertiary);
-  border: 1px solid var(--border-color);
-  color: var(--text-secondary);
-  cursor: pointer;
-}
-
-.channel-pan-button:hover {
-  border-color: var(--active-border);
-}
-
-.channel-pan-button:focus-visible {
-  outline: none;
-  border-color: var(--active-border);
-}
-
 /* Piano Keyboard */
 .piano-keyboard-container {
   background-color: var(--bg-primary);
@@ -3475,7 +3479,7 @@ body {
   gap: 2px;
 }
 
-.octave-btn {
+.octave-button {
   width: 20px;
   height: 20px;
   background: linear-gradient(135deg, var(--button-bg) 0%, var(--bg-hover) 100%);
@@ -3489,13 +3493,13 @@ body {
   transition: all 0.2s ease;
 }
 
-.octave-btn:hover {
+.octave-button:hover {
   background: linear-gradient(135deg, var(--button-hover) 0%, var(--button-active) 100%);
   border-color: var(--border-bright);
   box-shadow: var(--shadow-medium);
 }
 
-.octave-btn.current {
+.octave-button.current {
   background: linear-gradient(135deg, var(--active-bg) 0%, var(--button-active) 100%);
   border-color: var(--active-border);
   color: var(--text-primary);
@@ -3877,18 +3881,18 @@ body {
     gap: 4px;
   }
 
-  .command-btn {
+  .command-button {
     max-width: 100%;
     margin-top: 0px;
     margin-bottom: 1px;
   }
 
-  .command-row .command-btn:nth-child(3n + 1) {
+  .command-row .command-button:nth-child(3n + 1) {
     margin-left: -1px;
     left: -1px;
   }
 
-  .command-row .command-btn:nth-child(3n + 3) {
+  .command-row .command-button:nth-child(3n + 3) {
     margin-right: -1px;
     left: 2px;
   }

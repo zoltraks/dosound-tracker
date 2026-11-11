@@ -47,7 +47,7 @@ describe('coerceYamlNumber', () => {
 describe('YAML_DUMP_OPTIONS', () => {
   it('carries the canonical emitter options', () => {
     try {
-      expect(YAML_DUMP_OPTIONS).toEqual({ indent: 2, lineWidth: -1, quotingType: '"' });
+      expect(YAML_DUMP_OPTIONS).toEqual({ indent: 2, lineWidth: -1, quoteStyle: 'double' });
     } catch (error) {
       console.log('dump options mismatch');
       throw error;

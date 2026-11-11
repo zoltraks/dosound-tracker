@@ -98,7 +98,7 @@ const decodeFrames = (asm: string): number[][] => {
  * The subset of register state a listener can hear: noise period, mixer I/O
  * bits, per-channel volume, and - only while a channel is audible - its tone
  * period and mixer enable bits. A silent channel's enable bits and period are
- * inaudible, which is exactly what the compact dedups rely on.
+ * inaudible, which is exactly what the tight dedups rely on.
  */
 const audibleSignature = (regs: number[]): number[] => {
   const sig = [regs[0x06] ?? 0, (regs[0x07] ?? 0) & 0xc0];
@@ -117,19 +117,19 @@ const delayValues = (asm: string): number[] =>
 
 const mixerWriteCount = (asm: string): number => (asm.match(/dc\.b \$7,\$[0-9A-F]+/g) || []).length;
 
-describe('exportToAssembly compact strategy', () => {
+describe('exportToAssembly tight strategy', () => {
   it('emits a two-byte tone line when only the fine period byte changes', () => {
     const s = song({ instrument: [inst({ pitch: env([0, 2, 4, 6, 8, 10, 12, 14]) })] });
-    const compact = exportToAssembly(s, 'compact');
-    const optimized = exportToAssembly(s, 'optimized');
+    const tight = exportToAssembly(s, 'tight');
+    const complex = exportToAssembly(s, 'complex');
     try {
       // Fine-only writes land as a lone R0 pair: `dc.b $0,$ll`.
-      expect(compact).toMatch(/dc\.b \$0,\$[0-9A-F]+\s*;\s*TA/);
-      // The optimized path always emits the four-byte pair for a tone change.
-      expect(optimized).not.toMatch(/dc\.b \$0,/);
-      expect(commandBytes(compact).length).toBeLessThan(commandBytes(optimized).length);
+      expect(tight).toMatch(/dc\.b \$0,\$[0-9A-F]+\s*;\s*TA/);
+      // The complex path always emits the four-byte pair for a tone change.
+      expect(complex).not.toMatch(/dc\.b \$0,/);
+      expect(commandBytes(tight).length).toBeLessThan(commandBytes(complex).length);
     } catch (error) {
-      console.log(compact);
+      console.log(tight);
       throw error;
     }
   });
@@ -139,12 +139,12 @@ describe('exportToAssembly compact strategy', () => {
     // same fine byte, coarse 1 -> 0. The delta exceeds the UI pitch range on
     // purpose: the fixture exercises the coarse-only emission path.
     const s = song({ instrument: [inst({ pitch: env([0, 256]) })] });
-    const compact = exportToAssembly(s, 'compact');
+    const tight = exportToAssembly(s, 'tight');
     try {
-      expect(compact).toMatch(/dc\.b \$1,\$0+\s*;\s*TA/);
-      expect(compact).not.toMatch(/dc\.b \$1,\$0+,\$0,\$DD/);
+      expect(tight).toMatch(/dc\.b \$1,\$0+\s*;\s*TA/);
+      expect(tight).not.toMatch(/dc\.b \$1,\$0+,\$0,\$DD/);
     } catch (error) {
-      console.log(compact);
+      console.log(tight);
       throw error;
     }
   });
@@ -159,22 +159,20 @@ describe('exportToAssembly compact strategy', () => {
         : { note: null, volume: null },
     );
     const s = song({ length: 160, pattern: [{ id: '00', name: 'P0', step: steps }] });
-    const compact = exportToAssembly(s, 'compact');
+    const tight = exportToAssembly(s, 'tight');
     const complex = exportToAssembly(s, 'complex');
     try {
-      const compactDelays = delayValues(compact);
+      const tightDelays = delayValues(tight);
       const complexDelays = delayValues(complex);
-      expect(compactDelays.length).toBeGreaterThan(1);
-      expect(Math.max(...compactDelays)).toBeLessThanOrEqual(256);
-      expect(compactDelays.reduce((acc, n) => acc + n, 0)).toBe(
+      expect(tightDelays.length).toBeGreaterThan(1);
+      expect(Math.max(...tightDelays)).toBeLessThanOrEqual(256);
+      // Every emitted delay count fits the single command byte, and the
+      // chunked counts still sum to the unmerged complex run.
+      expect(tightDelays.reduce((acc, n) => acc + n, 0)).toBe(
         complexDelays.reduce((acc, n) => acc + n, 0),
       );
-      // The optimized merge stays unbounded for byte identity - this fixture
-      // shows the >256-frame count compact now splits.
-      const optimizedDelays = delayValues(exportToAssembly(s, 'optimized'));
-      expect(optimizedDelays.some((n) => n > 256)).toBe(true);
     } catch (error) {
-      console.log(compact.slice(0, 2000));
+      console.log(tight.slice(0, 2000));
       throw error;
     }
   });
@@ -185,14 +183,14 @@ describe('exportToAssembly compact strategy', () => {
     const s = song({
       instrument: [inst({ volume: env([15, 0]), mode: env([0, 1]), noise: env([4]) })],
     });
-    const compact = exportToAssembly(s, 'compact');
+    const tight = exportToAssembly(s, 'tight');
     const complex = exportToAssembly(s, 'complex');
     try {
       expect(mixerWriteCount(complex)).toBeGreaterThanOrEqual(2);
-      expect(mixerWriteCount(compact)).toBe(1);
-      expect(compact).not.toContain('dc.b $7,$31');
+      expect(mixerWriteCount(tight)).toBe(1);
+      expect(tight).not.toContain('dc.b $7,$31');
     } catch (error) {
-      console.log(compact, complex);
+      console.log(tight, complex);
       throw error;
     }
   });
@@ -203,53 +201,53 @@ describe('exportToAssembly compact strategy', () => {
     const s = song({
       instrument: [inst({ volume: env([15, 0, 15]), mode: env([0, 1]), noise: env([4]) })],
     });
-    const compact = exportToAssembly(s, 'compact');
+    const tight = exportToAssembly(s, 'tight');
     try {
-      expect(compact).toContain('dc.b $7,$31');
-      expect(mixerWriteCount(compact)).toBe(2);
+      expect(tight).toContain('dc.b $7,$31');
+      expect(mixerWriteCount(tight)).toBe(2);
     } catch (error) {
-      console.log(compact);
+      console.log(tight);
       throw error;
     }
   });
 
   it('does not rewrite unchanged tone registers across playlist positions', () => {
     // A '--' entry keeps the held note sounding across the boundary; complex
-    // and optimized force a TA rewrite after the marker, compact does not.
+    // forces a TA rewrite after the marker, tight does not.
     const s = song({
       line: [
         { A: '00', B: '--', C: '--' },
         { A: '--', B: '--', C: '--' },
       ],
     });
-    const compact = exportToAssembly(s, 'compact');
-    const optimized = exportToAssembly(s, 'optimized');
+    const tight = exportToAssembly(s, 'tight');
+    const complex = exportToAssembly(s, 'complex');
     try {
       const toneLines = (asm: string) => (asm.match(/;\s*T[ABC] /g) || []).length;
-      expect(toneLines(optimized)).toBeGreaterThan(toneLines(compact));
-      expect(toneLines(compact)).toBe(1);
+      expect(toneLines(complex)).toBeGreaterThan(toneLines(tight));
+      expect(toneLines(tight)).toBe(1);
     } catch (error) {
-      console.log(compact, optimized);
+      console.log(tight, complex);
       throw error;
     }
   });
 
   it('silences only the channels still audible in the END block', () => {
     // Only channel A plays; B and C stay at volume zero, so their zero writes
-    // are redundant under compact.
+    // are redundant under tight.
     const s = song();
-    const compact = exportToAssembly(s, 'compact');
-    const optimized = exportToAssembly(s, 'optimized');
+    const tight = exportToAssembly(s, 'tight');
+    const complex = exportToAssembly(s, 'complex');
     try {
-      const compactEnd = compact.slice(compact.indexOf('; END'));
-      const optimizedEnd = optimized.slice(optimized.indexOf('; END'));
-      expect(compactEnd).toContain('dc.b $8,$0');
-      expect(compactEnd).not.toContain('dc.b $9,$0');
-      expect(compactEnd).not.toContain('dc.b $A,$0');
-      expect(optimizedEnd).toContain('dc.b $9,$0');
-      expect(optimizedEnd).toContain('dc.b $A,$0');
+      const tightEnd = tight.slice(tight.indexOf('; END'));
+      const complexEnd = complex.slice(complex.indexOf('; END'));
+      expect(tightEnd).toContain('dc.b $8,$0');
+      expect(tightEnd).not.toContain('dc.b $9,$0');
+      expect(tightEnd).not.toContain('dc.b $A,$0');
+      expect(complexEnd).toContain('dc.b $9,$0');
+      expect(complexEnd).toContain('dc.b $A,$0');
     } catch (error) {
-      console.log(compact);
+      console.log(tight);
       throw error;
     }
   });
@@ -268,22 +266,22 @@ describe('exportToAssembly compact strategy', () => {
       ],
     });
     const complexFrames = decodeFrames(exportToAssembly(s, 'complex'));
-    const compactFrames = decodeFrames(exportToAssembly(s, 'compact'));
+    const tightFrames = decodeFrames(exportToAssembly(s, 'tight'));
     try {
-      expect(compactFrames.length).toBe(complexFrames.length);
+      expect(tightFrames.length).toBe(complexFrames.length);
       for (let i = 0; i < complexFrames.length; i++) {
-        expect(audibleSignature(compactFrames[i])).toEqual(audibleSignature(complexFrames[i]));
+        expect(audibleSignature(tightFrames[i])).toEqual(audibleSignature(complexFrames[i]));
       }
     } catch (error) {
-      console.log('complex frames', complexFrames.length, 'compact frames', compactFrames.length);
+      console.log('complex frames', complexFrames.length, 'tight frames', tightFrames.length);
       throw error;
     }
   });
 
-  it('keeps the existing strategies free of compact emission shapes', () => {
+  it('keeps the existing strategies free of tight emission shapes', () => {
     const s = song({ instrument: [inst({ pitch: env([0, 2, 4, 6]) })] });
     try {
-      for (const strategy of ['simple', 'complex', 'optimized'] as const) {
+      for (const strategy of ['simple', 'complex'] as const) {
         const asm = exportToAssembly(s, strategy);
         // Tone changes always arrive as the four-byte coarse+fine pair.
         expect(asm).not.toMatch(/dc\.b \$0,\$[0-9A-F]+\s*;\s*TA/);
@@ -295,11 +293,11 @@ describe('exportToAssembly compact strategy', () => {
     }
   });
 
-  it('feeds the compact stream through the binary export unchanged', () => {
+  it('feeds the tight stream through the binary export unchanged', () => {
     const s = song({ instrument: [inst({ pitch: env([0, 2, 4]) })] });
     try {
-      const asmBytes = commandBytes(exportToAssembly(s, 'compact'));
-      const binBytes = Array.from(exportToBinary(s, 'compact'));
+      const asmBytes = commandBytes(exportToAssembly(s, 'tight'));
+      const binBytes = Array.from(exportToBinary(s, 'tight'));
       expect(binBytes).toEqual(asmBytes);
     } catch (error) {
       console.log('binary mismatch');
@@ -307,12 +305,12 @@ describe('exportToAssembly compact strategy', () => {
     }
   });
 
-  it('shrinks the bundled demo song relative to optimized', () => {
+  it('shrinks the bundled demo song relative to complex', () => {
     const bundled = parseSongFromYaml(readFileSync('test/fixtures/bundled-song.yaml', 'utf-8'));
     try {
-      const compactBytes = commandBytes(exportToAssembly(bundled, 'compact')).length;
-      const optimizedBytes = commandBytes(exportToAssembly(bundled, 'optimized')).length;
-      expect(compactBytes).toBeLessThan(optimizedBytes);
+      const tightBytes = commandBytes(exportToAssembly(bundled, 'tight')).length;
+      const complexBytes = commandBytes(exportToAssembly(bundled, 'complex')).length;
+      expect(tightBytes).toBeLessThan(complexBytes);
     } catch (error) {
       console.log('bundled measurement failed');
       throw error;

@@ -193,8 +193,7 @@ function buildMaxStream(
   }
 
   const reg7Data = buildReg7Stream(frames);
-  const streamData =
-    strategy === 'optimized' || strategy === 'compact' ? optimizeReg7Delays(reg7Data) : reg7Data;
+  const streamData = strategy === 'tight' ? optimizeReg7Delays(reg7Data) : reg7Data;
 
   return { streamFormat: 0x07, streamData, frameCount };
 }

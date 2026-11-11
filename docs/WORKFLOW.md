@@ -189,7 +189,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 | Templates              | `docs/template/`                    | Document templates                               |
 | Standards              | `docs/standard/`                    | Engineering standards, one per technology stack  |
 | Media                  | `docs/media/`                       | Documentation images                             |
-| Changelog              | `public/CHANGELOG.md`               | Written only at version bump                     |
+| Changelog              | `public/CHANGELOG.md`               | Written only at version bump or on request       |
 | Bundled documents      | `public/`                           | MANUAL.md, MESSAGES.md rendered in-app           |
 | Local workspace        | `work/`                             | Gitignored scratch, shell-access only            |
 | Agent entry            | `README.md`                         | Routes agents to `GUIDELINES.md`; no `AGENTS.md` |
@@ -331,6 +331,8 @@ The repository records a three-mode scheme governing how a modification request 
 The default mode. Every modification request runs the full change lifecycle: a change record, a deep analysis of the current implementation, an implementation plan, implementation in documentation-first order in verifiable increments, and the verification loop.
 
 The agent enters the lifecycle on its own - a described change is already the trigger, so the change record is created without waiting for a separate "create a change request" instruction.
+
+Size is no exemption: the record precedes the code for every user-directed modification - a one-line label rename still files its record before the edit, and a refactoring proposal lands in `docs/refactoring/<version>/` before the first structural edit, never after. Records or proposals written after code lands exist only as review-time repair of an intake miss - they are not a routine path.
 
 **Ad-Hoc**
 
@@ -477,6 +479,22 @@ A generated record written in one pass can carry drafting artifacts - half-edite
 **Scripted sweeps must cover inline literals too**
 
 A find-and-replace driven on line-end patterns misses single-line call sites - a `windowScroll: 0,$` pass fixed every block-style `saveUiState` literal but skipped two inline calls until a grep for the unchanged pattern caught them. Enumerate both the block and inline shapes of the target, or verify leftovers after the sweep.
+
+**Rename sweeps must exclude homonyms in other domains**
+
+A global `compact` to `tight` sweep correctly renamed the export strategy but also rewrote the piano keyboard's compact-layout flag, a color-picker comment, and two historical changelog sentences. Enumerate the occurrences by meaning first, exclude same-spelling words in unrelated domains, and re-check historical or generated prose (changelog entries, archived records) after the sweep.
+
+**Optional UI surface lands behind owner confirmation**
+
+Visible controls added beyond a record's minimum scope risk being walked back - the EQ pan buttons, Song-panel chip/stereo toggles, and the OPTIMIZED strategy level all shipped in one window and were removed or consolidated on user feedback in the next. When a record's file-format or engine support is the requirement and its visible control is optional, flag the control for owner confirmation rather than shipping it on assumption.
+
+**Renaming a persisted enum value requires reader migration**
+
+A value stored under a `StorageKeys` key outlives the release that renames it - a user who saved `compact` still holds that string after the strategy becomes `tight`. Extend the storage `read` function to resolve each retired value to its successor, or saved preferences silently fall back to the default.
+
+**Visual regressions can ride inside formatting commits**
+
+A report of cramped modal radios traced to a `line-height` change bundled inside a repository-wide Prettier commit - the formatting pass carried a real behaviour change. When chasing a visual regression, bisect the CSS rule's history before reworking markup, and treat bulk-format commits as suspects rather than neutral.
 
 **Static `?worker&url` imports emit the bundle, dynamic ones do not**
 

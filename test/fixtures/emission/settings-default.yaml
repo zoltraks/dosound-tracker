@@ -1,0 +1,13 @@
+settings:
+  version: 1
+  general:
+    theme: dark
+    textScale: "100"
+    trackBackground: true
+    startupTone: true
+  editor:
+    restoreCursor: true
+    restoreView: true
+    pasteTrackMode: replace
+  sound:
+    engine: internal

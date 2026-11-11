@@ -150,9 +150,9 @@ describe('exportSongToMax', () => {
     expect(bytes[dataStart + 1]).toBe(0x08); // ZX0 compression
   });
 
-  it('produces a REG7 stream with optimized delays for the optimized strategy', () => {
+  it('produces a REG7 stream with merged delays for the tight strategy', () => {
     const song = loadSongYaml('song-vgm-tone.yaml');
-    const { buffer } = exportSongToMax(song, 'optimized');
+    const { buffer } = exportSongToMax(song, 'tight');
     const bytes = new Uint8Array(buffer);
 
     const streamDef = findChunk(bytes, 0x53); // 'S'

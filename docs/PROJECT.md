@@ -102,7 +102,7 @@ The system must export music data as DOSOUND-compatible assembly code with:
 - Automatic delay insertion for proper timing resolution.
 - Volume-based optimization (remove unnecessary data when channels are silent).
 - Pattern boundary markers with comments.
-- Selectable strategies (simple, complex, optimized, compact), with compact packing the command stream tighter while staying replay-equivalent.
+- Selectable strategies (simple, complex, tight), with tight packing the command stream tighter while staying replay-equivalent.
 
 **F-08: Multiple Export Formats**
 
@@ -178,11 +178,11 @@ Committed settings persist under the per-key `dosound-tracker-*` storage. The ne
 
 **F-18: Per-Channel Stereo Output**
 
-The system must provide optional per-channel stereo output on both sound engines. A song may declare a named stereo layout (`mono`, `ABC`, `ACB` - the canonical machine wirings) or free per-channel pan positions on a 0..1 scale, persisted in the song file format. Mono remains the default: a song without stereo settings renders the faithful Atari ST mono mixdown exactly as before. A `Stereo` toggle in the Song information panel cycles the named layouts, and a per-channel pan control in the EQ panel cycles each channel through left, centre, and right positions. Panning applies to live playback and instrument previews. All export formats are unchanged - the register-stream formats carry the same YM2149 register data, the WAV export renders the mono mixdown, and the MOD and MIDI exports carry no pan data.
+The system must provide optional per-channel stereo output on both sound engines. A song may declare a named stereo layout (`mono`, `ABC`, `ACB` - the canonical machine wirings) or free per-channel pan positions on a 0..1 scale, persisted in the song file format. Mono remains the default: a song without stereo settings renders the faithful Atari ST mono mixdown exactly as before. Both layouts and pan positions are declared in the song file only - the interface exposes no stereo editing control yet. Panning applies to live playback and instrument previews. All export formats are unchanged - the register-stream formats carry the same YM2149 register data, the WAV export renders the mono mixdown, and the MOD and MIDI exports carry no pan data.
 
 **F-19: Chip Variant Selection**
 
-The system must allow each song to declare its PSG variant from a supported list: `YM` (YM2149, the default) or `AY` (AY-3-8910 family). A `Chip` toggle in the Song information panel cycles the supported variants. New songs default to `YM`; songs loaded without a chip fall back to `YM`, and a loaded value outside the supported list is kept on the song and raises the import warning. The value is persisted in the song YAML file format.
+The system must allow each song to declare its PSG variant from a supported list: `YM` (YM2149, the default) or `AY` (AY-3-8910 family). The variant is declared in the song file only - the interface exposes no chip selection control yet. New songs default to `YM`; songs loaded without a chip fall back to `YM`, and a loaded value outside the supported list is kept on the song and raises the import warning. The value is persisted in the song YAML file format.
 
 The selected chip drives the per-variant amplitude curve on both sound engines: the internal engine selects between its YM and AY volume tables and the Ayumi engine selects the matching DAC table in the emulation core. Chip-aware exports carry the variant: MAX writes the chip id in the chip setup chunk, VGM writes the chip-type byte in the header, and WAV renders with the variant's amplitude curve. The DOSOUND assembly, binary, register-dump, MOD, and MIDI formats carry no chip declaration.
 

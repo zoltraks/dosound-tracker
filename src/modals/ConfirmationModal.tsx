@@ -37,12 +37,12 @@ export const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       </div>
       <div className="modal-actions confirm-actions">
         <div className="confirm-actions-left">
-          <button className="command-btn" onClick={onCancel}>
+          <button className="command-button" onClick={onCancel}>
             {cancelLabel}
           </button>
         </div>
         <div className="confirm-actions-right">
-          <button className="command-btn" onClick={onConfirm}>
+          <button className="command-button" onClick={onConfirm}>
             {confirmLabel}
           </button>
         </div>

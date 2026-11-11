@@ -1,0 +1,13 @@
+settings:
+  version: 1
+  general:
+    theme: contrast
+    textScale: "150"
+    trackBackground: false
+    startupTone: false
+  editor:
+    restoreCursor: false
+    restoreView: true
+    pasteTrackMode: overwriteAll
+  sound:
+    engine: ayumi

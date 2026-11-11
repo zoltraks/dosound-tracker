@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import { ENVELOPE_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../../constants/music.ts';
 import { assertImportSize } from '../validation/importSize.ts';

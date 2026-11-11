@@ -212,7 +212,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
       <div className="modal-actions">
         <button
           type="button"
-          className="command-btn"
+          className="command-button"
           ref={clearButtonRef}
           onClick={handleClear}
           onKeyDown={handleActionButtonKeyDown}
@@ -222,7 +222,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
         <div style={{ display: 'flex', gap: 6 }}>
           <button
             type="button"
-            className="command-btn"
+            className="command-button"
             ref={cancelButtonRef}
             onClick={onCancel}
             onKeyDown={handleActionButtonKeyDown}
@@ -231,7 +231,7 @@ export const InstrumentMidiModal: React.FC<InstrumentMidiModalProps> = ({
           </button>
           <button
             type="button"
-            className="command-btn"
+            className="command-button"
             ref={saveButtonRef}
             onClick={handleSave}
             onKeyDown={handleActionButtonKeyDown}

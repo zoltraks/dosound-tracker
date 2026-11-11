@@ -201,7 +201,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
       <div className="modal-actions file-picker-actions">
         <div className="file-picker-actions-left">
           <button
-            className="command-btn"
+            className="command-button"
             type="button"
             onClick={() => setSortDescending((prev) => !prev)}
             disabled={!hasFiles}
@@ -210,7 +210,7 @@ export const FilePickerModal: React.FC<FilePickerModalProps> = ({
           </button>
         </div>
         <div className="file-picker-actions-right">
-          <button className="command-btn" type="button" onClick={onClose}>
+          <button className="command-button" type="button" onClick={onClose}>
             CLOSE
           </button>
         </div>

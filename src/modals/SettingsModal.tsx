@@ -177,7 +177,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   key={id}
                   id={`settings-category-${id}`}
                   type="button"
-                  className={`settings-category-btn ${category === id ? 'active' : ''}`}
+                  className={`settings-category-button ${category === id ? 'active' : ''}`}
                   onClick={() => onCategoryChange(id)}
                 >
                   {CATEGORY_LABELS[id]}
@@ -366,7 +366,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="settings-actions-left">
               <button
                 id="settings-confirm-cancel"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={() => onConfirmingResetChange(false)}
               >
@@ -376,7 +376,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="settings-actions-right">
               <button
                 id="settings-confirm-reset"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={handleResetConfirm}
               >
@@ -389,7 +389,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="settings-actions-left">
               <button
                 id="settings-action-cancel"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={onCancel}
               >
@@ -397,7 +397,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
               <button
                 id="settings-action-reset"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={() => onConfirmingResetChange(true)}
               >
@@ -407,7 +407,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="settings-actions-right">
               <button
                 id="settings-action-load"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={handleLoadClick}
               >
@@ -415,7 +415,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
               <button
                 id="settings-action-save"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={handleSave}
               >
@@ -423,7 +423,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </button>
               <button
                 id="settings-action-ok"
-                className="command-btn"
+                className="command-button"
                 type="button"
                 onClick={onCommit}
               >

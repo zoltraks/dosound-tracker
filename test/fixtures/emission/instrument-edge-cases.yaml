@@ -1,0 +1,13 @@
+instrument:
+  name: "Edge \"Case\" & <Instrument>"
+  type: dosound
+  version: 1
+  base: "F#2"
+  color: "#5d5"
+  octave: 0
+  mode: [1]
+  volume: [15, 14, 13]
+  shift: [-2, -2, 2]
+  pitch: [7, 0, 7, 0]
+  noise: [9]
+  sustain: 0

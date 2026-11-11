@@ -64,10 +64,10 @@ describe('exportSongToVgm metadata and strategy branches', () => {
     }
   });
 
-  it('optimized strategy rewrites delay commands', () => {
+  it('tight strategy rewrites delay commands', () => {
     try {
       const { buffer: simple } = exportSongToVgm(song(), 'simple');
-      const { buffer: optimized } = exportSongToVgm(song(), 'optimized');
+      const { buffer: optimized } = exportSongToVgm(song(), 'tight');
       expect(simple.byteLength).toBeGreaterThan(0x100);
       expect(optimized.byteLength).toBeGreaterThan(0x100);
     } catch (error) {

@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import type { Pattern, Step } from '../../synth/SoundDriver.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { PATTERN_LENGTH, MAX_PATTERN_LENGTH } from '../../constants/music.ts';

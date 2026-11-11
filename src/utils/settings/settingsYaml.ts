@@ -1,4 +1,4 @@
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import type { SettingsValues } from '../../types/settings.ts';
 import { assertImportSize } from '../validation/importSize.ts';
 import { YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';

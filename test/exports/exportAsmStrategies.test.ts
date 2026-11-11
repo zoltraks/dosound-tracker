@@ -78,13 +78,13 @@ describe('exportToAssembly strategies', () => {
     }
   });
 
-  it('optimized strategy matches the complex path shape', () => {
+  it('tight strategy matches the complex path shape', () => {
     try {
-      const asm = exportToAssembly(song(), 'optimized');
+      const asm = exportToAssembly(song(), 'tight');
       expect(asm).toContain('; START');
       expect(asm).toContain('; STOP');
     } catch (error) {
-      console.log('optimized mismatch');
+      console.log('tight mismatch');
       throw error;
     }
   });

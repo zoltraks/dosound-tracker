@@ -1,13 +1,8 @@
-// Stereo output helpers: song-file boundary normalization, pan resolution,
-// display formatting, and the UI pan-step cycle. Channel pans live on a
-// 0..1 scale where 0 is full left, 0.5 centre, and 1 full right.
+// Stereo output helpers: song-file boundary normalization and pan
+// resolution. Channel pans live on a 0..1 scale where 0 is full left,
+// 0.5 centre, and 1 full right.
 import type { SongStereo } from '../../synth/SoundDriver.ts';
-import {
-  DEFAULT_CHANNEL_PAN,
-  DEFAULT_CHANNEL_PANS,
-  STEREO_LAYOUTS,
-  CHANNEL_PAN_STEPS,
-} from '../../constants/song.ts';
+import { DEFAULT_CHANNEL_PANS, STEREO_LAYOUTS } from '../../constants/song.ts';
 
 export const clampChannelPan = (value: number): number => Math.min(1, Math.max(0, value));
 
@@ -71,42 +66,4 @@ export const resolveChannelPans = (stereo: SongStereo | undefined): [number, num
   }
 
   return pans;
-};
-
-// Id of the catalog layout the resolved pans match exactly, or null when
-// the configuration is custom.
-export const resolveStereoLayoutId = (stereo: SongStereo | undefined): string | null => {
-  const pans = resolveChannelPans(stereo);
-  for (const [id, layoutPans] of Object.entries(STEREO_LAYOUTS)) {
-    if (pans[0] === layoutPans[0] && pans[1] === layoutPans[1] && pans[2] === layoutPans[2]) {
-      return id;
-    }
-  }
-  return null;
-};
-
-// Display form for a pan value: `C` at centre, `L`/`R` with the percent
-// deviation otherwise (for example `L50`, `R100`).
-export const formatChannelPan = (pan: number): string => {
-  const clamped = clampChannelPan(Number.isFinite(pan) ? pan : DEFAULT_CHANNEL_PAN);
-  const deviation = Math.round((clamped - DEFAULT_CHANNEL_PAN) * 200);
-  if (deviation === 0) {
-    return 'C';
-  }
-  const side = deviation < 0 ? 'L' : 'R';
-  const percent = Math.min(100, Math.abs(deviation));
-  return `${side}${percent}`;
-};
-
-// Advance a pan value to the next position in CHANNEL_PAN_STEPS, wrapping
-// to the first step. A value between steps lands on the next higher step.
-export const nextChannelPan = (pan: number): number => {
-  const clamped = clampChannelPan(Number.isFinite(pan) ? pan : DEFAULT_CHANNEL_PAN);
-  const epsilon = 1e-9;
-  for (const step of CHANNEL_PAN_STEPS) {
-    if (step > clamped + epsilon) {
-      return step;
-    }
-  }
-  return CHANNEL_PAN_STEPS[0];
 };

@@ -76,7 +76,7 @@ When bumping the version manually (outside the automated build script):
 - Calculate the new version number per the bumping rules above.
 - Update the version in `package.json`.
 - Run `npm install` to update `package-lock.json`.
-- **Create a CHANGELOG entry**: analyse all code changes since the last version bump, using `git log` if needed, and add a comprehensive entry to `public/CHANGELOG.md` describing every significant change.
+- **Create a CHANGELOG entry**: analyse all code changes since the last version bump - grounded in the window's review, its change records in `docs/change/`, and its implementation plans in `docs/plan/`, with `git log` as supporting evidence - and add a comprehensive entry to `public/CHANGELOG.md` describing every significant change.
 - Rebuild the application with `npm run build` so generated files are refreshed with the new version.
 
 Do **not** create a new directory in `docs/change/` when bumping versions.
@@ -141,7 +141,7 @@ One-sentence summary of the release scope and theme.
 - Inspect source code changes between versions and describe every significant change. The CHANGELOG must accurately reflect all changes that occurred, not just a high-level summary.
 - **Omit refactoring details**: Do not list internal refactoring work, code restructuring, or test additions. Focus on functionalities, features, and bug fixes that affect users. Never use the wording "Internal refactoring" - refactoring is a routine part of a version window. If a release contains only refactoring, either omit the refactoring information or describe the change plainly in the summary without the label.
 - **Check implementation plans**: When bumping from version X.Y.Z to the next version, review all implementation plan files in `docs/plan/X.Y.Z/` to ensure every implemented feature is documented in the CHANGELOG entry for the new version. Implementation plans describe work done for the upcoming version and must be recorded when that version is released.
-- **Never modify CHANGELOG.md outside the version bump procedure**: Do not add, edit, or remove entries when implementing individual features, bug fixes, or refactors. All CHANGELOG changes must happen exclusively during the version bump sequence described above. Feature changes accumulate in the codebase and are documented only when the version is actually bumped.
+- **Never modify CHANGELOG.md outside the version bump procedure or a specific request**: Do not add, edit, or remove entries when implementing individual features, bug fixes, or refactors - including edits to a pending version entry for the current window. All CHANGELOG changes happen exclusively during the version bump sequence described above, or when the user explicitly asks for one. Entry content is grounded in the current window's review, its change records in `docs/change/`, its implementation plans in `docs/plan/`, and the actual implementation - not in memory or partial diffs.
 
 ## Examples
 

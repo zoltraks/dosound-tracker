@@ -1,0 +1,29 @@
+song:
+  title: VGM Test Song
+  author: Test Suite
+  year: 2025
+  chip: YM
+  frame: 50
+  clock: 2000000
+  speed: 4
+  length: 4
+  loop: 1
+  line:
+    - A: "00"
+    - A: "01"
+    - {}
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+    - number: "01"
+      step:
+        - wait: 1
+        - note: "E-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: Simple Lead
+      base: "C-4"
+      volume: [15, 14, 12, 0]

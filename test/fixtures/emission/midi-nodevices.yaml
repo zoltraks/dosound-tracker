@@ -1,0 +1,8 @@
+midi:
+  version: 1
+  input:
+    enable: true
+    agnostic: true
+  output:
+    enable: false
+    agnostic: false

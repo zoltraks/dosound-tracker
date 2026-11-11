@@ -71,8 +71,8 @@ function formatFramesToAssembly(
     return asm;
   }
 
-  if (strategy === 'complex' || strategy === 'optimized' || strategy === 'compact') {
-    const compact = strategy === 'compact';
+  if (strategy === 'complex' || strategy === 'tight') {
+    const tight = strategy === 'tight';
     const lastRegs: { [register: number]: number } = {};
     let lastLineIndex = -1;
 
@@ -85,13 +85,13 @@ function formatFramesToAssembly(
       // Add beat marker after each completed playlist position (every patternLength lines).
       // Under complex and optimized the marker also forces tone registers to be
       // re-emitted so that each playlist position starts with explicit TA/TB/TC
-      // writes, even if the underlying period value did not change. Compact
+      // writes, even if the underlying period value did not change. Tight
       // keeps the marker comment but drops the forced rewrite.
       const patternLength = song.length ?? 64;
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
 
-        if (!compact) {
+        if (!tight) {
           // Clear cached tone registers (R0-R5) so next frame writes them again.
           for (let r = 0; r <= 5; r++) {
             delete lastRegs[r];
@@ -103,8 +103,8 @@ function formatFramesToAssembly(
       const mixer = regs[0x07] || 0x38;
       const lastMixer = lastRegs[0x07] || 0x38;
       let emitMixer = i === 0 || mixer !== lastMixer;
-      if (emitMixer && compact && i !== 0) {
-        // Compact keys mixer writes on audible bits: a channel whose volume
+      if (emitMixer && tight && i !== 0) {
+        // Tight keys mixer writes on audible bits: a channel whose volume
         // nibble is zero cannot sound, so enable-bit changes on it are
         // inaudible until its volume returns. The I/O bits (0xC0) always count.
         const diff = mixer ^ lastMixer;
@@ -141,7 +141,7 @@ function formatFramesToAssembly(
           const meta = toneMeta[ch];
           const comment = buildToneComment(channelLabel, meta, period, chipClock);
 
-          if (compact && i !== 0) {
+          if (tight && i !== 0) {
             // Emit only the changed half of the period pair, keeping the
             // coarse-then-fine write order of the four-byte form.
             const bytes: number[] = [];
@@ -224,7 +224,7 @@ function formatFramesToAssembly(
   }
 
   asm += '\n\t; END\n\n';
-  if (strategy === 'compact') {
+  if (strategy === 'tight') {
     // Silence only channels whose last written volume is non-zero. Every
     // strategy emits all three volume registers at frame 0, so the final
     // frame's snapshot equals the last written values.
@@ -244,13 +244,10 @@ function formatFramesToAssembly(
   asm += '\n';
   asm += formatAsmLine([0xff, 0x00], 'STOP');
 
-  if (strategy === 'optimized' || strategy === 'compact') {
+  if (strategy === 'tight') {
     // The delay count is one byte ($FF,N delays N+1 frames), so a merged
-    // run may not exceed 256 frames per command. Compact splits longer
-    // runs; optimized keeps its unbounded merge for byte identity.
-    asm = combineDelayLines(asm, {
-      maxFramesPerCommand: strategy === 'compact' ? 256 : Infinity,
-    });
+    // run may not exceed 256 frames per command.
+    asm = combineDelayLines(asm, { maxFramesPerCommand: 256 });
   }
 
   return asm;

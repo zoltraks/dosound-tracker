@@ -3,11 +3,14 @@ import type { Song, Instrument } from '../../synth/SoundDriver.ts';
 import type { ExportType, ExportStrategy } from '../../constants/export.ts';
 import { logger } from '../../utils/log/logger.ts';
 import {
-  buildInstrumentExportBaseName,
-  buildPatternExportBaseName,
   buildSongExportBaseName,
   buildDumpExportBaseName,
 } from '../../utils/export/exportFileNaming.ts';
+import {
+  buildExportErrorLines,
+  buildExportScopeLines,
+  resolveExportScope,
+} from '../../utils/export/exportSummary.ts';
 import {
   mapSongLineToPlaylistEntries,
   mapPlaylistEntriesToSongLine,
@@ -90,12 +93,7 @@ export function useFileOperations({
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
       logger.error('VGM export failed', error);
-      const lines: string[] = [];
-      lines.push('VGM export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setSoundExportSummary(lines.join('\n'));
+      setSoundExportSummary(buildExportErrorLines('VGM', error).join('\n'));
     }
   }, [song, exportStrategy]);
 
@@ -125,12 +123,7 @@ export function useFileOperations({
       setSoundExportSummary(lines.join('\n'));
     } catch (error) {
       logger.error('WAV export failed', error);
-      const lines: string[] = [];
-      lines.push('WAV export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setSoundExportSummary(lines.join('\n'));
+      setSoundExportSummary(buildExportErrorLines('WAV', error).join('\n'));
     }
   }, [song]);
 
@@ -157,12 +150,7 @@ export function useFileOperations({
       setDumpExportSummary(lines.join('\n'));
     } catch (error) {
       logger.error('Dump export failed', error);
-      const lines: string[] = [];
-      lines.push('Dump export failed.');
-      if (error instanceof Error) {
-        lines.push(`Error: ${error.message}`);
-      }
-      setDumpExportSummary(lines.join('\n'));
+      setDumpExportSummary(buildExportErrorLines('Dump', error).join('\n'));
     }
   }, [song]);
 
@@ -171,25 +159,17 @@ export function useFileOperations({
       try {
         const { exportToAssembly, exportInstrumentToAssembly, downloadAssemblyFile } =
           await import('../../exports/export.ts');
-        let assemblyContent: string;
-        let filenameBase: string;
+        const { scopedSong, instrument, filenameBase } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
 
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          assemblyContent = exportInstrumentToAssembly(ctx.instrument, song);
-          filenameBase = buildInstrumentExportBaseName(song.title, ctx.instrument.id);
+        let assemblyContent: string;
+        if (instrument) {
+          assemblyContent = exportInstrumentToAssembly(instrument, song);
         } else {
-          let scopedSong: Song = song;
-          if (ctx.type === 'pattern') {
-            const scoped = getScopedSongForPattern(ctx.playlistIndex);
-            if (scoped) {
-              scopedSong = scoped;
-            }
-          }
           assemblyContent = exportToAssembly(scopedSong, ctx.strategy);
-          filenameBase =
-            ctx.type === 'pattern'
-              ? buildPatternExportBaseName(song.title)
-              : buildSongExportBaseName(song.title);
         }
 
         const filename = `${filenameBase}.s`;
@@ -199,28 +179,12 @@ export function useFileOperations({
         lines.push('DATA export completed.');
         lines.push('');
         lines.push(`File: ${filename}`);
-        if (ctx.type === 'song') {
-          lines.push('Scope: Song');
-        } else if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else if (ctx.type === 'instrument') {
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument ? ctx.instrument.id : 'n/a'}`);
-        }
-        if (ctx.type !== 'instrument') {
-          lines.push(`Strategy: ${ctx.strategy}`);
-        }
+        lines.push(...buildExportScopeLines(ctx, true));
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware DATA export failed', error);
-        const lines: string[] = [];
-        lines.push('DATA export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('DATA', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],
@@ -231,9 +195,16 @@ export function useFileOperations({
       try {
         const { exportSongToMax, exportInstrumentToMax, downloadMaxFile } =
           await import('../../exports/export.ts');
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          const result = exportInstrumentToMax(ctx.instrument, song, ctx.strategy);
-          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.max`;
+        const { scopedSong, instrument, filenameBase, scopeType } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
+        const summaryCtx = { ...ctx, type: scopeType };
+
+        if (instrument) {
+          const result = exportInstrumentToMax(instrument, song, ctx.strategy);
+          const filename = `${filenameBase}.max`;
           downloadMaxFile(result.buffer, filename);
 
           const lines: string[] = [];
@@ -241,26 +212,13 @@ export function useFileOperations({
           lines.push('');
           lines.push(`File: ${filename}`);
           lines.push(`Frames: ${result.frameCount}`);
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          lines.push(...buildExportScopeLines(summaryCtx, true));
 
           setSoundExportSummary(lines.join('\n'));
           return;
         }
 
-        let scopedSong: Song = song;
-        if (ctx.type === 'pattern') {
-          const scoped = getScopedSongForPattern(ctx.playlistIndex);
-          if (scoped) {
-            scopedSong = scoped;
-          }
-        }
-
         const result = exportSongToMax(scopedSong, ctx.strategy);
-        const filenameBase =
-          ctx.type === 'pattern'
-            ? buildPatternExportBaseName(song.title)
-            : buildSongExportBaseName(song.title);
         const filename = `${filenameBase}.max`;
         downloadMaxFile(result.buffer, filename);
 
@@ -269,23 +227,12 @@ export function useFileOperations({
         lines.push('');
         lines.push(`File: ${filename}`);
         lines.push(`Frames: ${result.frameCount}`);
-        if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else {
-          lines.push('Scope: Song');
-        }
-        lines.push(`Strategy: ${ctx.strategy}`);
+        lines.push(...buildExportScopeLines(summaryCtx, true));
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware MAX export failed', error);
-        const lines: string[] = [];
-        lines.push('MAX export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('MAX', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],
@@ -296,17 +243,23 @@ export function useFileOperations({
       try {
         const { exportSongToMidi, exportInstrumentToMidi, downloadMidiFile } =
           await import('../../exports/export.ts');
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          const result = exportInstrumentToMidi(ctx.instrument, song);
-          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.mid`;
+        const { scopedSong, instrument, filenameBase, scopeType } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
+        const summaryCtx = { ...ctx, type: scopeType };
+
+        if (instrument) {
+          const result = exportInstrumentToMidi(instrument, song);
+          const filename = `${filenameBase}.mid`;
           downloadMidiFile(result.buffer, filename);
 
           const lines: string[] = [];
           lines.push('MIDI export completed.');
           lines.push('');
           lines.push(`File: ${filename}`);
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          lines.push(...buildExportScopeLines(summaryCtx, false));
           for (const warning of result.warnings) {
             lines.push(`Note: ${warning}`);
           }
@@ -315,19 +268,7 @@ export function useFileOperations({
           return;
         }
 
-        let scopedSong: Song = song;
-        if (ctx.type === 'pattern') {
-          const scoped = getScopedSongForPattern(ctx.playlistIndex);
-          if (scoped) {
-            scopedSong = scoped;
-          }
-        }
-
         const result = exportSongToMidi(scopedSong);
-        const filenameBase =
-          ctx.type === 'pattern'
-            ? buildPatternExportBaseName(song.title)
-            : buildSongExportBaseName(song.title);
         const filename = `${filenameBase}.mid`;
         downloadMidiFile(result.buffer, filename);
 
@@ -335,12 +276,7 @@ export function useFileOperations({
         lines.push('MIDI export completed.');
         lines.push('');
         lines.push(`File: ${filename}`);
-        if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else {
-          lines.push('Scope: Song');
-        }
+        lines.push(...buildExportScopeLines(summaryCtx, false));
         for (const warning of result.warnings) {
           lines.push(`Note: ${warning}`);
         }
@@ -348,12 +284,7 @@ export function useFileOperations({
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware MIDI export failed', error);
-        const lines: string[] = [];
-        lines.push('MIDI export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('MIDI', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],
@@ -364,17 +295,23 @@ export function useFileOperations({
       try {
         const { exportSongToMod, exportInstrumentToMod, downloadModFile } =
           await import('../../exports/export.ts');
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          const result = exportInstrumentToMod(ctx.instrument, song);
-          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.mod`;
+        const { scopedSong, instrument, filenameBase, scopeType } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
+        const summaryCtx = { ...ctx, type: scopeType };
+
+        if (instrument) {
+          const result = exportInstrumentToMod(instrument, song);
+          const filename = `${filenameBase}.mod`;
           downloadModFile(result.buffer, filename);
 
           const lines: string[] = [];
           lines.push('MOD export completed.');
           lines.push('');
           lines.push(`File: ${filename}`);
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          lines.push(...buildExportScopeLines(summaryCtx, false));
           for (const warning of result.warnings) {
             lines.push(`Note: ${warning}`);
           }
@@ -383,19 +320,7 @@ export function useFileOperations({
           return;
         }
 
-        let scopedSong: Song = song;
-        if (ctx.type === 'pattern') {
-          const scoped = getScopedSongForPattern(ctx.playlistIndex);
-          if (scoped) {
-            scopedSong = scoped;
-          }
-        }
-
         const result = exportSongToMod(scopedSong);
-        const filenameBase =
-          ctx.type === 'pattern'
-            ? buildPatternExportBaseName(song.title)
-            : buildSongExportBaseName(song.title);
         const filename = `${filenameBase}.mod`;
         downloadModFile(result.buffer, filename);
 
@@ -403,12 +328,7 @@ export function useFileOperations({
         lines.push('MOD export completed.');
         lines.push('');
         lines.push(`File: ${filename}`);
-        if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else {
-          lines.push('Scope: Song');
-        }
+        lines.push(...buildExportScopeLines(summaryCtx, false));
         for (const warning of result.warnings) {
           lines.push(`Note: ${warning}`);
         }
@@ -416,12 +336,7 @@ export function useFileOperations({
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware MOD export failed', error);
-        const lines: string[] = [];
-        lines.push('MOD export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('MOD', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],
@@ -436,27 +351,18 @@ export function useFileOperations({
           downloadBinaryFile,
           exportInstrumentToAssembly,
         } = await import('../../exports/export.ts');
+        const { scopedSong, instrument, filenameBase } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
+
         let bytes: Uint8Array;
-        let filenameBase: string;
-
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          const asm = exportInstrumentToAssembly(ctx.instrument, song);
+        if (instrument) {
+          const asm = exportInstrumentToAssembly(instrument, song);
           bytes = parseAssemblyToBinary(asm);
-          filenameBase = buildInstrumentExportBaseName(song.title, ctx.instrument.id);
         } else {
-          let scopedSong: Song = song;
-          if (ctx.type === 'pattern') {
-            const scoped = getScopedSongForPattern(ctx.playlistIndex);
-            if (scoped) {
-              scopedSong = scoped;
-            }
-          }
-
           bytes = exportToBinary(scopedSong, ctx.strategy);
-          filenameBase =
-            ctx.type === 'pattern'
-              ? buildPatternExportBaseName(song.title)
-              : buildSongExportBaseName(song.title);
         }
 
         const filename = `${filenameBase}.bin`;
@@ -467,28 +373,12 @@ export function useFileOperations({
         lines.push('');
         lines.push(`File: ${filename}`);
         lines.push(`Bytes: ${bytes.length}`);
-        if (ctx.type === 'song') {
-          lines.push('Scope: Song');
-        } else if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else if (ctx.type === 'instrument') {
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument ? ctx.instrument.id : 'n/a'}`);
-        }
-        if (ctx.type !== 'instrument') {
-          lines.push(`Strategy: ${ctx.strategy}`);
-        }
+        lines.push(...buildExportScopeLines(ctx, true));
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware BIN export failed', error);
-        const lines: string[] = [];
-        lines.push('BIN export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('BIN', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],
@@ -499,9 +389,16 @@ export function useFileOperations({
       try {
         const { exportSongToVgm, exportInstrumentToVgm, downloadVgmFile } =
           await import('../../exports/export.ts');
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          const result = exportInstrumentToVgm(ctx.instrument, song);
-          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.vgm`;
+        const { scopedSong, instrument, filenameBase, scopeType } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
+        const summaryCtx = { ...ctx, type: scopeType };
+
+        if (instrument) {
+          const result = exportInstrumentToVgm(instrument, song);
+          const filename = `${filenameBase}.vgm`;
           downloadVgmFile(result.buffer, filename);
 
           const lines: string[] = [];
@@ -509,26 +406,13 @@ export function useFileOperations({
           lines.push('');
           lines.push(`File: ${filename}`);
           lines.push(`Total samples: ${result.totalSamples}`);
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          lines.push(...buildExportScopeLines(summaryCtx, false));
 
           setSoundExportSummary(lines.join('\n'));
           return;
         }
 
-        let scopedSong: Song = song;
-        if (ctx.type === 'pattern') {
-          const scoped = getScopedSongForPattern(ctx.playlistIndex);
-          if (scoped) {
-            scopedSong = scoped;
-          }
-        }
-
         const result = exportSongToVgm(scopedSong, ctx.strategy);
-        const filenameBase =
-          ctx.type === 'pattern'
-            ? buildPatternExportBaseName(song.title)
-            : buildSongExportBaseName(song.title);
         const filename = `${filenameBase}.vgm`;
         downloadVgmFile(result.buffer, filename);
 
@@ -537,22 +421,12 @@ export function useFileOperations({
         lines.push('');
         lines.push(`File: ${filename}`);
         lines.push(`Total samples: ${result.totalSamples}`);
-        if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else {
-          lines.push('Scope: Song');
-        }
+        lines.push(...buildExportScopeLines(summaryCtx, false));
 
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware VGM export failed', error);
-        const lines: string[] = [];
-        lines.push('VGM export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('VGM', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],
@@ -563,9 +437,16 @@ export function useFileOperations({
       try {
         const { exportSongToWav, exportInstrumentToWav, downloadWavFile } =
           await import('../../exports/export.ts');
-        if (ctx.type === 'instrument' && ctx.instrument) {
-          const result = exportInstrumentToWav(ctx.instrument, song);
-          const filename = `${buildInstrumentExportBaseName(song.title, ctx.instrument.id)}.wav`;
+        const { scopedSong, instrument, filenameBase, scopeType } = resolveExportScope(
+          ctx,
+          song,
+          getScopedSongForPattern,
+        );
+        const summaryCtx = { ...ctx, type: scopeType };
+
+        if (instrument) {
+          const result = exportInstrumentToWav(instrument, song);
+          const filename = `${filenameBase}.wav`;
           downloadWavFile(result.buffer, filename);
 
           const lines: string[] = [];
@@ -577,8 +458,7 @@ export function useFileOperations({
           lines.push('Bit depth: 16-bit');
           lines.push(`Total samples: ${result.totalSamples}`);
           lines.push(`Duration: ${result.durationSeconds.toFixed(2)} seconds`);
-          lines.push('Scope: Instrument');
-          lines.push(`Instrument ID: ${ctx.instrument.id}`);
+          lines.push(...buildExportScopeLines(summaryCtx, false));
 
           if (result.totalSamples === 0) {
             lines.push('');
@@ -589,19 +469,7 @@ export function useFileOperations({
           return;
         }
 
-        let scopedSong: Song = song;
-        if (ctx.type === 'pattern') {
-          const scoped = getScopedSongForPattern(ctx.playlistIndex);
-          if (scoped) {
-            scopedSong = scoped;
-          }
-        }
-
         const result = exportSongToWav(scopedSong);
-        const filenameBase =
-          ctx.type === 'pattern'
-            ? buildPatternExportBaseName(song.title)
-            : buildSongExportBaseName(song.title);
         const filename = `${filenameBase}.wav`;
         downloadWavFile(result.buffer, filename);
 
@@ -614,12 +482,7 @@ export function useFileOperations({
         lines.push('Bit depth: 16-bit');
         lines.push(`Total samples: ${result.totalSamples}`);
         lines.push(`Duration: ${result.durationSeconds.toFixed(2)} seconds`);
-        if (ctx.type === 'pattern') {
-          lines.push('Scope: Pattern (current playlist position)');
-          lines.push(`Playlist index: ${ctx.playlistIndex}`);
-        } else {
-          lines.push('Scope: Song');
-        }
+        lines.push(...buildExportScopeLines(summaryCtx, false));
 
         if (result.totalSamples === 0) {
           lines.push('');
@@ -629,12 +492,7 @@ export function useFileOperations({
         setSoundExportSummary(lines.join('\n'));
       } catch (error) {
         logger.error('Context-aware WAV export failed', error);
-        const lines: string[] = [];
-        lines.push('WAV export failed.');
-        if (error instanceof Error) {
-          lines.push(`Error: ${error.message}`);
-        }
-        setSoundExportSummary(lines.join('\n'));
+        setSoundExportSummary(buildExportErrorLines('WAV', error).join('\n'));
       }
     },
     [song, getScopedSongForPattern],

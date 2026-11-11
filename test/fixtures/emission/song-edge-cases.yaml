@@ -1,0 +1,59 @@
+song:
+  title: "Edge: \\"Quoted\\" #Hash [Brackets] {Braces} <Angle> Ångström"
+  author: Author & Co.
+  year: 2026
+  chip: YM
+  frame: 50
+  clock: 2000000
+  speed: 6
+  length: 16
+  loop: 1
+  stereo:
+    layout: abc
+    A: 0
+    B: 0.5
+    C: 1
+  line:
+    - A: "00"
+      B: "01"
+      C: "00"
+    - A: "01"
+  pattern:
+    - number: "00"
+      name: "Lead \"Theme\" #1"
+      step:
+        - note: "C-4"
+          instrument: "00"
+          volume: 15
+        - note: "C#4"
+          instrument: "00"
+        - note: "OFF"
+        - wait: 3
+          volume: 10
+        - wait: 2
+        - note: "F#2"
+          instrument: "01"
+          volume: 0
+    - number: "01"
+      step:
+        - note: "A-5"
+          instrument: "01"
+  instrument:
+    - number: "00"
+      name: "Weird \"Name\" \\ Test: #1"
+      base: "C-3"
+      color: "#a1b"
+      octave: 5
+      volume: [15]
+      shift: [1, 2, 3]
+      pitch: [0, 1, 0, -1]
+      noise: [0, 0, 5]
+      mode: [1, 1, 0]
+      sustain: 4
+      midi:
+        channel: 16
+        program: 127
+    - number: "01"
+      name: Plain
+      base: "C-4"
+      volume: [13, 13, 13, 13, 0]

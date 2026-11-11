@@ -28,7 +28,7 @@ export const MidiMonitorPanel: React.FC<MidiMonitorPanelProps> = ({ title, entri
       <div className="midi-monitor-title">
         <span>{title}</span>
         <button
-          className="midi-monitor-copy-btn"
+          className="midi-monitor-copy-button"
           type="button"
           onClick={handleCopyClick}
           disabled={count === 0}

@@ -1,0 +1,10 @@
+step:
+  - note: "C-4"
+    instrument: "00"
+    volume: 15
+  - note: "OFF"
+  - wait: 2
+  - wait: 2
+    volume: 12
+  - note: "G#3"
+    instrument: "01"

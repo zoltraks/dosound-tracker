@@ -12,7 +12,7 @@ import { StorageKeys } from '../../src/utils/storage/storageKeys.ts';
 import { logger } from '../../src/utils/log/logger.ts';
 import type { MutableRefObject } from 'react';
 import type { Pattern } from '../../src/synth/SoundDriver.ts';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 const ref = (): MutableRefObject<{ kind: 'timeout' | 'idle'; id: number } | null> => ({
   current: null,

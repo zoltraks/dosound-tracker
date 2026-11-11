@@ -76,10 +76,10 @@ export const InstrumentTypeWarningModal: React.FC<InstrumentTypeWarningModalProp
         </label>
       </div>
       <div className="modal-actions">
-        <button className="command-btn" type="button" onClick={onConfirm}>
+        <button className="command-button" type="button" onClick={onConfirm}>
           Continue
         </button>
-        <button className="command-btn" type="button" onClick={onCancel}>
+        <button className="command-button" type="button" onClick={onCancel}>
           Abort
         </button>
       </div>

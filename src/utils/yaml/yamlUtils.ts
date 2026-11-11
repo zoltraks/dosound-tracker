@@ -24,11 +24,14 @@ export const quoteYamlValues = (text: string, keyPattern: string): string => {
 /**
  * Canonical options for YAML song-data emitters.
  * Instrument export keeps its own options (`flowLevel`, default quoting).
+ * `quoteStyle: 'double'` is the js-yaml 5 successor of the 4.x
+ * `quotingType: '"'` option - both select double quotes when a scalar
+ * needs them.
  */
 export const YAML_DUMP_OPTIONS = {
   indent: 2,
   lineWidth: -1,
-  quotingType: '"',
+  quoteStyle: 'double',
 } as const;
 
 /**

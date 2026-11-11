@@ -138,20 +138,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <input
               type="radio"
               name="export-strategy"
-              checked={exportStrategy === 'optimized'}
-              onChange={() => onChangeStrategy('optimized')}
+              checked={exportStrategy === 'tight'}
+              onChange={() => onChangeStrategy('tight')}
             />{' '}
-            OPTIMIZED DUMP
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              name="export-strategy"
-              checked={exportStrategy === 'compact'}
-              onChange={() => onChangeStrategy('compact')}
-            />{' '}
-            COMPACT DUMP
+            TIGHT DUMP
           </label>
         </div>
 
@@ -167,7 +157,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
           >
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleDataClick}
             >
@@ -175,7 +165,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleDumpClick}
             >
@@ -183,7 +173,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleBinClick}
             >
@@ -191,7 +181,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleVgmClick}
             >
@@ -199,7 +189,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleMaxClick}
             >
@@ -207,7 +197,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleWavClick}
             >
@@ -215,7 +205,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleModClick}
             >
@@ -223,23 +213,23 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={handleMidiClick}
             >
-              MID
+              MIDI
             </button>
           </div>
         </div>
       </div>
       <div className="modal-actions export-actions">
         <div className="export-actions-left">
-          <button className="command-btn" onClick={onCancel}>
+          <button className="command-button" onClick={onCancel}>
             Cancel
           </button>
         </div>
         <div className="export-actions-right">
-          <button className="command-btn" onClick={handleConfirm}>
+          <button className="command-button" onClick={handleConfirm}>
             OK
           </button>
         </div>

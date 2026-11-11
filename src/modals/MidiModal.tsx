@@ -328,17 +328,17 @@ export const MidiModal: React.FC<MidiModalProps> = ({
 
       <div className="modal-actions midi-actions">
         <div className="midi-actions-left">
-          <button className="command-btn" type="button" onClick={onCancel}>
+          <button className="command-button" type="button" onClick={onCancel}>
             CANCEL
           </button>
-          <button className="command-btn" type="button" onClick={onClear}>
+          <button className="command-button" type="button" onClick={onClear}>
             CLEAR
           </button>
-          <button className="command-btn" type="button" onClick={onRescan}>
+          <button className="command-button" type="button" onClick={onRescan}>
             RESCAN
           </button>
           <button
-            className="command-btn"
+            className="command-button"
             type="button"
             onClick={onSystemReset}
             disabled={!localConfig.outputEnabled || !effectiveOutputId}
@@ -347,13 +347,13 @@ export const MidiModal: React.FC<MidiModalProps> = ({
           </button>
         </div>
         <div className="midi-actions-right">
-          <button className="command-btn" type="button" onClick={handleLoadClick}>
+          <button className="command-button" type="button" onClick={handleLoadClick}>
             LOAD
           </button>
-          <button className="command-btn" type="button" onClick={handleExportConfig}>
+          <button className="command-button" type="button" onClick={handleExportConfig}>
             SAVE
           </button>
-          <button className="command-btn" type="button" onClick={handleSave}>
+          <button className="command-button" type="button" onClick={handleSave}>
             OK
           </button>
         </div>

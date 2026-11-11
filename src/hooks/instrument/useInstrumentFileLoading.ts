@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import type { RefObject } from 'react';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { InstrumentTypeInfo } from './useInstrumentWarnings.ts';
 import { logger } from '../../utils/log/logger.ts';

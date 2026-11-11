@@ -1,0 +1,10 @@
+midi:
+  version: 1
+  input:
+    enable: true
+    agnostic: true
+    device: IAC Driver Bus 1
+  output:
+    enable: false
+    agnostic: false
+    device: USB MIDI Interface

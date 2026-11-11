@@ -58,12 +58,12 @@ export const PasteTrackModal: React.FC<PasteTrackModalProps> = ({
       </div>
       <div className="modal-actions export-actions">
         <div className="export-actions-left">
-          <button className="command-btn" type="button" onClick={onCancel}>
+          <button className="command-button" type="button" onClick={onCancel}>
             CANCEL
           </button>
         </div>
         <div className="export-actions-right">
-          <button className="command-btn" type="button" onClick={onConfirm}>
+          <button className="command-button" type="button" onClick={onConfirm}>
             OK
           </button>
         </div>

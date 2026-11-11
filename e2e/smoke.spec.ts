@@ -26,12 +26,12 @@ test('enters a note in track A and plays the song', async ({ page }) => {
   await page.keyboard.press('z');
   await expect(cell).toHaveText(/^C-\d 00$/);
   await commandButton(page, 'PLAY SONG').click();
-  await expect(page.locator('.play-song-btn')).toHaveClass(/playing/);
+  await expect(page.locator('.play-song-button')).toHaveClass(/playing/);
   await expect(page.locator('.position-number.current')).not.toHaveText('00', {
     timeout: 10_000,
   });
   await commandButton(page, 'STOP').click();
-  await expect(page.locator('.play-song-btn')).not.toHaveClass(/playing/);
+  await expect(page.locator('.play-song-button')).not.toHaveClass(/playing/);
 });
 
 test('undoes and redoes a note entry', async ({ page }) => {
@@ -99,33 +99,6 @@ test('saves and loads a song file', async ({ page }) => {
   await expect(titleInput).toHaveValue('E2E SONG', { timeout: 15_000 });
 });
 
-test('switches the stereo layout and pans a channel', async ({ page }) => {
-  await gotoApp(page);
-  const layoutButton = page.getByLabel('Stereo layout');
-  await expect(layoutButton).toHaveText('MONO');
-  await layoutButton.click();
-  await expect(layoutButton).toHaveText('ABC');
-  await layoutButton.click();
-  await expect(layoutButton).toHaveText('ACB');
-  await layoutButton.click();
-  await expect(layoutButton).toHaveText('MONO');
-
-  const panButton = page.getByLabel('Pan channel B');
-  await expect(panButton).toHaveText('C');
-  await panButton.click();
-  await expect(panButton).toHaveText('R50');
-});
-
-test('switches the chip variant', async ({ page }) => {
-  await gotoApp(page);
-  const chipButton = page.getByLabel('Chip variant');
-  await expect(chipButton).toHaveText('YM2149');
-  await chipButton.click();
-  await expect(chipButton).toHaveText('AY8910');
-  await chipButton.click();
-  await expect(chipButton).toHaveText('YM2149');
-});
-
 test('switches theme between dark and light', async ({ page }) => {
   await gotoApp(page);
   await expect(page.locator('.app')).toHaveClass(/dark/);
@@ -186,12 +159,12 @@ test('switches the sound engine to Ayumi and plays', async ({ page }) => {
     .poll(() => page.evaluate(() => localStorage.getItem('dosound-tracker-sound-engine')))
     .toBe('ayumi');
   await commandButton(page, 'PLAY SONG').click();
-  await expect(page.locator('.play-song-btn')).toHaveClass(/playing/);
+  await expect(page.locator('.play-song-button')).toHaveClass(/playing/);
   await expect(page.locator('.position-number.current')).not.toHaveText('00', {
     timeout: 10_000,
   });
   await commandButton(page, 'STOP').click();
-  await expect(page.locator('.play-song-btn')).not.toHaveClass(/playing/);
+  await expect(page.locator('.play-song-button')).not.toHaveClass(/playing/);
 });
 
 test('exports the song as VGM', async ({ page }) => {
@@ -234,7 +207,7 @@ test('exports the song as MIDI', async ({ page }) => {
   await gotoApp(page);
   await openExportModal(page);
   const download = await clickAndDownload(page, () =>
-    page.locator('.export-modal').getByRole('button', { name: 'MID' }).click(),
+    page.locator('.export-modal').getByRole('button', { name: 'MIDI' }).click(),
   );
   expect(download.suggestedFilename()).toMatch(/\.mid$/);
   const path = await download.path();

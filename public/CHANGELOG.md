@@ -7,12 +7,15 @@ Accessibility, stereo output, chip variants, new export formats, and undo histor
 - **Undo**: CTRL+Z steps composition edits back and CTRL+Y or CTRL+SHIFT+Z steps them forward - pattern, playlist, instrument, and song edits keep a session history of 100 entries, with rapid typing in a field coalescing into one entry.
 - **Accessibility**: the GENERAL settings category gains a `Text size` selector scaling the interface to 100%, 125%, or 150%, and a `High Contrast` theme variant joins dark and light - both persist across sessions.
 - **Accessibility**: panels now carry landmark roles a screen reader can navigate, and the pattern editor announces the cursor row with column and note context through a live region.
-- **Stereo**: a `Stereo` toggle in the song information selects MONO, ABC, or ACB channel layouts, and per-channel pan buttons under the EQ channel labels set free positions - the layout and pans persist in the song file and apply to both sound engines.
-- **Chip**: a `Chip` toggle in the song information selects `YM2149` or `AY8910`, switching the DAC amplitude curve on both engines and declaring the right chip in VGM, MAX, and WAV exports.
-- **Export**: `MOD` writes a ProTracker module and `MID` writes a Standard MIDI File, each reporting the tracker features it could not represent.
-- **Export**: a `COMPACT` dump strategy produces smaller assembly output by deduplicating tone, mixer, delay, and end-silence writes while staying replay-equivalent to the optimized stream.
+- **Stereo**: a song may declare a `stereo` node in its file - a MONO, ABC, or ACB channel layout or free per-channel pan positions - applying to live playback and previews on both sound engines.
+- **Chip**: a song may declare `chip: "AY"` for the AY-3-8910 variant, switching the DAC amplitude curve on both engines and declaring the right chip in VGM, MAX, and WAV exports.
+- **Export**: `MOD` writes a ProTracker module and `MIDI` writes a Standard MIDI File, each reporting the tracker features it could not represent.
+- **Export**: a `TIGHT` dump strategy produces smaller assembly output by deduplicating tone, mixer, delay, and end-silence writes while staying replay-equivalent to the previous optimized stream.
+- **Export**: the `OPTIMIZED` dump strategy was folded into `TIGHT`; the strategy ladder is now `SIMPLE` / `COMPLEX` / `TIGHT`, and saved settings that selected `OPTIMIZED` or `COMPACT` resolve to `TIGHT`.
 - **Sound engine**: the Ayumi engine plays at corrected loudness with a soft limiter that keeps the output under the clipping point.
 - **Export**: the VGM and MAX chip-type bytes now declare the song's chip variant correctly.
+- **Export**: merged assembly delays split at the 256-frame command bound, keeping long static runs within the single-byte delay count.
+- **Interface**: the export dialog lays its format buttons four to a row and restores the radio spacing from earlier releases.
 - **Playback**: the sequencer clock now runs inside an AudioWorklet processor that counts rendered samples, replacing the timer worker for stable 50 Hz row advancement.
 
 ## Version 1.5.2

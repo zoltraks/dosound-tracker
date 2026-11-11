@@ -17,7 +17,7 @@ npm run build
 Creates the `dist/` directory with:
 
 - `index.html`, the entry HTML file.
-- `js/`, JavaScript bundles - `index.js` entry, `sequencer.js` worker, `ayumiWorklet.js` audio worklet, `export.js` lazy export chunk.
+- `js/`, JavaScript bundles - `index.js` entry, `sequencer.js` worklet, `ayumi.js` audio worklet, `export.js` lazy export chunk.
 - `css/`, the bundled stylesheet.
 - `media/`, emitted assets grouped by type - `svg/` and `icon/` today, further groups emitted as assets are added.
 - `worker.js`, the service worker at the bundle root.

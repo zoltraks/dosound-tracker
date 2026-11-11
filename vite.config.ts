@@ -70,11 +70,18 @@ export default defineConfig({
   },
   worker: {
     // Ensure worker bundles (like the sequencer worklet) also get stable filenames
-    // without random hashes.
+    // without random hashes. The worklet suffix lives in the source names only -
+    // deployed assets are js/ayumi.js and js/sequencer.js.
     format: 'es',
     rollupOptions: {
       output: {
-        entryFileNames: 'js/[name].js',
+        entryFileNames: (chunkInfo) => {
+          const deployedNames: Record<string, string> = {
+            ayumiWorklet: 'ayumi',
+            sequencerWorklet: 'sequencer',
+          };
+          return `js/${deployedNames[chunkInfo.name] ?? chunkInfo.name}.js`;
+        },
         chunkFileNames: 'js/[name].js',
       },
     },

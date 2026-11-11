@@ -134,6 +134,12 @@ All test data, fixtures, and scratch files live under `work/` at the repository 
 
 Committed fixtures live in `test/fixtures/`. Personal scratch files live in `work/`, which is git-ignored.
 
+**Emitted-YAML golden files**
+
+Emitted YAML is a file-format contract: the same in-memory data must produce the same text. `test/utils/yaml/yamlEmission.test.ts` pins the exact emitted bytes of every YAML saver - song, instrument, settings, MIDI configuration, and clipboard - against golden files under `test/fixtures/emission/`, using `toMatchFileSnapshot` so the comparison is the emitted string, not a parsed value.
+
+Golden files regenerate through `vitest --update` or first run. Regeneration re-baselines the format contract - run it only deliberately, and review the emitted diff the way a save-format change is reviewed. `test/fixtures/emission/` is exempt from `npm run format` through `.prettierignore` - a formatting pass must never rebase emitted bytes.
+
 **Production Build Test Constraints**
 
 For production-ready builds, unit tests must not reference files outside the `test/` directory. Tests must be self-contained and cannot depend on the `work/` directory or any other external paths that may not exist in production environments. If a test needs to write temporary files for debugging purposes, it must clean them up using try/finally blocks and should be removed or converted to a pure in-memory test before production builds.
@@ -164,6 +170,7 @@ This preserves valuable diagnostic information for debugging while keeping succe
 Cover pure functions and isolated classes.
 
 - Song YAML parsing and serialisation round-trip.
+- Emitted-YAML byte equivalence against golden files.
 - YM2149 register calculation and frequency conversion.
 - Export format generation (assembly, binary, VGM, WAV, MAX, MOD, MIDI).
 - Instrument utility functions.
@@ -208,8 +215,6 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 - Open settings, change the theme, and verify persistence across a reload.
 - Apply the contrast theme and text scaling from settings and verify persistence across a reload.
 - Switch the sound engine to Ayumi, play, and verify playback advances.
-- Switch the stereo layout and pan a channel, verifying the control labels update.
-- Switch the chip variant and verify the control label updates.
 - Export song to VGM format.
 - Export song to MAX format.
 - Export song to MOD format.

@@ -119,7 +119,7 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
           >
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={() => onAmountAdjust(-12)}
             >
@@ -127,7 +127,7 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={() => onAmountAdjust(-1)}
             >
@@ -135,7 +135,7 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={() => onAmountAdjust(12)}
             >
@@ -143,7 +143,7 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
             </button>
             <button
               type="button"
-              className="command-btn"
+              className="command-button"
               style={{ width: '100%' }}
               onClick={() => onAmountAdjust(1)}
             >
@@ -167,10 +167,10 @@ export const TransposeModal: React.FC<TransposeModalProps> = ({
         </div>
       </div>
       <div className="modal-actions">
-        <button className="command-btn" onClick={onConfirm}>
+        <button className="command-button" onClick={onConfirm}>
           OK
         </button>
-        <button className="command-btn" onClick={onCancel}>
+        <button className="command-button" onClick={onCancel}>
           Cancel
         </button>
       </div>

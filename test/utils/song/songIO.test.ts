@@ -10,7 +10,7 @@ import {
 import { ENVELOPE_LENGTH } from '../../../src/constants/music.ts';
 import { asInstrumentId } from '../../../src/types/branded.ts';
 import type { Instrument, Song } from '../../../src/synth/SoundDriver.ts';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 
 const inst = (id: string, overrides: Partial<Instrument> = {}): Instrument => ({
   id,

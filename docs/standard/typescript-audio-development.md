@@ -102,6 +102,11 @@ src/
 - Asynchronously-constructed engines expose a readiness gate that playback callers
   await - register writes and silence requests issued before the engine lands are
   silently dropped. Synchronously-constructible engines land synchronously.
+- A post function that only exists after an asynchronously-created node lands drops
+  every message sent in the gap - mount-time parameter posts vanish and the node
+  runs on its defaults. Give the post function a stable first-render identity that
+  buffers into a queue, and flush the queue when the node is created so no message
+  ordering is lost.
 
 ## Worker Isolation
 

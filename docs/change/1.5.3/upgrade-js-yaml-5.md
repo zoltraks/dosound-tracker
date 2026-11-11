@@ -10,8 +10,8 @@
 |               | proven - the prior attempt reverted on YAML serialization drift        |
 | Key decisions | A format-equivalence harness precedes the version bump - upgrade lands |
 |               | only after byte-identical round-trips are demonstrated                 |
-| Open risks    | Blocked on the equivalence harness existing first - the 5.5.0 attempt  |
-|               | failed with dozens of suite failures on emission drift                 |
+| Open risks    | Resolved - the harness proved byte-identical emission on 5.5.0 and the |
+|               | bump landed with the suite green                                       |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
@@ -61,3 +61,25 @@ proceeds as an ordinary dependency upgrade.
   not improvement.
 - Other YAML libraries - the record upgrades `js-yaml`, it does not
   replace it.
+
+## Outcome
+
+Landed at `js-yaml` 5.5.0. The equivalence harness
+(`test/utils/yaml/yamlEmission.test.ts`) pins emitted bytes for the full
+saver surface - the `test/fixtures/` song corpus, a committed copy of the
+repository instrument corpus, and constructed edge cases covering
+special-character scalars, envelope trimming, `midi`, `settings`, and
+clipboard documents - against goldens under `test/fixtures/emission/`.
+
+Two API migrations were required, neither touching emitted bytes:
+
+- Default export removed: `import yaml from 'js-yaml'` became
+  `import * as yaml from 'js-yaml'` at every call site.
+- `quotingType: '"'` removed: replaced by `quoteStyle: 'double'` in
+  `YAML_DUMP_OPTIONS`. The stale option was silently ignored - the
+  likely root cause of the earlier attempt's emission drift.
+
+No emitted-byte drift was found after the migration: every corpus
+document emits identical text under 5.5.0. `@types/js-yaml` was removed -
+the 5.x package bundles its own declarations. `electron-builder` keeps a
+transitive 4.x copy untouched.

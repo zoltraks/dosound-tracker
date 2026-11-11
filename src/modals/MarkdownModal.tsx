@@ -70,12 +70,12 @@ export const MarkdownModal: React.FC<MarkdownModalProps> = ({
       />
       <div className="modal-actions text-display-actions">
         <div className="text-display-actions-left">
-          <a className="command-btn" href={downloadHref} download>
+          <a className="command-button" href={downloadHref} download>
             DOWNLOAD
           </a>
         </div>
         <div className="text-display-actions-right">
-          <button className="command-btn" onClick={onClose}>
+          <button className="command-button" onClick={onClose}>
             OK
           </button>
         </div>

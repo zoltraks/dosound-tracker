@@ -52,7 +52,7 @@ describe('ExportModal', () => {
       ['MAX', handlers.onExportMax],
       ['WAV', handlers.onExportWav],
       ['MOD', handlers.onExportMod],
-      ['MID', handlers.onExportMidi],
+      ['MIDI', handlers.onExportMidi],
     ];
     for (const [label, handler] of cases) {
       fireEvent.click(screen.getByRole('button', { name: label }));
@@ -96,7 +96,7 @@ describe('ExportModal', () => {
       container.querySelectorAll<HTMLInputElement>('input[name="export-strategy"]'),
     );
     try {
-      expect(radios).toHaveLength(4);
+      expect(radios).toHaveLength(3);
       expect(radios[0].checked).toBe(true);
     } catch (error) {
       console.log('strategy radios', radios.length);
@@ -104,11 +104,9 @@ describe('ExportModal', () => {
     }
     fireEvent.click(radios[1]);
     fireEvent.click(radios[2]);
-    fireEvent.click(radios[3]);
     try {
       expect(onChangeStrategy).toHaveBeenNthCalledWith(1, 'complex');
-      expect(onChangeStrategy).toHaveBeenNthCalledWith(2, 'optimized');
-      expect(onChangeStrategy).toHaveBeenNthCalledWith(3, 'compact');
+      expect(onChangeStrategy).toHaveBeenNthCalledWith(2, 'tight');
     } catch (error) {
       console.log('strategy dispatch', onChangeStrategy.mock.calls);
       throw error;

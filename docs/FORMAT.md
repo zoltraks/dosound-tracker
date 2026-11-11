@@ -19,6 +19,8 @@ Examples of the YAML formats can be found under:
 
 - `src/assets/song.yaml`
 
+Every YAML format below is a byte-level emission contract: the same in-memory data must produce the same text. The emitted output of each saver is pinned against golden files by `test/utils/yaml/yamlEmission.test.ts` (see `TESTING.md`).
+
 ## SAVE SONG
 
 ### Output file
@@ -318,12 +320,11 @@ Details:
 - Comments describe the logical meaning (mixer, tone period, volume, delay, etc.).
 - In **simple dump** mode, all relevant registers are written every frame.
 - In **complex dump** mode, unchanged registers are skipped for compactness.
-- In **optimized dump** mode, complex-mode output additionally merges consecutive delay commands into one longer delay.
-- In **compact dump** mode, the stream shrinks further while staying replay-equivalent:
+- In **tight dump** mode, complex-mode output additionally merges consecutive delay commands and shrinks the stream further while staying replay-equivalent:
+  - consecutive delay commands merge into one longer delay, split into commands of at most 256 frames each so every delay count fits the single delay byte;
   - tone-period writes emit only the changed byte of the coarse/fine pair, as a single-register `dc.b` when one half is unchanged;
   - the mixer byte emits only when the change touches an audible channel's enable bits or the I/O bits - a channel is audible while its volume nibble is non-zero;
   - playlist-position markers no longer force tone-register rewrites;
-  - merged delays split into commands of at most 256 frames each, so every delay count fits the single delay byte;
   - the END block emits a zero-volume write only for channels whose last written volume is non-zero.
 - The DOSOUND formats (assembly, binary, and register dump) carry no chip declaration - the register stream is identical for every supported chip variant.
 - Ends with lines that silence all channels and a STOP marker, for example:
@@ -363,7 +364,7 @@ Details:
   where each placeholder is a byte value for the corresponding YM2149 register.
 
 - No optimisation: every logical frame produces one line.
-- The dump is intended for debugging/analysis of the raw register stream rather than for compact inclusion.
+- The dump is intended for debugging/analysis of the raw register stream rather than for tight inclusion.
 
 ## EXPORT BIN
 

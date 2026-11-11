@@ -1,0 +1,7 @@
+instrument:
+  name: Bass Flat
+  type: dosound
+  version: 1
+  base: 'C-3'
+  color: '#55d'
+  volume: [13, 13, 13, 13, 0]

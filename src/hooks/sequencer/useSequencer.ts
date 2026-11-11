@@ -46,11 +46,18 @@ export const useSequencer = (
   });
 
   const nodeRef = useRef<AudioWorkletNode | null>(null);
-  // Outgoing messages route through postRef: until the worklet node
-  // lands (addModule is asynchronous) messages queue in arrival order
-  // and flush on readiness - the same ordering the worker saw, since
-  // its creation effect always ran before the control effects.
-  const postRef = useRef<((message: SequencerWorkletIncomingMessage) => void) | null>(null);
+  // Outgoing messages route through postRef. The post function exists
+  // from the first render because the audio context lands after mount:
+  // messages posted while no node exists queue in arrival order and
+  // flush when the node lands, so mount-time params are never dropped.
+  const pendingMessagesRef = useRef<SequencerWorkletIncomingMessage[]>([]);
+  const postRef = useRef((message: SequencerWorkletIncomingMessage) => {
+    if (nodeRef.current) {
+      nodeRef.current.port.postMessage(message);
+    } else {
+      pendingMessagesRef.current.push(message);
+    }
+  });
   const callbackRef = useRef<((state: SequencerState) => void) | null>(null);
   const patternLengthRef = useRef(patternLength);
   const frameRateRef = useRef(frameRate);
@@ -106,7 +113,6 @@ export const useSequencer = (
     }
 
     let cancelled = false;
-    const pending: SequencerWorkletIncomingMessage[] = [];
 
     const handleMessage = (event: MessageEvent<SequencerWorkletMessage>) => {
       const { type, data } = event.data;
@@ -171,14 +177,6 @@ export const useSequencer = (
       }
     };
 
-    postRef.current = (message) => {
-      if (nodeRef.current) {
-        nodeRef.current.port.postMessage(message);
-      } else {
-        pending.push(message);
-      }
-    };
-
     postRef.current({
       type: 'setParams',
       data: {
@@ -201,7 +199,7 @@ export const useSequencer = (
         node.connect(audioContext.destination);
         node.port.onmessage = handleMessage;
         nodeRef.current = node;
-        for (const message of pending.splice(0)) {
+        for (const message of pendingMessagesRef.current.splice(0)) {
           node.port.postMessage(message);
         }
       })
@@ -211,8 +209,6 @@ export const useSequencer = (
 
     return () => {
       cancelled = true;
-      postRef.current = null;
-      pending.length = 0;
       if (nodeRef.current) {
         nodeRef.current.port.onmessage = null;
         nodeRef.current.port.close();

@@ -30,7 +30,7 @@ export const InformationModal: React.FC<InformationModalProps> = ({
         ))}
       </div>
       <div className="modal-actions">
-        <button className="command-btn" onClick={onClose}>
+        <button className="command-button" onClick={onClose}>
           OK
         </button>
       </div>
