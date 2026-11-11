@@ -137,8 +137,12 @@ export interface ModalContainerProps {
   isSettingsOpen: boolean;
   settingsCategory: SettingsCategory;
   settingsDraft: SettingsValues;
+  settingsConfirmingReset: boolean;
   onSettingsCategoryChange: (category: SettingsCategory) => void;
   onSettingsDraftChange: (draft: SettingsValues) => void;
+  onSettingsConfirmingResetChange: (confirming: boolean) => void;
+  onSettingsSessionFocus: (elementId: string | null) => void;
+  onSettingsPaneScroll: (scrollTop: number) => void;
   onCommitSettings: () => void;
   onCancelSettings: () => void;
   onSettingsLoadError: (message: string) => void;
@@ -253,8 +257,12 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
   isSettingsOpen,
   settingsCategory,
   settingsDraft,
+  settingsConfirmingReset,
   onSettingsCategoryChange,
   onSettingsDraftChange,
+  onSettingsConfirmingResetChange,
+  onSettingsSessionFocus,
+  onSettingsPaneScroll,
   onCommitSettings,
   onCancelSettings,
   onSettingsLoadError,
@@ -456,6 +464,10 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
           onCategoryChange={onSettingsCategoryChange}
           draft={settingsDraft}
           onDraftChange={onSettingsDraftChange}
+          confirmingReset={settingsConfirmingReset}
+          onConfirmingResetChange={onSettingsConfirmingResetChange}
+          onSessionFocus={onSettingsSessionFocus}
+          onSessionPaneScroll={onSettingsPaneScroll}
           onCommit={onCommitSettings}
           onCancel={onCancelSettings}
           onLoadError={onSettingsLoadError}

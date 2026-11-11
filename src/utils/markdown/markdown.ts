@@ -16,7 +16,6 @@ const applyInlineFormatting = (text: string): string => {
     return `<a href="${url}" target="_blank" rel="noreferrer">${url}</a>`;
   });
 
-  // Bold **text** and __text__
   const withBold = withLinks
     .replace(/\*\*(.+?)\*\*/g, '<strong class="markdown-strong">$1</strong>')
     .replace(/(?<![_\w])__([^_]+?)__(?![_\w])/g, '<strong class="markdown-strong">$1</strong>');
@@ -36,11 +35,9 @@ const renderInlineMarkdown = (text: string): string => {
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  // Walk through all code spans in the original text.
   while ((match = codePattern.exec(text)) !== null) {
     const [fullMatch, , codeContent] = match;
 
-    // Text before this code span: apply normal inline formatting.
     if (match.index > lastIndex) {
       const nonCode = text.slice(lastIndex, match.index);
       result += applyInlineFormatting(nonCode);
@@ -54,7 +51,6 @@ const renderInlineMarkdown = (text: string): string => {
     lastIndex = match.index + fullMatch.length;
   }
 
-  // Remaining text after the last code span.
   if (lastIndex < text.length) {
     const remaining = text.slice(lastIndex);
     result += applyInlineFormatting(remaining);

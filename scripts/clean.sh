@@ -27,7 +27,6 @@ for arg in "$@"; do
   esac
 done
 
-# Removable directory targets.
 TARGETS="dist coverage playwright-report test-results"
 if [ "$PURGE" -eq 1 ]; then
   TARGETS="$TARGETS node_modules work"

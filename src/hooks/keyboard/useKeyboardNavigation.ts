@@ -69,7 +69,6 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
           navigateToPrevious();
           break;
         default: {
-          // Try to execute callback for active section
           const callback = callbacksRef.current[activeSection];
           if (callback) {
             callback();
@@ -107,7 +106,6 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
       const ctrl = event.ctrlKey || event.metaKey;
       const shift = event.shiftKey;
 
-      // Let PianoKeyboard handle plain Space when it is active/focused
       if (
         !ctrl &&
         !shift &&

@@ -8,7 +8,7 @@ import { PlaylistPanel } from './PlaylistPanel.tsx';
 import { InstrumentPanel } from './InstrumentSection.tsx';
 import { DumpPanel } from './DumpPanel.tsx';
 import { EQPanel } from './EQPanel.tsx';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 
 interface SongSectionProps {
   song: Song;
@@ -27,7 +27,7 @@ interface SongSectionProps {
   onOpenInstrumentMidi: (instrument: Instrument) => void;
   onOpenInstrumentColor: (instrument: Instrument) => void;
   instrumentPanelFocusRevision: number;
-  ym2149: YM2149 | null;
+  ym2149: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (index: number) => void;
 }

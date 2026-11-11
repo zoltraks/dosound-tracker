@@ -147,7 +147,6 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
       if (!cell) {
         step = { wait: hasVolume ? 1 : true };
       } else if (cell.note === '===') {
-        // Explicit key-release step: encode as off: true in YAML.
         step = { note: 'OFF' };
       } else {
         const noteText = formatBaseKey(cell.note, cell.octave);

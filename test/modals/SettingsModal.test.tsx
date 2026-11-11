@@ -12,6 +12,10 @@ const renderModal = (overrides: Partial<Parameters<typeof SettingsModal>[0]> = {
       onCategoryChange={vi.fn()}
       draft={DEFAULT_SETTINGS}
       onDraftChange={vi.fn()}
+      confirmingReset={false}
+      onConfirmingResetChange={vi.fn()}
+      onSessionFocus={vi.fn()}
+      onSessionPaneScroll={vi.fn()}
       onCommit={vi.fn()}
       onCancel={vi.fn()}
       onLoadError={vi.fn()}
@@ -71,10 +75,15 @@ describe('SettingsModal', () => {
     const draft: SettingsValues = {
       general: { theme: 'light', trackBackground: false, startupTone: false },
       editor: { restoreCursor: false, restoreView: false, pasteTrackMode: 'overwriteAll' },
+      sound: { engine: 'internal' },
     };
     const onDraftChange = vi.fn();
-    renderModal({ draft, onDraftChange });
+    const onConfirmingResetChange = vi.fn();
+    renderModal({ draft, onDraftChange, onConfirmingResetChange });
     fireEvent.click(screen.getByRole('button', { name: 'RESET' }));
+    expect(onConfirmingResetChange).toHaveBeenCalledWith(true);
+    cleanup();
+    renderModal({ draft, onDraftChange, onConfirmingResetChange, confirmingReset: true });
     try {
       expect(screen.getByText('Reset all settings to their default values?')).toBeTruthy();
     } catch (error) {
@@ -83,6 +92,7 @@ describe('SettingsModal', () => {
     }
     fireEvent.click(screen.getByRole('button', { name: 'RESET' }));
     expect(onDraftChange).toHaveBeenCalledWith(DEFAULT_SETTINGS);
+    expect(onConfirmingResetChange).toHaveBeenCalledWith(false);
   });
 
   it('shows the editor settings when the editor category is active', () => {
@@ -105,5 +115,22 @@ describe('SettingsModal', () => {
       ...DEFAULT_SETTINGS,
       general: { ...DEFAULT_SETTINGS.general, theme: 'light' },
     });
+  });
+
+  it('shows the engine select under the sound category and edits through onDraftChange', () => {
+    const onDraftChange = vi.fn();
+    renderModal({ category: 'sound', onDraftChange });
+    try {
+      expect(screen.getByRole('button', { name: 'SOUND' })).toBeTruthy();
+      const select = screen.getByLabelText('Sound engine');
+      fireEvent.change(select, { target: { value: 'ayumi' } });
+      expect(onDraftChange).toHaveBeenCalledWith({
+        ...DEFAULT_SETTINGS,
+        sound: { ...DEFAULT_SETTINGS.sound, engine: 'ayumi' },
+      });
+    } catch (error) {
+      console.log('sound pane missing engine select');
+      throw error;
+    }
   });
 });

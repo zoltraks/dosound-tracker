@@ -67,11 +67,9 @@ describe('TrackPanel', () => {
       />,
     );
 
-    // Header shows track id and volume
     expect(screen.getByText('A')).toBeTruthy();
     expect(screen.getByText(/VOL/i)).toBeTruthy();
 
-    // First line should display the C-4 note with instrument 00
     expect(screen.getByText('C-4 00')).toBeTruthy();
   });
 

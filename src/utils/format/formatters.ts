@@ -9,32 +9,19 @@ export interface FormatOptions {
 }
 
 export class Formatter {
-  /**
-   * Format number as hexadecimal string
-   * @param value - Number to format
-   * @param options - Formatting options
-   * @returns Formatted hex string
-   */
   static hex(value: number, options: FormatOptions = {}): string {
     const { padWidth = 2, uppercase = true, prefix = '', suffix = '', noPad = false } = options;
     const hex = Math.abs(value).toString(16);
     const formatted = uppercase ? hex.toUpperCase() : hex;
 
-    // If noPad is true and value < 16, don't pad (matches original toHex behavior)
     if (noPad && Math.abs(value) < 0x10) {
       return `${prefix}${formatted}${suffix}`;
     }
 
-    // Otherwise, pad to specified width
     const padded = formatted.padStart(padWidth, '0');
     return `${prefix}${padded}${suffix}`;
   }
 
-  /**
-   * Format number with sign prefix
-   * @param value - Number to format
-   * @returns Signed string (e.g., "+5", "-3")
-   */
   static signed(value: number): string {
     return value >= 0 ? `+${value}` : value.toString();
   }
@@ -57,12 +44,6 @@ export class Formatter {
     }
   }
 
-  /**
-   * Format envelope value based on type
-   * @param type - Envelope parameter type
-   * @param value - Value to format
-   * @returns Formatted string appropriate for type
-   */
   static envelopeValue(type: EnvelopePanelType, value: number): string {
     switch (type) {
       case 'volume':

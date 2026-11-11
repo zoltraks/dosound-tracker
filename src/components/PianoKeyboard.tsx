@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
 import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../constants/music.ts';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import { PianoKey } from './PianoKey.tsx';
@@ -15,7 +15,7 @@ interface PianoKeyboardProps {
   setActiveSection: (section: NavigationSection) => void;
   currentOctave: number;
   onOctaveChange: (octave: number) => void;
-  ym2149: YM2149 | null;
+  ym2149: SoundEngine | null;
   currentInstrument: Instrument;
   previewChannel: number;
   tickIntervalMs?: number;
@@ -49,7 +49,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const isActive = activeSection === 'piano';
   const [isCompactLayout, setIsCompactLayout] = useState(false);
 
-  // Envelope timing state per previewed key
   const preview = usePreviewEnvelope({ ym2149 });
 
   const pianoKeys = generatePianoKeys(isCompactLayout, currentOctave);
@@ -94,7 +93,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
       if (!ym2149) return;
 
-      // If note and octave provided, handle per-key release
       if (note && octave) {
         const keyId = noteKeyId(note, octave);
 
@@ -130,7 +128,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
       // For preview, treat the channel as strictly monophonic: before starting
       // a new note, stop any existing preview envelopes on this channel to
-      // avoid overlapping timers fighting over the same YM2149 registers.
+      // avoid overlapping timers fighting over the same SoundEngine registers.
       stopNote();
 
       preview.start(keyId, {
@@ -178,7 +176,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
     (event: React.KeyboardEvent) => {
       if (!isActive) return;
 
-      // Play base note with Space when piano has focus
       if (event.key === ' ') {
         if (baseKeyData) {
           event.preventDefault();
@@ -195,7 +192,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
       const key = event.key.toUpperCase();
 
-      // Handle computer keyboard notes
       const mapped = getKeyboardMappedNote(key, currentOctave, KEYBOARD_TO_NOTE);
       if (mapped) {
         event.preventDefault();
@@ -207,7 +203,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
         }
       }
 
-      // Handle octave changes
       if (key === 'ARROWUP') {
         event.preventDefault();
         onOctaveChange(Math.min(MAX_OCTAVE, currentOctave + 1));
@@ -316,7 +311,6 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
 
   return (
     <div className="piano-keyboard-container">
-      {/* Piano keyboard */}
       <div
         ref={pianoRef}
         className={`piano-keyboard ${isActive ? 'active' : ''}`}

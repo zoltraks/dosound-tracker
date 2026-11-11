@@ -136,7 +136,6 @@ export function useTrackOperations({
       const targetLength = song.length || PATTERN_LENGTH;
       const existingLines = pattern.step || [];
 
-      // Check for existing data to determine if we need to ask for paste mode
       let hasExistingData = false;
       for (let i = 0; i < targetLength; i++) {
         const line = existingLines[i];

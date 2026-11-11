@@ -85,7 +85,6 @@ describe('WAV export context', () => {
     // 60 Hz should have fewer total samples (735 per tick vs 882 per tick)
     expect(result60Hz.totalSamples).toBeLessThan(result50Hz.totalSamples);
 
-    // The ratio should be approximately 50/60
     const ratio = result60Hz.totalSamples / result50Hz.totalSamples;
     expect(ratio).toBeCloseTo(50 / 60, 1);
   });

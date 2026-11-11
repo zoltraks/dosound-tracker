@@ -56,12 +56,10 @@ type WorkerIncomingMessage =
 function scheduleTick() {
   if (!isPlaying) return;
 
-  // Advance to the next tick/row first, then send the updated position
   let nextTick = currentTick + 1;
   let nextLine = currentLine;
   let nextPattern = currentPattern;
 
-  // Check if we need to advance to the next line
   if (nextTick >= ticksPerRow) {
     nextTick = 0;
     nextLine++;
@@ -74,10 +72,8 @@ function scheduleTick() {
         if (playlistLength > 0) {
           const lastIndex = playlistLength - 1;
           if (currentPattern >= lastIndex && hasLoop) {
-            // At or past last index with loop - wrap directly to loop index
             nextPattern = loopIndex;
           } else if (currentPattern < lastIndex) {
-            // Not at last index - advance to next pattern
             nextPattern++;
           } else {
             // At last index but no loop defined - increment anyway (will stop playback)
@@ -90,7 +86,6 @@ function scheduleTick() {
     }
   }
 
-  // Update current position BEFORE sending the message
   currentTick = nextTick;
   currentLine = nextLine;
   currentPattern = nextPattern;
@@ -134,8 +129,21 @@ function startSequencer() {
   }
 
   isPlaying = true;
-  nextTickTime = 0;
+  nextTickTime = performance.now() + tickInterval;
   intervalId = setTimeout(tickLoop, tickInterval);
+
+  // Emit the starting position immediately. Tick 0 carries the first note's
+  // attack, so waiting a full interval before the first message drops it and
+  // leaves the audible start one tick behind the sequencer view.
+  self.postMessage({
+    type: 'tick',
+    data: {
+      isPlaying: true,
+      currentPattern,
+      currentLine,
+      currentTick,
+    },
+  });
 }
 
 function stopSequencer() {
@@ -204,7 +212,6 @@ function setParams(params: {
       intervalId = setTimeout(tickLoop, tickInterval);
     }
   }
-  // Handle playlist parameters for song looping
   if (params.playlistLength !== undefined) {
     playlistLength = params.playlistLength;
   }
@@ -219,7 +226,6 @@ function setParams(params: {
   }
 }
 
-// Handle messages from main thread
 self.addEventListener('message', (event: MessageEvent<WorkerIncomingMessage>) => {
   const { type, data } = event.data;
 

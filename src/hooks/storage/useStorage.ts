@@ -34,7 +34,6 @@ export function scheduleJsonSave<K extends JsonStorageKey>(
   };
 
   if (timeoutRef.current !== null) {
-    // Clear any previously scheduled save before scheduling a new one.
     const handle = timeoutRef.current;
     if (handle.kind === 'timeout') {
       window.clearTimeout(handle.id);

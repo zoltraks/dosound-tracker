@@ -161,7 +161,6 @@ function optimizeReg7Delays(input: number[]): number[] {
       continue;
     }
 
-    // Collect consecutive single-byte frame delimiters and coalesce their delays.
     let delay = 0;
     while (i < len && (input[i] & 0xff) >= REG7_DELIMITER_BASE) {
       delay += (input[i] & 0x7f) + 1;
@@ -220,7 +219,6 @@ export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple')
   // File header: magic "MAX "
   fileBytes.push(0x4d, 0x41, 0x58, 0x20);
 
-  // Version chunk: 'V', size 0, version 1
   fileBytes.push(...buildMaxShortChunk('V', [0x01]));
 
   const infoChunk = buildMaxInfoChunk(normalizedSong);

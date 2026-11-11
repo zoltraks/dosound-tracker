@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Song, Pattern, Step, Note, Instrument } from '../../synth/SoundDriver.ts';
-import type { YM2149 } from '../../synth/YM2149.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 import type { MidiConfiguration, MidiNoteEvent } from './useMidi.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import { NOTE_BASE_OCTAVE, PATTERN_LENGTH } from '../../constants/music.ts';
@@ -33,7 +33,7 @@ interface UseMidiActionsArgs {
   setSharedCurrentLine: (line: number) => void;
   getCurrentPatternForTrack: (trackId: 'A' | 'B' | 'C') => Pattern | null;
   handlePatternChange: (pattern: Pattern) => void;
-  ym2149Ref: RefObject<YM2149 | null>;
+  ym2149Ref: RefObject<SoundEngine | null>;
   midiHelpersRef: RefObject<MidiHelpersRef | null>;
   midiConfigurationRef: RefObject<MidiConfiguration | null>;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
@@ -169,8 +169,6 @@ export function useMidiActions({
 
       const ym2149 = ym2149Ref.current;
 
-      // When a track panel is focused, insert notes into the current pattern and advance the cursor,
-      // then start a sustain-aware live preview on that track's channel.
       if (isTrackFocused && type === 'noteOn') {
         const ignoreInputVolume = midiConfigurationRef.current?.ignoreInputVolume ?? true;
         const ignoreOutputVolume = midiConfigurationRef.current?.ignoreOutputVolume ?? true;
@@ -279,7 +277,6 @@ export function useMidiActions({
         return;
       }
 
-      // When no track panel is focused, use MIDI to preview the current instrument
       if (!isTrackFocused) {
         const ymChannel = lastTrackId === 'B' ? 1 : lastTrackId === 'C' ? 2 : 0;
 
@@ -299,7 +296,6 @@ export function useMidiActions({
             volumeModifier: liveVolumeModifier,
           });
 
-          // Also send MIDI OUT for live preview using the instrument's MIDI settings.
           const helpers = midiHelpersRef.current;
           if (helpers) {
             helpers.sendInstrumentMidiNoteOn(
@@ -330,7 +326,6 @@ export function useMidiActions({
             last.ymChannel >= 0 &&
             last.ymChannel <= 2
           ) {
-            // Send matching MIDI Note Off for the YM channel used by the live preview.
             const helpers = midiHelpersRef.current;
             if (helpers) {
               helpers.sendInstrumentMidiNoteOffForChannel(last.ymChannel);

@@ -78,7 +78,6 @@ export function useEditorPersistence({
     }
   }, [trackBackgroundEnabled]);
 
-  // Restore the persisted editor cursor once on mount, clamped to the loaded song.
   const hasRestoredCursorRef = useRef(false);
 
   useEffect(() => {
@@ -107,7 +106,6 @@ export function useEditorPersistence({
     hasRestoredCursorRef.current = true;
   }, []);
 
-  // Persist the selected instrument so it is restored on the next launch.
   useEffect(() => {
     if (!hasRestoredCursorRef.current) return;
     try {

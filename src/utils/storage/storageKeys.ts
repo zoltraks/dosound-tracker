@@ -6,7 +6,6 @@
 export const APPLICATION_STORAGE_PREFIX = 'dosound-tracker-' as const;
 
 export class StorageKeys {
-  // Debug and development settings
   static readonly DEBUG_MODE = 'dosound-tracker-debug-mode' as const;
 
   // Export settings
@@ -32,14 +31,13 @@ export class StorageKeys {
   static readonly STARTUP_TONE = 'dosound-tracker-startup-tone' as const;
   static readonly RESTORE_CURSOR = 'dosound-tracker-restore-cursor' as const;
   static readonly RESTORE_VIEW = 'dosound-tracker-restore-view' as const;
+  static readonly SOUND_ENGINE = 'dosound-tracker-sound-engine' as const;
 
-  // View-state snapshot
   static readonly UI_STATE = 'dosound-tracker-ui-state' as const;
 
   // Data persistence
   static readonly SONG = 'dosound-tracker-song' as const;
   static readonly INSTRUMENT = 'dosound-tracker-instrument' as const;
 
-  // MIDI
   static readonly MIDI_CONFIGURATION = 'dosound-tracker-midi-configuration' as const;
 }

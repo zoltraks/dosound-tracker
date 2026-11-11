@@ -3,7 +3,7 @@ import {
   loadSettings,
   normalizeSettings,
   readFlag,
-  writeSettingFlags,
+  writeSettingKeys,
 } from '../../../src/utils/settings/settingsState.ts';
 import { DEFAULT_SETTINGS } from '../../../src/types/settings.ts';
 import { StorageKeys } from '../../../src/utils/storage/storageKeys.ts';
@@ -24,12 +24,14 @@ describe('settingsState', () => {
     localStorage.setItem(StorageKeys.STARTUP_TONE, 'off');
     localStorage.setItem(StorageKeys.RESTORE_CURSOR, 'off');
     localStorage.setItem(StorageKeys.RESTORE_VIEW, 'off');
+    localStorage.setItem(StorageKeys.SOUND_ENGINE, 'ayumi');
 
     const settings = loadSettings();
     try {
       expect(settings).toEqual({
         general: { theme: 'light', trackBackground: false, startupTone: false },
         editor: { restoreCursor: false, restoreView: false, pasteTrackMode: 'overwriteAll' },
+        sound: { engine: 'ayumi' },
       });
     } catch (error) {
       console.log('loaded settings:', settings);
@@ -55,15 +57,17 @@ describe('settingsState', () => {
     expect(readFlag(StorageKeys.STARTUP_TONE, false)).toBe(false);
   });
 
-  it('writeSettingFlags writes the three toggle keys as on and off', () => {
-    writeSettingFlags({
+  it('writeSettingKeys writes the three toggle keys and the engine key', () => {
+    writeSettingKeys({
       general: { theme: 'dark', trackBackground: true, startupTone: false },
       editor: { restoreCursor: true, restoreView: false, pasteTrackMode: 'replace' },
+      sound: { engine: 'ayumi' },
     });
     try {
       expect(localStorage.getItem(StorageKeys.STARTUP_TONE)).toBe('off');
       expect(localStorage.getItem(StorageKeys.RESTORE_CURSOR)).toBe('on');
       expect(localStorage.getItem(StorageKeys.RESTORE_VIEW)).toBe('off');
+      expect(localStorage.getItem(StorageKeys.SOUND_ENGINE)).toBe('ayumi');
     } catch (error) {
       console.log('flag keys:', localStorage.getItem(StorageKeys.STARTUP_TONE));
       throw error;
@@ -91,9 +95,14 @@ describe('settingsState', () => {
         restoreView: false,
         pasteTrackMode: 'overwriteEmpty' as const,
       },
+      sound: { engine: 'ayumi' as const },
     };
     const normalized = normalizeSettings(
-      { general: { theme: 'neon' }, editor: { pasteTrackMode: 'sideways' } },
+      {
+        general: { theme: 'neon' },
+        editor: { pasteTrackMode: 'sideways' },
+        sound: { engine: 'bogus' },
+      },
       base,
     );
     expect(normalized).toEqual(base);

@@ -1,5 +1,46 @@
 # Changes
 
+## Version 1.5.2
+
+- **Interface**: the modal dialogs no longer show a browser focus frame around the dialog edge - focus indicators inside the dialogs are unchanged.
+
+## Version 1.5.1
+
+The settings modal now restores completely after a reload.
+
+- **Settings**: reloading with the settings modal open restores the focused control, the property pane's scroll position, and the reset confirmation in addition to the category and draft - the dialog holds keyboard focus itself when nothing specific was focused.
+- **Settings**: while the reset confirmation is showing, ENTER now confirms the reset and ESCAPE cancels back to the settings pane instead of committing or closing the whole dialog.
+
+## Version 1.5.0
+
+Dialogs now fit their content on desktop and use the full screen on the mobile layout.
+
+- **Settings**: the settings dialog sizes to the height its controls need instead of always claiming 80% of the window, and stays centered on the screen.
+- **Interface**: on the mobile layout the settings, About-document (Changes, Manual), MIDI, and download dialogs fill the screen and scroll their own content.
+
+## Version 1.4.9
+
+The sound engine is selectable from a new SOUND category in Settings.
+
+- **Settings**: a `SOUND` category joins the settings sidebar with a `Sound engine` selector offering `Internal` and `Ayumi` - the choice persists, applies on OK without a reload, and travels with the settings file's save and load actions.
+- **Sound engine**: switching engines now silences and disposes the active engine before the replacement is created, so notes never carry over into the new engine.
+
+## Version 1.4.8
+
+The sound engine reports consistent channel state before the first note plays.
+
+- **Sound engine**: a freshly started engine now reports tone and noise enable flags decoded from its register file, so the Dump and EQ views agree with the hardware convention from the first read instead of diverging until the first write.
+- **Internals**: both sound engines share one register mirror and batching implementation, removing the duplicated write and coalescing mechanics.
+
+## Version 1.4.7
+
+A new Ayumi sound engine joins the tracker, a settings dialog gathers the application's preferences, and the number spinners follow the theme.
+
+- **Sound engine**: a precise Ayumi emulation core can now render live audio in a dedicated audio thread as an alternative to the built-in engine - it models the measured YM2149 volume steps, the hardware envelope generator, and per-channel tone and noise masking. The selection persists across sessions and an unrecognised stored value falls back to the built-in engine.
+- **Settings**: a gear button in the header opens a settings dialog with GENERAL and EDITOR categories covering theme, track backgrounds, startup tone, cursor and view restore, and the default paste mode - changes apply on OK, RESET restores defaults, and SAVE/LOAD exchange a settings file.
+- **Interface**: the up/down buttons on the Year, Speed, Length, and Loop spinners now render in the theme's button colors in both night and day mode.
+- **Build**: the deployed bundle now emits its scripts, stylesheet, and media under `js/`, `css/`, and `media/` directories.
+
 ## Version 1.4.6
 
 The desktop app now asks before quitting with unsaved changes, every Arp Loop instrument is pickable, and the interface is friendlier to assistive technology.

@@ -55,7 +55,6 @@ export const useSequencer = (
   const updateSongLoop = useCallback((playlistLength: number, loop: number | null | undefined) => {
     const clampedLength = Math.max(0, playlistLength | 0);
 
-    // Determine whether a valid loop index is present and clamp it into range.
     let nextLoopIndex = 0;
     let nextHasLoop = false;
 
@@ -70,7 +69,6 @@ export const useSequencer = (
         type: 'setParams',
         data: {
           playlistLength: clampedLength,
-          // Only send a meaningful loopIndex when looping is enabled.
           loopIndex: nextHasLoop ? nextLoopIndex : 0,
           hasLoop: nextHasLoop,
         },
@@ -97,7 +95,6 @@ export const useSequencer = (
     }
   }, []);
 
-  // Initialize Web Worker
   useEffect(() => {
     if (typeof Worker !== 'undefined') {
       workerRef.current = new Worker(new URL('../../workers/sequencer.ts', import.meta.url), {
@@ -170,7 +167,6 @@ export const useSequencer = (
         },
       );
 
-      // Initialize worker parameters
       workerRef.current.postMessage({
         type: 'setParams',
         data: {
@@ -209,7 +205,6 @@ export const useSequencer = (
       setSequencerState(nextState);
       playbackStateRef.current = nextState;
 
-      // Start worker-based timing
       if (workerRef.current) {
         workerRef.current.postMessage({
           type: 'start',
@@ -254,7 +249,6 @@ export const useSequencer = (
       setSequencerState(newState);
       playbackStateRef.current = newState;
 
-      // Update worker position
       if (workerRef.current) {
         workerRef.current.postMessage({
           type: 'update',
@@ -269,7 +263,6 @@ export const useSequencer = (
     // Use song speed directly as number of VBLANK frames per row (50 Hz)
     const newTicksPerRow = Math.max(1, newSpeed | 0);
 
-    // Update worker parameters
     if (workerRef.current) {
       workerRef.current.postMessage({
         type: 'setParams',
@@ -305,7 +298,6 @@ export const useSequencer = (
       currentLine: Math.min(prev.currentLine, clamped - 1),
     }));
 
-    // Update worker parameters
     if (workerRef.current) {
       workerRef.current.postMessage({
         type: 'setParams',
@@ -319,7 +311,6 @@ export const useSequencer = (
       const clamped = Math.max(1, newFrameRate | 0);
       frameRateRef.current = clamped;
 
-      // Update worker tick interval
       if (workerRef.current) {
         workerRef.current.postMessage({
           type: 'setParams',

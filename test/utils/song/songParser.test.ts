@@ -15,16 +15,13 @@ describe('parseSongFromYaml', () => {
     expect(song.year).toBe(2025);
     expect(song.speed).toBeGreaterThan(0);
 
-    // Pattern length should follow the YAML length field
     expect(song.length).toBe(4);
 
-    // Playlist
     expect(song.line.length).toBe(3);
     expect(song.line[0]).toEqual({ A: '00', B: '--', C: '--' });
     expect(song.line[1]).toEqual({ A: '01', B: '--', C: '--' });
     expect(song.line[2]).toEqual({ A: '--', B: '--', C: '--' });
 
-    // Patterns
     expect(song.pattern.length).toBe(2);
 
     const pattern0 = song.pattern[0];
@@ -35,7 +32,6 @@ describe('parseSongFromYaml', () => {
     expect(pattern0.step.length).toBe(4);
     expect(pattern1.step.length).toBe(4);
 
-    // Pattern 0: C-4 then 3 spaces
     expect(pattern0.step[0].note).not.toBeNull();
     expect(pattern0.step[0].note?.note).toBe('C');
     expect(pattern0.step[0].note?.octave).toBe(4);
@@ -44,7 +40,6 @@ describe('parseSongFromYaml', () => {
     expect(pattern0.step[2].note).toBeNull();
     expect(pattern0.step[3].note).toBeNull();
 
-    // Pattern 1: space, E-4, then 2 spaces
     expect(pattern1.step[0].note).toBeNull();
     expect(pattern1.step[1].note).not.toBeNull();
     expect(pattern1.step[1].note?.note).toBe('E');
@@ -53,7 +48,6 @@ describe('parseSongFromYaml', () => {
     expect(pattern1.step[2].note).toBeNull();
     expect(pattern1.step[3].note).toBeNull();
 
-    // Instruments
     expect(song.instrument.length).toBeGreaterThan(0);
     const inst0 = song.instrument[0];
     expect(inst0.id).toBe('00');

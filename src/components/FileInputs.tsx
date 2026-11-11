@@ -37,7 +37,6 @@ export const FileInputs: React.FC<FileInputsProps> = ({
             setSharedCurrentLine(0);
             setActiveSection('playlist');
             setChannelMutes([false, false, false]);
-            // This will be handled by the useDataManagement hook
           }
         }}
       />

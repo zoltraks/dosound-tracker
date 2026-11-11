@@ -1,6 +1,6 @@
 import { useCallback, useRef, useMemo } from 'react';
 import type { Song, Pattern, Note, Instrument } from '../../synth/SoundDriver.ts';
-import { YM2149 } from '../../synth/YM2149.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 import type { SequencerState } from './useSequencer.ts';
 import { updateChannelWithInstrument } from '../../utils/playback/playbackUtils.ts';
 import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
@@ -13,7 +13,7 @@ interface UseSequencerIntegrationArgs {
   currentSong: Song;
   patternsById: Map<string, Pattern>;
   channelMutes: boolean[];
-  ym2149Ref: React.MutableRefObject<YM2149 | null>;
+  ym2149Ref: React.MutableRefObject<SoundEngine | null>;
   midiHelpersRef: React.MutableRefObject<{
     sendInstrumentMidiNoteOn: (
       ymChannel: number,
@@ -124,9 +124,8 @@ export function useSequencerIntegration({
         debugTickCounterRef.current = (debugTickCounterRef.current + 1) >>> 0;
 
         const lastPos = lastSequencerPositionRef.current;
-        const wrappedOrJumped = lastPos && state.currentPattern !== lastPos.pattern; // Only treat as wrap/jump if pattern actually changes
+        const wrappedOrJumped = lastPos && state.currentPattern !== lastPos.pattern;
 
-        // Detect if this is the first tick after starting playback
         const isFirstTick = !lastPos;
 
         lastSequencerPositionRef.current = {
@@ -186,14 +185,13 @@ export function useSequencerIntegration({
             ? patternsById.get(currentPlaylistEntry.C)
             : undefined;
 
-          // Get current line data (patterns are track-agnostic - read trackA data for any track)
           const lineA = patternA?.step[state.currentLine];
           const lineB = patternB?.step[state.currentLine];
           const lineC = patternC?.step[state.currentLine];
 
           const noteA = lineA?.note || null;
-          const noteB = patternB ? lineB?.note || null : null; // Read A for track B
-          const noteC = patternC ? lineC?.note || null : null; // Read A for track C
+          const noteB = patternB ? lineB?.note || null : null;
+          const noteC = patternC ? lineC?.note || null : null;
 
           const notes = [noteA, noteB, noteC];
           const patterns = [patternA, patternB, patternC];
@@ -302,9 +300,6 @@ export function useSequencerIntegration({
               // Explicit note-off event on this row. Only act on the first tick of the
               // row so we match the offline export logic.
               if (state.currentTick === 0 && noteOnRow && noteOnRow.note === '===') {
-                // For MIDI output, treat this as an explicit key release and
-                // send a matching Note Off for any active note on this
-                // playback channel.
                 const helpers = midiHelpersRef.current;
                 if (helpers) {
                   helpers.sendInstrumentMidiNoteOffForChannel(ch);
@@ -368,18 +363,14 @@ export function useSequencerIntegration({
                 continue;
               }
 
-              // Determine active note: explicit note on this row if present, otherwise
-              // continue holding the last active note.
               let activeNote: Note | null = last;
               const hasExplicitNote = !!(noteOnRow && noteOnRow.note && noteOnRow.note !== '===');
 
-              // Update per-channel volume modifier when a volume nibble is present on this row.
               if (volumeOnRow !== undefined && volumeOnRow !== null) {
                 channelVolumeModifierRef.current[ch] = clampVolumeNibble(volumeOnRow as number);
               }
 
               if (hasExplicitNote) {
-                // New explicit note on this row
                 activeNote = noteOnRow;
 
                 // Retrigger envelopes and send MIDI output only on the first tick of the
@@ -389,7 +380,6 @@ export function useSequencerIntegration({
                   channelEnvelopeStepRef.current[ch] = 0;
                   channelSubTickRef.current[ch] = 0;
 
-                  // Resolve sustain position for the instrument used by this note.
                   const instId =
                     activeNote && typeof activeNote.instrument === 'string'
                       ? normalizeInstrumentId(activeNote.instrument)
@@ -485,7 +475,7 @@ export function useSequencerIntegration({
               } else {
                 // No active note at all. Explicit rests and hard mutes are
                 // already handled above (no pattern, note-off without
-                // sustain, or initial startup row). Leaving the YM2149
+                // sustain, or initial startup row). Leaving the SoundEngine
                 // registers as-is here avoids brief drop-outs if state
                 // transiently reports no note for a single tick.
                 channelEnvelopeStepRef.current[ch] = 0;

@@ -41,3 +41,10 @@ The emulation is based on publicly available technical documentation of the YM21
 The ZX0 compressor implementation in `src/utils/compression/zx0.ts` is a TypeScript port of the Salvador
 compressor by Einar Saukas, distributed under the BSD 3-Clause license.
 The original copyright notice and license terms are retained in the source file header.
+
+## Ayumi Emulation
+
+The Ayumi emulation core in `src/synth/ayumiCore.ts` is a TypeScript port of the Ayumi AY-3-8910/YM2149
+emulator by Peter Sovietov (`true-grue/ayumi`), distributed under the MIT license, with the JavaScript
+port by Alexander Kovalenko (`alexanderk23/ayumi-js`, also MIT) serving as the porting reference.
+The original copyright notice and license terms are retained in the source file header.

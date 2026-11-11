@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react'
 import type { NavigationSection } from '../constants/navigation.ts';
 import { KEYBOARD_TO_NOTE } from '../constants/music.ts';
 import type { Pattern, Note, Instrument, Step } from '../synth/SoundDriver.ts';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import { TrackLine } from './TrackLine.tsx';
 import { computeEffectiveVolume } from '../utils/track/trackUtils.ts';
@@ -38,7 +38,7 @@ interface TrackPanelProps {
   onLineChange: (lineIndex: number) => void;
   pattern: Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
-  ym2149: YM2149 | null;
+  ym2149: SoundEngine | null;
   currentInstrumentData: Instrument;
   instruments: Instrument[];
   trackBackgroundEnabled: boolean;
@@ -124,7 +124,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     [pattern, currentLine],
   );
 
-  // Hard stop of any current preview on this track/channel
   const stopPreview = useCallback(() => {
     preview.stop();
     activePreviewKeyRef.current = null;
@@ -184,7 +183,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     ],
   );
 
-  // Get notes for this track from the pattern
   const computeTrackNotes = useCallback(() => {
     return getTrackNotesForPattern(pattern, patternLength);
   }, [pattern, patternLength]);
@@ -207,7 +205,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     [preview],
   );
 
-  // Ensure any preview is stopped when this track loses focus or unmounts
   useEffect(() => {
     if (!isActive && hasPreviewState()) {
       stopPreview();
@@ -233,7 +230,6 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         return;
       }
 
-      // Navigation
       if (key === 'ARROWUP') {
         event.preventDefault();
         onLineChange(stepLineIndex(currentLine, patternLength, -1));
@@ -258,10 +254,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       } else if (key === 'ARROWLEFT') {
         event.preventDefault();
         if (currentColumn === 'volume') {
-          // Move from volume to note within the same track
           setCurrentColumn('note');
         } else {
-          // Move to previous track and select its volume column
           const targetTrack: NavigationSection = getPreviousTrackSection(trackId);
           setActiveSection(targetTrack);
           setCurrentColumn('volume');
@@ -269,10 +263,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       } else if (key === 'ARROWRIGHT') {
         event.preventDefault();
         if (currentColumn === 'note') {
-          // Move from note to volume within the same track
           setCurrentColumn('volume');
         } else {
-          // Move to next track and select its note column
           const targetTrack: NavigationSection = getNextTrackSection(trackId);
           setActiveSection(targetTrack);
           setCurrentColumn('note');
@@ -290,11 +282,9 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
         const newPattern = updatePatternStep(pattern, currentLine, (step) => {
           if (currentColumn === 'volume') {
-            // Clear only the per-line volume modifier
             return { ...step, volume: undefined };
           }
 
-          // Clear the note (and implicitly any volume) for shared pattern (trackA)
           return { ...step, note: null, volume: undefined };
         });
 
@@ -305,14 +295,12 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         if (pattern) {
           const noteOff: Note = createNoteOff();
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
-            // Set note off for shared pattern (always use trackA)
             return { ...step, note: noteOff };
           });
           onPatternChange(newPattern);
         }
       } else if (key === ' ') {
         event.preventDefault();
-        // Clear current position in the active column and move to next line
         if (pattern) {
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
             if (currentColumn === 'volume') {
@@ -321,12 +309,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
             return { ...step, note: null, volume: undefined };
           });
           onPatternChange(newPattern);
-          // Move to next line (wrap around pattern length)
           onLineChange(stepLineIndex(currentLine, patternLength, 1));
         }
       } else if (!event.ctrlKey && key === '-') {
         event.preventDefault();
-        // Insert explicit key-release step (note-off) and move to next line
         if (pattern) {
           const noteOff: Note = createNoteOff();
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
@@ -337,23 +323,19 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         }
       } else if (event.ctrlKey && key === '-') {
         event.preventDefault();
-        // Previous instrument
         setCurrentInstrument((prev) => stepInstrumentId(prev, -1));
       } else if (event.ctrlKey && (key === '+' || key === '=')) {
         event.preventDefault();
-        // Next instrument
         setCurrentInstrument((prev) => stepInstrumentId(prev, 1));
       } else if (!event.ctrlKey && currentColumn === 'volume' && parseVolumeNibble(key) !== null) {
         const nibble = parseVolumeNibble(key) as number;
 
         event.preventDefault();
-        // Hex input for per-line volume modifier
         if (pattern) {
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
             return { ...step, volume: nibble };
           });
           onPatternChange(newPattern);
-          // Move to next line after entering a volume nibble (wrap around pattern length)
           onLineChange(stepLineIndex(currentLine, patternLength, 1));
         }
       } else {
@@ -378,16 +360,13 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
 
         playPreviewNote(note, finalOctave);
 
-        // Insert note
         if (pattern) {
           const newNote: Note = { note, octave: finalOctave, instrument: currentInstrumentData.id };
 
           const newPattern = updatePatternStep(pattern, currentLine, (step) => {
-            // Set the note for shared pattern (always use trackA)
             return { ...step, note: newNote };
           });
           onPatternChange(newPattern);
-          // Move to next line (wrap around pattern length)
           onLineChange(stepLineIndex(currentLine, patternLength, 1));
         }
       }

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
 import type { Song, Instrument } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import type { YM2149 } from '../../synth/YM2149.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
 import { usePreviewEnvelope } from '../playback/usePreviewEnvelope.ts';
 import {
@@ -35,7 +35,7 @@ interface UseInstrumentActionsArgs {
   setIsInstrumentDeleteOpen: (open: boolean) => void;
   normalizeInstrumentId: (value?: string | number | null) => InstrumentId;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
-  ym2149Ref: RefObject<YM2149 | null>;
+  ym2149Ref: RefObject<SoundEngine | null>;
 }
 
 interface UseInstrumentActionsResult {

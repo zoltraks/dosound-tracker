@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useKeyboardNavigation } from './hooks/keyboard/useKeyboardNavigation.ts';
 import { useNavigationSuspension } from './hooks/keyboard/useNavigationSuspension.ts';
 import { useTheme } from './hooks/ui/useTheme.ts';
@@ -17,8 +17,11 @@ import { useAppState } from './hooks/app/useAppState.ts';
 import { useKeyboardShortcuts } from './hooks/keyboard/useKeyboardShortcuts.ts';
 import { useMessageSystem } from './hooks/ui/useMessageSystem.ts';
 import { useModalState } from './hooks/modal/useModalState.ts';
-import { loadSettings, writeSettingFlags } from './utils/settings/settingsState.ts';
+import { loadSettings, writeSettingKeys } from './utils/settings/settingsState.ts';
+import { loadSoundEngineId } from './utils/storage/soundEngine.ts';
+import type { SoundEngineId } from './constants/sound.ts';
 import { updateSettingsView } from './utils/storage/uiState.ts';
+import { DEFAULT_SETTINGS, type SettingsValues } from './types/settings.ts';
 import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.ts';
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
@@ -56,6 +59,7 @@ import { useSongImportWarning } from './hooks/song/useSongImportWarning.ts';
 import { useInstrumentOctaves } from './hooks/instrument/useInstrumentOctaves.ts';
 import { useTrackFocus } from './hooks/ui/useTrackFocus.ts';
 import { useAudioContextResume } from './hooks/audio/useAudioContextResume.ts';
+import { useAudioContextPlaybackSync } from './hooks/audio/useAudioContextPlaybackSync.ts';
 import { useElectronCloseGuard } from './hooks/app/useElectronCloseGuard.ts';
 import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
 import './App.css';
@@ -130,7 +134,6 @@ const App: React.FC = () => {
     setTransposeAmountInput,
   } = useAppState();
 
-  // Check if download files are available
   const hasDownloads = useDownloadAvailability();
 
   const {
@@ -248,10 +251,20 @@ const App: React.FC = () => {
     [mirrorRestoreNotice, messages],
   );
 
-  const { audioContext, ym2149Ref, ym2149, playTestTone } = useAudioSetup(
+  const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
+  const { audioContext, ym2149Ref, ym2149, waitForEngine, playTestTone } = useAudioSetup(
     currentSong.clock ?? DEFAULT_SONG_CLOCK,
+    soundEngineId,
   );
   const previewTickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
+
+  useAudioContextPlaybackSync({
+    audioContext,
+    sequencerState,
+    stop,
+    startSong,
+    startPatternLoop,
+  });
 
   const { isMobileViewport, isCommandPanelMobileCollapsed, setIsCommandPanelMobileCollapsed } =
     useResponsivePanels();
@@ -514,6 +527,8 @@ const App: React.FC = () => {
     lastTrackId,
     isLinePlaying,
     setIsLinePlaying,
+    ensureAudioContextResumed,
+    waitForEngine,
   });
 
   useKeyboardShortcuts({
@@ -667,26 +682,52 @@ const App: React.FC = () => {
 
   const { handlePositionScroll } = useScrollSync(sharedCurrentLine);
 
-  // Settings dialog: committed snapshot, working draft, and session restore
   const committedSettings = useMemo(
     () => loadSettings(),
-    [isDarkMode, trackBackgroundEnabled, pasteTrackMode, modalState.isSettingsOpen],
+    [isDarkMode, trackBackgroundEnabled, pasteTrackMode, soundEngineId, modalState.isSettingsOpen],
   );
-  const { settingsCategory, setSettingsCategory, settingsDraft, setSettingsDraft } =
-    useSettingsDialog(modalState.isSettingsOpen, committedSettings);
+  const {
+    settingsCategory,
+    setSettingsCategory,
+    settingsDraft,
+    setSettingsDraft,
+    confirmingReset,
+    setConfirmingReset,
+    recordFocus,
+    recordPaneScroll,
+  } = useSettingsDialog(modalState.isSettingsOpen, committedSettings);
+
+  const closeSettingsSession = (draft: SettingsValues) =>
+    updateSettingsView({
+      category: settingsCategory,
+      draft,
+      confirmingReset: false,
+      focus: null,
+      paneScroll: 0,
+    });
 
   const handleCommitSettings = () => {
+    if (confirmingReset) {
+      setSettingsDraft(DEFAULT_SETTINGS);
+      setConfirmingReset(false);
+      return;
+    }
     const next = settingsDraft;
     setIsDarkMode(next.general.theme === 'dark');
     setTrackBackgroundEnabled(next.general.trackBackground);
-    writeSettingFlags(next);
+    writeSettingKeys(next);
     setPasteTrackMode(next.editor.pasteTrackMode);
-    updateSettingsView(null);
+    setSoundEngineId(next.sound.engine);
+    closeSettingsSession(next);
     modalState.setIsSettingsOpen(false);
   };
 
   const handleCancelSettings = () => {
-    updateSettingsView(null);
+    if (confirmingReset) {
+      setConfirmingReset(false);
+      return;
+    }
+    closeSettingsSession(committedSettings);
     modalState.setIsSettingsOpen(false);
   };
 
@@ -793,8 +834,12 @@ const App: React.FC = () => {
     handleCancelPasteTrackModal,
     settingsCategory,
     settingsDraft,
+    settingsConfirmingReset: confirmingReset,
     onSettingsCategoryChange: setSettingsCategory,
     onSettingsDraftChange: setSettingsDraft,
+    onSettingsConfirmingResetChange: setConfirmingReset,
+    onSettingsSessionFocus: recordFocus,
+    onSettingsPaneScroll: recordPaneScroll,
     handleCommitSettings,
     handleCancelSettings,
   });

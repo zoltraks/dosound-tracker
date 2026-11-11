@@ -31,7 +31,6 @@ export function generateClipboardData(
 
   for (let i = 0; i < targetLength; i++) {
     const line: Step = rawLines[i] || { note: null };
-    // Caller passes the relevant pattern; we read `note` from each line.
 
     const cell = line.note;
     const volRaw = line.volume;
@@ -258,7 +257,6 @@ export function applyClipboardToLines(
       if (rawStep && typeof rawStep === 'object') {
         newLines.push(applyClipboardStepToLine(baseLine, rawStep, i));
       } else {
-        // Clear line
         newLines.push({ ...baseLine, note: null, volume: undefined });
       }
     } else if (mode === 'overwriteAll') {

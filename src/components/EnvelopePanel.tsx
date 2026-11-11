@@ -159,7 +159,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         handleValueChange(-1);
       } else if (key === 'BACKSPACE' || key === 'DELETE') {
         event.preventDefault();
-        // Zero out the current position value
         if (onChange) {
           const newData = [...envelopeData];
           newData[currentPosition] = 0;
@@ -335,7 +334,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       <div className="envelope-header">{getTitle()}</div>
 
       {type === 'shift' || type === 'pitch' ? (
-        // Thin horizontal line rendering for shift and pitch
         <div className="envelope-content">
           <div className="envelope-graph centered">
             <div className="neutral-line"></div>
@@ -371,7 +369,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
           </div>
         </div>
       ) : (
-        // Bar rendering for volume and noise
         <div className="envelope-content">
           <div
             className="envelope-graph"

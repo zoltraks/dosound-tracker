@@ -2,6 +2,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ExtendedWindow } from '../../types/electronApi.ts';
 import { fetchBundledMarkdown } from '../../utils/markdown/bundledMarkdown.ts';
+import { updateMarkdownScroll } from '../../utils/storage/uiState.ts';
 import { logger } from '../../utils/log/logger.ts';
 
 export interface UseAppInfoDialogsParams {
@@ -128,6 +129,7 @@ export function useAppInfoDialogs({
 
   const handleCloseChangelog = useCallback(() => {
     setIsChangelogOpen(false);
+    updateMarkdownScroll(0);
   }, []);
 
   const handleShowManual = useCallback(() => {
@@ -146,6 +148,7 @@ export function useAppInfoDialogs({
 
   const handleCloseManual = useCallback(() => {
     setIsManualOpen(false);
+    updateMarkdownScroll(0);
   }, []);
 
   return {

@@ -1,5 +1,6 @@
 import { StorageKeys } from '../storage/storageKeys.ts';
 import type { TrackPasteMode } from '../track/trackClipboard.ts';
+import { loadSoundEngineId, normalizeSoundEngineId } from '../storage/soundEngine.ts';
 import { DEFAULT_SETTINGS, type SettingsValues } from '../../types/settings.ts';
 
 const PASTE_MODES: readonly TrackPasteMode[] = ['replace', 'overwriteAll', 'overwriteEmpty'];
@@ -28,9 +29,11 @@ export const normalizeSettings = (
   const source = (typeof raw === 'object' && raw !== null ? raw : {}) as {
     general?: Record<string, unknown>;
     editor?: Record<string, unknown>;
+    sound?: Record<string, unknown>;
   };
   const general = source.general && typeof source.general === 'object' ? source.general : {};
   const editor = source.editor && typeof source.editor === 'object' ? source.editor : {};
+  const sound = source.sound && typeof source.sound === 'object' ? source.sound : {};
 
   return {
     general: {
@@ -53,6 +56,9 @@ export const normalizeSettings = (
       pasteTrackMode: PASTE_MODES.includes(editor.pasteTrackMode as TrackPasteMode)
         ? (editor.pasteTrackMode as TrackPasteMode)
         : base.editor.pasteTrackMode,
+    },
+    sound: {
+      engine: normalizeSoundEngineId(sound.engine, base.sound.engine),
     },
   };
 };
@@ -93,12 +99,13 @@ export const loadSettings = (): SettingsValues => {
       restoreView: readFlag(StorageKeys.RESTORE_VIEW, DEFAULT_SETTINGS.editor.restoreView),
       pasteTrackMode,
     },
+    sound: { engine: loadSoundEngineId() },
   };
 };
 
-/** Writes the three settings-only flag keys. Existing keys are written by
- *  their owning setters. */
-export const writeSettingFlags = (settings: SettingsValues): void => {
+/** Writes the settings-only keys - the three 'on'/'off' flags plus the
+ *  engine id. Existing keys are written by their owning setters. */
+export const writeSettingKeys = (settings: SettingsValues): void => {
   try {
     window.localStorage.setItem(
       StorageKeys.STARTUP_TONE,
@@ -112,6 +119,7 @@ export const writeSettingFlags = (settings: SettingsValues): void => {
       StorageKeys.RESTORE_VIEW,
       settings.editor.restoreView ? 'on' : 'off',
     );
+    window.localStorage.setItem(StorageKeys.SOUND_ENGINE, settings.sound.engine);
   } catch {
     // ignore
   }

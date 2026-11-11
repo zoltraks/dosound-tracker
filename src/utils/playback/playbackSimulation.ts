@@ -78,7 +78,6 @@ export function simulateSong(
     }
   }
 
-  // Initialize register state
   let currentRegs: RegisterState = {
     0x07: 0x38, // Mixer: all tones enabled, noise disabled
     0x08: 0x00, // Volume A
@@ -123,7 +122,6 @@ export function simulateSong(
   let globalLineIndex = 0;
   let hasEmittedFrame = false;
 
-  // Process each playlist entry
   for (let playlistIdx = 0; playlistIdx < song.line.length; playlistIdx++) {
     const playlistEntry = song.line[playlistIdx];
     const patterns = [
@@ -154,29 +152,24 @@ export function simulateSong(
       channelState.released = false;
     }
 
-    // Process each line in the pattern
     const lineCount = song.length || 64;
 
     for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
-      // Get notes for this line
       const notes = [
         patterns[0]?.step[lineIdx]?.note || null,
         patterns[1]?.step[lineIdx]?.note || null,
         patterns[2]?.step[lineIdx]?.note || null,
       ];
-      // Per-line volume modifiers (shared pattern trackA volume)
       const volumes = [
         patterns[0]?.step[lineIdx]?.volume,
         patterns[1]?.step[lineIdx]?.volume,
         patterns[2]?.step[lineIdx]?.volume,
       ];
 
-      // Process each tick in this row
       for (let tick = 0; tick < ticksPerRow; tick++) {
         const newRegs: RegisterState = { ...currentRegs };
         const toneMeta: ToneMetaByChannel = {};
 
-        // Process each channel
         for (let ch = 0; ch < 3; ch++) {
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
@@ -253,13 +246,11 @@ export function simulateSong(
               channelState.isNewNote = false;
             }
 
-            // Update per-channel volume modifier when explicitly present on this row.
             if (volumeOnRow !== undefined && volumeOnRow !== null) {
               channelState.volumeModifier = clampVolumeNibble(volumeOnRow as number);
             }
           }
 
-          // Update channel with current envelope step
           if (channelState.note) {
             const instrument = instrumentsByNormId.get(channelInstrumentIds[ch]);
             if (instrument) {
@@ -368,7 +359,6 @@ function applyInstrumentToRegisters(
 ): void {
   const step = Math.max(0, envelopeStep);
 
-  // Get envelope values
   const volumeEnv = instrument.volume || [0x0f];
   const shiftEnv = instrument.shift || [0];
   const pitchEnv = instrument.pitch || [0];
@@ -393,7 +383,6 @@ function applyInstrumentToRegisters(
     volume = Math.floor((volume * mod) / 15);
   }
 
-  // Set volume
   regs[0x08 + channel] = volume;
 
   // Calculate frequency with shift (NOTE_FREQUENCIES are defined for NOTE_BASE_OCTAVE)
@@ -408,7 +397,6 @@ function applyInstrumentToRegisters(
     period = (period - pitch) & 0x0fff;
   }
 
-  // Update mixer based on mode
   const toneActive = mode === 0 || mode === 2;
   const noiseActive = mode === 1 || mode === 2;
 
@@ -431,7 +419,6 @@ function applyInstrumentToRegisters(
     regs[channel * 2 + 1] = (period >> 8) & 0x0f;
   }
 
-  // Set noise period if active
   if (noiseActive && noisePeriod > 0) {
     regs[0x06] = noisePeriod;
   }

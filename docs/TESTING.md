@@ -206,6 +206,8 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 
 `npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/` - the `pretest:e2e` script builds first, so the preview always serves the current code. The suite runs on the chromium and webkit projects - the firefox project is excluded because headless launch fails under the current macOS sandbox.
 
+The `saves and loads a song file` webkit case can flake under parallel workers - the file-input assertion observes a pre-upload value under load. It is timing-dependent, not a regression: rerun it in isolation (`npx playwright test --project=webkit e2e/smoke.spec.ts`) before treating it as a failure, and prefer making the test deterministic over accepting repeats.
+
 ## Test Configuration
 
 **Vitest**

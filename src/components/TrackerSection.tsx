@@ -5,7 +5,7 @@ import type { Pattern, Instrument, Song } from '../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../constants/music.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import { TrackPanel } from './TrackPanel.tsx';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 import RainbowModeLight from '../assets/svg/rainbow-mode-light.svg';
 import RainbowModeDark from '../assets/svg/rainbow-mode-dark.svg';
 import RainbowModeLightColorless from '../assets/svg/rainbow-mode-light-colorless.svg';
@@ -21,7 +21,7 @@ interface TrackerSectionProps {
   currentOctave: number;
   getCurrentPatternForTrack: (trackId: 'A' | 'B' | 'C') => Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
-  ym2149: YM2149 | null;
+  ym2149: SoundEngine | null;
   currentInstrument: Instrument;
   targetTrackId: 'A' | 'B' | 'C';
   onToggleLineFromCursor: (lineIndex: number) => void;

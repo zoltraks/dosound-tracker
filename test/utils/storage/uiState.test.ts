@@ -4,6 +4,7 @@ import {
   saveUiState,
   updateMarkdownScroll,
   updateSettingsView,
+  patchSettingsView,
   clearUiState,
   DEFAULT_UI_STATE,
 } from '../../../src/utils/storage/uiState.ts';
@@ -65,7 +66,11 @@ describe('uiState snapshot', () => {
         draft: {
           general: { theme: 'light', trackBackground: false, startupTone: true },
           editor: { restoreCursor: true, restoreView: false, pasteTrackMode: 'overwriteAll' },
+          sound: { engine: 'internal' },
         },
+        focus: null,
+        paneScroll: 0,
+        confirmingReset: false,
       },
     });
     const state = loadUiState();
@@ -90,7 +95,11 @@ describe('uiState snapshot', () => {
         draft: {
           general: { theme: 'dark', trackBackground: true, startupTone: true },
           editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
+          sound: { engine: 'internal' },
         },
+        focus: null,
+        paneScroll: 0,
+        confirmingReset: false,
       },
     });
     expect(loadUiState().settingsView?.category).toBe('general');
@@ -107,13 +116,70 @@ describe('uiState snapshot', () => {
         draft: {
           general: { theme: 'dark', trackBackground: true, startupTone: true },
           editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
+          sound: { engine: 'internal' },
         },
+        focus: null,
+        paneScroll: 0,
+        confirmingReset: false,
       },
     });
     updateSettingsView(null);
     const state = loadUiState();
     expect(state.settingsView).toBeNull();
     expect(state.openModal).toBe('settings');
+  });
+
+  it('defaults the extended session members on an older snapshot', () => {
+    saveUiState({
+      openModal: 'settings',
+      sharedCurrentLine: 0,
+      markdownScroll: 0,
+      windowScroll: 0,
+      settingsView: {
+        category: 'editor',
+        draft: {
+          general: { theme: 'dark', trackBackground: true, startupTone: true },
+          editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
+          sound: { engine: 'internal' },
+        },
+      } as never,
+    });
+    const view = loadUiState().settingsView;
+    expect(view?.focus).toBeNull();
+    expect(view?.paneScroll).toBe(0);
+    expect(view?.confirmingReset).toBe(false);
+  });
+
+  it('merges a patch into the settings session without clearing siblings', () => {
+    saveUiState({
+      openModal: 'settings',
+      sharedCurrentLine: 0,
+      markdownScroll: 0,
+      windowScroll: 0,
+      settingsView: {
+        category: 'sound',
+        draft: {
+          general: { theme: 'dark', trackBackground: true, startupTone: true },
+          editor: { restoreCursor: true, restoreView: true, pasteTrackMode: 'replace' },
+          sound: { engine: 'internal' },
+        },
+        focus: null,
+        paneScroll: 0,
+        confirmingReset: false,
+      },
+    });
+    patchSettingsView({ focus: 'settings-sound-engine', paneScroll: 42 });
+    const view = loadUiState().settingsView;
+    expect(view?.category).toBe('sound');
+    expect(view?.focus).toBe('settings-sound-engine');
+    expect(view?.paneScroll).toBe(42);
+    expect(view?.draft.editor.pasteTrackMode).toBe('replace');
+  });
+
+  it('ignores a patch when no settings session exists', () => {
+    saveUiState({ ...DEFAULT_UI_STATE });
+    patchSettingsView({ focus: 'settings-action-ok' });
+    expect(loadUiState().settingsView).toBeNull();
   });
 
   it('updates only the scroll offset', () => {

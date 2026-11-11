@@ -532,6 +532,8 @@ settings:
     restoreCursor: true # restore the editor cursor on reload
     restoreView: true # restore the open view on reload
     pasteTrackMode: 'replace' # 'replace', 'overwriteAll', or 'overwriteEmpty'
+  sound:
+    engine: 'internal' # 'internal' or 'ayumi'
 ```
 
 Loader rules (from `parseSettingsFromYaml`):

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { DialogFrame } from '../components/DialogFrame.tsx';
 import { logger } from '../utils/log/logger.ts';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hooks/midi/useMidi.ts';
@@ -61,20 +61,11 @@ export const MidiModal: React.FC<MidiModalProps> = ({
     }
   }, [isOpen, configuration]);
 
-  useEffect(() => {
-    if (!isOpen) return;
-  }, [isOpen]);
-
   const hasInputs = devices.inputs.length > 0;
   const hasOutputs = devices.outputs.length > 0;
 
-  const effectiveInputId = useMemo(() => {
-    return localConfig.inputId;
-  }, [localConfig.inputId]);
-
-  const effectiveOutputId = useMemo(() => {
-    return localConfig.outputId;
-  }, [localConfig.outputId]);
+  const effectiveInputId = localConfig.inputId;
+  const effectiveOutputId = localConfig.outputId;
 
   if (!isOpen) return null;
 

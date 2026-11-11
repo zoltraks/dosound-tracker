@@ -1,10 +1,10 @@
 import { Formatter } from '../utils/format/formatters.ts';
 import React, { useEffect, useRef, useState } from 'react';
 import { logger } from '../utils/log/logger.ts';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 
 interface DumpPanelProps {
-  ym2149: YM2149 | null;
+  ym2149: SoundEngine | null;
 }
 
 interface DerivedRegisters {
@@ -19,7 +19,7 @@ interface DerivedRegisters {
 }
 
 export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
-  const ym2149Ref = useRef<YM2149 | null>(null);
+  const ym2149Ref = useRef<SoundEngine | null>(null);
   const [derived, setDerived] = useState<DerivedRegisters>({
     toneA: 0,
     toneB: 0,
@@ -89,7 +89,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
         mixer,
         noisePeriod,
       });
-    }, 100); // Update every 100ms
+    }, 100);
 
     return () => clearInterval(updateInterval);
   }, []);

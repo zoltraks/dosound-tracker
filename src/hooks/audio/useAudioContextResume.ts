@@ -8,14 +8,9 @@ export const useAudioContextResume = ({ audioContext }: { audioContext: AudioCon
     }
 
     if (audioContext.state === 'suspended') {
-      return audioContext
-        .resume()
-        .then(() => {
-          // AudioContext resumed; piano preview notes can now play immediately.
-        })
-        .catch((error: unknown) => {
-          logger.error('AudioContext resume failed in ensureAudioContextResumed', error);
-        });
+      return audioContext.resume().catch((error: unknown) => {
+        logger.error('AudioContext resume failed in ensureAudioContextResumed', error);
+      });
     }
 
     return Promise.resolve();

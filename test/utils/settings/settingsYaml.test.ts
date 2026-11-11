@@ -15,6 +15,7 @@ describe('settingsYaml', () => {
         restoreView: true,
         pasteTrackMode: 'overwriteAll' as const,
       },
+      sound: { engine: 'ayumi' as const },
     };
     const parsed = parseSettingsFromYaml(buildSettingsYaml(settings), DEFAULT_SETTINGS);
     try {
@@ -33,6 +34,8 @@ describe('settingsYaml', () => {
       expect(text).toContain('general:');
       expect(text).toContain('editor:');
       expect(text).toContain('pasteTrackMode: replace');
+      expect(text).toContain('sound:');
+      expect(text).toContain('engine: internal');
     } catch (error) {
       console.log('yaml text:', text);
       throw error;
@@ -68,6 +71,7 @@ describe('settingsYaml', () => {
         restoreView: true,
         pasteTrackMode: 'overwriteEmpty' as const,
       },
+      sound: { engine: 'ayumi' as const },
     };
     const parsed = parseSettingsFromYaml(
       'settings:\n  version: 1\n  general:\n    theme: dark\n',
@@ -77,6 +81,7 @@ describe('settingsYaml', () => {
       expect(parsed).toEqual({
         general: { theme: 'dark', trackBackground: false, startupTone: true },
         editor: fallback.editor,
+        sound: fallback.sound,
       });
     } catch (error) {
       console.log('parsed with fallback:', parsed);

@@ -16,7 +16,6 @@ export const useTrackPattern = ({
 }: UseTrackPatternParams) => {
   const getCurrentPatternForTrack = useCallback(
     (trackId: 'A' | 'B' | 'C') => {
-      // Get current playlist row based on sequencer state
       const playlistLength = currentSong.line.length;
       if (playlistLength === 0) {
         return null;
@@ -29,7 +28,6 @@ export const useTrackPattern = ({
         return null;
       }
 
-      // Return pattern based on which track is asking
       let patternId = '--';
       switch (trackId) {
         case 'A':
@@ -44,12 +42,11 @@ export const useTrackPattern = ({
       }
 
       if (patternId === '--') {
-        return null; // No pattern set for this track
+        return null;
       }
 
       let foundPattern = currentSong.pattern.find((p) => p.id === patternId);
 
-      // If pattern doesn't exist, create it with current pattern length
       if (!foundPattern) {
         const targetLength = currentSong.length || PATTERN_LENGTH;
         const newPattern = {
@@ -62,7 +59,6 @@ export const useTrackPattern = ({
             })),
         };
 
-        // Add the new pattern to the song
         const updatedPatterns = [...currentSong.pattern, newPattern];
         updateSong({ pattern: updatedPatterns });
 
@@ -74,7 +70,6 @@ export const useTrackPattern = ({
     [currentSong, sequencerPatternIndex, updateSong],
   );
 
-  // Handle stop playback with silence
   const handlePatternChange = useCallback(
     (newPattern: Pattern) => {
       if (!newPattern || !newPattern.id) {
@@ -82,7 +77,6 @@ export const useTrackPattern = ({
         return;
       }
 
-      // Find and update the pattern by ID
       const updatedPatterns = [...currentSong.pattern];
       const patternIndex = updatedPatterns.findIndex((p) => p.id === newPattern.id);
 

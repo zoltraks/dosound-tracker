@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react';
 import type { Note } from '../../synth/SoundDriver.ts';
-import { YM2149 } from '../../synth/YM2149.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 
 export interface PlaybackSimulationState {
   channelSubTickRef: React.MutableRefObject<number[]>;
@@ -18,7 +18,7 @@ export interface PlaybackSimulationState {
 }
 
 export function usePlaybackSimulation(
-  ym2149Ref: React.MutableRefObject<YM2149 | null>,
+  ym2149Ref: React.MutableRefObject<SoundEngine | null>,
   midiHelpersRef: React.MutableRefObject<{
     sendInstrumentMidiNoteOffForChannel: (ymChannel: number) => void;
   } | null>,
@@ -47,7 +47,6 @@ export function usePlaybackSimulation(
     debugLastRowRef.current = null;
     debugLastTimeRef.current = null;
 
-    // Send MIDI Note Off for any active playback notes
     const helpers = midiHelpersRef.current;
     if (helpers) {
       for (let ch = 0; ch < 3; ch += 1) {
@@ -55,7 +54,6 @@ export function usePlaybackSimulation(
       }
     }
 
-    // Silence all channels
     if (ym2149Ref.current) {
       ym2149Ref.current.silenceAll();
     }

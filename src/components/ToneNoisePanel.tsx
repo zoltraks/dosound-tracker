@@ -181,18 +181,17 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   );
 
   const getBarEmoji = () => {
-    return '🎵'; // Always use music note emoji
+    return '🎵';
   };
 
   const getBarColor = (value: number) => {
-    // Use different colors based on mode value: 0=T, 1=N, 2=T+N
     if (value === 0) {
-      return '#f59e0b'; // Orange for T (tone)
+      return '#f59e0b';
     }
     if (value === 1) {
-      return '#3fbbc8'; // Cyan for N (noise)
+      return '#3fbbc8';
     }
-    return '#a855f7'; // Purple for B (both)
+    return '#a855f7';
   };
 
   const getModeLabel = (value: number) => {
@@ -202,7 +201,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
   };
 
   const getTitle = () => {
-    return 'Mode'; // Simplified header title
+    return 'Mode';
   };
 
   return (

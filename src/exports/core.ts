@@ -19,7 +19,6 @@ export function normalizeSongForExport(song: Song): Song {
   };
 }
 
-// Parse base key string like "C-4" or "C#4" into note/octave
 export function parseBaseKeyForExport(rawBase?: string): { note: string; octave: number } {
   const fallback = 'C-4';
 
@@ -44,7 +43,6 @@ export function formatNoteLabel(
 ): string {
   const idx = NOTES.indexOf(baseNote);
   if (idx === -1) {
-    // Fallback: just use base values
     return baseNote.includes('#') ? `${baseNote}${baseOctave}` : `${baseNote}-${baseOctave}`;
   }
 

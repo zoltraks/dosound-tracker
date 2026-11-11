@@ -44,7 +44,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
 
   const isActive = activeSection === 'playlist';
 
-  // Persist the selected playlist track column across reloads.
   useEffect(() => {
     try {
       localStorage.setItem(StorageKeys.PLAYLIST_TRACK, currentTrack);
@@ -84,7 +83,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       const newPlaylist = [...playlist];
       const entry = { ...newPlaylist[lineIndex] };
 
-      // Validate pattern ID (should be 2-digit hex or '--')
       if (patternId === '--' || (patternId.length === 2 && /^[0-9A-Fa-f]{2}$/.test(patternId))) {
         switch (track) {
           case 'A':
@@ -138,7 +136,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       }
       setEditingPattern('');
 
-      // Refocus the playlist container after editing completes
       const shouldRefocusPlaylist = options?.refocusPlaylist !== false;
       if (!shouldRefocusPlaylist) {
         return;
@@ -202,7 +199,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     (event: React.KeyboardEvent) => {
       if (!isActive) return;
 
-      // Ctrl+ArrowUp / Ctrl+ArrowDown: move current line up/down
       if (!editingPattern && event.ctrlKey) {
         if (event.key === 'ArrowUp') {
           event.preventDefault();
@@ -218,7 +214,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
 
       const key = event.key.toUpperCase();
 
-      // If we're editing a pattern, handle pattern input
       if (editingPattern !== '') {
         if (key === 'ENTER' || key === 'ESCAPE') {
           event.preventDefault();
@@ -229,7 +224,6 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           }
         } else if (key === 'BACKSPACE') {
           event.preventDefault();
-          // If editing pattern has only 1 character, clear to '--' and exit editing
           if (editingPattern.length === 1) {
             updatePattern(currentLine, currentTrack, '--');
             setEditingPattern('');

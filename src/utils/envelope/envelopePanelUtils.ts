@@ -2,7 +2,6 @@ import { ENVELOPE_LENGTH, NOISE_MAX } from '../../constants/music.ts';
 import type { EnvelopePanelType } from './envelopeTypes.ts';
 import { clampEnvelopeValue, getFullEnvelope } from './envelopeTypes.ts';
 
-// Read a persisted envelope step cursor, clamped to the envelope length.
 export function readEnvelopeCursor(raw: string | null): number {
   const value = Number(raw);
   if (raw === null || raw === '' || !Number.isFinite(value)) {

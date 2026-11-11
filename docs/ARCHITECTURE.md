@@ -44,10 +44,10 @@ The source tree under `src/` is organized into focused folders. Each folder owns
 - **hooks** - Custom React hooks that encapsulate behavior. This is the largest folder and contains the bulk of the application logic: data management, playback, audio setup, MIDI, keyboard, modals, file operations, instrument actions, playlist operations, and sequencer integration. `usePreviewEnvelope` in `hooks/playback/` is the single preview-envelope engine shared by every instrument-preview surface. Every hook lives in a domain subdirectory (`midi/`, `instrument/`, `song/`, `playback/`, `keyboard/`, `audio/`, `sequencer/`, `modal/`, `app/`, `storage/`, `file/`, `ui/`) - the folder holds no files directly. It also holds the bounded orchestration hooks extracted from `App.tsx` (dialog groups, persistence, playback handlers) - each owns one concern and receives its dependencies through a typed parameter object.
 - **modals** - Modal dialog components and their supporting logic. Separated from the general components folder to keep modal wiring isolated. Modal files are imported directly - the folder carries no barrel file.
 - **hooks/ui** - Holds the single Zustand store, `useUiStore.ts`, beside the UI-domain hooks. The store holds cross-component UI state - `src/stores/` was dissolved when its only member moved here under the directories-only rule.
-- **synth** - Audio synthesis core. `YM2149.ts` emulates the hardware chip and `SoundDriver.ts` holds the song data-model interfaces (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) imported as types across the tree.
+- **synth** - Audio synthesis core. Two selectable engines sit behind the `SoundEngine` contract in `soundEngine.ts`: `YM2149.ts` emulates the chip with Web Audio nodes (the `internal` engine, default) and `AyumiEngine.ts` drives the vendored `ayumiCore.ts` DSP inside `workers/ayumiWorklet.ts` (the `ayumi` engine). `channelInstrument.ts` holds the instrument-to-register logic shared by both engines, and `SoundDriver.ts` holds the song data-model interfaces (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) imported as types across the tree.
 - **types** - Shared TypeScript type definitions used across modules.
 - **utils** - Pure utility functions and stateless helpers. Every utility lives in a domain subdirectory (`instrument/`, `track/`, `song/`, `midi/`, `keyboard/`, `envelope/`, `playback/`, `file/`, `compression/`, `cursor/`, `export/`, `format/`, `log/`, `markdown/`, `panel/`, `pattern/`, `storage/`, `timer/`, `transpose/`, `validation/`, `yaml/`) - the folder holds no files directly, and single-file directories are allowed when a domain has one member.
-- **workers** - Web Workers. `sequencer.ts` runs the 50Hz VBLANK timer in a dedicated thread to keep playback timing isolated from the React render loop.
+- **workers** - Web Workers and worklets. `sequencer.ts` runs the 50Hz VBLANK timer in a dedicated thread to keep playback timing isolated from the React render loop. `ayumiWorklet.ts` is the `AudioWorkletProcessor` that renders Ayumi samples off the main thread.
 - **assets** - Static assets such as icons and images bundled with the app.
 
 ## State Domains
@@ -71,8 +71,8 @@ The application has two primary data flows.
 1. Song data lives in `useState` inside `useDataManagement`, which is wired from App.tsx and handles load, save, and mutation of the song model.
 2. `useSequencer` receives the song's pattern length and frame rate, starts the Web Worker, and emits tick events at that rate (50Hz default).
 3. Each tick drives `useSequencerIntegration`, which advances the per-channel instrument envelopes and computes the next frame of YM2149 register values through `src/utils/playback/` helpers.
-4. The integration applies those register writes to the `YM2149` emulator instance.
-5. The `YM2149` emulator maps registers to Web Audio nodes (oscillators, gain nodes, noise buffer, envelope gain) and produces sound through the `AudioContext`.
+4. The integration applies those register writes to the selected `SoundEngine` instance.
+5. The engine renders the registers: `internal` maps them to Web Audio nodes (oscillators, gain nodes, noise buffer, envelope gain), while `ayumi` forwards them to the `AudioWorkletProcessor` holding the Ayumi DSP core. Both produce sound through the `AudioContext`.
 
 **Export pipeline:**
 
@@ -85,7 +85,11 @@ The application has two primary data flows.
 
 The audio pipeline mirrors the real Atari ST hardware path, emulated in software.
 
-The `YM2149` class is the hardware emulator. It owns 16 registers, three tone channels, a noise generator, an envelope generator, and a set of Web Audio nodes (oscillators, gain nodes, noise buffer source, envelope gain). It runs at a configurable clock (default 2 MHz, `YM_CLOCK = 2000000`) set per song via the `clock` field. The clock drives the tone and noise frequency calculations (`f = clock / (16 * period)`). At 1 MHz, period values are half of the 2 MHz values for the same note. It uses a 16-step logarithmic volume table (`YM_LOG_VOLUME_TABLE`) that approximates the real chip's -2dB per step curve. Register writes are batched to avoid redundant node updates.
+The `YM2149` class is the default (`internal`) hardware emulator. It owns 16 registers, three tone channels, a noise generator, an envelope generator, and a set of Web Audio nodes (oscillators, gain nodes, noise buffer source, envelope gain). It runs at a configurable clock (default 2 MHz, `YM_CLOCK = 2000000`) set per song via the `clock` field. The clock drives the tone and noise frequency calculations (`f = clock / (16 * period)`). At 1 MHz, period values are half of the 2 MHz values for the same note. It uses a 16-step logarithmic volume table (`YM_LOG_VOLUME_TABLE`) that approximates the real chip's -2dB per step curve. Register writes are batched to avoid redundant node updates.
+
+The `AyumiEngine` class is the `ayumi` engine. It owns a main-thread register mirror and forwards writes to an `AudioWorkletProcessor` (`workers/ayumiWorklet.ts`) that runs the vendored `ayumiCore.ts` DSP - the precise AY/YM emulation by Peter Sovietov with the measured YM2149 DAC table, hardware envelope generator, FIR decimation, and DC removal filter. The mirror keeps `getRegisters`, `getRegistersArray`, and `getState` synchronous for the Dump and EQ panels. Channel output stays mono to match the Atari ST.
+
+Both engines implement the `SoundEngine` contract in `src/synth/soundEngine.ts`. `createSoundEngine` resolves a persisted engine id (`internal` or `ayumi`, `internal` fallback) to a concrete engine inside `useAudioSetup`, and switching engines disposes the active instance and creates the new one without a reload. The instrument-to-register translation lives once in `src/synth/channelInstrument.ts` and feeds both engines.
 
 The song data model (`Song`, `Pattern`, `Step`, `Note`, `Line`, `Instrument`) is defined as interfaces in `src/synth/SoundDriver.ts` and consumed across the tree through type-only imports. Per-tick playback logic lives in `src/hooks/sequencer/useSequencerIntegration.ts` and `src/utils/playback/`, which translate instruments, envelopes, and mixer state into register writes on the `YM2149` instance. Timing is anchored to the song's frame rate (default 50 Hz, `DEFAULT_SONG_FRAME`), configurable per song via the `frame` field.
 

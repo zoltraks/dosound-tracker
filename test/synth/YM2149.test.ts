@@ -2,6 +2,7 @@
 
 import { describe, it, expect } from 'vitest';
 import { YM2149, YM_CLOCK, YM_LOG_VOLUME_TABLE } from '../../src/synth/YM2149.ts';
+import { deriveYmState } from '../../src/synth/channelInstrument.ts';
 import type { Instrument } from '../../src/synth/SoundDriver.ts';
 import { createAudioContextStub } from './audioContextStub.ts';
 
@@ -39,6 +40,18 @@ describe('YM2149 construction', () => {
       expect(ym.getClock()).toBe(1_000_000);
     } catch (error) {
       console.log('clock mismatch');
+      throw error;
+    }
+  });
+
+  it('initial state matches the zero register file decode', () => {
+    const { context } = createAudioContextStub();
+    const ym = new YM2149(context);
+    try {
+      expect(ym.getState()).toEqual(deriveYmState(new Array(16).fill(0)));
+      expect(ym.getState().channels[0].noiseEnabled).toBe(true);
+    } catch (error) {
+      console.log('initial state', JSON.stringify(ym.getState()));
       throw error;
     }
   });

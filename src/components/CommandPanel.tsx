@@ -260,7 +260,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
           </div>
         ) : (
           <>
-            {/* Row 1: Playback and utilities */}
             <div className="command-row">
               <button
                 onClick={isPlaying && !isLinePlaying ? onStop : onPlaySong}
@@ -318,7 +317,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
               </button>
             </div>
 
-            {/* Row 2: Playlist and track commands */}
             <div className="command-row">
               <button onClick={onAddLine} className="command-btn">
                 ADD LINE
@@ -364,7 +362,6 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
               </button>
             </div>
 
-            {/* Row 3: Instrument and delete commands */}
             <div className="command-row">
               <button onClick={onNewInstrument} className="command-btn">
                 ADD INST

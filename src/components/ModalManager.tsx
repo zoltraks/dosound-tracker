@@ -11,7 +11,6 @@ import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../hoo
 import type { InstrumentDeleteUsage } from '../hooks/modal/useModalState.ts';
 
 interface ModalManagerProps {
-  // Error and summary states
   songError: string;
   setSongError: (error: string) => void;
   instrumentError: string;
@@ -31,7 +30,6 @@ interface ModalManagerProps {
   instrumentOperationSummary: string;
   onCloseInstrumentOperationSummary: () => void;
 
-  // Modal states
   isDebugInfoOpen: boolean;
   setIsDebugInfoOpen: (open: boolean) => void;
   isInstrumentTypeWarningOpen: boolean;
@@ -126,7 +124,6 @@ interface ModalManagerProps {
   onConfirmSongConfigurationWarning: () => void;
   onCancelSongConfigurationWarning: () => void;
 
-  // File picker modals
   isRepositoryInstrumentOpen: boolean;
   setIsRepositoryInstrumentOpen: (open: boolean) => void;
   onPickRepositoryInstrument: (fileUrl: string) => void;
@@ -134,7 +131,6 @@ interface ModalManagerProps {
   setIsDemoSongPickerOpen: (open: boolean) => void;
   onPickDemoSong: (fileUrl: string) => void;
 
-  // Export modal
   isExportModalOpen: boolean;
   pendingExportType: ExportType;
   pendingExportStrategy: ExportStrategy;
@@ -149,26 +145,27 @@ interface ModalManagerProps {
   onConfirmExport: () => void;
   onCancelExport: () => void;
 
-  // Paste track modal
   isPasteTrackModalOpen: boolean;
   pasteTrackPendingMode: TrackPasteMode;
   setPasteTrackPendingMode: (mode: TrackPasteMode) => void;
   onConfirmPasteTrackModal: () => void;
   onCancelPasteTrackModal: () => void;
 
-  // Settings modal
   isSettingsOpen: boolean;
   settingsCategory: SettingsCategory;
   settingsDraft: SettingsValues;
+  settingsConfirmingReset: boolean;
   onSettingsCategoryChange: (category: SettingsCategory) => void;
   onSettingsDraftChange: (draft: SettingsValues) => void;
+  onSettingsConfirmingResetChange: (confirming: boolean) => void;
+  onSettingsSessionFocus: (elementId: string | null) => void;
+  onSettingsPaneScroll: (scrollTop: number) => void;
   onCommitSettings: () => void;
   onCancelSettings: () => void;
   onSettingsLoadError: (message: string) => void;
 }
 
 export const ModalManager: React.FC<ModalManagerProps> = ({
-  // Error and summary states
   songError,
   setSongError,
   instrumentError,
@@ -301,8 +298,12 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
   isSettingsOpen,
   settingsCategory,
   settingsDraft,
+  settingsConfirmingReset,
   onSettingsCategoryChange,
   onSettingsDraftChange,
+  onSettingsConfirmingResetChange,
+  onSettingsSessionFocus,
+  onSettingsPaneScroll,
   onCommitSettings,
   onCancelSettings,
   onSettingsLoadError,
@@ -418,8 +419,12 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
         isSettingsOpen={isSettingsOpen}
         settingsCategory={settingsCategory}
         settingsDraft={settingsDraft}
+        settingsConfirmingReset={settingsConfirmingReset}
         onSettingsCategoryChange={onSettingsCategoryChange}
         onSettingsDraftChange={onSettingsDraftChange}
+        onSettingsConfirmingResetChange={onSettingsConfirmingResetChange}
+        onSettingsSessionFocus={onSettingsSessionFocus}
+        onSettingsPaneScroll={onSettingsPaneScroll}
         onCommitSettings={onCommitSettings}
         onCancelSettings={onCancelSettings}
         onSettingsLoadError={onSettingsLoadError}

@@ -14,7 +14,6 @@ export interface UseAppModalsParams {
   modalState: UseModalStateResult;
   aboutVersion: string;
 
-  // Error and summary states owned outside the modal-state hook
   songError: string;
   setSongError: (value: string) => void;
   instrumentError: string;
@@ -30,7 +29,6 @@ export interface UseAppModalsParams {
   handleCloseRenumberSummary: () => void;
   handleCloseInstrumentOperationSummary: () => void;
 
-  // About, changelog, manual, and quit dialogs
   aboutRuntimeLabel: string | null;
   aboutRuntimeDetails: string[];
   handleShowChangelog: () => void;
@@ -40,7 +38,6 @@ export interface UseAppModalsParams {
   handleConfirmQuit: () => void;
   handleCancelQuit: () => void;
 
-  // Transpose dialog
   transposeScope: 'line' | 'song';
   setTransposeScope: Dispatch<SetStateAction<'line' | 'song'>>;
   transposeTrackScope: 'current' | 'all';
@@ -55,7 +52,6 @@ export interface UseAppModalsParams {
   handleConfirmTranspose: () => void;
   handleCancelTranspose: () => void;
 
-  // Optimize, renumber, new-song, and reset confirmations
   handleConfirmOptimize: () => void;
   handleCancelOptimize: () => void;
   handleConfirmRenumber: () => void;
@@ -65,12 +61,10 @@ export interface UseAppModalsParams {
   handleConfirmReset: () => void;
   handleCancelReset: () => void;
 
-  // Instrument delete confirmation
   handleCancelInstrumentDelete: () => void;
   handleConfirmDeleteInstrumentAndNotes: () => void;
   handleConfirmDeleteInstrumentOnly: () => void;
 
-  // Instrument type warning
   isInstrumentTypeWarningOpen: boolean;
   pendingInstrumentTypeInfo: InstrumentTypeInfo | null;
   instrumentTypeWarningIgnoreChecked: boolean;
@@ -78,7 +72,6 @@ export interface UseAppModalsParams {
   handleConfirmInstrumentTypeWarning: () => void;
   handleCancelInstrumentTypeWarning: () => void;
 
-  // Instrument MIDI and color dialogs
   instrumentMidiTarget: Instrument | null;
   handleSaveInstrumentMidi: (midi: { channel: number | null; program: number | null }) => void;
   handleCloseInstrumentMidi: () => void;
@@ -87,7 +80,6 @@ export interface UseAppModalsParams {
   handleClearInstrumentColor: () => void;
   handleCloseInstrumentColor: () => void;
 
-  // MIDI dialog
   isMidiSupported: boolean;
   midiAccessError: string | null;
   midiConfiguration: MidiConfiguration;
@@ -104,13 +96,11 @@ export interface UseAppModalsParams {
   handleLiveMidiConfigChange: (patch: Partial<MidiConfiguration>) => void;
   handleMidiSystemReset: () => void;
 
-  // Song import configuration warning
   pendingSongImport: PendingSongImport | null;
   configurationWarningMessage: string;
   handleConfirmSongConfigurationWarning: () => void;
   handleCancelSongConfigurationWarning: () => void;
 
-  // File picker dialogs
   isRepositoryInstrumentOpen: boolean;
   setIsRepositoryInstrumentOpen: (open: boolean) => void;
   handlePickRepositoryInstrument: (fileUrl: string) => void;
@@ -118,7 +108,6 @@ export interface UseAppModalsParams {
   setIsDemoSongPickerOpen: (open: boolean) => void;
   handlePickDemoSong: (fileUrl: string) => void;
 
-  // Export modal
   pendingExportType: ExportType;
   pendingExportStrategy: ExportStrategy;
   handleExportTypeChange: (type: ExportType) => void;
@@ -132,18 +121,20 @@ export interface UseAppModalsParams {
   handleConfirmExport: () => void;
   handleCancelExport: () => void;
 
-  // Paste track options modal
   isPasteTrackModalOpen: boolean;
   pasteTrackPendingMode: TrackPasteMode;
   setPasteTrackPendingMode: (mode: TrackPasteMode) => void;
   handleConfirmPasteTrackModal: () => void;
   handleCancelPasteTrackModal: () => void;
 
-  // Settings modal
   settingsCategory: SettingsCategory;
   settingsDraft: SettingsValues;
+  settingsConfirmingReset: boolean;
   onSettingsCategoryChange: (category: SettingsCategory) => void;
   onSettingsDraftChange: (draft: SettingsValues) => void;
+  onSettingsConfirmingResetChange: (confirming: boolean) => void;
+  onSettingsSessionFocus: (elementId: string | null) => void;
+  onSettingsPaneScroll: (scrollTop: number) => void;
   handleCommitSettings: () => void;
   handleCancelSettings: () => void;
 }
@@ -256,8 +247,12 @@ export function useAppModals({
   handleCancelPasteTrackModal,
   settingsCategory,
   settingsDraft,
+  settingsConfirmingReset,
   onSettingsCategoryChange,
   onSettingsDraftChange,
+  onSettingsConfirmingResetChange,
+  onSettingsSessionFocus,
+  onSettingsPaneScroll,
   handleCommitSettings,
   handleCancelSettings,
 }: UseAppModalsParams): ReactElement {
@@ -366,7 +361,6 @@ export function useAppModals({
 
   return (
     <ModalManager
-      // Error and summary states
       songError={songError}
       setSongError={setSongError}
       instrumentError={instrumentError}
@@ -502,8 +496,12 @@ export function useAppModals({
       isSettingsOpen={isSettingsOpen}
       settingsCategory={settingsCategory}
       settingsDraft={settingsDraft}
+      settingsConfirmingReset={settingsConfirmingReset}
       onSettingsCategoryChange={onSettingsCategoryChange}
       onSettingsDraftChange={onSettingsDraftChange}
+      onSettingsConfirmingResetChange={onSettingsConfirmingResetChange}
+      onSettingsSessionFocus={onSettingsSessionFocus}
+      onSettingsPaneScroll={onSettingsPaneScroll}
       onCommitSettings={handleCommitSettings}
       onCancelSettings={handleCancelSettings}
       onSettingsLoadError={setSongError}

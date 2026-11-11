@@ -39,7 +39,6 @@ describe('FilePickerModal', () => {
     const links = screen.getAllByRole('link');
     expect(links).toHaveLength(2);
 
-    // defaultSortDescending=true should make the first visible label "b.txt"
     expect(links[0].textContent).toBe('b.txt');
     expect(links[0].getAttribute('href')).toBe('download/b.txt');
     expect(links[1].textContent).toBe('a.txt');
@@ -93,7 +92,6 @@ describe('FilePickerModal', () => {
     fireEvent.click(button);
 
     expect(handlePick).toHaveBeenCalledTimes(1);
-    // Directory and path should be encoded and joined with '/'
     expect(handlePick).toHaveBeenCalledWith('subdir/file%20name.txt');
     expect(handleClose).toHaveBeenCalledTimes(1);
   });

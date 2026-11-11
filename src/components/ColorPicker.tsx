@@ -7,13 +7,7 @@ export interface ColorPickerProps {
    * When omitted or invalid, the picker falls back to a safe default.
    */
   value?: string;
-  /**
-   * Called whenever the selected color changes (via palette or custom input).
-   */
   onChange?: (color: string) => void;
-  /**
-   * Optional extra class name for the root container.
-   */
   className?: string;
 }
 

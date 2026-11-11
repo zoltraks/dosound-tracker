@@ -79,39 +79,44 @@ afterEach(() => {
 });
 
 describe('sequencer start and tick emission', () => {
-  it('emits the first tick only after two intervals have elapsed', () => {
+  it('emits the starting tick immediately, then advances on the interval', () => {
     dispatch({ type: 'start' });
-    vi.advanceTimersByTime(20);
-    try {
-      expect(messages()).toHaveLength(0);
-    } catch (error) {
-      console.log('early tick', messages());
-      throw error;
-    }
-    vi.advanceTimersByTime(20);
     try {
       expect(tickMessages()).toHaveLength(1);
       expect(tickMessages()[0].data).toEqual({
         isPlaying: true,
         currentPattern: 0,
         currentLine: 0,
+        currentTick: 0,
+      });
+    } catch (error) {
+      console.log('immediate tick', messages());
+      throw error;
+    }
+    vi.advanceTimersByTime(20);
+    try {
+      expect(tickMessages()).toHaveLength(2);
+      expect(tickMessages()[1].data).toEqual({
+        isPlaying: true,
+        currentPattern: 0,
+        currentLine: 0,
         currentTick: 1,
       });
     } catch (error) {
-      console.log('first tick', messages());
+      console.log('first interval tick', messages());
       throw error;
     }
   });
 
   it('advances tick within a row, then wraps to the next line', () => {
     dispatch({ type: 'start' });
-    vi.advanceTimersByTime(20 * 5); // ticks at +40, +60, +80, +100
+    vi.advanceTimersByTime(20 * 5); // ticks at +20, +40, +60, +80, +100
     const ticks = tickMessages();
     try {
-      expect(ticks).toHaveLength(4);
-      expect(ticks.map((t) => t.data.currentTick)).toEqual([1, 2, 0, 1]);
-      expect(ticks.map((t) => t.data.currentLine)).toEqual([0, 0, 1, 1]);
-      expect(ticks.map((t) => t.data.currentPattern)).toEqual([0, 0, 0, 0]);
+      expect(ticks).toHaveLength(6);
+      expect(ticks.map((t) => t.data.currentTick)).toEqual([0, 1, 2, 0, 1, 2]);
+      expect(ticks.map((t) => t.data.currentLine)).toEqual([0, 0, 0, 1, 1, 1]);
+      expect(ticks.map((t) => t.data.currentPattern)).toEqual([0, 0, 0, 0, 0, 0]);
     } catch (error) {
       console.log('progression', JSON.stringify(ticks));
       throw error;
@@ -123,12 +128,24 @@ describe('sequencer start and tick emission', () => {
     vi.advanceTimersByTime(40);
     const ticks = tickMessages();
     try {
-      expect(ticks).toHaveLength(1);
+      expect(ticks).toHaveLength(3);
       expect(ticks[0].data).toEqual({
         isPlaying: true,
         currentPattern: 2,
         currentLine: 5,
+        currentTick: 1,
+      });
+      expect(ticks[1].data).toEqual({
+        isPlaying: true,
+        currentPattern: 2,
+        currentLine: 5,
         currentTick: 2,
+      });
+      expect(ticks[2].data).toEqual({
+        isPlaying: true,
+        currentPattern: 2,
+        currentLine: 6,
+        currentTick: 0,
       });
     } catch (error) {
       console.log('start position', JSON.stringify(ticks));
@@ -141,14 +158,14 @@ describe('sequencer boundaries', () => {
   it('advances the pattern after ticksPerRow * patternLength ticks', () => {
     dispatch({ type: 'setParams', data: { ticksPerRow: 2, patternLength: 2 } });
     dispatch({ type: 'start' });
-    vi.advanceTimersByTime(20 * 5); // 4 ticks
+    vi.advanceTimersByTime(20 * 5); // immediate tick + 5 interval ticks
     const ticks = tickMessages();
     try {
-      expect(ticks).toHaveLength(4);
-      const last = ticks[3].data;
-      expect(last.currentPattern).toBe(1);
-      expect(last.currentLine).toBe(0);
-      expect(last.currentTick).toBe(0);
+      expect(ticks).toHaveLength(6);
+      const wrap = ticks[4].data;
+      expect(wrap.currentPattern).toBe(1);
+      expect(wrap.currentLine).toBe(0);
+      expect(wrap.currentTick).toBe(0);
     } catch (error) {
       console.log('pattern advance', JSON.stringify(ticks));
       throw error;
@@ -158,13 +175,13 @@ describe('sequencer boundaries', () => {
   it('keeps the same pattern when patternLoop is set', () => {
     dispatch({ type: 'setParams', data: { ticksPerRow: 2, patternLength: 2 } });
     dispatch({ type: 'start', data: { pattern: 1, patternLoop: true } });
-    vi.advanceTimersByTime(20 * 5); // 4 ticks -> one full pattern
+    vi.advanceTimersByTime(20 * 5); // immediate tick + 5 interval ticks
     const ticks = tickMessages();
     try {
-      expect(ticks).toHaveLength(4);
-      expect(ticks[3].data.currentPattern).toBe(1);
-      expect(ticks[3].data.currentLine).toBe(0);
-      expect(ticks[3].data.currentTick).toBe(0);
+      expect(ticks).toHaveLength(6);
+      expect(ticks[4].data.currentPattern).toBe(1);
+      expect(ticks[4].data.currentLine).toBe(0);
+      expect(ticks[4].data.currentTick).toBe(0);
     } catch (error) {
       console.log('pattern loop', JSON.stringify(ticks));
       throw error;
@@ -177,10 +194,10 @@ describe('sequencer boundaries', () => {
       data: { ticksPerRow: 2, patternLength: 2, playlistLength: 3, hasLoop: true, loopIndex: 1 },
     });
     dispatch({ type: 'start', data: { pattern: 1 } });
-    vi.advanceTimersByTime(20 * 5); // wrap once: pattern 1 -> 2
+    vi.advanceTimersByTime(20 * 5); // immediate tick + wrap once: pattern 1 -> 2
     let ticks = tickMessages();
     try {
-      expect(ticks[3].data.currentPattern).toBe(2);
+      expect(ticks[4].data.currentPattern).toBe(2);
     } catch (error) {
       console.log('playlist advance', JSON.stringify(ticks));
       throw error;
@@ -188,8 +205,8 @@ describe('sequencer boundaries', () => {
     vi.advanceTimersByTime(20 * 4); // wrap again: last index -> loopIndex 1
     ticks = tickMessages();
     try {
-      expect(ticks[7].data.currentPattern).toBe(1);
-      expect(ticks[7].data.currentLine).toBe(0);
+      expect(ticks[8].data.currentPattern).toBe(1);
+      expect(ticks[8].data.currentLine).toBe(0);
     } catch (error) {
       console.log('loop wrap', JSON.stringify(ticks));
       throw error;
@@ -205,7 +222,7 @@ describe('sequencer boundaries', () => {
     vi.advanceTimersByTime(20 * 5);
     const ticks = tickMessages();
     try {
-      expect(ticks[3].data.currentPattern).toBe(3);
+      expect(ticks[4].data.currentPattern).toBe(3);
     } catch (error) {
       console.log('past end', JSON.stringify(ticks));
       throw error;
@@ -263,7 +280,7 @@ describe('sequencer stop and update', () => {
 describe('sequencer setParams', () => {
   it('reschedules on a tickInterval change while playing without emitting stop', () => {
     dispatch({ type: 'start' });
-    vi.advanceTimersByTime(40); // one tick emitted
+    vi.advanceTimersByTime(40); // immediate tick + two interval ticks emitted
     postSpy.mockClear();
     dispatch({ type: 'setParams', data: { tickInterval: 50 } });
     const sentDuringChange = messages();
@@ -277,7 +294,8 @@ describe('sequencer setParams', () => {
     const ticks = tickMessages();
     try {
       expect(ticks).toHaveLength(1);
-      expect(ticks[0].data.currentTick).toBe(2);
+      expect(ticks[0].data.currentTick).toBe(0);
+      expect(ticks[0].data.currentLine).toBe(1);
     } catch (error) {
       console.log('reschedule ticks', JSON.stringify(ticks));
       throw error;
@@ -287,17 +305,11 @@ describe('sequencer setParams', () => {
   it('uses a newly configured tickInterval on the next start', () => {
     dispatch({ type: 'setParams', data: { tickInterval: 40 } });
     dispatch({ type: 'start' });
-    vi.advanceTimersByTime(40); // first tickLoop only primes nextTickTime
+    vi.advanceTimersByTime(40); // immediate tick + first interval tick
     try {
-      expect(tickMessages()).toHaveLength(0);
-    } catch (error) {
-      console.log('prime tick', JSON.stringify(messages()));
-      throw error;
-    }
-    vi.advanceTimersByTime(40);
-    try {
-      expect(tickMessages()).toHaveLength(1);
-      expect(tickMessages()[0].data.currentTick).toBe(1);
+      expect(tickMessages()).toHaveLength(2);
+      expect(tickMessages()[0].data.currentTick).toBe(0);
+      expect(tickMessages()[1].data.currentTick).toBe(1);
     } catch (error) {
       console.log('new interval', JSON.stringify(messages()));
       throw error;

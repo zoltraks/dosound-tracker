@@ -2,7 +2,7 @@
 import React, { useRef, useEffect } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
 import { KEYBOARD_TO_NOTE, MIN_OCTAVE, MAX_OCTAVE } from '../constants/music.ts';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME } from '../constants/song.ts';
 import LogoDark from '../assets/svg/logo-dark.svg';
@@ -19,7 +19,7 @@ interface HeaderPanelProps {
   onShowAbout: () => void;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
-  ym2149: YM2149 | null;
+  ym2149: SoundEngine | null;
   currentInstrument: Instrument;
   previewChannel: number;
   tickIntervalMs?: number;
@@ -65,7 +65,6 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     }
   };
 
-  // Simple instrument preview state for octave selection
   const preview = usePreviewEnvelope({ ym2149 });
 
   const stopPreview = () => {
@@ -223,7 +222,6 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
               ⏬
             </button>
           )}
-          {/* Octave Selection */}
           <div
             ref={octaveRef}
             className={`octave-selection ${isOctaveActive ? 'active' : ''}`}

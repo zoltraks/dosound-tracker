@@ -22,7 +22,6 @@ Creates the `dist/` directory with:
 - `media/`, emitted assets grouped by type - `svg/`, `png/`, `font/`, plus `icon/` holding the application icons.
 - `worker.js`, the service worker at the bundle root.
 - Static assets from `public/`.
-- Static assets from `public/`.
 
 The build command does not bump the version. To bump the version and build, run `npm run bump` instead.
 

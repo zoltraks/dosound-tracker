@@ -72,6 +72,9 @@ export const loadUiState = (): UiState => {
               ? (storedView.category as SettingsCategory)
               : 'general',
             draft: storedView.draft,
+            focus: typeof storedView.focus === 'string' ? storedView.focus : null,
+            paneScroll: typeof storedView.paneScroll === 'number' ? storedView.paneScroll : 0,
+            confirmingReset: storedView.confirmingReset === true,
           }
         : null;
     return {
@@ -106,6 +109,15 @@ export const updateMarkdownScroll = (markdownScroll: number): void => {
 export const updateWindowScroll = (windowScroll: number): void => {
   const state = loadUiState();
   saveUiState({ ...state, windowScroll });
+};
+
+/** Merge a partial update into the settings modal session without clearing siblings. */
+export const patchSettingsView = (partial: Partial<SettingsSession>): void => {
+  const current = loadUiState().settingsView;
+  if (!current) {
+    return;
+  }
+  updateSettingsView({ ...current, ...partial });
 };
 
 /** Read-modify-write the settings modal session - the SettingsModal owns it. */

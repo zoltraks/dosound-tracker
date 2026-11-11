@@ -129,7 +129,7 @@ export function useMidiMessageProcessing(
       const data2 = data.length >= 3 ? data[2] | 0 : 0;
 
       const command = status & 0xf0;
-      const channel = (status & 0x0f) + 1; // 1-16
+      const channel = (status & 0x0f) + 1;
 
       const dataHex = bytesToHex(data);
 
@@ -490,7 +490,6 @@ export function useMidiMessageProcessing(
     enableMonitors,
   ]);
 
-  // Handle Input Changes
   useEffect(() => {
     const access = midiAccessRef.current;
     if (!access) {
@@ -570,7 +569,6 @@ export function useMidiMessageProcessing(
     }
   }, [configuration.inputEnabled, configuration.inputId, handleMidiMessage, midiAccessRef]);
 
-  // Handle Output Changes
   useEffect(() => {
     const access = midiAccessRef.current;
     if (!access) {
@@ -640,7 +638,6 @@ export function useMidiMessageProcessing(
     }
   }, [configuration.outputEnabled, configuration.outputId, sendSystemReset, midiAccessRef]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       const input = currentInputRef.current;

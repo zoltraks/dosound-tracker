@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import type { Instrument } from '../../synth/SoundDriver.ts';
-import type { YM2149 } from '../../synth/YM2149.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 import {
   advancePreviewEnvelopeTick,
   getPreviewEnvelopeApplyStep,
@@ -10,7 +10,7 @@ import {
 export interface PreviewEnvelopeOptions {
   // A getter form keeps call sites fresh when the chip arrives through a ref
   // whose .current cannot be read during render (react-hooks/refs).
-  ym2149: YM2149 | null | (() => YM2149 | null);
+  ym2149: SoundEngine | null | (() => SoundEngine | null);
   onAutoStop?: (keyId: string) => void;
 }
 
@@ -31,13 +31,13 @@ export interface PreviewEnvelopeResult {
   hasState: (keyId?: string) => boolean;
 }
 
-const resolveYm2149 = (options: PreviewEnvelopeOptions): YM2149 | null =>
+const resolveYm2149 = (options: PreviewEnvelopeOptions): SoundEngine | null =>
   typeof options.ym2149 === 'function' ? options.ym2149() : options.ym2149;
 
 export interface PreviewVoice {
   timerId: number;
   channel: number;
-  ym2149: YM2149;
+  ym2149: SoundEngine;
   instrument: Instrument;
   noteData: { note: string; octave: number };
   tickIntervalMs: number;

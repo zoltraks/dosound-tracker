@@ -117,7 +117,6 @@ describe('exportSongToMax', () => {
     expect(uncompressedSize).toBeGreaterThan(0);
     expect(uncompressedSize % 14).toBe(0);
 
-    // Frame size byte should be 14 for RAW8
     expect(bytes[dataStart + 5]).toBe(14);
   });
 
@@ -178,9 +177,8 @@ describe('exportSongToMax', () => {
     while (pos < decompressed.length) {
       // Skip register/value pairs (register address < 0x80).
       while (pos < decompressed.length && decompressed[pos] < 0x80) {
-        pos += 2; // skip register number and value
+        pos += 2;
       }
-      // Now we must be at a delimiter byte.
       expect(pos).toBeLessThan(decompressed.length);
       expect(decompressed[pos]).toBe(0x80); // single-byte delimiter, 1 frame delay
       pos += 1;
@@ -213,7 +211,6 @@ describe('exportSongToMax', () => {
       pos += 2;
     }
 
-    // Every register written in the first frame must have a non-zero value.
     for (const entry of registersInFirstFrame) {
       expect(entry.value).not.toBe(0);
     }
@@ -263,7 +260,6 @@ describe('exportSongToMax', () => {
   it('captures one frame per VBLANK tick, not every second tick', () => {
     const song = loadSongYaml('song-vgm-tone.yaml');
 
-    // Count simulation ticks
     let simTickCount = 0;
     simulateSong(song, () => {
       simTickCount++;

@@ -84,7 +84,6 @@ describe('exportSongToVgm', () => {
 
     const view = new DataView(buffer);
 
-    // EOF offset = fileSize - 4
     const eofOffset = view.getUint32(0x04, true);
     expect(eofOffset + 4).toBe(bytes.length);
 
@@ -92,27 +91,22 @@ describe('exportSongToVgm', () => {
     const version = view.getUint32(0x08, true);
     expect(version).toBe(0x00000171);
 
-    // Total samples field should match export result and be > 0
     const headerTotalSamples = view.getUint32(0x18, true);
     expect(headerTotalSamples).toBe(totalSamples);
     expect(totalSamples).toBeGreaterThan(0);
 
-    // Loop information should be present for the default song (loop field in YAML)
     const loopOffset = view.getUint32(0x1c, true);
     const loopSamples = view.getUint32(0x20, true);
     expect(loopOffset).toBeGreaterThan(0);
     expect(loopSamples).toBeGreaterThan(0);
 
-    // Rate field should match VBLANK_RATE (50 Hz)
     const rate = view.getUint32(0x24, true);
     expect(rate).toBe(VBLANK_RATE);
 
-    // Data offset: for our files data starts at 0x100
     const dataOffsetRel = view.getUint32(0x34, true);
     const dataStart = 0x34 + dataOffsetRel;
     expect(dataStart).toBe(0x100);
 
-    // AY8910 clock in header should match YM_CLOCK
     const ayClock = view.getUint32(0x74, true);
     expect(ayClock).toBe(YM_CLOCK);
 
@@ -191,13 +185,11 @@ describe('exportSongToVgm', () => {
 
     const view = new DataView(buffer);
 
-    // No loop information should be present for this song
     const loopOffset = view.getUint32(0x1c, true);
     const loopSamples = view.getUint32(0x20, true);
     expect(loopOffset).toBe(0);
     expect(loopSamples).toBe(0);
 
-    // Data offset: for our files data starts at 0x100
     const dataOffsetRel = view.getUint32(0x34, true);
     const dataStart = 0x34 + dataOffsetRel;
     expect(dataStart).toBe(0x100);
@@ -227,7 +219,6 @@ describe('exportSongToVgm', () => {
     // The stream should end with 0x66 (end of sound data)
     expect(bytes[gd3Start - 1]).toBe(0x66);
 
-    // Total samples should still be consistent and > 0
     const headerTotalSamples = view.getUint32(0x18, true);
     expect(headerTotalSamples).toBe(totalSamples);
     expect(totalSamples).toBeGreaterThan(0);
@@ -270,7 +261,6 @@ describe('exportSongToVgm', () => {
 
     const view = new DataView(buffer);
 
-    // Loop information should be disabled for instrument preview exports
     const loopOffset = view.getUint32(0x1c, true);
     const loopSamples = view.getUint32(0x20, true);
     expect(loopOffset).toBe(0);
@@ -292,7 +282,6 @@ describe('exportSongToVgm', () => {
     const simpleBytes = new Uint8Array(simple.buffer);
     const optimizedBytes = new Uint8Array(optimized.buffer);
 
-    // Sanity: optimized output should still look like a valid VGM file
     expect(optimizedBytes[0]).toBe(0x56); // 'V'
     expect(optimizedBytes[1]).toBe(0x67); // 'g'
     expect(optimizedBytes[2]).toBe(0x6d); // 'm'
@@ -343,7 +332,6 @@ describe('exportSongToVgm', () => {
     const bytes = new Uint8Array(buffer);
     const view = new DataView(buffer);
 
-    // Header frame rate should be 60
     expect(view.getUint32(0x24, true)).toBe(60);
 
     // 60 Hz = 735 samples per tick at 44100 Hz
@@ -409,7 +397,6 @@ describe('exportSongToVgm', () => {
 
     expect(period2MHz).not.toBeNull();
     expect(period1MHz).not.toBeNull();
-    // At 1 MHz, period should be approximately half of the 2 MHz period
     expect(period1MHz!).toBeLessThan(period2MHz!);
     expect(Math.round(period2MHz! / period1MHz!)).toBe(2);
   });

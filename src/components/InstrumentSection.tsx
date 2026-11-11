@@ -48,7 +48,6 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
   const isActive = activeSection === 'instrumentList';
 
   useEffect(() => {
-    // Find current instrument index
     const index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
     if (index !== -1) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -100,7 +99,6 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
         return;
       }
 
-      // Ctrl+ArrowUp / Ctrl+ArrowDown: move current instrument up/down
       if (event.ctrlKey) {
         if (event.key === 'ArrowUp') {
           event.preventDefault();

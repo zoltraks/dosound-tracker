@@ -47,8 +47,6 @@ describe('exportToAssembly optimized strategy', () => {
     const complexDelay2Count = complexDelays.filter((m) => Number(m[1]) === 2).length;
     const optimizedDelay2Count = optimizedDelays.filter((m) => Number(m[1]) === 2).length;
 
-    // For this fixture we expect at least one DL 2 in the complex output
-    // and fewer DL 2 entries after optimization.
     expect(complexDelay2Count).toBeGreaterThan(0);
     expect(optimizedDelay2Count).toBeLessThan(complexDelay2Count);
 

@@ -115,8 +115,6 @@ export function useAppState(): UseAppStateResult {
     return '0';
   });
 
-  // Persist transpose settings whenever they change so they survive reloads
-  // until the RESET action clears localStorage.
   useEffect(() => {
     try {
       const payload = {

@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { DialogFrame } from '../components/DialogFrame.tsx';
 import { logger } from '../utils/log/logger.ts';
 import {
@@ -8,6 +8,7 @@ import {
   type SettingsValues,
 } from '../types/settings.ts';
 import type { TrackPasteMode } from '../utils/track/trackClipboard.ts';
+import { SOUND_ENGINE_IDS, SOUND_ENGINE_LABELS, type SoundEngineId } from '../constants/sound.ts';
 import {
   buildSettingsYaml,
   parseSettingsFromYaml,
@@ -21,6 +22,10 @@ interface SettingsModalProps {
   onCategoryChange: (category: SettingsCategory) => void;
   draft: SettingsValues;
   onDraftChange: (draft: SettingsValues) => void;
+  confirmingReset: boolean;
+  onConfirmingResetChange: (confirming: boolean) => void;
+  onSessionFocus: (elementId: string | null) => void;
+  onSessionPaneScroll: (scrollTop: number) => void;
   onCommit: () => void;
   onCancel: () => void;
   onLoadError?: (message: string) => void;
@@ -29,6 +34,7 @@ interface SettingsModalProps {
 const CATEGORY_LABELS: Record<SettingsCategory, string> = {
   general: 'GENERAL',
   editor: 'EDITOR',
+  sound: 'SOUND',
 };
 
 const PASTE_MODE_OPTIONS: { value: TrackPasteMode; label: string }[] = [
@@ -42,12 +48,39 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onCategoryChange,
   draft,
   onDraftChange,
+  confirmingReset,
+  onConfirmingResetChange,
+  onSessionFocus,
+  onSessionPaneScroll,
   onCommit,
   onCancel,
   onLoadError,
 }) => {
-  const [confirmingReset, setConfirmingReset] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(
+    () => () => {
+      if (scrollTimer.current) {
+        clearTimeout(scrollTimer.current);
+      }
+    },
+    [],
+  );
+
+  const handleDialogFocus: React.FocusEventHandler<HTMLDivElement> = (event) => {
+    onSessionFocus((event.target as HTMLElement).id || null);
+  };
+
+  const handlePaneScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const pane = event.currentTarget;
+    if (scrollTimer.current) {
+      clearTimeout(scrollTimer.current);
+    }
+    scrollTimer.current = setTimeout(() => {
+      onSessionPaneScroll(pane.scrollTop);
+    }, 150);
+  };
 
   const handleSave = () => {
     try {
@@ -110,11 +143,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleResetConfirm = () => {
     onDraftChange(DEFAULT_SETTINGS);
-    setConfirmingReset(false);
+    onConfirmingResetChange(false);
   };
 
   return (
-    <DialogFrame label="Settings" className="settings-modal">
+    <DialogFrame label="Settings" className="settings-modal" onFocus={handleDialogFocus}>
       <div className="modal-title">SETTINGS</div>
       <div className="modal-body settings-modal-body">
         {confirmingReset ? (
@@ -128,6 +161,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {SETTINGS_CATEGORIES.map((id) => (
                 <button
                   key={id}
+                  id={`settings-category-${id}`}
                   type="button"
                   className={`settings-category-btn ${category === id ? 'active' : ''}`}
                   onClick={() => onCategoryChange(id)}
@@ -137,7 +171,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               ))}
             </div>
 
-            <div className="settings-pane">
+            <div id="settings-pane" className="settings-pane" onScroll={handlePaneScroll}>
               {category === 'general' && (
                 <>
                   <div className="settings-row">
@@ -256,6 +290,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </>
               )}
+
+              {category === 'sound' && (
+                <div className="settings-row">
+                  <label htmlFor="settings-sound-engine" className="settings-label">
+                    Sound engine
+                  </label>
+                  <select
+                    id="settings-sound-engine"
+                    value={draft.sound.engine}
+                    onChange={(e) =>
+                      onDraftChange({
+                        ...draft,
+                        sound: { ...draft.sound, engine: e.target.value as SoundEngineId },
+                      })
+                    }
+                  >
+                    {SOUND_ENGINE_IDS.map((engineId) => (
+                      <option key={engineId} value={engineId}>
+                        {SOUND_ENGINE_LABELS[engineId]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -266,15 +324,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <>
             <div className="settings-actions-left">
               <button
+                id="settings-confirm-cancel"
                 className="command-btn"
                 type="button"
-                onClick={() => setConfirmingReset(false)}
+                onClick={() => onConfirmingResetChange(false)}
               >
                 CANCEL
               </button>
             </div>
             <div className="settings-actions-right">
-              <button className="command-btn" type="button" onClick={handleResetConfirm}>
+              <button
+                id="settings-confirm-reset"
+                className="command-btn"
+                type="button"
+                onClick={handleResetConfirm}
+              >
                 RESET
               </button>
             </div>
@@ -282,25 +346,46 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         ) : (
           <>
             <div className="settings-actions-left">
-              <button className="command-btn" type="button" onClick={onCancel}>
+              <button
+                id="settings-action-cancel"
+                className="command-btn"
+                type="button"
+                onClick={onCancel}
+              >
                 CANCEL
               </button>
               <button
+                id="settings-action-reset"
                 className="command-btn"
                 type="button"
-                onClick={() => setConfirmingReset(true)}
+                onClick={() => onConfirmingResetChange(true)}
               >
                 RESET
               </button>
             </div>
             <div className="settings-actions-right">
-              <button className="command-btn" type="button" onClick={handleLoadClick}>
+              <button
+                id="settings-action-load"
+                className="command-btn"
+                type="button"
+                onClick={handleLoadClick}
+              >
                 LOAD
               </button>
-              <button className="command-btn" type="button" onClick={handleSave}>
+              <button
+                id="settings-action-save"
+                className="command-btn"
+                type="button"
+                onClick={handleSave}
+              >
                 SAVE
               </button>
-              <button className="command-btn" type="button" onClick={onCommit}>
+              <button
+                id="settings-action-ok"
+                className="command-btn"
+                type="button"
+                onClick={onCommit}
+              >
                 OK
               </button>
             </div>

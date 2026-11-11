@@ -35,9 +35,7 @@ export class Logger {
   private level: LogLevel = LogLevel.INFO;
   private debugMode: boolean = false;
 
-  private constructor() {
-    // Private constructor for singleton
-  }
+  private constructor() {}
 
   static getInstance(): Logger {
     if (!Logger.instance) {

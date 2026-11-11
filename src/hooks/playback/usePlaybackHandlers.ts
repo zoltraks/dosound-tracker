@@ -4,6 +4,7 @@ import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { SequencerState } from '../sequencer/useSequencer.ts';
 import type { Song } from '../../synth/SoundDriver.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
 
 export interface UsePlaybackHandlersParams {
@@ -23,6 +24,8 @@ export interface UsePlaybackHandlersParams {
   lastTrackId: 'A' | 'B' | 'C';
   isLinePlaying: boolean;
   setIsLinePlaying: Dispatch<SetStateAction<boolean>>;
+  ensureAudioContextResumed: () => Promise<void>;
+  waitForEngine: () => Promise<SoundEngine | null>;
 }
 
 export interface UsePlaybackHandlersResult {
@@ -53,36 +56,55 @@ export function usePlaybackHandlers({
   lastTrackId,
   isLinePlaying,
   setIsLinePlaying,
+  ensureAudioContextResumed,
+  waitForEngine,
 }: UsePlaybackHandlersParams): UsePlaybackHandlersResult {
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
+  const playbackGenerationRef = useRef(0);
 
-  // Handle stop playback with silence
+  // Start playback only after the AudioContext is running and an engine is
+  // writable. Starting earlier lets ticks pile writes onto a suspended clock
+  // or a null ref: the view advances while the first notes are dropped, and
+  // audio joins mid-position when the context finally resumes. The generation
+  // counter drops a pending start when stop or a newer start arrives first.
+  const startWhenReady = useCallback(
+    (start: () => void) => {
+      const generation = ++playbackGenerationRef.current;
+      void (async () => {
+        await ensureAudioContextResumed();
+        const engine = await waitForEngine();
+        if (!engine || generation !== playbackGenerationRef.current) {
+          return;
+        }
+        start();
+      })();
+    },
+    [ensureAudioContextResumed, waitForEngine],
+  );
+
   const handleStop = useCallback(() => {
-    // Stop the sequencer
+    playbackGenerationRef.current += 1;
+    void ensureAudioContextResumed();
+
     stop();
 
-    // Ensure line play state is cleared so buttons show PLAY again
     setIsLinePlaying(false);
 
-    // Stop any instrument preview playback
     stopInstrumentPreview();
 
-    // Reset cycle counters and silence all channels
     handleStopPlayback();
-  }, [stop, handleStopPlayback, stopInstrumentPreview]);
+  }, [stop, handleStopPlayback, stopInstrumentPreview, ensureAudioContextResumed]);
 
-  // Handle stop line playback (pattern-loop mode for the current playlist line)
   const handleStopLinePlayback = useCallback(() => {
-    // Stop the sequencer
+    playbackGenerationRef.current += 1;
+    void ensureAudioContextResumed();
+
     stop();
 
-    // Update line playing state
     setIsLinePlaying(false);
 
-    // Stop any instrument preview playback
     stopInstrumentPreview();
 
-    // Reset cycle counters and silence all channels
     handleStopPlayback();
     const returnPos = patternReturnPositionRef.current;
     if (returnPos) {
@@ -90,9 +112,8 @@ export function usePlaybackHandlers({
       setSharedCurrentLine(returnPos.line);
       patternReturnPositionRef.current = null;
     }
-  }, [stop, handleStopPlayback, setPosition, stopInstrumentPreview]);
+  }, [stop, handleStopPlayback, setPosition, stopInstrumentPreview, ensureAudioContextResumed]);
 
-  // Handle start song playback
   const handleStartSong = useCallback(() => {
     if (currentSong.line.length === 0) {
       return;
@@ -115,7 +136,6 @@ export function usePlaybackHandlers({
       return;
     }
 
-    // Otherwise start song from the beginning (line 0) of the current pattern.
     patternReturnPositionRef.current = {
       pattern: clampedIndex,
       line: sharedCurrentLine,
@@ -124,7 +144,7 @@ export function usePlaybackHandlers({
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
 
-    startSong(clampedIndex, 0);
+    startWhenReady(() => startSong(clampedIndex, 0));
   }, [
     isLinePlaying,
     startSong,
@@ -134,9 +154,9 @@ export function usePlaybackHandlers({
     currentSong.line,
     sharedCurrentLine,
     setPatternLoopMode,
+    startWhenReady,
   ]);
 
-  // Handle start line playback (line-loop mode for the current playlist line)
   const handleStartLinePlayback = useCallback(() => {
     if (currentSong.line.length === 0) {
       return;
@@ -198,7 +218,6 @@ export function usePlaybackHandlers({
       return;
     }
 
-    // Otherwise (not playing, or already in pattern mode), start from the beginning.
     if (sequencerState.isPlaying) {
       stop();
     }
@@ -206,9 +225,10 @@ export function usePlaybackHandlers({
     // Clear position ref to ensure first tick detection works
     lastSequencerPositionRef.current = null;
 
-    setIsLinePlaying(true);
-
-    startPatternLoop(clampedIndex, 0);
+    startWhenReady(() => {
+      setIsLinePlaying(true);
+      startPatternLoop(clampedIndex, 0);
+    });
   }, [
     stop,
     startPatternLoop,
@@ -221,6 +241,8 @@ export function usePlaybackHandlers({
     lastTrackId,
     isLinePlaying,
     setPatternLoopMode,
+    setIsLinePlaying,
+    startWhenReady,
   ]);
 
   const handleStartLineFromBeginning = useCallback(() => {
@@ -272,10 +294,10 @@ export function usePlaybackHandlers({
       setIsLinePlaying(false);
     }
 
-    // Start from the beginning (line 0) of the current pattern
-    setPosition(clampedIndex, 0, 0);
-
-    startSong();
+    startWhenReady(() => {
+      setPosition(clampedIndex, 0, 0);
+      startSong();
+    });
   }, [
     stop,
     startSong,
@@ -286,6 +308,7 @@ export function usePlaybackHandlers({
     currentSong.line,
     activeSection,
     lastTrackId,
+    startWhenReady,
   ]);
 
   const handleStartLineFromCurrentLine = useCallback(
@@ -330,7 +353,6 @@ export function usePlaybackHandlers({
 
       const effectiveLine = overrideLine != null ? overrideLine : sharedCurrentLine;
 
-      // Save return position (playlist row and line where cursor currently is)
       patternReturnPositionRef.current = {
         pattern: clampedIndex,
         line: effectiveLine,
@@ -343,14 +365,14 @@ export function usePlaybackHandlers({
       // Clear position ref to ensure first tick detection works
       lastSequencerPositionRef.current = null;
 
-      setIsLinePlaying(true);
-
-      // Start pattern loop from the current cursor line
       const startLine = Math.max(
         0,
         Math.min(effectiveLine, (currentSong.length || PATTERN_LENGTH) - 1),
       );
-      startPatternLoop(clampedIndex, startLine);
+      startWhenReady(() => {
+        setIsLinePlaying(true);
+        startPatternLoop(clampedIndex, startLine);
+      });
     },
     [
       currentSong.line,
@@ -362,6 +384,8 @@ export function usePlaybackHandlers({
       lastTrackId,
       stop,
       startPatternLoop,
+      setIsLinePlaying,
+      startWhenReady,
     ],
   );
 
@@ -398,7 +422,6 @@ export function usePlaybackHandlers({
 
       const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
 
-      // Save the cursor return position so pressing Enter or Ctrl+Enter restores it.
       patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
 
       handleStartLinePlayback();
@@ -418,13 +441,12 @@ export function usePlaybackHandlers({
   useEffect(() => {
     const playlistLength = currentSong.line.length;
 
-    // Nothing to do if not playing
     if (!sequencerState.isPlaying) {
       return;
     }
 
-    // If playlist was cleared while playing, stop gracefully
     if (playlistLength === 0) {
+      playbackGenerationRef.current += 1;
       handleStopPlayback();
       stop();
       return;
@@ -435,6 +457,7 @@ export function usePlaybackHandlers({
       const hasLoop = typeof rawLoop === 'number' && Number.isFinite(rawLoop);
 
       if (!hasLoop) {
+        playbackGenerationRef.current += 1;
         handleStopPlayback();
         setPosition(0, 0, 0);
         stop();

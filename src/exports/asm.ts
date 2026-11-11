@@ -36,7 +36,6 @@ export function exportToAssembly(song: Song, strategy: ExportStrategy = 'complex
   const normalizedSong = normalizeSongForExport(song);
   const chipClock = normalizedSong.clock ?? YM_CLOCK;
 
-  // Simulate playback and collect register states per frame
   const frames: SimulationFrame[] = [];
 
   simulateSong(
@@ -44,7 +43,6 @@ export function exportToAssembly(song: Song, strategy: ExportStrategy = 'complex
     (frame) => {
       // Store this frame only when envelope steps advance (every 2 ticks)
       // The simulation emits ticks based on song speed.
-      // Original logic: if (tick === 0 || (tick % 2 === 0))
       if (frame.tick === 0 || frame.tick % 2 === 0) {
         frames.push(frame);
       }
@@ -52,7 +50,6 @@ export function exportToAssembly(song: Song, strategy: ExportStrategy = 'complex
     { clock: chipClock },
   );
 
-  // Now convert frames to optimized assembly output
   return formatFramesToAssembly(frames, normalizedSong, strategy);
 }
 
@@ -61,7 +58,6 @@ function formatFramesToAssembly(
   song: Song,
   strategy: ExportStrategy,
 ): string {
-  // song parameter will be used for future optimization logic and pattern markers
   const chipClock = song.clock ?? YM_CLOCK;
   let asm = 'music:\n\n\t; START\n\n';
 
@@ -76,7 +72,6 @@ function formatFramesToAssembly(
   }
 
   if (strategy === 'complex' || strategy === 'optimized') {
-    // Optimized dump for complex mode - track changes and skip unchanged registers
     const lastRegs: { [register: number]: number } = {};
     let lastLineIndex = -1;
 
@@ -101,7 +96,6 @@ function formatFramesToAssembly(
       }
       lastLineIndex = lineIndex;
 
-      // Write mixer register if changed (or first frame)
       if (i === 0 || (regs[0x07] || 0x38) !== (lastRegs[0x07] || 0x38)) {
         asm += formatAsmLine(
           [0x07, regs[0x07] || 0x38],
@@ -110,7 +104,6 @@ function formatFramesToAssembly(
         lastRegs[0x07] = regs[0x07] || 0x38;
       }
 
-      // Write tone registers for all three channels if changed and the channel is audible
       for (let ch = 0; ch < 3; ch++) {
         const fineReg = ch * 2;
         const coarseReg = ch * 2 + 1;
@@ -139,7 +132,6 @@ function formatFramesToAssembly(
         }
       }
 
-      // Write volume registers if changed
       for (let ch = 0; ch < 3; ch++) {
         const reg = 0x08 + ch;
         if (i === 0 || (regs[reg] || 0x00) !== (lastRegs[reg] || 0x00)) {
@@ -150,18 +142,15 @@ function formatFramesToAssembly(
         }
       }
 
-      // Write noise register if changed
       if (i === 0 || (regs[0x06] || 0x00) !== (lastRegs[0x06] || 0x00)) {
         const value = regs[0x06] || 0x00;
         asm += formatAsmLine([0x06, value], `NS ${value}`);
         lastRegs[0x06] = value;
       }
 
-      // Always add delay of 2 frames to maintain resolution
       asm += formatAsmLine([0xff, 0x01], 'DL 2');
     }
   } else {
-    // Unoptimized dump - write all registers every frame
     let lastLineIndex = -1;
 
     for (let i = 0; i < frames.length; i++) {
@@ -170,20 +159,17 @@ function formatFramesToAssembly(
       const lineIndex = frame.lineIndex;
       const toneMeta = frame.toneMeta || {};
 
-      // Add beat marker after each completed playlist position (every patternLength lines)
       const patternLength = song.length ?? 64;
       if (lineIndex !== lastLineIndex && lineIndex > 0 && lineIndex % patternLength === 0) {
         asm += '\n\t; ---\n\n';
       }
       lastLineIndex = lineIndex;
 
-      // Write mixer register
       asm += formatAsmLine(
         [0x07, regs[0x07] || 0x38],
         getRegisterComment(0x07, regs[0x07] || 0x38),
       );
 
-      // Write tone registers for all three channels
       for (let ch = 0; ch < 3; ch++) {
         const fineReg = ch * 2;
         const coarseReg = ch * 2 + 1;
@@ -199,20 +185,16 @@ function formatFramesToAssembly(
         asm += formatAsmLine([coarseReg, coarse, fineReg, fine], comment);
       }
 
-      // Write volume registers for all three channels
       asm += formatAsmLine([0x08, regs[0x08] || 0x00], `VA ${regs[0x08] || 0x00}`);
       asm += formatAsmLine([0x09, regs[0x09] || 0x00], `VB ${regs[0x09] || 0x00}`);
       asm += formatAsmLine([0x0a, regs[0x0a] || 0x00], `VC ${regs[0x0a] || 0x00}`);
 
-      // Write noise register
       asm += formatAsmLine([0x06, regs[0x06] || 0x00], `NS ${regs[0x06] || 0x00}`);
 
-      // Add delay of 2 frames after each register set
       asm += formatAsmLine([0xff, 0x01], 'DL 2');
     }
   }
 
-  // END marker
   asm += '\n\t; END\n\n';
   asm += formatAsmLine([0x08, 0x00], 'VA 0');
   asm += formatAsmLine([0x09, 0x00], 'VB 0');
@@ -311,7 +293,6 @@ function buildToneComment(
   return noteLabel ? `T${channelLabel} ${noteLabel}${pitchText}` : `T${channelLabel}`;
 }
 
-// Helper: format one dc.b line with TAB indent and aligned comment
 function formatAsmLine(bytes: number[], comment: string): string {
   const code = '\t' + 'dc.b ' + bytes.map((b) => `$${Formatter.hex(b, { noPad: true })}`).join(',');
   const targetCol = 20;
@@ -338,7 +319,6 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   const chipClock = normalizedSong?.clock ?? YM_CLOCK;
   const base = parseBaseKeyForExport(instrument.base || 'C-4');
 
-  // Base frequency for the instrument's root note
   const baseFreq = NOTE_FREQUENCIES[base.note] || 440.0;
   const baseFrequency = baseFreq * pow2Octave(base.octave - 4);
 
@@ -354,7 +334,6 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
 
   const vols = volumeEnv.map(clampVolumeNibble);
 
-  // Number of envelope steps to consider (one step every 2 ticks)
   const stepsCount = Math.max(
     vols.length,
     shiftEnv.length || 1,
@@ -396,16 +375,13 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
   for (let i = 0; i < totalSteps; i++) {
     const vol = i < vols.length ? vols[i] : (vols[vols.length - 1] ?? 0);
 
-    // Get mode for this step
     const modeIdx = modeEnv.length > 0 ? Math.min(i, modeEnv.length - 1) : 0;
     const mode = modeEnv.length > 0 ? modeEnv[modeIdx] || 0 : 0;
 
-    // Get noise period for this step
     const noiseIdx = noiseEnv.length > 0 ? Math.min(i, noiseEnv.length - 1) : 0;
     const noisePeriod =
       noiseEnv.length > 0 ? Math.max(0, Math.min(0x1f, noiseEnv[noiseIdx] | 0)) : 0;
 
-    // Get pitch delta for this step (applied directly to divider value)
     let pitchDelta = 0;
     if (pitchEnv && pitchEnv.length > 0) {
       const pIdx = Math.min(i, pitchEnv.length - 1);
@@ -415,7 +391,6 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       }
     }
 
-    // Apply shift in semitones on top of baseFrequency
     let frequency = baseFrequency;
     let semitone = 0;
     if (shiftEnv && shiftEnv.length > 0) {
@@ -426,7 +401,6 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
         frequency = frequency * pow2Semitone(semitone);
       }
     }
-    // Base divider from frequency
     let period = frequencyToPeriod(frequency, chipClock) & 0x0fff;
     // Apply pitch delta directly on divider (positive = decrease divider)
     if (pitchDelta !== 0) {
@@ -464,7 +438,6 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
 
   let asm = '';
 
-  // Header and START marker
   asm += 'music:\n\n';
   asm += '\t; START\n\n';
 
@@ -489,17 +462,14 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
 
   const first = states[0];
 
-  // Initial mixer based on first mode
   const initialMixer = getMixerForMode(first.mode, 0);
   const mixerComment = getRegisterComment(0x07, initialMixer) || 'MX';
   asm += formatAsmLine([0x07, initialMixer], mixerComment);
 
-  // Initial volumes
   asm += formatAsmLine([0x08, first.volume], `VA ${first.volume}`);
   asm += formatAsmLine([0x09, 0x0], 'VB 0');
   asm += formatAsmLine([0x0a, 0x0], 'VC 0');
 
-  // Initial tone period (only if tone is active)
   const firstToneActive = first.mode === 0 || first.mode === 2;
   if (firstToneActive) {
     const firstCF = getCoarseFine(first.period);
@@ -511,16 +481,13 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     );
   }
 
-  // Initial noise period (only if noise is active)
   const firstNoiseActive = first.mode === 1 || first.mode === 2;
   if (firstNoiseActive && first.noisePeriod > 0) {
     asm += formatAsmLine([0x06, first.noisePeriod], `NS ${first.noisePeriod}`);
   }
 
-  // Emit delay for the first step (2 frames)
   asm += formatDelayLine(2);
 
-  // Subsequent steps: track changes
   let prevVolume = first.volume;
   let prevPeriod = first.period;
   let prevMode = first.mode;
@@ -531,7 +498,6 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
     const toneActive = step.mode === 0 || step.mode === 2;
     const noiseActive = step.mode === 1 || step.mode === 2;
 
-    // Check if mode changed
     if (step.mode !== prevMode) {
       const newMixer = getMixerForMode(step.mode, 0);
       const comment = getRegisterComment(0x07, newMixer) || 'MX';
@@ -539,19 +505,16 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       prevMode = step.mode;
     }
 
-    // Update noise period if mode includes noise
     if (noiseActive && step.noisePeriod !== prevNoisePeriod) {
       asm += formatAsmLine([0x06, step.noisePeriod], `NS ${step.noisePeriod}`);
       prevNoisePeriod = step.noisePeriod;
     }
 
-    // Update volume if changed
     if (step.volume !== prevVolume) {
       asm += formatAsmLine([0x08, step.volume], `VA ${step.volume}`);
       prevVolume = step.volume;
     }
 
-    // Update tone period if mode includes tone AND period changed
     if (toneActive && step.period !== prevPeriod) {
       const cf = getCoarseFine(step.period);
       const label = formatNoteLabel(base.note, base.octave, step.semitone || 0);
@@ -560,11 +523,9 @@ export function exportInstrumentToAssembly(instrument: Instrument, song?: Song):
       prevPeriod = step.period;
     }
 
-    // Emit delay (2 frames)
     asm += formatDelayLine(2);
   }
 
-  // END block: silence channels and STOP marker
   asm += '\n';
   asm += '\t; END\n\n';
   asm += formatAsmLine([0x08, 0x0], 'VA 0');
@@ -629,9 +590,6 @@ function getRegisterComment(register: number, value: number): string {
   }
 }
 
-/**
- * Downloads the assembly content as a .s file
- */
 export function downloadAssemblyFile(content: string, filename: string = 'music.s'): void {
   downloadFile(content, filename, 'text/plain;charset=utf-8');
 }

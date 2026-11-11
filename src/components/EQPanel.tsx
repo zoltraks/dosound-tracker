@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { YM2149 } from '../synth/YM2149.ts';
+import type { SoundEngine } from '../synth/soundEngine.ts';
 
 interface EQPanelProps {
-  ym2149?: YM2149 | null;
+  ym2149?: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (channelIndex: number) => void;
 }
@@ -10,7 +10,7 @@ interface EQPanelProps {
 export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggleChannelMute }) => {
   const [volumes, setVolumes] = useState<number[]>([0, 0, 0]);
 
-  const ym2149Ref = useRef<YM2149 | null | undefined>(null);
+  const ym2149Ref = useRef<SoundEngine | null | undefined>(null);
 
   useEffect(() => {
     ym2149Ref.current = ym2149;
@@ -30,7 +30,9 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
       }
 
       const state = currentYm2149.getState();
-      const next = state.channels.map((channel) => channel.volume);
+      const next = state.channels.map((channel) =>
+        channel.toneEnabled || channel.noiseEnabled ? channel.volume : 0,
+      );
       setVolumes((prev) => {
         if (prev[0] === next[0] && prev[1] === next[1] && prev[2] === next[2]) {
           return prev;
@@ -59,7 +61,10 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
                 aria-label={`${channelMutes[index] ? 'Unmute' : 'Mute'} channel ${String.fromCharCode(65 + index)}`}
                 onClick={() => onToggleChannelMute(index)}
               >
-                <div className="volume-fill" style={{ height: `${getBarHeight(volume)}%` }} />
+                <div
+                  className="volume-fill"
+                  style={{ height: `${channelMutes[index] ? 0 : getBarHeight(volume)}%` }}
+                />
               </div>
               <span className={`channel-label ${channelMutes[index] ? 'muted' : ''}`}>
                 {String.fromCharCode(65 + index)} {/* A, B, C */}

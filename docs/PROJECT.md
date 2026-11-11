@@ -92,6 +92,7 @@ The system must emulate the YM2149 chip with:
 - Accurate noise generation using 17-bit LFSR algorithm.
 - 2MHz clock precision with proper frequency calculations.
 - Square wave synthesis with period-accurate tone generation.
+- Two selectable sound engines behind one contract: `internal` (the Web Audio node implementation, default) and `ayumi` (the precise Ayumi emulation core rendered in an AudioWorklet). The selection persists and an unrecognised stored value falls back to `internal`.
 
 **F-07: DOSOUND Assembly Export**
 
@@ -164,13 +165,13 @@ The system must mirror autosaved song and instrument data into an IndexedDB snap
 
 The system must provide a settings modal opened by a gear button in the header, placed directly after the theme toggle. The gear button uses the `⚙` glyph and the same icon-button treatment as the theme toggle, and stays out of the section navigation order.
 
-The modal presents named categories in a left sidebar, the active category's settings as label and control rows in a scrollable property pane, and a footer action bar. The initial categories are GENERAL (theme, track background, startup test tone) and EDITOR (restore editor cursor, restore open view, default paste mode).
+The modal presents named categories in a left sidebar, the active category's settings as label and control rows in a scrollable property pane, and a footer action bar. The dialog sizes to its content up to a bounded fraction of the viewport and stays centered on the desktop layout; in the mobile layout it fills the screen and the property pane scrolls inside it. The categories are GENERAL (theme, track background, startup test tone), EDITOR (restore editor cursor, restore open view, default paste mode), and SOUND (sound engine).
 
 The modal edits a draft copy of the settings. OK commits the draft, Cancel and ESC discard it, and ENTER confirms like OK. The footer holds CANCEL and RESET on the left and LOAD, SAVE, and OK on the right. RESET replaces the draft with the default values behind a confirmation. SAVE writes the current draft to a `settings.yaml` file and LOAD reads a `settings.yaml` file into the draft; both leave the draft uncommitted until OK.
 
-The application restores its state on page reload. This convention applies to every view: persisted state, including the open view, survives a reload exactly. The settings modal follows the same rule - when the page reloads with the modal open, the modal re-opens with the same active category and the same uncommitted draft contents.
+The application restores its state on page reload. This convention applies to every view: persisted state, including the open view, survives a reload exactly. The settings modal follows the same rule - when the page reloads with the modal open, the modal re-opens with the same active category, the same uncommitted draft contents, the same focused control, the same property-pane scroll offset, and the same reset-confirmation state.
 
-Committed settings persist under the per-key `dosound-tracker-*` storage. The new options - startup test tone, restore editor cursor, and restore open view - each get their own key and default to on, preserving the behaviour that existed before the setting was introduced.
+Committed settings persist under the per-key `dosound-tracker-*` storage. The new options - startup test tone, restore editor cursor, and restore open view - each get their own key and default to on, preserving the behaviour that existed before the setting was introduced. The SOUND category's engine selector persists `internal` or `ayumi` under `dosound-tracker-sound-engine`, defaults to `internal` on an unrecognised value, and applies the switch live on OK - the old engine is silenced and disposed, playback does not carry over.
 
 ## Non-Functional Requirements
 

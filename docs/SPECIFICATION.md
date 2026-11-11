@@ -163,6 +163,34 @@ Volume uses a 16-level logarithmic scale defined by YM_LOG_VOLUME_TABLE in src/s
 
 The register write path supports batch updates via beginBatch and endBatch to avoid redundant audio node recalculations when multiple registers change in a single frame.
 
+## Sound Engines
+
+Two engines render YM2149 audio behind the shared `SoundEngine` contract in `src/synth/soundEngine.ts`. The engine vocabulary lives in `src/constants/sound.ts`: ids `internal` and `ayumi`, display labels `Internal` and `Ayumi`, and `internal` as the default.
+
+| Engine id  | Implementation                                                                     |
+| ---------- | ---------------------------------------------------------------------------------- |
+| `internal` | `src/synth/YM2149.ts` - Web Audio oscillators, noise buffer, and gain nodes        |
+| `ayumi`    | `src/synth/AyumiEngine.ts` driving `ayumiCore.ts` inside `workers/ayumiWorklet.ts` |
+
+The `SoundEngine` surface covers `writeRegister`, `beginBatch`, `endBatch`, `updateChannelWithInstrument`, `silenceAll`, `reset`, `setClock`, `getClock`, `getRegisters`, `getRegistersArray`, `getState`, and `dispose`. The instrument-to-register helpers shared by both engines live in `src/synth/channelInstrument.ts`.
+
+The engine selection persists under the `dosound-tracker-sound-engine` local storage key (`StorageKeys.SOUND_ENGINE`). `loadSoundEngineId` in `src/utils/storage/soundEngine.ts` validates the stored value against the id set and falls back to `internal` when the key is missing or holds an unrecognised value. Switching the engine disposes the active instance and creates the replacement inside `useAudioSetup` without a page reload - sounding notes are silenced and playback does not carry over.
+
+**Ayumi register mapping**
+
+The Ayumi core is setter-based rather than register-based. `workers/ayumiWorklet.ts` translates register writes onto the core's setters:
+
+| Register | Translation                                                            |
+| -------- | ---------------------------------------------------------------------- |
+| R0-R5    | Channel A/B/C tone period pairs - `setTone(channel, 12-bit period)`    |
+| R6       | Noise period - `setNoise(period & 0x1f)`                               |
+| R7       | Mixer - `setMixer(channel, toneOff, noiseOff, envelopeOn)` per channel |
+| R8-R10   | Channel volumes - `setVolume(channel, value & 0x0f)`, bit 4 into `eOn` |
+| R11-R12  | Envelope period - `setEnvelope(16-bit period)`                         |
+| R13      | Envelope shape - `setEnvelopeShape(shape & 0x0f)`                      |
+
+The worklet renders one output block by looping `process()` plus `removeDc()` into a single channel. All three Ayumi channels are panned centre so the voices merge into one mono path, matching the Atari ST. `AyumiEngine` keeps a main-thread mirror of the register file so `getRegisters`, `getRegistersArray`, and `getState` stay synchronous for the Dump and EQ panels. A clock change reconfigures the core and replays the mirrored registers because `configure` resets tone and envelope state.
+
 ## Sequencer Timing
 
 Playback is driven by the song's frame rate (default 50 Hz, DEFAULT_SONG_FRAME = 50, defined in src/constants/song.ts). The frame rate is configurable per song via the `frame` field. Each tick corresponds to 1000 / frameRate milliseconds (20 ms at 50 Hz, 16.66 ms at 60 Hz).
@@ -201,6 +229,7 @@ Application constants live in `src/constants/`, one file per domain. See those f
 - **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
 - **song.ts** — chip, frame rate, and clock defaults and their supported values.
 - **export.ts** — the ExportType and ExportStrategy union types.
+- **sound.ts** — the sound-engine vocabulary (SOUND_ENGINE_IDS, SoundEngineId, DEFAULT_SOUND_ENGINE_ID, SOUND_ENGINE_LABELS).
 - **navigation.ts** — NAVIGATION_ORDER and the KEYBOARD_SHORTCUTS map.
 - **modal.ts** — modal dialog titles and confirmation texts (INFO_MODAL_TITLES, CONFIRM_MODAL_TEXT).
 - **import.ts** — the MAX_IMPORT_BYTES byte cap applied to imported text content.
@@ -283,11 +312,13 @@ Two destructive paths drop the mirror together with local storage: the legacy-sc
 
 **Settings persistence**
 
-The application restores its state on page reload - persisted state, including the open view, survives exactly. The `UI_STATE` snapshot records the open restorable modal in `openModal` and, for the settings modal, the `settingsView` member holding the active category and the uncommitted draft. `updateSettingsView` writes the member whenever either changes while the modal is open, and the settings modal clears it on both close paths.
+The application restores its state on page reload - persisted state, including the open view, survives exactly. The `UI_STATE` snapshot records the open restorable modal in `openModal` and, for the settings modal, the `settingsView` member holding the active category, the uncommitted draft, the focused control's element id, the property-pane scroll offset, and the reset-confirmation state. `updateSettingsView` writes the member whenever either changes while the modal is open, and the settings modal clears it on both close paths.
 
 Three keys hold the settings toggles introduced with the modal: `STARTUP_TONE`, `RESTORE_CURSOR`, and `RESTORE_VIEW`, each storing `'on'` or `'off'` and defaulting to on. `STARTUP_TONE` gates the startup test tone. `RESTORE_VIEW` gates the whole view-snapshot restore, including the window scroll. `RESTORE_CURSOR` gates the application of the persisted editor cursor - cursor recording continues regardless.
 
-The settings modal's committed values persist under the per-key storage: `THEME`, `TRACK_BACKGROUND_ENABLED`, and `PASTE_TRACK_MODE` cover the reused options.
+Content modals size by layout: on the desktop layout the settings dialog takes only the height its controls need, capped at 80% of the viewport and centered inside the backdrop, while in the mobile layout the sized modals - settings, text display, MIDI, download - expand to fill the screen and keep their own internal scrolling regions.
+
+The settings modal's committed values persist under the per-key storage: `THEME`, `TRACK_BACKGROUND_ENABLED`, `PASTE_TRACK_MODE`, and `SOUND_ENGINE` cover the reused options. The `SOUND` category holds the engine selector (`Internal`, `Ayumi`); committing it applies the engine swap live through `useAudioSetup`, silencing and disposing the previous engine without a reload.
 
 ## Markdown Rendering Security
 
@@ -381,7 +412,7 @@ The desktop main process intercepts the window `close` event and forwards `app-c
 
 ### Modal Working State
 
-A modal whose contents must respond to the global Enter and ESC handler keeps its working state in an orchestration hook owned above the modal pipeline. Component-internal state is invisible to `useModalManager` - the handler attaches to `window` in the capture phase and cannot read a draft or a selection held inside the modal component. `useSettingsDialog` holds the settings draft and category for this reason.
+A modal whose contents must respond to the global Enter and ESC handler keeps its working state in an orchestration hook owned above the modal pipeline. Component-internal state is invisible to `useModalManager` - the handler attaches to `window` in the capture phase and cannot read a draft or a selection held inside the modal component. `useSettingsDialog` holds the settings draft, category, and reset-confirmation state for this reason.
 
 ## Known Limitations
 

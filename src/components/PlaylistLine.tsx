@@ -3,11 +3,6 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Formatter } from '../utils/format/formatters.ts';
 import type { PlaylistEntry } from '../types/playlist.ts';
 
-const formatPatternDisplay = (patternId: string): string => {
-  if (patternId === '--') return '--';
-  return patternId;
-};
-
 interface PlaylistLineProps {
   index: number;
   entry: PlaylistEntry;
@@ -105,7 +100,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
         }}
         onContextMenu={(event) => onPatternRightClick(index, track, event)}
       >
-        {formatPatternDisplay(patternValue)}
+        {patternValue}
       </span>
     );
   };

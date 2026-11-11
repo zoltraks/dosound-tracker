@@ -242,8 +242,6 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
         : Array.isArray(patternNode.lines)
           ? patternNode.lines
           : [];
-    // Expand compressed wait/space/off runs into individual logical lines,
-    // bounded to the remaining pattern length.
     const expandedLineNodes = expandRunNodes<unknown>(
       rawLineNodes,
       clampedLength,
@@ -264,10 +262,9 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
         const isOffNote = typeof rawNote === 'string' && rawNote.trim().toUpperCase() === 'OFF';
 
         if (ln.off === true || isOffNote) {
-          // Empty or note-off line: currently treated as space
           line.note = createNoteOff();
         } else if (ln.wait === true || ln.space === true) {
-          // Empty or note-off line: currently treated as space
+          // Wait/space step: leave the line empty (note stays null).
         } else if (typeof rawNote === 'string') {
           const parsedKey = parseBaseKey(rawNote);
           if (!parsedKey) {
@@ -424,7 +421,6 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     };
   });
 
-  // Ensure loop index stays within playlist bounds
   if (loop != null) {
     if (line.length === 0) {
       loop = null;

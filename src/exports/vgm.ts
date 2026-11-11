@@ -19,7 +19,6 @@ function optimizeVgmDelays(
     return { commands, loopCommandOffset };
   }
 
-  // If no valid loop point, just optimize the whole stream.
   if (loopCommandOffset < 0 || loopCommandOffset > commands.length) {
     const merged = mergeVgmDelaySequence(commands, waitCommand, samplesPerTick);
     return { commands: merged, loopCommandOffset };

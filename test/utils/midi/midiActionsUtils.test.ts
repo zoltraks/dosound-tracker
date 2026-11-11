@@ -32,13 +32,11 @@ describe('midiActionsUtils', () => {
   });
 
   it('transposeMidiNoteToInstrumentBase shifts input by base key semitone offset vs C-4 reference', () => {
-    // Base key is C-3, so controller C-4 should preview as C-3
     expect(transposeMidiNoteToInstrumentBase('C', 4, { note: 'C', octave: 3 })).toEqual({
       note: 'C',
       octave: 3,
     });
 
-    // Base key is D-4 (2 semitones above C-4), so controller C-4 becomes D-4
     expect(transposeMidiNoteToInstrumentBase('C', 4, { note: 'D', octave: 4 })).toEqual({
       note: 'D',
       octave: 4,

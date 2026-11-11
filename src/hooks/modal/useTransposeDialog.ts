@@ -46,8 +46,6 @@ export function useTransposeDialog({
   applyTranspose,
 }: UseTransposeDialogParams): UseTransposeDialogResult {
   const handleOpenTranspose = useCallback(() => {
-    // When opening, keep the last-used transpose settings and just ensure the
-    // input text reflects the current numeric amount.
     setTransposeAmountInput(String(transposeAmount));
     setIsTransposeOpen(true);
   }, [transposeAmount]);
@@ -57,8 +55,6 @@ export function useTransposeDialog({
   }, []);
 
   const handleConfirmTranspose = useCallback(() => {
-    // Parse the semitone offset from the text input so negative values and
-    // partial edits are handled correctly.
     let semitones = 0;
     const trimmed = transposeAmountInput.trim();
 
@@ -146,8 +142,6 @@ export function useTransposeDialog({
   ]);
 
   const handleTransposeAmountChange = useCallback((value: string) => {
-    // Allow arbitrary text (including just "-" while typing) but only update
-    // the numeric amount when the value parses to a finite number.
     setTransposeAmountInput(value);
 
     const trimmed = value.trim();

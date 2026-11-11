@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
 import type { Instrument, Pattern, Song } from '../../synth/SoundDriver.ts';
-import type { YM2149 } from '../../synth/YM2149.ts';
+import type { SoundEngine } from '../../synth/soundEngine.ts';
 import type { MidiConfiguration } from '../midi/useMidi.ts';
 import type { SequencerState } from '../sequencer/useSequencer.ts';
 import { usePlaybackSimulation } from './usePlaybackSimulation.ts';
@@ -23,7 +23,7 @@ export interface UsePlaybackBridgeParams {
   currentSong: Song;
   patternsById: Map<string, Pattern>;
   channelMutes: boolean[];
-  ym2149Ref: MutableRefObject<YM2149 | null>;
+  ym2149Ref: MutableRefObject<SoundEngine | null>;
   isDebugMode: boolean;
   setSharedCurrentLine: (line: number) => void;
   stop: () => void;
@@ -80,7 +80,6 @@ export function usePlaybackBridge({
     currentInstrument,
   });
 
-  // Register sequencer callback
   useEffect(() => {
     setCallback(sequencerCallback);
   }, [setCallback, sequencerCallback]);

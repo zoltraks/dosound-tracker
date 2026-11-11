@@ -48,9 +48,7 @@ describe('toneNoisePanelUtils', () => {
     expect(left).toHaveLength(32);
     expect(right).toHaveLength(32);
 
-    // padded last value should be 2, so after left rotation the last element should be 0
     expect(left[31]).toBe(0);
-    // after right rotation, first element should be 2 (last element of padded array)
     expect(right[0]).toBe(2);
   });
 

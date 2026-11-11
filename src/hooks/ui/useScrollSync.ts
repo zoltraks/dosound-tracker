@@ -6,7 +6,6 @@ export const useScrollSync = (sharedCurrentLine: number) => {
 
   const handlePositionScroll = useCallback((event: React.UIEvent<HTMLDivElement>) => {
     const scrollTop = event.currentTarget.scrollTop;
-    // Sync all tracks scroll when position block is scrolled
     const tracks = document.querySelectorAll('.track-content');
     tracks.forEach((track) => {
       (track as HTMLDivElement).scrollTop = scrollTop;
@@ -58,10 +57,8 @@ export const useScrollSync = (sharedCurrentLine: number) => {
       let newScrollTop = currentScrollTop;
 
       if (targetTop < currentScrollTop) {
-        // Selected row is above the visible area
         newScrollTop = targetTop;
       } else if (targetBottom > currentScrollTop + containerHeight) {
-        // Selected row is below the visible area
         newScrollTop = targetBottom - containerHeight;
       }
 
@@ -72,7 +69,6 @@ export const useScrollSync = (sharedCurrentLine: number) => {
         return;
       }
 
-      // Apply synchronized scroll only to the pattern area
       container.scrollTop = newScrollTop;
       positionContent.scrollTop = newScrollTop;
 

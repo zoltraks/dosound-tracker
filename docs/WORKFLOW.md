@@ -192,6 +192,8 @@ The resolved role-to-path map for the documentation set and its workflow directo
 
 ## Document Directory Access
 
+- The documents sitting directly in `docs/` are the default read surface - read them as the task requires. The directories under it are restricted: read them only as the bullets below authorize, and never scan them for unrelated history.
+- An operation stage that names window artifacts reads only the directories that stage requires - a window review analyzing the window reads its change requests and plans, and a named SDLC window run authorizes that window's groups as the bullets below record.
 - Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. A request that names a specific record as a dependency or integration target authorizes reading that record - never the whole group. Otherwise never automatically scan or gather change requests from this directory - the user will manually request implementation plans for individual changes.
 - Do not read any document from `docs/plan/` unless specifically instructed by the user or a named window request authorizes the window's plan group. Implementation plans are written to this directory only when the user explicitly requests them or a window run requires them.
 - Do not read any document from `docs/archive/` or `docs/refactoring/` unless specifically instructed by the user. These directories contain historical documents and refactoring proposals that are not part of the active documentation set.
@@ -462,6 +464,25 @@ A generated record written in one pass can carry drafting artifacts - half-edite
 **Scripted sweeps must cover inline literals too**
 
 A find-and-replace driven on line-end patterns misses single-line call sites - a `windowScroll: 0,$` pass fixed every block-style `saveUiState` literal but skipped two inline calls until a grep for the unchanged pattern caught them. Enumerate both the block and inline shapes of the target, or verify leftovers after the sweep.
+
+**Static `?worker&url` imports emit the bundle, dynamic ones do not**
+
+Under the rolldown build, `await import('module.ts?worker&url')` compiles to a plain dynamic chunk import and leaves a dangling `./name.js` reference with no emitted file - a runtime 404 that typecheck, lint, and build all miss. The static `import url from 'module.ts?worker&url'` emits the self-contained worker bundle correctly. Verify the emitted file exists in `dist/js/` whenever a worklet route is added or moved.
+
+**A dev server shadowing the preview port fools e2e and probes**
+
+`playwright.config.ts` sets `reuseExistingServer`, so `npm run test:e2e` and ad-hoc probes run against whatever holds port 8008 - a stale `npm run dev` serves `src/` while `vite preview` would serve `dist/`. Dev-mode resource names like `?worker&url` wrappers differ from emitted `js/` files, so path-sensitive assertions must tolerate both or the port must be freed first (see the stopping note).
+
+**Deleting a sole comment inside an empty body leaves a no-op**
+
+A comment sweep that removes the only content of `.then(() => { /* c */ })` or `else if (...) { /* c */ }` leaves a `.then(() => {})` dead link or trips `no-empty`. The sweep restores an accurate deliberately-empty marker or collapses the construct - a comment-only pass can still produce a code artifact that needs its own tidy.
+
+**`erasableSyntaxOnly` rejects TypeScript parameter properties**
+
+`tsconfig.app.json` enables `erasableSyntaxOnly`, so constructor parameter
+properties (`constructor(private readonly x: T)`) fail typecheck even though
+older code reads as if they were allowed. Declare the field explicitly and
+assign it in the constructor body.
 
 **Table formatting and Prettier**
 

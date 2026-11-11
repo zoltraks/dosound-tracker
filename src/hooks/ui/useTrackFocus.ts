@@ -16,7 +16,6 @@ export const useTrackFocus = ({ activeSection }: { activeSection: NavigationSect
     } catch {
       // ignore
     }
-    // Default: enabled (use per-track backgrounds)
     return true;
   });
 

@@ -42,7 +42,6 @@ describe('exportFileNaming', () => {
     expect(buildInstrumentExportBaseName('My Song', '0A')).toBe('My_Song_inst_0A');
     expect(buildDumpExportBaseName('My Song')).toBe('My_Song_dump');
 
-    // fallback behavior
     expect(buildSongExportBaseName('')).toBe('music');
     expect(buildInstrumentExportBaseName('', '')).toBe('music_inst_inst');
   });

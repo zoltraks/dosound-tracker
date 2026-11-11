@@ -45,7 +45,6 @@ export function useInstrumentDialogs({
   const [instrumentMidiTarget, setInstrumentMidiTarget] = useState<Instrument | null>(null);
   const [instrumentColorTarget, setInstrumentColorTarget] = useState<Instrument | null>(null);
 
-  // Handle instrument selection
   const handleInstrumentSelect = useCallback((instrument: Instrument) => {
     setCurrentInstrument(instrument);
   }, []);
