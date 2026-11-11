@@ -26,6 +26,8 @@ Before creating the proposal, thoroughly analyse the current implementation sour
 
 The analysis must be performed autonomously. Do not ask the user what to refactor. Instead, examine recent changes, the current codebase, existing guidelines and standards, and research good practices to determine the most valuable refactoring focus.
 
+When the target is a prop-drilled handler set or a callback passed between layers, trace every consumer by prop name, not only the producing hook - intermediate pass-through components and aggregator hooks hide their true layer count and only surface once the props are searched for directly.
+
 **Apply the Rule of Three**
 
 Do not extract a shared abstraction from a single call site. Do not pre-emptively generalise a pattern that appears twice. Wait until at least three concrete duplicates exist before introducing a helper, hook, or component, and write the abstraction to match the three real call sites rather than to a hypothetical future fourth one.

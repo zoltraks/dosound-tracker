@@ -1,7 +1,7 @@
 {
   "name": "dosound-tracker",
   "private": true,
-  "version": "1.5.4",
+  "version": "1.5.5",
   "type": "module",
   "description": "DOSOUND Tracker",
   "main": "electron/main.cjs",
@@ -53,8 +53,8 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.3.0",
-    "@vitest/coverage-v8": "^4.1.12",
-    "@vitest/ui": "^4.1.12",
+    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/ui": "^5.1.0",
     "concurrently": "^10.0.3",
     "electron": "^45.2.1",
     "electron-builder": "^26.18.1",
@@ -67,7 +67,7 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.72.2",
     "vite": "^8.3.7",
-    "vitest": "^4.1.12",
+    "vitest": "^5.1.0",
     "wait-on": "^9.5.1"
   },
   "author": {

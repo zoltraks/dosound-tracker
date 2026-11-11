@@ -9,14 +9,7 @@ interface ExportModalProps {
   exportStrategy: ExportStrategy;
   onChangeType: (type: ExportType) => void;
   onChangeStrategy: (strategy: ExportStrategy) => void;
-  onExportDump: () => void;
-  onExportData: () => void;
-  onExportBin: () => void;
-  onExportVgm: () => void;
-  onExportMax: () => void;
-  onExportWav: () => void;
-  onExportMod: () => void;
-  onExportMidi: () => void;
+  onExportFormat: (format: ExportFormat) => void;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -27,14 +20,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   exportStrategy,
   onChangeType,
   onChangeStrategy,
-  onExportDump,
-  onExportData,
-  onExportBin,
-  onExportVgm,
-  onExportMax,
-  onExportWav,
-  onExportMod,
-  onExportMidi,
+  onExportFormat,
   onConfirm,
   onCancel,
 }) => {
@@ -44,15 +30,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     onConfirm();
   };
 
-  const formatButtons: { format: ExportFormat; label: string; onExport: () => void }[] = [
-    { format: 'data', label: 'DATA', onExport: onExportData },
-    { format: 'dump', label: 'DUMP', onExport: onExportDump },
-    { format: 'bin', label: 'BIN', onExport: onExportBin },
-    { format: 'vgm', label: 'VGM', onExport: onExportVgm },
-    { format: 'max', label: 'MAX', onExport: onExportMax },
-    { format: 'wav', label: 'WAV', onExport: onExportWav },
-    { format: 'mod', label: 'MOD', onExport: onExportMod },
-    { format: 'midi', label: 'MIDI', onExport: onExportMidi },
+  const formatButtons: { format: ExportFormat; label: string }[] = [
+    { format: 'data', label: 'DATA' },
+    { format: 'dump', label: 'DUMP' },
+    { format: 'bin', label: 'BIN' },
+    { format: 'vgm', label: 'VGM' },
+    { format: 'max', label: 'MAX' },
+    { format: 'wav', label: 'WAV' },
+    { format: 'mod', label: 'MOD' },
+    { format: 'midi', label: 'MIDI' },
   ];
 
   return (
@@ -135,13 +121,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               marginTop: '4px',
             }}
           >
-            {formatButtons.map(({ format, label, onExport }) => (
+            {formatButtons.map(({ format, label }) => (
               <button
                 key={format}
                 type="button"
                 className="command-button"
                 style={{ width: '100%' }}
-                onClick={onExport}
+                onClick={() => onExportFormat(format)}
               >
                 {label}
                 {exportStrategyApplies(format, exportType) && <span aria-hidden="true">*</span>}

@@ -37,7 +37,7 @@ import { EnvelopeSection } from './components/EnvelopeSection.tsx';
 import { SongSection } from './components/SongSection.tsx';
 import { FileInputs } from './components/FileInputs.tsx';
 import { useAppModals } from './hooks/modal/useAppModals.tsx';
-import { useFileOperations } from './hooks/file/useFileOperations.ts';
+import { useExportOperations } from './hooks/file/useExportOperations.ts';
 import { useAppUiState } from './hooks/ui/useAppUiState.ts';
 import { useAppInfoDialogs } from './hooks/app/useAppInfoDialogs.ts';
 import { useStartupRestore } from './hooks/app/useStartupRestore.ts';
@@ -208,7 +208,7 @@ const App: React.FC = () => {
     exportMaxWithContext,
     exportMidiWithContext,
     exportModWithContext,
-  } = useFileOperations({ song: currentSong, exportStrategy });
+  } = useExportOperations({ song: currentSong });
 
   const isNavigationSuspended = useNavigationSuspension({
     modalState,
@@ -589,14 +589,7 @@ const App: React.FC = () => {
     handleConfirmExport,
     handleExportTypeChange,
     handleExportStrategyChange,
-    handleExportDumpFromModal,
-    handleExportDataFromModal,
-    handleExportBinFromModal,
-    handleExportVgmFromModal,
-    handleExportWavFromModal,
-    handleExportMaxFromModal,
-    handleExportModFromModal,
-    handleExportMidiFromModal,
+    handleExportFormatFromModal,
   } = useExportModal({
     exportType,
     setExportType,
@@ -796,14 +789,7 @@ const App: React.FC = () => {
     pendingExportStrategy,
     handleExportTypeChange,
     handleExportStrategyChange,
-    handleExportDumpFromModal,
-    handleExportDataFromModal,
-    handleExportBinFromModal,
-    handleExportVgmFromModal,
-    handleExportMaxFromModal,
-    handleExportWavFromModal,
-    handleExportModFromModal,
-    handleExportMidiFromModal,
+    handleExportFormatFromModal,
     handleConfirmExport,
     handleCancelExport,
     isPasteTrackModalOpen,

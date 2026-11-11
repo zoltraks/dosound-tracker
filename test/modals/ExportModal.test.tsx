@@ -12,14 +12,7 @@ const renderModal = (overrides: Partial<Parameters<typeof ExportModal>[0]> = {})
       exportStrategy="simple"
       onChangeType={vi.fn()}
       onChangeStrategy={vi.fn()}
-      onExportDump={vi.fn()}
-      onExportData={vi.fn()}
-      onExportBin={vi.fn()}
-      onExportVgm={vi.fn()}
-      onExportMax={vi.fn()}
-      onExportWav={vi.fn()}
-      onExportMod={vi.fn()}
-      onExportMidi={vi.fn()}
+      onExportFormat={vi.fn()}
       onConfirm={vi.fn()}
       onCancel={vi.fn()}
       {...overrides}
@@ -32,36 +25,33 @@ describe('ExportModal', () => {
     expect(container.querySelector('.modal-backdrop')).toBeNull();
   });
 
-  it('routes each of the eight format buttons to its own handler', () => {
-    const handlers = {
-      onExportData: vi.fn(),
-      onExportDump: vi.fn(),
-      onExportBin: vi.fn(),
-      onExportVgm: vi.fn(),
-      onExportMax: vi.fn(),
-      onExportWav: vi.fn(),
-      onExportMod: vi.fn(),
-      onExportMidi: vi.fn(),
-    };
-    renderModal(handlers);
-    const cases: [string, () => void][] = [
-      ['DATA', handlers.onExportData],
-      ['DUMP', handlers.onExportDump],
-      ['BIN', handlers.onExportBin],
-      ['VGM', handlers.onExportVgm],
-      ['MAX', handlers.onExportMax],
-      ['WAV', handlers.onExportWav],
-      ['MOD', handlers.onExportMod],
-      ['MIDI', handlers.onExportMidi],
+  it('routes each of the eight format buttons through onExportFormat', () => {
+    const onExportFormat = vi.fn();
+    renderModal({ onExportFormat });
+    const cases: [string, string][] = [
+      ['DATA', 'data'],
+      ['DUMP', 'dump'],
+      ['BIN', 'bin'],
+      ['VGM', 'vgm'],
+      ['MAX', 'max'],
+      ['WAV', 'wav'],
+      ['MOD', 'mod'],
+      ['MIDI', 'midi'],
     ];
-    for (const [label, handler] of cases) {
+    for (const [label, format] of cases) {
       fireEvent.click(screen.getByRole('button', { name: label }));
       try {
-        expect(handler).toHaveBeenCalledTimes(1);
+        expect(onExportFormat).toHaveBeenLastCalledWith(format);
       } catch (error) {
         console.log('format handler', label);
         throw error;
       }
+    }
+    try {
+      expect(onExportFormat).toHaveBeenCalledTimes(8);
+    } catch (error) {
+      console.log('format calls', onExportFormat.mock.calls);
+      throw error;
     }
   });
 
@@ -168,14 +158,7 @@ describe('ExportModal', () => {
         exportStrategy="simple"
         onChangeType={vi.fn()}
         onChangeStrategy={vi.fn()}
-        onExportDump={vi.fn()}
-        onExportData={vi.fn()}
-        onExportBin={vi.fn()}
-        onExportVgm={vi.fn()}
-        onExportMax={vi.fn()}
-        onExportWav={vi.fn()}
-        onExportMod={vi.fn()}
-        onExportMidi={vi.fn()}
+        onExportFormat={vi.fn()}
         onConfirm={vi.fn()}
         onCancel={vi.fn()}
       />,

@@ -1,5 +1,13 @@
 # Changes
 
+## Version 1.5.4
+
+The export dialog now shows which formats honour the chosen dump strategy under the current scope.
+
+- **Export**: the format buttons that honour the selected strategy carry a `*` marker - `DATA`, `BIN`, `VGM`, and `MAX` for song and pattern exports, `MAX` alone for instrument exports - and a caption explains that `MAX` uses the strategy to select a stream format while `VGM` differs only under `TIGHT`.
+- **Build**: the test toolchain upgrades to Vitest 5.
+- **Internals**: the export format buttons dispatch through a single callback and the export hook carries a matching name.
+
 ## Version 1.5.3
 
 Accessibility, stereo output, chip variants, new export formats, and undo history join the tracker, with sample-accurate playback timing underneath.

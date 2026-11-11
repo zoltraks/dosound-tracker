@@ -24,4 +24,4 @@ The following items were previously listed as future work and have since been im
 
 ## Candidates
 
-- **`useExportOperations` hook extraction**: the export handlers still live inside `useFileOperations.ts` even after the shared scope/summary/error helpers moved to `utils/export/exportSummary.ts`. A dedicated export hook is the natural next decomposition step - noted in `docs/refactoring/1.5.3/ASSESSMENT.md` as a follow-up candidate.
+- **`useAppModals` narrowing**: the hook shuttles every modal concern's props from `App.tsx` onto `ModalManager` - the 1.5.4 refactoring found it only when the eight export handlers collapsed through it. Splitting or thinning the pass-through is deferred decomposition work.

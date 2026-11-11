@@ -4,52 +4,48 @@
 
 ## Summary
 
-| Field         | Value                                                                   |
-| ------------- | ----------------------------------------------------------------------- |
-| Intent        | Move the test toolchain to the `vitest` 5 line across the related       |
-|               | packages once the runner stabilizes on this stack                       |
-| Key decisions | `vitest`, `@vitest/ui`, and `@vitest/coverage-v8` upgrade together -    |
-|               | the chain shares the runner                                             |
-| Open risks    | Blocked on upstream stability - the 5.1.0 attempt failed the full suite |
-|               | on rolldown-vite 7 and was reverted                                     |
+| Field         | Value                                                                |
+| ------------- | -------------------------------------------------------------------- |
+| Intent        | Move the test toolchain to the `vitest` 5 line across the related    |
+|               | packages once the runner stabilizes on this stack                    |
+| Key decisions | `vitest`, `@vitest/ui`, and `@vitest/coverage-v8` upgrade together - |
+|               | the chain shares the runner; the localStorage setup installs the     |
+|               | plain-object mock unconditionally                                    |
+| Open risks    | `none` - landed at 5.1.0 on the Vite 8 stack                         |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
 
 ## Description
 
-`vitest` 5 was evaluated at 5.1.0 and reverted: the full suite failed
-under the new runner on the rolldown-vite 7 stack. The failure was
+`vitest` 5 was evaluated at 5.1.0 on the rolldown-vite 7 stack and
+reverted: the full suite failed under the new runner. The failure was
 toolchain-level, not test-quality - the suite itself is healthy on 4.x.
 
-The upgrade is deferred to a later window pending evidence the runner
-works on this stack: a vitest 5.x release that runs the suite clean under
-rolldown-vite, or upstream fixes addressing the observed failures. When
-that evidence exists, `vitest`, `@vitest/ui`, and
-`@vitest/coverage-v8` bump together inside the same window - they share
-the runner core and upgrading one alone leaves version skew.
+The 1.5.4 window re-ran the evaluation at 5.1.0 under Vite 8. The peer
+range `^6.4.0 || ^7.0.0 || ^8.0.0` admits the stack, and the suite's two
+drift surfaces resolved with a single infrastructure fix:
 
-The re-evaluation starts by re-running the archived failure list from
-the 1.3.6 attempt against the new version, since vitest 5 changes to the
-runner, environment handling, or config schema may have since been
-fixed.
+- Newer jsdom exposes `localStorage` as a getter-only accessor on the
+  window, so the setup file's mirror assignment threw for every jsdom
+  test - `assignLocalStorage` now falls back to `Object.defineProperty`.
+- jsdom's own `Storage` is a WebIDL legacy platform object whose
+  named-property semantics swallow `vi.spyOn` method mocks, so the
+  setup now installs the plain-object mock unconditionally - the
+  spyable contract `TESTING.md` already documents.
 
-## Use Cases
+## Implementation
 
-- When a vitest 5.x release runs `npm test` clean on this stack, the
-  upgrade proceeds in the window.
-- When the suite still fails the same way, the record stays blocked and
-  reports the upstream state.
+- `package.json` and `package-lock.json`: `vitest`, `@vitest/ui`, and
+  `@vitest/coverage-v8` move `^4.1.12` to `5.1.0`.
+- `test/setup-localstorage.ts`: `assignLocalStorage` helper with a
+  defineProperty fallback, and unconditional mock installation.
 
-## Hints
+## Verification
 
-- The reverted-attempt evidence is recorded in the 1.3.6 dependency
-  upgrade archive - read it before re-running so the same failure modes
-  get checked first.
-- jsdom environment behaviour and the `// @vitest-environment node`
-  pragma are the likeliest drift surfaces per the suite's conventions.
-- Coverage thresholds in `vitest.config.ts` may need re-baselining under
-  the new coverage provider version.
+- `npm test` - 133 files, 1198 tests, zero failures under 5.1.0.
+- `npm run test:coverage` - 90.8% statements, thresholds hold unchanged.
+- Full verification loop clean: typecheck, lint, format, build, test.
 
 ## Out of Scope
 

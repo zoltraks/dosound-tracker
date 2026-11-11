@@ -1,5 +1,5 @@
 import type { Dispatch, ReactElement, SetStateAction } from 'react';
-import type { ExportType, ExportStrategy } from '../../constants/export.ts';
+import type { ExportType, ExportStrategy, ExportFormat } from '../../constants/export.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../midi/useMidi.ts';
 import type { InstrumentTypeInfo } from '../instrument/useInstrumentWarnings.ts';
@@ -112,14 +112,7 @@ export interface UseAppModalsParams {
   pendingExportStrategy: ExportStrategy;
   handleExportTypeChange: (type: ExportType) => void;
   handleExportStrategyChange: (strategy: ExportStrategy) => void;
-  handleExportDumpFromModal: () => void;
-  handleExportDataFromModal: () => void;
-  handleExportBinFromModal: () => void;
-  handleExportVgmFromModal: () => void;
-  handleExportMaxFromModal: () => void;
-  handleExportWavFromModal: () => void;
-  handleExportModFromModal: () => void;
-  handleExportMidiFromModal: () => void;
+  handleExportFormatFromModal: (format: ExportFormat) => void;
   handleConfirmExport: () => void;
   handleCancelExport: () => void;
 
@@ -234,14 +227,7 @@ export function useAppModals({
   pendingExportStrategy,
   handleExportTypeChange,
   handleExportStrategyChange,
-  handleExportDumpFromModal,
-  handleExportDataFromModal,
-  handleExportBinFromModal,
-  handleExportVgmFromModal,
-  handleExportMaxFromModal,
-  handleExportWavFromModal,
-  handleExportModFromModal,
-  handleExportMidiFromModal,
+  handleExportFormatFromModal,
   handleConfirmExport,
   handleCancelExport,
   isPasteTrackModalOpen,
@@ -484,14 +470,7 @@ export function useAppModals({
       pendingExportStrategy={pendingExportStrategy}
       onChangeExportType={handleExportTypeChange}
       onChangeExportStrategy={handleExportStrategyChange}
-      onExportDumpFromModal={handleExportDumpFromModal}
-      onExportDataFromModal={handleExportDataFromModal}
-      onExportBinFromModal={handleExportBinFromModal}
-      onExportVgmFromModal={handleExportVgmFromModal}
-      onExportMaxFromModal={handleExportMaxFromModal}
-      onExportWavFromModal={handleExportWavFromModal}
-      onExportModFromModal={handleExportModFromModal}
-      onExportMidiFromModal={handleExportMidiFromModal}
+      onExportFormat={handleExportFormatFromModal}
       onConfirmExport={handleConfirmExport}
       onCancelExport={handleCancelExport}
       isPasteTrackModalOpen={isPasteTrackModalOpen}

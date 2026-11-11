@@ -3,7 +3,7 @@ import { ModalContainer } from './ModalContainer.tsx';
 import { FilePickerModal } from '../modals/FilePickerModal.tsx';
 import { ExportModal } from '../modals/ExportModal.tsx';
 import { PasteTrackModal } from '../modals/PasteTrackModal.tsx';
-import type { ExportType, ExportStrategy } from '../constants/export.ts';
+import type { ExportType, ExportStrategy, ExportFormat } from '../constants/export.ts';
 import type { SettingsCategory, SettingsValues } from '../types/settings.ts';
 import type { TrackPasteMode } from '../hooks/song/useTrackOperations.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
@@ -136,14 +136,7 @@ interface ModalManagerProps {
   pendingExportStrategy: ExportStrategy;
   onChangeExportType: (type: ExportType) => void;
   onChangeExportStrategy: (strategy: ExportStrategy) => void;
-  onExportDumpFromModal: () => void;
-  onExportDataFromModal: () => void;
-  onExportBinFromModal: () => void;
-  onExportVgmFromModal: () => void;
-  onExportMaxFromModal: () => void;
-  onExportWavFromModal: () => void;
-  onExportModFromModal: () => void;
-  onExportMidiFromModal: () => void;
+  onExportFormat: (format: ExportFormat) => void;
   onConfirmExport: () => void;
   onCancelExport: () => void;
 
@@ -284,14 +277,7 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
   pendingExportStrategy,
   onChangeExportType,
   onChangeExportStrategy,
-  onExportDumpFromModal,
-  onExportDataFromModal,
-  onExportBinFromModal,
-  onExportVgmFromModal,
-  onExportMaxFromModal,
-  onExportWavFromModal,
-  onExportModFromModal,
-  onExportMidiFromModal,
+  onExportFormat,
   onConfirmExport,
   onCancelExport,
   isPasteTrackModalOpen,
@@ -457,14 +443,7 @@ export const ModalManager: React.FC<ModalManagerProps> = ({
         exportStrategy={pendingExportStrategy}
         onChangeType={onChangeExportType}
         onChangeStrategy={onChangeExportStrategy}
-        onExportDump={onExportDumpFromModal}
-        onExportData={onExportDataFromModal}
-        onExportBin={onExportBinFromModal}
-        onExportVgm={onExportVgmFromModal}
-        onExportMax={onExportMaxFromModal}
-        onExportWav={onExportWavFromModal}
-        onExportMod={onExportModFromModal}
-        onExportMidi={onExportMidiFromModal}
+        onExportFormat={onExportFormat}
         onConfirm={onConfirmExport}
         onCancel={onCancelExport}
       />

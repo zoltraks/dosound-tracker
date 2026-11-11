@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import {
-  useFileOperations,
+  useExportOperations,
   type ExportContext,
-} from '../../../src/hooks/file/useFileOperations.ts';
+} from '../../../src/hooks/file/useExportOperations.ts';
 import { ENVELOPE_LENGTH } from '../../../src/constants/music.ts';
 import type { Instrument, Pattern, Song, Step } from '../../../src/synth/SoundDriver.ts';
 import type { ExportStrategy, ExportType } from '../../../src/constants/export.ts';
@@ -92,10 +92,9 @@ const ctx = (overrides: Partial<ExportContext> = {}): ExportContext => ({
   ...overrides,
 });
 
-const renderOperations = () =>
-  renderHook(() => useFileOperations({ song: song(), exportStrategy: 'tight' }));
+const renderOperations = () => renderHook(() => useExportOperations({ song: song() }));
 
-describe('useFileOperations export summaries', () => {
+describe('useExportOperations export summaries', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });

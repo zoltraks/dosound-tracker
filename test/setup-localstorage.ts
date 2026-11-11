@@ -30,7 +30,25 @@ function createLocalStorageMock(): Storage {
   };
 }
 
+// Newer jsdom exposes localStorage as a getter-only accessor on the window,
+// so install the store through defineProperty when plain assignment fails.
+function assignLocalStorage(storage: Storage): void {
+  const target = globalThis as typeof globalThis & { localStorage?: Storage };
+  try {
+    target.localStorage = storage;
+  } catch {
+    Object.defineProperty(globalThis, 'localStorage', {
+      value: storage,
+      configurable: true,
+      writable: true,
+    });
+  }
+}
+
 // Install before each test run so state is isolated per test file.
+// The mock is always installed, never jsdom's own Storage - a WebIDL
+// legacy platform object swallows vi.spyOn mocks through its
+// named-property semantics, while the plain object stays fully spyable.
 beforeEach(() => {
   const globalWindow = globalThis as Record<string, unknown>;
 
@@ -38,22 +56,5 @@ beforeEach(() => {
     globalWindow.window = {};
   }
 
-  const windowWithLocalStorage = globalWindow.window as { localStorage?: Storage };
-  const existing = windowWithLocalStorage.localStorage;
-
-  if (
-    !existing ||
-    typeof existing.getItem !== 'function' ||
-    typeof existing.setItem !== 'function' ||
-    typeof existing.removeItem !== 'function' ||
-    typeof existing.clear !== 'function'
-  ) {
-    const mock = createLocalStorageMock();
-    const globalWithLocalStorage = globalThis as typeof globalThis & { localStorage?: Storage };
-    globalWithLocalStorage.localStorage = mock;
-  } else {
-    // If jsdom provided a working localStorage, make sure tests start clean.
-    existing.clear();
-    globalWindow.localStorage = existing;
-  }
+  assignLocalStorage(createLocalStorageMock());
 });

@@ -1,8 +1,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import type { ExportType, ExportStrategy } from '../../constants/export.ts';
-import type { ExportContext } from '../file/useFileOperations.ts';
+import type { ExportType, ExportStrategy, ExportFormat } from '../../constants/export.ts';
+import type { ExportContext } from '../file/useExportOperations.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 
 export interface UseExportModalParams {
@@ -32,14 +32,7 @@ export interface UseExportModalResult {
   handleConfirmExport: () => void;
   handleExportTypeChange: (type: ExportType) => void;
   handleExportStrategyChange: (strategy: ExportStrategy) => void;
-  handleExportDumpFromModal: () => void;
-  handleExportDataFromModal: () => void;
-  handleExportBinFromModal: () => void;
-  handleExportVgmFromModal: () => void;
-  handleExportWavFromModal: () => void;
-  handleExportMaxFromModal: () => void;
-  handleExportMidiFromModal: () => void;
-  handleExportModFromModal: () => void;
+  handleExportFormatFromModal: (format: ExportFormat) => void;
 }
 
 export function useExportModal({
@@ -105,37 +98,33 @@ export function useExportModal({
     ],
   );
 
-  const handleExportDumpFromModal = useCallback(() => {
-    exportDumpWithContext(buildExportContext());
-  }, [buildExportContext, exportDumpWithContext]);
+  const exportFormatHandlers: Record<ExportFormat, (ctx: ExportContext) => void> = {
+    data: exportDataWithContext,
+    bin: exportBinWithContext,
+    vgm: exportVgmWithContext,
+    wav: exportWavWithContext,
+    max: exportMaxWithContext,
+    midi: exportMidiWithContext,
+    mod: exportModWithContext,
+    dump: exportDumpWithContext,
+  };
 
-  const handleExportDataFromModal = useCallback(() => {
-    exportDataWithContext(buildExportContext());
-  }, [buildExportContext, exportDataWithContext]);
-
-  const handleExportBinFromModal = useCallback(() => {
-    exportBinWithContext(buildExportContext());
-  }, [buildExportContext, exportBinWithContext]);
-
-  const handleExportVgmFromModal = useCallback(() => {
-    exportVgmWithContext(buildExportContext());
-  }, [buildExportContext, exportVgmWithContext]);
-
-  const handleExportWavFromModal = useCallback(() => {
-    exportWavWithContext(buildExportContext());
-  }, [buildExportContext, exportWavWithContext]);
-
-  const handleExportMaxFromModal = useCallback(() => {
-    exportMaxWithContext(buildExportContext());
-  }, [buildExportContext, exportMaxWithContext]);
-
-  const handleExportMidiFromModal = useCallback(() => {
-    exportMidiWithContext(buildExportContext());
-  }, [buildExportContext, exportMidiWithContext]);
-
-  const handleExportModFromModal = useCallback(() => {
-    exportModWithContext(buildExportContext());
-  }, [buildExportContext, exportModWithContext]);
+  const handleExportFormatFromModal = useCallback(
+    (format: ExportFormat) => {
+      exportFormatHandlers[format](buildExportContext());
+    },
+    [
+      buildExportContext,
+      exportDataWithContext,
+      exportBinWithContext,
+      exportVgmWithContext,
+      exportWavWithContext,
+      exportMaxWithContext,
+      exportMidiWithContext,
+      exportModWithContext,
+      exportDumpWithContext,
+    ],
+  );
 
   return {
     pendingExportType,
@@ -145,13 +134,6 @@ export function useExportModal({
     handleConfirmExport,
     handleExportTypeChange,
     handleExportStrategyChange,
-    handleExportDumpFromModal,
-    handleExportDataFromModal,
-    handleExportBinFromModal,
-    handleExportVgmFromModal,
-    handleExportWavFromModal,
-    handleExportMaxFromModal,
-    handleExportMidiFromModal,
-    handleExportModFromModal,
+    handleExportFormatFromModal,
   };
 }
