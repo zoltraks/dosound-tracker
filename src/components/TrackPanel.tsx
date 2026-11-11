@@ -63,6 +63,7 @@ interface TrackPanelProps {
   onRegisterStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
   selection?: { start: number; end: number } | null;
   onExtendSelection?: (delta: number) => void;
+  onNavigateSongLine?: (delta: number) => void;
   tickIntervalMs?: number;
 }
 
@@ -95,6 +96,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onRegisterStopPreview,
     selection,
     onExtendSelection,
+    onNavigateSongLine,
     tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
   } = props;
 
@@ -259,12 +261,20 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         }
       } else if (key === 'PAGEUP') {
         event.preventDefault();
-        const step = 16;
-        onLineChange(stepLineIndex(currentLine, patternLength, -step));
+        if (event.ctrlKey || event.metaKey) {
+          onNavigateSongLine?.(-1);
+        } else {
+          const step = 16;
+          onLineChange(stepLineIndex(currentLine, patternLength, -step));
+        }
       } else if (key === 'PAGEDOWN') {
         event.preventDefault();
-        const step = 16;
-        onLineChange(stepLineIndex(currentLine, patternLength, step));
+        if (event.ctrlKey || event.metaKey) {
+          onNavigateSongLine?.(1);
+        } else {
+          const step = 16;
+          onLineChange(stepLineIndex(currentLine, patternLength, step));
+        }
       } else if (key === 'HOME') {
         event.preventDefault();
         onLineChange(0);
@@ -424,6 +434,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       setCurrentColumn,
       setActiveSection,
       onExtendSelection,
+      onNavigateSongLine,
     ],
   );
 

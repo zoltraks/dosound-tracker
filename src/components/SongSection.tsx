@@ -20,6 +20,10 @@ interface SongSectionProps {
   onPlaylistChange: (playlist: PlaylistEntry[]) => void;
   onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   targetTrackId: 'A' | 'B' | 'C';
+  sharedCurrentLine: number;
+  onToggleLineFromStart: (lineIndex: number) => void;
+  onToggleSongFromCursor: (lineIndex: number) => void;
+  onToggleSongFromStart: (lineIndex: number) => void;
   currentInstrument: Instrument;
   onSelectInstrument: (instrument: Instrument) => void;
   onRenameInstrument: (name: string) => void;
@@ -27,6 +31,7 @@ interface SongSectionProps {
   onOpenInstrumentMidi: (instrument: Instrument) => void;
   onOpenInstrumentColor: (instrument: Instrument) => void;
   instrumentPanelFocusRevision: number;
+  playlistFocusRevision: number;
   ym2149: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (index: number) => void;
@@ -42,6 +47,10 @@ export const SongSection: React.FC<SongSectionProps> = ({
   onPlaylistChange,
   onCreatePatternAt,
   targetTrackId,
+  sharedCurrentLine,
+  onToggleLineFromStart,
+  onToggleSongFromCursor,
+  onToggleSongFromStart,
   currentInstrument,
   onSelectInstrument,
   onRenameInstrument,
@@ -49,6 +58,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
   onOpenInstrumentMidi,
   onOpenInstrumentColor,
   instrumentPanelFocusRevision,
+  playlistFocusRevision,
   ym2149,
   channelMutes,
   onToggleChannelMute,
@@ -73,6 +83,11 @@ export const SongSection: React.FC<SongSectionProps> = ({
         onPositionSelect={onPositionSelect}
         onCreatePatternAt={onCreatePatternAt}
         targetTrack={targetTrackId}
+        sharedCurrentLine={sharedCurrentLine}
+        focusRevision={playlistFocusRevision}
+        onToggleLineFromStart={onToggleLineFromStart}
+        onToggleSongFromCursor={onToggleSongFromCursor}
+        onToggleSongFromStart={onToggleSongFromStart}
       />
 
       <InstrumentPanel

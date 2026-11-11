@@ -7,6 +7,7 @@ export const useTrackFocus = ({ activeSection }: { activeSection: NavigationSect
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
   const [instrumentPanelFocusRevision, setInstrumentPanelFocusRevision] = useState(0);
+  const [playlistFocusRevision, setPlaylistFocusRevision] = useState(0);
   const [trackBackgroundEnabled, setTrackBackgroundEnabled] = useState<boolean>(() => {
     try {
       const stored = localStorage.getItem(StorageKeys.TRACK_BACKGROUND_ENABLED);
@@ -64,6 +65,8 @@ export const useTrackFocus = ({ activeSection }: { activeSection: NavigationSect
     setTrackFocusRevision,
     instrumentPanelFocusRevision,
     setInstrumentPanelFocusRevision,
+    playlistFocusRevision,
+    setPlaylistFocusRevision,
     trackBackgroundEnabled,
     setTrackBackgroundEnabled,
     handleToggleTrackBackground,

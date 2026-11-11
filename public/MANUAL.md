@@ -103,7 +103,7 @@ In the pattern editor:
 
 4. **PLAY INST** tests just the selected instrument
 
-**Quick tip:** Press **ENTER** while editing a track or playing the on-screen piano to loop the current pattern from the cursor row. **CTRL + ENTER** loops it from the first row, **SHIFT + ENTER** plays the song from the cursor row, and **CTRL + SHIFT + ENTER** plays the song from the first row. Pressing an **ENTER** binding while playback runs stops it, and stopping an ENTER-started playback restores the playlist position and track row.
+**Quick tip:** Press **ENTER** while editing a track or playing the on-screen piano to loop the current pattern from the cursor row. **CTRL + ENTER** loops it from the first row, **SHIFT + ENTER** plays the song from the cursor row, and **CTRL + SHIFT + ENTER** plays the song from the first row - the modifier bindings work from the playlist too, except while a pattern id is being typed. They also work from a disabled track (a channel with no pattern on the current line), as long as the playlist line holds a pattern on some channel. Pressing an **ENTER** binding while playback runs switches between line-loop and song playback without restarting - the binding matching the running mode stops it, and stopping an ENTER-started playback restores the playlist position and track row.
 
 ### Building the Playlist
 
@@ -243,6 +243,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 
 - **TAB** and **SHIFT + TAB** section cycling
 - **ARROW** movement
+- **PG UP / PG DOWN** to jump 16 rows inside a track, **CTRL + PG UP / CTRL + PG DOWN** to move between song lines while keeping the track row
 - **ALT + 1 / ALT + 2 / ALT + 3** to focus tracks A, B, and C (OPTION on macOS)
 - **CTRL + SPACE** to focus the on-screen piano, and again to return to the previous section
 - **SHIFT + SPACE** to write a note-off, or to clear a position that already holds one
@@ -253,7 +254,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - **F2** plays the current line, **ALT + 5** plays the song from the start of the current line, **ALT + 6** plays the current line, **ALT + 8** or **ESCAPE** stops playback
 - **ENTER / CTRL + ENTER / SHIFT + ENTER / CTRL + SHIFT + ENTER** to play a line or the song as described in the playback quick tip
 - **CTRL + N / CTRL + O / CTRL + S / CTRL + I** for new song, load song, save song, and new instrument
-- **CTRL + Z** to undo the last edit and **CTRL + Y** or **CTRL + SHIFT + Z** to redo it
+- **CTRL + Z** to undo the last edit and **CTRL + Y** or **CTRL + SHIFT + Z** to redo it - on macOS **CMD + Z** undoes and **CMD + SHIFT + Z** redoes
 - Hotkey support for all functions
 
 **Visual Feedback:**
@@ -312,23 +313,35 @@ For whole-envelope operations, the editor treats the envelope as fully defined f
 - **PICK INST**: Choose from the bundled instrument repository - it includes the Warmball instruments colored by role: red drums, blue basses, green leads, yellow effects
 - **DELETE INST**: Remove instrument
 - **CLONE INST**: Duplicate instrument
+
+Clicking an instrument in the list while a track is active selects it without leaving the track, so note entry continues with the new instrument.
+
 - **PLAY INST**: Test sound
 
 **Pattern Operations:**
 
-- **ADD LINE**: Create playlist entry
-- **DELETE LINE**: Remove playlist row
+- **ADD LINE**: Insert playlist entry after the current line
+- **DELETE LINE**: Remove playlist row and select the previous line
 - **DUPLICATE LINE**: Duplicate entry
 - **CLONE LINE**: Copy entry with new patterns
 - **INSERT STEP**: Add pattern row
 - **DELETE STEP**: Remove pattern row
+
+The line commands keep the playlist active and focused when it is the current section, so keyboard playlist editing continues right after a click.
 
 **Track Operations:**
 
 - **ADD TRACK**: Create new pattern
 - **DELETE TRACK**: Remove pattern
 - **COPY TRACK**: Copy pattern data to clipboard
-- **PASTE TRACK**: Paste pattern data from clipboard
+- **PASTE TRACK**: Paste pattern data from clipboard starting at the first track row and leave the cursor on the first row
+
+**History Operations:**
+
+- **UNDO**: Revert the last recorded edit and return the cursor to the row it started from
+- **REDO**: Re-apply a reverted edit
+
+The edit history survives a page reload and is cleared by NEW SONG, LOAD SONG, DEMO SONG, and RESET.
 
 ### Export Capabilities
 

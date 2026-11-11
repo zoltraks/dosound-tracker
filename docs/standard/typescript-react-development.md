@@ -650,6 +650,12 @@ async function fetchData(signal: AbortSignal): Promise<Data> {
 - Synchronous file I/O (`readFileSync`, `writeFileSync`) on the hot path,
   because it blocks the event loop.
 - Mutable shared state across module boundaries, because it creates hidden coupling
+- Wiring `onClick={handler}` when the handler's parameters are not the event - the DOM
+  delivers a `MouseEvent`, so an optional numeric or unrelated parameter silently receives
+  the event object. Wrap the call: `onClick={() => handler()}`.
+- Letting a committing control's event bubble to a parent `onKeyDown` that closes over the
+  same editing state - the parent re-fires the commit through its stale closure. Stop
+  propagation at the committing control.
 
 ### React 19 Patterns
 
@@ -1507,6 +1513,14 @@ never a guessed shape - a wrapped setter may be `(value) => void`, not `Dispatch
 
 **Empty catch convention.** A deliberately empty catch is written `{ // ignore }`, stays rare,
 and marks an intentional discard rather than forgotten error handling.
+
+**Modifier-chord keys match on `event.code`.** A modifier that produces a character changes
+`event.key` - Option+digit on macOS emits `¡`, `£`, `ﬁ`, `ﬂ`, `•` - so a digit chord matched
+on `key` is silently dead there while the same Alt+digit works on Windows and Linux.
+`event.code` (`Digit1`, `Numpad1`, `KeyQ`) names the physical key and stays locale-stable.
+
+`code` values are camelCase - normalize before prefix comparisons, because
+`code.startsWith('DIGIT')` never matches `'Digit1'`.
 
 **Test-hygiene contracts.** React Testing Library does not auto-clean rendered trees - every
 component test registers `afterEach(() => cleanup())` when no global setup does it.

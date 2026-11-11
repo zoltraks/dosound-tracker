@@ -66,6 +66,10 @@ HMR updates that touch audio-path code re-run the audio effects, which closes th
 
 `git stash` leaves untracked files in place, so a stash-based "clean tree" lint or build check still sees newly created files. Use `git stash -u` when the check must exclude uncommitted new files, or move them aside explicitly.
 
+**A shared working tree shares check results**
+
+`npx prettier --check` and `npm run format` sweep the whole tree, so on a tree shared with another session they flag - or rewrite - files the other session has mid-flight. Scope the check to the change set's own paths when the tree is shared, and treat a whole-tree failure in a file the session never touched as a foreign write, not a regression in the current change set.
+
 **Enumerate moved files explicitly, not by depth**
 
 A specifier rewrite driven by `find <dir> -mindepth 2` silently skips files directly under a start directory, because the depth is counted relative to each start path. After a tree move that places files at different depths, enumerate the moved paths from the move list itself (or glob each destination directory) and rewrite every one - a depth-filtered enumeration can look complete while missing a whole destination folder.
@@ -136,6 +140,10 @@ A comment sweep that removes the only content of `.then(() => { /* c */ })` or `
 properties (`constructor(private readonly x: T)`) fail typecheck even though
 older code reads as if they were allowed. Declare the field explicitly and
 assign it in the constructor body.
+
+**BSD sed has no GNU offset ranges**
+
+`sed -n 'FIRST,+Np'` is GNU-only syntax - the BSD sed on macOS rejects it with `invalid command code`. Compute the end line (`sed -n 'FIRST,LASTp'`) or use `awk 'NR>=F && NR<=L'` for range reads that must run on both.
 
 **Table formatting and Prettier**
 

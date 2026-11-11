@@ -1,11 +1,30 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useRef } from 'react';
 import type { Dispatch, MutableRefObject, SetStateAction } from 'react';
-import type { NavigationSection } from '../../constants/navigation.ts';
 import type { SequencerState } from '../sequencer/useSequencer.ts';
 import type { Song } from '../../synth/SoundDriver.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
+
+const clampPlaylistIndex = (patternIndex: number, playlistLength: number) =>
+  Math.max(0, Math.min(patternIndex, playlistLength - 1));
+
+// A playlist line is playable when any channel holds a pattern - a disabled
+// track only means the focused channel is empty at this line, and the loop
+// still plays the other channels' patterns. Only a completely empty line
+// has nothing to play.
+const resolvePlayableLineIndex = (song: Song, patternIndex: number): number | null => {
+  const playlistLength = song.line.length;
+  if (playlistLength === 0) {
+    return null;
+  }
+  const clampedIndex = clampPlaylistIndex(patternIndex, playlistLength);
+  const entry = song.line[clampedIndex];
+  if (!entry || (entry.A === '--' && entry.B === '--' && entry.C === '--')) {
+    return null;
+  }
+  return clampedIndex;
+};
 
 export interface UsePlaybackHandlersParams {
   stop: () => void;
@@ -20,8 +39,6 @@ export interface UsePlaybackHandlersParams {
   currentSong: Song;
   sharedCurrentLine: number;
   setSharedCurrentLine: (line: number) => void;
-  activeSection: NavigationSection;
-  lastTrackId: 'A' | 'B' | 'C';
   isLinePlaying: boolean;
   setIsLinePlaying: Dispatch<SetStateAction<boolean>>;
   ensureAudioContextResumed: () => Promise<void>;
@@ -54,8 +71,6 @@ export function usePlaybackHandlers({
   currentSong,
   sharedCurrentLine,
   setSharedCurrentLine,
-  activeSection,
-  lastTrackId,
   isLinePlaying,
   setIsLinePlaying,
   ensureAudioContextResumed,
@@ -110,18 +125,15 @@ export function usePlaybackHandlers({
       return;
     }
 
-    const clampedIndex = Math.max(
-      0,
-      Math.min(sequencerState.currentPattern, currentSong.line.length - 1),
-    );
+    const clampedIndex = clampPlaylistIndex(sequencerState.currentPattern, currentSong.line.length);
 
     // If we are currently in line-loop mode and playback is running, switch
     // to song playback without restarting the sequencer. The worker will
     // apply the mode change at the next pattern boundary, avoiding any
-    // audible gap.
+    // audible gap. A saved return position survives the switch, so an
+    // Enter-started playback still restores it on stop.
     if (isLinePlaying && sequencerState.isPlaying) {
       setIsLinePlaying(false);
-      patternReturnPositionRef.current = null;
 
       setPatternLoopMode(false);
       return;
@@ -143,43 +155,8 @@ export function usePlaybackHandlers({
   ]);
 
   const handleStartLinePlayback = useCallback(() => {
-    if (currentSong.line.length === 0) {
-      return;
-    }
-
-    const clampedIndex = Math.max(
-      0,
-      Math.min(sequencerState.currentPattern, currentSong.line.length - 1),
-    );
-    const currentEntry = currentSong.line[clampedIndex];
-
-    if (!currentEntry) {
-      return;
-    }
-
-    let trackId: 'A' | 'B' | 'C' = lastTrackId;
-    if (activeSection === 'trackA') {
-      trackId = 'A';
-    } else if (activeSection === 'trackB') {
-      trackId = 'B';
-    } else if (activeSection === 'trackC') {
-      trackId = 'C';
-    }
-
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentEntry.A;
-        break;
-      case 'B':
-        patternId = currentEntry.B;
-        break;
-      case 'C':
-        patternId = currentEntry.C;
-        break;
-    }
-
-    if (patternId === '--') {
+    const clampedIndex = resolvePlayableLineIndex(currentSong, sequencerState.currentPattern);
+    if (clampedIndex === null) {
       return;
     }
 
@@ -192,10 +169,14 @@ export function usePlaybackHandlers({
         Math.min(sequencerState.currentLine, (currentSong.length || PATTERN_LENGTH) - 1),
       );
 
-      patternReturnPositionRef.current = {
-        pattern: clampedIndex,
-        line: effectiveLine,
-      };
+      // The first binding owns the return position - a mode switch during
+      // an Enter-started playback does not steal it.
+      if (patternReturnPositionRef.current === null) {
+        patternReturnPositionRef.current = {
+          pattern: clampedIndex,
+          line: effectiveLine,
+        };
+      }
 
       setIsLinePlaying(true);
 
@@ -222,8 +203,6 @@ export function usePlaybackHandlers({
     sequencerState.currentLine,
     currentSong.line,
     currentSong.length,
-    activeSection,
-    lastTrackId,
     isLinePlaying,
     setPatternLoopMode,
     setIsLinePlaying,
@@ -231,43 +210,8 @@ export function usePlaybackHandlers({
   ]);
 
   const handleStartLineFromBeginning = useCallback(() => {
-    if (currentSong.line.length === 0) {
-      return;
-    }
-
-    const clampedIndex = Math.max(
-      0,
-      Math.min(sequencerState.currentPattern, currentSong.line.length - 1),
-    );
-    const currentEntry = currentSong.line[clampedIndex];
-
-    if (!currentEntry) {
-      return;
-    }
-
-    let trackId: 'A' | 'B' | 'C' = lastTrackId;
-    if (activeSection === 'trackA') {
-      trackId = 'A';
-    } else if (activeSection === 'trackB') {
-      trackId = 'B';
-    } else if (activeSection === 'trackC') {
-      trackId = 'C';
-    }
-
-    let patternId = '--';
-    switch (trackId) {
-      case 'A':
-        patternId = currentEntry.A;
-        break;
-      case 'B':
-        patternId = currentEntry.B;
-        break;
-      case 'C':
-        patternId = currentEntry.C;
-        break;
-    }
-
-    if (patternId === '--') {
+    const clampedIndex = resolvePlayableLineIndex(currentSong, sequencerState.currentPattern);
+    if (clampedIndex === null) {
       return;
     }
 
@@ -291,48 +235,13 @@ export function usePlaybackHandlers({
     setPosition,
     isLinePlaying,
     currentSong.line,
-    activeSection,
-    lastTrackId,
     startWhenReady,
   ]);
 
   const handleStartLineFromCurrentLine = useCallback(
     (overrideLine?: number) => {
-      if (currentSong.line.length === 0) {
-        return;
-      }
-
-      const playlistLength = currentSong.line.length;
-      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-      const currentEntry = currentSong.line[clampedIndex];
-
-      if (!currentEntry) {
-        return;
-      }
-
-      let trackId: 'A' | 'B' | 'C' = lastTrackId;
-      if (activeSection === 'trackA') {
-        trackId = 'A';
-      } else if (activeSection === 'trackB') {
-        trackId = 'B';
-      } else if (activeSection === 'trackC') {
-        trackId = 'C';
-      }
-
-      let patternId = '--';
-      switch (trackId) {
-        case 'A':
-          patternId = currentEntry.A;
-          break;
-        case 'B':
-          patternId = currentEntry.B;
-          break;
-        case 'C':
-          patternId = currentEntry.C;
-          break;
-      }
-
-      if (patternId === '--') {
+      const clampedIndex = resolvePlayableLineIndex(currentSong, sequencerState.currentPattern);
+      if (clampedIndex === null) {
         return;
       }
 
@@ -365,8 +274,6 @@ export function usePlaybackHandlers({
       sharedCurrentLine,
       sequencerState.currentPattern,
       sequencerState.isPlaying,
-      activeSection,
-      lastTrackId,
       stop,
       startPatternLoop,
       setIsLinePlaying,
@@ -374,54 +281,57 @@ export function usePlaybackHandlers({
     ],
   );
 
-  const handleToggleLineFromCursor = useCallback(
-    (lineIndex: number) => {
-      if (sequencerState.isPlaying) {
-        handleStopLinePlayback();
-        return;
+  // Shared playing-mode branch of the two line Enter bindings: the binding
+  // that owns the running line loop stops playback, and a press during song
+  // playback switches into line-loop mode, keeping the pressed row as the
+  // return position unless one was saved.
+  const handleLineToggleWhilePlaying = useCallback(
+    (lineIndex: number): boolean => {
+      if (!sequencerState.isPlaying) {
+        return false;
       }
 
-      handleStartLineFromCurrentLine(lineIndex);
-    },
-    [sequencerState.isPlaying, handleStopLinePlayback, handleStartLineFromCurrentLine],
-  );
-
-  // Ctrl+Enter in a track: play the line from its first row like the PLAY LINE
-  // menu command, remembering the cursor position so Enter restores it on stop.
-  const handleToggleLineFromStart = useCallback(
-    (lineIndex: number) => {
-      if (sequencerState.isPlaying) {
+      if (isLinePlaying) {
         handleStopLinePlayback();
-        return;
+        return true;
       }
 
       const playlistLength = currentSong.line.length;
-      if (playlistLength === 0) {
-        return;
+      if (playlistLength > 0 && patternReturnPositionRef.current === null) {
+        patternReturnPositionRef.current = {
+          pattern: clampPlaylistIndex(sequencerState.currentPattern, playlistLength),
+          line: lineIndex,
+        };
       }
-
-      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-
-      patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
-
       handleStartLinePlayback();
+      return true;
     },
     [
       sequencerState.isPlaying,
       sequencerState.currentPattern,
+      isLinePlaying,
       currentSong.line.length,
       handleStopLinePlayback,
       handleStartLinePlayback,
     ],
   );
 
-  // Shift+Enter in a track or the piano: play the song from the cursor row at
-  // the current playlist position, remembering the position so any stop
-  // restores it. Pressed while playback runs, it stops with restore.
-  const handleToggleSongFromCursor = useCallback(
+  const handleToggleLineFromCursor = useCallback(
     (lineIndex: number) => {
-      if (sequencerState.isPlaying) {
-        handleStop();
+      if (handleLineToggleWhilePlaying(lineIndex)) {
+        return;
+      }
+
+      handleStartLineFromCurrentLine(lineIndex);
+    },
+    [handleLineToggleWhilePlaying, handleStartLineFromCurrentLine],
+  );
+
+  // Ctrl+Enter in a track: play the line from its first row like the PLAY LINE
+  // menu command, remembering the cursor position so Enter restores it on stop.
+  const handleToggleLineFromStart = useCallback(
+    (lineIndex: number) => {
+      if (handleLineToggleWhilePlaying(lineIndex)) {
         return;
       }
 
@@ -430,11 +340,45 @@ export function usePlaybackHandlers({
         return;
       }
 
-      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-      const startLine = Math.max(
-        0,
-        Math.min(lineIndex, (currentSong.length || PATTERN_LENGTH) - 1),
-      );
+      patternReturnPositionRef.current = {
+        pattern: clampPlaylistIndex(sequencerState.currentPattern, playlistLength),
+        line: lineIndex,
+      };
+
+      handleStartLinePlayback();
+    },
+    [
+      handleLineToggleWhilePlaying,
+      sequencerState.currentPattern,
+      currentSong.line.length,
+      handleStartLinePlayback,
+    ],
+  );
+
+  // Shared body of the two song Enter bindings - Shift+Enter starts from the
+  // cursor row and Ctrl+Shift+Enter from the first row. Pressed while
+  // playback runs, the binding stops a running song or switches a running
+  // line loop into song playback without restarting.
+  const toggleSongPlayback = useCallback(
+    (lineIndex: number, startFromCursor: boolean) => {
+      if (sequencerState.isPlaying) {
+        if (isLinePlaying) {
+          handleStartSong();
+        } else {
+          handleStop();
+        }
+        return;
+      }
+
+      const playlistLength = currentSong.line.length;
+      if (playlistLength === 0) {
+        return;
+      }
+
+      const clampedIndex = clampPlaylistIndex(sequencerState.currentPattern, playlistLength);
+      const startLine = startFromCursor
+        ? Math.max(0, Math.min(lineIndex, (currentSong.length || PATTERN_LENGTH) - 1))
+        : 0;
 
       patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
 
@@ -454,50 +398,27 @@ export function usePlaybackHandlers({
       currentSong.line.length,
       currentSong.length,
       handleStop,
+      handleStartSong,
       startSong,
       setIsLinePlaying,
       startWhenReady,
     ],
   );
 
+  // Shift+Enter in a track or the piano: play the song from the cursor row at
+  // the current playlist position, remembering the position so any stop
+  // restores it.
+  const handleToggleSongFromCursor = useCallback(
+    (lineIndex: number) => toggleSongPlayback(lineIndex, true),
+    [toggleSongPlayback],
+  );
+
   // Ctrl+Shift+Enter in a track or the piano: play the song from its first row
   // at the current playlist position, remembering the cursor so any stop
-  // restores it. Pressed while playback runs, it stops with restore.
+  // restores it.
   const handleToggleSongFromStart = useCallback(
-    (lineIndex: number) => {
-      if (sequencerState.isPlaying) {
-        handleStop();
-        return;
-      }
-
-      const playlistLength = currentSong.line.length;
-      if (playlistLength === 0) {
-        return;
-      }
-
-      const clampedIndex = Math.max(0, Math.min(sequencerState.currentPattern, playlistLength - 1));
-
-      patternReturnPositionRef.current = { pattern: clampedIndex, line: lineIndex };
-
-      if (isLinePlaying) {
-        setIsLinePlaying(false);
-      }
-
-      // Clear position ref to ensure first tick detection works
-      lastSequencerPositionRef.current = null;
-
-      startWhenReady(() => startSong(clampedIndex, 0));
-    },
-    [
-      sequencerState.isPlaying,
-      sequencerState.currentPattern,
-      isLinePlaying,
-      currentSong.line.length,
-      handleStop,
-      startSong,
-      setIsLinePlaying,
-      startWhenReady,
-    ],
+    (lineIndex: number) => toggleSongPlayback(lineIndex, false),
+    [toggleSongPlayback],
   );
 
   // Safety guard: ensure sequencer position always stays within playlist bounds

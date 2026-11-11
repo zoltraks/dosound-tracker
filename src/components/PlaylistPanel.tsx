@@ -16,6 +16,11 @@ interface PlaylistPanelProps {
   onPositionSelect: (position: number) => void;
   onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   targetTrack: 'A' | 'B' | 'C';
+  sharedCurrentLine: number;
+  focusRevision?: number;
+  onToggleLineFromStart: (lineIndex: number) => void;
+  onToggleSongFromCursor: (lineIndex: number) => void;
+  onToggleSongFromStart: (lineIndex: number) => void;
 }
 
 export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
@@ -27,6 +32,11 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   onPositionSelect,
   onCreatePatternAt,
   targetTrack,
+  sharedCurrentLine,
+  focusRevision = 0,
+  onToggleLineFromStart,
+  onToggleSongFromCursor,
+  onToggleSongFromStart,
 }) => {
   const [currentLine, setCurrentLine] = useState(0);
   // REASON: kept as a plain useState so the setter stays a stable dispatch that
@@ -154,7 +164,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     if (isActive && playlistRef.current) {
       playlistRef.current.focus();
     }
-  }, [isActive]);
+  }, [isActive, focusRevision]);
 
   useEffect(() => {
     if (editingPattern !== '') {
@@ -310,9 +320,16 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           updatePattern(currentLine, currentTrack, '--');
           break;
         case 'ENTER':
-          if (!bare) break;
           event.preventDefault();
-          startEditingPattern(currentLine, currentTrack);
+          if (event.ctrlKey && event.shiftKey) {
+            onToggleSongFromStart(sharedCurrentLine);
+          } else if (event.shiftKey) {
+            onToggleSongFromCursor(sharedCurrentLine);
+          } else if (event.ctrlKey) {
+            onToggleLineFromStart(sharedCurrentLine);
+          } else {
+            startEditingPattern(currentLine, currentTrack);
+          }
           break;
       }
     },
@@ -328,6 +345,10 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       moveLine,
       onCreatePatternAt,
       onPositionSelect,
+      sharedCurrentLine,
+      onToggleLineFromStart,
+      onToggleSongFromCursor,
+      onToggleSongFromStart,
     ],
   );
 

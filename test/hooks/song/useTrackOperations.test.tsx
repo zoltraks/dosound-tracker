@@ -85,4 +85,70 @@ describe('useTrackOperations paste cursor advance', () => {
     expect(args.setSharedCurrentLine).not.toHaveBeenCalled();
     expect(args.updateSong).toHaveBeenCalledTimes(1);
   });
+
+  it('pastes at the cursor row and lands one below via CTRL+V', async () => {
+    const args = makeArgs({ sharedCurrentLine: 10 });
+    const pattern = (args.song as Song).pattern[0];
+    (args.getCurrentPatternForTrack as ReturnType<typeof vi.fn>).mockReturnValue(pattern);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { readText: vi.fn(async () => 'step:\n  - note: C-4\n  - note: D-4\n') },
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => useTrackOperations(args));
+    await act(async () => {
+      result.current.handlePasteTrackAtCursor();
+      await Promise.resolve();
+    });
+
+    const pasted = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      pattern: Pattern[];
+    };
+    expect(pasted.pattern[0].step?.[10]?.note).toMatchObject({ note: 'C', octave: 4 });
+    expect(pasted.pattern[0].step?.[0]?.note).toBeNull();
+    expect(args.setSharedCurrentLine).toHaveBeenCalledWith(12);
+  });
+
+  it('wraps the cursor to the top when CTRL+V fills to the last row', async () => {
+    const args = makeArgs({ sharedCurrentLine: 10 });
+    const pattern = (args.song as Song).pattern[0];
+    (args.getCurrentPatternForTrack as ReturnType<typeof vi.fn>).mockReturnValue(pattern);
+    const wholeTrack = 'step:\n' + '  - note: C-4\n'.repeat(64);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { readText: vi.fn(async () => wholeTrack) },
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => useTrackOperations(args));
+    await act(async () => {
+      result.current.handlePasteTrackAtCursor();
+      await Promise.resolve();
+    });
+
+    expect(args.setSharedCurrentLine).toHaveBeenCalledWith(0);
+  });
+
+  it('pastes from the first row and lands the cursor on it via PASTE TRACK', async () => {
+    const args = makeArgs({ sharedCurrentLine: 10 });
+    const pattern = (args.song as Song).pattern[0];
+    (args.getCurrentPatternForTrack as ReturnType<typeof vi.fn>).mockReturnValue(pattern);
+    Object.defineProperty(navigator, 'clipboard', {
+      value: { readText: vi.fn(async () => 'step:\n  - note: C-4\n  - note: D-4\n') },
+      configurable: true,
+    });
+
+    const { result } = renderHook(() => useTrackOperations(args));
+    await act(async () => {
+      result.current.handlePasteTrackFromStart();
+      await Promise.resolve();
+    });
+
+    const pasted = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as {
+      pattern: Pattern[];
+    };
+    expect(pasted.pattern[0].step?.[0]?.note).toMatchObject({ note: 'C', octave: 4 });
+    expect(pasted.pattern[0].step?.[1]?.note).toMatchObject({ note: 'D', octave: 4 });
+    expect(pasted.pattern[0].step?.[10]?.note).toBeNull();
+    expect(args.setSharedCurrentLine).toHaveBeenCalledWith(0);
+  });
 });

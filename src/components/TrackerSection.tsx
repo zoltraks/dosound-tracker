@@ -43,6 +43,7 @@ interface TrackerSectionProps {
   onRegisterTrackStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
   trackSelection: TrackSelection | null;
   onExtendSelection: (trackId: 'A' | 'B' | 'C', delta: number) => void;
+  onNavigateSongLine: (delta: number) => void;
   trackBackgroundEnabled: boolean;
   onToggleTrackBackground: () => void;
   isDarkMode: boolean;
@@ -74,6 +75,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   onRegisterTrackStopPreview,
   trackSelection,
   onExtendSelection,
+  onNavigateSongLine,
   trackBackgroundEnabled,
   onToggleTrackBackground,
   isDarkMode,
@@ -173,6 +175,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 onRegisterStopPreview={onRegisterTrackStopPreview}
                 selection={selectionRangeForTrack(trackSelection, trackId, patternLength)}
                 onExtendSelection={(delta) => onExtendSelection(trackId, delta)}
+                onNavigateSongLine={onNavigateSongLine}
                 tickIntervalMs={tickIntervalMs}
               />
             ))}

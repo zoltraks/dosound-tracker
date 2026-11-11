@@ -3,21 +3,26 @@ import type { Instrument, Song } from '../../synth/SoundDriver.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { logger } from '../../utils/log/logger.ts';
 import { mirrorSnapshot, type MirrorKey } from '../../utils/storage/persistenceMirror.ts';
+import { type EditSnapshot, type SerializedEditHistory } from '../../utils/song/editHistory.ts';
 
 export type ScheduledSaveHandle = { kind: 'timeout'; id: number } | { kind: 'idle'; id: number };
 
 type SongStorageKey = typeof StorageKeys.SONG;
 type InstrumentStorageKey = typeof StorageKeys.INSTRUMENT;
+type EditHistoryStorageKey = typeof StorageKeys.EDIT_HISTORY;
 
-type JsonStorageKey = SongStorageKey | InstrumentStorageKey;
+type JsonStorageKey = SongStorageKey | InstrumentStorageKey | EditHistoryStorageKey;
 
 type JsonStorageValue<K extends JsonStorageKey> = K extends SongStorageKey
   ? Song
   : K extends InstrumentStorageKey
     ? Instrument
-    : never;
+    : K extends EditHistoryStorageKey
+      ? SerializedEditHistory<EditSnapshot>
+      : never;
 
-const MIRROR_KEYS: Record<JsonStorageKey, MirrorKey> = {
+// History is not mirrored - losing persisted stacks only loses undo depth.
+const MIRROR_KEYS: Partial<Record<JsonStorageKey, MirrorKey>> = {
   [StorageKeys.SONG]: 'song',
   [StorageKeys.INSTRUMENT]: 'instrument',
 };
@@ -52,7 +57,10 @@ export function scheduleJsonSave<K extends JsonStorageKey>(
       logger.warn(`Failed to save ${key} to localStorage`, error);
       return;
     }
-    mirrorSnapshot(MIRROR_KEYS[key], value);
+    const mirrorKey = MIRROR_KEYS[key];
+    if (mirrorKey !== undefined) {
+      mirrorSnapshot(mirrorKey, value);
+    }
   };
 
   // Prefer requestIdleCallback when available so disk writes happen during

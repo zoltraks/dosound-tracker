@@ -16,8 +16,10 @@ interface UsePlaylistOperationsArgs {
   currentPatternIndex: number;
   updateSong: (patch: Partial<Song>) => void;
   setActiveSection: (section: NavigationSection) => void;
+  sharedCurrentLine: number;
   setSharedCurrentLine: (line: number) => void;
   setPosition: (playlistIndex: number, patternIndex: number, lineIndex: number) => void;
+  setPlaylistFocusRevision?: (updater: (prev: number) => number) => void;
 }
 
 interface UsePlaylistOperationsResult {
@@ -34,6 +36,7 @@ interface UsePlaylistOperationsResult {
   handleDeleteTrack: () => void;
   clampedPlaybackPosition: number;
   handlePositionSelect: (position: number) => void;
+  handleNavigateSongLine: (delta: number) => void;
 }
 
 export function usePlaylistOperations({
@@ -42,9 +45,14 @@ export function usePlaylistOperations({
   currentPatternIndex,
   updateSong,
   setActiveSection,
+  sharedCurrentLine,
   setSharedCurrentLine,
   setPosition,
+  setPlaylistFocusRevision,
 }: UsePlaylistOperationsArgs): UsePlaylistOperationsResult {
+  const focusPlaylist = useCallback(() => {
+    setPlaylistFocusRevision?.((prev) => prev + 1);
+  }, [setPlaylistFocusRevision]);
   const playlistLength = song.line.length;
   const clampedPlaybackPosition =
     playlistLength === 0 ? 0 : Math.max(0, Math.min(currentPatternIndex, playlistLength - 1));
@@ -149,14 +157,17 @@ export function usePlaylistOperations({
   ]);
 
   const handleAddLine = useCallback(() => {
+    const length = song.line.length;
     const playlistEntries = mapSongLineToPlaylistEntries(song.line);
-    playlistEntries.push({ A: '--', B: '--', C: '--' });
+    const insertIndex =
+      length === 0 ? 0 : Math.max(0, Math.min(currentPatternIndex, length - 1)) + 1;
+    playlistEntries.splice(insertIndex, 0, { A: '--', B: '--', C: '--' });
     updateSong({ line: mapPlaylistEntriesToSongLine(playlistEntries) });
 
-    const newIndex = Math.max(0, playlistEntries.length - 1);
-    setPosition(newIndex, 0, 0);
+    setPosition(insertIndex, 0, 0);
     setActiveSection('playlist');
-  }, [song.line, updateSong, setPosition, setActiveSection]);
+    focusPlaylist();
+  }, [song.line, currentPatternIndex, updateSong, setPosition, setActiveSection, focusPlaylist]);
 
   // Shallow duplicate: insert a copy of the current playlist entry, reusing pattern IDs
   const handleDuplicateLine = useCallback(() => {
@@ -175,7 +186,8 @@ export function usePlaylistOperations({
     newPlaylist.splice(insertIndex, 0, clonedEntry);
     updateSong({ line: mapPlaylistEntriesToSongLine(newPlaylist) });
     setPosition(insertIndex, 0, 0);
-  }, [song.line, currentPatternIndex, updateSong, setPosition]);
+    focusPlaylist();
+  }, [song.line, currentPatternIndex, updateSong, setPosition, focusPlaylist]);
 
   const handleDeleteLine = useCallback(() => {
     const length = song.line.length;
@@ -191,12 +203,14 @@ export function usePlaylistOperations({
     const newLength = playlistEntries.length;
     if (newLength === 0) {
       setPosition(0, 0, 0);
+      focusPlaylist();
       return;
     }
 
-    const newIndex = Math.min(currentIndex, newLength - 1);
+    const newIndex = currentIndex === 0 ? 0 : currentIndex - 1;
     setPosition(newIndex, 0, 0);
-  }, [song.line, currentPatternIndex, updateSong, setPosition]);
+    focusPlaylist();
+  }, [song.line, currentPatternIndex, updateSong, setPosition, focusPlaylist]);
 
   // Deep clone: duplicate the current playlist entry and create new patterns for any referenced IDs
   const handleCloneLine = useCallback(() => {
@@ -271,7 +285,8 @@ export function usePlaylistOperations({
     });
 
     setPosition(insertIndex, 0, 0);
-  }, [song.line, song.pattern, currentPatternIndex, updateSong, setPosition]);
+    focusPlaylist();
+  }, [song.line, song.pattern, currentPatternIndex, updateSong, setPosition, focusPlaylist]);
 
   const handleDeleteTrack = useCallback(() => {
     const length = song.line.length;
@@ -306,6 +321,23 @@ export function usePlaylistOperations({
     [setPosition],
   );
 
+  const handleNavigateSongLine = useCallback(
+    (delta: number) => {
+      if (playlistLength === 0) {
+        return;
+      }
+
+      const currentIndex = Math.max(0, Math.min(currentPatternIndex, playlistLength - 1));
+      const next = Math.max(0, Math.min(currentIndex + delta, playlistLength - 1));
+      if (next === currentIndex) {
+        return;
+      }
+
+      setPosition(next, sharedCurrentLine, 0);
+    },
+    [playlistLength, currentPatternIndex, sharedCurrentLine, setPosition],
+  );
+
   return {
     handlePlaylistChange,
     generateUniquePatternId,
@@ -318,5 +350,6 @@ export function usePlaylistOperations({
     handleDeleteTrack,
     clampedPlaybackPosition,
     handlePositionSelect,
+    handleNavigateSongLine,
   };
 }

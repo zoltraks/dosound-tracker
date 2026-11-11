@@ -51,7 +51,9 @@ interface UseTrackOperationsResult {
   handleExtendSelection: (trackId: 'A' | 'B' | 'C', delta: number) => void;
   handleCopyTrack: () => Promise<void>;
   handleCutTrack: () => Promise<void>;
-  handlePasteTrack: (anchorRow?: number) => Promise<void>;
+  handlePasteTrack: (anchorRow?: number, cursorRow?: number) => Promise<void>;
+  handlePasteTrackAtCursor: () => void;
+  handlePasteTrackFromStart: () => void;
   handleCopyTrackShortcut: () => void;
   handleCutTrackShortcut: () => void;
   handlePasteTrackShortcut: () => void;
@@ -202,7 +204,7 @@ export function useTrackOperations({
   ]);
 
   const handlePasteTrack = useCallback(
-    async (anchorRow?: number) => {
+    async (anchorRow?: number, cursorRow?: number) => {
       try {
         if (
           typeof navigator === 'undefined' ||
@@ -284,7 +286,11 @@ export function useTrackOperations({
             startOffset + expandedSteps.length - 1,
             Math.max(0, targetLength - 1),
           );
-          setSharedCurrentLine(wrapIndex(lastPastedRow + 1, targetLength));
+          const nextRow =
+            cursorRow !== undefined && Number.isFinite(cursorRow)
+              ? Math.min(Math.max(0, Math.floor(cursorRow)), Math.max(0, targetLength - 1))
+              : wrapIndex(lastPastedRow + 1, targetLength);
+          setSharedCurrentLine(nextRow);
         }
       } catch (error) {
         logger.error('Failed to paste track', error);
@@ -421,11 +427,19 @@ export function useTrackOperations({
     }
   }, [isTrackSectionActive, handleCutTrack]);
 
+  const handlePasteTrackAtCursor = useCallback(() => {
+    void handlePasteTrack(sharedCurrentLine);
+  }, [handlePasteTrack, sharedCurrentLine]);
+
+  const handlePasteTrackFromStart = useCallback(() => {
+    void handlePasteTrack(0, 0);
+  }, [handlePasteTrack]);
+
   const handlePasteTrackShortcut = useCallback(() => {
     if (isTrackSectionActive) {
-      void handlePasteTrack(sharedCurrentLine);
+      handlePasteTrackAtCursor();
     }
-  }, [isTrackSectionActive, handlePasteTrack, sharedCurrentLine]);
+  }, [isTrackSectionActive, handlePasteTrackAtCursor]);
 
   return {
     trackClipboardError,
@@ -435,6 +449,8 @@ export function useTrackOperations({
     handleCopyTrack,
     handleCutTrack,
     handlePasteTrack,
+    handlePasteTrackAtCursor,
+    handlePasteTrackFromStart,
     handleCopyTrackShortcut,
     handleCutTrackShortcut,
     handlePasteTrackShortcut,

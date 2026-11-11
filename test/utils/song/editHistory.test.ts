@@ -4,8 +4,12 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   EDIT_COALESCE_MS,
   EDIT_HISTORY_LIMIT,
+  EDIT_HISTORY_PERSIST_LIMIT,
   createEditHistory,
+  clearEditHistory,
+  deserializeEditHistory,
   recordEdit,
+  serializeEditHistory,
   takeRedoSnapshot,
   takeUndoSnapshot,
 } from '../../../src/utils/song/editHistory.ts';
@@ -150,5 +154,56 @@ describe('editHistory', () => {
     expect(recordEdit(history, 3, 'field')).toBe(true);
 
     expect(history.undo).toEqual([3]);
+  });
+
+  it('clearEditHistory empties both stacks and resets the coalescing cursor', () => {
+    const history = createEditHistory<number>();
+    const now = 1000;
+    vi.spyOn(Date, 'now').mockImplementation(() => now);
+
+    recordEdit(history, 1, 'field');
+    recordEdit(history, 2);
+    takeUndoSnapshot(history, 3);
+
+    clearEditHistory(history);
+
+    expect(history.undo).toEqual([]);
+    expect(history.redo).toEqual([]);
+    expect(history.lastKey).toBeNull();
+    expect(history.lastTime).toBe(0);
+  });
+
+  it('serializeEditHistory keeps only the newest entries per stack', () => {
+    const history = createEditHistory<number>();
+    for (let index = 0; index < EDIT_HISTORY_PERSIST_LIMIT + 3; index += 1) {
+      recordEdit(history, index);
+    }
+
+    const serialized = serializeEditHistory(history);
+
+    expect(serialized.undo).toHaveLength(EDIT_HISTORY_PERSIST_LIMIT);
+    expect(serialized.undo[0]).toBe(3);
+    expect(serialized.redo).toEqual([]);
+  });
+
+  it('deserializeEditHistory round-trips a serialized history', () => {
+    const history = createEditHistory<number>();
+    recordEdit(history, 1);
+    recordEdit(history, 2);
+    takeUndoSnapshot(history, 3);
+
+    const restored = deserializeEditHistory<number>(serializeEditHistory(history));
+
+    expect(restored.undo).toEqual([1]);
+    expect(restored.redo).toEqual([3]);
+    expect(restored.lastKey).toBeNull();
+    expect(restored.lastTime).toBe(0);
+  });
+
+  it('deserializeEditHistory returns an empty history on corrupt input', () => {
+    expect(deserializeEditHistory('junk')).toEqual(createEditHistory());
+    expect(deserializeEditHistory({ undo: 'nope', redo: [] })).toEqual(createEditHistory());
+    expect(deserializeEditHistory(null)).toEqual(createEditHistory());
+    expect(deserializeEditHistory(undefined)).toEqual(createEditHistory());
   });
 });

@@ -829,6 +829,11 @@ body {
   outline: none;
 }
 
+.command-button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
 .command-button.play-song-button {
   background: linear-gradient(
     135deg,

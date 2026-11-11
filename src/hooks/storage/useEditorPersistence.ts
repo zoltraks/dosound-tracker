@@ -23,7 +23,6 @@ export interface UseEditorPersistenceParams {
   setPosition: (pattern: number, line: number, tick?: number) => void;
   setSharedCurrentLine: (line: number) => void;
   setCurrentTrackColumn: Dispatch<SetStateAction<'note' | 'volume'>>;
-  setCurrentInstrument: (instrument: Instrument) => void;
   activeSection: NavigationSection;
   targetTrackId: 'A' | 'B' | 'C';
   sequencerIsPlaying: boolean;
@@ -43,7 +42,6 @@ export function useEditorPersistence({
   setPosition,
   setSharedCurrentLine,
   setCurrentTrackColumn,
-  setCurrentInstrument,
   activeSection,
   targetTrackId,
   sequencerIsPlaying,
@@ -93,14 +91,6 @@ export function useEditorPersistence({
       setPosition(clamped.playlistLine, 0, 0);
       setSharedCurrentLine(clamped.trackRow);
       setCurrentTrackColumn(clamped.column);
-    }
-
-    const storedInstrumentId = localStorage.getItem(StorageKeys.CURRENT_INSTRUMENT);
-    if (storedInstrumentId) {
-      const match = currentSong.instrument.find((inst) => inst.id === storedInstrumentId);
-      if (match) {
-        setCurrentInstrument(match);
-      }
     }
 
     hasRestoredCursorRef.current = true;

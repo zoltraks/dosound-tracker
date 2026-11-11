@@ -273,6 +273,8 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - TAB cycles to the next UI section
 - SHIFT+TAB cycles to the previous UI section
 - ARROW keys move the cursor between lines and columns in the pattern editor
+- PAGEUP and PAGEDOWN step the cursor 16 rows inside the focused track pattern
+- CTRL+PAGEUP and CTRL+PAGEDOWN navigate to the previous and next song line while a track section is active, keeping the cursor row inside the track - clamped at the first and last playlist entries
 - ALT+1 focuses track A, ALT+2 focuses track B, ALT+3 focuses track C (ALT is OPTION on macOS)
 - CTRL+SPACE focuses the on-screen piano, or returns focus to the section that was active before the piano
 
@@ -298,6 +300,7 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - A fragment copy keeps its trailing empty rows so the pasted fragment spans the full selection size; the whole-track copy trims them as before
 - CTRL+X cuts the selected row range to the clipboard, clears the covered cells, and drops the selection
 - CTRL+V pastes the clipboard fragment at the cursor row, clipped at the pattern length, then moves the cursor one row below the last pasted row - wrapping to the first row when the fragment reaches the pattern end
+- PASTE TRACK pastes the clipboard fragment from the first row of the track, clipped at the pattern length, and leaves the cursor on the first row
 - The clipboard bindings fire only while a track section is the active section
 
 **Playback shortcuts:**
@@ -308,11 +311,14 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - ALT+8 stops playback
 - ESC stops playback
 - ENTER in a track or the piano plays the current line from the cursor row and toggles playback
-- CTRL+ENTER in a track or the piano plays the current line from its first row and toggles playback
-- SHIFT+ENTER in a track or the piano plays the song from the cursor row and toggles playback
-- CTRL+SHIFT+ENTER in a track or the piano plays the song from its first row and toggles playback
-- Pressing an Enter binding while playback is running stops playback
-- Playback started with an Enter binding restores the playlist position and the track row held before playback started when it stops, whichever control stops it
+- CTRL+ENTER in a track, the playlist, or the piano plays the current line from its first row and toggles playback
+- SHIFT+ENTER in a track, the playlist, or the piano plays the song from the cursor row and toggles playback
+- CTRL+SHIFT+ENTER in a track, the playlist, or the piano plays the song from its first row and toggles playback
+- The Enter bindings fire from a disabled track too - a track is disabled when its channel has no pattern on the current playlist line, but the line bindings still start when another channel on the line holds one, and only a completely empty playlist line makes line playback a no-op
+- In the playlist the modifier Enter bindings yield to an open pattern-id edit - while a value is being edited, Enter commits it and bare Enter outside an edit still starts one
+- Pressing an Enter binding while playback is running switches to the binding's mode instead of stopping - a line binding during song playback loops the running line from the next pattern boundary, and a song binding during a line loop continues as song playback
+- Pressing the Enter binding that owns the running mode stops playback
+- Playback started with an Enter binding restores the playlist position and the track row held before playback started when it stops, whichever control stops it - the return position survives mode switches, and a mode switch during playback that was not Enter-started records the pressed position
 
 **File operation shortcuts:**
 
@@ -326,6 +332,8 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - CTRL+Z undoes the last recorded edit
 - CTRL+Y redoes the last undone edit
 - CTRL+SHIFT+Z redoes the last undone edit
+- The meta modifier folds into ctrl, so CMD+Z undoes and CMD+Y or CMD+SHIFT+Z redoes on macOS
+- The UNDO and REDO buttons on the third command row run the same actions - UNDO is enabled while the undo stack holds entries and REDO while the redo stack holds entries
 
 **Modal shortcuts:**
 
@@ -334,17 +342,23 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 
 The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
 
+Clicking inside the command panel activates the `commands` section, except for buttons that swallow the click to keep the caller's section - the playlist line commands (ADD LINE, DUPLICATE LINE, CLONE LINE, DELETE LINE), INSERT STEP, DELETE STEP, MIDI, and EXPORT. The playlist line commands also prevent the press from taking DOM focus and bump a playlist focus revision, so while the playlist is the active section the panel stays focused after the operation.
+
+Clicking an instrument in the instrument list selects it and activates `instrumentList`, except while a track section is active - then the selection applies but the track keeps the section and DOM focus, so note entry continues uninterrupted.
+
 ## Edit History
 
 The application keeps a bounded undo/redo history over the composition data: pattern steps, instrument parameters, playlist lines, and song information fields. The model is snapshot-based, not command-based - see `src/utils/song/editHistory.ts` for the stack logic and `src/hooks/song/useDataManagement.ts` for the recording boundary.
 
 **Recording boundary**
 
-`useDataManagement` holds the undo and redo stacks in a ref and snapshots the `{song, instrument}` pair before every recorded mutation. Every recorded mutator - `updateSong`, `updateInstrument`, `createNewSong`, `createNewInstrument`, `loadInstrument`, `createNewPattern`, `addPlaylistEntry`, `optimizeSong`, `renumberSong`, and `applyParsedSong` - pushes one entry before applying its change, so composite operations such as paste, transpose, renumber, and optimize land as single history entries. Snapshots hold object references because every mutation helper produces fresh objects through spreads; nothing is deep-copied.
+`useDataManagement` holds the undo and redo stacks in a ref and snapshots the `{song, instrument}` pair plus the live editor position (`{pattern, line}`) before every recorded mutation - the playlist line comes from the sequencer index and the track row from the shared cursor, since track navigation never touches the sequencer row. The position arrives through an optional bridge `App.tsx` wires to the editor, so the hook keeps no playback dependency; snapshots persisted before the bridge existed carry no position and restore as before. Every recorded mutator - `updateSong`, `updateInstrument`, `createNewInstrument`, `loadInstrument`, `createNewPattern`, `addPlaylistEntry`, `optimizeSong`, and `renumberSong` - pushes one entry before applying its change, so composite operations such as paste, transpose, renumber, and optimize land as single history entries. Snapshots hold object references because every mutation helper produces fresh objects through spreads; nothing is deep-copied.
+
+`createNewSong` and `applyParsedSong` are lifecycle operations - they clear both stacks instead of recording, so NEW SONG, LOAD SONG, the pending-import confirmation, and DEMO SONG (which loads through `loadSongFromText`) destroy the history rather than leaving the previous song undoable.
 
 **Non-recorded paths**
 
-`setCurrentInstrument` alone is instrument selection, not a composition edit, and stays out of the history. The startup mirror restore, the instrument-sync effect, and the lazy pattern materialization in `getCurrentPatternForTrack` are also silent - the last runs `updateSong` with `{ record: false }`.
+`setCurrentInstrument` alone is instrument selection, not a composition edit, and stays out of the history. The startup mirror restore, the instrument-sync effect, and the lazy pattern materialization in `getCurrentPatternForTrack` are also silent - the last runs `updateSong` with `{ record: false }`. The track selection range and the header-bar current octave are session state outside the history.
 
 **Coalescing**
 
@@ -352,11 +366,11 @@ The application keeps a bounded undo/redo history over the composition data: pat
 
 **Restore**
 
-`undo` pops the undo stack, pushes the live pair onto the redo stack, and restores both setters with the song marked dirty; `redo` mirrors it. A recorded edit clears the redo stack, so a new edit after undo discards the redo branch. The stacks are bounded by `EDIT_HISTORY_LIMIT` (100 entries, oldest evicted) and are session state - they never persist to storage or the song file and start empty on reload.
+`undo` pops the undo stack, pushes the live snapshot onto the redo stack, and restores both setters with the song marked dirty; `redo` mirrors it. A snapshot that carries a position also re-applies it through the bridge, so the cursor returns to the row the edit started from - an undone ADD LINE or DELETE LINE lands back on its starting row instead of leaving the cursor where the operation moved it, and an undone note, note-off, or volume entry lands back on the edited row instead of staying where the edit step advanced it. A recorded edit clears the redo stack, so a new edit after undo discards the redo branch. The stacks are bounded in memory by `EDIT_HISTORY_LIMIT` (100 entries, oldest evicted) and persist to local storage under `EDIT_HISTORY` - each scheduled save writes the stacks serialized to the newest `EDIT_HISTORY_PERSIST_LIMIT` (20) entries, and startup restores them with the coalescing cursor reset so coalescing never spans a reload. RESET clears the key with the rest of the application storage. The history never travels with the song file.
 
 **Audio path**
 
-Restore applies through the ordinary `setCurrentSong`/`setCurrentInstrument` setters only. No engine call, worker message, or callback re-creation happens on undo, so an undo during playback re-syncs the sequencer through the existing `usePlaybackControls` effects exactly like a normal edit.
+Restore applies through the ordinary `setCurrentSong`/`setCurrentInstrument` setters plus the sequencer's `setPosition` and the shared track-cursor setter when the snapshot carries a position - the same `update` message a playlist position select posts, so an undo during playback moves the playhead the way a mid-playlist click would. No engine call or callback re-creation happens on undo, so an undo during playback re-syncs the sequencer through the existing `usePlaybackControls` effects exactly like a normal edit.
 
 The history shortcuts fire from the global key handler, which skips editable targets. Inside a song information text input CTRL+Z therefore runs the browser's native text undo, not the song history.
 
@@ -366,11 +380,13 @@ The editor cursor is remembered across reloads through local storage. Local stor
 
 The top-level cursor is stored under `EDITOR_CURSOR` as a JSON object with the focused section, the selected track, the playlist line, the track row, and the track column. On mount it is parsed, clamped to the restored song, and applied through the existing setters. The playlist line is clamped to the playlist length, the track row to the pattern length. An invalid section falls back to the selected track's section. It is written when playback is not running, so no local storage writes occur on the audio path.
 
-Additional cursor state is persisted at its source of truth to avoid duplicate state. The selected instrument id is stored under `CURRENT_INSTRUMENT` - the instrument list highlight follows it. The playlist row cursor inside the playlist panel follows the top-level playlist line and is not stored separately.
+Additional cursor state is persisted at its source of truth to avoid duplicate state. The selected instrument id is stored under `CURRENT_INSTRUMENT` - the instrument list highlight follows it. `useDataManagement` restores it inside the instrument state initializer so the selection is set on the first render and cannot race the mount-time instrument sync. The playlist row cursor inside the playlist panel follows the top-level playlist line and is not stored separately.
 
 Single-value panel cursors are persisted to local storage. The song information field is stored under `SONG_INFO_FIELD` through the `useLocalStorageState` hook. The playlist track column is stored under `PLAYLIST_TRACK`, each envelope panel step cursor under `ENVELOPE_CURSOR_PREFIX` followed by the panel type, and the per-instrument octave selection under `INSTRUMENT_OCTAVES` through `src/hooks/instrument/useInstrumentOctaves.ts`. Where the state setter is captured inside memoized callbacks, the cursor uses a plain `useState` with a lazy initializer and a persist effect instead of `useLocalStorageState`, so the setter stays a stable dispatch that the React Compiler can track. The octave is persisted in the ui store under `OCTAVE`. The envelope step cursor is per panel and independent of the selected instrument.
 
 The track selection is stored under `TRACK_SELECTION` as a JSON object carrying the track id and the anchor and head rows. It is written whenever the selection changes, restored on startup normalized to a start and end range clamped to the current pattern length, and stays bound to the track where it was created - one selection exists at a time.
+
+The edit history stacks persist under `EDIT_HISTORY` - see the Edit History section for the recording boundary, the persisted depth, and the lifecycle clears.
 
 **Snapshot mirror**
 
@@ -507,7 +523,7 @@ A modal whose contents must respond to the global Enter and ESC handler keeps it
 The following constraints reflect the current state of the codebase and are candidates for future improvement.
 
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
-- **Session-only undo/redo**: The undo/redo history described in the Edit History section is session state. It is not written to the song file, to localStorage, or to the persistence mirror, so history starts empty on every reload and does not survive a song switch through `createNewSong` boundaries beyond a single undo step.
+- **Bounded persisted history**: The undo/redo history persists to localStorage capped at the newest `EDIT_HISTORY_PERSIST_LIMIT` entries per stack, so a reload restores a shallower history than the in-memory bound and coalescing does not span a reload. A scheduled save pending at RESET time can rewrite the cleared key in the same window the song save already exposes.
 - **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map and remains the largest file in the tree. Bounded concerns live in dedicated orchestration hooks under `src/hooks/`, including the store-selector bundle, the stereo pan cluster, and the settings session - further decomposition remains a candidate for later windows.
 - **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) and the Ayumi engine now carry dedicated `test/synth/` suites, and the sequencer worklet carries `test/workers/` protocol tests. The export modules (src/exports/) are exercised by the `test/exports/` suite. Remaining thin surfaces are components, hooks, and the `AboutModal`/`DownloadModal` dialogs.
 - **Single chip instance**: A song drives one PSG instance. The `chip` field selects the variant (YM, AY) and the `stereo` node routes its three channels, but dual-chip configurations such as TurboSound have no representation in the song model.

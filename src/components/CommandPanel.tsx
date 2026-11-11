@@ -1,6 +1,16 @@
 import React, { useRef, useEffect } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
 
+// Section-preserving command buttons: the press keeps DOM focus and the
+// click never bubbles to the container's section activation.
+const keepSectionButtonProps = (handler: () => void) => ({
+  onMouseDown: (event: React.MouseEvent) => event.preventDefault(),
+  onClick: (event: React.MouseEvent) => {
+    event.stopPropagation();
+    handler();
+  },
+});
+
 interface CommandPanelProps {
   onNewSong: () => void;
   onLoadSong: () => void;
@@ -40,6 +50,10 @@ interface CommandPanelProps {
   onShowMidi: () => void;
   onPickInstrument: () => void;
   onDemoSong: () => void;
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
   isMobileCollapsed: boolean;
 }
 
@@ -82,6 +96,10 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onShowMidi,
   onPickInstrument,
   onDemoSong,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
   isMobileCollapsed,
 }) => {
   const panelRef = useRef<HTMLDivElement | null>(null);
@@ -320,16 +338,16 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
             </div>
 
             <div className="command-row">
-              <button onClick={onAddLine} className="command-button">
+              <button {...keepSectionButtonProps(onAddLine)} className="command-button">
                 ADD LINE
               </button>
-              <button onClick={onDuplicateLine} className="command-button">
+              <button {...keepSectionButtonProps(onDuplicateLine)} className="command-button">
                 DUPLICATE LINE
               </button>
-              <button onClick={onCloneLine} className="command-button">
+              <button {...keepSectionButtonProps(onCloneLine)} className="command-button">
                 CLONE LINE
               </button>
-              <button onClick={onDeleteLine} className="command-button">
+              <button {...keepSectionButtonProps(onDeleteLine)} className="command-button">
                 DELETE LINE
               </button>
               <button onClick={onNewTrack} className="command-button">
@@ -365,6 +383,12 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
             </div>
 
             <div className="command-row">
+              <button onClick={onUndo} disabled={!canUndo} className="command-button undo-button">
+                UNDO
+              </button>
+              <button onClick={onRedo} disabled={!canRedo} className="command-button redo-button">
+                REDO
+              </button>
               <button onClick={onNewInstrument} className="command-button">
                 ADD INST
               </button>

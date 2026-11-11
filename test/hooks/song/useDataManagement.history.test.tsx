@@ -1,12 +1,37 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, waitFor, act } from '@testing-library/react';
-import { useDataManagement } from '../../../src/hooks/song/useDataManagement.ts';
+import {
+  useDataManagement,
+  type EditPositionBridge,
+} from '../../../src/hooks/song/useDataManagement.ts';
+import { StorageKeys } from '../../../src/utils/storage/storageKeys.ts';
+
+const SONG_YAML = `
+song:
+  title: Loaded
+  speed: 4
+  length: 4
+  line:
+    - A: "00"
+  pattern:
+    - number: "00"
+      steps:
+        - note: "C-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      name: "Named Inst"
+      volume: [15]
+`;
 
 type HookResult = ReturnType<typeof useDataManagement>;
 
-const DataManagementHarness: React.FC<{ onReady: (value: HookResult) => void }> = ({ onReady }) => {
-  const value = useDataManagement();
+const DataManagementHarness: React.FC<{
+  onReady: (value: HookResult) => void;
+  positionBridge?: EditPositionBridge;
+}> = ({ onReady, positionBridge }) => {
+  const value = useDataManagement(positionBridge);
 
   React.useEffect(() => {
     onReady(value);
@@ -15,7 +40,9 @@ const DataManagementHarness: React.FC<{ onReady: (value: HookResult) => void }> 
   return null;
 };
 
-const renderHookValue = async (): Promise<{ current: HookResult | null }> => {
+const renderHookValue = async (
+  positionBridge?: EditPositionBridge,
+): Promise<{ current: HookResult | null }> => {
   const ref: { current: HookResult | null } = { current: null };
 
   render(
@@ -23,6 +50,7 @@ const renderHookValue = async (): Promise<{ current: HookResult | null }> => {
       onReady={(value) => {
         ref.current = value;
       }}
+      positionBridge={positionBridge}
     />,
   );
 
@@ -176,7 +204,7 @@ describe('useDataManagement (edit history)', () => {
     });
   });
 
-  it('restores the previous song when undoing createNewSong', async () => {
+  it('clears the history on createNewSong instead of recording it', async () => {
     const hook = await renderHookValue();
 
     await act(async () => {
@@ -184,6 +212,7 @@ describe('useDataManagement (edit history)', () => {
     });
     await waitFor(() => {
       expect(hook.current!.currentSong.title).toBe('Keep Me');
+      expect(hook.current!.canUndo).toBe(true);
     });
 
     await act(async () => {
@@ -191,14 +220,104 @@ describe('useDataManagement (edit history)', () => {
     });
     await waitFor(() => {
       expect(hook.current!.currentSong.title).not.toBe('Keep Me');
+      expect(hook.current!.canUndo).toBe(false);
+      expect(hook.current!.canRedo).toBe(false);
     });
 
     await act(async () => {
       hook.current!.undo();
     });
 
-    await waitFor(() => {
-      expect(hook.current!.currentSong.title).toBe('Keep Me');
+    expect(hook.current!.currentSong.title).not.toBe('Keep Me');
+  });
+
+  it('clears the history on loadSongFromText instead of recording it', async () => {
+    const hook = await renderHookValue();
+
+    await act(async () => {
+      hook.current!.updateSong({ title: 'Before Load' });
     });
+    await waitFor(() => {
+      expect(hook.current!.canUndo).toBe(true);
+    });
+
+    await act(async () => {
+      hook.current!.loadSongFromText(SONG_YAML);
+    });
+    await waitFor(() => {
+      expect(hook.current!.currentSong.title).toBe('Loaded');
+      expect(hook.current!.canUndo).toBe(false);
+      expect(hook.current!.canRedo).toBe(false);
+    });
+  });
+
+  it('persists the stacks to localStorage on each committed change', async () => {
+    const hook = await renderHookValue();
+
+    await act(async () => {
+      hook.current!.updateSong({ title: 'Persisted' });
+    });
+
+    await waitFor(() => {
+      const raw = localStorage.getItem(StorageKeys.EDIT_HISTORY);
+      expect(raw).not.toBeNull();
+      const parsed = JSON.parse(raw!) as { undo: unknown[]; redo: unknown[] };
+      expect(parsed.undo).toHaveLength(1);
+      expect(parsed.redo).toEqual([]);
+    });
+  });
+
+  it('restores the recorded cursor position on undo and redo', async () => {
+    let livePosition = { pattern: 0, line: 0 };
+    const applied: { pattern: number; line: number }[] = [];
+    const hook = await renderHookValue({
+      getPosition: () => livePosition,
+      applyPosition: (position) => {
+        applied.push(position);
+      },
+    });
+
+    // The edit is recorded while the cursor sits at row 2; the operation
+    // then moves it to row 5, the way a playlist operation would.
+    livePosition = { pattern: 2, line: 0 };
+    await act(async () => {
+      hook.current!.updateSong({ title: 'Moved Cursor' });
+    });
+    livePosition = { pattern: 5, line: 0 };
+
+    await act(async () => {
+      hook.current!.undo();
+    });
+
+    await waitFor(() => {
+      expect(applied).toEqual([{ pattern: 2, line: 0 }]);
+      expect(hook.current!.canRedo).toBe(true);
+    });
+
+    await act(async () => {
+      hook.current!.redo();
+    });
+
+    await waitFor(() => {
+      expect(applied).toEqual([
+        { pattern: 2, line: 0 },
+        { pattern: 5, line: 0 },
+      ]);
+    });
+  });
+
+  it('hydrates the undo and redo flags from persisted stacks', async () => {
+    localStorage.setItem(
+      StorageKeys.EDIT_HISTORY,
+      JSON.stringify({
+        undo: [{ song: {}, instrument: {} }],
+        redo: [{ song: {}, instrument: {} }],
+      }),
+    );
+
+    const hook = await renderHookValue();
+
+    expect(hook.current!.canUndo).toBe(true);
+    expect(hook.current!.canRedo).toBe(true);
   });
 });

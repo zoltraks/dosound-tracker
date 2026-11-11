@@ -50,8 +50,6 @@ const makeParams = (overrides: Partial<UsePlaybackHandlersParams> = {}) => {
     currentSong: makeSong(),
     sharedCurrentLine: 0,
     setSharedCurrentLine: vi.fn(),
-    activeSection: 'trackA',
-    lastTrackId: 'A',
     isLinePlaying: false,
     setIsLinePlaying: vi.fn(),
     ensureAudioContextResumed: vi.fn(() => Promise.resolve()),
@@ -193,26 +191,109 @@ describe('usePlaybackHandlers', () => {
     }
   });
 
-  it('returns early when the selected track has no pattern', async () => {
-    const params = makeParams({ activeSection: 'trackB' });
+  it('returns early when every track on the line is empty', async () => {
+    const song = { ...makeSong(), line: [{ A: '--', B: '--', C: '--' }] };
+    const params = makeParams({ currentSong: song });
     const { result } = renderHook(() => usePlaybackHandlers(params));
 
     act(() => result.current.handleStartLinePlayback());
     act(() => result.current.handleStartLineFromBeginning());
     act(() => result.current.handleStartLineFromCurrentLine());
+    act(() => result.current.handleToggleLineFromCursor(0));
+    act(() => result.current.handleToggleLineFromStart(0));
     await flush();
     try {
       expect(params.startSong).not.toHaveBeenCalled();
       expect(params.startPatternLoop).not.toHaveBeenCalled();
+      expect(params.ensureAudioContextResumed).not.toHaveBeenCalled();
     } catch (error) {
-      console.log('empty track mismatch');
+      console.log('empty line mismatch');
+      throw error;
+    }
+  });
+
+  it('loops the line from the cursor when the focused track is disabled', async () => {
+    const song = { ...makeSong(), line: [{ A: '--', B: '00', C: '--' }] };
+    const params = makeParams({ currentSong: song });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleLineFromCursor(10));
+    await flush();
+    try {
+      expect(params.startPatternLoop).toHaveBeenCalledWith(0, 10);
+    } catch (error) {
+      console.log('disabled track Enter mismatch');
+      throw error;
+    }
+  });
+
+  it('loops the line from the start when the focused track is disabled', async () => {
+    const song = { ...makeSong(), line: [{ A: '--', B: '00', C: '--' }] };
+    const params = makeParams({ currentSong: song });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleLineFromStart(10));
+    await flush();
+    try {
+      expect(params.startPatternLoop).toHaveBeenCalledWith(0, 0);
+    } catch (error) {
+      console.log('disabled track Ctrl+Enter mismatch');
+      throw error;
+    }
+  });
+
+  it('starts the song from the cursor row when the focused track is disabled', async () => {
+    const song = { ...makeSong(), line: [{ A: '--', B: '00', C: '--' }] };
+    const params = makeParams({ currentSong: song });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromCursor(10));
+    await flush();
+    try {
+      expect(params.startSong).toHaveBeenCalledWith(0, 10);
+    } catch (error) {
+      console.log('disabled track Shift+Enter mismatch');
+      throw error;
+    }
+  });
+
+  it('starts the song from the first row when the focused track is disabled', async () => {
+    const song = { ...makeSong(), line: [{ A: '--', B: '00', C: '--' }] };
+    const params = makeParams({ currentSong: song });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleSongFromStart(10));
+    await flush();
+    try {
+      expect(params.startSong).toHaveBeenCalledWith(0, 0);
+    } catch (error) {
+      console.log('disabled track Ctrl+Shift+Enter mismatch');
+      throw error;
+    }
+  });
+
+  it('switches a running song into line loop when the focused track is disabled', async () => {
+    const song = { ...makeSong(), line: [{ A: '--', B: '00', C: '--' }] };
+    const params = makeParams({
+      currentSong: song,
+      sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
+    });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleLineFromCursor(5));
+    await flush();
+    try {
+      expect(params.setIsLinePlaying).toHaveBeenCalledWith(true);
+      expect(params.setPatternLoopMode).toHaveBeenCalledWith(true);
+    } catch (error) {
+      console.log('disabled track mode switch mismatch');
       throw error;
     }
   });
 
   it('starts the line from the B and C tracks', async () => {
     const song = { ...makeSong(), line: [{ A: '--', B: '01', C: '02' }] };
-    const params = makeParams({ currentSong: song, activeSection: 'trackB' });
+    const params = makeParams({ currentSong: song });
     const { result } = renderHook(() => usePlaybackHandlers(params));
 
     act(() => result.current.handleStartLinePlayback());
@@ -225,7 +306,7 @@ describe('usePlaybackHandlers', () => {
     }
     cleanup();
 
-    const cParams = makeParams({ currentSong: song, activeSection: 'trackC' });
+    const cParams = makeParams({ currentSong: song });
     const cResult = renderHook(() => usePlaybackHandlers(cParams));
     act(() => cResult.result.current.handleStartLineFromCurrentLine(4));
     await flush();
@@ -233,25 +314,6 @@ describe('usePlaybackHandlers', () => {
       expect(cParams.startPatternLoop).toHaveBeenCalledWith(0, 4);
     } catch (error) {
       console.log('trackC mismatch', vi.mocked(cParams.startPatternLoop).mock.calls);
-      throw error;
-    }
-  });
-
-  it('falls back to the last track when the section is not a track', async () => {
-    const song = { ...makeSong(), line: [{ A: '--', B: '01', C: '--' }] };
-    const params = makeParams({
-      currentSong: song,
-      activeSection: 'piano',
-      lastTrackId: 'B',
-    });
-    const { result } = renderHook(() => usePlaybackHandlers(params));
-
-    act(() => result.current.handleStartLinePlayback());
-    await flush();
-    try {
-      expect(params.startPatternLoop).toHaveBeenCalledWith(0, 0);
-    } catch (error) {
-      console.log('last track mismatch', vi.mocked(params.startPatternLoop).mock.calls);
       throw error;
     }
   });
@@ -428,6 +490,73 @@ describe('usePlaybackHandlers', () => {
       expect(params.startPatternLoop).not.toHaveBeenCalled();
     } catch (error) {
       console.log('start toggle mismatch');
+      throw error;
+    }
+  });
+
+  it('switches song playback to a line loop on Enter without restarting', async () => {
+    const params = makeParams({
+      sequencerState: makeState({ isPlaying: true, currentPattern: 0, currentLine: 4 }),
+    });
+    const { result } = renderHook(() => usePlaybackHandlers(params));
+
+    act(() => result.current.handleToggleLineFromCursor(5));
+    await flush();
+    try {
+      expect(params.stop).not.toHaveBeenCalled();
+      expect(params.startPatternLoop).not.toHaveBeenCalled();
+      expect(params.setIsLinePlaying).toHaveBeenCalledWith(true);
+      expect(params.setPatternLoopMode).toHaveBeenCalledWith(true);
+    } catch (error) {
+      console.log('song to loop toggle mismatch');
+      throw error;
+    }
+
+    // The pressed row was saved as the return position - stop restores it.
+    act(() => result.current.handleStopLinePlayback());
+    try {
+      expect(params.setPosition).toHaveBeenCalledWith(0, 5, 0);
+      expect(params.setSharedCurrentLine).toHaveBeenCalledWith(5);
+    } catch (error) {
+      console.log('toggle return mismatch', vi.mocked(params.setPosition).mock.calls);
+      throw error;
+    }
+  });
+
+  it('keeps the Enter return position across a mode switch to song playback', async () => {
+    const params = makeParams();
+    const { result, rerender } = renderHook(
+      (p: UsePlaybackHandlersParams) => usePlaybackHandlers(p),
+      { initialProps: params },
+    );
+
+    // Enter starts the line loop and saves the pressed position.
+    act(() => result.current.handleToggleLineFromStart(7));
+    await flush();
+    expect(params.startPatternLoop).toHaveBeenCalledWith(0, 0);
+
+    // Playback now runs in line-loop mode; Shift+Enter switches to song.
+    rerender({
+      ...params,
+      isLinePlaying: true,
+      sequencerState: makeState({ isPlaying: true }),
+    });
+    act(() => result.current.handleToggleSongFromStart(3));
+    await flush();
+    try {
+      expect(params.setIsLinePlaying).toHaveBeenCalledWith(false);
+      expect(params.setPatternLoopMode).toHaveBeenCalledWith(false);
+    } catch (error) {
+      console.log('switch keep mismatch');
+      throw error;
+    }
+
+    act(() => result.current.handleStop());
+    try {
+      expect(params.setPosition).toHaveBeenCalledWith(0, 7, 0);
+      expect(params.setSharedCurrentLine).toHaveBeenCalledWith(7);
+    } catch (error) {
+      console.log('switched restore mismatch', vi.mocked(params.setPosition).mock.calls);
       throw error;
     }
   });
@@ -662,7 +791,7 @@ describe('usePlaybackHandlers', () => {
     }
   });
 
-  it('stops a running line loop through the song toggle', async () => {
+  it('switches a running line loop to song playback through the song toggle', async () => {
     const params = makeParams({
       isLinePlaying: true,
       sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
@@ -672,17 +801,19 @@ describe('usePlaybackHandlers', () => {
     act(() => result.current.handleToggleSongFromCursor(2));
     await flush();
     try {
-      expect(params.stop).toHaveBeenCalledTimes(1);
-      expect(params.handleStopPlayback).toHaveBeenCalled();
+      expect(params.stop).not.toHaveBeenCalled();
+      expect(params.handleStopPlayback).not.toHaveBeenCalled();
       expect(params.startSong).not.toHaveBeenCalled();
       expect(params.startPatternLoop).not.toHaveBeenCalled();
+      expect(params.setIsLinePlaying).toHaveBeenCalledWith(false);
+      expect(params.setPatternLoopMode).toHaveBeenCalledWith(false);
     } catch (error) {
-      console.log('loop stop mismatch');
+      console.log('loop switch mismatch');
       throw error;
     }
   });
 
-  it('stops a running song playback through the line toggle', async () => {
+  it('switches a running song playback to line loop through the line toggle', async () => {
     const params = makeParams({
       sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
     });
@@ -691,17 +822,19 @@ describe('usePlaybackHandlers', () => {
     act(() => result.current.handleToggleLineFromCursor(5));
     await flush();
     try {
-      expect(params.stop).toHaveBeenCalledTimes(1);
-      expect(params.handleStopPlayback).toHaveBeenCalled();
+      expect(params.stop).not.toHaveBeenCalled();
+      expect(params.handleStopPlayback).not.toHaveBeenCalled();
       expect(params.startPatternLoop).not.toHaveBeenCalled();
       expect(params.startSong).not.toHaveBeenCalled();
+      expect(params.setIsLinePlaying).toHaveBeenCalledWith(true);
+      expect(params.setPatternLoopMode).toHaveBeenCalledWith(true);
     } catch (error) {
-      console.log('song stop mismatch');
+      console.log('song switch mismatch');
       throw error;
     }
   });
 
-  it('restores the cursor when Enter stops a song started with Shift+Enter', async () => {
+  it('keeps the Shift+Enter return position when Enter loops the playing song', async () => {
     const idle = makeParams();
     const playing = makeParams({
       sequencerState: makeState({ isPlaying: true, currentPattern: 0 }),
@@ -720,6 +853,14 @@ describe('usePlaybackHandlers', () => {
     }
     rerender({ params: playing });
     act(() => result.current.handleToggleLineFromCursor(5));
+    try {
+      expect(playing.setIsLinePlaying).toHaveBeenCalledWith(true);
+      expect(playing.setPatternLoopMode).toHaveBeenCalledWith(true);
+    } catch (error) {
+      console.log('enter switch mismatch');
+      throw error;
+    }
+    act(() => result.current.handleStop());
     try {
       expect(playing.setPosition).toHaveBeenCalledWith(0, 5, 0);
       expect(playing.setSharedCurrentLine).toHaveBeenCalledWith(5);

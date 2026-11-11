@@ -61,6 +61,8 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
       onFinishEditingPattern({ refocusPlaylist: false });
       onTrackHeaderClick(track);
     } else if (event.key === 'Enter') {
+      event.preventDefault();
+      event.stopPropagation();
       onFinishEditingPattern();
     } else if (event.key === 'Escape') {
       onEditingPatternChange('');

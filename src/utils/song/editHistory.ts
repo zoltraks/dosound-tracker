@@ -2,8 +2,32 @@
 // the hook boundary in useDataManagement.ts holds an EditHistory in a ref and
 // feeds it {song, instrument} snapshots.
 
+import type { Instrument, Song } from '../../synth/SoundDriver.ts';
+
 export const EDIT_HISTORY_LIMIT = 100;
+export const EDIT_HISTORY_PERSIST_LIMIT = 20;
 export const EDIT_COALESCE_MS = 1000;
+
+// The sequencer cursor position rides inside the snapshot so undo and redo
+// return the cursor to where the edit started - an operation that moved
+// the position (ADD LINE, DELETE LINE) lands back on its starting row.
+export interface EditPosition {
+  pattern: number;
+  line: number;
+}
+
+// One undo entry restores the song and the current instrument together -
+// the pair every recorded mutation can touch.
+export interface EditSnapshot {
+  song: Song;
+  instrument: Instrument;
+  position?: EditPosition;
+}
+
+export interface SerializedEditHistory<T> {
+  undo: T[];
+  redo: T[];
+}
 
 export interface EditHistory<T> {
   undo: T[];
@@ -72,4 +96,44 @@ export const takeRedoSnapshot = <T>(history: EditHistory<T>, current: T): T | nu
   history.lastKey = null;
   history.lastTime = 0;
   return snapshot;
+};
+
+// Empties both stacks and resets the coalescing cursor. Lifecycle
+// operations (new, load, demo, reset) destroy history through this.
+export const clearEditHistory = <T>(history: EditHistory<T>): void => {
+  history.undo = [];
+  history.redo = [];
+  history.lastKey = null;
+  history.lastTime = 0;
+};
+
+// Serializes the stacks for storage, keeping only the newest `limit`
+// entries per stack. The in-memory bound stays EDIT_HISTORY_LIMIT.
+export const serializeEditHistory = <T>(
+  history: EditHistory<T>,
+  limit: number = EDIT_HISTORY_PERSIST_LIMIT,
+): SerializedEditHistory<T> => ({
+  undo: history.undo.slice(-limit),
+  redo: history.redo.slice(-limit),
+});
+
+// Validates a parsed payload into an EditHistory with a cleared coalescing
+// cursor - coalescing never spans a reload. Corrupt input returns an empty
+// history.
+export const deserializeEditHistory = <T>(raw: unknown): EditHistory<T> => {
+  const candidate = raw as Partial<SerializedEditHistory<T>> | null;
+  if (
+    candidate === null ||
+    typeof candidate !== 'object' ||
+    !Array.isArray(candidate.undo) ||
+    !Array.isArray(candidate.redo)
+  ) {
+    return createEditHistory();
+  }
+  return {
+    undo: candidate.undo,
+    redo: candidate.redo,
+    lastKey: null,
+    lastTime: 0,
+  };
 };

@@ -89,6 +89,22 @@ describe('TrackPanel navigation', () => {
     }
   });
 
+  it.each([
+    ['PageUp', -1],
+    ['PageDown', 1],
+  ])('Ctrl+%s navigates song lines and keeps the track row', (key, delta) => {
+    const onNavigateSongLine = vi.fn();
+    const { panel, onLineChange } = renderPanel({ onNavigateSongLine });
+    try {
+      fireEvent.keyDown(panel, { key, ctrlKey: true });
+      expect(onNavigateSongLine).toHaveBeenCalledWith(delta);
+      expect(onLineChange).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('ctrl page nav mismatch', key);
+      throw error;
+    }
+  });
+
   it('ArrowLeft from note column jumps to the previous track volume', () => {
     const { panel, setActiveSection, setCurrentColumn } = renderPanel();
     try {

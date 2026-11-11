@@ -98,6 +98,27 @@ describe('useKeyboardNavigation', () => {
     expect(result.current.activeSection).toBe('trackB');
   });
 
+  it('routes Cmd+Shift+Z to redo through the meta fold on macOS', () => {
+    const { result } = renderHook(() => useKeyboardNavigation());
+    const handler = vi.fn();
+
+    act(() => {
+      result.current.setGlobalShortcut('redo', handler);
+    });
+
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'z',
+        metaKey: true,
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(handler).toHaveBeenCalledTimes(1);
+  });
+
   it('does not focus a track when Ctrl or Cmd is used instead of Alt', () => {
     const { result } = renderHook(() => useKeyboardNavigation());
 

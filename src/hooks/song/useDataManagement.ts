@@ -18,6 +18,7 @@ import {
 import { downloadFile } from '../../utils/file/fileOperations.ts';
 import { logger } from '../../utils/log/logger.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
+import { readFlag } from '../../utils/settings/settingsState.ts';
 import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import {
   asInstrumentId,
@@ -51,30 +52,36 @@ import {
   requestPersistentStorage,
 } from '../../utils/storage/persistenceMirror.ts';
 import {
-  createEditHistory,
   recordEdit,
   takeUndoSnapshot,
   takeRedoSnapshot,
+  clearEditHistory,
+  serializeEditHistory,
   type EditHistory,
+  type EditPosition,
+  type EditSnapshot,
 } from '../../utils/song/editHistory.ts';
+import { loadPersistedEditHistory } from '../../utils/storage/editHistoryStorage.ts';
 
 const INSTRUMENT_STORAGE_KEY = StorageKeys.INSTRUMENT;
+const EDIT_HISTORY_STORAGE_KEY = StorageKeys.EDIT_HISTORY;
 
 export type PendingSongImport = {
   song: Song;
   metadata: SongParseMetadata;
 };
 
-// One undo entry restores the song and the current instrument together -
-// the pair every recorded mutation can touch.
-export interface EditSnapshot {
-  song: Song;
-  instrument: Instrument;
-}
-
 export interface UpdateSongOptions {
   record?: boolean;
   coalesceKey?: string;
+}
+
+// Position bridge into the sequencer domain. App.tsx wires it so a
+// snapshot records the cursor position at edit time and a restore applies
+// it back, without the hook holding a playback dependency.
+export interface EditPositionBridge {
+  getPosition?: () => EditPosition | undefined;
+  applyPosition?: (position: EditPosition) => void;
 }
 
 const shouldWarnForSongConfiguration = (metadata: SongParseMetadata | null): boolean => {
@@ -88,10 +95,30 @@ const shouldWarnForSongConfiguration = (metadata: SongParseMetadata | null): boo
   return chipWarning || frameWarning;
 };
 
-export const useDataManagement = () => {
+export const useDataManagement = (positionBridge?: EditPositionBridge) => {
   const [currentSong, setCurrentSong] = useState<Song>(() => loadInitialSong());
 
   const [currentInstrument, setCurrentInstrument] = useState<Instrument>(() => {
+    // The persisted selection is restored here so it survives the mount-time
+    // instrument sync below - a later effect restore races the deferred sync
+    // write and can lose the selection depending on flush ordering.
+    const storedInstrumentId = readFlag(StorageKeys.RESTORE_CURSOR, true)
+      ? localStorage.getItem(StorageKeys.CURRENT_INSTRUMENT)
+      : null;
+    const restored = storedInstrumentId
+      ? currentSong.instrument.find((inst) => inst.id === storedInstrumentId)
+      : undefined;
+    if (restored) {
+      return restored;
+    }
+
+    const songDefault = currentSong.instrument.find(
+      (inst) => normalizeInstrumentId(inst?.id) === '00',
+    );
+    if (songDefault) {
+      return songDefault;
+    }
+
     return {
       id: asInstrumentId('00'),
       name: 'Default Instrument',
@@ -139,61 +166,90 @@ export const useDataManagement = () => {
 
   const songSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
   const instrumentSaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
+  const historySaveTimeoutRef = useRef<ScheduledSaveHandle | null>(null);
 
-  const historyRef = useRef<EditHistory<EditSnapshot>>(createEditHistory());
-  const [historySize, setHistorySize] = useState({ undo: 0, redo: 0 });
+  const [initialEditHistory] = useState(loadPersistedEditHistory);
+  const historyRef = useRef<EditHistory<EditSnapshot>>(initialEditHistory);
+  const [historySize, setHistorySize] = useState({
+    undo: initialEditHistory.undo.length,
+    redo: initialEditHistory.redo.length,
+  });
+
+  // Every stack mutation routes through here: refresh the size flags and
+  // persist the serialized stacks on the scheduled-save path.
+  const commitHistory = useCallback(() => {
+    setHistorySize({
+      undo: historyRef.current.undo.length,
+      redo: historyRef.current.redo.length,
+    });
+    scheduleJsonSave(
+      EDIT_HISTORY_STORAGE_KEY,
+      serializeEditHistory(historyRef.current),
+      historySaveTimeoutRef,
+    );
+  }, []);
+
+  // Lifecycle operations destroy the history instead of recording it.
+  const clearHistory = useCallback(() => {
+    clearEditHistory(historyRef.current);
+    commitHistory();
+  }, [commitHistory]);
+
+  // The bridge object is rebuilt by the caller on every render - the
+  // latest copy lives in a ref so the history callbacks stay referentially
+  // stable and add no render-time cost on the audio path.
+  const positionBridgeRef = useRef(positionBridge);
+  useEffect(() => {
+    positionBridgeRef.current = positionBridge;
+  });
+
+  const snapshotCurrent = useCallback(
+    (): EditSnapshot => ({
+      song: currentSong,
+      instrument: currentInstrument,
+      position: positionBridgeRef.current?.getPosition?.(),
+    }),
+    [currentSong, currentInstrument],
+  );
 
   // Recording boundary: every recorded mutator snapshots the live pair
   // through this helper before applying its change. The stacks stay in a
   // ref, so history work adds no render-time cost on the audio path.
   const recordHistory = useCallback(
     (coalesceKey?: string) => {
-      recordEdit(
-        historyRef.current,
-        { song: currentSong, instrument: currentInstrument },
-        coalesceKey,
-      );
-      setHistorySize({
-        undo: historyRef.current.undo.length,
-        redo: historyRef.current.redo.length,
-      });
+      recordEdit(historyRef.current, snapshotCurrent(), coalesceKey);
+      commitHistory();
     },
-    [currentSong, currentInstrument],
+    [snapshotCurrent, commitHistory],
   );
 
   const undo = useCallback(() => {
-    const snapshot = takeUndoSnapshot(historyRef.current, {
-      song: currentSong,
-      instrument: currentInstrument,
-    });
+    const snapshot = takeUndoSnapshot(historyRef.current, snapshotCurrent());
     if (snapshot === null) {
       return;
     }
     setCurrentSong(snapshot.song);
     setCurrentInstrument(snapshot.instrument);
+    if (snapshot.position) {
+      positionBridgeRef.current?.applyPosition?.(snapshot.position);
+    }
     setIsSongDirty(true);
-    setHistorySize({
-      undo: historyRef.current.undo.length,
-      redo: historyRef.current.redo.length,
-    });
-  }, [currentSong, currentInstrument]);
+    commitHistory();
+  }, [snapshotCurrent, commitHistory]);
 
   const redo = useCallback(() => {
-    const snapshot = takeRedoSnapshot(historyRef.current, {
-      song: currentSong,
-      instrument: currentInstrument,
-    });
+    const snapshot = takeRedoSnapshot(historyRef.current, snapshotCurrent());
     if (snapshot === null) {
       return;
     }
     setCurrentSong(snapshot.song);
     setCurrentInstrument(snapshot.instrument);
+    if (snapshot.position) {
+      positionBridgeRef.current?.applyPosition?.(snapshot.position);
+    }
     setIsSongDirty(true);
-    setHistorySize({
-      undo: historyRef.current.undo.length,
-      redo: historyRef.current.redo.length,
-    });
-  }, [currentSong, currentInstrument]);
+    commitHistory();
+  }, [snapshotCurrent, commitHistory]);
 
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
@@ -231,6 +287,7 @@ export const useDataManagement = () => {
     return () => {
       clearScheduledSave(songSaveTimeoutRef);
       clearScheduledSave(instrumentSaveTimeoutRef);
+      clearScheduledSave(historySaveTimeoutRef);
     };
   }, []);
 
@@ -308,13 +365,13 @@ export const useDataManagement = () => {
       clock: DEFAULT_SONG_CLOCK,
     };
 
-    recordHistory();
+    clearHistory();
     setCurrentSong(newSong);
     setCurrentInstrument(newCurrentInstrument);
     setIsSongDirty(false);
 
     return newSong;
-  }, [recordHistory]);
+  }, [clearHistory]);
 
   const createNewInstrument = useCallback(() => {
     const { updatedSong, newInstrument } = createNewInstrumentForSong(currentSong);
@@ -341,7 +398,7 @@ export const useDataManagement = () => {
   const applyParsedSong = useCallback(
     (newSong: Song) => {
       setPendingSongImport(null);
-      recordHistory();
+      clearHistory();
       setCurrentSong(newSong);
 
       const firstInstrument = newSong.instrument.find(
@@ -352,7 +409,7 @@ export const useDataManagement = () => {
       }
       setIsSongDirty(false);
     },
-    [recordHistory],
+    [clearHistory],
   );
 
   const loadSongFromText = useCallback(

@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useKeyboardNavigation } from './hooks/keyboard/useKeyboardNavigation.ts';
 import { useNavigationSuspension } from './hooks/keyboard/useNavigationSuspension.ts';
 import { useTheme } from './hooks/ui/useTheme.ts';
@@ -25,6 +25,7 @@ import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
 import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
 import { normalizeInstrumentId } from './utils/instrument/instrumentSelection.ts';
+import type { EditPosition } from './utils/song/editHistory.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
 import { HeaderPanel } from './components/HeaderPanel.tsx';
@@ -151,6 +152,16 @@ const App: React.FC = () => {
   const { theme, setTheme, toggleTheme } = useTheme();
   const { textScale, setTextScale } = useTextScale();
   const isDarkMode = theme !== 'light';
+
+  // Position bridge for the edit history: getPosition reads the mirrored
+  // editor position - the playlist line comes from the sequencer while the
+  // row comes from the shared track cursor, since track navigation never
+  // touches the sequencer row. applyPosition lands through the ref bound
+  // once usePlaybackControls exists - the hook is instantiated earlier than
+  // the sequencer, so the wiring goes through refs.
+  const editPositionRef = useRef<EditPosition>({ pattern: 0, line: 0 });
+  const applyEditPositionRef = useRef<((position: EditPosition) => void) | null>(null);
+
   const {
     currentSong,
     currentInstrument,
@@ -179,7 +190,12 @@ const App: React.FC = () => {
     cancelPendingSongImport,
     undo,
     redo,
-  } = useDataManagement();
+    canUndo,
+    canRedo,
+  } = useDataManagement({
+    getPosition: () => editPositionRef.current,
+    applyPosition: (position) => applyEditPositionRef.current?.(position),
+  });
 
   const {
     configurationWarningMessage,
@@ -245,6 +261,20 @@ const App: React.FC = () => {
     setPatternLoopMode,
   } = usePlaybackControls({ currentSong, audioContext });
 
+  useEffect(() => {
+    editPositionRef.current = {
+      pattern: sequencerState.currentPattern,
+      line: sharedCurrentLine,
+    };
+  }, [sequencerState.currentPattern, sharedCurrentLine]);
+
+  useEffect(() => {
+    applyEditPositionRef.current = (position) => {
+      setPosition(position.pattern, position.line, 0);
+      setSharedCurrentLine(position.line);
+    };
+  }, [setPosition]);
+
   useElectronCloseGuard({ isSongDirty, onQuitRequested: setIsQuitConfirmOpen });
 
   const { messages, currentMessageIndex, isNotesVisible, handleNotesClick } = useMessageSystem();
@@ -276,6 +306,8 @@ const App: React.FC = () => {
     setTrackFocusRevision,
     instrumentPanelFocusRevision,
     setInstrumentPanelFocusRevision,
+    playlistFocusRevision,
+    setPlaylistFocusRevision,
     trackBackgroundEnabled,
     setTrackBackgroundEnabled,
     handleToggleTrackBackground,
@@ -296,7 +328,6 @@ const App: React.FC = () => {
     setPosition,
     setSharedCurrentLine,
     setCurrentTrackColumn,
-    setCurrentInstrument,
     activeSection,
     targetTrackId,
     sequencerIsPlaying: sequencerState.isPlaying,
@@ -341,14 +372,17 @@ const App: React.FC = () => {
     handleDeleteTrack,
     clampedPlaybackPosition,
     handlePositionSelect,
+    handleNavigateSongLine,
   } = usePlaylistOperations({
     song: currentSong,
     targetTrackId,
     currentPatternIndex: sequencerState.currentPattern,
     updateSong,
     setActiveSection,
+    sharedCurrentLine,
     setSharedCurrentLine,
     setPosition,
+    setPlaylistFocusRevision,
   });
 
   const {
@@ -430,7 +464,7 @@ const App: React.FC = () => {
     trackSelection,
     handleExtendSelection,
     handleCopyTrack,
-    handlePasteTrack,
+    handlePasteTrackFromStart,
     handleCopyTrackShortcut,
     handleCutTrackShortcut,
     handlePasteTrackShortcut,
@@ -527,8 +561,6 @@ const App: React.FC = () => {
     currentSong,
     sharedCurrentLine,
     setSharedCurrentLine,
-    activeSection,
-    lastTrackId,
     isLinePlaying,
     setIsLinePlaying,
     ensureAudioContextResumed,
@@ -885,7 +917,7 @@ const App: React.FC = () => {
             isLinePlaying={isLinePlaying}
             onPlayInstrument={handlePlayInstrument}
             onCopyTrack={handleCopyTrack}
-            onPasteTrack={handlePasteTrack}
+            onPasteTrack={handlePasteTrackFromStart}
             onNewTrack={handleCreateNewTrack}
             onDeleteTrack={handleDeleteTrack}
             activeSection={activeSection}
@@ -896,6 +928,10 @@ const App: React.FC = () => {
             onShowMidi={handleShowMidi}
             onPickInstrument={handleOpenRepositoryInstrumentPicker}
             onDemoSong={handleDemoSongClick}
+            onUndo={undo}
+            onRedo={redo}
+            canUndo={canUndo}
+            canRedo={canRedo}
             isMobileCollapsed={isMobileViewport && isCommandPanelMobileCollapsed}
           />
         }
@@ -926,6 +962,7 @@ const App: React.FC = () => {
             onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
             trackSelection={trackSelection}
             onExtendSelection={handleExtendSelection}
+            onNavigateSongLine={handleNavigateSongLine}
             trackBackgroundEnabled={trackBackgroundEnabled}
             onToggleTrackBackground={handleToggleTrackBackground}
             isDarkMode={isDarkMode}
@@ -954,6 +991,10 @@ const App: React.FC = () => {
             onPlaylistChange={handlePlaylistChange}
             onCreatePatternAt={handleCreatePatternAt}
             targetTrackId={targetTrackId}
+            sharedCurrentLine={sharedCurrentLine}
+            onToggleLineFromStart={handleToggleLineFromStart}
+            onToggleSongFromCursor={handleToggleSongFromCursor}
+            onToggleSongFromStart={handleToggleSongFromStart}
             currentInstrument={currentInstrument}
             onSelectInstrument={handleInstrumentSelect}
             onRenameInstrument={handleRenameInstrument}
@@ -961,6 +1002,7 @@ const App: React.FC = () => {
             onOpenInstrumentMidi={handleOpenInstrumentMidi}
             onOpenInstrumentColor={handleOpenInstrumentColor}
             instrumentPanelFocusRevision={instrumentPanelFocusRevision}
+            playlistFocusRevision={playlistFocusRevision}
             ym2149={ym2149}
             channelMutes={channelMutes}
             onToggleChannelMute={toggleChannelMute}

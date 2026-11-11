@@ -264,7 +264,7 @@ Node 26 prints `ExperimentalWarning: localStorage is not available` lines during
 - `localStorage` enumeration in both source and tests must use `length` and `key(index)`, never `Object.keys(localStorage)` - the installed mock is a plain object whose own enumerable keys are method names, so `Object.keys` yields `getItem`, `setItem`, and friends instead of stored data keys.
 - `fetch` stubs must return the full Response surface the code under test reads - `ok`, `headers.get()`, and `text()` - not only the fields an older consumer used. A stub that omits `headers` turns a new header read into a TypeError that only surfaces as an empty-state test failure.
 - Assertions on rendered or generated HTML must distinguish escaped entities from raw markup - `&quot;` inside an attribute value is safe text, not an attribute breakout. Assert on the unescaped pattern (a real quote followed by an attribute name), not on substring scans that match entity bodies.
-- Synthetic keyboard and DOM events must carry `bubbles: true` and be dispatched on a real element such as `document.body` - a `new KeyboardEvent` defaults to non-bubbling, so a `window` listener never fires, and dispatching on `window` makes `event.target` an object without `closest` or `tagName`, which breaks handlers that inspect the target.
+- Synthetic keyboard and DOM events must carry `bubbles: true` and be dispatched on a real element such as `document.body` - a `new KeyboardEvent` defaults to non-bubbling, so a `window` listener never fires, and dispatching on `window` makes `event.target` an object without `closest` or `tagName`, which breaks handlers that inspect the target. A shortcut that resolves the physical key from `event.code` also needs `code` set on the synthetic event - Option+digit cases carry a symbol in `key` (`¡`, `£`) and only the code reaches the matcher.
 - Assertions on expansion, truncation, or filtering must prove the code path actually ran - assert the expanded output's content, not only its bounded shape. Input that never triggers the mechanism can satisfy a bounds assertion vacuously: a step node carrying a sibling `instrument` key is not a run and never expands, so asserting "at most N steps" proves nothing.
 - Assertions on serialized YAML must account for scalar normalization on round-trip - `yaml.load` strips plain-scalar surrounding whitespace, so a parse-back assertion can pass while the emitted text is still wrong. Assert on the raw output text for unquoted scalars (for example `toContain('author: Writer')`), and use the parsed document only for values the emitter guarantees to quote.
 - Commit-style inputs buffer typed text locally and emit `onChange` only on a committing event - blur, Enter, or a spin-button step. A `fireEvent.change` alone exercises the buffer and never the commit; assertions on the emitted value dispatch the committing event.
@@ -347,6 +347,14 @@ A fake object built fresh on every render - `fakeAudioContext()` returned inline
 **jsdom lacks matchMedia and scrollIntoView**
 
 Panels with scroll or media-query effects - `PlaylistPanel` reads `window.matchMedia` in a scroll-into-view effect - crash a jsdom mount with `TypeError: window.matchMedia is not a function`. Stub `window.matchMedia` inside the test file's setup and return `matches: true` - the effect takes its early-return path and never reaches `scrollIntoView`, which jsdom does not implement either.
+
+**jsdom lacks navigator.clipboard**
+
+Any suite exercising a code path that calls `navigator.clipboard` installs the surface first - `Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockResolvedValue(undefined) }, configurable: true })` in `beforeEach`, then spies or asserts on `writeText` per test (the pattern lives in `test/modals/MidiModal.test.tsx`).
+
+**Suite helpers live inside their describe scope**
+
+Props factories such as `createPanelProps` are declared inside the `describe` that owns them - a `describe`/`it` block appended at file end sits outside that scope and fails typecheck with `Cannot find name`. Nest new blocks inside the owning describe, or hoist the factory to file scope when several blocks share it.
 
 **Computed-style probes must disable transitions**
 

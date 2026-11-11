@@ -46,6 +46,8 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
   const itemsContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = activeSection === 'instrumentList';
+  const isTrackSectionActive =
+    activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
 
   useEffect(() => {
     const index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
@@ -168,9 +170,13 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
     (slotIndex: number) => {
       setCurrentIndex(slotIndex);
       onSelectInstrument(getInstrumentForSlot(slotIndex));
-      setActiveSection('instrumentList');
+      // Picking an instrument while a track is active must not steal the
+      // section - the track keeps focus so note entry can continue.
+      if (!isTrackSectionActive) {
+        setActiveSection('instrumentList');
+      }
     },
-    [onSelectInstrument, setActiveSection, getInstrumentForSlot],
+    [onSelectInstrument, setActiveSection, getInstrumentForSlot, isTrackSectionActive],
   );
 
   const getItemClass = useCallback(
@@ -227,7 +233,16 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                       } as React.CSSProperties)
                     : undefined
                 }
-                onClick={() => handleInstrumentClick(slotIndex)}
+                onMouseDown={(event) => {
+                  if ((event.target as HTMLElement).closest('input, button')) {
+                    return;
+                  }
+                  event.preventDefault();
+                }}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleInstrumentClick(slotIndex);
+                }}
               >
                 <span className="instrument-number">{formatInstrumentSlotId(slotIndex)}</span>
                 <span className="instrument-name">
