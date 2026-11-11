@@ -134,7 +134,7 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
         return;
       }
 
-      const match = matchKeyboardShortcut(key, ctrl, shift);
+      const match = matchKeyboardShortcut(key, ctrl, shift, event.altKey);
       if (!match) {
         return;
       }

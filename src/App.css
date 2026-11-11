@@ -19,10 +19,11 @@
   --section-hover-border: #b84ec8;
   --section-active-hover-border: #00cc00;
   --section-hover-glow: rgba(226, 139, 240, 0.55);
-  --section-hover-bg: color-mix(in srgb, var(--bg-secondary) 75%, black 25%);
+  --section-hover-bg: #252d42;
+  --section-active-hover-bg: color-mix(in srgb, var(--section-hover-bg) 75%, var(--active-bg) 25%);
   --track-hover-bg: color-mix(in srgb, var(--bg-secondary) 85%, black 15%);
 
-  --active-bg: #252d42;
+  --active-bg: color-mix(in srgb, var(--bg-secondary) 75%, black 25%);
   --active-border: #7aa2f7;
   --active-glow: rgba(122, 162, 247, 0.45);
 
@@ -108,6 +109,7 @@
   --envelope-glow: rgba(122, 162, 247, 0.6);
   --envelope-bar-hover: #7f61eb;
   --envelope-bar-current: #a54c4c;
+  --envelope-sustain-dot-idle: #c0c0c0;
   --volume-bar: #7aa2f7;
   --track-cell-active-bg: #51376f;
   --track-a-bg: #582537;
@@ -185,10 +187,11 @@
     var(--section-hover-border)
   );
   --section-hover-glow: color-mix(in srgb, var(--section-hover-border) 45%, transparent);
-  --section-hover-bg: color-mix(in srgb, var(--bg-secondary) 78%, #98a1ab 22%);
+  --section-hover-bg: #fef3c7;
+  --section-active-hover-bg: color-mix(in srgb, var(--section-hover-bg) 75%, var(--active-bg) 25%);
   --track-hover-bg: color-mix(in srgb, var(--bg-secondary) 55%, #98a1ab 45%);
 
-  --active-bg: #fef3c7;
+  --active-bg: color-mix(in srgb, var(--bg-secondary) 78%, #98a1ab 22%);
   --active-border: #f59e0b;
   --active-glow: rgba(245, 158, 11, 0.3);
 
@@ -272,6 +275,7 @@
   --envelope-glow: rgba(245, 158, 11, 0.5);
   --envelope-bar-hover: #6694da;
   --envelope-bar-current: #ab97f5;
+  --envelope-sustain-dot-idle: #444444;
   --volume-bar: #f59e0b;
   --track-cell-active-bg: #f5fffc;
   --track-a-bg: #ffe8f0;
@@ -341,9 +345,10 @@
   );
   --section-hover-glow: rgba(0, 255, 255, 0.6);
   --section-hover-bg: #1a1a1a;
+  --section-active-hover-bg: color-mix(in srgb, var(--section-hover-bg) 75%, var(--active-bg) 25%);
   --track-hover-bg: #242424;
 
-  --active-bg: #222200;
+  --active-bg: #000000;
   --active-border: #ffff00;
   --active-glow: rgba(255, 255, 0, 0.55);
 
@@ -429,6 +434,7 @@
   --envelope-glow: rgba(102, 170, 255, 0.6);
   --envelope-bar-hover: #cc66ff;
   --envelope-bar-current: #ff6655;
+  --envelope-sustain-dot-idle: #ffff00;
   --volume-bar: #66aaff;
   --track-cell-active-bg: #22224d;
   --track-a-bg: #330d14;
@@ -707,6 +713,7 @@ body {
 
 .octave-selection.active:hover {
   border-bottom-color: var(--section-active-hover-border);
+  background-color: var(--section-active-hover-bg);
 }
 
 .octave-button {
@@ -771,6 +778,11 @@ body {
 
 .command-panel.active:hover {
   border-color: var(--section-active-hover-border);
+  background-image: linear-gradient(
+    180deg,
+    var(--section-active-hover-bg) 0%,
+    var(--bg-tertiary) 100%
+  );
 }
 
 .command-row {
@@ -1981,6 +1993,11 @@ body {
 
 .track-panel.active:hover {
   border-color: var(--section-active-hover-border);
+  background-image: linear-gradient(
+    180deg,
+    var(--section-active-hover-bg) 0%,
+    var(--bg-secondary) 100%
+  );
 }
 
 .track-panel:hover::before {
@@ -2259,6 +2276,7 @@ body {
 
 .track-panel.active .track-line.current .volume-data {
   padding-left: 0;
+  padding-right: 1px;
 }
 
 .track-footer {
@@ -2300,6 +2318,7 @@ body {
 
 .envelope-panel.active:hover {
   border-color: var(--section-active-hover-border);
+  background-color: var(--section-active-hover-bg);
 }
 
 .envelope-header {
@@ -2355,6 +2374,10 @@ body {
   height: 6px;
   border-radius: 50%;
   background-color: #000;
+}
+
+.envelope-sustain-dot.idle {
+  background-color: var(--envelope-sustain-dot-idle);
 }
 
 .value-display {
@@ -2510,6 +2533,7 @@ body {
 
 .information-panel.active:hover {
   border-color: var(--section-active-hover-border);
+  background-color: var(--section-active-hover-bg);
 }
 
 .information-header {
@@ -2827,6 +2851,7 @@ body {
 
 .playlist-panel.active:hover {
   border-color: var(--section-active-hover-border);
+  background-color: var(--section-active-hover-bg);
 }
 
 .playlist-header {
@@ -3070,6 +3095,7 @@ body {
 
 .instrument-panel.active:hover {
   border-color: var(--section-active-hover-border);
+  background-color: var(--section-active-hover-bg);
 }
 
 .instrument-list-header {
@@ -3594,6 +3620,11 @@ body {
 
 .piano-keyboard.active:hover {
   border-color: var(--section-active-hover-border);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--section-active-hover-bg) 60%, #1a1a1a) 0%,
+    color-mix(in srgb, var(--section-active-hover-bg) 60%, #2a2a2a) 100%
+  );
 }
 
 .piano-keys {

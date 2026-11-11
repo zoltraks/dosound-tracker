@@ -9,6 +9,7 @@ import LogoDark from '../assets/svg/logo-dark.svg';
 import LogoLight from '../assets/svg/logo-light.svg';
 import { usePreviewEnvelope } from '../hooks/playback/usePreviewEnvelope.ts';
 import { parseBaseKey } from '../utils/song/songFormat.ts';
+import { isModifierChord } from '../utils/keyboard/keyboardShortcutUtils.ts';
 
 interface HeaderPanelProps {
   isDarkMode: boolean;
@@ -103,8 +104,12 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     const rawKey = event.key;
     const keyUpper = rawKey.toUpperCase();
 
+    if (isModifierChord(event)) {
+      return;
+    }
+
     // Space: preview instrument base note at its own base octave (like PianoKeyboard)
-    if (rawKey === ' ') {
+    if (rawKey === ' ' && !event.shiftKey) {
       if (baseKeyData) {
         event.preventDefault();
         event.stopPropagation();
@@ -125,13 +130,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
 
     const key = rawKey;
 
-    if (
-      key === 'ArrowLeft' ||
-      key === 'ArrowRight' ||
-      key === 'ArrowUp' ||
-      key === 'ArrowDown' ||
-      key === ' '
-    ) {
+    if (key === 'ArrowLeft' || key === 'ArrowRight' || key === 'ArrowUp' || key === 'ArrowDown') {
       event.preventDefault();
       event.stopPropagation();
     }
@@ -162,7 +161,9 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     if (rawKey === ' ' || KEYBOARD_TO_NOTE[keyUpper]) {
       event.preventDefault();
       event.stopPropagation();
-      stopPreview();
+      if (preview.hasState()) {
+        stopPreview();
+      }
     }
   };
 

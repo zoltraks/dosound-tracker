@@ -243,12 +243,12 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 
 - **TAB** and **SHIFT + TAB** section cycling
 - **ARROW** movement
-- **CTRL + 1 / CTRL + 2 / CTRL + 3** to focus tracks A, B, and C
+- **ALT + 1 / ALT + 2 / ALT + 3** to focus tracks A, B, and C (OPTION on macOS)
 - **CTRL + SPACE** to focus the on-screen piano, and again to return to the previous section
 - **SHIFT + SPACE** to write a note-off, or to clear a position that already holds one
 - **ENTER** for editing
 - **ESCAPE** for cancel
-- **F2** plays the current line, **CTRL + 5** plays the song from the start of the current line, **CTRL + 6** plays the current line, **CTRL + 8** or **ESCAPE** stops playback
+- **F2** plays the current line, **ALT + 5** plays the song from the start of the current line, **ALT + 6** plays the current line, **ALT + 8** or **ESCAPE** stops playback
 - **ENTER / CTRL + ENTER / SHIFT + ENTER / CTRL + SHIFT + ENTER** to play a line or the song as described in the playback quick tip
 - **CTRL + N / CTRL + O / CTRL + S / CTRL + I** for new song, load song, save song, and new instrument
 - **CTRL + Z** to undo the last edit and **CTRL + Y** or **CTRL + SHIFT + Z** to redo it
@@ -261,7 +261,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - Playback position tracking
 - Volume level visualization
 - EQ display with channel muting
-- Section frames tint on mouse hover, and a hovered section that is also active shows its own frame color - lime in the dark theme
+- An active section shows a darker background, a hovered section a lighter one, and a hovered section that is also active shows its own background with a lime frame color in the dark theme
 
 ### Envelope Editor
 
@@ -279,6 +279,8 @@ For whole-envelope operations, the editor treats the envelope as fully defined f
 | Shift + 0-9, A-F         | Noise         | Add 16 to the typed hex value and advance              |
 | 0-9, A-F                 | Arpeggio      | Set positive value (+0..+15) and advance               |
 | Shift + 1-9, A-F         | Arpeggio      | Set negative value (-1..-15) and advance               |
+| Ctrl + 0-9               | Volume, Noise | Enter the hex value and advance                        |
+| Ctrl + 0-9               | Arpeggio      | Enter the positive value (+0..+9) and advance          |
 | T / N / B                | Mode          | Set Tone / Noise / Both and advance                    |
 | Space                    | All but Mode  | Set value from the previously selected position        |
 | Space                    | Mode          | Cycle mode (T -> N -> B -> T) at current position      |

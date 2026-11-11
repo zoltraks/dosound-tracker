@@ -28,6 +28,7 @@ import {
 } from '../utils/track/trackPanelUtils.ts';
 import { usePreviewEnvelope } from '../hooks/playback/usePreviewEnvelope.ts';
 import { noteKeyId } from '../utils/panel/pianoUtils.ts';
+import { isModifierChord } from '../utils/keyboard/keyboardShortcutUtils.ts';
 
 interface TrackPanelProps {
   trackId: 'A' | 'B' | 'C';
@@ -353,7 +354,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       } else {
         // Modifier chords belong to global shortcuts (undo, redo, file
         // ops) - they must never fall through to note entry.
-        if (event.ctrlKey || event.metaKey || event.altKey) {
+        if (isModifierChord(event)) {
           return;
         }
 

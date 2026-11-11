@@ -8,6 +8,7 @@ import { PianoKey } from './PianoKey.tsx';
 import { generatePianoKeys, noteKeyId, parseBaseKey } from '../utils/panel/pianoUtils.ts';
 import type { PianoKeyConfig } from '../utils/panel/pianoUtils.ts';
 import { getKeyboardMappedNote } from '../utils/keyboard/keyboardNoteMapping.ts';
+import { isModifierChord } from '../utils/keyboard/keyboardShortcutUtils.ts';
 import { usePreviewEnvelope } from '../hooks/playback/usePreviewEnvelope.ts';
 
 interface PianoKeyboardProps {
@@ -211,6 +212,10 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
             playNoteWithAudioUnlock(baseKeyData.note, baseKeyData.octave);
           }
         }
+        return;
+      }
+
+      if (isModifierChord(event)) {
         return;
       }
 

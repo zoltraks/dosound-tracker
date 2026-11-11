@@ -1,5 +1,19 @@
 # Changes
 
+## Version 1.5.5
+
+Alt and Option chords take over the global shortcuts, the bundled repository gains the Warmball instruments, and section frames read active, hovered, and both at once.
+
+- **Keyboard**: ALT+1 / ALT+2 / ALT+3 focus tracks A, B, and C (OPTION on macOS), and ALT+5 / ALT+6 / ALT+8 drive playback - Ctrl chords no longer collide with envelope value entry.
+- **Envelope editor**: CTRL + digit enters a hex value at the cursor in the Volume, Arpeggio, and Noise envelopes, and editing keys now require bare keys so global chords such as CTRL+SPACE or CTRL+S no longer mutate envelope data.
+- **Playlist**: the pattern-id input commits and focuses the track with ALT+ENTER, and CTRL+SPACE from the playlist no longer mounts the editing input - the piano toggle keeps its focus.
+- **Sections**: an active section shows a darker background, a hovered section a lighter one, and a hovered active section a third background with its lime frame, in all three themes.
+- **Envelope editor**: the volume sustain dot switches to a contrasting idle color when the bar under it does not reach the marker.
+- **Keyboard**: ENTER, CTRL+ENTER, SHIFT+ENTER, and CTRL+SHIFT+ENTER start line or song playback from the cursor row or the first row, stop on a repeated press, and restore the playlist position and track row.
+- **Keyboard**: CTRL+SPACE toggles focus between the on-screen piano and the previous section, and SHIFT+SPACE writes a note-off or clears one.
+- **Instruments**: the bundled repository gains the seven Warmball instruments colored by role - red drums, blue basses, green leads, yellow effects.
+- **Manual**: the bundled manual now covers the keyboard shortcuts, the settings dialog, the stereo layout, the sound engines, and the instrument repository.
+
 ## Version 1.5.4
 
 The export dialog now shows which formats honour the chosen dump strategy under the current scope.

@@ -5,13 +5,38 @@ export interface KeyboardShortcutMatch {
   preventDefault: boolean;
 }
 
+export const isModifierChord = (event: {
+  ctrlKey: boolean;
+  metaKey: boolean;
+  altKey: boolean;
+}): boolean => event.ctrlKey || event.metaKey || event.altKey;
+
 export function matchKeyboardShortcut(
   keyUpper: string,
   ctrl: boolean,
   shift: boolean,
+  alt: boolean,
 ): KeyboardShortcutMatch | null {
   let shortcut: KeyboardShortcut | null = null;
   let preventDefault = false;
+
+  if (alt && !ctrl && !shift) {
+    switch (keyUpper) {
+      case '1':
+        return { shortcut: 'ALT+1', preventDefault: true };
+      case '2':
+        return { shortcut: 'ALT+2', preventDefault: true };
+      case '3':
+        return { shortcut: 'ALT+3', preventDefault: true };
+      case '5':
+        return { shortcut: 'ALT+5', preventDefault: true };
+      case '6':
+        return { shortcut: 'ALT+6', preventDefault: true };
+      case '8':
+        return { shortcut: 'ALT+8', preventDefault: true };
+    }
+    return null;
+  }
 
   if (ctrl && shift) {
     if (keyUpper === 'Z') {
@@ -45,27 +70,6 @@ export function matchKeyboardShortcut(
       case 'I':
         shortcut = 'CTRL+I';
         preventDefault = true;
-        break;
-      case '1':
-        shortcut = 'CTRL+1';
-        preventDefault = true;
-        break;
-      case '2':
-        shortcut = 'CTRL+2';
-        preventDefault = true;
-        break;
-      case '3':
-        shortcut = 'CTRL+3';
-        preventDefault = true;
-        break;
-      case '5':
-        shortcut = 'CTRL+5';
-        break;
-      case '6':
-        shortcut = 'CTRL+6';
-        break;
-      case '8':
-        shortcut = 'CTRL+8';
         break;
       case ' ':
         preventDefault = true;

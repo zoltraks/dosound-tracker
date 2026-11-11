@@ -288,6 +288,31 @@ describe('EnvelopePanel volume', () => {
     }
   });
 
+  it('marks the sustain dot idle when the bar does not reach it', () => {
+    const data = zeros();
+    data[0] = 3;
+    const { container } = renderPanel({ data, sustainIndex: 0, onSustainChange: vi.fn() });
+    try {
+      expect(container.querySelector('.envelope-sustain-dot.idle')).toBeTruthy();
+    } catch (error) {
+      console.log('idle dot mismatch');
+      throw error;
+    }
+  });
+
+  it('keeps the default dot when the bar reaches it', () => {
+    const data = zeros();
+    data[0] = 0x0f;
+    const { container } = renderPanel({ data, sustainIndex: 0, onSustainChange: vi.fn() });
+    try {
+      expect(container.querySelector('.envelope-sustain-dot.idle')).toBeNull();
+      expect(container.querySelector('.envelope-sustain-dot')).toBeTruthy();
+    } catch (error) {
+      console.log('dot on bar mismatch');
+      throw error;
+    }
+  });
+
   it('hides the sustain dot for out-of-range indexes', () => {
     const { container } = renderPanel({ data: zeros(), sustainIndex: 99 });
     try {
@@ -457,6 +482,79 @@ describe('EnvelopePanel volume', () => {
       expect(screen.getByText('Val: 0A')).toBeTruthy();
     } catch (error) {
       console.log('data sync mismatch', container.textContent);
+      throw error;
+    }
+  });
+});
+
+describe('EnvelopePanel modifier discipline', () => {
+  it('enters the hex value and advances on Ctrl+digit', () => {
+    const onChange = vi.fn();
+    renderPanel({ data: zeros(), onChange });
+    const panel = getPanel(document.body);
+    fireEvent.keyDown(panel, { key: '7', code: 'Digit7', ctrlKey: true });
+    try {
+      const next = onChange.mock.calls[0]?.[0] as number[];
+      expect(next[0]).toBe(7);
+      expect(screen.getByText('Pos: 1')).toBeTruthy();
+    } catch (error) {
+      console.log('ctrl digit mismatch', onChange.mock.calls);
+      throw error;
+    }
+  });
+
+  it('enters the hex value on Ctrl+digit in the noise panel', () => {
+    const onChange = vi.fn();
+    renderPanel({
+      type: 'noise',
+      activeSection: 'noise' as NavigationSection,
+      data: zeros(),
+      onChange,
+    });
+    fireEvent.keyDown(getPanel(document.body), { key: '5', code: 'Digit5', ctrlKey: true });
+    try {
+      const next = onChange.mock.calls[0]?.[0] as number[];
+      expect(next[0]).toBe(5);
+      expect(screen.getByText('Pos: 1')).toBeTruthy();
+    } catch (error) {
+      console.log('noise ctrl digit mismatch', onChange.mock.calls);
+      throw error;
+    }
+  });
+
+  it('does not enter a value or toggle sustain on Ctrl chords', () => {
+    const onChange = vi.fn();
+    const onSustainChange = vi.fn();
+    renderPanel({ data: zeros(), onChange, onSustainChange, sustainIndex: null });
+    const panel = getPanel(document.body);
+    fireEvent.keyDown(panel, { key: 'a', code: 'KeyA', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: 's', code: 'KeyS', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: 'n', code: 'KeyN', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: 'a', code: 'KeyA', metaKey: true });
+    try {
+      expect(onChange).not.toHaveBeenCalled();
+      expect(onSustainChange).not.toHaveBeenCalled();
+      expect(screen.getByText('Pos: 0')).toBeTruthy();
+    } catch (error) {
+      console.log('ctrl chord guard mismatch', onChange.mock.calls, onSustainChange.mock.calls);
+      throw error;
+    }
+  });
+
+  it('does not copy the last position on Ctrl+Space or Shift+Space', () => {
+    const onChange = vi.fn();
+    const data = zeros();
+    data[2] = 9;
+    const { container } = renderPanel({ data, onChange });
+    const bars = container.querySelectorAll('.envelope-bar');
+    fireEvent.click(bars[2] as HTMLElement);
+    fireEvent.keyDown(getPanel(container), { key: 'ArrowRight' });
+    fireEvent.keyDown(getPanel(container), { key: ' ', ctrlKey: true });
+    fireEvent.keyDown(getPanel(container), { key: ' ', shiftKey: true });
+    try {
+      expect(onChange).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('space chord guard mismatch', onChange.mock.calls);
       throw error;
     }
   });

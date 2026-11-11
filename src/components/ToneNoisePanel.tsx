@@ -13,6 +13,7 @@ import {
 } from '../utils/panel/toneNoisePanelUtils.ts';
 import { readEnvelopeCursor } from '../utils/envelope/envelopePanelUtils.ts';
 import { StorageKeys } from '../utils/storage/storageKeys.ts';
+import { isModifierChord } from '../utils/keyboard/keyboardShortcutUtils.ts';
 
 interface ToneNoisePanelProps {
   activeSection: NavigationSection;
@@ -94,6 +95,10 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         }
       }
 
+      if (isModifierChord(event)) {
+        return;
+      }
+
       if (key === 'ARROWLEFT') {
         event.preventDefault();
         setCurrentPosition((prev) => getMovedModePosition(prev, 'left'));
@@ -143,7 +148,7 @@ export const ToneNoisePanel: React.FC<ToneNoisePanelProps> = ({
         const length = toneNoiseData.length > 0 ? toneNoiseData.length : 32;
         const nextPosition = getNextModePosition(currentPosition, length);
         setCurrentPosition(nextPosition);
-      } else if (key === ' ') {
+      } else if (key === ' ' && !event.shiftKey) {
         event.preventDefault();
         if (onChange) {
           const source = toneNoiseData;

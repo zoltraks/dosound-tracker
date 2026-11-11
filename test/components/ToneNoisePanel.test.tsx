@@ -76,6 +76,22 @@ describe('ToneNoisePanel', () => {
     }
   });
 
+  it('does not change the mode on modifier chords', () => {
+    const onChange = vi.fn();
+    const { container } = renderPanel({ data: zeros(), onChange });
+    const panel = getPanel(container);
+    fireEvent.keyDown(panel, { key: ' ', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: ' ', shiftKey: true });
+    fireEvent.keyDown(panel, { key: 'n', ctrlKey: true });
+    fireEvent.keyDown(panel, { key: 't', altKey: true });
+    try {
+      expect(onChange).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('mode chord guard mismatch', onChange.mock.calls);
+      throw error;
+    }
+  });
+
   it('moves the cursor with arrow keys and clamps at edges', () => {
     const { container } = renderPanel();
     const panel = getPanel(container);

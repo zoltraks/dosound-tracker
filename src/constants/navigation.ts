@@ -25,9 +25,9 @@ export const KEYBOARD_SHORTCUTS = {
   ARROW_DOWN: 'nextLine',
   ARROW_LEFT: 'previousColumn',
   ARROW_RIGHT: 'nextColumn',
-  'CTRL+1': 'focusTrackA',
-  'CTRL+2': 'focusTrackB',
-  'CTRL+3': 'focusTrackC',
+  'ALT+1': 'focusTrackA',
+  'ALT+2': 'focusTrackB',
+  'ALT+3': 'focusTrackC',
   'CTRL+SPACE': 'togglePianoFocus',
 
   // Editing
@@ -43,9 +43,9 @@ export const KEYBOARD_SHORTCUTS = {
 
   // Playback
   F2: 'playLine',
-  'CTRL+5': 'playLineFromStart',
-  'CTRL+6': 'playLine',
-  'CTRL+8': 'stopPlayback',
+  'ALT+5': 'playLineFromStart',
+  'ALT+6': 'playLine',
+  'ALT+8': 'stopPlayback',
   ESC: 'stopPlayback',
 
   // File operations

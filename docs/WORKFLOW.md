@@ -325,7 +325,7 @@ For each change record in the window, in intake order:
 
 ## Work Modes
 
-The repository records a three-mode scheme governing how a modification request enters the change lifecycle.
+The repository records a scheme of named work modes governing how a modification request enters the change lifecycle.
 
 **Mode Selection**
 
@@ -338,7 +338,7 @@ A work request names its mode or the agent asks before proceeding - the selectio
 | `Improvement mode (verbose + development + improvement)` | Development plus the `improvement` working mode    |
 | `Wait (skip for now)`                                    | Intake standby - wait for commands before any work |
 
-A request that names its mode skips the question - mode words resolve from the request text, `verbose` arming the report mode and `improvement` the working mode on top of Development. `Wait (skip for now)` follows the Intake standby convention below.
+A request that names its mode skips the question - mode words resolve from the request text, `verbose` arming the report mode, `improvement` the working mode on top of Development, and `ad-hoc implementation` the deferred-record path described below. `Wait (skip for now)` follows the Intake standby convention below.
 
 **Standard Workflow**
 
@@ -352,9 +352,15 @@ Size is no exemption: the record precedes the code for every user-directed modif
 
 A quick path that applies the change without producing change artifacts. Ad-hoc is never the default - it applies only when the request explicitly demands it through phrasing such as "ad-hoc", "immediate", or "quick fix". The agent may propose the ad-hoc path when a request looks small enough for it - the user selects the mode, the proposal never selects itself. An ad-hoc change still requires a deep analysis of the current implementation before any edit - the analysis runs inside the session and is summarized in the response without producing a durable document. The recorded verification procedure still applies, and the outcome is reported in the session rather than in change artifacts.
 
+**Ad-Hoc Implementation**
+
+A deferred-record path that applies first and documents afterward. Each described change is implemented immediately - no change record or implementation plan precedes the edit - and the applied change joins the session's changeset stack, which records every landed change with a one-line summary. The deep analysis of the current implementation and the recorded verification procedure still apply to every change, and the outcome is reported in the session rather than in artifacts.
+
+When the user closes the stack - "write the records", "document the applied changes", or a later window intake - each stacked change produces its change record in `docs/change/<version>/` and its implementation plan in `docs/plan/<version>/`, written against the landed state rather than as proposals. Retroactive records describe work already implemented - an SDLC intake or window review verifies them against the tree and closes them without re-implementing. The mode differs from plain Ad-Hoc only in the deferred artifacts: Ad-Hoc produces none, Ad-Hoc Implementation produces them after the fact.
+
 **Planning**
 
-A collection mode that analyzes requests without implementing them. Each request is analyzed quickly and held on the session's changeset - the conversation, not a durable document. When the planning phase is declared complete, the changeset re-enters the Standard Workflow: each item gets its change record, the current implementation is re-analyzed, and the usual cycle proceeds in the recorded order.
+A collection mode that analyzes requests without implementing them. Each request is analyzed quickly and held on the session's changeset - the conversation, not a durable document. The agent reports the full changeset on every addition so the user can amend or reorder it, and overlapping items that share files and intent fold into a single item. When the planning phase is declared complete - an explicit 'apply' - the changeset re-enters the Standard Workflow: applying means writing the change-request documents, grouped so that similar items share a record and the document count stays minimal. Each record then gets its implementation plan, the current implementation is re-analyzed, and the usual cycle proceeds in the recorded order.
 
 **Improvement**
 

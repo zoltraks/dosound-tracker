@@ -126,6 +126,9 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
 
       switch (event.key.toUpperCase()) {
         case 'ENTER':
+          if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) {
+            break;
+          }
           event.preventDefault();
           if (nameInputRef.current) {
             nameInputRef.current.focus();

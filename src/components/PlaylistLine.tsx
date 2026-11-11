@@ -55,7 +55,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
     track: 'A' | 'B' | 'C',
   ) => {
     const key = event.key.toUpperCase();
-    if (event.key === 'Enter' && event.ctrlKey) {
+    if (event.key === 'Enter' && event.altKey && !event.ctrlKey && !event.metaKey) {
       event.preventDefault();
       event.stopPropagation();
       onFinishEditingPattern({ refocusPlaylist: false });

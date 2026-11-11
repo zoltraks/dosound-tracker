@@ -343,3 +343,15 @@ The vitest include glob is `test/**/*.{test,spec}.{ts,tsx}`, so a throwaway prob
 **Fakes consumed through dependency arrays must be referentially stable**
 
 A fake object built fresh on every render - `fakeAudioContext()` returned inline, for example - re-runs the effect that depends on it. The hook tears down and recreates its worker or node, and messages dispatched in the test land on a dead instance. Hoist the fake to module scope or a `useRef` so the effect binds once and the test's port stays live.
+
+**jsdom lacks matchMedia and scrollIntoView**
+
+Panels with scroll or media-query effects - `PlaylistPanel` reads `window.matchMedia` in a scroll-into-view effect - crash a jsdom mount with `TypeError: window.matchMedia is not a function`. Stub `window.matchMedia` inside the test file's setup and return `matches: true` - the effect takes its early-return path and never reaches `scrollIntoView`, which jsdom does not implement either.
+
+**Computed-style probes must disable transitions**
+
+Section backgrounds animate over `transition: background-color 0.6s ease`, so a `getComputedStyle` read taken immediately after a hover or class change reports the animating value, not the target. Inject `* { transition: none !important; }` through `page.addStyleTag` in Playwright probes before reading state colors - or the probe asserts a mid-flight frame and reports false failures.
+
+**color-mix resolves to modern color notation in computed style**
+
+Chrome serializes `color-mix()` results as `color(srgb r g b)` or `oklab(...)`, not `rgb(r, g, b)` - a parser that only matches the rgb form returns no value and silently mis-asserts. Probe parsers must handle all three serializations when comparing theme colors.

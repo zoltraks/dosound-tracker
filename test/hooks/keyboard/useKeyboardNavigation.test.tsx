@@ -2,10 +2,11 @@ import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useKeyboardNavigation } from '../../../src/hooks/keyboard/useKeyboardNavigation.ts';
 
-const pressKey = (key: string, ctrl: boolean): KeyboardEvent => {
+const pressKey = (key: string, ctrl: boolean, alt: boolean = false): KeyboardEvent => {
   const event = new KeyboardEvent('keydown', {
     key,
     ctrlKey: ctrl,
+    altKey: alt,
     cancelable: true,
     bubbles: true,
   });
@@ -61,33 +62,59 @@ describe('useKeyboardNavigation', () => {
     expect(event.defaultPrevented).toBe(true);
   });
 
-  it('focuses tracks A, B and C with Ctrl+1, Ctrl+2 and Ctrl+3', () => {
+  it('focuses tracks A, B and C with Alt+1, Alt+2 and Alt+3', () => {
     const { result } = renderHook(() => useKeyboardNavigation());
 
     act(() => {
-      pressKey('1', true);
+      pressKey('1', false, true);
     });
     expect(result.current.activeSection).toBe('trackA');
     act(() => {
-      pressKey('2', true);
+      pressKey('2', false, true);
     });
     expect(result.current.activeSection).toBe('trackB');
     act(() => {
-      pressKey('3', true);
+      pressKey('3', false, true);
     });
     expect(result.current.activeSection).toBe('trackC');
   });
 
-  it('focuses a track when Cmd is used instead of Ctrl', () => {
+  it('does not focus a track when Ctrl or Cmd is used instead of Alt', () => {
     const { result } = renderHook(() => useKeyboardNavigation());
 
     act(() => {
+      pressKey('1', true);
       document.body.dispatchEvent(
         new KeyboardEvent('keydown', { key: '2', metaKey: true, bubbles: true, cancelable: true }),
       );
     });
 
-    expect(result.current.activeSection).toBe('trackB');
+    expect(result.current.activeSection).toBe('octave');
+  });
+
+  it('dispatches the playback digit shortcuts with Alt', () => {
+    const { result } = renderHook(() => useKeyboardNavigation());
+    const handlers = {
+      playLineFromStart: vi.fn(),
+      playLine: vi.fn(),
+      stopPlayback: vi.fn(),
+    };
+
+    act(() => {
+      result.current.setGlobalShortcut('playLineFromStart', handlers.playLineFromStart);
+      result.current.setGlobalShortcut('playLine', handlers.playLine);
+      result.current.setGlobalShortcut('stopPlayback', handlers.stopPlayback);
+    });
+
+    act(() => {
+      pressKey('5', false, true);
+      pressKey('6', false, true);
+      pressKey('8', false, true);
+    });
+
+    expect(handlers.playLineFromStart).toHaveBeenCalledTimes(1);
+    expect(handlers.playLine).toHaveBeenCalledTimes(1);
+    expect(handlers.stopPlayback).toHaveBeenCalledTimes(1);
   });
 
   it('toggles between the piano and the previous section with Ctrl+Space', () => {

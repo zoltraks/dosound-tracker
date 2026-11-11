@@ -213,6 +213,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       }
 
       const key = event.key.toUpperCase();
+      const bare = !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
 
       if (editingPattern !== '') {
         if (key === 'ENTER' || key === 'ESCAPE') {
@@ -274,6 +275,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           });
           break;
         case 'N':
+          if (!bare) break;
           event.preventDefault();
           onCreatePatternAt(currentLine, currentTrack);
           break;
@@ -294,6 +296,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         case 'D':
         case 'E':
         case 'F':
+          if (!bare) break;
           event.preventDefault();
           startEditingPattern(currentLine, currentTrack);
           if (key !== ' ') {
@@ -302,10 +305,12 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           break;
         case 'DELETE':
         case 'BACKSPACE':
+          if (!bare) break;
           event.preventDefault();
           updatePattern(currentLine, currentTrack, '--');
           break;
         case 'ENTER':
+          if (!bare) break;
           event.preventDefault();
           startEditingPattern(currentLine, currentTrack);
           break;

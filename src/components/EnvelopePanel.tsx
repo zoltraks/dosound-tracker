@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import type { NavigationSection } from '../constants/navigation.ts';
-import { ENVELOPE_LENGTH, NOISE_MAX } from '../constants/music.ts';
+import { ENVELOPE_LENGTH } from '../constants/music.ts';
 import {
   type EnvelopePanelType,
   applyEnvelopeDelta,
@@ -25,6 +25,7 @@ import {
   toggleSustainIndex,
 } from '../utils/envelope/envelopePanelUtils.ts';
 import { StorageKeys } from '../utils/storage/storageKeys.ts';
+import { isModifierChord } from '../utils/keyboard/keyboardShortcutUtils.ts';
 
 interface EnvelopePanelProps {
   type: EnvelopePanelType;
@@ -143,6 +144,35 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
         }
       }
 
+      const commitParsedValue = (parsed: number | null) => {
+        event.preventDefault();
+        if (onChange && parsed != null) {
+          const newData = [...envelopeData];
+          newData[currentPosition] = parsed;
+          setEnvelopeData(newData);
+          onChange(newData);
+        }
+        lastPositionRef.current = currentPosition;
+        setCurrentPosition(getNextEnvelopePosition(currentPosition));
+      };
+
+      const wantsCtrlDigit =
+        event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        !event.shiftKey &&
+        digitMatch !== null &&
+        (type === 'volume' || type === 'shift' || type === 'noise');
+      if (wantsCtrlDigit) {
+        event.stopPropagation();
+        commitParsedValue(parseEnvelopeHexValue(type, hexKey, false));
+        return;
+      }
+
+      if (isModifierChord(event)) {
+        return;
+      }
+
       if (key === 'ARROWLEFT') {
         event.preventDefault();
         lastPositionRef.current = currentPosition;
@@ -170,65 +200,17 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
           const nextPosition = getNextEnvelopePosition(currentPosition);
           setCurrentPosition(nextPosition);
         }
-      } else if (type === 'volume' && /^[0-9A-F]$/.test(hexKey)) {
-        event.preventDefault();
-        if (onChange) {
-          const parsed = parseEnvelopeHexValue(type, hexKey, event.shiftKey);
-          if (parsed != null) {
-            const newData = [...envelopeData];
-            newData[currentPosition] = parsed;
-            setEnvelopeData(newData);
-            onChange(newData);
-          }
-        }
-        lastPositionRef.current = currentPosition;
-        const nextPosition = getNextEnvelopePosition(currentPosition);
-        setCurrentPosition(nextPosition);
-      } else if (type === 'shift' && /^[0-9A-F]$/.test(hexKey)) {
-        event.preventDefault();
-        if (onChange) {
-          const parsed = parseEnvelopeHexValue(type, hexKey, event.shiftKey);
-          if (parsed != null) {
-            const newData = [...envelopeData];
-            newData[currentPosition] = parsed;
-            setEnvelopeData(newData);
-            onChange(newData);
-          }
-        }
-        lastPositionRef.current = currentPosition;
-        const nextPosition = getNextEnvelopePosition(currentPosition);
-        setCurrentPosition(nextPosition);
-      } else if (type === 'noise' && /^[0-9A-F]$/.test(hexKey)) {
-        event.preventDefault();
-        if (onChange) {
-          const parsed = parseEnvelopeHexValue(type, hexKey, event.shiftKey, NOISE_MAX);
-          if (parsed != null) {
-            const newData = [...envelopeData];
-            newData[currentPosition] = parsed;
-            setEnvelopeData(newData);
-            onChange(newData);
-          }
-        }
-        lastPositionRef.current = currentPosition;
-        const nextPosition = getNextEnvelopePosition(currentPosition);
-        setCurrentPosition(nextPosition);
+      } else if (
+        (type === 'volume' || type === 'shift' || type === 'noise') &&
+        /^[0-9A-F]$/.test(hexKey)
+      ) {
+        commitParsedValue(parseEnvelopeHexValue(type, hexKey, event.shiftKey));
       } else if (type === 'mode' && (key === 'T' || key === 'N' || key === 'B')) {
-        event.preventDefault();
-        if (onChange) {
-          const parsed = parseEnvelopeModeValue(key);
-          if (parsed != null) {
-            const newData = [...envelopeData];
-            newData[currentPosition] = parsed;
-            setEnvelopeData(newData);
-            onChange(newData);
-          }
-        }
-        lastPositionRef.current = currentPosition;
-        const nextPosition = getNextEnvelopePosition(currentPosition);
-        setCurrentPosition(nextPosition);
+        commitParsedValue(parseEnvelopeModeValue(key));
       } else if (
         (type === 'pitch' || type === 'noise' || type === 'shift' || type === 'volume') &&
-        event.key === ' '
+        event.key === ' ' &&
+        !event.shiftKey
       ) {
         event.preventDefault();
         if (onChange && lastPositionRef.current !== null) {
@@ -419,7 +401,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
               sustainIndex >= 0 &&
               sustainIndex < envelopeData.length && (
                 <div
-                  className="envelope-sustain-dot"
+                  className={`envelope-sustain-dot${getBarHeight(envelopeData[sustainIndex]) >= 50 ? '' : ' idle'}`}
                   style={{
                     left: `${((sustainIndex + 0.5) / envelopeData.length) * 100}%`,
                   }}
