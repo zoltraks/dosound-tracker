@@ -410,7 +410,7 @@ Each strategy selects a stream format. All strategies apply ZX0 compression with
 
 - **Simple**: RAW8 stream format (`0x08`). Flat dump of all 14 register values per frame, with no delimiters or differencing. The stream definition chunk includes a frame size of 14.
 - **Complex**: REG7 stream format (`0x07`). Differential format that writes only registers whose values changed since the previous frame, followed by a single-byte frame delimiter. The player zeroes all registers before replay starts, so the first frame only writes registers with non-zero values. The stream definition chunk omits the frame size field.
-- **Optimized**: REG7 stream format (`0x07`) with delay optimization. Consecutive frame delimiters are coalesced into the minimal set of `0x80`–`0xFF` bytes, with runs longer than 128 frames split across multiple delimiters.
+- **Tight**: REG7 stream format (`0x07`) with delay optimization. Consecutive frame delimiters are coalesced into the minimal set of `0x80`–`0xFF` bytes, with runs longer than 128 frames split across multiple delimiters.
 
 ### REG7 frame delimiter encoding
 

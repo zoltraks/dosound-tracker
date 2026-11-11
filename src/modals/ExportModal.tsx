@@ -1,6 +1,7 @@
 import React from 'react';
 import { DialogFrame } from '../components/DialogFrame.tsx';
-import type { ExportType, ExportStrategy } from '../constants/export.ts';
+import type { ExportType, ExportFormat, ExportStrategy } from '../constants/export.ts';
+import { buildExportStrategyNote, exportStrategyApplies } from '../utils/export/exportStrategy.ts';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -43,37 +44,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     onConfirm();
   };
 
-  const handleDumpClick = () => {
-    onExportDump();
-  };
-
-  const handleDataClick = () => {
-    onExportData();
-  };
-
-  const handleBinClick = () => {
-    onExportBin();
-  };
-
-  const handleVgmClick = () => {
-    onExportVgm();
-  };
-
-  const handleMaxClick = () => {
-    onExportMax();
-  };
-
-  const handleWavClick = () => {
-    onExportWav();
-  };
-
-  const handleModClick = () => {
-    onExportMod();
-  };
-
-  const handleMidiClick = () => {
-    onExportMidi();
-  };
+  const formatButtons: { format: ExportFormat; label: string; onExport: () => void }[] = [
+    { format: 'data', label: 'DATA', onExport: onExportData },
+    { format: 'dump', label: 'DUMP', onExport: onExportDump },
+    { format: 'bin', label: 'BIN', onExport: onExportBin },
+    { format: 'vgm', label: 'VGM', onExport: onExportVgm },
+    { format: 'max', label: 'MAX', onExport: onExportMax },
+    { format: 'wav', label: 'WAV', onExport: onExportWav },
+    { format: 'mod', label: 'MOD', onExport: onExportMod },
+    { format: 'midi', label: 'MIDI', onExport: onExportMidi },
+  ];
 
   return (
     <DialogFrame label="Export" className="export-modal">
@@ -155,71 +135,20 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               marginTop: '4px',
             }}
           >
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleDataClick}
-            >
-              DATA
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleDumpClick}
-            >
-              DUMP
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleBinClick}
-            >
-              BIN
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleVgmClick}
-            >
-              VGM
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleMaxClick}
-            >
-              MAX
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleWavClick}
-            >
-              WAV
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleModClick}
-            >
-              MOD
-            </button>
-            <button
-              type="button"
-              className="command-button"
-              style={{ width: '100%' }}
-              onClick={handleMidiClick}
-            >
-              MIDI
-            </button>
+            {formatButtons.map(({ format, label, onExport }) => (
+              <button
+                key={format}
+                type="button"
+                className="command-button"
+                style={{ width: '100%' }}
+                onClick={onExport}
+              >
+                {label}
+                {exportStrategyApplies(format, exportType) && <span aria-hidden="true">*</span>}
+              </button>
+            ))}
           </div>
+          <div className="export-strategy-note">{buildExportStrategyNote(exportType)}</div>
         </div>
       </div>
       <div className="modal-actions export-actions">

@@ -344,7 +344,7 @@ A collection mode that analyzes requests without implementing them. Each request
 
 **Improvement**
 
-`improvement` named as a mode on a work request is a working mode, not the review operation. After the described development operation finishes, the agent applies adjustments, fixes, and optimizations on the fly inside the same change set - small repairs do not route through the change-record lifecycle. Improvements that alter observable behavior or exceed the request's scope still split into their own record. This mode never triggers the Session Review on its own.
+`improvement` named as a mode on a work request is a working mode, not the review operation. While running the described operation, the agent applies the corrections and optimizations it discovers on the way inside the same change set - a stale doc line refreshed as it is touched, a small repair folded into the work, reusable knowledge folded back into the owning document rather than left in the session. Improvements that alter observable behavior or exceed the request's scope still split into their own record, and the mode never triggers the Session Review on its own - the named improvement operation is recorded under Self-Routines below. The mode applies improvements during the work itself; it reviews no history that precedes the request.
 
 **Intake Standby**
 
@@ -369,6 +369,8 @@ If no specialised file is appropriate, update `GUIDELINES.md`. Always confirm th
 ## Stage Gates
 
 Under the `stage-gates` extension, each change-lifecycle stage boundary is an approval checkpoint: the agent presents the stage's product and waits for approval before the next stage begins. Checkpoints are workflow checkpoints, not discretionary questions - a session-level instruction to minimize questions or continue without stopping does not waive them. The `autonomous` gate mode of a named version window is the recorded continuous-execution convention that skips per-stage checkpoints inside that window's run.
+
+Checkpoint prompts go through the host's interactive question mechanics - when the environment provides a structured ask-the-user tool, gate confirmations and clarification requests use it rather than a prose question appended to a report.
 
 ## Specification Audit
 
@@ -496,6 +498,10 @@ A value stored under a `StorageKeys` key outlives the release that renames it - 
 
 A report of cramped modal radios traced to a `line-height` change bundled inside a repository-wide Prettier commit - the formatting pass carried a real behaviour change. When chasing a visual regression, bisect the CSS rule's history before reworking markup, and treat bulk-format commits as suspects rather than neutral.
 
+**A restore request names a version's mechanism, not its look**
+
+A request to restore the export modal's earlier spacing was first "fixed" by reverting the format grid to its previous column count - but the 1.2.8 appearance actually came from `.modal-body`'s `line-height`, and the grid revert had to be undone and the real rule restored. When the user references a previous version's appearance, diff that version's actual rules against the current ones and restore the mechanism; approximating the symptom from the visible difference lands the wrong patch.
+
 **Static `?worker&url` imports emit the bundle, dynamic ones do not**
 
 Under the rolldown build, `await import('module.ts?worker&url')` compiles to a plain dynamic chunk import and leaves a dangling `./name.js` reference with no emitted file - a runtime 404 that typecheck, lint, and build all miss. The static `import url from 'module.ts?worker&url'` emits the self-contained worker bundle correctly. Verify the emitted file exists in `dist/js/` whenever a worklet route is added or moved.
@@ -564,6 +570,7 @@ The lesson file indexes rules that live in the owning documents - it does not ho
 
 - Propose each routed lesson briefly before writing - a lesson is a claim about what is durable, not a log of the session.
 - Edits to owning documents follow the change-record workflow - lesson records and session reports land directly.
+- A finding that advises a change to the implementation itself produces a change-request document rather than an immediate edit. Its window is decided against the pending records: check the upcoming `docs/change/<version>/` directories, place the record before any pending work it must precede and after any it depends on, and default to the next upcoming window when nothing in the pending set constrains it.
 - A correction that appears in two consecutive sessions graduates: it becomes a written rule in the owning document, not another lesson entry.
 
 **Housekeeping checklist**
@@ -574,6 +581,27 @@ Run periodically and before a version bump:
 - `scripts/release-check.sh` for record coverage, assessment completeness, and window-review presence.
 - Stale-figure sweep: README/toolchain numbers, hook counts, file sizes, standard versions (`diff -w -B` against the canonical library), and path references inside `docs/template/` against the real tree.
 - `git status --short` confirms only the intended change set remains.
+
+## Self-Routines
+
+The project's agent instructions repair, extend, and lighten themselves through three named routines. Each has its own trigger, scope, and artifact - they share one contract: an adjustment lands in its owning document in the same change set and never waits for a separate request to write it down.
+
+| Routine           | Trigger                                       | Scope                                                   | Artifact                                          |
+| ----------------- | --------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------- |
+| Self-improvement  | `improve dosound-tracker`, window-close step  | Session wounds become durable rules                     | `docs/lesson/` index + owning-document rules      |
+| Self-healing      | A named defect in agent behavior or machinery | One defect in instructions, scripts, or gates           | Minimal patch proven by external replay           |
+| Self-optimization | Window refactoring phase, improvement work    | Accumulated weight: duplication, stale or fat documents | Smaller tree and document set, identical behavior |
+
+**Self-improvement** is the Session Review loop recorded above: gather the session's wounds, verify real state, land each durable lesson in its owning document, and index it under `docs/lesson/`. It harvests - it does not repair code.
+
+**Self-healing** repairs a named misfire in the project's own machinery - a rule that misrouted a request, a gate that failed on a healthy tree, a script that broke, a document that contradicts the tree. The loop is evidence-gated:
+
+- **Evaluate** - classify the failure with a structured tag (`missed-rule`, `contradiction`, `stale-document`, `gate-misfire`), not prose impressions. A defect without a concrete failure is not a healing target.
+- **Patch** - produce a minimal correction in the owning document or tool. Never rewrite a document wholesale as a healing act.
+- **Replay** - verify the patch against an external verifier before promoting it: re-run the failing test, the verification loop, `scripts/release-check.sh`, or the recorded failing path. Internal reflection - "the patch looks right" - is not evidence. A patch with no measurable improvement is reported inconclusive, never promoted.
+- **Promote** - apply only the proven patch and record the restore path before editing. Behavior changes to shipped code route through the change-record lifecycle - healing fixes the machinery, not the product.
+
+**Self-optimization** removes weight without changing observable behavior: the per-window refactoring cycle (`docs/refactoring/<version>/` proposal and assessment), the Documentation Distillation convention below, deduplication past the Rule of Three, and the stale-figure sweeps in the housekeeping checklist. Optimization that would alter observable behavior is not optimization - it splits into a change record.
 
 ## Documentation Distillation
 
@@ -615,8 +643,8 @@ Replace each removed code block with a short reference such as `See src/synth/So
 Under the `session-reporting` extension:
 
 - A request to "print usage" writes the session usage report as markdown tables: agent identity (software name, version, and the language model when known), conversation summary (prompt requests, reply blocks, sentence and token counts, marking estimated values), context-window usage as one table whose rows are the session's operations in execution order, each carrying its fulfillment share, with remaining headroom reported alongside, fulfillment of each requested item against its delivered result, and the boundary state (uncommitted files, branch position, reserved decisions). The full report is emitted only when usage or context reporting is specifically requested - it never rides along on an unrelated response. Counters the host does not expose are omitted entirely - rows are never written with `unknown` or any other placeholder value. A descriptive context-usage note answers only a direct context question - the ordered table stays the default report shape.
-- Operation timing is armed by default. The agent captures the clock before starting an operation's work and ends the response with `<subject> took <m:ss>`. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table before the timing sentence. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
-- In verbose mode, when no usage report was specifically requested, the final response carries a compact context summary instead of the full report - a single small table with no report headings, a few rows covering the context share the last operation's tasks consumed and the time each took - plus a short description of the change, immediately before the timing line.
+- Operation timing is armed by default on every operation. The agent captures the clock before starting an operation's work and ends the response with a separate paragraph whose last sentence is `<description> operation took <m:ss>`, where `<description>` names the operation the request asked for. Naming `no timing` or `without timing` opts out for that request only. An operation longer than three minutes closes with a stage-breakdown table immediately before the timing sentence - `Stage`, `Elapsed`, `Share`, and `Note` columns, with stage times taken from command-reported values, recorded clock captures, or output timestamps and the note saying so when none exists. A backgrounded command running past about a minute reports a progress heartbeat roughly every 60 seconds - one short line with the current stage, items done of the total, and warnings seen.
+- Report modes are named on the request and are request-scoped - resolved from the request text, never from environment variables. `verbose`, `diagnostic`, and `timing` arm the operations table, the compact context summary: when no usage report was specifically requested, the response closes with a single small table with no report headings placed above the timing paragraph - one row per operation the session has run, with `Operation`, `Time`, and `Context` columns. `Context` is the change in context-window fulfillment the operation caused - the best measure available, an estimate when the environment reports none - and a counter the host does not expose is omitted entirely. In verbose mode a short description of the change still accompanies the table before the timing line. `informational` adds nothing beyond the timing paragraph. The driving agent and model are named once per session - on the first mode report, or whenever a request asks for them - as a separate paragraph outside the report block.
 
 **Context Management**
 

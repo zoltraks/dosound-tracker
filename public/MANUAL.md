@@ -889,7 +889,9 @@ Use the UI commands corresponding to:
 - **EXPORT** – opens the Export dialog where you pick:
   - What: **Song**, **Pattern (current playlist position)**, or **Instrument (current)**.
   - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, or **TIGHT DUMP**.
-  - Format: **DATA**, **DUMP**, **BIN**, **VGM**, **MAX**, **WAV**.
+  - Format: **DATA**, **DUMP**, **BIN**, **VGM**, **MAX**, **WAV**, **MOD**, **MIDI**.
+
+The strategy matters only for the formats marked `*` in the dialog: under the song and pattern scopes it drives DATA, BIN, VGM, and MAX (for VGM only **TIGHT DUMP** differs, and for MAX it selects the stream format), while under the instrument scope only MAX uses it. DUMP, WAV, MOD, and MIDI always ignore the strategy selection.
 
 Then:
 

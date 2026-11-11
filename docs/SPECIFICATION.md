@@ -241,7 +241,7 @@ DOSOUND Tracker supports eight export formats. Each format produces a downloadab
 
 **MIDI** produces a Standard MIDI File type 1 at note level for DAW import. One tracker row maps to 24 ticks at a 96 PPQ division, so the tempo meta event encodes the song's speed and frame rate directly (speed 6 at 50 Hz is 125 BPM). Each tracker channel becomes one SMF track on its own MIDI channel unless `instrument.midi.channel` overrides it; `instrument.midi.program` emits program changes, and the volume column arrives as note velocity plus CC7 on held notes. Envelope, noise, pitch, and sustain semantics have no MIDI representation and are reported as dropped in the result's warning list. See src/exports/midi.ts.
 
-Export scope can target the full song, a single pattern, or a single instrument. The `ExportType` and `ExportStrategy` (simple, complex, tight) unions are typed in src/constants/export.ts - the eight formats dispatch through the export modal's per-format handlers. MOD and MIDI ignore the strategy selector since neither format defines strategies.
+Export scope can target the full song, a single pattern, or a single instrument. The `ExportType`, `ExportFormat`, and `ExportStrategy` (simple, complex, tight) unions are typed in src/constants/export.ts - the eight formats dispatch through the export modal's per-format handlers. The strategy's relevance is per format and per scope: under the song and pattern scopes DATA, BIN, VGM, and MAX consume it - for VGM only `tight` differs from the other two, and for MAX it selects the stream format - while under the instrument scope only MAX consumes it, since the other instrument export paths take no strategy parameter. DUMP, WAV, MOD, and MIDI ignore the selector under every scope. The relevance map lives in src/utils/export/exportStrategy.ts, and the export modal marks each strategy-honoring format button with `*` under the current scope and captions the marker under the format grid.
 
 ## Constants
 
@@ -454,7 +454,7 @@ Examples:
 
 ### Export Output Stability
 
-Export modules in `src/exports/` must produce byte-identical output for the same input across refactoring changes. The test fixtures in `test/fixtures/` and the export test suite (`exportVgm.test.ts`, `exportMax.test.ts`, `exportWav.test.ts`, `exportAssemblyOptimized.test.ts`) verify zero diff in export output. Any change to export output is a behaviour change, not a refactoring, and must be routed through `docs/change/<version>/`.
+Export modules in `src/exports/` must produce byte-identical output for the same input across refactoring changes. The test fixtures in `test/fixtures/` and the export test suite (`exportVgm.test.ts`, `exportMax.test.ts`, `exportWav.test.ts`, `exportAssemblyTight.test.ts`) verify zero diff in export output. Any change to export output is a behaviour change, not a refactoring, and must be routed through `docs/change/<version>/`.
 
 ### YM2149 Emulation Stability
 

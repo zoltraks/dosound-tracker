@@ -65,3 +65,19 @@ Observed symptom: three user-directed changes - the MIDI button label, the workl
 Root cause: the Standard Workflow already requires the record before the edit for every modification request, but request size was silently treated as an exemption - "small" user requests went straight to code.
 
 Preventing rule: see "Standard Workflow" in `WORKFLOW.md` and "Update documentation first" in `GUIDELINES.md`.
+
+### A restore request names a version's mechanism, not its look
+
+Observed symptom: asked to restore the export modal's earlier spacing, the first patch reverted the format grid to the old six-column layout - the user had to correct twice before the real 1.2.8 mechanism (a `.modal-body` `line-height` lost inside a formatting commit) was found and restored.
+
+Root cause: the visible symptom (wider buttons) was patched by approximating the old look instead of diffing the referenced version's actual rules against the current ones - the referenced version's mechanism, not the symptom, is the specification.
+
+Preventing rule: see "A restore request names a version's mechanism, not its look" in `WORKFLOW.md`.
+
+### Improvement findings place change records by dependency, not by convenience
+
+Observed symptom: the session review was asked to file implementation findings into future windows - the strategy-relevance record landed in 1.5.4 as independent work, while the stereo-controls return went to 1.5.6 beside the dual-chip record it pairs with, rather than both piling into the nearest window.
+
+Root cause: without a placement rule, review findings default to the next window regardless of what the pending records already claim - a finding that belongs with later groundwork creates orphaned work or ordering conflicts.
+
+Preventing rule: see "Apply and verify" under Session Review in `WORKFLOW.md`.

@@ -39,8 +39,7 @@ Examples:
 
 **Git Commits**
 
-- Do not commit unless specifically told to make commits automatically.
-- The AI assistant must never commit changes. The user commits manually when ready.
+- The AI assistant must never commit changes - the user commits manually when ready.
 
 **Version Bumps**
 
@@ -217,6 +216,7 @@ These rules apply to every change made in this project. Follow them in order - d
 **Create or confirm the plan**
 
 - When asked to perform a change, first create a change record and implementation plan - location, naming, and version-directory rules are owned by `WORKFLOW.md` under Implementation Planning. The record precedes the code no matter how small the request, and a refactoring proposal precedes the first structural edit.
+- The plan is composed and presented for approval in the session - the durable plan document lands in `docs/plan/<version>/` only when the user explicitly requests it or a named window run requires it, per the Document Directory Access rules in `WORKFLOW.md`.
 - If a plan already exists, ensure it is consistent with the current request.
 - Present the plan and ask for review before proceeding when one does not already exist.
 - Do not start any implementation work until the plan is approved.
@@ -255,9 +255,9 @@ The work is finished only when the loop passes clean, the implementation matches
 
 After the change is complete and the verification loop passes, propose a commit message for review, following the Commit Messages rules above. Do not commit - the user commits manually.
 
-## Session Review
+## Session Review and Self-Routines
 
-See `WORKFLOW.md` for the session-review convention - trigger, procedure, and lesson routing.
+See `WORKFLOW.md` for the session-review convention - trigger, procedure, and lesson routing - and the Self-Routines section for the three named routines: self-improvement (the session review), self-healing (evidence-gated defect repair), and self-optimization (behavior-preserving weight removal).
 
 ## Memorisation Convention
 

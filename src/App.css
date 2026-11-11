@@ -1176,6 +1176,12 @@ body {
   line-height: 1.2rem;
 }
 
+.export-strategy-note {
+  color: var(--text-dim);
+  font-size: 9px;
+  margin-top: 4px;
+}
+
 /* MIDI configuration modal (90% of the screen) */
 .modal-dialog.midi-modal {
   width: 90vw;

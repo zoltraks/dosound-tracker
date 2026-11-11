@@ -21,3 +21,7 @@ The following items were previously listed as future work and have since been im
 - **Dark and light theme**: toggle persisted to localStorage.
 - **Demo song**: built-in demo loadable via DEMO button.
 - **Built-in manual and changelog viewer**: in-app access to MANUAL.md and CHANGELOG.md.
+
+## Candidates
+
+- **`useExportOperations` hook extraction**: the export handlers still live inside `useFileOperations.ts` even after the shared scope/summary/error helpers moved to `utils/export/exportSummary.ts`. A dedicated export hook is the natural next decomposition step - noted in `docs/refactoring/1.5.3/ASSESSMENT.md` as a follow-up candidate.
