@@ -200,6 +200,7 @@ When asked to describe a change (feature, fix, refactor, chore):
 - When the request binds the change to a record in a different version group - a declared dependency or integration target - the record joins the dependency's group instead of the `package.json` version
 - Name the document using kebab-case to briefly describe the change (for example `midi-support.md`, `export-dump-fix.md`)
 - The user may want to relocate the file after creation
+- Change records are reviewed by experienced designers - keep each record precise, verified against the current tree, and free of drafting artifacts
 
 ## Applying a Change
 

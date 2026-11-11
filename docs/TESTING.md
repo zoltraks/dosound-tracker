@@ -277,6 +277,7 @@ npx playwright test --debug
 Tests are organised under `test/` by domain:
 
 - `test/components/` — React component tests
+- `test/constants/` — constants tests
 - `test/electron/` — main-process module tests
 - `test/exports/` — export format module tests, mirroring `src/exports/`
 - `test/hooks/` — custom hook tests
@@ -300,7 +301,7 @@ Remaining coverage gaps that may be addressed in future work:
 
 - `src/components/` — several components still lack dedicated tests
 - `src/hooks/` — a number of hooks have thin branch coverage
-- `src/modals/` — `AboutModal`, `DownloadModal`, `MarkdownModal`, and `MidiModal` lack dedicated tests
+- `src/modals/` — `AboutModal` and `DownloadModal` lack dedicated tests
 
 `npm run test:coverage` passes the configured 80% thresholds and is an enforceable gate.
 

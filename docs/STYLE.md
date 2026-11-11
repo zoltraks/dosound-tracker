@@ -21,6 +21,7 @@ documents at the repository root and under `public/`.
 - **Headings**: avoid using colons in headings.
 - **Section headers**: bold text used as a section header places the header text on its own line with no trailing period, followed by one blank line, then the content on the next line.
 - **Fragment wording**: use "fragment", not "excerpt", for code examples.
+- **Volatile figures**: do not record exact line numbers, byte sizes, or item counts that drift with routine edits - describe scale in relative terms and let the referenced source file carry the number.
 
 ## Internal Document References
 
