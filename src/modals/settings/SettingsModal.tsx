@@ -10,7 +10,11 @@ import {
   type ThemeVariant,
 } from '../../types/settings.ts';
 import type { TrackPasteMode } from '../../utils/track/trackClipboard.ts';
-import { SOUND_ENGINE_IDS, SOUND_ENGINE_LABELS, type SoundEngineId } from '../../constants/sound.ts';
+import {
+  SOUND_ENGINE_IDS,
+  SOUND_ENGINE_LABELS,
+  type SoundEngineId,
+} from '../../constants/sound.ts';
 import {
   buildSettingsYaml,
   parseSettingsFromYaml,

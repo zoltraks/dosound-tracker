@@ -30,7 +30,9 @@ const collectMixedDirectories = (rootName: string): string[] => {
       .map((entry) => entry.name)
       .filter((name) => dir !== root || !exemptions.has(name));
     if (files.length > 0) {
-      violations.push(`${path.relative(ROOT_DIR, dir)} holds files beside subdirectories: ${files.join(', ')}`);
+      violations.push(
+        `${path.relative(ROOT_DIR, dir)} holds files beside subdirectories: ${files.join(', ')}`,
+      );
     }
     for (const subdir of subdirs) {
       walk(path.join(dir, subdir.name));

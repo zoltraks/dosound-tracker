@@ -11,6 +11,9 @@ vi.mock('../../../src/utils/storage/persistenceMirror.ts', () => ({
   removeMirroredSnapshot: vi.fn(),
   clearMirroredSnapshots: vi.fn(),
   requestPersistentStorage: vi.fn(),
+  beginResetEpoch: vi.fn(),
+  getResetEpoch: vi.fn(() => 0),
+  isResetInProgress: vi.fn(() => false),
 }));
 
 type HookResult = ReturnType<typeof useDataManagement>;

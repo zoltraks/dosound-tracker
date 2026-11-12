@@ -1,6 +1,11 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import { MIN_OCTAVE, MAX_OCTAVE, NOTE_FREQUENCIES, KEYBOARD_TO_NOTE } from '../../constants/music.ts';
+import {
+  MIN_OCTAVE,
+  MAX_OCTAVE,
+  NOTE_FREQUENCIES,
+  KEYBOARD_TO_NOTE,
+} from '../../constants/music.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';

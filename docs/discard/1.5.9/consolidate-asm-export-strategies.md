@@ -2,6 +2,13 @@
 
 **Type:** Refactoring
 
+**Status:** Abandoned
+
+**Abandonment reason:** The project owner discarded the record at the
+plan gate during the 1.5.9 window run. The strategy branches in
+`src/exports/asm.ts` stay as separate emission paths - consolidation
+is not wanted work in this window.
+
 ## Summary
 
 | Field         | Value                                                                 |

@@ -2,7 +2,12 @@ import type { MutableRefObject } from 'react';
 import type { Instrument, Song } from '../../synth/SoundDriver.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { logger } from '../../utils/log/logger.ts';
-import { mirrorSnapshot, type MirrorKey } from '../../utils/storage/persistenceMirror.ts';
+import {
+  mirrorSnapshot,
+  getResetEpoch,
+  isResetInProgress,
+  type MirrorKey,
+} from '../../utils/storage/persistenceMirror.ts';
 import { type EditSnapshot, type SerializedEditHistory } from '../../utils/song/editHistory.ts';
 
 export type ScheduledSaveHandle = { kind: 'timeout'; id: number } | { kind: 'idle'; id: number };
@@ -33,6 +38,10 @@ export function scheduleJsonSave<K extends JsonStorageKey>(
   timeoutRef: MutableRefObject<ScheduledSaveHandle | null>,
   delayMs: number = 300,
 ): void {
+  if (isResetInProgress()) {
+    return;
+  }
+  const epoch = getResetEpoch();
   const win = window as unknown as {
     requestIdleCallback?: (cb: () => void, options?: { timeout: number }) => number;
     cancelIdleCallback?: (handle: number) => void;
@@ -51,6 +60,11 @@ export function scheduleJsonSave<K extends JsonStorageKey>(
   }
 
   const performSave = () => {
+    // A save scheduled before RESET captured the old generation - it must
+    // not rewrite storage the reset just cleared.
+    if (epoch !== getResetEpoch()) {
+      return;
+    }
     try {
       localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {

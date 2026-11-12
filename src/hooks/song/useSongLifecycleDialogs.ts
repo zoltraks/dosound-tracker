@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useState } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import { clearMirroredSnapshots } from '../../utils/storage/persistenceMirror.ts';
+import { clearMirroredSnapshots, beginResetEpoch } from '../../utils/storage/persistenceMirror.ts';
 import { clearApplicationStorage } from '../../utils/storage/applicationStorage.ts';
 import { logger } from '../../utils/log/logger.ts';
 
@@ -17,6 +17,7 @@ export interface UseSongLifecycleDialogsParams {
   isSongDirty: boolean;
   loadSongFromText: (text: string) => void;
   setSongError: (value: string) => void;
+  reloadPage?: () => void;
 }
 
 export interface UseSongLifecycleDialogsResult {
@@ -44,6 +45,7 @@ export function useSongLifecycleDialogs({
   isSongDirty,
   loadSongFromText,
   setSongError,
+  reloadPage = () => window.location.reload(),
 }: UseSongLifecycleDialogsParams): UseSongLifecycleDialogsResult {
   const [pendingNewSongAction, setPendingNewSongAction] = useState<'new-song' | 'demo-song'>(
     'new-song',
@@ -88,6 +90,7 @@ export function useSongLifecycleDialogs({
   }, []);
 
   const handleConfirmReset = useCallback(() => {
+    beginResetEpoch();
     try {
       clearApplicationStorage();
     } catch {
@@ -96,10 +99,17 @@ export function useSongLifecycleDialogs({
     setChannelMutes([false, false, false]);
     setCurrentOctave(3);
     // Reload only after the mirror clear commits so reset data cannot resurrect
-    void clearMirroredSnapshots().finally(() => {
-      window.location.reload();
+    void clearMirroredSnapshots().then((cleared) => {
+      if (cleared) {
+        reloadPage();
+        return;
+      }
+      setIsResetConfirmOpen(false);
+      setSongError(
+        'Reset failed - saved data could not be fully cleared. Reload the page and try again.',
+      );
     });
-  }, [setChannelMutes, setCurrentOctave]);
+  }, [setChannelMutes, setCurrentOctave, setSongError, setIsResetConfirmOpen, reloadPage]);
 
   const handleCancelReset = useCallback(() => {
     setIsResetConfirmOpen(false);

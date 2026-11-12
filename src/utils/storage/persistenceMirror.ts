@@ -12,6 +12,34 @@ const DATABASE_VERSION = 1;
 
 let databasePromise: Promise<IDBDatabase | null> | null = null;
 
+// The reset generation invalidates work queued before a RESET: writes that
+// captured an older epoch are skipped, and while a reset is pending new
+// saves and mirror writes are refused entirely until the reload lands.
+let resetEpoch = 0;
+let resetPending = false;
+
+export const beginResetEpoch = (): void => {
+  resetEpoch += 1;
+  resetPending = true;
+};
+
+export const getResetEpoch = (): number => resetEpoch;
+
+export const isResetInProgress = (): boolean => resetPending;
+
+// Mirror writes serialize through this tail so a clear issued at RESET
+// cannot be overtaken by a put that was queued earlier.
+let writeQueue: Promise<unknown> = Promise.resolve();
+
+const enqueueWrite = <T>(work: () => Promise<T>): Promise<T> => {
+  const next = writeQueue.then(work);
+  writeQueue = next.then(
+    () => undefined,
+    () => undefined,
+  );
+  return next;
+};
+
 const openDatabase = (): Promise<IDBDatabase | null> => {
   if (databasePromise) {
     return databasePromise;
@@ -54,64 +82,81 @@ const openDatabase = (): Promise<IDBDatabase | null> => {
   return databasePromise;
 };
 
+type StoreResult = { ok: boolean; result: unknown };
+
 const withStore = (
   mode: IDBTransactionMode,
   action: (store: IDBObjectStore) => IDBRequest | void,
-): Promise<unknown> =>
+): Promise<StoreResult> =>
   openDatabase().then(
     (db) =>
-      new Promise((resolve) => {
+      new Promise<StoreResult>((resolve) => {
         if (!db) {
-          resolve(null);
+          resolve({ ok: true, result: null });
           return;
         }
         try {
           const transaction = db.transaction(STORE_NAME, mode);
+          let actionResult: unknown = null;
+          transaction.oncomplete = () => {
+            resolve({ ok: true, result: actionResult });
+          };
           transaction.onerror = () => {
             logger.warn('Mirror transaction failed', transaction.error);
+            resolve({ ok: false, result: null });
+          };
+          transaction.onabort = () => {
+            logger.warn('Mirror transaction aborted', transaction.error);
+            resolve({ ok: false, result: null });
           };
           const request = action(transaction.objectStore(STORE_NAME));
           if (request) {
             request.onsuccess = () => {
-              resolve(request.result);
+              actionResult = request.result;
             };
             request.onerror = () => {
               logger.warn('Mirror request failed', request.error);
-              resolve(null);
-            };
-          } else {
-            transaction.oncomplete = () => {
-              resolve(null);
             };
           }
         } catch (error) {
           logger.warn('Mirror access failed', error);
-          resolve(null);
+          resolve({ ok: false, result: null });
         }
       }),
   );
 
 export const mirrorSnapshot = (key: MirrorKey, value: unknown): void => {
-  void withStore('readwrite', (store) => store.put(value, key)).catch((error) =>
-    logger.warn('Failed to mirror snapshot', key, error),
-  );
+  if (resetPending) {
+    return;
+  }
+  const epoch = resetEpoch;
+  void enqueueWrite(() =>
+    withStore('readwrite', (store) => (epoch === resetEpoch ? store.put(value, key) : undefined)),
+  ).catch((error) => logger.warn('Failed to mirror snapshot', key, error));
 };
 
 export const readMirroredSnapshot = async <T>(key: MirrorKey): Promise<T | null> => {
-  const result = await withStore('readonly', (store) => store.get(key));
+  const { result } = await withStore('readonly', (store) => store.get(key));
   return (result as T | undefined) ?? null;
 };
 
 export const removeMirroredSnapshot = (key: MirrorKey): void => {
-  void withStore('readwrite', (store) => store.delete(key)).catch((error) =>
-    logger.warn('Failed to remove mirrored snapshot', key, error),
-  );
+  if (resetPending) {
+    return;
+  }
+  const epoch = resetEpoch;
+  void enqueueWrite(() =>
+    withStore('readwrite', (store) => (epoch === resetEpoch ? store.delete(key) : undefined)),
+  ).catch((error) => logger.warn('Failed to remove mirrored snapshot', key, error));
 };
 
-export const clearMirroredSnapshots = (): Promise<void> =>
-  withStore('readwrite', (store) => store.clear())
-    .then(() => undefined)
-    .catch((error) => logger.warn('Failed to clear mirrored snapshots', error));
+export const clearMirroredSnapshots = (): Promise<boolean> =>
+  enqueueWrite(() => withStore('readwrite', (store) => store.clear()).then(({ ok }) => ok)).catch(
+    (error) => {
+      logger.warn('Failed to clear mirrored snapshots', error);
+      return false;
+    },
+  );
 
 export const requestPersistentStorage = (): void => {
   try {

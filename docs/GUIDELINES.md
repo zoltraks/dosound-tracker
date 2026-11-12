@@ -104,6 +104,7 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
 - Mode selection: a work request that names no mode asks the recorded mode-selection question in `WORKFLOW.md` - `Usage (default)`, `Development (verbose + development)`, `Improvement mode (verbose + development + improvement)`, or `Wait (skip for now)` - and a request that names its mode skips the question.
 - Plan confirmation: the confirmation step in `WORKFLOW.md` asks through the host's interactive question mechanics - `Implement`, `Adjust`, or `Discard` - matching the mode-selection convention.
+- Question mechanics: every pending question and option surface - gate confirmations, window-stage continuation, clarifications - is asked through the host's interactive question mechanics, never appended to a reply in prose.
 - A window review or audit report that was never produced for a released version is abandoned, not repaired - change records that propose retroactively writing past-version reports are discarded.
 - Community files (`CONTRIBUTING.md`, `SECURITY.md`) were evaluated and declined - none are planned.
 - A CI pipeline (`.github/workflows/`) was evaluated and declined - the verification loop is enforced locally and no CI configuration is planned.

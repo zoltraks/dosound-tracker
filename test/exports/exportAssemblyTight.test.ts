@@ -306,7 +306,9 @@ describe('exportToAssembly tight strategy', () => {
   });
 
   it('shrinks the bundled demo song relative to complex', () => {
-    const bundled = parseSongFromYaml(readFileSync('test/fixtures/song/bundled-song.yaml', 'utf-8'));
+    const bundled = parseSongFromYaml(
+      readFileSync('test/fixtures/song/bundled-song.yaml', 'utf-8'),
+    );
     try {
       const tightBytes = commandBytes(exportToAssembly(bundled, 'tight')).length;
       const complexBytes = commandBytes(exportToAssembly(bundled, 'complex')).length;

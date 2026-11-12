@@ -18,8 +18,20 @@ type FakeRequest = {
   onblocked: (() => void) | null;
 };
 
+type FakeTransaction = {
+  objectStore: () => unknown;
+  onerror: (() => void) | null;
+  onabort: (() => void) | null;
+  oncomplete: (() => void) | null;
+};
+
+type FakeIndexedDb = ReturnType<typeof createFakeIndexedDb>;
+
 const createFakeIndexedDb = () => {
   const stores = new Map<string, Map<string, unknown>>();
+  const heldTransactions: FakeTransaction[] = [];
+  let holdNextTransaction = false;
+  let failNextTransaction: 'abort' | 'error' | null = null;
 
   const blankRequest = (): FakeRequest => ({
     onsuccess: null,
@@ -68,11 +80,33 @@ const createFakeIndexedDb = () => {
   };
 
   const db = {
-    transaction: (name: string) => ({
-      objectStore: () => objectStore(name),
-      onerror: null as null | (() => void),
-      oncomplete: null as null | (() => void),
-    }),
+    transaction: (name: string) => {
+      const transaction: FakeTransaction = {
+        objectStore: () => objectStore(name),
+        onerror: null,
+        onabort: null,
+        oncomplete: null,
+      };
+      if (holdNextTransaction) {
+        holdNextTransaction = false;
+        heldTransactions.push(transaction);
+        return transaction;
+      }
+      const failure = failNextTransaction;
+      failNextTransaction = null;
+      // The request handlers run on microtasks - the commit lands on the
+      // following task like a real transaction.
+      setTimeout(() => {
+        if (failure === 'abort') {
+          transaction.onabort?.();
+        } else if (failure === 'error') {
+          transaction.onerror?.();
+        } else {
+          transaction.oncomplete?.();
+        }
+      }, 0);
+      return transaction;
+    },
     createObjectStore: (name: string) => {
       if (!stores.has(name)) {
         stores.set(name, new Map());
@@ -90,6 +124,13 @@ const createFakeIndexedDb = () => {
       });
       return request;
     },
+    holdNext: () => {
+      holdNextTransaction = true;
+    },
+    failNext: (mode: 'abort' | 'error') => {
+      failNextTransaction = mode;
+    },
+    heldTransactions,
   };
 };
 
@@ -97,6 +138,12 @@ const flush = () =>
   new Promise<void>((resolve) => {
     setTimeout(resolve, 0);
   });
+
+const importFreshMirror = async (idb: unknown) => {
+  vi.stubGlobal('indexedDB', idb);
+  vi.resetModules();
+  return import('../../../src/utils/storage/persistenceMirror.ts');
+};
 
 describe('persistenceMirror', () => {
   afterEach(() => {
@@ -124,9 +171,7 @@ describe('persistenceMirror', () => {
   });
 
   it('round-trips a snapshot through the mirror store', async () => {
-    vi.stubGlobal('indexedDB', createFakeIndexedDb());
-    vi.resetModules();
-    const mirror = await import('../../../src/utils/storage/persistenceMirror.ts');
+    const mirror = await importFreshMirror(createFakeIndexedDb());
     try {
       mirror.mirrorSnapshot('song', { title: 'Mirrored Song' });
       await flush();
@@ -141,11 +186,73 @@ describe('persistenceMirror', () => {
       mirror.removeMirroredSnapshot('instrument');
       await flush();
       await expect(mirror.readMirroredSnapshot('instrument')).resolves.toBeNull();
-      mirror.clearMirroredSnapshots();
+      await expect(mirror.clearMirroredSnapshots()).resolves.toBe(true);
       await flush();
       await expect(mirror.readMirroredSnapshot('song')).resolves.toBeNull();
     } catch (error) {
       console.log('round-trip mismatch');
+      throw error;
+    }
+  });
+
+  it('resolves the clear only after the transaction commits', async () => {
+    const idb: FakeIndexedDb = createFakeIndexedDb();
+    const mirror = await importFreshMirror(idb);
+    try {
+      idb.holdNext();
+      let settled = false;
+      const clearing = mirror.clearMirroredSnapshots().then((result) => {
+        settled = true;
+        return result;
+      });
+      await flush();
+      if (settled) {
+        throw new Error('clear resolved before the transaction committed');
+      }
+      idb.heldTransactions[0]?.oncomplete?.();
+      await expect(clearing).resolves.toBe(true);
+    } catch (error) {
+      console.log('commit-ordering mismatch');
+      throw error;
+    }
+  });
+
+  it('reports a failed clear when the transaction aborts', async () => {
+    const idb: FakeIndexedDb = createFakeIndexedDb();
+    const mirror = await importFreshMirror(idb);
+    try {
+      idb.failNext('abort');
+      await expect(mirror.clearMirroredSnapshots()).resolves.toBe(false);
+    } catch (error) {
+      console.log('abort mismatch');
+      throw error;
+    }
+  });
+
+  it('drops a queued write captured before the reset epoch', async () => {
+    const mirror = await importFreshMirror(createFakeIndexedDb());
+    try {
+      mirror.mirrorSnapshot('song', { title: 'Stale' });
+      mirror.beginResetEpoch();
+      await expect(mirror.clearMirroredSnapshots()).resolves.toBe(true);
+      await flush();
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toBeNull();
+    } catch (error) {
+      console.log('stale-write mismatch');
+      throw error;
+    }
+  });
+
+  it('refuses mirror writes while a reset is pending', async () => {
+    const mirror = await importFreshMirror(createFakeIndexedDb());
+    try {
+      mirror.beginResetEpoch();
+      mirror.mirrorSnapshot('song', { title: 'Post Reset' });
+      await expect(mirror.clearMirroredSnapshots()).resolves.toBe(true);
+      await flush();
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toBeNull();
+    } catch (error) {
+      console.log('pending-reset mismatch');
       throw error;
     }
   });

@@ -262,7 +262,9 @@ Archived documents are historical, not active rules - the Document Directory Acc
 
 The repository adopts the `version-window` extension and the `audit-driven-development` convention. A named window request - "run the SDLC for `<version>`" or "process the `<version>` window" - executes the whole window as one operation instead of one change request at a time.
 
-The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline - `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result. An unspecified mode follows the recorded default: `human-in-the-loop`.
+The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline - `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result, and again at each stage transition - records to refactoring, refactoring to review, review to bump. An unspecified mode follows the recorded default: `human-in-the-loop`.
+
+Every pending question and option surface in a window run - gate confirmations, stage-continuation prompts, and clarification requests - is asked through the host's interactive question mechanics, never appended to a reply in prose.
 
 **Intake**
 
@@ -337,7 +339,7 @@ The repository records a scheme of named work modes governing how a modification
 
 **Mode Selection**
 
-A work request names its mode or the agent asks before proceeding - the selection is resolved per request and never assumed. A request that names no mode - a bare `work on dosound-tracker`, or any described change carrying no mode - presents the recorded options through the host's interactive question mechanics:
+A work request with no task follows Intake Standby first. Once the user describes a task, use the mode they named or present the recorded options through the host's interactive question mechanics. Resolve the mode per request.
 
 | Option                                                   | Resolves to                                        |
 | -------------------------------------------------------- | -------------------------------------------------- |
@@ -380,7 +382,7 @@ A collection mode that analyzes requests without implementing them. Each request
 
 **Intake Standby**
 
-A work request that names modes but describes no operation is intake standby - the agent reads the guidelines set, reports the boundary state, and waits for the described change rather than editing on assumption.
+When a request such as `work on dosound-tracker` describes no task, read the intake guidelines and always ask the user what they want done. Ask even if they already named a work mode. Wait for the task before selecting any missing mode or starting changes. If the user explicitly selects `Wait (skip for now)`, remain on standby until their next instruction.
 
 ## Memorisation Convention
 

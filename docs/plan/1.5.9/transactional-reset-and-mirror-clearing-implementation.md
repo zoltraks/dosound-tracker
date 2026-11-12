@@ -111,3 +111,27 @@ state; failed clear blocks the reload.
   `npm test` - all clean.
 - Manual: populated snapshot, RESET, reload - no stale state; playback
   running during RESET stays stable until reload.
+
+## Refinements
+
+Recorded as the implementation landed.
+
+- Mirror writes serialize through a shared `writeQueue` tail promise in
+  `persistenceMirror.ts`, so a clear issued at RESET cannot be overtaken by a
+  put queued earlier - the plan named a generation alone; ordering plus
+  generation together is what closes the race.
+- `withStore` now resolves every operation on `IDBTransaction.oncomplete`
+  carrying the request result, and reports failure on `onerror`/`onabort`
+  through a `{ ok, result }` shape - `clearMirroredSnapshots()` returns
+  `Promise<boolean>` instead of `Promise<void>`.
+- The generation lives in `persistenceMirror.ts` as `resetEpoch` plus a
+  `resetPending` flag (`beginResetEpoch`, `getResetEpoch`,
+  `isResetInProgress`): scheduled saves are refused during a pending reset
+  and skipped when their captured epoch is stale, and mirror writes carry
+  the same two checks so a post-reset put cannot resurrect cleared data.
+- The reload became an injectable `reloadPage` param on
+  `useSongLifecycleDialogs` because jsdom's `location.reload` is
+  non-configurable - the default still calls `window.location.reload()`.
+- The fake IndexedDB harness gained controllable transactions (held,
+  abort, error modes) so the clear's commit ordering is asserted
+  deterministically instead of by timing.

@@ -80,3 +80,11 @@ gate does.
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`,
   `npm test` - all clean.
 - `test -e dist/LICENSE` passes; unpacked macOS app contains the notice.
+
+## Refinements
+
+Recorded as the implementation landed.
+
+- The packaged ASAR carries the notice twice: `/LICENSE` from the
+  `build.files` entry and `/dist/LICENSE` from the `public/LICENSE` copy -
+  a harmless duplication that covers both the app root and the bundle.

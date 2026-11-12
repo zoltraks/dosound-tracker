@@ -1,5 +1,20 @@
 # Changes
 
+## Version 1.6.0
+
+Reset protection hardens so cleared data cannot revive, and the project's
+MIT license notice now ships with every distribution.
+
+- **Reset safety**: NEW SONG and data resets wait for the storage clear
+  to commit before reloading - a failed clear reports an error instead of
+  reloading into half-cleared state, and saves queued before a reset can
+  no longer write stale data back.
+- **License**: the project's MIT notice ships inside the web build and
+  inside packaged desktop apps, alongside the dependency notices.
+- **Repository**: bundled instrument filenames drop their song prefixes,
+  and the source tree adopts the recorded domain-directory layout with a
+  structure-purity guard keeping it that way.
+
 ## Version 1.5.8
 
 The instrument list renders every stored slot and gains a polished look, the keyboard gets global instrument page navigation, and the UI adopts bundled Ubuntu fonts.

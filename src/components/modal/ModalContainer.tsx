@@ -12,7 +12,11 @@ import { MidiModal } from '../../modals/midi/MidiModal.tsx';
 import { SettingsModal } from '../../modals/settings/SettingsModal.tsx';
 import { TransposeModal } from '../../modals/track/TransposeModal.tsx';
 import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
-import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../../hooks/midi/useMidi.ts';
+import type {
+  MidiConfiguration,
+  MidiDeviceInfo,
+  MidiMonitorEntry,
+} from '../../hooks/midi/useMidi.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import { CONFIRM_MODAL_TEXT } from '../../constants/modal.ts';
 import { buildInfoModals } from '../../utils/panel/modalRendering.ts';

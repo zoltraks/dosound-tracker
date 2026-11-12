@@ -1,7 +1,7 @@
 {
   "name": "dosound-tracker",
   "private": true,
-  "version": "1.5.9",
+  "version": "1.6.0",
   "type": "module",
   "description": "DOSOUND Tracker",
   "main": "electron/main.cjs",
@@ -88,7 +88,8 @@
     "files": [
       "dist/**/*",
       "electron/**/*",
-      "package.json"
+      "package.json",
+      "LICENSE"
     ],
     "directories": {
       "output": "release"

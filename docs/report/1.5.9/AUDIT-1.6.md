@@ -3,7 +3,7 @@
 ## Document Information
 
 |                    |                                                                                                                             |
-|--------------------|-----------------------------------------------------------------------------------------------------------------------------|
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------- |
 | Report Revision    | 1.6                                                                                                                         |
 | Report Date        | 2026-11-12                                                                                                                  |
 | Report Style       | Audit                                                                                                                       |
@@ -56,7 +56,7 @@
 ## Audit Coverage
 
 | Report type               | Status   | Rationale                                                       |
-|---------------------------|----------|-----------------------------------------------------------------|
+| ------------------------- | -------- | --------------------------------------------------------------- |
 | Structural inventory      | Covered  | 1,215 tracked files inventoried and classified                  |
 | Requirements conformance  | Covered  | 33 mandatory requirements extracted and graded                  |
 | Criteria assessment       | Covered  | 99 fixed-catalogue criteria graded on evidence                  |
@@ -68,7 +68,7 @@
 ## Glossary Index
 
 | Term  | Definition                                                                   |
-|-------|------------------------------------------------------------------------------|
+| ----- | ---------------------------------------------------------------------------- |
 | API   | Application Programming Interface - the typed `ElectronApi` preload contract |
 | ASM   | Assembly - the DOSOUND ASM export format for YM2149 register dumps           |
 | BSD   | Berkeley Software Distribution - permissive license family in the census     |
@@ -109,7 +109,7 @@
 **Identifier triplets**
 
 | Triplet | Scope     | Description                                             |
-|---------|-----------|---------------------------------------------------------|
+| ------- | --------- | ------------------------------------------------------- |
 | FND     | Findings  | Technical Findings identifier prefix (`FND-SEC-001`)    |
 | EVD     | Evidence  | Evidence List identifier prefix (`EVD-001`)             |
 | TDR     | Debt      | Technical Debt Register identifier prefix (`TDR-001`)   |
@@ -142,7 +142,7 @@
 ## Executive Summary
 
 | Field             | Value                                              |
-|-------------------|----------------------------------------------------|
+| ----------------- | -------------------------------------------------- |
 | System type       | Production system (desktop chiptune tracker)       |
 | Scope             | Whole repository at cef0d425, version window 1.5.9 |
 | Source basis      | Inspected code plus executed commissioned commands |
@@ -150,7 +150,7 @@
 | **Overall score** | **8.8/10 (Excellent)**                             |
 
 | Score               | Value              | Basis                                          |
-|---------------------|--------------------|------------------------------------------------|
+| ------------------- | ------------------ | ---------------------------------------------- |
 | Product Quality     | 8.7/10 (Excellent) | tier-weighted mean of 17 applicable dimensions |
 | Engineering Process | 9.0/10 (Excellent) | mean of 2 applicable process dimensions        |
 
@@ -192,7 +192,7 @@ and exported to nine formats including DOSOUND ASM, [VGM](#glossary-index),
 ### Technology Stack
 
 | Layer                        | Technology                    | Version                 |
-|------------------------------|-------------------------------|-------------------------|
+| ---------------------------- | ----------------------------- | ----------------------- |
 | Language                     | TypeScript (strict)           | 5.9.3                   |
 | [UI](#glossary-index)        | React, React DOM              | 19.3.1                  |
 | State                        | Zustand                       | 5.0.16                  |
@@ -209,7 +209,7 @@ and exported to nine formats including DOSOUND ASM, [VGM](#glossary-index),
 Production dependencies (5):
 
 | Component | Version      | License                | Risk | Advisory    | Source            |
-|-----------|--------------|------------------------|------|-------------|-------------------|
+| --------- | ------------ | ---------------------- | ---- | ----------- | ----------------- |
 | js-yaml   | 5.5.0        | [MIT](#glossary-index) | None | Not checked | package-lock.json |
 | react     | 19.3.1       | [MIT](#glossary-index) | None | Not checked | package-lock.json |
 | react-dom | 19.3.1       | [MIT](#glossary-index) | None | Not checked | package-lock.json |
@@ -243,18 +243,18 @@ GPL-family obligations exist.
 **Risk Map**
 
 | Impact            | Low                                                  | Medium                                                                                                                                                               | High                                                                                                       |
-|-------------------|------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------|
+| ----------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | Likelihood High   | -                                                    | -                                                                                                                                                                    | -                                                                                                          |
 | Likelihood Medium | [RSK-005](#rsk-005-stale-documentation-misdirection) | [RSK-004](#rsk-004-composition-root-change-blast-radius), [RSK-006](#rsk-006-unmeasured-performance-regressions), [RSK-008](#rsk-008-silent-release-script-failure)* | [RSK-001](#rsk-001-export-vs-live-audio-divergence), [RSK-003](#rsk-003-single-maintainer-continuity-loss) |
 | Likelihood Low    | [RSK-002](#rsk-002-unbounded-instrument-file-parse)* | [RSK-007](#rsk-007-unautomated-verification-gate)                                                                                                                    | -                                                                                                          |
 
-* [RSK-002](#rsk-002-unbounded-instrument-file-parse) sits at likelihood Low, impact Medium.
-* [RSK-008](#rsk-008-silent-release-script-failure) is recorded Low/Low.
+- [RSK-002](#rsk-002-unbounded-instrument-file-parse) sits at likelihood Low, impact Medium.
+- [RSK-008](#rsk-008-silent-release-script-failure) is recorded Low/Low.
 
 **Legend**
 
 | Band      | Score |
-|-----------|-------|
+| --------- | ----- |
 | Poor      | 1-3   |
 | Average   | 4-6   |
 | Good      | 7-8   |
@@ -263,7 +263,7 @@ GPL-family obligations exist.
 **Scorecard Summary**
 
 | Dimension               | Score |
-|-------------------------|-------|
+| ----------------------- | ----- |
 | Functional Suitability  | 8/10  |
 | Testability             | 9/10  |
 | Design Soundness        | 9/10  |
@@ -283,8 +283,7 @@ GPL-family obligations exist.
 | Delivery & Continuity   | 8/10  |
 | Originality & Licensing | 10/10 |
 
-Dependency Health carries a material-unknown cap (DEP-ADVISORY unassessed): uncapped 10, published
-8.
+Dependency Health carries a material-unknown cap (DEP-ADVISORY unassessed): uncapped 10, published 8.
 
 **Team & Continuity**
 
@@ -313,7 +312,7 @@ an unreferenced sync-branches.sh force-pushes all branches.
 ## High-Level Observations
 
 | Observation                                                                                                                                                                                                                 |
-|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | All six commissioned commands pass green in isolation - typecheck, lint, format-check, build, 1334 unit tests, 30 e2e tests (see Evidence List rows [EVD-002](#evidence-list) through [EVD-007](#evidence-list)).           |
 | Electron baseline isolation is strong: contextIsolation, nodeIntegration disabled, origin-gated permissions, [CSP](#glossary-index) on build ([EVD-008](#evidence-list)).                                                   |
 | The audio-critical path duplicates instrument/envelope semantics between live playback and export simulation with observable deltas ([FND-CQY-001](#fnd-cqy-001-duplicated-audio-semantics-between-live-and-export-paths)). |
@@ -341,7 +340,7 @@ not scored PASS, with its outcome.
 **Criteria table**
 
 | Criteria      | Dimension              | Weight | Criticality | Outcome |
-|---------------|------------------------|--------|-------------|---------|
+| ------------- | ---------------------- | ------ | ----------- | ------- |
 | FNC-JOURNEY   | functional_suitability | 2      | high        | PARTIAL |
 | FNC-DEFECT    | functional_suitability | 2      | high        | PARTIAL |
 | FNC-CONTRACT  | functional_suitability | 1      | medium      | PARTIAL |
@@ -394,17 +393,17 @@ main/preload forms a thin, permission-gated shell.
 ### Design Principles
 
 - Separation of concerns: hooks orchestrate, utils transform, engines render audio. Verified
-against module roles ([EVD-017](#evidence-list), [EVD-031](#evidence-list)).
+  against module roles ([EVD-017](#evidence-list), [EVD-031](#evidence-list)).
 - Dependency direction: inward toward pure modules, with one noted type-only inversion -
-`src/utils/midi/midiConfiguration.ts` imports from `hooks/midi/useMidi.ts`.
+  `src/utils/midi/midiConfiguration.ts` imports from `hooks/midi/useMidi.ts`.
 - Interface boundaries: `SoundEngine` (soundEngine.ts:31-39) and the typed `ElectronApi` preload
-surface are narrow and explicit.
+  surface are narrow and explicit.
 - State domains: Zustand stores plus hook-local state, persistence is centralized in
-`utils/storage/` with a documented exception list (one drift - InformationPanel, [FND-ARC-001](#fnd-arc-001-documentation-drift-cluster)).
+  `utils/storage/` with a documented exception list (one drift - InformationPanel, [FND-ARC-001](#fnd-arc-001-documentation-drift-cluster)).
 - Patterns: factory (engines), strategy (export strategies), adapter/facade
-(AyumiEngine and RegisterFile), undo memento, playback/edit bridges, and the
-stereo, engine, and period registries. Apt, not decorative
-([EVD-031](#evidence-list)).
+  (AyumiEngine and RegisterFile), undo memento, playback/edit bridges, and the
+  stereo, engine, and period registries. Apt, not decorative
+  ([EVD-031](#evidence-list)).
 
 ### Data Flow Diagram
 
@@ -438,7 +437,7 @@ React 19 + TypeScript strict single project, Vite-built, ~210 source files (~37.
 shell, mirrored test tree.
 
 | Level | Directory    | Contents                                                                            | Role                  |
-|-------|--------------|-------------------------------------------------------------------------------------|-----------------------|
+| ----- | ------------ | ----------------------------------------------------------------------------------- | --------------------- |
 | 1     | `src/`       | components, hooks, modals, synth, exports, utils, constants, types, workers, assets | Application source    |
 | 1     | `electron/`  | main.cjs, preload.cjs, permissions.cjs                                              | Desktop shell         |
 | 1     | `test/`      | mirrors src layout + fixtures                                                       | Unit/component suite  |
@@ -450,7 +449,7 @@ shell, mirrored test tree.
 | 2     | `src/utils/` | 22 domain subdirs, 61 files                                                         | Pure transforms       |
 
 | Area                       | Verdict   | Basis                                                                                     |
-|----------------------------|-----------|-------------------------------------------------------------------------------------------|
+| -------------------------- | --------- | ----------------------------------------------------------------------------------------- |
 | Directory organization     | Passed    | Domain-grouped, mirrors docs, test tree mirrors src                                       |
 | Naming conventions         | Passed    | use* hooks, PascalCase components, domain directories                                     |
 | Component placement        | Passed    | Single-level feature placement, anomalies limited to test tree                            |
@@ -467,20 +466,20 @@ Limitations: docs/archive and docs/report restricted surfaces were inventoried b
 Two design alternatives were implicit in the observed trade-offs:
 
 - Live-vs-sim duplication vs shared semantics module: the project chose independent
-implementations so export stays deterministic and engine-free, trading drift
-risk - observed deltas,
-[FND-CQY-001](#fnd-cqy-001-duplicated-audio-semantics-between-live-and-export-paths) -
-for decoupling the export path from AudioContext. A shared pure module with
-thin adapters would keep determinism without duplication, golden live-vs-sim
-conformance tests are the lower-cost alternative.
+  implementations so export stays deterministic and engine-free, trading drift
+  risk - observed deltas,
+  [FND-CQY-001](#fnd-cqy-001-duplicated-audio-semantics-between-live-and-export-paths) -
+  for decoupling the export path from AudioContext. A shared pure module with
+  thin adapters would keep determinism without duplication, golden live-vs-sim
+  conformance tests are the lower-cost alternative.
 - Composition root vs domain composition units: the single-root wiring keeps the dataflow legible
-in one file but concentrates change risk
-([FND-CQY-002](#fnd-cqy-002-composition-root-concentration-and-large-module-hotspots)). Splitting
-by domain (playback cluster, file-ops cluster, modal cluster) would bound blast radius at the cost
-of one more indirection layer.
+  in one file but concentrates change risk
+  ([FND-CQY-002](#fnd-cqy-002-composition-root-concentration-and-large-module-hotspots)). Splitting
+  by domain (playback cluster, file-ops cluster, modal cluster) would bound blast radius at the cost
+  of one more indirection layer.
 - No-CI vs automated gate: a deliberate, recorded choice favoring a single-maintainer workflow, the
-local loop plus release-check.sh compensates but cannot fire on merge
-([FND-INF-003](#fnd-inf-003-no-automated-gate-on-change)).
+  local loop plus release-check.sh compensates but cannot fire on merge
+  ([FND-INF-003](#fnd-inf-003-no-automated-gate-on-change)).
 
 ## Threat Model
 
@@ -489,24 +488,24 @@ listing fetches,
 clipboard, [MIDI](#glossary-index) devices, service worker cache, external links.
 
 - Spoofing: no identity surface, app-origin checks gate permissions and navigation
-(main.cjs:25-48). No material threat.
+  (main.cjs:25-48). No material threat.
 - Tampering: will-navigate blocks off-origin navigation, will-redirect is unhandled
-([FND-SEC-003](#fnd-sec-003-no-will-redirect-guard-http-urls-reach-openexternal)), LIST.txt-derived
-hrefs accept parent-directory segments
-([FND-SEC-004](#fnd-sec-004-buildhref-accepts--segments-in-listing-paths)). Bounded: fetch targets
-are first-party assets.
+  ([FND-SEC-003](#fnd-sec-003-no-will-redirect-guard-http-urls-reach-openexternal)), LIST.txt-derived
+  hrefs accept parent-directory segments
+  ([FND-SEC-004](#fnd-sec-004-buildhref-accepts--segments-in-listing-paths)). Bounded: fetch targets
+  are first-party assets.
 - Repudiation: no audit-trail obligation for a local single-user app. No material threat.
 - Information disclosure: no secrets in the tree ([EVD-011](#evidence-list)), persistence holds
-only user song/settings data, [CSP](#glossary-index) injected on build. No material threat.
+  only user song/settings data, [CSP](#glossary-index) injected on build. No material threat.
 - Denial of service: unbounded instrument-file parse can hang the renderer
-([FND-SEC-001](#fnd-sec-001-instrument-file-import-skips-the-import-size-bound)), all other import
-paths are bounded.
+  ([FND-SEC-001](#fnd-sec-001-instrument-file-import-skips-the-import-size-bound)), all other import
+  paths are bounded.
 - Elevation of privilege: contextIsolation + nodeIntegration off + origin-gated permissions +
-narrow preload, sandbox flag unset
-([FND-SEC-002](#fnd-sec-002-browserwindow-sandbox-flag-not-set)), http [URLs](#glossary-index)
-reach openExternal
-([FND-SEC-003](#fnd-sec-003-no-will-redirect-guard-http-urls-reach-openexternal)),
-app-close-confirmed [IPC](#glossary-index) is unconditionally callable.
+  narrow preload, sandbox flag unset
+  ([FND-SEC-002](#fnd-sec-002-browserwindow-sandbox-flag-not-set)), http [URLs](#glossary-index)
+  reach openExternal
+  ([FND-SEC-003](#fnd-sec-003-no-will-redirect-guard-http-urls-reach-openexternal)),
+  app-close-confirmed [IPC](#glossary-index) is unconditionally callable.
 
 ## Guidance Conformance
 
@@ -517,7 +516,7 @@ is narrower than the actual dependency licenses recorded in COPYRIGHTS.md
 ([FND-ARC-001](#fnd-arc-001-documentation-drift-cluster)).
 
 | Document           | Status  | Basis                                                                                 |
-|--------------------|---------|---------------------------------------------------------------------------------------|
+| ------------------ | ------- | ------------------------------------------------------------------------------------- |
 | docs/GUIDELINES.md | Pass    | Current, specific, sources-of-truth table                                             |
 | README.md routing  | Pass    | Agents routed to canonical guidance                                                   |
 | License list       | Partial | Narrower than COPYRIGHTS.md ([FND-ARC-001](#fnd-arc-001-documentation-drift-cluster)) |
@@ -534,7 +533,7 @@ threshold ([FND-INF-006](#fnd-inf-006-coverage-thresholds-configured-but-never-r
 deviations observed.
 
 | Standard           | Status  | Basis                                                                                            |
-|--------------------|---------|--------------------------------------------------------------------------------------------------|
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------ |
 | Typecheck gate     | Pass    | Executed clean ([EVD-002](#evidence-list))                                                       |
 | Lint gate          | Pass    | Executed clean ([EVD-003](#evidence-list))                                                       |
 | Format gate        | Pass    | Executed clean ([EVD-004](#evidence-list))                                                       |
@@ -549,7 +548,7 @@ Conformance: strong.
 executed evidence.
 
 | Requirement | Statement                                                  | Status  | Basis                                                                                                                        |
-|-------------|------------------------------------------------------------|---------|------------------------------------------------------------------------------------------------------------------------------|
+| ----------- | ---------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | F-01        | Three-track composition                                    | Pass    | Source and executed evidence ([EVD-007](#evidence-list), [EVD-030](#evidence-list))                                          |
 | F-02        | Pattern-based sequencing                                   | Pass    | Source and executed evidence ([EVD-007](#evidence-list), [EVD-030](#evidence-list))                                          |
 | F-03        | Playlist and order management                              | Pass    | Source and executed evidence ([EVD-007](#evidence-list), [EVD-030](#evidence-list))                                          |
@@ -598,7 +597,7 @@ artifact, dead code absent. Deviations from baseline hygiene: coverage unmeasure
 (recorded decision, [FND-INF-003](#fnd-inf-003-no-automated-gate-on-change)).
 
 | Baseline item             | Status  | Basis                                                                                 |
-|---------------------------|---------|---------------------------------------------------------------------------------------|
+| ------------------------- | ------- | ------------------------------------------------------------------------------------- |
 | Strict compiler, zero any | Pass    | Executed typecheck, census                                                            |
 | Test harness and setup    | Pass    | vitest + jsdom + setup files                                                          |
 | Lockfile committed        | Pass    | package-lock.json v3                                                                  |
@@ -618,7 +617,7 @@ layout, work/ scratch ignored. Deviations: four test-placement anomalies
 midiConfiguration.ts.
 
 | Check                      | Status  | Basis                                                                                |
-|----------------------------|---------|--------------------------------------------------------------------------------------|
+| -------------------------- | ------- | ------------------------------------------------------------------------------------ |
 | Declared model conformance | Pass    | Structure matches ARCHITECTURE.md and GUIDELINES.md                                  |
 | Test-tree mirror           | Partial | Four placement anomalies ([FND-STR-001](#fnd-str-001-test-tree-placement-anomalies)) |
 | Layering direction         | Partial | One type-only inversion in midiConfiguration.ts                                      |
@@ -635,7 +634,7 @@ useMidiMessageProcessing 691, asm.ts 687, and the single 4,178-line stylesheet
 ([FND-CQY-002](#fnd-cqy-002-composition-root-concentration-and-large-module-hotspots)).
 
 | Lens            | Status  | Basis                                                                                                                  |
-|-----------------|---------|------------------------------------------------------------------------------------------------------------------------|
+| --------------- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
 | Formatting      | Pass    | Prettier check clean                                                                                                   |
 | Naming          | Pass    | Consistent conventions, zero violations observed                                                                       |
 | Lint discipline | Pass    | ESLint zero diagnostics, zero TODO markers                                                                             |
@@ -646,32 +645,32 @@ Conformance: strong.
 ## Strengths and What's Working
 
 - The verification loop is real and green: strict typecheck, ESLint 10, Prettier, 1334 unit tests,
-30 e2e tests, and a clean build all pass on the first complete-copy run
-(see Evidence List rows [EVD-002](#evidence-list) through [EVD-007](#evidence-list)).
+  30 e2e tests, and a clean build all pass on the first complete-copy run
+  (see Evidence List rows [EVD-002](#evidence-list) through [EVD-007](#evidence-list)).
 - Electron hardening is done right at the baseline: contextIsolation, nodeIntegration off,
-origin-gated permission handlers, denied window creation, will-navigate blocking, build-injected
-[CSP](#glossary-index), and a 32-line typed preload surface ([EVD-008](#evidence-list)).
+  origin-gated permission handlers, denied window creation, will-navigate blocking, build-injected
+  [CSP](#glossary-index), and a 32-line typed preload surface ([EVD-008](#evidence-list)).
 - Import validation is a stated convention and is enforced on five of six entry paths via
-assertImportSize with MAX_IMPORT_BYTES ([EVD-010](#evidence-list)).
+  assertImportSize with MAX_IMPORT_BYTES ([EVD-010](#evidence-list)).
 - The export surface is deep and contract-verified: nine formats behind a lazy barrel, with e2e
-magic-byte assertions and golden emission fixtures ([EVD-037](#evidence-list), [EVD-039](#evidence-list)).
+  magic-byte assertions and golden emission fixtures ([EVD-037](#evidence-list), [EVD-039](#evidence-list)).
 - Persistence is redundant and lifecycle-complete: localStorage plus IndexedDB mirror, centralized
-keys, reset flows that clear residue ([EVD-013](#evidence-list)).
+  keys, reset flows that clear residue ([EVD-013](#evidence-list)).
 - The test suite mirrors the source tree and asserts byte-level behavior, not just shape
-([EVD-021](#evidence-list)).
+  ([EVD-021](#evidence-list)).
 - Documentation is unusually strong for a solo project: ASE change records, contiguous window
-reviews, and a declared sources-of-truth table ([EVD-023](#evidence-list)).
+  reviews, and a declared sources-of-truth table ([EVD-023](#evidence-list)).
 - Dependency hygiene is exemplary: 30 declared deps all used, 570 resolved packages exactly pinned,
-licenses fully compatible ([EVD-015](#evidence-list), [EVD-016](#evidence-list)).
+  licenses fully compatible ([EVD-015](#evidence-list), [EVD-016](#evidence-list)).
 - Provenance is honest: ported-code attribution headers, asset licenses bundled, AI-assisted
-authorship disclosed in the README ([EVD-032](#evidence-list)).
+  authorship disclosed in the README ([EVD-032](#evidence-list)).
 - Dead code is genuinely absent - every src/ module traces to a live importer, including lazy and
-worker-bound paths ([EVD-018](#evidence-list)).
+  worker-bound paths ([EVD-018](#evidence-list)).
 
 ## Technical Findings
 
 | Finding                                                                                       | Pillar                                    | Severity | Title                                                                   | Result                        | Verification |
-|-----------------------------------------------------------------------------------------------|-------------------------------------------|----------|-------------------------------------------------------------------------|-------------------------------|--------------|
+| --------------------------------------------------------------------------------------------- | ----------------------------------------- | -------- | ----------------------------------------------------------------------- | ----------------------------- | ------------ |
 | [FND-ARC-001](#fnd-arc-001-documentation-drift-cluster)                                       | Architecture & Design                     | Low      | Documentation drift cluster                                             | confirmed defect              |              |
 | [FND-ARC-002](#fnd-arc-002-midi-recording-path-verified-at-source-only)                       | Architecture & Design                     | Low      | [MIDI](#glossary-index) recording path verified at source only          | evidence gap                  | Confirmed    |
 | [FND-STR-001](#fnd-str-001-test-tree-placement-anomalies)                                     | Structure & Organization                  | Low      | Test-tree placement anomalies                                           | confirmed defect              |              |
@@ -1035,7 +1034,7 @@ No coverage run was commissioned, the level is unmeasured.
 ## Technical Debt Register
 
 | TDR                                                                | Category        | Title                                          | Severity |
-|--------------------------------------------------------------------|-----------------|------------------------------------------------|----------|
+| ------------------------------------------------------------------ | --------------- | ---------------------------------------------- | -------- |
 | [TDR-001](#tdr-001-live-vs-simulation-audio-semantics-duplication) | Maintainability | Live-vs-simulation audio semantics duplication | Medium   |
 | [TDR-002](#tdr-002-composition-root-concentration)                 | Maintainability | Composition-root concentration                 | Medium   |
 | [TDR-003](#tdr-003-modalmanager-pass-through-layer)                | Maintainability | ModalManager pass-through layer                | Low      |
@@ -1107,7 +1106,7 @@ The helper sync-branches.sh is orphaned.
 ## Unified Risk Register
 
 | Risk                                                     | Title                                | Severity | Likelihood | Impact | Source                                                                                        |
-|----------------------------------------------------------|--------------------------------------|----------|------------|--------|-----------------------------------------------------------------------------------------------|
+| -------------------------------------------------------- | ------------------------------------ | -------- | ---------- | ------ | --------------------------------------------------------------------------------------------- |
 | [RSK-001](#rsk-001-export-vs-live-audio-divergence)      | Export-vs-live audio divergence      | High     | Medium     | High   | [FND-CQY-001](#fnd-cqy-001-duplicated-audio-semantics-between-live-and-export-paths)          |
 | [RSK-002](#rsk-002-unbounded-instrument-file-parse)      | Unbounded instrument-file parse      | Medium   | Low        | Medium | [FND-SEC-001](#fnd-sec-001-instrument-file-import-skips-the-import-size-bound)                |
 | [RSK-003](#rsk-003-single-maintainer-continuity-loss)    | Single-maintainer continuity loss    | High     | Medium     | High   | [FND-INF-005](#fnd-inf-005-single-author-delivery)                                            |
@@ -1248,34 +1247,34 @@ A swallowed bump failure or wrong rollover version produces a bad release silent
 ## Scope Exclusions
 
 - Changes Since Previous Audit omitted - this is a fresh audit, AUDIT-1.5 set the revision floor
-only.
+  only.
 - API Contract Conformance, API Compatibility & Versioning Discipline, Skill Definition
-Conformance, AI System Assessment omitted - the subject is a standalone application with no
-published [API](#glossary-index), skill package, or AI system surface.
+  Conformance, AI System Assessment omitted - the subject is a standalone application with no
+  published [API](#glossary-index), skill package, or AI system surface.
 - Architecture Decision Records subsection omitted - the project records decisions in ASE change
-records, not ADRs.
+  records, not ADRs.
 - Contradiction Register omitted - no external or prior report asserting conflicting claims was
-consulted.
+  consulted.
 - Further Verification section folded into Known Limitations - executed-commands mode, unperformed
-checks are listed there.
+  checks are listed there.
 - Packaged Electron runtime behavior excluded - the commissioned e2e exercises the browser bundle,
-not a packaged build.
+  not a packaged build.
 
 ## Known Limitations
 
 - Dependency-advisory sweep not commissioned - DEP-ADVISORY is UNKNOWN, package currency is
-verified but vulnerability status is not (roadmap [REC-009](#rec-009-commission-advisory-sweep-and-optional-ci)).
+  verified but vulnerability status is not (roadmap [REC-009](#rec-009-commission-advisory-sweep-and-optional-ci)).
 - Coverage percentages unmeasured - vitest thresholds are configured at 80% but no coverage run was
-commissioned, N-06 graded PARTIAL.
+  commissioned, N-06 graded PARTIAL.
 - [MIDI](#glossary-index) recording path verified at source level only, no
-[MIDI](#glossary-index) fixture drives it in the commissioned
-suites.
+  [MIDI](#glossary-index) fixture drives it in the commissioned
+  suites.
 - No performance-measurement harness exists, the only signals are the build chunk warning and e2e
-timings.
+  timings.
 - The first isolation copy (openrsync) silently dropped ~11k files, it was rebuilt with ditto and
-all commands re-ran green. The truncation is a harness defect, not a subject defect.
+  all commands re-ran green. The truncation is a harness defect, not a subject defect.
 - External automation cannot be ruled out - no in-tree CI exists, but a hosted pipeline outside the
-repository would not be visible to this audit.
+  repository would not be visible to this audit.
 - docs/archive and docs/report restricted surfaces were inventoried by filename only.
 
 ## Executed Evidence
@@ -1284,7 +1283,7 @@ Executed in an isolated copy at `work/audit-isolation/dst/`, a ditto copy exclud
 `.git`, work/, and release artifacts. Subject tree compared clean afterwards.
 
 | Check                        | Command                                          | Cwd                      | Tool & Version                                | Exit status | Result | Interpretation                                   |
-|------------------------------|--------------------------------------------------|--------------------------|-----------------------------------------------|-------------|--------|--------------------------------------------------|
+| ---------------------------- | ------------------------------------------------ | ------------------------ | --------------------------------------------- | ----------- | ------ | ------------------------------------------------ |
 | Environment census           | node --version, [npm](#glossary-index) --version | work/audit-isolation/dst | Node v26.13.0, [npm](#glossary-index) 11.20.0 | 0           | Pass   | Toolchain satisfies .nvmrc/.npmrc floors         |
 | Typecheck                    | [npm](#glossary-index) run typecheck             | work/audit-isolation/dst | TypeScript 5.9.3                              | 0           | Pass   | Zero diagnostics                                 |
 | Lint                         | [npm](#glossary-index) run lint                  | work/audit-isolation/dst | ESLint 10.14.0                                | 0           | Pass   | Zero diagnostics                                 |
@@ -1296,7 +1295,7 @@ Executed in an isolated copy at `work/audit-isolation/dst/`, a ditto copy exclud
 ## Evidence List
 
 | Evidence | Basis | Type | Claims | Source |
-|----------|-------|------|--------|--------|
+| -------- | ----- | ---- | ------ | ------ |
 
 | EVD-001 | Executed | Observation | DEP-BUILD, DEP-LIFECYCLE | Environment census for commissioned commands: Node v26.13.0 and [npm](#glossary-index) 11.20.0 satisfy the .nvmrc pin and .npmrc engine-strict floor, macOS arm64 host, ~26 GiB free disk. |
 
@@ -1314,7 +1313,7 @@ Executed in an isolated copy at `work/audit-isolation/dst/`, a ditto copy exclud
 
 | EVD-008 | Inspected | Observation | SEC-THREAT, SEC-AUTHZ, OPS-SHUT | Electron main process: contextIsolation true, nodeIntegration false, backgroundThrottling false (electron/main.cjs:9-21), permission handlers gate every request except midi on app |
 
-| EVD-009 | Inspected | Observation | SEC-THREAT, DEP-CONFIG, DEP-BUILD, DEP-DEFAULTS | Vite config injects a [CSP](#glossary-index) meta only on build (vite.config.ts:12-31), stamps __APP_VERSION__ into the service worker at build (33-45), deploys worklet chunks as js/ayumi.js and js/s |
+| EVD-009 | Inspected | Observation | SEC-THREAT, DEP-CONFIG, DEP-BUILD, DEP-DEFAULTS | Vite config injects a [CSP](#glossary-index) meta only on build (vite.config.ts:12-31), stamps **APP_VERSION** into the service worker at build (33-45), deploys worklet chunks as js/ayumi.js and js/s |
 
 | EVD-010 | Inspected | Observation | SEC-INPUT, SCA-BOUNDS, FNC-DEFECT | Import-size enforcement: assertImportSize (utils/validation/importSize.ts) guards song, instrument-file repository, settings, MIDI-configuration, and clipboard parsing against MAX_ |
 
@@ -1379,7 +1378,7 @@ Executed in an isolated copy at `work/audit-isolation/dst/`, a ditto copy exclud
 ## Validation Protocol
 
 | Check           | Result  | Justification                                                                                          |
-|-----------------|---------|--------------------------------------------------------------------------------------------------------|
+| --------------- | ------- | ------------------------------------------------------------------------------------------------------ |
 | PAR-1           | Applied | Four SEC findings carry CWE IDs with rationale, no finding is unclassified                             |
 | PAR-2           | Applied | Severity column derives from impact x likelihood, CVSS used only inside Security fields                |
 | PAR-3           | Applied | Scoring Rubrics maps to the 20-dimension coverage model as a mapping only                              |
@@ -1418,7 +1417,7 @@ Executed in an isolated copy at `work/audit-isolation/dst/`, a ditto copy exclud
 ## Remediation Roadmap
 
 | Rec                                                           | Priority | Finding                                                                                       | Recommendation                                                                                 | Impact                                                            | Effort | Complexity | Breaking | Verification                                             |
-|---------------------------------------------------------------|----------|-----------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------|-------------------------------------------------------------------|--------|------------|----------|----------------------------------------------------------|
+| ------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- | ------ | ---------- | -------- | -------------------------------------------------------- |
 | [REC-001](#rec-001-bound-the-instrument-file-import)          | P1       | [FND-SEC-001](#fnd-sec-001-instrument-file-import-skips-the-import-size-bound)                | Apply assertImportSize before yaml.load in useInstrumentFileLoading.ts:61                      | Closes the only unbounded import path                             | S      | low        | None     | Unit test with an oversized instrument file              |
 | [REC-002](#rec-002-unify-live-and-simulation-audio-semantics) | P2       | [FND-CQY-001](#fnd-cqy-001-duplicated-audio-semantics-between-live-and-export-paths)          | Unify register and envelope semantics across live and simulation paths                         | Removes the drift vector on the audio path                        | M      | low        | None     | Golden live-vs-sim conformance output                    |
 | [REC-003](#rec-003-enable-electron-renderer-sandbox)          | P2       | [FND-SEC-002](#fnd-sec-002-browserwindow-sandbox-flag-not-set)                                | Enable sandbox:true in BrowserWindow, the preload is already compatible                        | Defense in depth at near-zero cost                                | S      | low        | None     | Electron launch smoke                                    |
@@ -1618,7 +1617,7 @@ Add a MIDI-capable test harness or fixture driving the recording path.
 ### Recommendation Classification
 
 | Rec                                                           | Class       | Basis                                                  |
-|---------------------------------------------------------------|-------------|--------------------------------------------------------|
+| ------------------------------------------------------------- | ----------- | ------------------------------------------------------ |
 | [REC-001](#rec-001-bound-the-instrument-file-import)          | Recommended | Closes the only unbounded import path                  |
 | [REC-002](#rec-002-unify-live-and-simulation-audio-semantics) | Recommended | Removes a drift vector on the audio-critical path      |
 | [REC-003](#rec-003-enable-electron-renderer-sandbox)          | Recommended | Near-zero-cost Electron hardening                      |
@@ -1638,7 +1637,7 @@ Add a MIDI-capable test harness or fixture driving the recording path.
 ### Follow-up Plan
 
 | Finding                                                                              | Priority | Evidence                                          | Trigger                                                       |
-|--------------------------------------------------------------------------------------|----------|---------------------------------------------------|---------------------------------------------------------------|
+| ------------------------------------------------------------------------------------ | -------- | ------------------------------------------------- | ------------------------------------------------------------- |
 | [FND-SEC-001](#fnd-sec-001-instrument-file-import-skips-the-import-size-bound)       | P1       | Oversized-file unit test plus manual verification | [REC-001](#rec-001-bound-the-instrument-file-import)          |
 | [FND-CQY-001](#fnd-cqy-001-duplicated-audio-semantics-between-live-and-export-paths) | P2       | Live-vs-sim golden conformance output             | [REC-002](#rec-002-unify-live-and-simulation-audio-semantics) |
 | [FND-SEC-002](#fnd-sec-002-browserwindow-sandbox-flag-not-set)                       | P2       | Electron launch smoke plus config diff            | [REC-003](#rec-003-enable-electron-renderer-sandbox)          |
@@ -1646,7 +1645,7 @@ Add a MIDI-capable test harness or fixture driving the recording path.
 ## Reference Sources
 
 | Reference                                             | Publisher or Author | Used In                                    |
-|-------------------------------------------------------|---------------------|--------------------------------------------|
+| ----------------------------------------------------- | ------------------- | ------------------------------------------ |
 | docs/GUIDELINES.md                                    | dosound-tracker     | Methodology, conventions, sources of truth |
 | docs/ARCHITECTURE.md                                  | dosound-tracker     | System Context, Architectural Assessment   |
 | docs/PROJECT.md                                       | dosound-tracker     | Requirements Conformance                   |

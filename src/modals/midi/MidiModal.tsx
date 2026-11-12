@@ -1,7 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { DialogFrame } from '../../components/modal/DialogFrame.tsx';
 import { logger } from '../../utils/log/logger.ts';
-import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../../hooks/midi/useMidi.ts';
+import type {
+  MidiConfiguration,
+  MidiDeviceInfo,
+  MidiMonitorEntry,
+} from '../../hooks/midi/useMidi.ts';
 import { MidiMonitorPanel } from '../../components/midi/MidiMonitorPanel.tsx';
 import { MidiDeviceSelect } from '../../components/midi/MidiDeviceSelect.tsx';
 import {

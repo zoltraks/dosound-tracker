@@ -7,7 +7,11 @@ import type { ExportType, ExportStrategy, ExportFormat } from '../../constants/e
 import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
 import type { TrackPasteMode } from '../../hooks/song/useTrackOperations.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
-import type { MidiConfiguration, MidiDeviceInfo, MidiMonitorEntry } from '../../hooks/midi/useMidi.ts';
+import type {
+  MidiConfiguration,
+  MidiDeviceInfo,
+  MidiMonitorEntry,
+} from '../../hooks/midi/useMidi.ts';
 import type { InstrumentDeleteUsage } from '../../hooks/modal/useModalState.ts';
 
 interface ModalManagerProps {

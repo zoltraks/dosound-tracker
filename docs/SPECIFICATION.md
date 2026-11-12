@@ -401,7 +401,7 @@ On startup the application requests persistent storage and checks `StorageKeys.S
 
 **Mirror invalidation**
 
-Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action removes every `dosound-tracker-*` local storage key except the preserved theme, text-scale, and debug-mode settings, then awaits the mirror clear and reloads only after the clear commits. Without this, intentionally deleted data would resurrect on the next load.
+Two destructive paths drop the mirror together with local storage: the legacy-schema removal inside `loadInitialSong` removes the `song` snapshot, and the RESET action removes every `dosound-tracker-*` local storage key except the preserved theme, text-scale, and debug-mode settings. RESET begins a reset epoch that invalidates every already scheduled save and mirror write, clears local storage, then awaits the mirror clear's transaction commit and reloads only on success - a failed clear reports an error and leaves the session running. Mirror writes serialize through a shared queue so a queued put cannot commit after the clear. Without this, intentionally deleted data would resurrect on the next load.
 
 **Persistence reminder**
 
@@ -526,7 +526,7 @@ A modal whose contents must respond to the global Enter and ESC handler keeps it
 The following constraints reflect the current state of the codebase and are candidates for future improvement.
 
 - **Single store**: All application state lives in one Zustand store (src/hooks/ui/useUiStore.ts). There is no store splitting or domain-based partitioning, which can make state updates difficult to reason about as the application grows.
-- **Bounded persisted history**: The undo/redo history persists to localStorage capped at the newest `EDIT_HISTORY_PERSIST_LIMIT` entries per stack, so a reload restores a shallower history than the in-memory bound and coalescing does not span a reload. A scheduled save pending at RESET time can rewrite the cleared key in the same window the song save already exposes.
+- **Bounded persisted history**: The undo/redo history persists to localStorage capped at the newest `EDIT_HISTORY_PERSIST_LIMIT` entries per stack, so a reload restores a shallower history than the in-memory bound and coalescing does not span a reload.
 - **App.tsx orchestrator**: The main application component still concentrates the hook wiring and JSX prop map and remains the largest file in the tree. Bounded concerns live in dedicated orchestration hooks under `src/hooks/`, including the store-selector bundle, the stereo pan cluster, and the settings session - further decomposition remains a candidate for later windows.
 - **Low test coverage for the synth**: The YM2149 emulator (src/synth/YM2149.ts) and the Ayumi engine now carry dedicated `test/synth/` suites, and the sequencer worklet carries `test/workers/` protocol tests. The export modules (src/exports/) are exercised by the `test/exports/` suite. Remaining thin surfaces are components, hooks, and the `AboutModal`/`DownloadModal` dialogs.
 - **Single chip instance**: A song drives one PSG instance. The `chip` field selects the variant (YM, AY) and the `stereo` node routes its three channels, but dual-chip configurations such as TurboSound have no representation in the song model.

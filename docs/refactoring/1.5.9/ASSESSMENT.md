@@ -7,13 +7,13 @@ executed against the recorded layout convention. Two additional mixed
 directories surfaced during execution - the new guard test caught them on its
 first run - and were resolved under the same rules.
 
-| Item                    | Proposed | Achieved |
-| ----------------------- | -------- | -------- |
-| Mandatory steps         | 4        | 4        |
-| Optional waves          | 7        | 7        |
-| Guard-surfaced fixes    | 0        | 2        |
-| Files moved (`git mv`)  | ~75      | ~80      |
-| Verification green      | yes      | yes      |
+| Item                   | Proposed | Achieved |
+| ---------------------- | -------- | -------- |
+| Mandatory steps        | 4        | 4        |
+| Optional waves         | 7        | 7        |
+| Guard-surfaced fixes   | 0        | 2        |
+| Files moved (`git mv`) | ~75      | ~80      |
+| Verification green     | yes      | yes      |
 
 ## Proposal vs Implementation
 
@@ -70,13 +70,13 @@ commit.
 
 ## Verification Results
 
-| Gate          | Result                                  |
-| ------------- | --------------------------------------- |
-| `typecheck`   | clean                                   |
-| `lint`        | clean                                   |
-| `test`        | 144 files, 1335 tests - all passing     |
-| `build`       | clean - `?raw` payload resolves         |
-| Purity guard  | green - fails on a seeded mixed dir     |
+| Gate         | Result                              |
+| ------------ | ----------------------------------- |
+| `typecheck`  | clean                               |
+| `lint`       | clean                               |
+| `test`       | 144 files, 1335 tests - all passing |
+| `build`      | clean - `?raw` payload resolves     |
+| Purity guard | green - fails on a seeded mixed dir |
 
 ## Remaining Gaps
 
@@ -97,3 +97,18 @@ ends moved in different waves.
 The kind-domain `cross/` leaf was the right home for every batch test - the
 file names (`envelopeAndMidi`, `vgmAndTrackLine`) already described the
 crossing.
+
+## Second Pass - Window Close
+
+The window-close pass ran after the last change record resolved. It
+re-analyzed the session delta - the transactional persistence change, the
+license-notice distribution, and the new guard test - against the recorded
+layout convention and the open finding register.
+
+No new items surfaced. The purity guard stays green across the added
+`test/guard/` file and the touched hook modules, `dist/` output remains
+ignore-matched with `public/LICENSE` as the tracked artifact, and every
+observed gap already maps to a scheduled record - DEBT-01 to REC-10,
+coverage to REC-03, format to REC-05, chunk size to REC-08. The
+consolidate-asm-export-strategies record was discarded at its plan gate,
+so the export module is unchanged and carries no follow-up from this pass.

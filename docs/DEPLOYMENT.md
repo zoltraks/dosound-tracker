@@ -49,6 +49,10 @@ Outputs to `release/`:
 - Windows: NSIS installer and `.zip`.
 - Linux: AppImage and `.tar.gz`.
 
+**License Notice**
+
+Every distributed artifact carries the project's own MIT license text: the Vite build emits `dist/LICENSE` from `public/LICENSE`, and the electron-builder `files` list ships the root `LICENSE` inside the packaged app alongside the dependency notices. `test/guard/licenseNotice.test.ts` keeps the bundled copy byte-identical to the root file.
+
 **Release Integrity**
 
 Each desktop build writes `SHA256SUMS-<platform>.txt` into `release/` through the `afterAllArtifactBuild` hook in `scripts/afterAllArtifactBuild.cjs`. The file lists one SHA-256 line per produced artifact in `sha256sum` format and is returned to electron-builder so it is published beside the artifacts. Recipients verify a download with `shasum -a 256 -c SHA256SUMS-<platform>.txt`.

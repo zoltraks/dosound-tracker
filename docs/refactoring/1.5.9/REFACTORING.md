@@ -195,16 +195,16 @@ kind boundary rather than fix it.
 
 **Target domains for `src/modals/`**
 
-| Domain         | Files                                                                              |
-| -------------- | ---------------------------------------------------------------------------------- |
+| Domain         | Files                                                                                        |
+| -------------- | -------------------------------------------------------------------------------------------- |
 | `instrument/`  | InstrumentColorModal, InstrumentDeleteModal, InstrumentMidiModal, InstrumentTypeWarningModal |
-| `information/` | AboutModal, InformationModal, MarkdownModal                                        |
-| `file/`        | FilePickerModal, DownloadModal                                                     |
-| `track/`       | PasteTrackModal, TransposeModal                                                    |
-| `settings/`    | SettingsModal                                                                      |
-| `midi/`        | MidiModal                                                                          |
-| `export/`      | ExportModal                                                                        |
-| `common/`      | ConfirmationModal - domain-blind confirm dialog                                    |
+| `information/` | AboutModal, InformationModal, MarkdownModal                                                  |
+| `file/`        | FilePickerModal, DownloadModal                                                               |
+| `track/`       | PasteTrackModal, TransposeModal                                                              |
+| `settings/`    | SettingsModal                                                                                |
+| `midi/`        | MidiModal                                                                                    |
+| `export/`      | ExportModal                                                                                  |
+| `common/`      | ConfirmationModal - domain-blind confirm dialog                                              |
 
 Single-file domains follow the recorded rule - a directory name carries the
 domain of the files it holds, including single-file directories, and
