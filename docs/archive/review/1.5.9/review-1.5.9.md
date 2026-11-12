@@ -39,8 +39,9 @@ REC-08, and the deferred stereo records in 1.7.0.
 - `26e7d3a` - trailing 1.5.7 refactoring-phase work (instrument filename
   strip) documented by its own pair; inside this window's period but
   outside its envelope.
-- REC-01 and REC-02 implementations verified in the working tree, pending
-  the owner's close commit - the usual pre-bump state.
+- REC-01 and REC-02 implementations verified in the working tree and
+  carried into the 1.6.0 bump - the owner commits the bumped tree per
+  `VERSIONING.md`.
 
 **Unconfirmed**
 
@@ -69,10 +70,10 @@ REC-08, and the deferred stereo records in 1.7.0.
 
 ## Findings
 
-| Severity | Finding                                | Evidence      | Action                         |
-| -------- | -------------------------------------- | ------------- | ------------------------------ |
-| Info     | Implementation changeset awaits commit | git status    | Owner close commit before bump |
-| Info     | Chunk-size build warning remains       | npm run build | Scheduled under REC-08 (1.6.1) |
+| Severity | Finding                                    | Evidence      | Action                         |
+| -------- | ------------------------------------------ | ------------- | ------------------------------ |
+| Info     | Bumped changeset awaits the owner's commit | git status    | Owner commits the bumped tree  |
+| Info     | Chunk-size build warning remains           | npm run build | Scheduled under REC-08 (1.6.1) |
 
 Severity classes follow the repository's refactoring rules document where
 one exists.
@@ -97,6 +98,6 @@ one exists.
 
 ## Bump Decision
 
-The window review feeds the version bump per `VERSIONING.md`: every 1.5.9
-record is landed or discarded, the tree is verified clean, and the window
-is ready for the owner's close commit and the 1.6.0 bump.
+The window review fed the version bump per `VERSIONING.md`: every 1.5.9
+record is landed or discarded, the tree verified clean, and the 1.6.0
+bump ran - the owner commits the bumped tree as the close commit.

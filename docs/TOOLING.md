@@ -148,3 +148,7 @@ assign it in the constructor body.
 **Table formatting and Prettier**
 
 When the canonical table formatter has aligned a document's tables, run Prettier on the edited files afterwards - Prettier is the enforcing format check in this repository and may re-align tables to its own convention. `npx prettier --check` on the touched files is the gate - `npm run format` achieves the same but sweeps the whole tree (see the formatting note in `TESTING.md`). Generated documents are checked before presentation - a newly authored record, plan, or report that fails `npx prettier --check` costs a rewrite cycle, so the check runs before the file is presented as a stage product, not only on swept files.
+
+**BSD grep has no Perl-regex flag**
+
+`grep -P` is GNU-only - the BSD grep on macOS fails with `invalid option -- P`, and `rg` is not installed on this machine. Non-ASCII scans and pattern checks run through `node -e`, `npx prettier --check`, or the file-search tools instead of reaching for GNU-only flags.

@@ -28,7 +28,7 @@ Preventing rule: see "Window Lifecycle" in `docs/WORKFLOW.md` - the phase bullet
 
 ### Review Deviations Must Be Complete
 
-Observed symptom: the filed `docs/review/1.5.5/review-1.5.5.md` recorded the Ctrl+Arrow deviation but not the octave keyup-guard deviation (implemented as `hasState()` gating rather than the plan's early return, to avoid stranding a sounding preview).
+Observed symptom: the filed `docs/archive/review/1.5.5/review-1.5.5.md` recorded the Ctrl+Arrow deviation but not the octave keyup-guard deviation (implemented as `hasState()` gating rather than the plan's early return, to avoid stranding a sounding preview).
 
 Root cause: the review's Deviations list was compiled from memory of the plan rather than a diff of plan-vs-implementation for every task step.
 

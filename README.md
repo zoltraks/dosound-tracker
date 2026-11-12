@@ -34,7 +34,7 @@ at install time.
 
 This project follows an Agentic Software Engineering (ASE) documentation structure. All documentation lives under `docs/`.
 
-Agents read [GUIDELINES.md](docs/GUIDELINES.md) first, then every file listed in its Sources of Truth table, before making any change.
+Agents start with the [tiered read order](docs/GUIDELINES.md#read-guidelines-by-tier). For a work request without a task, follow [Intake Standby](docs/WORKFLOW.md#intake-standby) and ask what the user wants done.
 
 _Built with dedication to authentic retro computing and the timeless appeal of 8-bit chiptune music. Every envelope, every register write, every frequency calculation aims to capture the pure essence of what made the YM2149 chip a cornerstone of computer music history._
 

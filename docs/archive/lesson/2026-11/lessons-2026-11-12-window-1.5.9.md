@@ -53,3 +53,17 @@ Preventing rule: persistence operations resolve on `IDBTransaction`
 completion (`oncomplete`, with `onerror`/`onabort` as failure) - recorded
 in `docs/SPECIFICATION.md` and enforced by the mirror's transaction-bound
 result and reset epoch.
+
+### Review Ordered the Close Backwards
+
+Observed symptom: the window review's findings and bump decision phrased
+the close as "owner commits before bump" - the user corrected the order
+and the bump ran first, with the bumped tree committed after.
+
+Root cause: the close-gate phrasing was composed from the prior review's
+wording instead of the recorded rule.
+
+Preventing rule: `docs/VERSIONING.md` already records "the user commits
+the bump manually after reviewing the changes" - the release gate runs
+the bump on the verified tree and the owner's commit lands the bumped
+result, never the other way around.

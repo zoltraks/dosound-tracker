@@ -102,7 +102,7 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
 - Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md` - `archive old documents`, `archive documents`, or `run retention` runs the Document Retention sweep recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
-- Mode selection: a work request that names no mode asks the recorded mode-selection question in `WORKFLOW.md` - `Usage (default)`, `Development (verbose + development)`, `Improvement mode (verbose + development + improvement)`, or `Wait (skip for now)` - and a request that names its mode skips the question.
+- Work intake and mode selection: follow the Intake Standby and Mode Selection rules in `WORKFLOW.md`.
 - Plan confirmation: the confirmation step in `WORKFLOW.md` asks through the host's interactive question mechanics - `Implement`, `Adjust`, or `Discard` - matching the mode-selection convention.
 - Question mechanics: every pending question and option surface - gate confirmations, window-stage continuation, clarifications - is asked through the host's interactive question mechanics, never appended to a reply in prose.
 - A window review or audit report that was never produced for a released version is abandoned, not repaired - change records that propose retroactively writing past-version reports are discarded.
@@ -110,16 +110,23 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - A CI pipeline (`.github/workflows/`) was evaluated and declined - the verification loop is enforced locally and no CI configuration is planned.
 - Repository profile: `Software`. Topology: `single-project`. Guidelines topology: `Distributed` - `GUIDELINES.md` plus topic owners.
 - Environment-readiness owner: `README.md` for the development environment, `DEPLOYMENT.md` for build and deployment prerequisites.
-- Context budget: the session-start intake is `GUIDELINES.md` and `WORKFLOW.md` - every other Sources-of-Truth document is a task-conditional read per the tiered mandate.
+- Context budget: session-start intake is limited to the sections named under Read Guidelines by Tier. Load the remaining guidance as the task requires.
 - An explicit user instruction may produce an implementation plan without a change record - the plan states the instruction as its reference (for example `docs/plan/<version>/remove-ci-workflow.md`).
 - `COMPARISATION` filenames and `docs/archive/report/1.2.4-configuration/` are accepted historical naming variance inside restricted directories and are not normalized.
 - ASE reference: adjustments to this document set consult the `compass-skill` canonical corpus - `references/PREPARATION.md` and the `conventions/` registry - for expected structure and semantics before editing.
 
 ## General Workflow
 
-**Read guidelines by tier**
+### Read Guidelines by Tier
 
-Every request reads `GUIDELINES.md` and `WORKFLOW.md` - mode selection, intake rules, and directory access live there. Every other Sources-of-Truth document loads when the task touches its domain, before the matching edit runs. Never assume a subset is sufficient for the domains the request actually touches.
+For a work request without a task, read Intake Standby in `WORKFLOW.md` and
+ask what the user wants done. Once the task is known, read Hard Rules,
+Sources of Truth, and Work Intake Table in this file. Consult Mode Selection
+in `WORKFLOW.md` for modification requests and Document Directory Access
+before opening workflow records.
+
+Load additional sections and documents from Sources of Truth when the task
+touches their domain. Read the applicable rules before acting.
 
 - Documentation and generated-record edits read `STYLE.md` first.
 - A described change reads the pillar owning it - `PROJECT.md`, `ARCHITECTURE.md`, or `SPECIFICATION.md` - before documentation-first edits.

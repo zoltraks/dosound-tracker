@@ -75,6 +75,10 @@ Adjust the file name if a different version was downloaded.
 
 After this, open the `.dmg` and install as usual.
 
+**Inspecting the Packaged App**
+
+The `--dir` output of `npm run electron:build` leaves an unpacked app under `release/` - list its bundled files with `npx @electron/asar list "release/mac-arm64/DOSOUND Tracker.app/Contents/Resources/app.asar"` to verify shipped notices and payload contents without mounting a DMG.
+
 ## Download Page
 
 Electron desktop builds can be downloaded from the project home page: https://dosound.alyx.pl

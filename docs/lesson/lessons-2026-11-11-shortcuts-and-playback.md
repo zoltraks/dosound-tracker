@@ -44,4 +44,4 @@ Preventing rule: see "Update the project specification" in `WORKFLOW.md` - the b
 
 ### Stage gates ask through the host's mechanism
 
-Already indexed in `docs/lesson/lessons-2026-11-11-window-1.5.4.md` - noted here only because the same correction recurred this session; the written rule stands.
+Already indexed in `docs/archive/lesson/2026-11/lessons-2026-11-11-window-1.5.4.md` - noted here only because the same correction recurred this session; the written rule stands.

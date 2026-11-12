@@ -380,9 +380,9 @@ A collection mode that analyzes requests without implementing them. Each request
 
 `immediate` named on a work request arms a confirmation loop in front of the Standard Workflow. On each described change the agent analyzes what must be done and asks through the host's interactive question mechanics with two options - `Accept` enters the Standard Workflow: a change record in `docs/change/<version>/`, extending a suitable existing record in the same group when one fits, a fresh implementation analysis, an implementation plan, and documentation-first implementation. `Decline` drops the request. A free-text reply adds details or another need to the described change, and the question repeats until the request is accepted or declined.
 
-**Intake Standby**
+### Intake Standby
 
-When a request such as `work on dosound-tracker` describes no task, read the intake guidelines and always ask the user what they want done. Ask even if they already named a work mode. Wait for the task before selecting any missing mode or starting changes. If the user explicitly selects `Wait (skip for now)`, remain on standby until their next instruction.
+When a request such as `work on dosound-tracker` describes no task, always use the host's interactive question mechanism to ask what the user wants done. Ask even if they already named a work mode. Wait for the task before selecting any missing mode or starting changes. If the user explicitly selects `Wait (skip for now)`, remain on standby until their next instruction.
 
 ## Memorisation Convention
 

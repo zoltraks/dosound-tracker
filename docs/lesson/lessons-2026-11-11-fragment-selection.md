@@ -24,7 +24,7 @@ Observed symptom: decisions taken while implementing - the selection's own track
 
 Root cause: implementation-time deviations were silently folded into the landed state because no convention named where they belonged.
 
-Preventing rule: see "Record refinements in the plan" in `docs/WORKFLOW.md` and the Refinements section of `docs/plan/1.5.6/track-fragment-selection-implementation.md`; indexed under the same decision record.
+Preventing rule: see "Record refinements in the plan" in `docs/WORKFLOW.md` and the Refinements section of `docs/archive/plan/1.5.6/track-fragment-selection-implementation.md`; indexed under the same decision record.
 
 ### Option-Digit Chords Emit Symbols, Not Digits
 
