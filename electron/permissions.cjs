@@ -4,7 +4,7 @@ const { fileURLToPath } = require('node:url');
 const DEV_ORIGIN = 'http://localhost:8008';
 const BUNDLED_INDEX_PATH = path.join(__dirname, '..', 'dist', 'index.html');
 
-function isAppOrigin(url) {
+function isAppOrigin(url, isPackaged) {
   if (typeof url !== 'string') {
     return false;
   }
@@ -15,7 +15,7 @@ function isAppOrigin(url) {
     return false;
   }
   if (parsed.origin === DEV_ORIGIN) {
-    return true;
+    return !isPackaged;
   }
   if (parsed.protocol !== 'file:') {
     return false;
@@ -27,8 +27,8 @@ function isAppOrigin(url) {
   }
 }
 
-function isMidiAllowed(permission, url) {
-  return permission === 'midi' && isAppOrigin(url);
+function isMidiAllowed(permission, url, isPackaged) {
+  return permission === 'midi' && isAppOrigin(url, isPackaged);
 }
 
 function isExternalHttpUrl(url) {

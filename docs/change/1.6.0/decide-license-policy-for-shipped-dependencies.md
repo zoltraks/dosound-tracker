@@ -6,12 +6,11 @@
 
 ## Summary
 
-| Field         | Value                                                       |
-| ------------- | ----------------------------------------------------------- |
-| Intent        | Reconcile installed licenses with the declared allowlist    |
-| Key decisions | none - the policy verdict is the user's reserved decision   |
-| Open risks    | Approving PSF-2.0 or 0BSD changes the policy; replacing the |
-|               | dependency chain changes the shipped bundle                 |
+| Field         | Value                                                    |
+| ------------- | -------------------------------------------------------- |
+| Intent        | Reconcile installed licenses with the declared allowlist |
+| Key decisions | PSF-2.0 and 0BSD approved for the allowlist              |
+| Open risks    | none - the dependency-swap path was not taken            |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

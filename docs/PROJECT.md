@@ -128,7 +128,7 @@ The system must support keyboard input for:
 
 - Piano keyboard mapping (Z=C, S=C#, X=D, etc.).
 - Navigation between sections using TAB and Shift+TAB.
-- Note entry, clearing (Space/Backspace), and note off (Ctrl+Space).
+- Note entry, clearing (Space/Backspace), and note off (Shift+Space).
 - Instrument selection (Ctrl+/-).
 - File operations (Ctrl+N new song, Ctrl+O load song, Ctrl+S save song, Ctrl+I new instrument).
 
@@ -284,79 +284,8 @@ The DOSOUND format export must be efficient and optimized. When an instrument's 
 
 ## User Interface Reference
 
-The UI must be simple, monospaced, and DOS-like. Avoid complex modern UI features where simple text and pseudo-graphic rendering is sufficient.
+Keep the tracker monospaced and DOS-like. Prefer text and pseudo-graphics, display hardware values in hexadecimal with the 0x prefix, and spell C sharp as C#.
 
-**Hexadecimal Display**
+Fit the tracker within the viewport. Support dark (default), light, and high-contrast themes. Keep the logo at the top left and the theme toggle at the top right. Keep the active section visible and the current element vertically centred during navigation. Scroll the position column and all three tracks together. Pattern, instrument, and playlist blocks scroll vertically, and envelope blocks scroll horizontally.
 
-Use hexadecimal notation (0x prefix) for displaying all hardware-related values in the user interface, including position numbers, instrument IDs, pattern positions, and register values. This maintains consistency with the underlying Atari ST hardware and assembly format.
-
-The note C sharp is written as "C#".
-
-**Layout Requirements**
-
-- The application screen should fit entirely within the browser tab so that using the scroll bar is not necessary.
-- The application should support a night mode (dark, default), a day mode (light), and a high-contrast mode (contrast).
-- In the top-right corner, there should be an icon to switch the theme.
-- Place the application logo in the top-left corner.
-- Keyboard support is required. The active section should be highlighted, and navigation between sections should use the TAB key clockwise or Shift+TAB in reverse.
-- Individual blocks can be scrolled vertically (pattern positions, instrument list, playlist) and horizontally (envelope blocks).
-- All three track blocks (A, B, and C) must scroll simultaneously with the position number block.
-- The interface should keep the current element centered vertically during navigation.
-
-**Interface Layout Diagram**
-
-```
-┌───┐┌───────────────────────────────────────────────┐┌─┬─┬─┬─┬─┬─┬─┬─┐┌───┐
-│ ♪ ││ Title bar with title, theme selection, etc    ││0│1│2│3│4│5│6│7││ ☾ │
-└───┘└───────────────────────────────────────────────┘└─┴─┴─┴─┴─┴─┴─┴─┘└───┘
-┌──────────────────────────────────────────────────────────────────────────┐
-│ Command (operations) button panel                                        │
-└──────────────────────────────────────────────────────────────────────────┘
-┌──┐┌─────────┐┌─────────┐┌─────────┐┌─────────────────┐┌──────────────────┐
-│  ││ Track A ││ Track B ││ Track C ││ Tone/Noise mode ││ Song information │
-│  ││         ││         ││         │└─────────────────┘└──────────────────┘
-│00││         ││         ││         │┌─────────────────┐┌──────────────────┐
-│01││         ││         ││         ││ Volume          ││ Song playlist    │
-│..││         ││         ││         ││                 ││                  │
-│..││         ││         ││         │└─────────────────┘└──────────────────┘
-│..││         ││         ││         │┌─────────────────┐┌──────────────────┐
-│..││         ││         ││         ││ Arpeggio        ││ Instrument list  │
-│..││         ││         ││         ││                 ││                  │
-│..││         ││         ││         │└─────────────────┘│                  │
-│..││         ││         ││         │┌─────────────────┐│                  │
-│..││         ││         ││         ││ Pitch           ││                  │
-│..││         ││         ││         ││                 ││                  │
-│..││         ││         ││         │└─────────────────┘└──────────────────┘
-│..││         ││         ││         │┌─────────────────┐┌────────────┐┌────┐
-│..││         ││         ││         ││ Noise           ││ Dump       ││ EQ │
-│..││         ││         ││         ││                 ││            ││    │
-└──┘└─────────┘└─────────┘└─────────┘└─────────────────┘└────────────┘└────┘
-┌──────────────────────────────────────────────────────────────────────────┐
-│ On-screen piano keyboard                                                 │
-└──────────────────────────────────────────────────────────────────────────┘
-```
-
-See `media/layout.png` for the full layout image.
-
-**Navigation Block Order**
-
-- On-screen piano keyboard
-- Octave selection
-- Commands panel
-- Track A
-- Track B
-- Track C
-- Tone/Noise
-- Volume
-- Arpeggio
-- Pitch
-- Noise
-- Song information
-- Song playlist
-- Instrument list
-
-Do not focus on Dump, EQ, logo, title, or the theme toggle during navigation.
-
-**Piano Keyboard Mapping**
-
-The computer keyboard doubles as a piano. The lower letter row starts at the base octave and continues into the next octave, and the upper letter and number rows map one or two octaves above. See `src/constants/keyboard.ts` for the exact key-to-note map and `SPECIFICATION.md` for the full input binding reference.
+Keep keyboard traversal bidirectional with Tab and Shift+Tab. Exclude the register dump, EQ, logo, title, and theme toggle from this traversal. The active order is in [navigation.ts](../src/constants/navigation.ts), the panel layout in [AppLayout.tsx](../src/components/shell/AppLayout.tsx), and the exact piano key map in [keyboard.ts](../src/constants/keyboard.ts). See [layout.png](media/layout.png) for the layout reference.

@@ -24,13 +24,15 @@ function createWindow() {
 
   if (session && typeof session.setPermissionRequestHandler === 'function') {
     session.setPermissionRequestHandler((webContents, permission, callback) => {
-      callback(isMidiAllowed(permission, webContents.getURL()));
+      callback(isMidiAllowed(permission, webContents.getURL(), app.isPackaged));
     });
   }
 
   if (session && typeof session.setPermissionCheckHandler === 'function') {
     session.setPermissionCheckHandler((webContents, permission) => {
-      return Boolean(webContents) && isMidiAllowed(permission, webContents.getURL());
+      return (
+        Boolean(webContents) && isMidiAllowed(permission, webContents.getURL(), app.isPackaged)
+      );
     });
   }
 
@@ -42,7 +44,7 @@ function createWindow() {
   });
 
   mainWindow.webContents.on('will-navigate', (event, navigationUrl) => {
-    if (!isAppOrigin(navigationUrl)) {
+    if (!isAppOrigin(navigationUrl, app.isPackaged)) {
       event.preventDefault();
     }
   });

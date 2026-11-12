@@ -8,9 +8,9 @@
 | ------------- | ---------------------------------------------------------------- |
 | Intent        | Executable license census plus the documented verdict on PSF-2.0 |
 |               | and 0BSD                                                         |
-| Key decisions | The census is a guard test so the policy stays enforced          |
-| Open risks    | A declined license forces a dependency swap - scope grows if     |
-|               | `js-yaml` must go                                                |
+| Key decisions | Both licenses approved - the census is a guard test so the       |
+|               | policy stays enforced                                            |
+| Open risks    | none - the dependency-swap path was not taken                    |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
@@ -84,3 +84,12 @@ None - the shipped-artifact inspection is a manual build check.
 
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`,
   `npm test` - all clean, census test green.
+
+## Refinements
+
+- The user verdicts landed at window intake - both licenses approved - so
+  the `COPYRIGHTS.md` allowlist update preceded the census test instead of
+  following a mid-iteration verdict step.
+- The census guard reads the allowlist from `COPYRIGHTS.md` directly, so
+  the document is the enforcement source rather than a duplicated list.
+  Prose names normalize onto SPDX identifiers and "Boost" aliases `BSL-1.0`.

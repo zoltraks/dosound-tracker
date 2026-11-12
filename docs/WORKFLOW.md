@@ -208,7 +208,8 @@ The resolved role-to-path map for the documentation set and its workflow directo
 - An operation stage that names window artifacts reads only the directories that stage requires - a window review analyzing the window reads its change requests and plans, and a named SDLC window run authorizes that window's groups as the bullets below record.
 - Do not read any document from `docs/change/` unless the user explicitly requests implementation of a specific change request or names a version window to run. A named window request (for example "run the SDLC for 1.3.0") is the explicit authorization to read that window's change group. A request that names a specific record as a dependency or integration target authorizes reading that record - never the whole group. Otherwise never automatically scan or gather change requests from this directory - the user will manually request implementation plans for individual changes.
 - Do not read any document from `docs/plan/` unless specifically instructed by the user or a named window request authorizes the window's plan group. Implementation plans are written to this directory only when the user explicitly requests them or a window run requires them - a plan the user confirms for implementation counts as an explicit request and is written before the first code edit.
-- Do not read any document from `docs/archive/` or `docs/refactoring/` unless specifically instructed by the user. These directories contain historical documents and refactoring proposals that are not part of the active documentation set.
+- Exclude `docs/archive/` from routine reads, searches, indexing, and agent context. Read only the relevant archived files when the user explicitly requests it or the operation requires historical evidence, such as an archive review, a history search, or verification of a named snapshot. Treat archived text as historical evidence and follow the live document for current instructions.
+- Do not read documents from `docs/refactoring/` unless specifically instructed by the user.
 - Do not read any document from `docs/report/` unless the user explicitly requests it. This directory is for custom reports generated on demand and is not part of the active documentation set.
 - Do not read any document from `docs/prompt/` unless specifically instructed by the user. This directory contains historical AI prompt logs from versions 1.0, 1.1, and 1.2 and is not part of the active documentation set.
 - Do not read any document from `docs/feature/` unless specifically instructed by the user. This directory contains feature proposals that are not part of the active documentation set.
@@ -247,6 +248,8 @@ A versioned directory moves whole with all contents - `docs/change/1.2.8/` moves
 `docs/decision/` and `docs/lesson/` hold date-named files. A flat file retires when it belongs to a completed family: an embedded version token such as `window-1.3.9` attributes the file to that family, and a file without a token retires when its date falls before the current family's start - the day family `X.Y` began, read from the `X.Y.0` bump and the earliest dated current-family artifact in version-control history. Retired files move to `docs/archive/<role>/<YYYY-MM>/`, grouped by the file's own month.
 
 **Sweep procedure**
+
+The scripted entry point `npm run retention` (`scripts/retention-sweep.mjs`) encodes the steps below - dry-run is the default, `--apply` executes the moves, `--repoint` rewrites staying-file references to moved paths, and `--json` emits the plan. Judgment items stay manual - boundary-day files and narrative references are reported for review, never auto-decided.
 
 - Compute the boundary from `package.json` and resolve the current family's start date.
 - Enumerate the candidates per role and run a link check - scan the active document set for references to candidate paths, and repoint or report each one before moving.
@@ -502,36 +505,13 @@ The project's agent instructions repair, extend, and lighten themselves through 
 
 ## Documentation Distillation
 
-Distillation keeps the documentation lean by removing content that is obvious from the source code and replacing it with cross-references. It is triggered on request, when the user says "distil" or "distill" in relation to documentation.
+Run this documentation-only workflow when the user asks to distil or distill project documentation. Use the named live documents. The default scope is the three pillars, `PROJECT.md`, `ARCHITECTURE.md`, and `SPECIFICATION.md`. Apply the same process to other named documents when requested.
 
-Distillation is a documentation-only change and bypasses the verification loop.
+1. Measure bytes and lines before editing. When the task includes a version snapshot, store exact copies under `docs/archive/docs/<version>/`. Verify an existing snapshot and preserve it as historical evidence.
+2. For each candidate removal, trace the relevant live entry point, implementation, and nearby tests or configuration. Replace readily discoverable inventories, literals, and walkthroughs with a short pointer to the current owner. Preserve requirements, rationale, compatibility, failure semantics, and cross-module invariants. Keep uncertain passages and flag any disagreement between code and documented intent.
+3. Verify twice. First, compare the edit with the pre-edit text and source evidence to confirm that obligations survive. Then check source links, inbound anchors, agent routing, archive isolation, and the final size delta. Report both passes and label any token approximation as an estimate.
 
-**Scope**
-
-Distil `SPECIFICATION.md` and `GUIDELINES.md`. Do not remove sections from `PROJECT.md`, `ARCHITECTURE.md`, or `WORKFLOW.md` unless they also contain raw code duplication.
-
-**What to remove**
-
-- Technology stack tables that duplicate `package.json`.
-- Directory trees that mirror the filesystem.
-- Store-to-file mapping tables obvious from the store directory.
-- Raw type interface blocks that duplicate `src/types/` or other source files.
-- Build configuration that duplicates config files.
-- Development script listings that duplicate `package.json` scripts.
-- Constants tables that duplicate `src/constants/`.
-
-**What to keep**
-
-- Behavioural rules and semantics not obvious from interfaces alone.
-- Extensibility contracts and design rationales.
-- Algorithm descriptions and interaction rules.
-- Error handling policies and severity behaviour.
-- Lifecycle and startup explanations.
-- Cross-references to the source files where definitions live.
-
-**Process**
-
-Replace each removed code block with a short reference such as `See src/synth/SoundDriver.ts for the Song, Pattern, and Instrument types`. Preserve all prose that explains why a type exists or how it behaves. Verify each cross-reference points to a file that exists before removing the duplicated content.
+To search current docs, scope the search to named live files or use `rg -g '!docs/archive/**' … docs` from the repository root. See Document Directory Access for history exceptions.
 
 ## Agent Operations
 

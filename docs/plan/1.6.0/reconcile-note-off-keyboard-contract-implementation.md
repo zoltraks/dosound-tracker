@@ -7,9 +7,8 @@
 | Field         | Value                                                            |
 | ------------- | ---------------------------------------------------------------- |
 | Intent        | One canonical note-off binding across code, tests, and documents |
-| Key decisions | Binding choice is presented to the user before edits start       |
-| Open risks    | Choosing Ctrl+Space displaces the piano-focus binding - the      |
-|               | replacement needs its own decision                               |
+| Key decisions | Shift+Space is canonical - `F-10` corrects, no code moves        |
+| Open risks    | none - the piano-focus binding is untouched                      |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
@@ -83,3 +82,12 @@ Shift+Space versus Ctrl+Space behave exactly as documented.
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`,
   `npm test` - all clean.
 - `npm run test:e2e` passes on Chromium and WebKit.
+
+## Refinements
+
+- The Shift+Space pick resolves the record to a documentation-only fix -
+  `F-10` in `PROJECT.md` was the lone outlier; `SPECIFICATION.md`,
+  `MANUAL.md`, the navigation map, and the keyboard tests already
+  described the canonical binding, so no code or test edits were needed.
+- Documentation-only change - the verification loop is bypassed per
+  `TESTING.md`.

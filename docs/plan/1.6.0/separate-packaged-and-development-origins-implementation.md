@@ -73,3 +73,11 @@ packaged entry point.
   `npm test` - all clean.
 - Manual: unpacked packaged app denies the dev origin per the `E13`
   probe shape.
+
+## Refinements
+
+- `SPECIFICATION.md` owns the permission surface - its Electron
+  Permission Policy section now states the packaged-only trust rule.
+- The packaged probe ran against a fresh `--dir` build's extracted
+  `app.asar`: all three `main.cjs` call sites pass `app.isPackaged`, and
+  the shipped `permissions.cjs` denies the dev origin while packaged.

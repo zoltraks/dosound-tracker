@@ -110,25 +110,9 @@ Source is organised by responsibility under `src/`, with folders for components,
 
 ## Data Models
 
-The core data models represent the musical content of a song. See src/synth/SoundDriver.ts for Song, Instrument, Pattern, Note, Step, and Line type definitions.
+Use [SoundDriver.ts](../src/synth/SoundDriver.ts) for composition types, [playlist.ts](../src/types/playlist.ts) for playlist conversion and empty slots, and [branded.ts](../src/types/branded.ts) for identifier boundaries. See [FORMAT.md](FORMAT.md) for serialized data.
 
-**Song** is the top-level container. It holds metadata (title, author, year, speed, length, loop point, chip type, frame rate, chip clock), an optional `stereo` output setting, an array of Pattern objects, an array of Line objects forming the playlist, and an array of Instrument objects.
-
-**SongStereo** declares the per-channel pan configuration. It carries an optional `layout` id and optional `A`, `B`, `C` channel pans on a 0..1 scale (0 left, 0.5 centre, 1 right). Resolution starts from the layout's canonical positions and applies each channel override. A missing `stereo` node resolves to all-centre pans - the mono mixdown. The layout catalog and helpers live in `src/constants/song.ts` and `src/utils/song/songStereo.ts`.
-
-**Instrument** defines a synthesized voice. Each instrument contains arrays for volume, shift, pitch, noise, and mode envelopes of length ENVELOPE_LENGTH (32 steps). Optional fields include a base key, default octave, sustain position, display color, and MIDI metadata. See src/synth/SoundDriver.ts for the Instrument interface.
-
-**Pattern** is a 64-step sequence (PATTERN_LENGTH). Each pattern has an id, name, and an array of Step objects. See src/synth/SoundDriver.ts for the Pattern interface.
-
-**Note** represents a single musical note with a note name, octave, and instrument reference. See src/synth/SoundDriver.ts for the Note interface.
-
-**Step** is one row in a pattern. It contains an optional Note and an optional per-line volume modifier (0-15). When volume is undefined, the track retains the previous modifier (default 0xF, meaning no attenuation). See src/synth/SoundDriver.ts for the Step interface.
-
-**Line** is one row in the playlist. It references pattern ids for channels A, B, and C. See src/synth/SoundDriver.ts for the Line interface.
-
-**Playlist** entries are normalized versions of Line objects using branded PlaylistPatternId types or the literal "--" for empty slots. See src/types/playlist.ts for PlaylistEntry and conversion helpers.
-
-Branded identifier types (InstrumentId, PatternId, TrackId, PlaylistPatternId) prevent accidental mixing of string IDs at compile time. See src/types/branded.ts for the brand definitions and constructor functions.
+An omitted step volume retains the previous track modifier. The initial modifier is 0xF (no attenuation). Stereo starts from the named layout and applies per-channel overrides. An omitted stereo node resolves to centred pans. See [songStereo.ts](../src/utils/song/songStereo.ts).
 
 ## YM2149 Register Mapping
 
@@ -174,7 +158,7 @@ Two engines render YM2149 audio behind the shared `SoundEngine` contract in `src
 | `internal` | `src/synth/YM2149.ts` - Web Audio oscillators, noise buffer, and gain nodes        |
 | `ayumi`    | `src/synth/AyumiEngine.ts` driving `ayumiCore.ts` inside `workers/ayumiWorklet.ts` |
 
-The `SoundEngine` surface covers `writeRegister`, `beginBatch`, `endBatch`, `updateChannelWithInstrument`, `silenceAll`, `reset`, `setClock`, `getClock`, `setChip`, `setChannelPans`, `getRegisters`, `getRegistersArray`, `getState`, and `dispose`. The instrument-to-register helpers shared by both engines live in `src/synth/channelInstrument.ts`.
+The instrument-to-register helpers shared by both engines live in `src/synth/channelInstrument.ts`.
 
 **Chip variant**
 
@@ -192,16 +176,7 @@ The engine selection persists under the `dosound-tracker-sound-engine` local sto
 
 **Ayumi register mapping**
 
-The Ayumi core is setter-based rather than register-based. `workers/ayumiWorklet.ts` translates register writes onto the core's setters:
-
-| Register | Translation                                                            |
-| -------- | ---------------------------------------------------------------------- |
-| R0-R5    | Channel A/B/C tone period pairs - `setTone(channel, 12-bit period)`    |
-| R6       | Noise period - `setNoise(period & 0x1f)`                               |
-| R7       | Mixer - `setMixer(channel, toneOff, noiseOff, envelopeOn)` per channel |
-| R8-R10   | Channel volumes - `setVolume(channel, value & 0x0f)`, bit 4 into `eOn` |
-| R11-R12  | Envelope period - `setEnvelope(16-bit period)`                         |
-| R13      | Envelope shape - `setEnvelopeShape(shape & 0x0f)`                      |
+The [Ayumi worklet](../src/workers/ayumiWorklet.ts) translates hardware register writes into the DSP core’s setter calls.
 
 The worklet renders one output block by looping `process()` plus `removeDc()` into the node's two output channels. While every channel pan sits at centre both sides carry the folded mono mixdown, matching the Atari ST; an off-centre pan renders the left and right taps separately. A stage gain (`AYUMI_OUTPUT_GAIN = 1.2`) scales the rendered stream to the measured loudness-parity point with the internal engine, followed by a soft-knee limiter (`AYUMI_SOFT_KNEE = 0.9`) that keeps the path linear for ordinary material and saturates the extreme tail smoothly - the folded peak reaches ~1.33 at three in-phase full-volume channels, so the limiter, not the gain alone, keeps output under `1.0`. `AyumiEngine` keeps a main-thread mirror of the register file so `getRegisters`, `getRegistersArray`, and `getState` stay synchronous for the Dump and EQ panels. A clock change reconfigures the core and replays the mirrored registers because `configure` resets tone and envelope state.
 
@@ -219,7 +194,7 @@ Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in 
 
 The playback speed parameter controls how many ticks elapse between sequencer steps. The minimum speed is 2 and only even values are used: an odd value is normalized down to the previous even value, and non-positive or non-numeric input falls back to 6. The normalization is implemented by `normalizeSongSpeed` in src/utils/song/songSpeed.ts and is applied on the song load and restore paths.
 
-The song speed field on the Song object determines the global tempo. The frame rate field (default 50), chip field (default "YM"), and chip clock field (default 2000000) are defined in src/constants/song.ts. Supported frame rates are 50 and 60 Hz. Supported chips are `YM` and `AY`. Supported chip clocks are 2000000 (2 MHz) and 1000000 (1 MHz).
+See [song.ts](../src/constants/song.ts) for supported frame rates, chip variants, clocks, and defaults.
 
 ## Export Formats
 
@@ -245,16 +220,7 @@ Export scope can target the full song, a single pattern, or a single instrument.
 
 ## Constants
 
-Application constants live in `src/constants/`, one file per domain. See those files for the actual values.
-
-- **music.ts** — note frequencies, octave bounds, default and maximum pattern length, instrument count, and envelope, volume, noise, pitch, and shift limits. Also holds the `POW2_OCTAVE_SCALE` and `POW2_SEMITONE_SCALE` lookup tables with their `pow2Octave`/`pow2Semitone` accessors - tables built from `Math.pow` itself so the frequency paths stay bit-identical, with a `Math.pow` fallback outside the integer domain.
-- **keyboard.ts** — the KEYBOARD_TO_NOTE piano map.
-- **song.ts** — chip, frame rate, and clock defaults and their supported values, plus the stereo vocabulary (`STEREO_LAYOUTS`, `STEREO_LAYOUT_ORDER`, `DEFAULT_CHANNEL_PANS`).
-- **export.ts** — the ExportType and ExportStrategy union types.
-- **sound.ts** — the sound-engine vocabulary (SOUND_ENGINE_IDS, SoundEngineId, DEFAULT_SOUND_ENGINE_ID, SOUND_ENGINE_LABELS).
-- **navigation.ts** — NAVIGATION_ORDER and the KEYBOARD_SHORTCUTS map.
-- **modal.ts** — modal dialog titles and confirmation texts (INFO_MODAL_TITLES, CONFIRM_MODAL_TEXT).
-- **import.ts** — the MAX_IMPORT_BYTES byte cap applied to imported text content.
+Use the domain definitions under [src/constants/](../src/constants/). The pitch lookup tables in [music.ts](../src/constants/music.ts) are generated from `Math.pow` and fall back to it outside the indexed integer domain. Preserve bit-identical frequency calculations when changing these paths.
 
 ## Keyboard Shortcuts and Input Bindings
 
@@ -509,7 +475,7 @@ MIDI message handling in `src/hooks/midi/useMidiMessageProcessing.ts` is a hot p
 
 ### Electron Permission Policy
 
-The desktop main process (`electron/main.cjs`) grants the `midi` permission only when the requesting page is the application's own origin: the packaged bundle's `dist/index.html` loaded over `file://`, or the development server at `http://localhost:8008`. The check resolves the requesting `file://` URL to a file path and compares it against the bundled index location rather than matching the `file://` scheme prefix, so any other `file://` page is a foreign origin. Requests from any other origin are denied, and `midiSysex` is never granted because the app does not request it. The origin check lives in `electron/permissions.cjs`.
+The desktop main process (`electron/main.cjs`) grants the `midi` permission only when the requesting page is the application's own origin: the packaged bundle's `dist/index.html` loaded over `file://`, or the development server at `http://localhost:8008` while the app runs unpackaged. The development origin passes only when `app.isPackaged` is false - a packaged build denies it like any other foreign origin. The check resolves the requesting `file://` URL to a file path and compares it against the bundled index location rather than matching the `file://` scheme prefix, so any other `file://` page is a foreign origin. Requests from any other origin are denied, and `midiSysex` is never granted because the app does not request it. The origin check lives in `electron/permissions.cjs` and takes the packaged state as a parameter.
 
 Navigation is contained by the same origin policy. `webContents.setWindowOpenHandler` never creates a second window: external `http:`/`https:` links are delegated to `shell.openExternal` and every other request is denied. `will-navigate` calls `preventDefault` for any target outside the app origin, including `file://` pages other than the bundled index, so top-level navigation is pinned to the bundle.
 

@@ -1,0 +1,362 @@
+# DOSOUND Tracker Project Specification
+
+## Vision
+
+DOSOUND Tracker is a music creation tool for the AY/YM sound chip used in the Atari ST.
+
+It functions as a complete three-track music tracker that leverages the unique audio capabilities of the Yamaha YM2149 Programmable Sound Generator (PSG).
+
+The application's core feature is its ability to export music data directly into the assembly format compatible with the DOSOUND function of the XBIOS subsystem on the Atari ST's TOS operating system.
+
+## Goals and Non-Goals
+
+**Goals**
+
+- Provide a complete three-track music tracker for the YM2149 PSG.
+- Export music data as DOSOUND-compatible assembly code for the Atari ST.
+- Support composition across three independent audio channels (Tracks A, B, and C).
+- Provide a pattern-based playlist system for song arrangement.
+- Offer 256 instrument slots with full parameter control.
+- Emulate the YM2149 chip with bit-perfect register simulation.
+- Support multiple export formats (assembly, register dump, binary, VGM, WAV, MAX, MOD, MIDI).
+- Provide real-time audio playback with sub-millisecond timing.
+- Support MIDI input for live recording and instrument control.
+- Deploy as both a web application and a cross-platform desktop application via Electron.
+
+**Non-Goals**
+
+- Multi-chip support beyond the AY/YM register family (chips such as SID or POKEY stay unsupported - variants sharing the YM2149 register model are admitted per F-19).
+- Multi-track beyond three channels (hardware limitation of the YM2149).
+- Modern audio synthesis techniques (the focus is authentic retro chip sound).
+- Server-side processing (all synthesis happens client-side).
+
+## Target Audience
+
+- Retro computing enthusiasts.
+- Chiptune composers.
+- Anyone who appreciates the raw, unfiltered sound of retro synthesis.
+- Atari ST demoscene developers needing DOSOUND-compatible music data.
+
+## Glossary
+
+| Term       | Definition                                                                                     |
+| ---------- | ---------------------------------------------------------------------------------------------- |
+| YM2149     | Yamaha YM2149 Programmable Sound Generator (PSG) used in the Atari ST                          |
+| PSG        | Programmable Sound Generator                                                                   |
+| DOSOUND    | XBIOS function on Atari ST TOS for playing music data                                          |
+| XBIOS      | Extended BIOS of the Atari ST operating system                                                 |
+| VBLANK     | Vertical blanking interrupt, 50Hz on PAL Atari ST                                              |
+| Chiptune   | Music written for sound chips from old computers and consoles                                  |
+| Pattern    | A sequence of note steps for a single track (64 steps by default, 4-256 configurable per song) |
+| Playlist   | A sequence of pattern references defining the song arrangement                                 |
+| Track      | One of three independent audio channels (A, B, C)                                              |
+| Instrument | A set of parameters defining the sound of a note                                               |
+| Envelope   | A sequence of volume or pitch values over time                                                 |
+| LFSR       | Linear Feedback Shift Register, used for noise generation                                      |
+
+## Functional Requirements
+
+**F-01: Three-Track Composition**
+
+The system must support composition across three independent audio channels (Tracks A, B, and C) with simultaneous playback.
+
+**F-02: Pattern-Based Sequencing**
+
+The system must use pattern-based composition with a configurable pattern length of 4-256 steps (64 by default). Patterns are single-track sequences.
+
+**F-03: Playlist Arrangement**
+
+The system must provide a playlist system to define the sequence of single-track patterns for the entire song arrangement.
+
+**F-04: Instrument Editor**
+
+The system must provide 256 instrument slots with the following parameters:
+
+- Mode control: pure tone, pure noise, or mixed tone and noise generation.
+- Volume envelope: 32-step amplitude control (ADSR-like shaping).
+- Arpeggio engine: real-time pitch shifting in semitone increments (-24 to +24).
+- Pitch modulation: direct period (divider) deviation for vibrato and fine-tuning.
+- Noise generation: dynamic noise period control (0-31 range).
+- Sustain points: realistic note release behavior with configurable sustain.
+
+**F-05: Real-Time Audio Playback**
+
+The system must provide real-time audio playback with sub-millisecond timing using the Web Audio API.
+
+**F-06: YM2149 Emulation**
+
+The system must emulate the YM2149 chip with:
+
+- Bit-perfect register simulation of all 16 registers.
+- Proper AY/YM logarithmic volume curves (16 levels, approximately -2dB per step).
+- Accurate noise generation using 17-bit LFSR algorithm.
+- 2MHz clock precision with proper frequency calculations.
+- Square wave synthesis with period-accurate tone generation.
+- Two selectable sound engines behind one contract: `internal` (the Web Audio node implementation, default) and `ayumi` (the precise Ayumi emulation core rendered in an AudioWorklet). The selection persists and an unrecognised stored value falls back to `internal`.
+
+**F-07: DOSOUND Assembly Export**
+
+The system must export music data as DOSOUND-compatible assembly code with:
+
+- Register change tracking (only output changed registers).
+- Automatic delay insertion for proper timing resolution.
+- Volume-based optimization (remove unnecessary data when channels are silent).
+- Pattern boundary markers with comments.
+- Selectable strategies (simple, complex, tight), with tight packing the command stream tighter while staying replay-equivalent.
+
+**F-08: Multiple Export Formats**
+
+The system must support the following export formats:
+
+- DOSOUND assembly (native Atari ST format with optimization).
+- WAV audio (44.1kHz 16-bit mono rendering).
+- Register dump (raw YM2149 register state sequences).
+- Instrument-only export (individual instrument definitions).
+- Binary export.
+- VGM (Video Game Music) format.
+- MAX (Music Audio eXchange) format.
+- ProTracker MOD format (tracker-native module with documented mapping losses).
+- Standard MIDI File format (note-level interchange with documented mapping losses).
+
+**F-09: File I/O**
+
+The system must support loading and saving complete songs or individual instrument definitions in YAML format.
+
+**F-10: Keyboard Input**
+
+The system must support keyboard input for:
+
+- Piano keyboard mapping (Z=C, S=C#, X=D, etc.).
+- Navigation between sections using TAB and Shift+TAB.
+- Note entry, clearing (Space/Backspace), and note off (Shift+Space).
+- Instrument selection (Ctrl+/-).
+- File operations (Ctrl+N new song, Ctrl+O load song, Ctrl+S save song, Ctrl+I new instrument).
+
+**F-11: MIDI Support**
+
+The system must support MIDI input for live recording and instrument control, including device selection and velocity sensitivity.
+
+**F-12: Theme Support**
+
+The system must support a night mode (dark, default), a day mode (light), and a high-contrast mode (contrast). The theme toggle in the top-right corner switches between the dark and light modes; the high-contrast mode is selected through the settings modal. The system must also offer a bounded text-size scaling option (100%, 125%, 150%) that enlarges the interface without breaking the fixed-grid layout - panels scroll their own content under scaling.
+
+**F-13: Cross-Platform Deployment**
+
+The system must deploy as:
+
+- A web application supporting Chrome, Firefox, Safari, and Edge.
+- A desktop application via Electron for Windows, macOS, and Linux.
+- A responsive interface for mobile devices.
+
+**F-14: Replay Rate and Chip Clock Selection**
+
+The system must provide toggle buttons in the Song information panel for selecting the replay rate (50 Hz or 60 Hz) and the YM2149 chip clock (2 MHz or 1 MHz). The Rate button is placed in the Title row and the Clock button in the Author row. Both buttons match the combined width of the two number-spinner buttons used elsewhere in the panel. New songs default to 50 Hz and 2 MHz. Songs loaded without these settings fall back to the same defaults. Both values are persisted in the song YAML file format.
+
+The selected replay rate drives the sequencer worklet tick interval (20 ms at 50 Hz, 16.66 ms at 60 Hz) and all instrument preview envelope timers. The selected chip clock drives the YM2149 emulator frequency calculation and the tone period register values. At 1 MHz, period values are half of the 2 MHz values for the same note, preserving the composed pitch. Noise period register values are set directly from instrument envelopes and are not recalculated - the noise timbre change at 1 MHz is expected.
+
+All export formats (VGM, MAX, WAV, ASM, BIN, MOD, MIDI) read the configured frame rate and chip clock from the song. VGM uses the appropriate wait command (0x63 for 50 Hz, 0x62 for 60 Hz) and writes the clock and rate to the header. MAX writes the frame rate and clock to the chip setup chunk. WAV renders at the correct samples-per-tick for the frame rate. ASM and BIN use the configured clock for period calculations. MOD uses the configured clock for tone-to-Amiga period conversion and derives its BPM from the frame rate. MIDI derives its tempo from the frame rate and ignores the chip clock, since note pitch is chip-independent.
+
+**F-15: Editor Cursor Persistence**
+
+The system must remember the editor cursor across application reloads. This includes the focused section, the selected track, the playlist line, the track row, the track column, the selected instrument, the song information field, the playlist track column, the octave, and each envelope panel step cursor. Restored values are clamped to the current song. The envelope step cursor is remembered per panel and does not change when the selected instrument changes. The editor cursor is session state stored in local storage and is not part of the saved or exported song file formats.
+
+**F-16: Redundant Local Persistence**
+
+The system must mirror autosaved song and instrument data into an IndexedDB snapshot store so compositions survive a cleared local storage. On startup, when the local storage song is absent and a snapshot exists, the system must restore the snapshot through the same schema migration used for local storage and mark the song dirty. The system must request persistent storage where the platform supports it, must clear the mirror when the user performs a full reset, and must surface the file-save recommendation unobtrusively through the rotating message panel.
+
+**F-17: Settings Modal**
+
+The system must provide a settings modal opened by a gear button in the header, placed directly after the theme toggle. The gear button uses the `⚙` glyph and the same icon-button treatment as the theme toggle, and stays out of the section navigation order.
+
+The modal presents named categories in a left sidebar, the active category's settings as label and control rows in a scrollable property pane, and a footer action bar. The dialog sizes to its content up to a bounded fraction of the viewport and stays centered on the desktop layout; in the mobile layout it fills the screen and the property pane scrolls inside it. The categories are GENERAL (theme, text size, track background, startup test tone), EDITOR (restore editor cursor, restore open view, default paste mode), and SOUND (sound engine).
+
+The modal edits a draft copy of the settings. OK commits the draft, Cancel and ESC discard it, and ENTER confirms like OK. The footer holds CANCEL and RESET on the left and LOAD, SAVE, and OK on the right. RESET replaces the draft with the default values behind a confirmation. SAVE writes the current draft to a `settings.yaml` file and LOAD reads a `settings.yaml` file into the draft; both leave the draft uncommitted until OK.
+
+The application restores its state on page reload. This convention applies to every view: persisted state, including the open view, survives a reload exactly. The settings modal follows the same rule - when the page reloads with the modal open, the modal re-opens with the same active category, the same uncommitted draft contents, the same focused control, the same property-pane scroll offset, and the same reset-confirmation state.
+
+Committed settings persist under the per-key `dosound-tracker-*` storage. The new options - startup test tone, restore editor cursor, and restore open view - each get their own key and default to on, preserving the behaviour that existed before the setting was introduced. The SOUND category's engine selector persists `internal` or `ayumi` under `dosound-tracker-sound-engine`, defaults to `internal` on an unrecognised value, and applies the switch live on OK - the old engine is silenced and disposed, playback does not carry over.
+
+**F-18: Per-Channel Stereo Output**
+
+The system must provide optional per-channel stereo output on both sound engines. A song may declare a named stereo layout (`mono`, `ABC`, `ACB` - the canonical machine wirings) or free per-channel pan positions on a 0..1 scale, persisted in the song file format. Mono remains the default: a song without stereo settings renders the faithful Atari ST mono mixdown exactly as before. Both layouts and pan positions are declared in the song file only - the interface exposes no stereo editing control yet. Panning applies to live playback and instrument previews. All export formats are unchanged - the register-stream formats carry the same YM2149 register data, the WAV export renders the mono mixdown, and the MOD and MIDI exports carry no pan data.
+
+**F-19: Chip Variant Selection**
+
+The system must allow each song to declare its PSG variant from a supported list: `YM` (YM2149, the default) or `AY` (AY-3-8910 family). The variant is declared in the song file only - the interface exposes no chip selection control yet. New songs default to `YM`; songs loaded without a chip fall back to `YM`, and a loaded value outside the supported list is kept on the song and raises the import warning. The value is persisted in the song YAML file format.
+
+The selected chip drives the per-variant amplitude curve on both sound engines: the internal engine selects between its YM and AY volume tables and the Ayumi engine selects the matching DAC table in the emulation core. Chip-aware exports carry the variant: MAX writes the chip id in the chip setup chunk, VGM writes the chip-type byte in the header, and WAV renders with the variant's amplitude curve. The DOSOUND assembly, binary, register-dump, MOD, and MIDI formats carry no chip declaration.
+
+**F-20: Undo and Redo History**
+
+The system must provide an edit history covering the composition data: pattern steps, instrument parameters, playlist lines, and song information fields. CTRL+Z steps the history backwards, and CTRL+Y or CTRL+SHIFT+Z re-applies reverted steps - on macOS the meta modifier folds into ctrl, so CMD+Z undoes and CMD+SHIFT+Z redoes. The command panel carries UNDO and REDO buttons on the third command row, each enabled while its stack holds entries. A new edit after undo discards the redo branch. Composite operations such as paste, transpose, renumber, and optimize record as single entries. The history is bounded, persists to local storage across application reloads, and is destroyed by NEW SONG, LOAD SONG, DEMO SONG, and RESET - it never travels with the saved song file. Undo applies through the ordinary song state setters, so restoring during playback must not recreate audio callbacks or write on the audio path.
+
+**F-21: Track Fragment Selection**
+
+The system must provide a keyboard-driven row selection inside a track. While a track section is the active section, SHIFT+UP and SHIFT+DOWN extend a selection range over whole pattern rows (note, instrument, and volume cells) and move the cursor with it. A single selection exists at a time, bound to the track where it was created, and it is session state persisted to local storage - it survives cursor moves, playlist position changes, and page reloads, restored clamped to the current pattern.
+
+While a track section is active, CTRL+C copies the selected fragment to the system clipboard in the `step:` YAML format shared with COPY TRACK - with no selection it copies the whole track. CTRL+X cuts the fragment: it copies the range, clears the covered notes and volumes, and drops the selection. CTRL+V pastes the clipboard fragment starting at the cursor row, clipped at the pattern length, applying the stored paste-track mode and preserving the rows after the pasted fragment, then moves the cursor one row below the last pasted row - wrapping to the first row at the pattern end. The PASTE TRACK command instead pastes the fragment from the first row of the track, clears the rows after the pasted fragment, and leaves the cursor on the first row. A new EDITOR settings option enables the paste-mode confirmation modal for fragment pastes over existing data. Copy, cut, and paste record in the edit history like every other composition edit.
+
+## Non-Functional Requirements
+
+**N-01: Audio Performance**
+
+Audio stability is the highest priority. React best practices are secondary to audio performance. The system must maintain consistent audio timing without glitches, pops, or stuttering.
+
+**N-02: Timing Accuracy**
+
+The system must use 50Hz VBLANK timing by default, matching the original Atari ST DOSOUND behavior (a 60Hz rate is selectable per F-14). Envelope progression must occur every 2 ticks (40ms at 50Hz).
+
+**N-03: Export Fidelity**
+
+Exported assembly code must be 100% compatible with the original Atari ST DOSOUND XBIOS function.
+
+**N-04: Type Safety**
+
+The codebase must use TypeScript strict mode with no `any` types.
+
+**N-05: Code Quality**
+
+The codebase must pass ESLint with zero errors and zero warnings, with documented exceptions for audio-critical linting warnings.
+
+**N-06: Test Coverage**
+
+The project targets 80% coverage for lines, functions, branches, and statements.
+
+## Use Cases
+
+**C-01: Compose a Song**
+
+A user creates a new song, enters notes in the track panels using the piano keyboard or computer keyboard, creates instruments with custom envelopes, arranges patterns in the playlist, and plays back the song in real time.
+
+**C-02: Export for Atari ST**
+
+A user composes a song, selects the DOSOUND assembly export, configures optimization options, and downloads the generated assembly file ready to be included in custom Atari ST software.
+
+**C-03: Edit an Instrument**
+
+A user selects an instrument from the instrument list, edits the volume envelope, arpeggio, pitch modulation, and noise parameters, and previews the sound in real time using the on-screen piano keyboard.
+
+**C-04: Save and Load**
+
+A user saves the current song to a YAML file, closes the application, reopens it, and loads the song file to continue editing.
+
+**C-05: MIDI Recording**
+
+A user connects a MIDI keyboard, selects the device in the application, plays notes on the MIDI keyboard to enter them into the current track, and adjusts velocity sensitivity.
+
+**C-06: Undo an Edit**
+
+A user enters a wrong note, presses CTRL+Z to restore the previous step content, edits further, then presses CTRL+Y to re-apply a reverted step where the redo branch still exists.
+
+## Quality Targets
+
+- Audio playback with zero glitches during normal operation.
+- Export output byte-identical for the same input song.
+- Application loads in under 2 seconds.
+- Song file size under 100KB for typical compositions.
+- Assembly export optimized for minimal memory usage on target hardware.
+
+## YM2149 Implementation Reference
+
+The emulation logic is split into two core areas under `src/synth/`.
+
+**YM2149 Chip Emulation**
+
+This module is responsible for the low-level register simulation.
+
+- Implement functions to handle the 16 YM2149 registers (R0 through R15).
+- Ensure accurate calculation of tone frequencies, noise generation, and envelope shapes.
+
+**DOSOUND Driver Logic**
+
+The DOSOUND format uses a packed data structure to define musical events, relying on delays and data blocks rather than a simple note-on/note-off stream.
+
+- The logic must translate the song's pattern and instrument events into sequential register writes for the YM2149 emulator, producing the register sequence the original DOSOUND routine would generate.
+- The timing must be tied to the Atari ST's 50Hz VBLANK, as the original DOSOUND routine relied on this timing.
+
+**Playback**
+
+The playback procedure should behave exactly as the DOSOUND function from the XBIOS subsystem does. If, at a given moment, more than one instrument specifies a value for noise, only the last value should be taken into account. If the values do not change in a given cycle, the delay should be extended accordingly for optimization purposes.
+
+**Export Optimization**
+
+The DOSOUND format export must be efficient and optimized. When an instrument's volume is silenced (volume = 0), all remaining sequence data for that channel (noise, pitch changes, arpeggio) must be ignored and excluded from the exported data stream to minimize memory usage and processing overhead on the target Atari ST system.
+
+## User Interface Reference
+
+The UI must be simple, monospaced, and DOS-like. Avoid complex modern UI features where simple text and pseudo-graphic rendering is sufficient.
+
+**Hexadecimal Display**
+
+Use hexadecimal notation (0x prefix) for displaying all hardware-related values in the user interface, including position numbers, instrument IDs, pattern positions, and register values. This maintains consistency with the underlying Atari ST hardware and assembly format.
+
+The note C sharp is written as "C#".
+
+**Layout Requirements**
+
+- The application screen should fit entirely within the browser tab so that using the scroll bar is not necessary.
+- The application should support a night mode (dark, default), a day mode (light), and a high-contrast mode (contrast).
+- In the top-right corner, there should be an icon to switch the theme.
+- Place the application logo in the top-left corner.
+- Keyboard support is required. The active section should be highlighted, and navigation between sections should use the TAB key clockwise or Shift+TAB in reverse.
+- Individual blocks can be scrolled vertically (pattern positions, instrument list, playlist) and horizontally (envelope blocks).
+- All three track blocks (A, B, and C) must scroll simultaneously with the position number block.
+- The interface should keep the current element centered vertically during navigation.
+
+**Interface Layout Diagram**
+
+```
+┌───┐┌───────────────────────────────────────────────┐┌─┬─┬─┬─┬─┬─┬─┬─┐┌───┐
+│ ♪ ││ Title bar with title, theme selection, etc    ││0│1│2│3│4│5│6│7││ ☾ │
+└───┘└───────────────────────────────────────────────┘└─┴─┴─┴─┴─┴─┴─┴─┘└───┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Command (operations) button panel                                        │
+└──────────────────────────────────────────────────────────────────────────┘
+┌──┐┌─────────┐┌─────────┐┌─────────┐┌─────────────────┐┌──────────────────┐
+│  ││ Track A ││ Track B ││ Track C ││ Tone/Noise mode ││ Song information │
+│  ││         ││         ││         │└─────────────────┘└──────────────────┘
+│00││         ││         ││         │┌─────────────────┐┌──────────────────┐
+│01││         ││         ││         ││ Volume          ││ Song playlist    │
+│..││         ││         ││         ││                 ││                  │
+│..││         ││         ││         │└─────────────────┘└──────────────────┘
+│..││         ││         ││         │┌─────────────────┐┌──────────────────┐
+│..││         ││         ││         ││ Arpeggio        ││ Instrument list  │
+│..││         ││         ││         ││                 ││                  │
+│..││         ││         ││         │└─────────────────┘│                  │
+│..││         ││         ││         │┌─────────────────┐│                  │
+│..││         ││         ││         ││ Pitch           ││                  │
+│..││         ││         ││         ││                 ││                  │
+│..││         ││         ││         │└─────────────────┘└──────────────────┘
+│..││         ││         ││         │┌─────────────────┐┌────────────┐┌────┐
+│..││         ││         ││         ││ Noise           ││ Dump       ││ EQ │
+│..││         ││         ││         ││                 ││            ││    │
+└──┘└─────────┘└─────────┘└─────────┘└─────────────────┘└────────────┘└────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│ On-screen piano keyboard                                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+```
+
+See `media/layout.png` for the full layout image.
+
+**Navigation Block Order**
+
+- On-screen piano keyboard
+- Octave selection
+- Commands panel
+- Track A
+- Track B
+- Track C
+- Tone/Noise
+- Volume
+- Arpeggio
+- Pitch
+- Noise
+- Song information
+- Song playlist
+- Instrument list
+
+Do not focus on Dump, EQ, logo, title, or the theme toggle during navigation.
+
+**Piano Keyboard Mapping**
+
+The computer keyboard doubles as a piano. The lower letter row starts at the base octave and continues into the next octave, and the upper letter and number rows map one or two octaves above. See `src/constants/keyboard.ts` for the exact key-to-note map and `SPECIFICATION.md` for the full input binding reference.

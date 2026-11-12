@@ -256,4 +256,92 @@ describe('persistenceMirror', () => {
       throw error;
     }
   });
+
+  it('drops a queued delete captured before the reset epoch', async () => {
+    const mirror = await importFreshMirror(createFakeIndexedDb());
+    try {
+      mirror.mirrorSnapshot('song', { title: 'Keeper' });
+      await flush();
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toEqual({ title: 'Keeper' });
+      mirror.removeMirroredSnapshot('song');
+      mirror.beginResetEpoch();
+      await flush();
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toEqual({ title: 'Keeper' });
+    } catch (error) {
+      console.log('stale-delete mismatch');
+      throw error;
+    }
+  });
+
+  it('refuses mirror deletes while a reset is pending', async () => {
+    const mirror = await importFreshMirror(createFakeIndexedDb());
+    try {
+      mirror.mirrorSnapshot('song', { title: 'Keeper' });
+      await flush();
+      mirror.beginResetEpoch();
+      mirror.removeMirroredSnapshot('song');
+      await flush();
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toEqual({ title: 'Keeper' });
+    } catch (error) {
+      console.log('pending-reset-delete mismatch');
+      throw error;
+    }
+  });
+
+  it('retries the database open after a transient failure', async () => {
+    const idb = createFakeIndexedDb();
+    let failures = 1;
+    vi.stubGlobal('indexedDB', {
+      open: () => {
+        if (failures > 0) {
+          failures -= 1;
+          const request = {
+            result: undefined as unknown,
+            error: new Error('transient'),
+            onsuccess: null as (() => void) | null,
+            onerror: null as (() => void) | null,
+            onupgradeneeded: null as (() => void) | null,
+            onblocked: null as (() => void) | null,
+          };
+          queueMicrotask(() => {
+            request.onerror?.();
+          });
+          return request;
+        }
+        return idb.open();
+      },
+    });
+    vi.resetModules();
+    const mirror = await import('../../../src/utils/storage/persistenceMirror.ts');
+    try {
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toBeNull();
+      mirror.mirrorSnapshot('song', { title: 'Retried' });
+      await flush();
+      await expect(mirror.readMirroredSnapshot('song')).resolves.toEqual({ title: 'Retried' });
+    } catch (error) {
+      console.log('retry-open mismatch');
+      throw error;
+    }
+  });
+
+  it('skips the persist request when navigator is absent or storage is missing', async () => {
+    vi.stubGlobal('navigator', undefined);
+    vi.resetModules();
+    const noNavigator = await import('../../../src/utils/storage/persistenceMirror.ts');
+    try {
+      expect(() => noNavigator.requestPersistentStorage()).not.toThrow();
+    } catch (error) {
+      console.log('no-navigator mismatch');
+      throw error;
+    }
+    vi.stubGlobal('navigator', {});
+    vi.resetModules();
+    const noStorage = await import('../../../src/utils/storage/persistenceMirror.ts');
+    try {
+      expect(() => noStorage.requestPersistentStorage()).not.toThrow();
+    } catch (error) {
+      console.log('no-storage mismatch');
+      throw error;
+    }
+  });
 });

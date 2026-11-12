@@ -119,6 +119,31 @@ describe('deletePatternStep', () => {
       throw error;
     }
   });
+
+  it('pads a short track to the pattern length before shifting', () => {
+    const lines = [noteStep('C'), noteStep('D')];
+    const result = deletePatternStep(lines, 0, 4);
+    try {
+      expect(result).toHaveLength(4);
+      expect(result[0].note?.note).toBe('D');
+      expect(result[1].note).toBeNull();
+      expect(result[3].note).toBeNull();
+    } catch (error) {
+      console.log('delete-pad mismatch', result);
+      throw error;
+    }
+  });
+
+  it('falls back to the default pattern length', () => {
+    const result = deletePatternStep([noteStep('C'), noteStep('D')], 0, 0);
+    try {
+      expect(result).toHaveLength(PATTERN_LENGTH);
+      expect(result[0].note?.note).toBe('D');
+    } catch (error) {
+      console.log('delete-default-length mismatch', result);
+      throw error;
+    }
+  });
 });
 
 describe('normalizePatternId', () => {

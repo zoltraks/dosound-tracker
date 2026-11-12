@@ -152,3 +152,7 @@ When the canonical table formatter has aligned a document's tables, run Prettier
 **BSD grep has no Perl-regex flag**
 
 `grep -P` is GNU-only - the BSD grep on macOS fails with `invalid option -- P`, and `rg` is not installed on this machine. Non-ASCII scans and pattern checks run through `node -e`, `npx prettier --check`, or the file-search tools instead of reaching for GNU-only flags.
+
+**`npm run retention` sweeps completed families deterministically**
+
+`scripts/retention-sweep.mjs` encodes the Document Retention sweep from `WORKFLOW.md` - dry-run prints the boundary reasoning, classified candidates, link-check hits, and `.gitkeep` actions without moving anything, `--apply` executes the `git mv` moves and reconciliation, `--repoint` rewrites staying-file references to moved paths, and `--json` emits the plan as machine-readable output. Boundary-day flat files and narrative references are reported for agent judgment, never auto-decided - run the dry-run first and read its report before passing `--apply`.

@@ -6,13 +6,11 @@
 
 ## Summary
 
-| Field         | Value                                                           |
-| ------------- | --------------------------------------------------------------- |
-| Intent        | Make one canonical note-off binding across code and documents   |
-| Key decisions | The canonical binding is the user's call - the record must not  |
-|               | pre-pick it                                                     |
-| Open risks    | Implementing Ctrl+Space note-off forces a redesign of the piano |
-|               | focus shortcut it currently drives                              |
+| Field         | Value                                                         |
+| ------------- | ------------------------------------------------------------- |
+| Intent        | Make one canonical note-off binding across code and documents |
+| Key decisions | Shift+Space is canonical - `F-10` corrects to match           |
+| Open risks    | none - the piano-focus binding is untouched                   |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

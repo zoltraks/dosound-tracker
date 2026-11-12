@@ -147,6 +147,48 @@ describe('PlaylistPanel', () => {
     }
   });
 
+  it('commits the pattern id without refocus on a plain Enter', () => {
+    const setActiveSection = vi.fn();
+    const { container } = renderPanel({ setActiveSection });
+    fireEvent.keyDown(getPanel(container), { key: 'Enter' });
+    const input = container.querySelector('.pattern-input') as HTMLInputElement;
+    try {
+      expect(input).toBeTruthy();
+    } catch (error) {
+      console.log('input mount mismatch');
+      throw error;
+    }
+    fireEvent.keyDown(input, { key: 'Enter' });
+    try {
+      expect(container.querySelector('.pattern-input')).toBeNull();
+      expect(setActiveSection).not.toHaveBeenCalledWith('trackA');
+    } catch (error) {
+      console.log('plain-enter mismatch');
+      throw error;
+    }
+  });
+
+  it('abandons pattern editing on Escape without committing', () => {
+    const onPlaylistChange = vi.fn();
+    const { container } = renderPanel({ onPlaylistChange });
+    fireEvent.keyDown(getPanel(container), { key: 'Enter' });
+    const input = container.querySelector('.pattern-input') as HTMLInputElement;
+    try {
+      expect(input).toBeTruthy();
+    } catch (error) {
+      console.log('input mount mismatch');
+      throw error;
+    }
+    fireEvent.keyDown(input, { key: 'Escape' });
+    try {
+      expect(container.querySelector('.pattern-input')).toBeNull();
+      expect(onPlaylistChange).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('escape-edit mismatch');
+      throw error;
+    }
+  });
+
   it('commits the pattern id and focuses the track on Alt+Enter', () => {
     const setActiveSection = vi.fn();
     const { container } = renderPanel({ setActiveSection });

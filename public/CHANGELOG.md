@@ -1,5 +1,21 @@
 # Changes
 
+## Version 1.6.1
+
+Packaged desktop builds stop trusting the development origin, the note-off
+binding is confirmed as Shift+Space in every document, and the
+shipped-dependency license policy is enforced by a census test.
+
+- **Desktop security**: packaged apps trust only the bundled
+  `dist/index.html` for permissions and navigation - the development
+  localhost origin is denied while packaged, and foreign `file:` pages
+  stay rejected.
+- **Keyboard**: Shift+Space is the canonical note-off binding; the
+  requirements record now matches the manual, specification, and code.
+- **Repository**: the license allowlist gains PSF-2.0 and 0BSD with a
+  lockfile census guard, and the branch-coverage gate is restored to 80%
+  with the instrument-navigation logic extracted and unit-tested.
+
 ## Version 1.6.0
 
 Reset protection hardens so cleared data cannot revive, and the project's

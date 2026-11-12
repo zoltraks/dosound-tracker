@@ -268,6 +268,8 @@ Node 26 prints `ExperimentalWarning: localStorage is not available` lines during
 - Assertions on expansion, truncation, or filtering must prove the code path actually ran - assert the expanded output's content, not only its bounded shape. Input that never triggers the mechanism can satisfy a bounds assertion vacuously: a step node carrying a sibling `instrument` key is not a run and never expands, so asserting "at most N steps" proves nothing.
 - Assertions on serialized YAML must account for scalar normalization on round-trip - `yaml.load` strips plain-scalar surrounding whitespace, so a parse-back assertion can pass while the emitted text is still wrong. Assert on the raw output text for unquoted scalars (for example `toContain('author: Writer')`), and use the parsed document only for values the emitter guarantees to quote.
 - Commit-style inputs buffer typed text locally and emit `onChange` only on a committing event - blur, Enter, or a spin-button step. A `fireEvent.change` alone exercises the buffer and never the commit; assertions on the emitted value dispatch the committing event.
+- Spawned `node` subprocesses are invisible to v8 coverage - a CLI script exercised through `spawnSync(process.execPath, ...)` contributes no instrumented paths. To cover a script's `main()`, run it inside the test process: set `process.argv` (including any `--root <fixture>` the script reads), call `vi.resetModules()`, then `await import()` the script so its entry guard executes `main()` under instrumentation, and restore `process.argv` and `process.exitCode` afterward so a nonzero exit never leaks into the worker.
+- Fixtures for repository tooling must live outside the repository - `git -C` and spawn-based git calls discover the parent `.git` upward, so a fixture under `work/` silently resolves the real repository. Build such fixtures in `os.tmpdir()`. Git pathspec `*` also spans `/`, so a version-matching glob like `docs/*/1.6.*` matches nested paths - test fixture history must keep unrelated `X.Y.Z` directories out of the commits the glob scans.
 
 **Playwright**
 
@@ -319,10 +321,14 @@ The project targets 80% coverage for lines, functions, branches, and statements.
 
 Remaining coverage gaps that may be addressed in future work:
 
-- `src/components/` — the header and tracker shells are the thinnest surfaces
-- `src/hooks/` — a number of hooks still have thin branch coverage
+- `src/components/piano/PianoKeyboard.tsx` — interaction and playback branches
+- `src/hooks/song/useTrackOperations.ts` — hook logic branches
+- `src/components/playlist/PlaylistPanel.tsx` — line-interaction internals
+- `src/utils/markdown/markdown.ts`, `src/utils/song/songParser.ts`, `src/hooks/ui/useUiStore.ts` — scattered edges
 
-The remaining uncovered branches are mostly defensive guards unreachable through the public surface (absent optional callbacks, unreachable `typeof` fallbacks, and fetch cancellation races).
+The remaining uncovered branches are mostly defensive guards unreachable through the public surface (absent optional callbacks, unreachable `typeof` fallbacks, constant-flag blocks, and fetch cancellation races).
+
+The enforced figure is an aggregate over everything the suite imports - a file entering `test/` mid-window shifts the denominator, so evaluate the gate per-source before planning coverage work; a red aggregate is not automatically project debt.
 
 The gap list is a claim about the tree - a change that adds or retires suites updates it in the same change set, so a later record never plans against stale gaps.
 

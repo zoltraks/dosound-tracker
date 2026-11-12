@@ -6,8 +6,8 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 interface PermissionsModule {
-  isAppOrigin(url: unknown): boolean;
-  isMidiAllowed(permission: unknown, url: unknown): boolean;
+  isAppOrigin(url: unknown, isPackaged?: boolean): boolean;
+  isMidiAllowed(permission: unknown, url: unknown, isPackaged?: boolean): boolean;
   isExternalHttpUrl(url: unknown): boolean;
 }
 
@@ -20,14 +20,24 @@ const { isAppOrigin, isMidiAllowed, isExternalHttpUrl } =
   require('../../electron/permissions.cjs') as PermissionsModule;
 
 describe('Electron MIDI permission policy', () => {
-  it('grants midi for the packaged bundle index', () => {
+  it('grants midi for the packaged bundle index in both modes', () => {
     expect(isAppOrigin(bundleIndexUrl)).toBe(true);
-    expect(isMidiAllowed('midi', bundleIndexUrl)).toBe(true);
+    expect(isAppOrigin(bundleIndexUrl, false)).toBe(true);
+    expect(isAppOrigin(bundleIndexUrl, true)).toBe(true);
+    expect(isMidiAllowed('midi', bundleIndexUrl, true)).toBe(true);
   });
 
-  it('grants midi for the development server origin', () => {
-    expect(isMidiAllowed('midi', 'http://localhost:8008/')).toBe(true);
-    expect(isMidiAllowed('midi', 'http://localhost:8008/index.html')).toBe(true);
+  it('grants midi for the development server origin while unpackaged', () => {
+    expect(isMidiAllowed('midi', 'http://localhost:8008/', false)).toBe(true);
+    expect(isMidiAllowed('midi', 'http://localhost:8008/index.html', false)).toBe(true);
+    expect(isAppOrigin('http://localhost:8008/', false)).toBe(true);
+  });
+
+  it('denies the development origin when packaged', () => {
+    expect(isAppOrigin('http://localhost:8008/', true)).toBe(false);
+    expect(isAppOrigin('http://localhost:8008/index.html', true)).toBe(false);
+    expect(isMidiAllowed('midi', 'http://localhost:8008/', true)).toBe(false);
+    expect(isMidiAllowed('midi', 'http://localhost:8008/index.html', true)).toBe(false);
   });
 
   it('denies midi for a foreign file origin', () => {
@@ -38,8 +48,10 @@ describe('Electron MIDI permission policy', () => {
       'file://remote-host/share/index.html',
     ];
     for (const url of foreignFileUrls) {
-      expect(isAppOrigin(url)).toBe(false);
-      expect(isMidiAllowed('midi', url)).toBe(false);
+      for (const isPackaged of [false, true]) {
+        expect(isAppOrigin(url, isPackaged)).toBe(false);
+        expect(isMidiAllowed('midi', url, isPackaged)).toBe(false);
+      }
     }
   });
 
@@ -60,6 +72,8 @@ describe('Electron MIDI permission policy', () => {
   it('never grants midiSysex', () => {
     expect(isMidiAllowed('midiSysex', bundleIndexUrl)).toBe(false);
     expect(isMidiAllowed('midiSysex', 'http://localhost:8008/')).toBe(false);
+    expect(isMidiAllowed('midiSysex', bundleIndexUrl, true)).toBe(false);
+    expect(isMidiAllowed('midiSysex', 'http://localhost:8008/', false)).toBe(false);
   });
 
   it('denies malformed and empty URLs', () => {

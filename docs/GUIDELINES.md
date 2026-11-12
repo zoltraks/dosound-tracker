@@ -287,7 +287,7 @@ The documentation style rules live in `STYLE.md`, the central source of truth fo
 
 ## Documentation Distillation
 
-See `WORKFLOW.md` for the documentation-distillation convention.
+For requests to distil or distill documentation, follow [Documentation Distillation](WORKFLOW.md#documentation-distillation). Exclude `docs/archive/` from routine reads and searches. Consult a scoped archived copy only on explicit request or when the operation requires historical evidence. Follow [Document Directory Access](WORKFLOW.md#document-directory-access).
 
 ## Date and Time Format
 

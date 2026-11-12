@@ -102,3 +102,153 @@ describe('useSongLifecycleDialogs reset', () => {
     }
   });
 });
+
+describe('useSongLifecycleDialogs demo song', () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    localStorage.clear();
+  });
+
+  const renderDialogsRef = (params: Params) => {
+    const captured: { current: HookResult | null } = { current: null };
+    const Harness = () => {
+      captured.current = useSongLifecycleDialogs(params);
+      return null;
+    };
+    render(<Harness />);
+    if (!captured.current) {
+      throw new Error('hook did not render');
+    }
+    return captured;
+  };
+
+  const stubFetchResponse = (response: {
+    ok: boolean;
+    contentType?: string | null;
+    body?: string;
+  }) => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(() =>
+        Promise.resolve({
+          ok: response.ok,
+          headers: {
+            get: (name: string) =>
+              name === 'content-type' ? (response.contentType ?? null) : null,
+          },
+          text: () => Promise.resolve(response.body ?? ''),
+        }),
+      ),
+    );
+  };
+
+  it('opens the picker directly when the song is clean', () => {
+    const params = createParams({ isSongDirty: false });
+    const dialogs = renderDialogsRef(params);
+    try {
+      act(() => {
+        dialogs.current!.handleDemoSongClick();
+      });
+      expect(dialogs.current!.isDemoSongPickerOpen).toBe(true);
+      expect(params.setIsNewSongConfirmOpen).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('demo-clean mismatch');
+      throw error;
+    }
+  });
+
+  it('routes a dirty song through the confirm dialog before opening the picker', () => {
+    const params = createParams({ isSongDirty: true });
+    const dialogs = renderDialogsRef(params);
+    try {
+      act(() => {
+        dialogs.current!.handleDemoSongClick();
+      });
+      expect(dialogs.current!.isDemoSongPickerOpen).toBe(false);
+      expect(params.setIsNewSongConfirmOpen).toHaveBeenCalledWith(true);
+
+      act(() => {
+        dialogs.current!.handleConfirmNewSong();
+      });
+      expect(params.setIsNewSongConfirmOpen).toHaveBeenCalledWith(false);
+      expect(dialogs.current!.isDemoSongPickerOpen).toBe(true);
+      expect(params.createNewSong).not.toHaveBeenCalled();
+    } catch (error) {
+      console.log('demo-dirty mismatch');
+      throw error;
+    }
+  });
+
+  it('loads a picked demo song, resets position, and closes the picker', async () => {
+    stubFetchResponse({ ok: true, contentType: 'text/yaml', body: 'song: demo' });
+    const params = createParams();
+    const dialogs = renderDialogsRef(params);
+    try {
+      act(() => {
+        dialogs.current!.handleDemoSongClick();
+      });
+      await act(async () => {
+        dialogs.current!.handlePickDemoSong('file:///songs/demo.yaml');
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(params.loadSongFromText).toHaveBeenCalledWith('song: demo');
+      expect(params.setPosition).toHaveBeenCalledWith(0, 0, 0);
+      expect(params.setSharedCurrentLine).toHaveBeenCalledWith(0);
+      expect(params.setActiveSection).toHaveBeenCalledWith('commands');
+      expect(params.setChannelMutes).toHaveBeenCalledWith([false, false, false]);
+      expect(params.setSongError).not.toHaveBeenCalled();
+      expect(dialogs.current!.isDemoSongPickerOpen).toBe(false);
+    } catch (error) {
+      console.log('demo-load mismatch');
+      throw error;
+    }
+  });
+
+  it('reports a fetch failure without loading the song', async () => {
+    stubFetchResponse({ ok: false });
+    const params = createParams();
+    const dialogs = renderDialogsRef(params);
+    try {
+      act(() => {
+        dialogs.current!.handleDemoSongClick();
+      });
+      await act(async () => {
+        dialogs.current!.handlePickDemoSong('file:///songs/missing.yaml');
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(params.loadSongFromText).not.toHaveBeenCalled();
+      expect(params.setSongError).toHaveBeenCalledWith('Error loading song file.');
+      expect(dialogs.current!.isDemoSongPickerOpen).toBe(false);
+    } catch (error) {
+      console.log('demo-failure mismatch');
+      throw error;
+    }
+  });
+
+  it('rejects an HTML response as a missing song', async () => {
+    stubFetchResponse({ ok: true, contentType: 'text/html', body: '<html>404</html>' });
+    const params = createParams();
+    const dialogs = renderDialogsRef(params);
+    try {
+      act(() => {
+        dialogs.current!.handleDemoSongClick();
+      });
+      await act(async () => {
+        dialogs.current!.handlePickDemoSong('file:///songs/missing.yaml');
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(params.loadSongFromText).not.toHaveBeenCalled();
+      expect(params.setSongError).toHaveBeenCalledWith('Error loading song file.');
+      expect(dialogs.current!.isDemoSongPickerOpen).toBe(false);
+    } catch (error) {
+      console.log('demo-html mismatch');
+      throw error;
+    }
+  });
+});

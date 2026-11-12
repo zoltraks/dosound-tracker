@@ -25,6 +25,7 @@ import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
 import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
 import { normalizeInstrumentId } from './utils/instrument/instrumentSelection.ts';
+import { resolveNextInstrument } from './utils/instrument/instrumentNavigation.ts';
 import type { EditPosition } from './utils/song/editHistory.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
@@ -572,23 +573,7 @@ const App: React.FC = () => {
 
   const handleNavigateInstrument = useCallback(
     (delta: number) => {
-      const instruments = currentSong.instrument;
-      if (!instruments || instruments.length === 0) {
-        return;
-      }
-      const count = instruments.length;
-      let index = instruments.findIndex((inst) => inst === currentInstrument);
-      if (index === -1) {
-        index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
-      }
-      if (index === -1) {
-        // The current instrument can be an unsaved empty slot outside the
-        // array - its slot id still encodes the position to step from.
-        const slot = parseInt(normalizeInstrumentId(currentInstrument.id), 16);
-        index = Number.isFinite(slot) ? Math.min(slot, count - 1) : 0;
-      }
-      const next = (((index + delta) % count) + count) % count;
-      const target = instruments[next];
+      const target = resolveNextInstrument(currentSong.instrument, currentInstrument, delta);
       if (target) {
         setCurrentInstrument(target);
       }
