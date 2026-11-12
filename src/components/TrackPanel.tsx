@@ -259,7 +259,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         }
       } else if (key === 'PAGEUP' || key === 'PAGEDOWN') {
         event.preventDefault();
-        if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        if (!event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey) {
           const step = key === 'PAGEUP' ? -16 : 16;
           onLineChange(stepLineIndex(currentLine, patternLength, step));
         }

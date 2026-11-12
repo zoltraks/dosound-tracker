@@ -244,6 +244,7 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 - **TAB** and **SHIFT + TAB** section cycling
 - **ARROW** movement
 - **PG UP / PG DOWN** to jump 16 rows inside a track, **SHIFT + PG UP / SHIFT + PG DOWN** to move between song lines from any section while keeping the track row
+- **ALT + PG UP / ALT + PG DOWN** to select the previous and next instrument from any section, wrapping around the list - **CTRL + -** and **CTRL + =** do the same
 - **ALT + 1 / ALT + 2 / ALT + 3** to focus tracks A, B, and C (OPTION on macOS)
 - **CTRL + SPACE** to focus the on-screen piano, and again to return to the previous section
 - **SHIFT + SPACE** to write a note-off, or to clear a position that already holds one

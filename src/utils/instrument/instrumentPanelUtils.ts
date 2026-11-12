@@ -37,20 +37,8 @@ export function computeVisibleSlotCount(
   instruments: Instrument[],
   currentIndex: number,
   maxInstruments: number,
-  isInstrumentEmpty: (instrument: Instrument) => boolean,
 ): number {
-  let lastIndex = -1;
-
-  for (let i = 0; i < instruments.length; i++) {
-    const inst = instruments[i];
-    if (inst && !isInstrumentEmpty(inst)) {
-      lastIndex = i;
-    }
-  }
-
-  if (lastIndex < 0 && instruments.length > 0) {
-    lastIndex = instruments.length - 1;
-  }
+  let lastIndex = instruments.length - 1;
 
   if (lastIndex < currentIndex) {
     lastIndex = currentIndex;

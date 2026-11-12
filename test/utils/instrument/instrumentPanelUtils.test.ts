@@ -47,19 +47,27 @@ describe('instrumentPanelUtils', () => {
   });
 
   it('computeVisibleSlotCount returns at least 1 and includes current index', () => {
-    const isEmpty = (inst: Instrument) => inst.name === '';
-
-    expect(computeVisibleSlotCount([], 0, 256, isEmpty)).toBe(1);
+    expect(computeVisibleSlotCount([], 0, 256)).toBe(1);
 
     const instruments = [
       makeInstrument('00', ''),
       makeInstrument('01', ''),
       makeInstrument('02', 'Lead'),
     ];
-    expect(computeVisibleSlotCount(instruments, 0, 256, isEmpty)).toBe(3);
+    expect(computeVisibleSlotCount(instruments, 0, 256)).toBe(3);
 
     // currentIndex forces visibility even if last non-empty is earlier
-    expect(computeVisibleSlotCount(instruments, 5, 256, isEmpty)).toBe(6);
+    expect(computeVisibleSlotCount(instruments, 5, 256)).toBe(6);
+  });
+
+  it('computeVisibleSlotCount includes trailing empty entries so they stay navigable', () => {
+    const instruments = [
+      makeInstrument('00', 'A'),
+      makeInstrument('01', 'B'),
+      makeInstrument('02', ''),
+      makeInstrument('03', ''),
+    ];
+    expect(computeVisibleSlotCount(instruments, 1, 256)).toBe(4);
   });
 
   it('getMovedInstrumentIndex clamps within range', () => {

@@ -1,6 +1,6 @@
 # CSS Engineering Standards
 
-<!-- Version: 0.1.6 | Date: 2026-11-08 -->
+<!-- Version: 0.1.7 | Date: 2026-11-12 -->
 
 ## Purpose
 
@@ -524,6 +524,26 @@ because a second document-level scrollbar beside the intended one means the heig
 
 Size grid and flex tracks by content when clipped items would let them collapse,
 and let the container scroll.
+
+Debug a scrollable area that is larger than its content by measuring, not by
+patching margins or padding: compare `scrollHeight` against the last child's
+bottom edge, then walk the descendants for the overflowing box - `transform`
+offsets, inline-level form controls sitting on a text baseline, and children
+larger than their container all extend the scrollable bounds.
+
+A scroll container that must reach an exact end position needs an integer
+height - a fractional `clientHeight` produces a fractional scroll maximum
+that wheel deltas and programmatic `scrollTop` writes fight over. Floor the
+track height (for example through a `ResizeObserver`) before touching scroll
+logic.
+
+Do not use `scroll-snap` to repair scroll bounds - under subpixel rounding the
+snap point and the scroll maximum disagree by a pixel and the container
+bounces.
+
+Space between scrolled content and the scrollbar belongs on the items as
+`margin`, not on the scroll container as `padding` - scroll containers can
+fold their padding into the scrollable area on the block axis too.
 
 ## HTML Structure for Layout
 

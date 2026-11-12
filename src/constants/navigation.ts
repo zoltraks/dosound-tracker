@@ -31,6 +31,8 @@ export const KEYBOARD_SHORTCUTS = {
   'CTRL+SPACE': 'togglePianoFocus',
   'SHIFT+PAGEUP': 'previousSongLine',
   'SHIFT+PAGEDOWN': 'nextSongLine',
+  'ALT+PAGEUP': 'previousInstrument',
+  'ALT+PAGEDOWN': 'nextInstrument',
 
   // Editing
   SPACE: 'clearPosition',

@@ -254,9 +254,9 @@ export const useDataManagement = (positionBridge?: EditPositionBridge) => {
   // Sync currentInstrument with song's instruments when song changes
   useEffect(() => {
     const currentId = normalizeInstrumentId(currentInstrument.id);
-    const songInstrument = currentSong.instrument.find(
-      (inst) => normalizeInstrumentId(inst?.id) === currentId,
-    );
+    const songInstrument =
+      currentSong.instrument.find((inst) => inst === currentInstrument) ??
+      currentSong.instrument.find((inst) => normalizeInstrumentId(inst?.id) === currentId);
     if (!songInstrument || songInstrument === currentInstrument) {
       return;
     }

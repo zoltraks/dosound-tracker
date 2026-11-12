@@ -2,15 +2,24 @@
 
 **Type:** Chore
 
+**Status:** Abandoned
+
+**Abandonment reason:** The project owner discarded the record during the
+1.5.8 window intake. The TypeScript 7 upgrade is no longer wanted work - the
+upstream gate was measured as still closed (`typescript-eslint` 8.72.2 and
+the canary line both declare `typescript <6.1.0`), and the owner chose to
+abandon the record rather than carry it into a later window.
+
 ## Summary
 
-| Field         | Value                                                               |
-| ------------- | ------------------------------------------------------------------- |
-| Intent        | Move to `typescript` 7 once the lint toolchain admits it            |
-| Key decisions | Single dependency bump behind a hard external gate                  |
-| Open risks    | Blocked upstream - `typescript-eslint` currently requires           |
-|               | `typescript <6.1.0`, so the bump cannot land until the linter chain |
-|               | supports the 7 line                                                 |
+| Field         | Value                                                             |
+| ------------- | ----------------------------------------------------------------- |
+| Intent        | Move to `typescript` 7 once the lint toolchain admits it          |
+| Key decisions | Single dependency bump behind a hard external gate                |
+| Open risks    | Blocked upstream - measured in the 1.5.8 window: `typescript`     |
+|               | 7.0.2 is published, but `typescript-eslint` 8.72.2 (latest) and   |
+|               | 8.72.3-alpha.8 (canary) both declare `typescript >=4.8.4 <6.1.0`, |
+|               | so even the TypeScript 6 stable line is not yet admitted          |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.

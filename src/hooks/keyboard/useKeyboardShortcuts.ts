@@ -15,7 +15,9 @@ export type GlobalShortcutName =
   | 'cutTrack'
   | 'pasteTrack'
   | 'previousSongLine'
-  | 'nextSongLine';
+  | 'nextSongLine'
+  | 'previousInstrument'
+  | 'nextInstrument';
 
 interface UseKeyboardShortcutsArgs {
   setGlobalShortcut: (name: GlobalShortcutName, handler: () => void) => void;
@@ -33,6 +35,7 @@ interface UseKeyboardShortcutsArgs {
   handleCutTrack: () => void;
   handlePasteTrack: () => void;
   handleNavigateSongLine: (delta: number) => void;
+  handleNavigateInstrument: (delta: number) => void;
 }
 
 export function useKeyboardShortcuts({
@@ -51,6 +54,7 @@ export function useKeyboardShortcuts({
   handleCutTrack,
   handlePasteTrack,
   handleNavigateSongLine,
+  handleNavigateInstrument,
 }: UseKeyboardShortcutsArgs): void {
   useEffect(() => {
     setGlobalShortcut('playSong', handleStartSong);
@@ -68,6 +72,8 @@ export function useKeyboardShortcuts({
     setGlobalShortcut('pasteTrack', handlePasteTrack);
     setGlobalShortcut('previousSongLine', () => handleNavigateSongLine(-1));
     setGlobalShortcut('nextSongLine', () => handleNavigateSongLine(1));
+    setGlobalShortcut('previousInstrument', () => handleNavigateInstrument(-1));
+    setGlobalShortcut('nextInstrument', () => handleNavigateInstrument(1));
   }, [
     setGlobalShortcut,
     handleStartSong,
@@ -84,5 +90,6 @@ export function useKeyboardShortcuts({
     handleCutTrack,
     handlePasteTrack,
     handleNavigateSongLine,
+    handleNavigateInstrument,
   ]);
 }

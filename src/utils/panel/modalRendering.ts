@@ -77,7 +77,6 @@ export function buildInfoModals(args: BuildInfoModalsArgs): InfoModalDescriptor[
       title: INFO_MODAL_TITLES.soundExportSummary,
       message: args.soundExportSummary,
       onClose: args.onCloseSoundExportSummary,
-      className: 'export-summary-modal',
     },
     {
       key: 'dumpExportSummary',
@@ -85,7 +84,6 @@ export function buildInfoModals(args: BuildInfoModalsArgs): InfoModalDescriptor[
       title: INFO_MODAL_TITLES.dumpExportSummary,
       message: args.dumpExportSummary,
       onClose: args.onCloseDumpExportSummary,
-      className: 'export-summary-modal',
     },
     {
       key: 'transposeSummary',

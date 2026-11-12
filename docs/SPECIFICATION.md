@@ -273,8 +273,9 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - TAB cycles to the next UI section
 - SHIFT+TAB cycles to the previous UI section
 - ARROW keys move the cursor between lines and columns in the pattern editor
-- PAGEUP and PAGEDOWN step the cursor 16 rows inside the focused track pattern
+- PAGEUP and PAGEDOWN without a modifier step the cursor 16 rows inside the focused track pattern
 - SHIFT+PAGEUP and SHIFT+PAGEDOWN navigate to the previous and next song line from any focused section, keeping the cursor row inside the track - clamped at the first and last playlist entries
+- ALT+PAGEUP and ALT+PAGEDOWN select the previous and next instrument from any focused section - wrapping around the stored instrument list (ALT is OPTION on macOS)
 - ALT+1 focuses track A, ALT+2 focuses track B, ALT+3 focuses track C (ALT is OPTION on macOS)
 - CTRL+SPACE focuses the on-screen piano, or returns focus to the section that was active before the piano
 
@@ -283,8 +284,8 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - SPACE clears the current cursor position
 - BACKSPACE clears the current cursor position
 - SHIFT+SPACE inserts a note-off event, or clears the position when it already holds a note-off
-- CTRL+Minus selects the previous instrument
-- CTRL+Plus selects the next instrument
+- CTRL+Minus selects the previous instrument with the same wrap-around as ALT+PAGEUP
+- CTRL+Plus selects the next instrument with the same wrap-around as ALT+PAGEDOWN
 - CTRL+digit enters the hex value in the Volume, Arpeggio, and Noise envelopes and advances to the next step
 - ALT+ENTER inside the playlist pattern-id input finishes editing and focuses the track
 - Section editing keys require bare keys - an event carrying Ctrl, Cmd, or Alt never mutates envelope or playlist data, and no section handler swallows a global chord

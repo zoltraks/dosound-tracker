@@ -131,7 +131,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
           aria-label="Move position down"
           disabled={index === playlistLength - 1}
         >
-          <ChevronDown className="h-3 w-3 rotate-90" />
+          <ChevronDown size={12} />
         </button>
         <button
           type="button"
@@ -139,7 +139,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
           aria-label="Move position up"
           disabled={index === 0}
         >
-          <ChevronUp className="h-3 w-3 rotate-90" />
+          <ChevronUp size={12} />
         </button>
       </div>
     </div>

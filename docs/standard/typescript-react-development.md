@@ -1,6 +1,6 @@
 # TypeScript and React Engineering Standards
 
-<!-- Version: 0.1.5 | Date: 2026-11-08 -->
+<!-- Version: 0.1.6 | Date: 2026-11-12 -->
 
 ## Purpose
 
@@ -665,6 +665,13 @@ async function fetchData(signal: AbortSignal): Promise<Data> {
   survives focus changes and reloads, so it can silently redirect the operation to a
   different subject than the user expects. Command buttons bind to the active subject;
   selection-aware behaviour belongs to keyboard shortcuts only.
+- Applying utility-framework class names (`h-3 w-3`, `rotate-90`, `p-4`, `mt-2`) to
+  elements or components in a project with no utility CSS framework - the classes
+  silently match nothing, so the intended sizing or rotation never happens and the
+  element keeps its library default. A 24px lucide icon inside a 16px button
+  overflowed its row and inflated the scrollable area below the list. Size icon
+  components through their own API - lucide-react takes `size={n}` - and style
+  everything else with the project's own classes.
 
 ### React 19 Patterns
 

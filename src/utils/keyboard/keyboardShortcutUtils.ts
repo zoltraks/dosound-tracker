@@ -34,6 +34,10 @@ export function matchKeyboardShortcut(
         return { shortcut: 'ALT+6', preventDefault: true };
       case '8':
         return { shortcut: 'ALT+8', preventDefault: true };
+      case 'PAGEUP':
+        return { shortcut: 'ALT+PAGEUP', preventDefault: true };
+      case 'PAGEDOWN':
+        return { shortcut: 'ALT+PAGEDOWN', preventDefault: true };
     }
     return null;
   }

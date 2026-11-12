@@ -159,7 +159,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         aria-label="Increase value"
         className="number-spinner-button"
       >
-        <ChevronUp className="h-3 w-3 rotate-90" />
+        <ChevronUp size={12} />
       </button>
       <button
         type="button"
@@ -167,7 +167,7 @@ const NumberSpinner: React.FC<NumberSpinnerProps> = ({
         aria-label="Decrease value"
         className="number-spinner-button"
       >
-        <ChevronDown className="h-3 w-3 rotate-90" />
+        <ChevronDown size={12} />
       </button>
     </span>
   );

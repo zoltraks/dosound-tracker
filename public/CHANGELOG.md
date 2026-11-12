@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.5.8
+
+The instrument list renders every stored slot and gains a polished look, the keyboard gets global instrument page navigation, and the UI adopts bundled Ubuntu fonts.
+
+- **Instrument list**: empty slots at the end of the instrument table now render and stay navigable, and clicking an empty row selects that slot instead of a different instrument.
+- **Keyboard**: ALT + PGUP / ALT + PGDN select the previous and next instrument from any section, wrapping around the list, and the previously declared CTRL + - / CTRL + = bindings now work the same way.
+- **Instrument list**: rows gain odd/even striping, uniform 16px controls, and Ubuntu Mono numbers and names; the list scrolls the current instrument into view when one is added and reaches the true bottom.
+- **Interface**: the rotating message notes use the instrument-name font, the command bar keeps its frame color on hover, modal text gets a roomier line height, and interactive elements show consistent focus styling.
+- **Fonts**: the Ubuntu and Ubuntu Mono faces are bundled with the app instead of depending on locally installed fonts.
+
 ## Version 1.5.7
 
 The command panel gains a clipboard-free CLONE TRACK command, song-line navigation moves to a browser-safe chord, and the demo repository grows by the Overload song and instruments.

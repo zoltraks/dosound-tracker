@@ -4,7 +4,6 @@ import type { NavigationSection } from '../constants/navigation.ts';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../constants/music.ts';
 import type { Instrument } from '../synth/SoundDriver.ts';
-import { isInstrumentEmpty } from '../utils/instrument/instrument.ts';
 import { formatInstrumentSlotId } from '../utils/instrument/instrumentSelection.ts';
 import {
   computeVisibleSlotCount,
@@ -48,9 +47,13 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
   const isActive = activeSection === 'instrumentList';
   const isTrackSectionActive =
     activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
+  const visibleSlotCount = computeVisibleSlotCount(instruments, currentIndex, MAX_INSTRUMENTS);
 
   useEffect(() => {
-    const index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
+    let index = instruments.findIndex((inst) => inst === currentInstrument);
+    if (index === -1) {
+      index = instruments.findIndex((inst) => inst.id === currentInstrument.id);
+    }
     if (index !== -1) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentIndex(index);
@@ -64,7 +67,20 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
   }, [isActive, focusRevision]);
 
   useEffect(() => {
-    if (!isActive || !itemsContainerRef.current) {
+    const container = itemsContainerRef.current;
+    const parent = container?.parentElement;
+    if (!container || !parent || typeof ResizeObserver === 'undefined') {
+      return;
+    }
+    const observer = new ResizeObserver(() => {
+      container.style.maxHeight = `${Math.floor(parent.clientHeight)}px`;
+    });
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!itemsContainerRef.current) {
       return;
     }
 
@@ -73,17 +89,15 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
       '.instrument-item',
     ) as NodeListOf<HTMLDivElement>;
     const target = itemElements[currentIndex];
-    if (target) {
+    if (!target) {
+      return;
+    }
+    if (currentIndex === itemElements.length - 1) {
+      container.scrollTop = container.scrollHeight;
+    } else {
       target.scrollIntoView({ block: 'nearest' });
     }
-  }, [currentIndex, isActive]);
-
-  const visibleSlotCount = computeVisibleSlotCount(
-    instruments,
-    currentIndex,
-    MAX_INSTRUMENTS,
-    isInstrumentEmpty,
-  );
+  }, [currentIndex, isActive, visibleSlotCount]);
 
   const getInstrumentForSlot = useCallback(
     (slotIndex: number): Instrument => {
@@ -317,7 +331,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                       aria-label="Move instrument down"
                       disabled={!instrument || slotIndex >= instruments.length - 1}
                     >
-                      <ChevronDown className="h-3 w-3 rotate-90" />
+                      <ChevronDown size={12} />
                     </button>
                     <button
                       type="button"
@@ -331,7 +345,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
                       aria-label="Move instrument up"
                       disabled={!instrument || slotIndex === 0}
                     >
-                      <ChevronUp className="h-3 w-3 rotate-90" />
+                      <ChevronUp size={12} />
                     </button>
                   </div>
                 </div>
