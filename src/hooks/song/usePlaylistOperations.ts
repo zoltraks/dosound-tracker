@@ -1,7 +1,11 @@
 import { useCallback } from 'react';
 import type { Song, Step } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import { PATTERN_LENGTH } from '../../constants/music.ts';
+import {
+  cloneTrackStep,
+  emptyTrackStep,
+  resolvePatternLength,
+} from '../../utils/track/trackUtils.ts';
 import { Formatter } from '../../utils/format/formatters.ts';
 import { asPatternId, asPlaylistPatternId, type PatternId } from '../../types/branded.ts';
 import type { PlaylistEntry } from '../../types/playlist.ts';
@@ -164,16 +168,16 @@ export function usePlaylistOperations({
   );
 
   const handleCreateNewTrack = useCallback(() => {
-    const targetLength = song.length || PATTERN_LENGTH;
-    createTrackWithSteps(Array.from({ length: targetLength }, () => ({ note: null }) as Step));
+    const targetLength = resolvePatternLength(song.length);
+    createTrackWithSteps(Array.from({ length: targetLength }, () => emptyTrackStep()));
   }, [song.length, createTrackWithSteps]);
 
   const handleCreateTrackFromSteps = useCallback(
     (steps: Step[]) => {
-      const targetLength = song.length || PATTERN_LENGTH;
+      const targetLength = resolvePatternLength(song.length);
       createTrackWithSteps(
         Array.from({ length: targetLength }, (_, index) =>
-          index < steps.length ? steps[index] : ({ note: null } as Step),
+          index < steps.length ? steps[index] : emptyTrackStep(),
         ),
       );
     },
@@ -282,10 +286,7 @@ export function usePlaylistOperations({
       }
 
       const newId = allocatePatternId();
-      const newSteps = original.step.map((step) => ({
-        note: step.note ? { ...step.note } : null,
-        ...(step.volume !== undefined ? { volume: step.volume } : {}),
-      }));
+      const newSteps = original.step.map(cloneTrackStep);
 
       newPatterns.push({
         id: newId,

@@ -257,16 +257,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         } else {
           onLineChange(stepLineIndex(currentLine, patternLength, 1));
         }
-      } else if (key === 'PAGEUP') {
+      } else if (key === 'PAGEUP' || key === 'PAGEDOWN') {
         event.preventDefault();
         if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
-          const step = 16;
-          onLineChange(stepLineIndex(currentLine, patternLength, -step));
-        }
-      } else if (key === 'PAGEDOWN') {
-        event.preventDefault();
-        if (!event.ctrlKey && !event.metaKey && !event.shiftKey) {
-          const step = 16;
+          const step = key === 'PAGEUP' ? -16 : 16;
           onLineChange(stepLineIndex(currentLine, patternLength, step));
         }
       } else if (key === 'HOME') {

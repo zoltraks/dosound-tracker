@@ -656,6 +656,15 @@ async function fetchData(signal: AbortSignal): Promise<Data> {
 - Letting a committing control's event bubble to a parent `onKeyDown` that closes over the
   same editing state - the parent re-fires the commit through its stale closure. Stop
   propagation at the committing control.
+- Binding a page-level handler to a browser-reserved chord - `Ctrl+PageUp`/`Ctrl+PageDown`
+  switch browser tabs, `Ctrl+Tab`, `Ctrl+W`, and similar never deliver `keydown` to the page,
+  so a passing unit test still leaves the binding dead in a real browser. Prefer `Shift` or
+  `Alt` variants for keys the browser claims, and confirm reserved-chord candidates against
+  the target browser before wiring them.
+- Letting a command-button operation read persisted selection state - a saved selection
+  survives focus changes and reloads, so it can silently redirect the operation to a
+  different subject than the user expects. Command buttons bind to the active subject;
+  selection-aware behaviour belongs to keyboard shortcuts only.
 
 ### React 19 Patterns
 

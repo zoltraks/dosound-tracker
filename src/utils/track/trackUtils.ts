@@ -1,7 +1,35 @@
-import type { Pattern } from '../../synth/SoundDriver.ts';
+import type { Pattern, Step } from '../../synth/SoundDriver.ts';
+import { PATTERN_LENGTH } from '../../constants/music.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 
 const DEFAULT_VOLUME = 0x0f;
+
+export function resolvePatternLength(songLength: number | undefined): number {
+  return songLength || PATTERN_LENGTH;
+}
+
+export function emptyTrackStep(): Step {
+  return { note: null } as Step;
+}
+
+export function cloneTrackStep(step: Step): Step {
+  return {
+    note: step.note ? { ...step.note } : null,
+    ...(step.volume !== undefined ? { volume: step.volume } : {}),
+  };
+}
+
+export function getClipboardApiOrReport(
+  kind: 'read' | 'write',
+  onError: (message: string) => void,
+): Clipboard | null {
+  const api = typeof navigator === 'undefined' ? undefined : navigator.clipboard;
+  if (!api || (kind === 'write' ? !api.writeText : !api.readText)) {
+    onError('Clipboard API is not available in this browser.');
+    return null;
+  }
+  return api;
+}
 
 export function computeEffectiveVolume(pattern: Pattern | null, currentLine: number): number {
   if (!pattern) return DEFAULT_VOLUME;

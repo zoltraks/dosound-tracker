@@ -2,7 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { logger } from '../../utils/log/logger.ts';
 import type { Song, Pattern, Step } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import { PATTERN_LENGTH } from '../../constants/music.ts';
+import {
+  cloneTrackStep,
+  emptyTrackStep,
+  getClipboardApiOrReport,
+  resolvePatternLength,
+} from '../../utils/track/trackUtils.ts';
 import {
   generateClipboardData,
   parseClipboardData,
@@ -82,7 +87,7 @@ export function useTrackOperations({
 }: UseTrackOperationsArgs): UseTrackOperationsResult {
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [trackSelection, setTrackSelection] = useState<TrackSelection | null>(() =>
-    readTrackSelection(song.length || PATTERN_LENGTH),
+    readTrackSelection(resolvePatternLength(song.length)),
   );
   const playlistEntries = useMemo(() => mapSongLineToPlaylistEntries(song.line), [song.line]);
 
@@ -100,9 +105,21 @@ export function useTrackOperations({
   const isTrackSectionActive =
     activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
 
+  const getCurrentPatternOrReport = useCallback(
+    (trackId: 'A' | 'B' | 'C'): Pattern | null => {
+      const pattern = getCurrentPatternForTrack(trackId);
+      if (!pattern) {
+        setTrackClipboardError('No pattern is assigned for the current track at this position.');
+        return null;
+      }
+      return pattern;
+    },
+    [getCurrentPatternForTrack],
+  );
+
   const handleExtendSelection = useCallback(
     (trackId: 'A' | 'B' | 'C', delta: number) => {
-      const patternLength = song.length || PATTERN_LENGTH;
+      const patternLength = resolvePatternLength(song.length);
       const next = extendTrackSelection(
         trackSelection,
         trackId,
@@ -121,36 +138,31 @@ export function useTrackOperations({
   const copyTrackToClipboard = useCallback(
     async (trackId: 'A' | 'B' | 'C', range?: { start: number; end: number }) => {
       try {
-        if (
-          typeof navigator === 'undefined' ||
-          !navigator.clipboard ||
-          !navigator.clipboard.writeText
-        ) {
-          setTrackClipboardError('Clipboard API is not available in this browser.');
+        const clipboard = getClipboardApiOrReport('write', setTrackClipboardError);
+        if (!clipboard) {
           return;
         }
 
-        const pattern = getCurrentPatternForTrack(trackId);
+        const pattern = getCurrentPatternOrReport(trackId);
         if (!pattern) {
-          setTrackClipboardError('No pattern is assigned for the current track at this position.');
           return;
         }
 
         const yamlContent = generateClipboardData(
           pattern,
-          song.length || PATTERN_LENGTH,
+          resolvePatternLength(song.length),
           formatNoteKey,
           range,
         );
 
-        await navigator.clipboard.writeText(yamlContent);
+        await clipboard.writeText(yamlContent);
       } catch (error) {
         logger.error('Failed to copy track', error);
         const message = error instanceof Error ? error.message : String(error);
         setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
       }
     },
-    [getCurrentPatternForTrack, song.length, formatNoteKey],
+    [getCurrentPatternOrReport, song.length, formatNoteKey],
   );
 
   const handleCopyTrack = useCallback(async () => {
@@ -164,26 +176,21 @@ export function useTrackOperations({
       }
       const trackId = trackSelection.trackId;
 
-      if (
-        typeof navigator === 'undefined' ||
-        !navigator.clipboard ||
-        !navigator.clipboard.writeText
-      ) {
-        setTrackClipboardError('Clipboard API is not available in this browser.');
+      const clipboard = getClipboardApiOrReport('write', setTrackClipboardError);
+      if (!clipboard) {
         return;
       }
 
-      const pattern = getCurrentPatternForTrack(trackId);
+      const pattern = getCurrentPatternOrReport(trackId);
       if (!pattern) {
-        setTrackClipboardError('No pattern is assigned for the current track at this position.');
         return;
       }
 
-      const targetLength = song.length || PATTERN_LENGTH;
+      const targetLength = resolvePatternLength(song.length);
       const range = normalizeTrackSelection(trackSelection);
 
       const yamlContent = generateClipboardData(pattern, targetLength, formatNoteKey, range);
-      await navigator.clipboard.writeText(yamlContent);
+      await clipboard.writeText(yamlContent);
 
       const existingLines = pattern.step || [];
       const newLines = existingLines.map((line, index) =>
@@ -202,7 +209,7 @@ export function useTrackOperations({
       setTrackClipboardError('Failed to cut track fragment to clipboard.\n\n' + message);
     }
   }, [
-    getCurrentPatternForTrack,
+    getCurrentPatternOrReport,
     song.length,
     song.pattern,
     formatNoteKey,
@@ -212,37 +219,25 @@ export function useTrackOperations({
 
   const handleCloneTrack = useCallback(() => {
     const trackId = getActiveTrackId();
-    const pattern = getCurrentPatternForTrack(trackId);
+    const pattern = getCurrentPatternOrReport(trackId);
     if (!pattern) {
-      setTrackClipboardError('No pattern is assigned for the current track at this position.');
       return;
     }
 
     createTrackFromSteps(
-      (pattern.step || []).map((step) =>
-        step
-          ? {
-              note: step.note ? { ...step.note } : null,
-              ...(step.volume !== undefined ? { volume: step.volume } : {}),
-            }
-          : ({ note: null } as Step),
-      ),
+      (pattern.step || []).map((step) => (step ? cloneTrackStep(step) : emptyTrackStep())),
     );
-  }, [getActiveTrackId, getCurrentPatternForTrack, createTrackFromSteps]);
+  }, [getActiveTrackId, getCurrentPatternOrReport, createTrackFromSteps]);
 
   const handlePasteTrack = useCallback(
     async (anchorRow?: number, cursorRow?: number, clearTail?: boolean) => {
       try {
-        if (
-          typeof navigator === 'undefined' ||
-          !navigator.clipboard ||
-          !navigator.clipboard.readText
-        ) {
-          setTrackClipboardError('Clipboard API is not available in this browser.');
+        const clipboard = getClipboardApiOrReport('read', setTrackClipboardError);
+        if (!clipboard) {
           return;
         }
 
-        const text = await navigator.clipboard.readText();
+        const text = await clipboard.readText();
         if (!text || !text.trim()) {
           setTrackClipboardError('Clipboard is empty or does not contain track data.');
           return;
@@ -258,13 +253,12 @@ export function useTrackOperations({
         }
 
         const trackId = getActiveTrackId();
-        const pattern = getCurrentPatternForTrack(trackId);
+        const pattern = getCurrentPatternOrReport(trackId);
         if (!pattern) {
-          setTrackClipboardError('No pattern is assigned for the current track at this position.');
           return;
         }
 
-        const targetLength = song.length || PATTERN_LENGTH;
+        const targetLength = resolvePatternLength(song.length);
         const existingLines = pattern.step || [];
         const startOffset =
           typeof anchorRow === 'number' && Number.isFinite(anchorRow)
@@ -328,7 +322,7 @@ export function useTrackOperations({
     },
     [
       getActiveTrackId,
-      getCurrentPatternForTrack,
+      getCurrentPatternOrReport,
       song.length,
       song.pattern,
       parseBaseKeyString,
@@ -365,7 +359,7 @@ export function useTrackOperations({
     const newLines = insertPatternStep(
       pattern.step || [],
       sharedCurrentLine,
-      song.length || PATTERN_LENGTH,
+      resolvePatternLength(song.length),
     );
 
     pattern.step = newLines;
@@ -415,7 +409,7 @@ export function useTrackOperations({
     const newLines = deletePatternStep(
       pattern.step || [],
       sharedCurrentLine,
-      song.length || PATTERN_LENGTH,
+      resolvePatternLength(song.length),
     );
 
     pattern.step = newLines;

@@ -1,5 +1,15 @@
 # Changes
 
+## Version 1.5.7
+
+The command panel gains a clipboard-free CLONE TRACK command, song-line navigation moves to a browser-safe chord, and the demo repository grows by the Overload song and instruments.
+
+- **Track operations**: CLONE TRACK duplicates the whole current track into a new pattern assigned to the playlist line - one history entry, no clipboard - and COPY TRACK now always copies the whole track, while CTRL+C still copies the selected fragment when a selection exists.
+- **Clipboard**: CTRL+V pastes a fragment over only its own rows, keeping the rows after the fragment intact; PASTE TRACK keeps its first-row, tail-clearing behaviour.
+- **Keyboard**: SHIFT + PGUP / SHIFT + PGDN move the song position one playlist line from any focused section - the Ctrl variant never reached the page because browsers reserve it for tab switching.
+- **Export**: the export dialog drops the strategy `*` markers and caption, and the export summary dialogs share the dialog's line height.
+- **Demo content**: the repository gains the Overload demo song, its eight instruments join the instrument picker, and the demo songs are renamed to `Nice` and `Arp`.
+
 ## Version 1.5.6
 
 Track fragments become selectable and clipboard-aware, an undo history survives reloads, and the keyboard gains song-line navigation and seamless playback switching.

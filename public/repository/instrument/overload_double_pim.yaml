@@ -1,9 +1,0 @@
-instrument:
-  name: "Double Pim"
-  type: dosound
-  version: 1
-  base: "C-4"
-  color: "#6ee"
-  octave: 4
-  volume: [13, 12, 0, 7, 6, 0]
-  shift: [12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0]

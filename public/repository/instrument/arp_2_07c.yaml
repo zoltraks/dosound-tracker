@@ -1,9 +1,9 @@
 instrument:
-  name: "Arp 2 07C"
+  name: 'Arp 2 07C'
   type: dosound
   version: 1
-  base: "C-5"
-  color: "#9ff"
+  base: 'C-5'
+  color: '#9ff'
   volume: [12, 14, 12, 10, 9, 8, 7, 7, 6, 5, 4, 0]
   shift: [12, 7, 0, 7, 12, 7, 0, 7, 12, 7, 0]
   pitch: [0, 0, 1, 2, 0, 0, 1, 2, 0, 1, 2, 1, 0]
