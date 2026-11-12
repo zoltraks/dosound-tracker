@@ -1,7 +1,6 @@
 import React from 'react';
 import { DialogFrame } from '../components/DialogFrame.tsx';
 import type { ExportType, ExportFormat, ExportStrategy } from '../constants/export.ts';
-import { buildExportStrategyNote, exportStrategyApplies } from '../utils/export/exportStrategy.ts';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -130,11 +129,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 onClick={() => onExportFormat(format)}
               >
                 {label}
-                {exportStrategyApplies(format, exportType) && <span aria-hidden="true">*</span>}
               </button>
             ))}
           </div>
-          <div className="export-strategy-note">{buildExportStrategyNote(exportType)}</div>
         </div>
       </div>
       <div className="modal-actions export-actions">

@@ -1,0 +1,7 @@
+instrument:
+  name: "Warmball Pim 2"
+  type: dosound
+  version: 1
+  base: "C-4"
+  color: "#7f7"
+  volume: [14, 10, 0]

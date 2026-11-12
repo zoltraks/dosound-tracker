@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 import { renderHook, act, cleanup } from '@testing-library/react';
 import { usePlaylistOperations } from '../../../src/hooks/song/usePlaylistOperations.ts';
-import type { Song } from '../../../src/synth/SoundDriver.ts';
+import type { Song, Step } from '../../../src/synth/SoundDriver.ts';
 
 const makeSong = (lineCount: number): Song => ({
   title: 'Test',
@@ -99,4 +99,53 @@ describe('usePlaylistOperations playlist focus', () => {
       expect(args.setPlaylistFocusRevision).toHaveBeenCalled();
     },
   );
+});
+
+describe('usePlaylistOperations create track from steps', () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('assigns a new pattern carrying the given steps to the target track line', () => {
+    const args = makeArgs();
+    const { result } = renderHook(() => usePlaylistOperations(args));
+
+    const steps: Step[] = [
+      { note: { note: 'C', octave: 4, instrument: '00' }, volume: 15 },
+      { note: { note: 'D', octave: 4, instrument: '00' } },
+    ];
+
+    act(() => {
+      result.current.handleCreateTrackFromSteps(steps);
+    });
+
+    expect(args.updateSong).toHaveBeenCalledTimes(1);
+    const patch = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<Song>;
+    const created = patch.pattern!.find((p) => p.step[0]?.note?.note === 'C');
+    expect(created).toBeDefined();
+    expect(created!.step).toHaveLength(64);
+    expect(created!.step[0].volume).toBe(15);
+    expect(created!.step[1].note?.note).toBe('D');
+    expect(created!.step[2]).toEqual({ note: null });
+    expect(patch.line![1].A).toBe(created!.id);
+    expect(patch.line![0].A).toBe('--');
+    expect(args.setActiveSection).toHaveBeenCalledWith('trackA');
+    expect(args.setSharedCurrentLine).toHaveBeenCalledWith(0);
+    expect(args.setPosition).toHaveBeenCalledWith(1, 0, 0);
+  });
+
+  it('still creates an empty track through handleCreateNewTrack', () => {
+    const args = makeArgs();
+    const { result } = renderHook(() => usePlaylistOperations(args));
+
+    act(() => {
+      result.current.handleCreateNewTrack();
+    });
+
+    const patch = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<Song>;
+    expect(patch.pattern![0].step).toHaveLength(64);
+    expect(patch.pattern![0].step.every((step) => step.note === null)).toBe(true);
+    expect(patch.line![1].A).toBe(patch.pattern![0].id);
+  });
 });

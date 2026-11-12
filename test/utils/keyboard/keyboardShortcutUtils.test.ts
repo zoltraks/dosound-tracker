@@ -97,6 +97,22 @@ describe('keyboardShortcutUtils', () => {
     });
   });
 
+  it('matches the shift page chords', () => {
+    expect(matchKeyboardShortcut('PAGEUP', false, true, false)).toEqual({
+      shortcut: 'SHIFT+PAGEUP',
+      preventDefault: true,
+    });
+    expect(matchKeyboardShortcut('PAGEDOWN', false, true, false)).toEqual({
+      shortcut: 'SHIFT+PAGEDOWN',
+      preventDefault: true,
+    });
+  });
+
+  it('does not match the page keys without shift', () => {
+    expect(matchKeyboardShortcut('PAGEUP', false, false, false)).toBeNull();
+    expect(matchKeyboardShortcut('PAGEDOWN', true, false, false)).toBeNull();
+  });
+
   it('matches ctrl+shift shortcuts', () => {
     expect(matchKeyboardShortcut('Z', true, true, false)).toEqual({
       shortcut: 'CTRL+SHIFT+Z',

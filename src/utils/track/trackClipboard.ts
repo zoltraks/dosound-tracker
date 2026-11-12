@@ -177,6 +177,7 @@ export function applyClipboardToLines(
   patternLength: number,
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null,
   startOffset = 0,
+  clearTail = startOffset === 0,
 ): Step[] {
   const targetLength = patternLength || PATTERN_LENGTH;
 
@@ -266,7 +267,7 @@ export function applyClipboardToLines(
     if (mode === 'replace') {
       if (rawStep && typeof rawStep === 'object') {
         newLines.push(applyClipboardStepToLine(baseLine, rawStep, i));
-      } else if (startOffset === 0) {
+      } else if (clearTail && i >= startOffset) {
         newLines.push({ ...baseLine, note: null, volume: undefined });
       } else {
         newLines.push({ ...baseLine });

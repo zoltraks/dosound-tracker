@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import type { Song } from '../../synth/SoundDriver.ts';
+import type { Song, Step } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
+import { PATTERN_LENGTH } from '../../constants/music.ts';
 import { Formatter } from '../../utils/format/formatters.ts';
 import { asPatternId, asPlaylistPatternId, type PatternId } from '../../types/branded.ts';
 import type { PlaylistEntry } from '../../types/playlist.ts';
@@ -27,6 +28,7 @@ interface UsePlaylistOperationsResult {
   generateUniquePatternId: () => PatternId;
   handleCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
   handleCreateNewTrack: () => void;
+  handleCreateTrackFromSteps: (steps: Step[]) => void;
   handleAddLine: () => void;
   // Shallow: duplicate the current playlist entry without cloning patterns
   handleDuplicateLine: () => void;
@@ -110,51 +112,73 @@ export function usePlaylistOperations({
     [song, updateSong, generateUniquePatternId],
   );
 
+  const createTrackWithSteps = useCallback(
+    (steps: Step[]) => {
+      const playlist: PlaylistEntry[] =
+        song.line.length > 0
+          ? mapSongLineToPlaylistEntries(song.line)
+          : [{ A: '--', B: '--', C: '--' }];
+
+      const targetLine = Math.max(0, Math.min(currentPatternIndex, playlist.length - 1));
+      const patternId = generateUniquePatternId();
+      const { newPattern } = createPatternForSong(song, patternId);
+      newPattern.step = steps;
+
+      const entry = { ...playlist[targetLine] };
+      switch (targetTrackId) {
+        case 'A':
+          entry.A = asPlaylistPatternId(patternId);
+          break;
+        case 'B':
+          entry.B = asPlaylistPatternId(patternId);
+          break;
+        case 'C':
+          entry.C = asPlaylistPatternId(patternId);
+          break;
+      }
+
+      playlist[targetLine] = entry;
+      // One updateSong call keeps pattern creation and playlist assignment
+      // together as a single undo entry.
+      updateSong({
+        line: mapPlaylistEntriesToSongLine(playlist),
+        pattern: [...song.pattern, newPattern],
+      });
+
+      const section =
+        targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
+      setActiveSection(section);
+      setSharedCurrentLine(0);
+      setPosition(targetLine, 0, 0);
+    },
+    [
+      song,
+      currentPatternIndex,
+      targetTrackId,
+      generateUniquePatternId,
+      updateSong,
+      setActiveSection,
+      setSharedCurrentLine,
+      setPosition,
+    ],
+  );
+
   const handleCreateNewTrack = useCallback(() => {
-    const playlist: PlaylistEntry[] =
-      song.line.length > 0
-        ? mapSongLineToPlaylistEntries(song.line)
-        : [{ A: '--', B: '--', C: '--' }];
+    const targetLength = song.length || PATTERN_LENGTH;
+    createTrackWithSteps(Array.from({ length: targetLength }, () => ({ note: null }) as Step));
+  }, [song.length, createTrackWithSteps]);
 
-    const targetLine = Math.max(0, Math.min(currentPatternIndex, playlist.length - 1));
-    const patternId = generateUniquePatternId();
-    const { newPattern } = createPatternForSong(song, patternId);
-
-    const entry = { ...playlist[targetLine] };
-    switch (targetTrackId) {
-      case 'A':
-        entry.A = asPlaylistPatternId(patternId);
-        break;
-      case 'B':
-        entry.B = asPlaylistPatternId(patternId);
-        break;
-      case 'C':
-        entry.C = asPlaylistPatternId(patternId);
-        break;
-    }
-
-    playlist[targetLine] = entry;
-    // One updateSong call keeps pattern creation and playlist assignment
-    // together as a single undo entry.
-    updateSong({
-      line: mapPlaylistEntriesToSongLine(playlist),
-      pattern: [...song.pattern, newPattern],
-    });
-
-    const section = targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
-    setActiveSection(section);
-    setSharedCurrentLine(0);
-    setPosition(targetLine, 0, 0);
-  }, [
-    song,
-    currentPatternIndex,
-    targetTrackId,
-    generateUniquePatternId,
-    updateSong,
-    setActiveSection,
-    setSharedCurrentLine,
-    setPosition,
-  ]);
+  const handleCreateTrackFromSteps = useCallback(
+    (steps: Step[]) => {
+      const targetLength = song.length || PATTERN_LENGTH;
+      createTrackWithSteps(
+        Array.from({ length: targetLength }, (_, index) =>
+          index < steps.length ? steps[index] : ({ note: null } as Step),
+        ),
+      );
+    },
+    [song.length, createTrackWithSteps],
+  );
 
   const handleAddLine = useCallback(() => {
     const length = song.line.length;
@@ -343,6 +367,7 @@ export function usePlaylistOperations({
     generateUniquePatternId,
     handleCreatePatternAt,
     handleCreateNewTrack,
+    handleCreateTrackFromSteps,
     handleAddLine,
     handleDuplicateLine,
     handleDeleteLine,

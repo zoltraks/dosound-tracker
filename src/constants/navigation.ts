@@ -29,6 +29,8 @@ export const KEYBOARD_SHORTCUTS = {
   'ALT+2': 'focusTrackB',
   'ALT+3': 'focusTrackC',
   'CTRL+SPACE': 'togglePianoFocus',
+  'SHIFT+PAGEUP': 'previousSongLine',
+  'SHIFT+PAGEDOWN': 'nextSongLine',
 
   // Editing
   SPACE: 'clearPosition',

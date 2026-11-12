@@ -106,6 +106,12 @@ export function matchKeyboardShortcut(
     if (keyUpper === ' ') {
       return { shortcut: 'SHIFT+SPACE', preventDefault: true };
     }
+    if (keyUpper === 'PAGEUP') {
+      return { shortcut: 'SHIFT+PAGEUP', preventDefault: true };
+    }
+    if (keyUpper === 'PAGEDOWN') {
+      return { shortcut: 'SHIFT+PAGEDOWN', preventDefault: true };
+    }
 
     return null;
   }

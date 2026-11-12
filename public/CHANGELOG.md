@@ -1,5 +1,18 @@
 # Changes
 
+## Version 1.5.6
+
+Track fragments become selectable and clipboard-aware, an undo history survives reloads, and the keyboard gains song-line navigation and seamless playback switching.
+
+- **Selection**: SHIFT + UP / SHIFT + DOWN selects a row range in the focused track, persisting across reload.
+- **Clipboard**: CTRL + C copies the selected fragment or the whole track, CTRL + X cuts the fragment, and CTRL + V pastes at the cursor row preserving the rows after the fragment - a new EDITOR settings option asks for a paste mode when pasting over existing data.
+- **Undo**: UNDO and REDO buttons join the command panel, the edit history persists to local storage across reloads, and undoing restores the playlist position and track row held before the edit.
+- **Track operations**: CLONE TRACK duplicates the current track or selected fragment into a new pattern without the clipboard, and PASTE TRACK pastes from the first row clearing the rows after the fragment.
+- **Playlist**: ADD LINE inserts after the current line, DELETE LINE selects the previous line, the playlist keeps focus after line commands, CTRL + PGUP / PGDN navigates song lines, and instrument clicks and reloads preserve the active track and selection.
+- **Playlist**: the pattern-id input no longer commits twice on Enter.
+- **Playback**: ENTER bindings switch between line and song playback without stopping, fire on disabled tracks and from the playlist outside a pattern-id edit, and restore the position held before playback started.
+- **Keyboard**: CTRL + digit envelope entry reads correctly under Alt on macOS.
+
 ## Version 1.5.5
 
 Alt and Option chords take over the global shortcuts, the bundled repository gains the Warmball instruments, and section frames read active, hovered, and both at once.

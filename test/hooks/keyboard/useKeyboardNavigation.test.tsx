@@ -132,6 +132,40 @@ describe('useKeyboardNavigation', () => {
     expect(result.current.activeSection).toBe('octave');
   });
 
+  it('dispatches Shift+PageUp and Shift+PageDown to the song-line handlers from any section', () => {
+    const { result } = renderHook(() => useKeyboardNavigation());
+    const handlers = {
+      previousSongLine: vi.fn(),
+      nextSongLine: vi.fn(),
+    };
+
+    act(() => {
+      result.current.setGlobalShortcut('previousSongLine', handlers.previousSongLine);
+      result.current.setGlobalShortcut('nextSongLine', handlers.nextSongLine);
+      result.current.setActiveSection('playlist');
+    });
+
+    const event = new KeyboardEvent('keydown', {
+      key: 'PageUp',
+      shiftKey: true,
+      cancelable: true,
+      bubbles: true,
+    });
+    document.body.dispatchEvent(event);
+    document.body.dispatchEvent(
+      new KeyboardEvent('keydown', {
+        key: 'PageDown',
+        shiftKey: true,
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+
+    expect(handlers.previousSongLine).toHaveBeenCalledTimes(1);
+    expect(handlers.nextSongLine).toHaveBeenCalledTimes(1);
+    expect(event.defaultPrevented).toBe(true);
+  });
+
   it('dispatches the playback digit shortcuts with Alt', () => {
     const { result } = renderHook(() => useKeyboardNavigation());
     const handlers = {

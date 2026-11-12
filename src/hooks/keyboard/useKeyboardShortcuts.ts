@@ -13,7 +13,9 @@ export type GlobalShortcutName =
   | 'redo'
   | 'copyTrack'
   | 'cutTrack'
-  | 'pasteTrack';
+  | 'pasteTrack'
+  | 'previousSongLine'
+  | 'nextSongLine';
 
 interface UseKeyboardShortcutsArgs {
   setGlobalShortcut: (name: GlobalShortcutName, handler: () => void) => void;
@@ -30,6 +32,7 @@ interface UseKeyboardShortcutsArgs {
   handleCopyTrack: () => void;
   handleCutTrack: () => void;
   handlePasteTrack: () => void;
+  handleNavigateSongLine: (delta: number) => void;
 }
 
 export function useKeyboardShortcuts({
@@ -47,6 +50,7 @@ export function useKeyboardShortcuts({
   handleCopyTrack,
   handleCutTrack,
   handlePasteTrack,
+  handleNavigateSongLine,
 }: UseKeyboardShortcutsArgs): void {
   useEffect(() => {
     setGlobalShortcut('playSong', handleStartSong);
@@ -62,6 +66,8 @@ export function useKeyboardShortcuts({
     setGlobalShortcut('copyTrack', handleCopyTrack);
     setGlobalShortcut('cutTrack', handleCutTrack);
     setGlobalShortcut('pasteTrack', handlePasteTrack);
+    setGlobalShortcut('previousSongLine', () => handleNavigateSongLine(-1));
+    setGlobalShortcut('nextSongLine', () => handleNavigateSongLine(1));
   }, [
     setGlobalShortcut,
     handleStartSong,
@@ -77,5 +83,6 @@ export function useKeyboardShortcuts({
     handleCopyTrack,
     handleCutTrack,
     handlePasteTrack,
+    handleNavigateSongLine,
   ]);
 }

@@ -1,0 +1,10 @@
+instrument:
+  name: "Kick 2"
+  type: dosound
+  version: 1
+  base: "D-1"
+  color: "#800"
+  octave: 1
+  mode: [1, 0, 2, 1, 0]
+  volume: [10, 14, 5, 2, 0]
+  noise: [11, 0, 8, 0]

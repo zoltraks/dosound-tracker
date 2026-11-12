@@ -241,7 +241,7 @@ DOSOUND Tracker supports eight export formats. Each format produces a downloadab
 
 **MIDI** produces a Standard MIDI File type 1 at note level for DAW import. One tracker row maps to 24 ticks at a 96 PPQ division, so the tempo meta event encodes the song's speed and frame rate directly (speed 6 at 50 Hz is 125 BPM). Each tracker channel becomes one SMF track on its own MIDI channel unless `instrument.midi.channel` overrides it; `instrument.midi.program` emits program changes, and the volume column arrives as note velocity plus CC7 on held notes. Envelope, noise, pitch, and sustain semantics have no MIDI representation and are reported as dropped in the result's warning list. See src/exports/midi.ts.
 
-Export scope can target the full song, a single pattern, or a single instrument. The `ExportType`, `ExportFormat`, and `ExportStrategy` (simple, complex, tight) unions are typed in src/constants/export.ts - the eight formats dispatch through the export modal's per-format handlers. The strategy's relevance is per format and per scope: under the song and pattern scopes DATA, BIN, VGM, and MAX consume it - for VGM only `tight` differs from the other two, and for MAX it selects the stream format - while under the instrument scope only MAX consumes it, since the other instrument export paths take no strategy parameter. DUMP, WAV, MOD, and MIDI ignore the selector under every scope. The relevance map lives in src/utils/export/exportStrategy.ts, and the export modal marks each strategy-honoring format button with `*` under the current scope and captions the marker under the format grid.
+Export scope can target the full song, a single pattern, or a single instrument. The `ExportType`, `ExportFormat`, and `ExportStrategy` (simple, complex, tight) unions are typed in src/constants/export.ts - the eight formats dispatch through the export modal's per-format handlers. The strategy's relevance is per format and per scope: under the song and pattern scopes DATA, BIN, VGM, and MAX consume it - for VGM only `tight` differs from the other two, and for MAX it selects the stream format - while under the instrument scope only MAX consumes it, since the other instrument export paths take no strategy parameter. DUMP, WAV, MOD, and MIDI ignore the selector under every scope. The export modal renders every format button with its plain label and shows no marker or caption for the strategy-honoring formats.
 
 ## Constants
 
@@ -274,7 +274,7 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - SHIFT+TAB cycles to the previous UI section
 - ARROW keys move the cursor between lines and columns in the pattern editor
 - PAGEUP and PAGEDOWN step the cursor 16 rows inside the focused track pattern
-- CTRL+PAGEUP and CTRL+PAGEDOWN navigate to the previous and next song line while a track section is active, keeping the cursor row inside the track - clamped at the first and last playlist entries
+- SHIFT+PAGEUP and SHIFT+PAGEDOWN navigate to the previous and next song line from any focused section, keeping the cursor row inside the track - clamped at the first and last playlist entries
 - ALT+1 focuses track A, ALT+2 focuses track B, ALT+3 focuses track C (ALT is OPTION on macOS)
 - CTRL+SPACE focuses the on-screen piano, or returns focus to the section that was active before the piano
 
@@ -297,10 +297,12 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - Extension continues an existing selection only while the cursor sits on its moving edge - from anywhere else it anchors a fresh selection at the cursor
 - Collapsing the range back onto its anchor clears the selection - extending back past the origin row is the way to drop it
 - CTRL+C copies the selected row range to the clipboard - with no selection it copies the whole track like COPY TRACK
+- COPY TRACK always copies the whole current track - an active selection does not narrow it
 - A fragment copy keeps its trailing empty rows so the pasted fragment spans the full selection size; the whole-track copy trims them as before
 - CTRL+X cuts the selected row range to the clipboard, clears the covered cells, and drops the selection
-- CTRL+V pastes the clipboard fragment at the cursor row, clipped at the pattern length, then moves the cursor one row below the last pasted row - wrapping to the first row when the fragment reaches the pattern end
-- PASTE TRACK pastes the clipboard fragment from the first row of the track, clipped at the pattern length, and leaves the cursor on the first row
+- CTRL+V pastes the clipboard fragment at the cursor row, clipped at the pattern length, preserving the rows after the pasted fragment, then moves the cursor one row below the last pasted row - wrapping to the first row when the fragment reaches the pattern end
+- PASTE TRACK pastes the clipboard fragment from the first row of the track, clipped at the pattern length, clears the rows after the pasted fragment, and leaves the cursor on the first row
+- CLONE TRACK copies the active track's whole pattern - regardless of any selection - into a new pattern assigned to the target track at the current line, landing the steps from the first row; the clipboard is never touched, the pattern creation and playlist assignment record as one history entry, and focus lands on the new track's first row like ADD TRACK
 - The clipboard bindings fire only while a track section is the active section
 
 **Playback shortcuts:**

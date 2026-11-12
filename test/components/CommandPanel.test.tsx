@@ -33,6 +33,7 @@ const defaultProps = (): React.ComponentProps<typeof CommandPanel> => ({
   onCopyTrack: vi.fn(),
   onPasteTrack: vi.fn(),
   onNewTrack: vi.fn(),
+  onCloneTrack: vi.fn(),
   onDeleteTrack: vi.fn(),
   activeSection: 'commands',
   setActiveSection: vi.fn(),
@@ -62,6 +63,27 @@ describe('CommandPanel', () => {
 
     expect(undoIndex).toBeGreaterThan(-1);
     expect(texts.slice(undoIndex, undoIndex + 3)).toEqual(['UNDO', 'REDO', 'ADD INST']);
+  });
+
+  it('renders CLONE TRACK between ADD TRACK and COPY TRACK', () => {
+    const { container } = render(<CommandPanel {...defaultProps()} />);
+
+    const texts = Array.from(container.querySelectorAll('.command-button')).map(
+      (button) => button.textContent,
+    );
+    const addIndex = texts.indexOf('ADD TRACK');
+
+    expect(addIndex).toBeGreaterThan(-1);
+    expect(texts.slice(addIndex, addIndex + 3)).toEqual(['ADD TRACK', 'CLONE TRACK', 'COPY TRACK']);
+  });
+
+  it('fires the clone track callback on click', () => {
+    const onCloneTrack = vi.fn();
+    const { getByRole } = render(<CommandPanel {...defaultProps()} onCloneTrack={onCloneTrack} />);
+
+    fireEvent.click(getByRole('button', { name: 'CLONE TRACK' }));
+
+    expect(onCloneTrack).toHaveBeenCalledTimes(1);
   });
 
   it('disables UNDO and REDO while their stacks are empty', () => {

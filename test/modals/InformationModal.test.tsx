@@ -55,6 +55,16 @@ describe('InformationModal', () => {
     }
   });
 
+  it('forwards the className onto the modal dialog', () => {
+    const { container } = renderModal({ className: 'export-summary-modal' });
+    try {
+      expect(container.querySelector('.modal-dialog.export-summary-modal')).toBeTruthy();
+    } catch (error) {
+      console.log('className mismatch', container.innerHTML.slice(0, 400));
+      throw error;
+    }
+  });
+
   it('fires onClose from the OK button', () => {
     const onClose = vi.fn();
     renderModal({ onClose });

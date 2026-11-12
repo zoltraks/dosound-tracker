@@ -243,12 +243,12 @@ DOSOUND Tracker is a comprehensive music creation tool designed for the Yamaha *
 
 - **TAB** and **SHIFT + TAB** section cycling
 - **ARROW** movement
-- **PG UP / PG DOWN** to jump 16 rows inside a track, **CTRL + PG UP / CTRL + PG DOWN** to move between song lines while keeping the track row
+- **PG UP / PG DOWN** to jump 16 rows inside a track, **SHIFT + PG UP / SHIFT + PG DOWN** to move between song lines from any section while keeping the track row
 - **ALT + 1 / ALT + 2 / ALT + 3** to focus tracks A, B, and C (OPTION on macOS)
 - **CTRL + SPACE** to focus the on-screen piano, and again to return to the previous section
 - **SHIFT + SPACE** to write a note-off, or to clear a position that already holds one
 - **SHIFT + UP / SHIFT + DOWN** to select a row range in the focused track
-- **CTRL + C** to copy the selected fragment or the whole track, **CTRL + X** to cut the fragment, **CTRL + V** to paste at the cursor row
+- **CTRL + C** to copy the selected fragment or the whole track, **CTRL + X** to cut the fragment, **CTRL + V** to paste at the cursor row, preserving the rows after the pasted fragment
 - **ENTER** for editing
 - **ESCAPE** for cancel
 - **F2** plays the current line, **ALT + 5** plays the song from the start of the current line, **ALT + 6** plays the current line, **ALT + 8** or **ESCAPE** stops playback
@@ -332,9 +332,10 @@ The line commands keep the playlist active and focused when it is the current se
 **Track Operations:**
 
 - **ADD TRACK**: Create new pattern
+- **CLONE TRACK**: Copy the current track's data - the whole track regardless of any selection - into a new pattern assigned at the current line, without using the clipboard
+- **COPY TRACK**: Copy the whole track's pattern data to clipboard, regardless of any selection
+- **PASTE TRACK**: Paste pattern data from clipboard starting at the first track row, clear the rows after the pasted fragment, and leave the cursor on the first row
 - **DELETE TRACK**: Remove pattern
-- **COPY TRACK**: Copy pattern data to clipboard
-- **PASTE TRACK**: Paste pattern data from clipboard starting at the first track row and leave the cursor on the first row
 
 **History Operations:**
 
@@ -927,7 +928,7 @@ Use the UI commands corresponding to:
   - Strategy: **SIMPLE DUMP**, **COMPLEX DUMP**, or **TIGHT DUMP**.
   - Format: **DATA**, **DUMP**, **BIN**, **VGM**, **MAX**, **WAV**, **MOD**, **MIDI**.
 
-The strategy matters only for the formats marked `*` in the dialog: under the song and pattern scopes it drives DATA, BIN, VGM, and MAX (for VGM only **TIGHT DUMP** differs, and for MAX it selects the stream format), while under the instrument scope only MAX uses it. DUMP, WAV, MOD, and MIDI always ignore the strategy selection.
+The strategy matters only for some formats: under the song and pattern scopes it drives DATA, BIN, VGM, and MAX (for VGM only **TIGHT DUMP** differs, and for MAX it selects the stream format), while under the instrument scope only MAX uses it. DUMP, WAV, MOD, and MIDI always ignore the strategy selection.
 
 Then:
 

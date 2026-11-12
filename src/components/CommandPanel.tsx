@@ -41,6 +41,7 @@ interface CommandPanelProps {
   onCopyTrack: () => void;
   onPasteTrack: () => void;
   onNewTrack: () => void;
+  onCloneTrack: () => void;
   onDeleteTrack: () => void;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
@@ -87,6 +88,7 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
   onCopyTrack,
   onPasteTrack,
   onNewTrack,
+  onCloneTrack,
   onDeleteTrack,
   activeSection,
   setActiveSection,
@@ -352,6 +354,9 @@ export const CommandPanel: React.FC<CommandPanelProps> = ({
               </button>
               <button onClick={onNewTrack} className="command-button">
                 ADD TRACK
+              </button>
+              <button onClick={onCloneTrack} className="command-button">
+                CLONE TRACK
               </button>
               <button onClick={onCopyTrack} className="command-button">
                 COPY TRACK

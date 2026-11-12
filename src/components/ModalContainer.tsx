@@ -303,6 +303,7 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
           title={modal.title}
           message={modal.message}
           onClose={modal.onClose}
+          className={modal.className}
         />
       ))}
 

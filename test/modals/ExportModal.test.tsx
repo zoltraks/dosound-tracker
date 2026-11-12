@@ -103,32 +103,6 @@ describe('ExportModal', () => {
     }
   });
 
-  it('marks the strategy-honoring format buttons under the song scope', () => {
-    const { container } = renderModal({ exportType: 'song' });
-    const marked = Array.from(
-      container.querySelectorAll('.command-button span[aria-hidden="true"]'),
-    ).map((span) => span.closest('button')?.textContent);
-    try {
-      expect(marked.sort()).toEqual(['BIN*', 'DATA*', 'MAX*', 'VGM*']);
-    } catch (error) {
-      console.log('marked buttons', marked);
-      throw error;
-    }
-  });
-
-  it('marks only the MAX button under the instrument scope', () => {
-    const { container } = renderModal({ exportType: 'instrument' });
-    const marked = Array.from(
-      container.querySelectorAll('.command-button span[aria-hidden="true"]'),
-    ).map((span) => span.closest('button')?.textContent);
-    try {
-      expect(marked).toEqual(['MAX*']);
-    } catch (error) {
-      console.log('marked buttons', marked);
-      throw error;
-    }
-  });
-
   it('keeps the accessible button names free of the marker', () => {
     renderModal();
     for (const label of ['DATA', 'DUMP', 'BIN', 'VGM', 'MAX', 'WAV', 'MOD', 'MIDI']) {
@@ -138,38 +112,6 @@ describe('ExportModal', () => {
         console.log('missing accessible name', label);
         throw error;
       }
-    }
-  });
-
-  it('shows the scope-specific strategy caption', () => {
-    const { container, rerender } = renderModal({ exportType: 'song' });
-    try {
-      expect(container.querySelector('.export-strategy-note')?.textContent).toBe(
-        '* uses the strategy - MAX selects a stream format; for VGM only TIGHT differs',
-      );
-    } catch (error) {
-      console.log('song note', container.querySelector('.export-strategy-note')?.textContent);
-      throw error;
-    }
-    rerender(
-      <ExportModal
-        isOpen={true}
-        exportType="instrument"
-        exportStrategy="simple"
-        onChangeType={vi.fn()}
-        onChangeStrategy={vi.fn()}
-        onExportFormat={vi.fn()}
-        onConfirm={vi.fn()}
-        onCancel={vi.fn()}
-      />,
-    );
-    try {
-      expect(container.querySelector('.export-strategy-note')?.textContent).toBe(
-        '* uses the strategy - MAX selects a stream format',
-      );
-    } catch (error) {
-      console.log('instrument note', container.querySelector('.export-strategy-note')?.textContent);
-      throw error;
     }
   });
 

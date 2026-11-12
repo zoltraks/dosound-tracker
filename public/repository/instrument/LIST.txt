@@ -15,3 +15,11 @@ warmball_kick.yaml
 warmball_pim_1.yaml
 warmball_pim_2.yaml
 warmball_snare.yaml
+overload_bass_flat.yaml
+overload_double_pim.yaml
+overload_kick_2.yaml
+overload_snare_2.yaml
+overload_hihat_2.yaml
+overload_warmball_pim_2.yaml
+overload_arp_2_07c.yaml
+overload_flute_3.yaml

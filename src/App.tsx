@@ -365,6 +365,7 @@ const App: React.FC = () => {
     handlePlaylistChange,
     handleCreatePatternAt,
     handleCreateNewTrack,
+    handleCreateTrackFromSteps,
     handleAddLine,
     handleCloneLine,
     handleDeleteLine,
@@ -464,6 +465,7 @@ const App: React.FC = () => {
     trackSelection,
     handleExtendSelection,
     handleCopyTrack,
+    handleCloneTrack,
     handlePasteTrackFromStart,
     handleCopyTrackShortcut,
     handleCutTrackShortcut,
@@ -485,6 +487,7 @@ const App: React.FC = () => {
     setActiveSection,
     setTrackFocusRevision,
     getPasteTrackMode,
+    createTrackFromSteps: handleCreateTrackFromSteps,
   });
 
   const {
@@ -582,6 +585,7 @@ const App: React.FC = () => {
     handleCopyTrack: handleCopyTrackShortcut,
     handleCutTrack: handleCutTrackShortcut,
     handlePasteTrack: handlePasteTrackShortcut,
+    handleNavigateSongLine,
   });
 
   const handleLineChange = useCallback((lineIndex: number) => {
@@ -919,6 +923,7 @@ const App: React.FC = () => {
             onCopyTrack={handleCopyTrack}
             onPasteTrack={handlePasteTrackFromStart}
             onNewTrack={handleCreateNewTrack}
+            onCloneTrack={handleCloneTrack}
             onDeleteTrack={handleDeleteTrack}
             activeSection={activeSection}
             setActiveSection={setActiveSection}
@@ -962,7 +967,6 @@ const App: React.FC = () => {
             onRegisterTrackStopPreview={handleRegisterTrackStopPreview}
             trackSelection={trackSelection}
             onExtendSelection={handleExtendSelection}
-            onNavigateSongLine={handleNavigateSongLine}
             trackBackgroundEnabled={trackBackgroundEnabled}
             onToggleTrackBackground={handleToggleTrackBackground}
             isDarkMode={isDarkMode}

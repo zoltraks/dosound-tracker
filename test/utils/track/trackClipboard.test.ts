@@ -390,6 +390,48 @@ describe('applyClipboardToLines replace mode', () => {
     }
   });
 
+  it('preserves rows after the fragment when clearTail is false at offset zero', () => {
+    const existing: Step[] = [
+      { note: makeNote('E', 5, '09'), volume: 3 },
+      { note: makeNote('F', 5, '08'), volume: 2 },
+      { note: makeNote('G', 5, '07'), volume: 1 },
+    ];
+    const out = applyClipboardToLines(
+      existing,
+      [{ note: 'C-4', instrument: '01' }],
+      'replace',
+      3,
+      parseBaseKey,
+      0,
+      false,
+    );
+    expect(out[0].note).toEqual({ note: 'C', octave: 4, instrument: '01' });
+    expect(out[1].note).toEqual({ note: 'F', octave: 5, instrument: '08' });
+    expect(out[1].volume).toBe(2);
+    expect(out[2].note).toEqual({ note: 'G', octave: 5, instrument: '07' });
+  });
+
+  it('clears rows after the fragment but not before it under an explicit clearTail', () => {
+    const existing: Step[] = [
+      { note: makeNote('E', 5, '09') },
+      { note: makeNote('F', 5, '08') },
+      { note: makeNote('G', 5, '07') },
+    ];
+    const out = applyClipboardToLines(
+      existing,
+      [{ note: 'C-4', instrument: '01' }],
+      'replace',
+      3,
+      parseBaseKey,
+      1,
+      true,
+    );
+    expect(out[0].note).toEqual({ note: 'E', octave: 5, instrument: '09' });
+    expect(out[1].note).toEqual({ note: 'C', octave: 4, instrument: '01' });
+    expect(out[2].note).toBeNull();
+    expect(out[2].volume).toBeUndefined();
+  });
+
   it('pads the result to the target length with cleared lines', () => {
     const out = applyClipboardToLines([], [{ note: 'C-4' }], 'replace', 3, parseBaseKey);
     try {

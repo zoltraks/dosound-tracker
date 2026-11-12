@@ -346,7 +346,7 @@ A work request names its mode or the agent asks before proceeding - the selectio
 | `Improvement mode (verbose + development + improvement)` | Development plus the `improvement` working mode    |
 | `Wait (skip for now)`                                    | Intake standby - wait for commands before any work |
 
-A request that names its mode skips the question - mode words resolve from the request text, `verbose` arming the report mode, `improvement` the working mode on top of Development, and `ad-hoc implementation` the deferred-record path described below. `Wait (skip for now)` follows the Intake standby convention below.
+A request that names its mode skips the question - mode words resolve from the request text, `verbose` arming the report mode, `improvement` the working mode on top of Development, `immediate` the confirmation loop, and `ad-hoc implementation` the deferred-record path described below. `Wait (skip for now)` follows the Intake standby convention below.
 
 **Standard Workflow**
 
@@ -358,7 +358,7 @@ Size is no exemption: the record precedes the code for every user-directed modif
 
 **Ad-Hoc**
 
-A quick path that applies the change without producing change artifacts. Ad-hoc is never the default - it applies only when the request explicitly demands it through phrasing such as "ad-hoc", "immediate", or "quick fix". The agent may propose the ad-hoc path when a request looks small enough for it - the user selects the mode, the proposal never selects itself. An ad-hoc change still requires a deep analysis of the current implementation before any edit - the analysis runs inside the session and is summarized in the response without producing a durable document. The recorded verification procedure still applies, and the outcome is reported in the session rather than in change artifacts.
+A quick path that applies the change without producing change artifacts. Ad-hoc is never the default - it applies only when the request explicitly demands it through phrasing such as "ad-hoc" or "quick fix" - `immediate` resolves to the Immediate mode instead. The agent may propose the ad-hoc path when a request looks small enough for it - the user selects the mode, the proposal never selects itself. An ad-hoc change still requires a deep analysis of the current implementation before any edit - the analysis runs inside the session and is summarized in the response without producing a durable document. The recorded verification procedure still applies, and the outcome is reported in the session rather than in change artifacts.
 
 **Ad-Hoc Implementation**
 
@@ -373,6 +373,10 @@ A collection mode that analyzes requests without implementing them. Each request
 **Improvement**
 
 `improvement` named as a mode on a work request is a working mode, not the review operation. While running the described operation, the agent applies the corrections and optimizations it discovers on the way inside the same change set - a stale doc line refreshed as it is touched, a small repair folded into the work, reusable knowledge folded back into the owning document rather than left in the session. Improvements that alter observable behavior or exceed the request's scope still split into their own record, and the mode never triggers the Session Review on its own - the named improvement operation is recorded under Self-Routines below. The mode applies improvements during the work itself; it reviews no history that precedes the request.
+
+**Immediate**
+
+`immediate` named on a work request arms a confirmation loop in front of the Standard Workflow. On each described change the agent analyzes what must be done and asks through the host's interactive question mechanics with two options - `Accept` enters the Standard Workflow: a change record in `docs/change/<version>/`, extending a suitable existing record in the same group when one fits, a fresh implementation analysis, an implementation plan, and documentation-first implementation. `Decline` drops the request. A free-text reply adds details or another need to the described change, and the question repeats until the request is accepted or declined.
 
 **Intake Standby**
 

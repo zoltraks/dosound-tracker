@@ -1,0 +1,2527 @@
+song:
+  title: Overload
+  author: Zoltar X / New Generation
+  year: 2026
+  chip: YM
+  frame: 50
+  clock: 2000000
+  speed: 6
+  length: 32
+  loop: 0
+  line:
+    - A: "04"
+      B: "12"
+    - A: "0D"
+      B: "13"
+    - A: "05"
+      B: "14"
+      C: "1B"
+    - A: "05"
+      B: "15"
+      C: "1C"
+    - A: "05"
+      B: "17"
+      C: "1C"
+    - A: "18"
+      B: "13"
+      C: "1D"
+    - A: "0F"
+      C: "10"
+    - A: "07"
+      C: "2C"
+    - A: "21"
+      C: "23"
+    - A: "2A"
+      B: "33"
+      C: "2B"
+    - A: "27"
+      B: "28"
+      C: "29"
+    - A: "0A"
+      B: "22"
+      C: "11"
+    - A: "2D"
+      B: "2E"
+      C: "2F"
+    - A: "24"
+      B: "25"
+      C: "26"
+    - A: "0B"
+      B: "1F"
+      C: "0C"
+    - A: "30"
+      B: "31"
+      C: "32"
+    - A: "34"
+      B: "35"
+      C: "36"
+    - A: "37"
+      B: "38"
+      C: "39"
+  pattern:
+    - number: "04"
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 5
+        - note: "D-2"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+        - wait: 5
+        - note: "F-2"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 5
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 5
+        - note: "C-2"
+          instrument: "00"
+    - number: "05"
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D-2"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "D-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "07"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "C-3"
+          instrument: "00"
+          volume: 13
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-3"
+          instrument: "00"
+          volume: 13
+    - number: "0A"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "C-3"
+          instrument: "00"
+          volume: 13
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-3"
+          instrument: "00"
+          volume: 13
+    - number: "0B"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "E-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "0C"
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 13
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+    - number: "0D"
+      name: Pattern 04
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 5
+        - note: "D-2"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+        - wait: 5
+        - note: "F-2"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 5
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "0F"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "E-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "10"
+      step:
+        - wait: 2
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 12
+    - number: "11"
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 3
+        - note: "D-1"
+          instrument: "03"
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 3
+        - note: "D-1"
+          instrument: "03"
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - note: "G-1"
+          instrument: "04"
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+          volume: 8
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+    - number: "12"
+      step:
+        - note: "D-5"
+          instrument: "06"
+          volume: 8
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 9
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 11
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 11
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 12
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 12
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+    - number: "13"
+      step:
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 12
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 13
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+    - number: "14"
+      step:
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+    - number: "15"
+      step:
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+    - number: "17"
+      name: Pattern 14
+      step:
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 14
+    - number: "18"
+      name: Pattern 05
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D-2"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "D-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 12
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 15
+    - number: "1B"
+      step:
+        - wait: 3
+        - note: "D-5"
+          instrument: "06"
+          volume: 4
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 4
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 5
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 5
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 6
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 6
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 7
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 7
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 8
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 8
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 8
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 8
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 9
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 9
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 9
+    - number: "1C"
+      step:
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+    - number: "1D"
+      step:
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "F-4"
+          instrument: "06"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "06"
+          volume: 8
+        - wait: 1
+        - note: "D-5"
+          instrument: "06"
+          volume: 6
+        - wait: 1
+        - note: "D-4"
+          instrument: "06"
+          volume: 4
+    - number: "1F"
+      step:
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+          volume: 12
+        - note: "D-5"
+          instrument: "08"
+          volume: 14
+        - wait: 2
+        - note: "D-5"
+          instrument: "08"
+          volume: 8
+        - wait: 2
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 3
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "G-4"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "D-4"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+    - number: "21"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "E-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "22"
+      name: Pattern 1F
+      step:
+        - wait: 12
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "D-5"
+          instrument: "02"
+        - wait: 3
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "D-5"
+          instrument: "02"
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+    - number: "23"
+      name: Pattern 0C
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+    - number: "24"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "C-3"
+          instrument: "00"
+          volume: 13
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-3"
+          instrument: "00"
+          volume: 13
+    - number: "25"
+      name: Pattern 20
+      step:
+        - note: "D-5"
+          instrument: "02"
+        - wait: 1
+        - note: "D-4"
+          instrument: "08"
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+          volume: 12
+        - note: "D-5"
+          instrument: "08"
+          volume: 14
+        - wait: 2
+        - note: "D-5"
+          instrument: "08"
+          volume: 8
+        - wait: 2
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "F-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-5"
+          instrument: "02"
+          volume: 15
+        - note: "F-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-6"
+          instrument: "02"
+          volume: 15
+    - number: "26"
+      name: Pattern 11
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - note: "G-1"
+          instrument: "04"
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+          volume: 8
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+    - number: "27"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "E-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "28"
+      name: Pattern 20
+      step:
+        - wait: 12
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "D-5"
+          instrument: "02"
+        - wait: 3
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "D-5"
+          instrument: "02"
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+    - number: "29"
+      name: Pattern 0C
+      step:
+        - note: "D-1"
+          instrument: "03"
+          volume: 15
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 3
+        - note: "D-1"
+          instrument: "03"
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 3
+        - note: "D-1"
+          instrument: "03"
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 3
+        - note: "D-1"
+          instrument: "03"
+        - wait: 3
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+    - number: "2A"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "2B"
+      name: Pattern 0C
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 7
+        - note: "D-6"
+          instrument: 0A
+          volume: 10
+    - number: "2C"
+      step:
+        - wait: 2
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 14
+        - wait: 3
+        - note: "C-3"
+          instrument: "05"
+          volume: 13
+        - note: "A-4"
+          instrument: "05"
+          volume: 11
+        - note: "A-4"
+          instrument: "05"
+          volume: 12
+        - note: "A-4"
+          instrument: "05"
+          volume: 13
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+    - number: "2D"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "E-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "2E"
+      name: Pattern 1F
+      step:
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+          volume: 12
+        - note: "D-5"
+          instrument: "08"
+          volume: 14
+        - wait: 2
+        - note: "D-5"
+          instrument: "08"
+          volume: 8
+        - wait: 2
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 3
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+        - wait: 1
+        - note: "D-5"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "D-4"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+    - number: "2F"
+      name: Pattern 0C
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 13
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+    - number: "30"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "C-3"
+          instrument: "00"
+          volume: 13
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-3"
+          instrument: "00"
+          volume: 13
+    - number: "31"
+      name: Pattern 20
+      step:
+        - note: "D-6"
+          instrument: "02"
+          volume: 13
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - note: "D-4"
+          instrument: "08"
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+          volume: 12
+        - note: "D-5"
+          instrument: "08"
+          volume: 14
+        - wait: 2
+        - note: "D-5"
+          instrument: "08"
+          volume: 8
+        - wait: 2
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "F-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-5"
+          instrument: "02"
+          volume: 15
+        - note: "F-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-6"
+          instrument: "02"
+          volume: 15
+    - number: "32"
+      name: Pattern 11
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - note: "G-1"
+          instrument: "04"
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+          volume: 8
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+    - number: "33"
+      step:
+        - wait: 22
+        - note: "D-5"
+          instrument: 0A
+          volume: 15
+    - number: "34"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "E-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+    - number: "35"
+      name: Pattern 1F
+      step:
+        - note: "D-5"
+          instrument: "02"
+        - wait: 1
+        - note: "D-4"
+          instrument: "08"
+        - wait: 2
+        - note: "D-4"
+          instrument: "08"
+          volume: 12
+        - note: "D-5"
+          instrument: "08"
+          volume: 14
+        - wait: 2
+        - note: "D-5"
+          instrument: "08"
+          volume: 8
+        - wait: 2
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "02"
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "G-4"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "D-4"
+          instrument: "02"
+        - note: "A-4"
+          instrument: "02"
+    - number: "36"
+      name: Pattern 0C
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 13
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+    - number: "37"
+      name: Pattern 06
+      step:
+        - note: "D-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "D-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "F-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "F-1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "A-1"
+          instrument: "00"
+        - wait: 1
+        - note: "C-2"
+          instrument: "00"
+          volume: 14
+        - wait: 1
+        - note: "A#1"
+          instrument: "00"
+          volume: 15
+        - wait: 1
+        - note: "D#1"
+          instrument: "00"
+        - wait: 1
+        - note: "G-1"
+          instrument: "00"
+    - number: "38"
+      name: Pattern 20
+      step:
+        - note: "D-6"
+          instrument: "02"
+          volume: 14
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - note: "D-4"
+          instrument: "08"
+        - note: "D-6"
+          instrument: "02"
+          volume: 12
+        - note: "D-6"
+          instrument: "02"
+          volume: 13
+        - note: "D-4"
+          instrument: "08"
+          volume: 12
+        - note: "D-5"
+          instrument: "08"
+          volume: 14
+        - wait: 2
+        - note: "D-5"
+          instrument: "08"
+          volume: 8
+        - wait: 2
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+        - note: "D-5"
+          instrument: "02"
+          volume: 10
+        - note: "C-5"
+          instrument: "02"
+          volume: 15
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - note: "D-5"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+          volume: 15
+        - note: "C-5"
+          instrument: "02"
+          volume: 10
+        - note: "G-4"
+          instrument: "02"
+          volume: 15
+        - wait: 1
+        - note: "A-4"
+          instrument: "02"
+          volume: 10
+        - wait: 1
+        - note: "D-4"
+          instrument: "02"
+          volume: 15
+    - number: "39"
+      name: Pattern 11
+      step:
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "A-4"
+          instrument: "05"
+          volume: 14
+        - note: "A-4"
+          instrument: "05"
+          volume: 15
+        - note: "G-1"
+          instrument: "04"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+          volume: 15
+        - note: "A-4"
+          instrument: "05"
+          volume: 9
+        - note: "G-1"
+          instrument: "04"
+          volume: 15
+        - wait: 1
+        - note: "C-4"
+          instrument: "05"
+        - wait: 1
+        - note: "D-1"
+          instrument: "03"
+  instrument:
+    - number: "00"
+      name: Bass Flat
+      base: "C-2"
+      color: "#55d"
+      octave: 1
+      volume: [14, 14, 13, 0]
+    - number: "02"
+      name: Double Pim
+      base: "C-4"
+      color: "#6ee"
+      octave: 4
+      volume: [13, 12, 0, 7, 6, 0]
+      shift: [12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0, 0, 0, 12, 0, 12, 0]
+    - number: "03"
+      name: Kick 2
+      base: "D-1"
+      color: "#800"
+      octave: 1
+      volume: [10, 14, 5, 2, 0]
+      noise: [11, 0, 8, 0]
+      mode: [1, 0, 2, 1, 0]
+    - number: "04"
+      name: Snare 2
+      base: "G-1"
+      color: "#fbf"
+      octave: 1
+      volume: [11, 13, 14, 11, 8, 5, 3, 2, 0]
+      noise: [9, 0, 1, 8, 8, 7, 6, 5, 0]
+      mode: [1, 0, 2, 1, 1, 1, 1, 1, 0]
+    - number: "05"
+      name: Hihat 2
+      base: "C-4"
+      color: "#b53"
+      volume: [12, 0]
+      noise: [1, 0]
+      mode: [1, 1, 0]
+    - number: "06"
+      name: Warmball Pim 2
+      base: "C-4"
+      color: "#7f7"
+      volume: [14, 10, 0]
+    - number: "08"
+      name: Arp 2 07C
+      base: "C-5"
+      color: "#9ff"
+      volume: [12, 14, 12, 10, 9, 8, 7, 7, 6, 5, 4, 0]
+      shift: [12, 7, 0, 7, 12, 7, 0, 7, 12, 7, 0]
+      pitch: [0, 0, 1, 2, 0, 0, 1, 2, 0, 1, 2, 1, 0]
+    - number: "0A"
+      name: Flute 3
+      base: "C-6"
+      color: "#ffb"
+      octave: 4
+      volume: [6, 6, 7, 7, 8, 8, 9, 9, 10, 10, 11, 11, 12, 12, 13, 13, 13, 13, 13, 13, 12, 12, 12, 12, 11, 11, 10, 9, 8, 7, 6, 0]
+      pitch: [0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 2, 1, 0, 1, 0]

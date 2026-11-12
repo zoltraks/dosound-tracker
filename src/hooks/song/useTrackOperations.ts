@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { logger } from '../../utils/log/logger.ts';
-import type { Song, Pattern } from '../../synth/SoundDriver.ts';
+import type { Song, Pattern, Step } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
 import {
@@ -42,6 +42,7 @@ interface UseTrackOperationsArgs {
   setActiveSection: (section: NavigationSection) => void;
   setTrackFocusRevision: (updater: (prev: number) => number) => void;
   getPasteTrackMode: (options: { hasExistingData: boolean }) => Promise<TrackPasteMode | null>;
+  createTrackFromSteps: (steps: Step[]) => void;
 }
 
 interface UseTrackOperationsResult {
@@ -51,6 +52,7 @@ interface UseTrackOperationsResult {
   handleExtendSelection: (trackId: 'A' | 'B' | 'C', delta: number) => void;
   handleCopyTrack: () => Promise<void>;
   handleCutTrack: () => Promise<void>;
+  handleCloneTrack: () => void;
   handlePasteTrack: (anchorRow?: number, cursorRow?: number) => Promise<void>;
   handlePasteTrackAtCursor: () => void;
   handlePasteTrackFromStart: () => void;
@@ -76,6 +78,7 @@ export function useTrackOperations({
   setActiveSection,
   setTrackFocusRevision,
   getPasteTrackMode,
+  createTrackFromSteps,
 }: UseTrackOperationsArgs): UseTrackOperationsResult {
   const [trackClipboardError, setTrackClipboardError] = useState('');
   const [trackSelection, setTrackSelection] = useState<TrackSelection | null>(() =>
@@ -115,40 +118,44 @@ export function useTrackOperations({
     [trackSelection, song.length, sharedCurrentLine, setSharedCurrentLine],
   );
 
+  const copyTrackToClipboard = useCallback(
+    async (trackId: 'A' | 'B' | 'C', range?: { start: number; end: number }) => {
+      try {
+        if (
+          typeof navigator === 'undefined' ||
+          !navigator.clipboard ||
+          !navigator.clipboard.writeText
+        ) {
+          setTrackClipboardError('Clipboard API is not available in this browser.');
+          return;
+        }
+
+        const pattern = getCurrentPatternForTrack(trackId);
+        if (!pattern) {
+          setTrackClipboardError('No pattern is assigned for the current track at this position.');
+          return;
+        }
+
+        const yamlContent = generateClipboardData(
+          pattern,
+          song.length || PATTERN_LENGTH,
+          formatNoteKey,
+          range,
+        );
+
+        await navigator.clipboard.writeText(yamlContent);
+      } catch (error) {
+        logger.error('Failed to copy track', error);
+        const message = error instanceof Error ? error.message : String(error);
+        setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
+      }
+    },
+    [getCurrentPatternForTrack, song.length, formatNoteKey],
+  );
+
   const handleCopyTrack = useCallback(async () => {
-    try {
-      if (
-        typeof navigator === 'undefined' ||
-        !navigator.clipboard ||
-        !navigator.clipboard.writeText
-      ) {
-        setTrackClipboardError('Clipboard API is not available in this browser.');
-        return;
-      }
-
-      const trackId = trackSelection ? trackSelection.trackId : getActiveTrackId();
-      const pattern = getCurrentPatternForTrack(trackId);
-      if (!pattern) {
-        setTrackClipboardError('No pattern is assigned for the current track at this position.');
-        return;
-      }
-
-      const range = trackSelection ? normalizeTrackSelection(trackSelection) : undefined;
-
-      const yamlContent = generateClipboardData(
-        pattern,
-        song.length || PATTERN_LENGTH,
-        formatNoteKey,
-        range,
-      );
-
-      await navigator.clipboard.writeText(yamlContent);
-    } catch (error) {
-      logger.error('Failed to copy track', error);
-      const message = error instanceof Error ? error.message : String(error);
-      setTrackClipboardError('Failed to copy track to clipboard.\n\n' + message);
-    }
-  }, [getActiveTrackId, getCurrentPatternForTrack, song.length, formatNoteKey, trackSelection]);
+    await copyTrackToClipboard(getActiveTrackId());
+  }, [getActiveTrackId, copyTrackToClipboard]);
 
   const handleCutTrack = useCallback(async () => {
     try {
@@ -203,8 +210,28 @@ export function useTrackOperations({
     updateSong,
   ]);
 
+  const handleCloneTrack = useCallback(() => {
+    const trackId = getActiveTrackId();
+    const pattern = getCurrentPatternForTrack(trackId);
+    if (!pattern) {
+      setTrackClipboardError('No pattern is assigned for the current track at this position.');
+      return;
+    }
+
+    createTrackFromSteps(
+      (pattern.step || []).map((step) =>
+        step
+          ? {
+              note: step.note ? { ...step.note } : null,
+              ...(step.volume !== undefined ? { volume: step.volume } : {}),
+            }
+          : ({ note: null } as Step),
+      ),
+    );
+  }, [getActiveTrackId, getCurrentPatternForTrack, createTrackFromSteps]);
+
   const handlePasteTrack = useCallback(
-    async (anchorRow?: number, cursorRow?: number) => {
+    async (anchorRow?: number, cursorRow?: number, clearTail?: boolean) => {
       try {
         if (
           typeof navigator === 'undefined' ||
@@ -275,6 +302,7 @@ export function useTrackOperations({
           targetLength,
           parseBaseKeyString,
           startOffset,
+          clearTail,
         );
 
         const updatedPattern = { ...pattern, step: newLines };
@@ -417,9 +445,11 @@ export function useTrackOperations({
 
   const handleCopyTrackShortcut = useCallback(() => {
     if (isTrackSectionActive) {
-      void handleCopyTrack();
+      const range = trackSelection ? normalizeTrackSelection(trackSelection) : undefined;
+      const trackId = trackSelection ? trackSelection.trackId : getActiveTrackId();
+      void copyTrackToClipboard(trackId, range);
     }
-  }, [isTrackSectionActive, handleCopyTrack]);
+  }, [isTrackSectionActive, trackSelection, getActiveTrackId, copyTrackToClipboard]);
 
   const handleCutTrackShortcut = useCallback(() => {
     if (isTrackSectionActive) {
@@ -428,11 +458,11 @@ export function useTrackOperations({
   }, [isTrackSectionActive, handleCutTrack]);
 
   const handlePasteTrackAtCursor = useCallback(() => {
-    void handlePasteTrack(sharedCurrentLine);
+    void handlePasteTrack(sharedCurrentLine, undefined, false);
   }, [handlePasteTrack, sharedCurrentLine]);
 
   const handlePasteTrackFromStart = useCallback(() => {
-    void handlePasteTrack(0, 0);
+    void handlePasteTrack(0, 0, true);
   }, [handlePasteTrack]);
 
   const handlePasteTrackShortcut = useCallback(() => {
@@ -448,6 +478,7 @@ export function useTrackOperations({
     handleExtendSelection,
     handleCopyTrack,
     handleCutTrack,
+    handleCloneTrack,
     handlePasteTrack,
     handlePasteTrackAtCursor,
     handlePasteTrackFromStart,
