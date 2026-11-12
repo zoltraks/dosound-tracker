@@ -7,7 +7,7 @@ import { exportSongToMod, exportInstrumentToMod } from '../../src/exports/mod.ts
 import type { Song } from '../../src/synth/SoundDriver.ts';
 
 function loadToneSong(): Song {
-  const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+  const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
   return parseSongFromYaml(yamlContent);
 }
 

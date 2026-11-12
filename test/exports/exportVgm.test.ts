@@ -68,7 +68,7 @@ function countVgmDelayCommands(
 
 describe('exportSongToVgm', () => {
   it('exports valid VGM data for the default song YAML', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
     const { buffer, totalSamples } = exportSongToVgm(song);
@@ -175,7 +175,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('exports valid VGM data for a noise-only song without loop', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-noise.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-noise.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
     const { buffer, totalSamples } = exportSongToVgm(song);
@@ -225,7 +225,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('uses only a single playlist entry worth of samples when scoped to one pattern', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
     const playlistLength = song.line.length;
@@ -246,7 +246,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('exports instrument-preview VGM without loop information even if the song has a loop', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
     expect(song.loop).not.toBeNull();
@@ -268,7 +268,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('preserves total samples when using tight strategy', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
 
@@ -305,7 +305,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('uses merged delay commands for tight strategy', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
 
@@ -324,7 +324,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('writes 60 Hz frame rate and uses 0x62 wait commands for 60 Hz songs', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
     const song = parseSongFromYaml(yamlContent);
     const song60Hz: Song = { ...song, frame: 60 };
 
@@ -345,7 +345,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('writes 1000000 to the AY clock header for 1 MHz songs', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
     const song = parseSongFromYaml(yamlContent);
     const song1MHz: Song = { ...song, clock: 1000000 };
 
@@ -356,7 +356,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('produces halved tone period register values for 1 MHz songs', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
     const song = parseSongFromYaml(yamlContent);
 
     const result2MHz = exportSongToVgm(song);
@@ -402,7 +402,7 @@ describe('exportSongToVgm', () => {
   });
 
   it('writes the AY chip-type byte per song chip', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
     const song = parseSongFromYaml(yamlContent);
 
     const ymBytes = new Uint8Array(exportSongToVgm({ ...song, chip: 'YM' }).buffer);

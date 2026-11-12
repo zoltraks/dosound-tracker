@@ -11,7 +11,7 @@ import type { Song } from '../../src/synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME as VBLANK_RATE } from '../../src/constants/song.ts';
 
 function loadSongYaml(name: string) {
-  const yamlContent = readFileSync(`test/fixtures/${name}`, 'utf-8');
+  const yamlContent = readFileSync(`test/fixtures/song/${name}`, 'utf-8');
   return parseSongFromYaml(yamlContent);
 }
 

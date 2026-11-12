@@ -17,7 +17,7 @@ This document describes the data formats produced by the following commands:
 
 Examples of the YAML formats can be found under:
 
-- `src/assets/song.yaml`
+- `src/assets/song/song.yaml`
 
 Every YAML format below is a byte-level emission contract: the same in-memory data must produce the same text. The emitted output of each saver is pinned against golden files by `test/utils/yaml/yamlEmission.test.ts` (see `TESTING.md`).
 

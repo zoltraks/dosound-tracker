@@ -1,0 +1,326 @@
+import React, { useRef, useEffect, useCallback } from 'react';
+import type { NavigationSection } from '../../constants/navigation.ts';
+import type { Song } from '../../synth/SoundDriver.ts';
+import {
+  DEFAULT_SONG_FRAME,
+  DEFAULT_SONG_CLOCK,
+  SUPPORTED_SONG_FRAMES,
+  SUPPORTED_SONG_CLOCKS,
+} from '../../constants/song.ts';
+import NumberSpinner from '../widgets/NumberSpinner.tsx';
+import ToggleValueButton from '../widgets/ToggleValueButton.tsx';
+import { useLocalStorageState } from '../../hooks/storage/useLocalStorageState.ts';
+import { StorageKeys } from '../../utils/storage/storageKeys.ts';
+import { readSongInfoField, type SongInfoField } from '../../utils/cursor/panelCursorFields.ts';
+import type { UpdateSongOptions } from '../../hooks/song/useDataManagement.ts';
+
+interface InformationPanelProps {
+  song: Song;
+  activeSection: NavigationSection;
+  setActiveSection: (section: NavigationSection) => void;
+  onChange: (updates: Partial<Song>, options?: UpdateSongOptions) => void;
+}
+
+export const InformationPanel: React.FC<InformationPanelProps> = ({
+  song,
+  activeSection,
+  setActiveSection,
+  onChange,
+}) => {
+  const titleRef = useRef<HTMLInputElement>(null);
+  const authorRef = useRef<HTMLInputElement>(null);
+  const yearRef = useRef<HTMLInputElement>(null);
+  const speedRef = useRef<HTMLInputElement>(null);
+  const lengthRef = useRef<HTMLInputElement>(null);
+  const loopRef = useRef<HTMLInputElement>(null);
+  const isActive = activeSection === 'songInfo';
+  const [lastFocusedField, setLastFocusedField] = useLocalStorageState<SongInfoField>(
+    StorageKeys.SONG_INFO_FIELD,
+    'title',
+    { read: readSongInfoField },
+  );
+
+  useEffect(() => {
+    if (!isActive) return;
+
+    const fieldMap = {
+      title: titleRef,
+      author: authorRef,
+      year: yearRef,
+      speed: speedRef,
+      length: lengthRef,
+      loop: loopRef,
+    } as const;
+
+    const targetRef = fieldMap[lastFocusedField] || titleRef;
+    if (targetRef.current) {
+      targetRef.current.focus();
+    }
+  }, [isActive, lastFocusedField]);
+
+  const handleFieldChange = useCallback(
+    (field: keyof Song, value: string | number | null) => {
+      // Coalesce bursts (typing, toggle cycling) in one field into a single
+      // undo entry.
+      onChange({ [field]: value }, { coalesceKey: `song-info:${String(field)}` });
+    },
+    [onChange],
+  );
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (!isActive) return;
+
+      const target = event.target as HTMLInputElement | null;
+
+      if (event.key === 'Tab') {
+        event.preventDefault();
+        // Let navigation handle tab
+        return;
+      }
+
+      if (!target) return;
+
+      const fields = [
+        titleRef.current,
+        authorRef.current,
+        yearRef.current,
+        speedRef.current,
+        lengthRef.current,
+        loopRef.current,
+      ];
+      const index = fields.findIndex((el) => el === target);
+
+      if (index === -1) return;
+
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        const delta = event.key === 'ArrowDown' ? 1 : -1;
+        const nextIndex = (index + delta + fields.length) % fields.length;
+        const next = fields[nextIndex];
+        if (next) {
+          next.focus();
+        }
+      }
+    },
+    [isActive],
+  );
+
+  const handleSpeedChange = useCallback(
+    (next: number | null) => {
+      if (typeof next !== 'number' || !Number.isFinite(next)) {
+        return;
+      }
+      const base = next;
+      const clamped = Math.max(2, base);
+      const even = clamped & ~1; // enforce even speed (2,4,6,...)
+      handleFieldChange('speed', even);
+    },
+    [handleFieldChange],
+  );
+
+  const handleYearChange = useCallback(
+    (next: number | null) => {
+      const fallback = new Date().getFullYear();
+      const raw = typeof next === 'number' && Number.isFinite(next) ? next : fallback;
+      const clamped = Math.max(1980, Math.min(2030, raw));
+      handleFieldChange('year', clamped);
+    },
+    [handleFieldChange],
+  );
+
+  const handleLengthChange = useCallback(
+    (next: number | null) => {
+      const base = typeof next === 'number' && Number.isFinite(next) ? next : 64;
+      const clamped = Math.max(4, Math.min(256, base));
+      handleFieldChange('length', clamped);
+    },
+    [handleFieldChange],
+  );
+
+  const handleLoopChange = useCallback(
+    (next: number | null) => {
+      if (typeof next !== 'number' || !Number.isFinite(next)) {
+        handleFieldChange('loop', null);
+        return;
+      }
+      const base = Math.floor(next as number);
+      const maxPos = Math.max(0, song.line.length - 1);
+      const clamped = Math.max(0, Math.min(maxPos, base));
+      handleFieldChange('loop', clamped);
+    },
+    [handleFieldChange, song.line.length],
+  );
+
+  const handleLoopInputKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Backspace') {
+        const input = event.currentTarget;
+        const value = input.value || '';
+        const selectionStart = input.selectionStart ?? 0;
+        const selectionEnd = input.selectionEnd ?? 0;
+
+        const deletingAll =
+          value.length === 0 ||
+          (selectionStart === 0 && selectionEnd === value.length) ||
+          (value.length === 1 && selectionStart === 1 && selectionEnd === 1);
+
+        if (deletingAll) {
+          handleLoopChange(null);
+        }
+      }
+
+      handleKeyDown(event);
+    },
+    [handleKeyDown, handleLoopChange],
+  );
+
+  const formatFrame = useCallback((frame: number) => `${frame} Hz`, []);
+
+  const formatClock = useCallback((clock: number) => `${clock / 1000000} MHz`, []);
+
+  const handleFrameToggle = useCallback(
+    (next: number) => {
+      handleFieldChange('frame', next);
+    },
+    [handleFieldChange],
+  );
+
+  const handleClockToggle = useCallback(
+    (next: number) => {
+      handleFieldChange('clock', next);
+    },
+    [handleFieldChange],
+  );
+
+  return (
+    <div
+      className={`information-panel ${isActive ? 'active' : ''}`}
+      role="group"
+      aria-label="Song information"
+      onClick={() => setActiveSection('songInfo')}
+    >
+      <div className="information-header">Song</div>
+
+      <div className="information-content">
+        <div className="information-field information-field-with-toggle">
+          <label>Title</label>
+          <input
+            ref={titleRef}
+            type="text"
+            value={song.title}
+            onChange={(e) => handleFieldChange('title', e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setLastFocusedField('title')}
+            className="information-input"
+            aria-label="Song title"
+          />
+          <ToggleValueButton
+            value={song.frame ?? DEFAULT_SONG_FRAME}
+            values={SUPPORTED_SONG_FRAMES}
+            formatValue={formatFrame}
+            onChange={handleFrameToggle}
+            ariaLabel="Replay rate"
+          />
+        </div>
+
+        <div className="information-field information-field-with-toggle">
+          <label>Author</label>
+          <input
+            ref={authorRef}
+            type="text"
+            value={song.author}
+            onChange={(e) => handleFieldChange('author', e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() => setLastFocusedField('author')}
+            className="information-input"
+            aria-label="Song author"
+          />
+          <ToggleValueButton
+            value={song.clock ?? DEFAULT_SONG_CLOCK}
+            values={SUPPORTED_SONG_CLOCKS}
+            formatValue={formatClock}
+            onChange={handleClockToggle}
+            ariaLabel="Chip clock"
+          />
+        </div>
+
+        <div className="song-info-grid">
+          <div className="song-info-column">
+            <div className="information-field">
+              <label>Year</label>
+              <NumberSpinner
+                value={song.year}
+                onChange={handleYearChange}
+                min={1980}
+                max={2030}
+                step={1}
+                ariaLabel="Song year"
+                inputRef={(el) => {
+                  yearRef.current = el;
+                }}
+                onInputKeyDown={handleKeyDown}
+                onInputFocus={() => setLastFocusedField('year')}
+              />
+            </div>
+
+            <div className="information-field">
+              <label>Speed</label>
+              <NumberSpinner
+                value={song.speed}
+                onChange={handleSpeedChange}
+                min={2}
+                max={255}
+                step={2}
+                ariaLabel="Song speed"
+                inputRef={(el) => {
+                  speedRef.current = el;
+                }}
+                onInputKeyDown={handleKeyDown}
+                onInputFocus={() => setLastFocusedField('speed')}
+              />
+            </div>
+          </div>
+
+          <div className="song-info-column song-info-column-right">
+            <div className="information-field">
+              <label>Length</label>
+              <NumberSpinner
+                value={song.length ?? 64}
+                onChange={handleLengthChange}
+                min={4}
+                max={256}
+                step={1}
+                ariaLabel="Pattern length"
+                inputRef={(el) => {
+                  lengthRef.current = el;
+                }}
+                onInputKeyDown={handleKeyDown}
+                onInputFocus={() => setLastFocusedField('length')}
+              />
+            </div>
+
+            <div className="information-field">
+              <label>Loop</label>
+              <NumberSpinner
+                value={
+                  typeof song.loop === 'number' && Number.isFinite(song.loop) ? song.loop : null
+                }
+                onChange={handleLoopChange}
+                min={0}
+                max={Math.max(0, song.line.length - 1)}
+                step={1}
+                ariaLabel="Playlist loop position"
+                inputRef={(el) => {
+                  loopRef.current = el;
+                }}
+                onInputKeyDown={handleLoopInputKeyDown}
+                onInputFocus={() => setLastFocusedField('loop')}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

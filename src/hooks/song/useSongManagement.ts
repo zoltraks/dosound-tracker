@@ -1,6 +1,6 @@
 import type { Instrument, Song, Pattern, Step, Note } from '../../synth/SoundDriver.ts';
 import { PATTERN_LENGTH, ENVELOPE_LENGTH } from '../../constants/music.ts';
-import defaultSongYaml from '../../assets/song.yaml?raw';
+import defaultSongYaml from '../../assets/song/song.yaml?raw';
 import { Formatter } from '../../utils/format/formatters.ts';
 import { formatInstrumentSlotId } from '../../utils/instrument/instrumentSelection.ts';
 import {

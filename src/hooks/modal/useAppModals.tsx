@@ -6,7 +6,7 @@ import type { InstrumentTypeInfo } from '../instrument/useInstrumentWarnings.ts'
 import type { PendingSongImport } from '../song/useDataManagement.ts';
 import type { TrackPasteMode } from '../song/useTrackOperations.ts';
 import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
-import { ModalManager } from '../../components/ModalManager.tsx';
+import { ModalManager } from '../../components/modal/ModalManager.tsx';
 import { useModalManager } from './useModalManager.ts';
 import type { UseModalStateResult } from './useModalState.ts';
 

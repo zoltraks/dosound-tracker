@@ -65,7 +65,7 @@ function parseTracks(bytes: Uint8Array): ParsedTrack[] {
 }
 
 function loadToneSong(): Song {
-  const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+  const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
   return parseSongFromYaml(yamlContent);
 }
 

@@ -6,7 +6,7 @@ import { parseSongFromYaml } from '../../../src/utils/song/songParser.ts';
 
 describe('parseSongFromYaml', () => {
   it('parses song-vgm-tone.yaml into a valid Song structure', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
 

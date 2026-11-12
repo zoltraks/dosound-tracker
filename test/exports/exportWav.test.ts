@@ -9,7 +9,7 @@ import { DEFAULT_SONG_FRAME as VBLANK_RATE } from '../../src/constants/song.ts';
 
 describe('WAV export context', () => {
   it('uses only a single playlist entry worth of samples when scoped to one pattern', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
 
     const song = parseSongFromYaml(yamlContent);
     const playlistLength = song.line.length;
@@ -75,7 +75,7 @@ describe('WAV export context', () => {
   });
 
   it('produces shorter duration for 60 Hz songs than 50 Hz songs', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
     const song = parseSongFromYaml(yamlContent);
 
     const result50Hz = exportSongToWav(song);
@@ -90,7 +90,7 @@ describe('WAV export context', () => {
   });
 
   it('renders the AY amplitude curve for an AY song', () => {
-    const yamlContent = readFileSync('test/fixtures/song-vgm-tone.yaml', 'utf-8');
+    const yamlContent = readFileSync('test/fixtures/song/song-vgm-tone.yaml', 'utf-8');
     const song = parseSongFromYaml(yamlContent);
 
     const ym = exportSongToWav({ ...song, chip: 'YM' });

@@ -180,7 +180,7 @@ describe('emitted YAML byte equivalence', () => {
   describe('song corpus', () => {
     for (const fixture of SONG_FIXTURES) {
       it(`emits ${fixture} byte-identically`, async () => {
-        const text = readFileSync(`test/fixtures/${fixture}.yaml`, 'utf-8');
+        const text = readFileSync(`test/fixtures/song/${fixture}.yaml`, 'utf-8');
         const emitted = buildSongYamlForExport(parseSongFromYaml(text));
         try {
           await expect(emitted).toMatchFileSnapshot(golden(`song-${fixture}`));
