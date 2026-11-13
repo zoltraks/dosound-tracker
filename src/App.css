@@ -3606,7 +3606,7 @@ body {
   box-shadow: 0 0 6px var(--section-hover-glow);
 }
 
-.eq-panel:hover .volume-bar {
+.eq-panel:hover .volume-bar:not(.muted) {
   background-color: var(--volume-bar-hover-bg);
   border-color: var(--volume-bar-hover-border);
 }

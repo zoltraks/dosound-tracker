@@ -1,7 +1,7 @@
 export const INFO_MODAL_TITLES = {
   songError: 'Song Load Error',
   instrumentError: 'Instrument Load Error',
-  trackClipboardError: 'Track Clipboard Error',
+  trackClipboardError: 'Clipboard Error',
   optimizeSummary: 'Optimization Summary',
   soundExportSummary: 'Export Summary',
   dumpExportSummary: 'Dump Export Summary',

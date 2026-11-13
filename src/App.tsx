@@ -55,6 +55,7 @@ import { useEditorPersistence } from './hooks/storage/useEditorPersistence.ts';
 import { usePlaybackHandlers } from './hooks/playback/usePlaybackHandlers.ts';
 import { useSongImportWarning } from './hooks/song/useSongImportWarning.ts';
 import { useInstrumentOctaves } from './hooks/instrument/useInstrumentOctaves.ts';
+import { useEnvelopeClipboard } from './hooks/instrument/useEnvelopeClipboard.ts';
 import { useTrackFocus } from './hooks/ui/useTrackFocus.ts';
 import { useAudioContextResume } from './hooks/audio/useAudioContextResume.ts';
 import { useAudioContextPlaybackSync } from './hooks/audio/useAudioContextPlaybackSync.ts';
@@ -491,6 +492,31 @@ const App: React.FC = () => {
     createTrackFromSteps: handleCreateTrackFromSteps,
   });
 
+  const { isEnvelopeSectionActive, handleCopyEnvelope, handlePasteEnvelope } = useEnvelopeClipboard(
+    {
+      activeSection,
+      currentInstrument,
+      updateInstrument,
+      setError: setTrackClipboardError,
+    },
+  );
+
+  const handleCopyClipboard = useCallback(() => {
+    if (isEnvelopeSectionActive) {
+      void handleCopyEnvelope();
+      return;
+    }
+    handleCopyTrackShortcut();
+  }, [isEnvelopeSectionActive, handleCopyEnvelope, handleCopyTrackShortcut]);
+
+  const handlePasteClipboard = useCallback(() => {
+    if (isEnvelopeSectionActive) {
+      void handlePasteEnvelope();
+      return;
+    }
+    handlePasteTrackShortcut();
+  }, [isEnvelopeSectionActive, handlePasteEnvelope, handlePasteTrackShortcut]);
+
   const {
     handleRenameInstrument,
     handlePlayInstrument,
@@ -593,9 +619,9 @@ const App: React.FC = () => {
     handleNewInstrument: createNewInstrument,
     handleUndo: undo,
     handleRedo: redo,
-    handleCopyTrack: handleCopyTrackShortcut,
+    handleCopyTrack: handleCopyClipboard,
     handleCutTrack: handleCutTrackShortcut,
-    handlePasteTrack: handlePasteTrackShortcut,
+    handlePasteTrack: handlePasteClipboard,
     handleNavigateSongLine,
     handleNavigateInstrument,
   });

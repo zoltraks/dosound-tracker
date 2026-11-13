@@ -3,3 +3,4 @@ Nice.song.yaml
 Warmball.song.yaml
 Billy.song.yaml
 Overload.song.yaml
+Crockett.song.yaml

@@ -295,6 +295,10 @@ For whole-envelope operations, the editor treats the envelope as fully defined f
 | Ctrl + Shift + Up        | All envelopes | Increase all 32 values by 1 (clamped)                  |
 | Ctrl + Shift + Down      | All envelopes | Decrease all 32 values by 1 (clamped)                  |
 | Ctrl + Shift + Enter     | Arpeggio      | Repeat-fill steps 0..current until step 31             |
+| Ctrl + C                 | All envelopes | Copy the envelope to the clipboard                     |
+| Ctrl + V                 | All envelopes | Paste a copied envelope of the same type               |
+
+Ctrl + C writes the active envelope in the instrument-file format (`volume:`, `shift:`, `pitch:`, `noise:`, `mode:` lists; volume copies include `sustain:`). Ctrl + V replaces the same envelope type on the current instrument, so switching instruments between copy and paste transfers the envelope. Text copied from an instrument file pastes the same way - the `arpeggio:` key is accepted for the Arpeggio envelope.
 
 ### Data Management
 
