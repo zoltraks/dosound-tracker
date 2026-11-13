@@ -11,7 +11,12 @@ export default mergeConfig(
       coverage: {
         provider: 'v8',
         reporter: ['text', 'json', 'html'],
-        exclude: ['node_modules/', 'test/', 'e2e/', 'src/**/*.d.ts'],
+        include: ['src/**/*.{ts,tsx}'],
+        exclude: [
+          'src/**/*.d.ts',
+          'src/types/electronApi.ts', // Type declarations for the preload API.
+          'src/main.tsx', // Browser bootstrap exercised by the Playwright smoke suite.
+        ],
         thresholds: {
           lines: 80,
           functions: 80,

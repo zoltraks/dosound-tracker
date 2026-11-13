@@ -9,7 +9,6 @@ import { InstrumentMidiModal } from '../../modals/instrument/InstrumentMidiModal
 import { InstrumentTypeWarningModal } from '../../modals/instrument/InstrumentTypeWarningModal.tsx';
 import { MarkdownModal } from '../../modals/information/MarkdownModal.tsx';
 import { MidiModal } from '../../modals/midi/MidiModal.tsx';
-import { SettingsModal } from '../../modals/settings/SettingsModal.tsx';
 import { TransposeModal } from '../../modals/track/TransposeModal.tsx';
 import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
 import type {
@@ -21,6 +20,11 @@ import type { Instrument } from '../../synth/SoundDriver.ts';
 import { CONFIRM_MODAL_TEXT } from '../../constants/modal.ts';
 import { buildInfoModals } from '../../utils/panel/modalRendering.ts';
 import type { InstrumentDeleteUsage } from '../../hooks/modal/useModalState.ts';
+
+const SettingsModal = React.lazy(async () => {
+  const { SettingsModal } = await import('../../modals/settings/SettingsModal.tsx');
+  return { default: SettingsModal };
+});
 
 type TransposeScope = 'line' | 'song';
 type TransposeTrackScope = 'current' | 'all';
@@ -464,19 +468,21 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
       />
 
       {isSettingsOpen && (
-        <SettingsModal
-          category={settingsCategory}
-          onCategoryChange={onSettingsCategoryChange}
-          draft={settingsDraft}
-          onDraftChange={onSettingsDraftChange}
-          confirmingReset={settingsConfirmingReset}
-          onConfirmingResetChange={onSettingsConfirmingResetChange}
-          onSessionFocus={onSettingsSessionFocus}
-          onSessionPaneScroll={onSettingsPaneScroll}
-          onCommit={onCommitSettings}
-          onCancel={onCancelSettings}
-          onLoadError={onSettingsLoadError}
-        />
+        <React.Suspense fallback={null}>
+          <SettingsModal
+            category={settingsCategory}
+            onCategoryChange={onSettingsCategoryChange}
+            draft={settingsDraft}
+            onDraftChange={onSettingsDraftChange}
+            confirmingReset={settingsConfirmingReset}
+            onConfirmingResetChange={onSettingsConfirmingResetChange}
+            onSessionFocus={onSettingsSessionFocus}
+            onSessionPaneScroll={onSettingsPaneScroll}
+            onCommit={onCommitSettings}
+            onCancel={onCancelSettings}
+            onLoadError={onSettingsLoadError}
+          />
+        </React.Suspense>
       )}
 
       <DownloadModal isOpen={isDownloadOpen} onClose={() => setIsDownloadOpen(false)} />

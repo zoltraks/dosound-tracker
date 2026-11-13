@@ -333,3 +333,114 @@ describe('useTrackOperations copy scope', () => {
     expect(yaml).not.toContain('G-4');
   });
 });
+
+describe('track edits and clipboard failures', () => {
+  afterEach(() => {
+    cleanup();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+    localStorage.removeItem(StorageKeys.TRACK_SELECTION);
+  });
+
+  const note = { note: 'C', octave: 4, instrument: '01' };
+
+  it.each(['A', 'B', 'C'] as const)('inserts and deletes a row in track %s', (track) => {
+    const pattern = makePattern(64);
+    pattern.step[2] = { note };
+    const args = makeArgs({
+      activeSection: `track${track}`,
+      song: { ...makeSong(pattern), line: [{ A: '00', B: '00', C: '00' }] },
+      sharedCurrentLine: 2,
+    });
+    const { result, rerender } = renderHook((params) => useTrackOperations(params), {
+      initialProps: args,
+    });
+    act(() => result.current.handleInsertStep());
+    const inserted = args.updateSong.mock.calls[0][0].pattern[0] as Pattern;
+    expect(inserted.step[2].note).toBeNull();
+    expect(inserted.step[3].note).toEqual(note);
+    expect(args.setActiveSection).toHaveBeenCalledWith(`track${track}`);
+    expect(args.setTrackFocusRevision.mock.calls[0][0](3)).toBe(4);
+    const song = args.song as Song;
+    rerender({ ...args, song: { ...song, pattern: [inserted] } });
+    act(() => result.current.handleDeleteStep());
+    expect(args.updateSong.mock.calls[1][0].pattern[0].step[2].note).toEqual(note);
+  });
+
+  it.each(
+    [[], [{ A: '--', B: '--', C: '--' }], [{ A: '01', B: '--', C: '--' }]].map((line) => ({
+      line,
+    })),
+  )('leaves the song alone when its track has no editable pattern (%j)', ({ line }) => {
+    const args = makeArgs({ song: { ...makeSong(makePattern(64)), line } });
+    const { result } = renderHook(() => useTrackOperations(args));
+    act(() => {
+      result.current.handleInsertStep();
+      result.current.handleDeleteStep();
+    });
+    expect(args.updateSong).not.toHaveBeenCalled();
+  });
+
+  it('cuts only the selected rows and preserves the song if clipboard writing fails', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const pattern = makePattern(64);
+    pattern.step[1] = { note, volume: 8 };
+    pattern.step[2] = { note };
+    pattern.step[3] = { note };
+    const other = { ...makePattern(64), id: '01' };
+    const args = makeArgs({
+      song: { ...makeSong(pattern), pattern: [pattern, other] },
+      sharedCurrentLine: 1,
+      getCurrentPatternForTrack: vi.fn(() => pattern),
+    });
+    const writeText = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Denied'))
+      .mockResolvedValueOnce(undefined);
+    vi.stubGlobal('navigator', { clipboard: { writeText } });
+    const { result } = renderHook(() => useTrackOperations(args));
+    await act(() => result.current.handleCutTrack());
+    expect(writeText).not.toHaveBeenCalled();
+    act(() => result.current.handleExtendSelection('A', 1));
+    await act(() => result.current.handleCutTrack());
+    expect(result.current.trackClipboardError).toContain('Denied');
+    expect(args.updateSong).not.toHaveBeenCalled();
+    await act(() => result.current.handleCutTrack());
+    const updated = args.updateSong.mock.calls[0][0].pattern as Pattern[];
+    expect(updated[0].step.slice(1, 4)).toEqual([{ note: null }, { note }, { note }]);
+    expect(updated[1]).toBe(other);
+    expect(result.current.trackSelection).toBeNull();
+  });
+
+  it.each([
+    ['', 'Clipboard is empty'],
+    ['step: [', 'Failed to parse track data'],
+  ])('reports unusable clipboard contents (%j)', async (text, message) => {
+    vi.stubGlobal('navigator', { clipboard: { readText: vi.fn(async () => text) } });
+    const args = makeArgs();
+    const { result } = renderHook(() => useTrackOperations(args));
+    await act(() => result.current.handlePasteTrack());
+    expect(result.current.trackClipboardError).toContain(message);
+    expect(args.updateSong).not.toHaveBeenCalled();
+  });
+
+  it('asks before overwriting volume-only data and preserves it on cancellation', async () => {
+    const pattern = makePattern(64);
+    pattern.step[0] = { note: null, volume: 0 };
+    const args = makeArgs({
+      song: makeSong(pattern),
+      getCurrentPatternForTrack: vi.fn(() => pattern),
+      getPasteTrackMode: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce('replace'),
+    });
+    vi.stubGlobal('navigator', {
+      clipboard: { readText: vi.fn(async () => 'step:\n  - note: D-4\n') },
+    });
+    const { result } = renderHook(() => useTrackOperations(args));
+    await act(() => result.current.handlePasteTrack(-5, 200));
+    expect(args.getPasteTrackMode).toHaveBeenCalledWith({ hasExistingData: true });
+    expect(args.updateSong).not.toHaveBeenCalled();
+    await act(() => result.current.handlePasteTrack(-5, 200));
+    expect(args.updateSong.mock.calls[0][0].pattern[0].step[0].note.note).toBe('D');
+    expect(args.setSharedCurrentLine).toHaveBeenCalledWith(63);
+  });
+});

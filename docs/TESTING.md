@@ -328,7 +328,7 @@ Remaining coverage gaps that may be addressed in future work:
 
 The remaining uncovered branches are mostly defensive guards unreachable through the public surface (absent optional callbacks, unreachable `typeof` fallbacks, constant-flag blocks, and fetch cancellation races).
 
-The enforced figure is an aggregate over everything the suite imports - a file entering `test/` mid-window shifts the denominator, so evaluate the gate per-source before planning coverage work; a red aggregate is not automatically project debt.
+The coverage gate includes executable TypeScript and TSX under `src/`, including modules the suite never imports. Declaration files contain no runtime code. Individual type-only files and entry points excluded from the gate have a reason in `vitest.config.ts`.
 
 The gap list is a claim about the tree - a change that adds or retires suites updates it in the same change set, so a later record never plans against stale gaps.
 

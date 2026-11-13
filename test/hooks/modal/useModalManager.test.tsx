@@ -287,3 +287,76 @@ describe('useModalManager', () => {
     expect(options.handleCloseChangelog).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('modal-specific keyboard actions', () => {
+  afterEach(cleanup);
+
+  it.each([
+    ['instrumentError', 'setInstrumentError', ['']],
+    ['transposeSummary', 'handleCloseTransposeSummary', []],
+    ['trackClipboardError', 'setTrackClipboardError', ['']],
+    ['optimizeSummary', 'handleCloseOptimizeSummary', []],
+    ['soundExportSummary', 'handleCloseSoundExportSummary', []],
+    ['dumpExportSummary', 'handleCloseDumpExportSummary', []],
+    ['renumberSummary', 'handleCloseRenumberSummary', []],
+    ['midiLoadError', 'setMidiLoadError', ['']],
+    ['midiCopySummary', 'setMidiCopySummary', ['']],
+  ] as const)('dismisses %s with either Escape or Enter', (flag, callback, args) => {
+    const close = vi.fn();
+    render(<ManagerHarness options={createOptions({ [flag]: 'Message', [callback]: close })} />);
+    dispatchKey('Escape');
+    dispatchKey('Enter');
+    expect(close.mock.calls).toEqual([args, args]);
+  });
+
+  it.each([
+    ['isOptimizeConfirmOpen', 'handleCancelOptimize', 'handleConfirmOptimize'],
+    ['isRenumberConfirmOpen', 'handleCancelRenumber', 'handleConfirmRenumber'],
+    ['isNewSongConfirmOpen', 'handleCancelNewSong', 'handleConfirmNewSong'],
+    ['isResetConfirmOpen', 'handleCancelReset', 'handleConfirmReset'],
+    [
+      'isInstrumentTypeWarningOpen',
+      'handleCancelInstrumentTypeWarning',
+      'handleConfirmInstrumentTypeWarning',
+    ],
+    ['isPasteTrackOptionsOpen', 'handleCancelPasteTrackOptions', 'handleConfirmPasteTrackOptions'],
+  ] as const)('routes Escape and Enter independently for %s', (flag, cancelKey, confirmKey) => {
+    const cancel = vi.fn();
+    const confirm = vi.fn();
+    render(
+      <ManagerHarness
+        options={createOptions({ [flag]: true, [cancelKey]: cancel, [confirmKey]: confirm })}
+      />,
+    );
+    dispatchKey('Escape');
+    expect(cancel).toHaveBeenCalledOnce();
+    expect(confirm).not.toHaveBeenCalled();
+    dispatchKey('Enter');
+    expect(confirm).toHaveBeenCalledOnce();
+  });
+
+  it('requires a specific action before deleting a used instrument', () => {
+    const cancel = vi.fn();
+    render(
+      <ManagerHarness
+        options={createOptions({
+          isInstrumentDeleteOpen: true,
+          handleCancelInstrumentDelete: cancel,
+        })}
+      />,
+    );
+    dispatchKey('Enter');
+    expect(cancel).not.toHaveBeenCalled();
+    dispatchKey('Escape');
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it('dismisses the debug information on Enter', () => {
+    const setIsDebugInfoOpen = vi.fn();
+    render(
+      <ManagerHarness options={createOptions({ isDebugInfoOpen: true, setIsDebugInfoOpen })} />,
+    );
+    dispatchKey('Enter');
+    expect(setIsDebugInfoOpen).toHaveBeenCalledExactlyOnceWith(false);
+  });
+});

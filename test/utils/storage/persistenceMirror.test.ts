@@ -345,3 +345,19 @@ describe('persistenceMirror', () => {
     }
   });
 });
+
+it('reports a mirror transaction error and keeps the queue usable', async () => {
+  const idb = createFakeIndexedDb();
+  const mirror = await importFreshMirror(idb);
+  const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+  try {
+    idb.failNext('error');
+    await expect(mirror.clearMirroredSnapshots()).resolves.toBe(false);
+    mirror.mirrorSnapshot('song', { title: 'Recovered' });
+    await expect.poll(() => mirror.readMirroredSnapshot('song')).toEqual({ title: 'Recovered' });
+    expect(warn).toHaveBeenCalled();
+  } finally {
+    warn.mockRestore();
+    vi.unstubAllGlobals();
+  }
+});

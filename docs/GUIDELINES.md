@@ -119,6 +119,10 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 
 ### Read Guidelines by Tier
 
+At the start of each session, check the repository root for `AGENTS.md`
+and read it before starting project work. If the project has no `AGENTS.md`,
+read the root `README.md` and follow its links to the project instructions.
+
 For a work request without a task, read Intake Standby in `WORKFLOW.md` and
 ask what the user wants done. Once the task is known, read Hard Rules,
 Sources of Truth, and Work Intake Table in this file. Consult Mode Selection

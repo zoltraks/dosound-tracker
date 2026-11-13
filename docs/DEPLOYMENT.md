@@ -17,11 +17,13 @@ npm run build
 Creates the `dist/` directory with:
 
 - `index.html`, the entry HTML file.
-- `js/`, JavaScript bundles - `index.js` entry, `sequencer.js` worklet, `ayumi.js` audio worklet, `export.js` lazy export chunk.
+- `js/`, JavaScript bundles - `index.js` entry, `sequencer.js` worklet, `ayumi.js` audio worklet, `export.js` loaded on demand for exports, and `SettingsModal.js` loaded when Settings first opens.
 - `css/`, the bundled stylesheet.
 - `media/`, emitted assets grouped by type - `svg/` and `icon/` today, further groups emitted as assets are added.
 - `worker.js`, the service worker at the bundle root.
 - Static assets from `public/`.
+
+Vite reports a warning when a minified JavaScript chunk exceeds 600 kB.
 
 The build command does not bump the version. To bump the version and build, run `npm run bump` instead.
 

@@ -1,5 +1,10 @@
 # Changes
 
+## Version 1.6.2
+
+Settings now loads on demand, reducing the JavaScript needed at startup
+and bringing the production entry bundle below its size limit.
+
 ## Version 1.6.1
 
 Packaged desktop builds stop trusting the development origin, the note-off

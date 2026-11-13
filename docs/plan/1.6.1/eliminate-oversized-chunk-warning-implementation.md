@@ -84,3 +84,32 @@ target device confirms startup is not regressed; `npm test` stays green.
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm test` -
   all clean.
 - Manual playback startup check after the split.
+
+## Implementation Evidence
+
+The working tree loads `SettingsModal.tsx` on demand through
+`React.lazy` in `ModalContainer.tsx`. The generated entry lists Settings
+and exports as dynamic imports. Settings includes `settingsYaml.ts`.
+The 600 kB limit still applies.
+
+A Vite output probe substituted the committed eager modal source in
+memory and measured both builds with the same configuration. The lazy
+boundary removed about 7.5 kB from the initial JavaScript and brought it
+under budget. The module attribution ranked the React DOM production
+client and js-yaml as the largest entry contributors, followed by
+`App.tsx`, the React production runtime, and
+`useSongManagement.ts`. The ranking uses rendered module lengths before
+final chunk minification. The build comparison uses emitted chunk bytes.
+
+The local Chromium cold-load comparison used 20 measured runs per
+build, alternating build order after warmup. Each run used a fresh
+browser context, blocked service workers, and disabled HTTP caching.
+Both builds had a median load event end of about 25 ms. The song title
+was visible by about 88 ms in both builds, as observed by Playwright.
+Only the entry script was requested during the measured load. The
+comparison represents local loopback behavior.
+
+All 30 browser smoke tests passed with two workers across Chromium and
+WebKit, including playback and Settings. The WebKit song save/load test
+timed out in the initial five-worker run and passed on its isolated
+retry and in the two-worker suite.

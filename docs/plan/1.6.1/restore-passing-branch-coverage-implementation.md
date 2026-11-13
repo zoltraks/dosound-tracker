@@ -82,3 +82,28 @@ exclusions exactly.
 - `npm run test:coverage` exits 0 - all four thresholds pass.
 - `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`,
   `npm test` - all clean.
+
+## Current Baseline
+
+The existing suite reports about 80.03% branch coverage, with the
+other three metrics above the threshold. The report omits executable
+modules such as `App.tsx`, `ModalManager.tsx`, and
+`useStartupRestore.ts`. Measure the gap again after including the
+full executable source inventory.
+
+The persistence mirror suite already covers transaction abort and
+writes and deletes invalidated by reset. Preserve those cases and
+inspect their measured branches before adding tests. Prioritize gaps
+observable through the public behavior of the newly included modules.
+
+## Verification Evidence
+
+The expanded inventory matches the coverage report. The only absent
+TypeScript paths are the browser bootstrap and the type-only Electron
+preload API declaration. The configuration documents both exclusions.
+
+The coverage run passed all four 80% gates. It measured 86.53%
+statements, 80.07% branches, 84.84% functions, and 86.83% lines. All
+1,527 tests passed. Added behavior tests cover startup restore, sequencer
+and MIDI playback, track edits, instrument and modal flows, and recovery
+after a persistence mirror transaction error.
