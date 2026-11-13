@@ -31,9 +31,9 @@ The Vite build configuration in `vite.config.ts` emits deterministic asset filen
 
 ## Service Worker Cache
 
-The production build registers a service worker at `/worker.js` that keeps the application available offline. The cache name carries the application version (`dosound-tracker-<version>`), baked into `dist/worker.js` during the build by the `version-service-worker-cache` plugin, so each deploy installs a fresh cache and the activate handler removes the previous version's entries.
+The production build registers the bundled `worker.js` as a service worker at the deployed base (`import.meta.env.BASE_URL`), keeping the application available offline. The cache name carries the application version (`dosound-tracker-<version>`), baked into `dist/worker.js` during the build by the `version-service-worker-cache` plugin, so each deploy installs a fresh cache and the activate handler removes the previous version's entries.
 
-All same-origin requests use a network-first strategy: the worker fetches the deployed asset, updates the cache, and falls back to the cached copy only when the network is unavailable. Returning clients therefore always receive the current build. Navigation requests fall back to `/index.html` when offline.
+All same-origin requests use a network-first strategy: the worker fetches the deployed asset, updates the cache, and falls back to the cached copy only when the network is unavailable. Returning clients therefore always receive the current build. The precache list and the navigation fallback resolve against the worker's registration scope, so navigation requests fall back to the deployed base's `index.html` when offline.
 
 Every production build also injects a restrictive `Content-Security-Policy` meta tag into `dist/index.html` - the directive list is defined by the `inject-content-security-policy` plugin in `vite.config.ts` and ships to both web deploys and the packaged Electron bundle.
 
@@ -87,4 +87,4 @@ Electron desktop builds can be downloaded from the project home page: https://do
 
 ## Web Hosting
 
-The application is a static single-page application. The live deployment is the project home page above - the `dist/` output deploys to any static file host without additional configuration.
+The application is a static single-page application. The live deployment is the project home page above - the `dist/` output deploys to any static file host without additional configuration. The relative build base and the scope-relative service worker keep asset and offline URLs working when the site is served from a nested path, not only from the host root.

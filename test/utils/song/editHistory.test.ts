@@ -186,6 +186,22 @@ describe('editHistory', () => {
     expect(serialized.redo).toEqual([]);
   });
 
+  it('a full in-memory session restores only the documented newest set', () => {
+    const history = createEditHistory<number>();
+    for (let index = 0; index < EDIT_HISTORY_LIMIT; index += 1) {
+      recordEdit(history, index);
+    }
+
+    const restored = deserializeEditHistory<number>(
+      JSON.parse(JSON.stringify(serializeEditHistory(history))),
+    );
+
+    expect(restored.undo).toHaveLength(EDIT_HISTORY_PERSIST_LIMIT);
+    expect(restored.undo[0]).toBe(EDIT_HISTORY_LIMIT - EDIT_HISTORY_PERSIST_LIMIT);
+    expect(restored.undo.at(-1)).toBe(EDIT_HISTORY_LIMIT - 1);
+    expect(restored.lastKey).toBeNull();
+  });
+
   it('deserializeEditHistory round-trips a serialized history', () => {
     const history = createEditHistory<number>();
     recordEdit(history, 1);

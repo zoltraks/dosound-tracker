@@ -616,7 +616,8 @@ midi:
 settings:
   version: 1 # required format version
   general:
-    theme: 'dark' # 'dark' or 'light'
+    theme: 'dark' # 'dark', 'light', or 'contrast'
+    textScale: '100' # '100', '125', or '150'
     trackBackground: true # per-track row backgrounds
     startupTone: true # startup test tone
   editor:

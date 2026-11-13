@@ -267,6 +267,8 @@ The repository adopts the `version-window` extension and the `audit-driven-devel
 
 The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline - `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result, and again at each stage transition - records to refactoring, refactoring to review, review to bump. An unspecified mode follows the recorded default: `human-in-the-loop`.
 
+A decision a record reserves to the user resolves under `autonomous` like every other decision point: the recommended option is chosen, reported inline, and flagged for owner confirmation in the window review.
+
 Every pending question and option surface in a window run - gate confirmations, stage-continuation prompts, and clarification requests - is asked through the host's interactive question mechanics, never appended to a reply in prose.
 
 **Intake**

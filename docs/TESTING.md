@@ -334,6 +334,10 @@ The gap list is a claim about the tree - a change that adds or retires suites up
 
 `npm run test:coverage` passes the configured 80% thresholds and is an enforceable gate.
 
+**Line-level gap maps need the `json` reporter**
+
+`--coverage.reporter=json-summary` writes only per-file percentages to `coverage/` and does not regenerate `coverage-final.json`. Targeted gap analysis - which statements and branch arms stay uncovered - needs `--coverage.reporter=json` alongside it so `coverage-final.json` carries the per-line detail.
+
 **Fake timers quantize performance.now on fractional intervals**
 
 Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep with fractional `setInterval` delays - a callback scheduled at 16.67 ms can observe `now` a fraction early, so boundary assertions on `1000 / 60`-style intervals are flaky. Use integer intervals in timer tests - a non-20 ms integer still proves an offset derives from the configured interval.
@@ -349,6 +353,10 @@ The vitest include glob is `test/**/*.{test,spec}.{ts,tsx}`, so a throwaway prob
 **Fakes consumed through dependency arrays must be referentially stable**
 
 A fake object built fresh on every render - `fakeAudioContext()` returned inline, for example - re-runs the effect that depends on it. The hook tears down and recreates its worker or node, and messages dispatched in the test land on a dead instance. Hoist the fake to module scope or a `useRef` so the effect binds once and the test's port stays live.
+
+**DOM-interface fakes keep their mock-bearing shapes**
+
+A fake implementing a DOM interface - `MIDIInput`, `MIDIOutput`, `MIDIAccess` - stays a plain object so its `vi.fn()` members keep their `Mock` type for `mock.calls` and `toHaveBeenCalled` assertions. Cast to the DOM interface only where the code under test demands it, such as a hook parameter or a typed ref - casting the fake itself to `as unknown as MIDIInput` makes `.mock` unreachable and costs a typecheck round trip.
 
 **jsdom lacks matchMedia and scrollIntoView**
 

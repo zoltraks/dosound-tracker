@@ -1,5 +1,22 @@
 # Changes
 
+## Version 1.6.3
+
+Offline support now works when the app is served from a nested path, and
+the format and state documentation is back in sync with the code it
+describes.
+
+- **Offline**: the service worker registers under the deployed base and
+  resolves its precache and navigation fallback against its own scope -
+  hosting under a nested path keeps offline navigation and asset fetches
+  working, and root hosting is unchanged.
+- **Settings**: the format documentation now lists the `contrast` theme
+  and `general.textScale`, matching what the settings saver emits.
+- **Repository**: the persisted undo-history bound is a measured
+  decision - larger bounds breach the localStorage quota on large
+  songs - and the largest orchestration modules shed seven bounded
+  responsibilities into dedicated modules.
+
 ## Version 1.6.2
 
 Settings now loads on demand, reducing the JavaScript needed at startup

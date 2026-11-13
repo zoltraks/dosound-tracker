@@ -4,11 +4,9 @@ import {
   updateInstrumentInSong,
   applyLoadedInstrumentToSong,
 } from '../../../src/hooks/instrument/useInstrumentManagement.ts';
-import {
-  createDefaultSong,
-  optimizeSongData,
-  renumberSongData,
-} from '../../../src/hooks/song/useSongManagement.ts';
+import { createDefaultSong } from '../../../src/hooks/song/useSongManagement.ts';
+import { optimizeSongData } from '../../../src/hooks/song/songOptimize.ts';
+import { renumberSongData } from '../../../src/hooks/song/songRenumber.ts';
 import { scheduleJsonSave, clearScheduledSave } from '../../../src/hooks/storage/useStorage.ts';
 import { StorageKeys } from '../../../src/utils/storage/storageKeys.ts';
 import { ENVELOPE_LENGTH, PATTERN_LENGTH } from '../../../src/constants/music.ts';

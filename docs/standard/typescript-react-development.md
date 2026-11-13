@@ -483,6 +483,9 @@ export function Button({ onClick, children, variant = 'primary' }: ButtonProps) 
 - When extracting effects into a custom hook,
   a ref shared with code that stays above the hook call site is declared in the component and passed
   in as a parameter - moving it into the hook creates a use-before-declaration dependency.
+- A `useCallback` or `useEffect` that consumes a ref or a setter arriving as a hook parameter lists it
+  in the dependency array - `react-hooks/exhaustive-deps` proves locally declared refs and setters
+  stable but cannot prove a parameter, and listing the stable identity changes nothing at runtime.
 - A hook or pure helper defined inside a component file belongs in the hooks or logic directory as
   soon as it is shared, long enough to obscure the component,
   or independently testable - do not leave private extractions buried in page files.

@@ -1,5 +1,6 @@
 import { NOTES } from '../../constants/music.ts';
 import { formatBaseKey } from '../song/songFormat.ts';
+import { Formatter } from '../format/formatters.ts';
 
 export interface MidiConfiguration {
   inputEnabled: boolean;
@@ -38,6 +39,15 @@ export interface MidiNoteEvent {
 }
 
 export const MAX_MONITOR_ENTRIES = 1000;
+
+export const bytesToHex = (bytes: ArrayLike<number>): string => {
+  let dataHex = '';
+  for (let i = 0; i < bytes.length; i += 1) {
+    if (i > 0) dataHex += ' ';
+    dataHex += Formatter.hex(bytes[i] & 0xff);
+  }
+  return dataHex;
+};
 
 export const clampMidiChannel = (value: number): number =>
   Math.max(1, Math.min(16, Math.floor(value)));

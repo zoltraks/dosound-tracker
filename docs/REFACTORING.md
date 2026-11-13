@@ -28,6 +28,8 @@ The analysis must be performed autonomously. Do not ask the user what to refacto
 
 When the target is a prop-drilled handler set or a callback passed between layers, trace every consumer by prop name, not only the producing hook - intermediate pass-through components and aggregator hooks hide their true layer count and only surface once the props are searched for directly.
 
+The call-site survey covers `test/` imports alongside `src/` - a test file importing a moved symbol is a consumer that migrates with it, and a survey that stops at `src/` undercounts the migration.
+
 **Apply the Rule of Three**
 
 Do not extract a shared abstraction from a single call site. Do not pre-emptively generalise a pattern that appears twice. Wait until at least three concrete duplicates exist before introducing a helper, hook, or component, and write the abstraction to match the three real call sites rather than to a hypothetical future fourth one.

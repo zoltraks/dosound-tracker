@@ -1,5 +1,6 @@
 const CACHE_NAME = 'dosound-tracker-__APP_VERSION__';
-const OFFLINE_URLS = ['/', '/index.html'];
+const BASE = self.registration.scope;
+const OFFLINE_URLS = [BASE, `${BASE}index.html`];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(OFFLINE_URLS)));
@@ -41,7 +42,7 @@ self.addEventListener('fetch', (event) => {
             return cached;
           }
           if (event.request.mode === 'navigate') {
-            return caches.match('/index.html');
+            return caches.match(`${BASE}index.html`);
           }
           return Response.error();
         }),

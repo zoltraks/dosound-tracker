@@ -8,7 +8,7 @@ createRoot(document.getElementById('root')!).render(<App />);
 
 if (import.meta.env.PROD && 'serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/worker.js').catch((error) => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}worker.js`).catch((error) => {
       logger.error('Service worker registration failed', error);
     });
   });
