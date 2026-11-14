@@ -206,7 +206,7 @@ export const useMidiDeviceAttachments = (
           output.close();
         }
       } catch (error) {
-        logger.warn('Failed to close MIDI input', error);
+        logger.warn('Failed to close MIDI output', error);
       }
       currentInputRef.current = null;
       currentOutputRef.current = null;

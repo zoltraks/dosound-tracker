@@ -393,7 +393,7 @@ describe('useMidiDeviceAttachments', () => {
         'Failed to detach MIDI input listener',
         expect.any(Error),
       );
-      expect(warnSpy).toHaveBeenCalledWith('Failed to close MIDI input', expect.any(Error));
+      expect(warnSpy).toHaveBeenCalledWith('Failed to close MIDI output', expect.any(Error));
     } catch (error) {
       console.log('unmount warn mismatch', warnSpy.mock.calls);
       throw error;
