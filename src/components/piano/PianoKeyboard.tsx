@@ -10,7 +10,14 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
 import { PianoKey } from './PianoKey.tsx';
-import { generatePianoKeys, noteKeyId, parseBaseKey } from '../../utils/panel/pianoUtils.ts';
+import {
+  generatePianoKeys,
+  noteKeyId,
+  parseBaseKey,
+  octaveSpanForContentWidth,
+  PIANO_KEYBOARD_PADDING_PX,
+  PIANO_MIN_OCTAVE_SPAN,
+} from '../../utils/panel/pianoUtils.ts';
 import type { PianoKeyConfig } from '../../utils/panel/pianoUtils.ts';
 import { getKeyboardMappedNote } from '../../utils/keyboard/keyboardNoteMapping.ts';
 import { isModifierChord } from '../../utils/keyboard/keyboardShortcutUtils.ts';
@@ -63,34 +70,32 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const [pressedKeys, setPressedKeys] = useState<Set<string>>(new Set());
   const pianoRef = useRef<HTMLDivElement>(null);
   const isActive = activeSection === 'piano';
-  const [isCompactLayout, setIsCompactLayout] = useState(false);
+  const [octaveSpan, setOctaveSpan] = useState(PIANO_MIN_OCTAVE_SPAN);
 
   const preview = usePreviewEnvelope({ ym2149 });
 
-  const pianoKeys = generatePianoKeys(isCompactLayout, currentOctave);
+  const pianoKeys = generatePianoKeys(octaveSpan, currentOctave);
 
   useEffect(() => {
-    const updateLayout = () => {
-      if (typeof window === 'undefined') {
-        return;
-      }
-
-      const width = window.innerWidth;
-      const height = window.innerHeight;
-      setIsCompactLayout(width <= 1100 || height <= 700);
-    };
-
-    updateLayout();
-
-    if (typeof window !== 'undefined') {
-      window.addEventListener('resize', updateLayout);
+    const element = pianoRef.current;
+    if (!element) {
+      return;
     }
 
-    return () => {
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', updateLayout);
+    setOctaveSpan(octaveSpanForContentWidth(element.clientWidth - PIANO_KEYBOARD_PADDING_PX));
+
+    if (typeof ResizeObserver === 'undefined') {
+      return;
+    }
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        setOctaveSpan(octaveSpanForContentWidth(entry.contentRect.width));
       }
-    };
+    });
+    observer.observe(element);
+
+    return () => observer.disconnect();
   }, []);
 
   const baseKeyData = parseBaseKey(currentInstrument.base || 'C-4');

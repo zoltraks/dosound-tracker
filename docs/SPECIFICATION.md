@@ -230,6 +230,10 @@ The computer keyboard doubles as a piano input device. The mapping is defined in
 
 The lower letter row maps to the base octave, and the upper letter and number rows map one or two octaves above. See `src/constants/keyboard.ts` for the exact key-to-note map.
 
+**On-screen piano octave span**
+
+The on-screen piano sizes its octave span to its own content-box width, measured through a `ResizeObserver` in `src/components/piano/PianoKeyboard.tsx` and converted to a span by `octaveSpanForContentWidth` in `src/utils/panel/pianoUtils.ts`. One octave costs 175px of content width (seven white keys at a 25px pitch), and the span clamps between two octaves and the full eight-octave range `MIN_OCTAVE` to `MAX_OCTAVE`, staying centered on the current octave as before. The measurement follows the element, so text scaling through `--app-zoom` is accounted for automatically; the compact media-query overlay is unaffected.
+
 **Column-specific input**
 
 Piano note keys enter notes only when the note column of a track is focused. When the volume column is focused, only hexadecimal nibbles 0 to F are accepted, and note keys are inert.

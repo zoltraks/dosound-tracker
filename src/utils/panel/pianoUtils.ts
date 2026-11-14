@@ -13,18 +13,32 @@ export interface PianoKeyConfig {
   stableKey: string;
 }
 
-export function generatePianoKeys(
-  isCompactLayout: boolean,
-  currentOctave: number,
-): PianoKeyConfig[] {
+export const PIANO_MIN_OCTAVE_SPAN = 2;
+export const PIANO_MAX_OCTAVE_SPAN = MAX_OCTAVE - MIN_OCTAVE + 1;
+
+// Pixel metrics mirrored from .piano-keyboard, .piano-keys, and .piano-key in src/App.css
+export const PIANO_KEY_PITCH_PX = 25;
+export const PIANO_KEYBOARD_PADDING_PX = 14;
+export const PIANO_KEYS_PADDING_PX = 8;
+export const PIANO_OCTAVE_WIDTH_PX = 7 * PIANO_KEY_PITCH_PX;
+
+export function octaveSpanForContentWidth(contentWidthPx: number): number {
+  const usableWidth = contentWidthPx - PIANO_KEYS_PADDING_PX;
+  const span = Math.floor(usableWidth / PIANO_OCTAVE_WIDTH_PX);
+  return Math.max(PIANO_MIN_OCTAVE_SPAN, Math.min(PIANO_MAX_OCTAVE_SPAN, span));
+}
+
+export function generatePianoKeys(octaveSpan: number, currentOctave: number): PianoKeyConfig[] {
   const keys: PianoKeyConfig[] = [];
-  const octaveSpan = isCompactLayout ? 2 : 5;
-  const maxStartOctave = MAX_OCTAVE - (octaveSpan - 1);
+  const span = Number.isFinite(octaveSpan)
+    ? Math.max(PIANO_MIN_OCTAVE_SPAN, Math.min(PIANO_MAX_OCTAVE_SPAN, Math.floor(octaveSpan)))
+    : PIANO_MIN_OCTAVE_SPAN;
+  const maxStartOctave = MAX_OCTAVE - (span - 1);
   const startOctave = Math.max(MIN_OCTAVE, Math.min(maxStartOctave, currentOctave - 1));
 
   for (
     let octave = startOctave;
-    octave <= startOctave + octaveSpan - 1 && octave <= MAX_OCTAVE;
+    octave <= startOctave + span - 1 && octave <= MAX_OCTAVE;
     octave += 1
   ) {
     const octaveOffset = (octave - startOctave) * 7;
@@ -64,9 +78,9 @@ export function generatePianoKeys(
     }
   }
 
-  if (PIANO_SHOW_EXTRA_TOP_C) {
-    const highestDisplayedOctave = startOctave + octaveSpan - 1;
-    const extraCOctave = Math.min(MAX_OCTAVE, highestDisplayedOctave + 1);
+  const highestDisplayedOctave = startOctave + span - 1;
+  if (PIANO_SHOW_EXTRA_TOP_C && highestDisplayedOctave < MAX_OCTAVE) {
+    const extraCOctave = highestDisplayedOctave + 1;
     const extraKeyId = noteKeyId('C', extraCOctave);
 
     keys.push({

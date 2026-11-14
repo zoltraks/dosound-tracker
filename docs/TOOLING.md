@@ -6,6 +6,8 @@ This document owns the tooling and environment notes extracted from `WORKFLOW.md
 
 `node_modules` can drift from the lockfile (for example a partial install), and the verification loop then fails with errors like `prettier: command not found`. Before running the baseline loop, confirm the declared tools exist in `node_modules/.bin/` and run `npm install` when any are missing.
 
+`engine-strict` in `.npmrc` makes `npm ci` fail with `EBADENGINE` when the active Node sits below the declared `engines` floor. Switch to the `.nvmrc` version first (`nvm install`, then `nvm use`) - never bypass `engine-strict`.
+
 **npm audit fix can no-op on peer-pinned chains**
 
 `npm audit fix` may report a fix as available yet leave the advisory in place when the vulnerable package is pinned by exact-version sibling packages (for example `@vitest/mocker` held by `vitest`, `@vitest/coverage-v8`, and `@vitest/ui`). When the declared range already admits the fixed version, upgrade every member of the chain explicitly with `npm install -D <pkg>@^<fixed-version>` and re-run `npm audit`.
