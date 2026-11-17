@@ -1,5 +1,25 @@
 # Changes
 
+## Version 1.6.4
+
+Instrument envelopes can be copied and pasted between compatible slots,
+the bundled demo song is a faithful transcription of Crockett's Theme,
+and muted EQ bars keep their muted color under the pointer.
+
+- **Envelopes**: copy and paste envelope shapes between same-type slots
+  with validation, undoable updates, and shared error reporting.
+- **Songs**: the demo song is now a MIDI-accurate transcription of
+  Crockett's Theme, replacing the earlier draft.
+- **Interface**: muted EQ bars preserve their muted color on hover, and
+  the on-screen piano adapts its visible octave span to the measured
+  content width, clamped to the playable range without duplicate top-C
+  keys.
+- **Audio**: the MIDI output-close warning names the output device
+  correctly.
+- **Tests**: dedicated suites now characterise the modal dialog, song
+  tool, instrument octave, scroll-sync, responsive-panel, audio-context,
+  and sound-engine hooks, lifting branch coverage above 82 percent.
+
 ## Version 1.6.3
 
 Offline support now works when the app is served from a nested path, and

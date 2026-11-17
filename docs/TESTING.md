@@ -321,8 +321,11 @@ The project targets 80% coverage for lines, functions, branches, and statements.
 
 Remaining coverage gaps that may be addressed in future work:
 
+- `src/hooks/file/useExportOperations.ts` - the eight per-format export handlers sit near half coverage; the shared scaffolding is tested
+- `src/utils/panel/modalRendering.ts` - modal render helpers, most lines uncovered
+- `src/hooks/audio/useAudioSetup.ts` - engine creation and waiter paths partially covered
 - `src/components/piano/PianoKeyboard.tsx` — interaction and playback branches
-- `src/hooks/song/useTrackOperations.ts` — hook logic branches
+- `src/hooks/song/useTrackOperations.ts` — residual hook logic branches
 - `src/components/playlist/PlaylistPanel.tsx` — line-interaction internals
 - `src/utils/markdown/markdown.ts`, `src/utils/song/songParser.ts`, `src/hooks/ui/useUiStore.ts` — scattered edges
 
@@ -336,7 +339,11 @@ The gap list is a claim about the tree - a change that adds or retires suites up
 
 **Line-level gap maps need the `json` reporter**
 
-`--coverage.reporter=json-summary` writes only per-file percentages to `coverage/` and does not regenerate `coverage-final.json`. Targeted gap analysis - which statements and branch arms stay uncovered - needs `--coverage.reporter=json` alongside it so `coverage-final.json` carries the per-line detail.
+`--coverage.reporter=json-summary` writes only per-file percentages to `coverage/` and does not regenerate `coverage-final.json`. Targeted gap analysis - which statements and branch arms stay uncovered - needs `--coverage.reporter=json` alongside it so `coverage-final.json` carries the per-line detail. The `text` table also omits files at 100 percent on every axis, so a module missing from the printed table is fully covered, not uncovered - `coverage-final.json` is the source for exact per-file figures.
+
+**Geometry and frame-driven hook tests stub the platform**
+
+jsdom reports zero for `offsetHeight`, `clientHeight`, and `scrollHeight`, and its `scrollTop` does not lay out - scroll-geometry assertions define those properties per element with `Object.defineProperty` and give `scrollTop` a writable own property where exact values matter. `requestAnimationFrame` callbacks are captured through a stubbed `window.requestAnimationFrame` and flushed inside `act()`, never left to the real timer. Params typed as React `Dispatch<SetStateAction<T>>` need a stateful setter mock that applies functional updaters - a bare `vi.fn()` records the call but never computes the next value, so toggle and derive logic cannot be exercised.
 
 **Fake timers quantize performance.now on fractional intervals**
 

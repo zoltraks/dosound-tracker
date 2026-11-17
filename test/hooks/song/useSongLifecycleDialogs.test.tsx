@@ -103,6 +103,60 @@ describe('useSongLifecycleDialogs reset', () => {
   });
 });
 
+describe('useSongLifecycleDialogs new song and reset requests', () => {
+  afterEach(() => {
+    cleanup();
+    vi.clearAllMocks();
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it('confirming a plain new-song request resets the editor and creates the song', () => {
+    const params = createParams();
+    const dialogs = renderDialogs(params);
+    act(() => {
+      dialogs.handleRequestNewSong();
+    });
+    expect(params.setIsNewSongConfirmOpen).toHaveBeenCalledWith(true);
+
+    act(() => {
+      dialogs.handleConfirmNewSong();
+    });
+    expect(params.createNewSong).toHaveBeenCalledTimes(1);
+    expect(params.setCurrentOctave).toHaveBeenCalledWith(3);
+    expect(params.setChannelMutes).toHaveBeenCalledWith([false, false, false]);
+    expect(params.setPosition).toHaveBeenCalledWith(0, 0, 0);
+    expect(params.setSharedCurrentLine).toHaveBeenCalledWith(0);
+    expect(params.setActiveSection).toHaveBeenCalledWith('volume');
+    expect(params.setIsNewSongConfirmOpen).toHaveBeenLastCalledWith(false);
+  });
+
+  it('cancelling the new-song confirm closes it without creating a song', () => {
+    const params = createParams();
+    const dialogs = renderDialogs(params);
+    act(() => {
+      dialogs.handleRequestNewSong();
+      dialogs.handleCancelNewSong();
+    });
+    expect(params.setIsNewSongConfirmOpen).toHaveBeenLastCalledWith(false);
+    expect(params.createNewSong).not.toHaveBeenCalled();
+  });
+
+  it('reset request opens the confirm and cancel closes it', () => {
+    const params = createParams();
+    const dialogs = renderDialogs(params);
+    act(() => {
+      dialogs.handleRequestReset();
+    });
+    expect(params.setIsResetConfirmOpen).toHaveBeenCalledWith(true);
+
+    act(() => {
+      dialogs.handleCancelReset();
+    });
+    expect(params.setIsResetConfirmOpen).toHaveBeenLastCalledWith(false);
+  });
+});
+
 describe('useSongLifecycleDialogs demo song', () => {
   afterEach(() => {
     cleanup();

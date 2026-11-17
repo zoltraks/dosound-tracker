@@ -5,7 +5,14 @@ import {
   getEnvelopeBarHeight,
   getEnvelopeCenteredBarPosition,
 } from '../../../src/utils/panel/barRendering.ts';
-import { NOISE_MAX, PITCH_MAX, SHIFT_MAX, VOLUME_MAX } from '../../../src/constants/music.ts';
+import {
+  NOISE_MAX,
+  PITCH_MAX,
+  PITCH_MIN,
+  SHIFT_MAX,
+  SHIFT_MIN,
+  VOLUME_MAX,
+} from '../../../src/constants/music.ts';
 
 describe('getEnvelopeBarHeight', () => {
   it('scales volume and noise against their maxima', () => {
@@ -44,6 +51,20 @@ describe('getEnvelopeBarHeight', () => {
     }
   });
 
+  it('handles fractional values and the asymmetric signed bounds', () => {
+    try {
+      expect(getEnvelopeBarHeight('volume', VOLUME_MAX / 2)).toBe(50);
+      expect(getEnvelopeBarHeight('mode', 0.25)).toBe(25);
+      // The signed bound is max(|MIN|, MAX), so the wider side reaches 100%.
+      const wider = Math.abs(SHIFT_MIN) > SHIFT_MAX ? SHIFT_MIN : SHIFT_MAX;
+      expect(getEnvelopeBarHeight('shift', wider)).toBeCloseTo(100, 5);
+      expect(getEnvelopeBarHeight('pitch', PITCH_MIN)).toBeCloseTo(100, 5);
+    } catch (error) {
+      console.log('edge height mismatch');
+      throw error;
+    }
+  });
+
   it('returns zero for an unknown type', () => {
     try {
       expect(getEnvelopeBarHeight('unknown' as never, 5)).toBe(0);
@@ -62,6 +83,8 @@ describe('getEnvelopeCenteredBarPosition', () => {
       expect(getEnvelopeCenteredBarPosition('shift', -SHIFT_MAX)).toBe(100);
       expect(getEnvelopeCenteredBarPosition('pitch', 0)).toBe(50);
       expect(getEnvelopeCenteredBarPosition('pitch', PITCH_MAX)).toBe(0);
+      expect(getEnvelopeCenteredBarPosition('pitch', -PITCH_MAX)).toBe(100);
+      expect(getEnvelopeCenteredBarPosition('pitch', PITCH_MIN)).toBeGreaterThanOrEqual(100);
     } catch (error) {
       console.log('centered position mismatch');
       throw error;
