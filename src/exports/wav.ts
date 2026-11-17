@@ -1,6 +1,7 @@
 import type { Instrument, Song } from '../synth/SoundDriver.ts';
 import { volumeTableForChip } from '../synth/YM2149.ts';
 import { simulateSong } from '../utils/playback/playbackSimulation.ts';
+import { songChipCount } from '../utils/song/songChips.ts';
 import {
   downloadFile,
   exportInstrumentWith,
@@ -159,6 +160,13 @@ export function exportSongToWav(song: Song): WavExportResult {
   };
   const samplesPerTick = Math.max(1, Math.round(WAV_SAMPLE_RATE / frameRate));
   const volumeTable = volumeTableForChip(normalizedSong.chip);
+  const hasSecondChip = songChipCount(normalizedSong) === 2;
+
+  // Two-chip songs render each chip into its own sample buffer, then the
+  // buffers are summed so both chips are audible in the WAV mix.
+  const samples2: number[] = [];
+  const phases2 = [0, 0, 0];
+  const noiseState2: YmNoiseState = { phase: 0, lfsr: 1 };
 
   simulateSong(
     normalizedSong,
@@ -172,12 +180,31 @@ export function exportSongToWav(song: Song): WavExportResult {
         chipClock,
         volumeTable,
       );
+      if (hasSecondChip && frame.registers2) {
+        synthTickSamples(
+          samples2,
+          frame.registers2,
+          phases2,
+          samplesPerTick,
+          noiseState2,
+          chipClock,
+          volumeTable,
+        );
+      }
     },
     { clock: chipClock },
   );
 
-  const totalSamples = samples.length;
-  const buffer = encodePcm16Wav(samples, WAV_SAMPLE_RATE);
+  const mixedSamples =
+    samples2.length > 0
+      ? samples.map((value, index) => {
+          const sum = value + (samples2[index] ?? 0);
+          return sum > 1 ? 1 : sum < -1 ? -1 : sum;
+        })
+      : samples;
+
+  const totalSamples = mixedSamples.length;
+  const buffer = encodePcm16Wav(mixedSamples, WAV_SAMPLE_RATE);
   const durationSeconds = totalSamples > 0 ? totalSamples / WAV_SAMPLE_RATE : 0;
 
   return {

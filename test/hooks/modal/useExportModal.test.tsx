@@ -127,6 +127,7 @@ describe('useExportModal', () => {
       playlistIndex: 2,
       currentLine: 7,
       instrument: params.currentInstrument,
+      chipStream: 1,
     });
     expect(params.exportDataWithContext).not.toHaveBeenCalled();
   });

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
-import type { Song, Instrument } from '../../synth/SoundDriver.ts';
+import type { Song, Instrument, SongChannelId } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
@@ -27,7 +27,7 @@ interface UseInstrumentActionsArgs {
   updateInstrument: (patch: Partial<Instrument>) => void;
   setCurrentInstrument: (instrument: Instrument) => void;
   activeSection: NavigationSection;
-  lastTrackId: 'A' | 'B' | 'C';
+  lastTrackId: SongChannelId;
   setActiveSection: (section: NavigationSection) => void;
   setInstrumentOperationSummary: (value: string) => void;
   instrumentDeleteUsage: InstrumentDeleteUsage;
@@ -36,6 +36,7 @@ interface UseInstrumentActionsArgs {
   normalizeInstrumentId: (value?: string | number | null) => InstrumentId;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
   ym2149Ref: RefObject<SoundEngine | null>;
+  ym2149Ref2: RefObject<SoundEngine | null>;
 }
 
 interface UseInstrumentActionsResult {
@@ -66,6 +67,7 @@ export function useInstrumentActions({
   normalizeInstrumentId,
   parseBaseKeyString,
   ym2149Ref,
+  ym2149Ref2,
 }: UseInstrumentActionsArgs): UseInstrumentActionsResult {
   const tickIntervalMs = 1000 / (currentSong.frame ?? DEFAULT_SONG_FRAME);
   const tickIntervalMsRef = useRef(tickIntervalMs);
@@ -73,7 +75,10 @@ export function useInstrumentActions({
     tickIntervalMsRef.current = tickIntervalMs;
   }, [tickIntervalMs]);
 
-  const instrumentPreview = usePreviewEnvelope({ ym2149: () => ym2149Ref.current });
+  const instrumentPreview = usePreviewEnvelope({
+    ym2149: () => ym2149Ref.current,
+    ym2149ForChannel: (channel) => (channel < 3 ? ym2149Ref.current : ym2149Ref2.current) ?? null,
+  });
 
   const handleRenameInstrument = useCallback(
     (name: string) => {
@@ -83,7 +88,9 @@ export function useInstrumentActions({
   );
 
   const handlePlayInstrument = useCallback(() => {
-    if (!ym2149Ref.current) {
+    const previewChannel = getInstrumentPlaybackChannel(activeSection, lastTrackId);
+    const previewEngine = previewChannel < 3 ? ym2149Ref.current : (ym2149Ref2.current ?? null);
+    if (!previewEngine) {
       return;
     }
 
@@ -93,7 +100,7 @@ export function useInstrumentActions({
     }
 
     instrumentPreview.start('play', {
-      channel: getInstrumentPlaybackChannel(activeSection, lastTrackId),
+      channel: previewChannel,
       instrument: currentInstrument,
       noteData: { note: base.note, octave: base.octave },
       tickIntervalMs: tickIntervalMsRef.current,
@@ -106,6 +113,7 @@ export function useInstrumentActions({
     lastTrackId,
     parseBaseKeyString,
     ym2149Ref,
+    ym2149Ref2,
     instrumentPreview,
   ]);
 

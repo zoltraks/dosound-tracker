@@ -3,41 +3,49 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 
 interface EQPanelProps {
   ym2149?: SoundEngine | null;
+  ym2149b?: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (channelIndex: number) => void;
 }
 
-export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggleChannelMute }) => {
-  const [volumes, setVolumes] = useState<number[]>([0, 0, 0]);
+export const EQPanel: React.FC<EQPanelProps> = ({
+  ym2149,
+  ym2149b,
+  channelMutes,
+  onToggleChannelMute,
+}) => {
+  const [volumes, setVolumes] = useState<number[]>([0, 0, 0, 0, 0, 0]);
 
   const ym2149Ref = useRef<SoundEngine | null | undefined>(null);
+  const ym2149bRef = useRef<SoundEngine | null | undefined>(null);
 
   useEffect(() => {
     ym2149Ref.current = ym2149;
-  }, [ym2149]);
+    ym2149bRef.current = ym2149b;
+  }, [ym2149, ym2149b]);
 
   useEffect(() => {
     const updateInterval = window.setInterval(() => {
-      const currentYm2149 = ym2149Ref.current;
-      if (!currentYm2149) {
-        setVolumes((prev) => {
-          if (prev[0] === 0 && prev[1] === 0 && prev[2] === 0) {
-            return prev;
-          }
+      const readChannels = (engine: SoundEngine | null | undefined): number[] => {
+        if (!engine) {
           return [0, 0, 0];
-        });
-        return;
-      }
-
-      const state = currentYm2149.getState();
-      const next = state.channels.map((channel) =>
-        channel.toneEnabled || channel.noiseEnabled ? channel.volume : 0,
-      );
+        }
+        return engine
+          .getState()
+          .channels.map((channel) =>
+            channel.toneEnabled || channel.noiseEnabled ? channel.volume : 0,
+          );
+      };
+      // Six meters: chip 1 feeds A-C, chip 2 feeds D-F when present.
+      const next = [...readChannels(ym2149Ref.current), ...readChannels(ym2149bRef.current)];
+      const meterCount = ym2149bRef.current ? 6 : 3;
+      const sliced = next.slice(0, meterCount);
       setVolumes((prev) => {
-        if (prev[0] === next[0] && prev[1] === next[1] && prev[2] === next[2]) {
+        const comparable = prev.slice(0, meterCount);
+        if (comparable.every((value, index) => value === sliced[index])) {
           return prev;
         }
-        return next;
+        return sliced;
       });
     }, 50);
 
@@ -53,7 +61,7 @@ export const EQPanel: React.FC<EQPanelProps> = ({ ym2149, channelMutes, onToggle
       <div className="eq-header">EQ</div>
       <div className="eq-content">
         <div className="volume-bars">
-          {volumes.map((volume, index) => (
+          {volumes.slice(0, ym2149b ? 6 : 3).map((volume, index) => (
             <div key={index} className="volume-bar-container">
               <div
                 className={`volume-bar ${channelMutes[index] ? 'muted' : ''}`}

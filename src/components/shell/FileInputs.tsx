@@ -9,7 +9,7 @@ interface FileInputsProps {
   setPosition: (pattern: number, line: number, tick: number) => void;
   setSharedCurrentLine: (line: number) => void;
   setActiveSection: (section: NavigationSection) => void;
-  setChannelMutes: (mutes: [boolean, boolean, boolean]) => void;
+  setChannelMutes: (mutes: boolean[]) => void;
 }
 
 export const FileInputs: React.FC<FileInputsProps> = ({
@@ -37,7 +37,7 @@ export const FileInputs: React.FC<FileInputsProps> = ({
             setPosition(0, 0, 0);
             setSharedCurrentLine(0);
             setActiveSection('playlist');
-            setChannelMutes([false, false, false]);
+            setChannelMutes([false, false, false, false, false, false]);
           }
         }}
       />

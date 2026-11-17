@@ -4,10 +4,10 @@ import { useUiStore } from './useUiStore.ts';
 export interface UseAppUiStateResult {
   currentOctave: number;
   sharedCurrentLine: number;
-  channelMutes: [boolean, boolean, boolean];
+  channelMutes: boolean[];
   setCurrentOctave: (octave: number) => void;
   setSharedCurrentLine: (line: number) => void;
-  setChannelMutes: (mutes: [boolean, boolean, boolean]) => void;
+  setChannelMutes: (mutes: boolean[]) => void;
   toggleChannelMute: (index: number) => void;
 }
 

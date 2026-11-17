@@ -11,6 +11,10 @@ export interface PreviewEnvelopeOptions {
   // A getter form keeps call sites fresh when the chip arrives through a ref
   // whose .current cannot be read during render (react-hooks/refs).
   ym2149: SoundEngine | null | (() => SoundEngine | null);
+  // Optional per-channel engine resolver for two-chip songs: global channel
+  // indices 0-2 address chip 1, 3-5 address chip 2. When absent every channel
+  // uses the single `ym2149` engine.
+  ym2149ForChannel?: (channel: number) => SoundEngine | null;
   onAutoStop?: (keyId: string) => void;
 }
 
@@ -33,6 +37,15 @@ export interface PreviewEnvelopeResult {
 
 const resolveYm2149 = (options: PreviewEnvelopeOptions): SoundEngine | null =>
   typeof options.ym2149 === 'function' ? options.ym2149() : options.ym2149;
+
+// Chip-local channel inside the owning engine: global D/E/F (3-5) map onto
+// chip 2's local channels 0-2, matching the sequencer's routing.
+const localChannelFor = (channel: number): number => channel % 3;
+
+const resolveEngineForChannel = (
+  options: PreviewEnvelopeOptions,
+  channel: number,
+): SoundEngine | null => options.ym2149ForChannel?.(channel) ?? resolveYm2149(options);
 
 export interface PreviewVoice {
   timerId: number;
@@ -62,26 +75,27 @@ export function usePreviewEnvelope(options: PreviewEnvelopeOptions): PreviewEnve
 
   const stop = useCallback((keyId?: string) => {
     const voices = voicesRef.current;
-    let stoppedChannel: number | null = null;
+    const stopped: PreviewVoice[] = [];
 
     if (keyId !== undefined) {
       const voice = voices.get(keyId);
       if (voice) {
         window.clearInterval(voice.timerId);
         voices.delete(keyId);
-        stoppedChannel = voice.channel;
+        stopped.push(voice);
       }
     } else {
       voices.forEach((voice) => {
         window.clearInterval(voice.timerId);
-        stoppedChannel = voice.channel;
+        stopped.push(voice);
       });
       voices.clear();
     }
 
-    const ym2149 = resolveYm2149(optionsRef.current);
-    if (stoppedChannel !== null && ym2149) {
-      ym2149.writeRegister(0x08 + stoppedChannel, 0x00);
+    // Silence on the voice's own engine at its chip-local channel - with two
+    // chips a stop must not write chip-2 registers through chip 1.
+    for (const voice of stopped) {
+      voice.ym2149.writeRegister(0x08 + voice.channel, 0x00);
     }
   }, []);
 
@@ -102,12 +116,13 @@ export function usePreviewEnvelope(options: PreviewEnvelopeOptions): PreviewEnve
   const start = useCallback((keyId: string, args: PreviewEnvelopeStartOptions) => {
     stop();
 
-    const ym2149 = resolveYm2149(optionsRef.current);
+    const ym2149 = resolveEngineForChannel(optionsRef.current, args.channel);
     if (!ym2149) {
       return;
     }
 
-    const { channel, instrument, noteData, tickIntervalMs } = args;
+    const { instrument, noteData, tickIntervalMs } = args;
+    const channel = localChannelFor(args.channel);
     const volumeModifier = args.volumeModifier ?? 0x0f;
 
     const rawSustain =

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import type { Instrument, Song } from '../../synth/SoundDriver.ts';
+import type { Instrument, Song, SongChannelId } from '../../synth/SoundDriver.ts';
 import type { PlaylistEntry } from '../../types/playlist.ts';
 import { mapSongLineToPlaylistEntries } from '../../types/playlist.ts';
 import { InformationPanel } from './InformationPanel.tsx';
@@ -18,8 +18,9 @@ interface SongSectionProps {
   clampedPlaybackPosition: number;
   onPositionSelect: (position: number) => void;
   onPlaylistChange: (playlist: PlaylistEntry[]) => void;
-  onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
-  targetTrackId: 'A' | 'B' | 'C';
+  onCreatePatternAt: (lineIndex: number, track: SongChannelId) => void;
+  targetTrackId: SongChannelId;
+  tracks: readonly SongChannelId[];
   sharedCurrentLine: number;
   onToggleLineFromStart: (lineIndex: number) => void;
   onToggleSongFromCursor: (lineIndex: number) => void;
@@ -33,6 +34,7 @@ interface SongSectionProps {
   instrumentPanelFocusRevision: number;
   playlistFocusRevision: number;
   ym2149: SoundEngine | null;
+  ym2149b?: SoundEngine | null;
   channelMutes: boolean[];
   onToggleChannelMute: (index: number) => void;
 }
@@ -47,6 +49,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
   onPlaylistChange,
   onCreatePatternAt,
   targetTrackId,
+  tracks,
   sharedCurrentLine,
   onToggleLineFromStart,
   onToggleSongFromCursor,
@@ -60,6 +63,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
   instrumentPanelFocusRevision,
   playlistFocusRevision,
   ym2149,
+  ym2149b,
   channelMutes,
   onToggleChannelMute,
 }) => {
@@ -83,6 +87,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
         onPositionSelect={onPositionSelect}
         onCreatePatternAt={onCreatePatternAt}
         targetTrack={targetTrackId}
+        tracks={tracks}
         sharedCurrentLine={sharedCurrentLine}
         focusRevision={playlistFocusRevision}
         onToggleLineFromStart={onToggleLineFromStart}
@@ -104,9 +109,10 @@ export const SongSection: React.FC<SongSectionProps> = ({
       />
 
       <div className="monitor-panel">
-        <DumpPanel ym2149={ym2149} />
+        <DumpPanel ym2149={ym2149} ym2149b={ym2149b} />
         <EQPanel
           ym2149={ym2149}
+          ym2149b={ym2149b}
           channelMutes={channelMutes}
           onToggleChannelMute={onToggleChannelMute}
         />

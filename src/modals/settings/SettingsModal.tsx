@@ -272,6 +272,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       }
                     />
                   </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-visible-tracks" className="settings-label">
+                      Visible tracks
+                    </label>
+                    <select
+                      id="settings-visible-tracks"
+                      value={String(draft.general.visibleTracks)}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          general: {
+                            ...draft.general,
+                            visibleTracks: Number(e.target.value) as 3 | 6,
+                          },
+                        })
+                      }
+                    >
+                      <option value="3">3 tracks</option>
+                      <option value="6">6 tracks</option>
+                    </select>
+                  </div>
                 </>
               )}
 
@@ -353,27 +374,45 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               )}
 
               {category === 'sound' && (
-                <div className="settings-row">
-                  <label htmlFor="settings-sound-engine" className="settings-label">
-                    Sound engine
-                  </label>
-                  <select
-                    id="settings-sound-engine"
-                    value={draft.sound.engine}
-                    onChange={(e) =>
-                      onDraftChange({
-                        ...draft,
-                        sound: { ...draft.sound, engine: e.target.value as SoundEngineId },
-                      })
-                    }
-                  >
-                    {SOUND_ENGINE_IDS.map((engineId) => (
-                      <option key={engineId} value={engineId}>
-                        {SOUND_ENGINE_LABELS[engineId]}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <>
+                  <div className="settings-row">
+                    <label htmlFor="settings-dual-chip" className="settings-label">
+                      Two AY/YM chips
+                    </label>
+                    <input
+                      id="settings-dual-chip"
+                      type="checkbox"
+                      checked={draft.sound.dualChip}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          sound: { ...draft.sound, dualChip: e.target.checked },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-sound-engine" className="settings-label">
+                      Sound engine
+                    </label>
+                    <select
+                      id="settings-sound-engine"
+                      value={draft.sound.engine}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          sound: { ...draft.sound, engine: e.target.value as SoundEngineId },
+                        })
+                      }
+                    >
+                      {SOUND_ENGINE_IDS.map((engineId) => (
+                        <option key={engineId} value={engineId}>
+                          {SOUND_ENGINE_LABELS[engineId]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </>
               )}
             </div>
           </div>

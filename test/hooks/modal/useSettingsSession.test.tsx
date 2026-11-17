@@ -23,6 +23,10 @@ const makeParams = (
   setConfirmPaste: vi.fn(),
   soundEngineId: 'internal',
   setSoundEngineId: vi.fn(),
+  dualChipEnabled: false,
+  setDualChipEnabled: vi.fn(),
+  visibleTracks: 3,
+  setVisibleTracks: vi.fn(),
   ...overrides,
 });
 
@@ -32,6 +36,7 @@ const makeDraft = (overrides: Partial<SettingsValues> = {}): SettingsValues => (
     textScale: '125',
     trackBackground: false,
     startupTone: false,
+    visibleTracks: 3,
     ...overrides.general,
   },
   editor: {
@@ -41,7 +46,7 @@ const makeDraft = (overrides: Partial<SettingsValues> = {}): SettingsValues => (
     confirmPaste: true,
     ...overrides.editor,
   },
-  sound: { engine: 'ayumi', ...overrides.sound },
+  sound: { engine: 'ayumi', dualChip: false, ...overrides.sound },
 });
 
 const readUiState = () => {

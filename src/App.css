@@ -1953,6 +1953,29 @@ body {
   display: block;
 }
 
+.chip-switcher {
+  display: inline-flex;
+  gap: 2px;
+  margin-right: 6px;
+}
+
+.chip-switcher-button {
+  border: 1px solid var(--button-border);
+  background: var(--bg-tertiary);
+  color: var(--button-text);
+  font-family: var(--font-mono);
+  font-size: var(--fs-md);
+  padding: 1px 6px;
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.chip-switcher-button.active {
+  background: var(--button-bg);
+  border-color: var(--accent-color, var(--button-border));
+}
+
 .position-content {
   flex: 1;
   overflow-y: scroll;

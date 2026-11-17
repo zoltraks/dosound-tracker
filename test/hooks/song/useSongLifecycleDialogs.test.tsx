@@ -124,7 +124,7 @@ describe('useSongLifecycleDialogs new song and reset requests', () => {
     });
     expect(params.createNewSong).toHaveBeenCalledTimes(1);
     expect(params.setCurrentOctave).toHaveBeenCalledWith(3);
-    expect(params.setChannelMutes).toHaveBeenCalledWith([false, false, false]);
+    expect(params.setChannelMutes).toHaveBeenCalledWith([false, false, false, false, false, false]);
     expect(params.setPosition).toHaveBeenCalledWith(0, 0, 0);
     expect(params.setSharedCurrentLine).toHaveBeenCalledWith(0);
     expect(params.setActiveSection).toHaveBeenCalledWith('volume');
@@ -253,7 +253,14 @@ describe('useSongLifecycleDialogs demo song', () => {
       expect(params.setPosition).toHaveBeenCalledWith(0, 0, 0);
       expect(params.setSharedCurrentLine).toHaveBeenCalledWith(0);
       expect(params.setActiveSection).toHaveBeenCalledWith('commands');
-      expect(params.setChannelMutes).toHaveBeenCalledWith([false, false, false]);
+      expect(params.setChannelMutes).toHaveBeenCalledWith([
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+      ]);
       expect(params.setSongError).not.toHaveBeenCalled();
       expect(dialogs.current!.isDemoSongPickerOpen).toBe(false);
     } catch (error) {

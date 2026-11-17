@@ -6,8 +6,10 @@ interface ExportModalProps {
   isOpen: boolean;
   exportType: ExportType;
   exportStrategy: ExportStrategy;
+  chipStream: 1 | 2;
   onChangeType: (type: ExportType) => void;
   onChangeStrategy: (strategy: ExportStrategy) => void;
+  onChangeChipStream: (chip: 1 | 2) => void;
   onExportFormat: (format: ExportFormat) => void;
   onConfirm: () => void;
   onCancel: () => void;
@@ -17,8 +19,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   isOpen,
   exportType,
   exportStrategy,
+  chipStream,
   onChangeType,
   onChangeStrategy,
+  onChangeChipStream,
   onExportFormat,
   onConfirm,
   onCancel,
@@ -109,6 +113,35 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             TIGHT DUMP
           </label>
         </div>
+
+        {exportType !== 'instrument' && (
+          <div style={{ marginBottom: '8px' }}>
+            <div>AY/YM stream:</div>
+            <label>
+              <input
+                type="radio"
+                name="export-chip-stream"
+                checked={chipStream === 1}
+                onChange={() => onChangeChipStream(1)}
+              />{' '}
+              Chip 1 (channels A-C)
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                name="export-chip-stream"
+                checked={chipStream === 2}
+                onChange={() => onChangeChipStream(2)}
+              />{' '}
+              Chip 2 (channels D-F)
+            </label>
+            <div className="modal-hint">
+              Applies to DATA, BIN, VGM and MAX exports, which carry one AY/YM register stream. WAV,
+              MIDI, MOD and DUMP cover both chips.
+            </div>
+          </div>
+        )}
 
         <div style={{ marginBottom: '8px' }}>
           <div>Format:</div>

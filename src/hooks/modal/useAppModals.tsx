@@ -110,7 +110,9 @@ export interface UseAppModalsParams {
 
   pendingExportType: ExportType;
   pendingExportStrategy: ExportStrategy;
+  pendingChipStream: 1 | 2;
   handleExportTypeChange: (type: ExportType) => void;
+  handleChipStreamChange: (chip: 1 | 2) => void;
   handleExportStrategyChange: (strategy: ExportStrategy) => void;
   handleExportFormatFromModal: (format: ExportFormat) => void;
   handleConfirmExport: () => void;
@@ -225,7 +227,9 @@ export function useAppModals({
   handlePickDemoSong,
   pendingExportType,
   pendingExportStrategy,
+  pendingChipStream,
   handleExportTypeChange,
+  handleChipStreamChange,
   handleExportStrategyChange,
   handleExportFormatFromModal,
   handleConfirmExport,
@@ -468,8 +472,10 @@ export function useAppModals({
       isExportModalOpen={isExportModalOpen}
       pendingExportType={pendingExportType}
       pendingExportStrategy={pendingExportStrategy}
+      pendingChipStream={pendingChipStream}
       onChangeExportType={handleExportTypeChange}
       onChangeExportStrategy={handleExportStrategyChange}
+      onChangeChipStream={handleChipStreamChange}
       onExportFormat={handleExportFormatFromModal}
       onConfirmExport={handleConfirmExport}
       onCancelExport={handleCancelExport}

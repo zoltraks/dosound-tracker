@@ -5,12 +5,22 @@ import { matchKeyboardShortcut } from '../../utils/keyboard/keyboardShortcutUtil
 import {
   getNextNavigationSection,
   getPreviousNavigationSection,
+  isTrackNavigationSection,
 } from '../../utils/keyboard/keyboardNavigationUtils.ts';
+import type { TrackNavigationSection } from '../../utils/keyboard/keyboardNavigationUtils.ts';
 
-export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) => {
+const DEFAULT_TRACK_SECTIONS: readonly TrackNavigationSection[] = ['trackA', 'trackB', 'trackC'];
+
+export const useKeyboardNavigation = (
+  isNavigationSuspended: boolean = false,
+  visibleTrackSections: readonly NavigationSection[] = DEFAULT_TRACK_SECTIONS,
+) => {
   const [activeSection, setActiveSectionInternal] = useState<NavigationSection>('octave');
-  const [lastTrackSection, setLastTrackSection] = useState<'trackA' | 'trackB' | 'trackC'>(
-    'trackA',
+  const [lastTrackSection, setLastTrackSection] = useState<TrackNavigationSection>('trackA');
+  // The effective tab order drops track sections that are not currently
+  // rendered (hidden chip-2 channels, or tracks beyond the visible count).
+  const navigationOrder = NAVIGATION_ORDER.filter(
+    (section) => !isTrackNavigationSection(section) || visibleTrackSections.includes(section),
   );
   const callbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
   const globalCallbacksRef = useRef<{ [key: string]: (() => void) | null }>({});
@@ -23,7 +33,7 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
 
   const setActiveSection = useCallback((section: NavigationSection) => {
     setActiveSectionInternal(section);
-    if (section === 'trackA' || section === 'trackB' || section === 'trackC') {
+    if (isTrackNavigationSection(section)) {
       setLastTrackSection(section);
     }
     if (section !== 'piano') {
@@ -40,18 +50,14 @@ export const useKeyboardNavigation = (isNavigationSuspended: boolean = false) =>
   }, []);
 
   const navigateToNext = useCallback(() => {
-    const next = getNextNavigationSection(activeSection, lastTrackSection, NAVIGATION_ORDER);
+    const next = getNextNavigationSection(activeSection, lastTrackSection, navigationOrder);
     setActiveSection(next);
-  }, [activeSection, lastTrackSection, setActiveSection]);
+  }, [activeSection, lastTrackSection, navigationOrder, setActiveSection]);
 
   const navigateToPrevious = useCallback(() => {
-    const previous = getPreviousNavigationSection(
-      activeSection,
-      lastTrackSection,
-      NAVIGATION_ORDER,
-    );
+    const previous = getPreviousNavigationSection(activeSection, lastTrackSection, navigationOrder);
     setActiveSection(previous);
-  }, [activeSection, lastTrackSection, setActiveSection]);
+  }, [activeSection, lastTrackSection, navigationOrder, setActiveSection]);
 
   const executeShortcut = useCallback(
     (shortcut: KeyboardShortcut) => {

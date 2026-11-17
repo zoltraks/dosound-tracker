@@ -1,7 +1,7 @@
 import { Formatter } from '../../utils/format/formatters.ts';
 import React from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import type { Pattern, Instrument, Song } from '../../synth/SoundDriver.ts';
+import type { Pattern, Instrument, Song, SongChannelId } from '../../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
 import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
 import { TrackPanel } from './TrackPanel.tsx';
@@ -20,11 +20,16 @@ interface TrackerSectionProps {
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   currentOctave: number;
-  getCurrentPatternForTrack: (trackId: 'A' | 'B' | 'C') => Pattern | null;
+  getCurrentPatternForTrack: (trackId: SongChannelId) => Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
   ym2149: SoundEngine | null;
+  ym2149ForChannel?: (channel: number) => SoundEngine | null;
   currentInstrument: Instrument;
-  targetTrackId: 'A' | 'B' | 'C';
+  targetTrackId: SongChannelId;
+  tracks: readonly SongChannelId[];
+  showChipSwitcher?: boolean;
+  chipGroup?: 0 | 1;
+  onChipGroupChange?: (group: 0 | 1) => void;
   onToggleLineFromCursor: (lineIndex: number) => void;
   onToggleLineFromStart: (lineIndex: number) => void;
   onToggleSongFromCursor: (lineIndex: number) => void;
@@ -40,9 +45,9 @@ interface TrackerSectionProps {
   ) => void;
   onPreviewMidiNoteOff: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
-  onRegisterTrackStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  onRegisterTrackStopPreview?: (trackId: SongChannelId, stopPreview: () => void) => void;
   trackSelection: TrackSelection | null;
-  onExtendSelection: (trackId: 'A' | 'B' | 'C', delta: number) => void;
+  onExtendSelection: (trackId: SongChannelId, delta: number) => void;
   trackBackgroundEnabled: boolean;
   onToggleTrackBackground: () => void;
   isDarkMode: boolean;
@@ -59,8 +64,13 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   getCurrentPatternForTrack,
   onPatternChange,
   ym2149,
+  ym2149ForChannel,
   currentInstrument,
   targetTrackId,
+  tracks,
+  showChipSwitcher = false,
+  chipGroup = 0,
+  onChipGroupChange,
   onToggleLineFromCursor,
   onToggleLineFromStart,
   onToggleSongFromCursor,
@@ -90,6 +100,21 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
       <div className="left-column-content">
         <div className="position-block">
           <div className="position-header">
+            {showChipSwitcher && (
+              <div className="chip-switcher" role="group" aria-label="AY/YM chip channels">
+                {([0, 1] as const).map((group) => (
+                  <button
+                    key={group}
+                    type="button"
+                    className={`chip-switcher-button ${chipGroup === group ? 'active' : ''}`}
+                    aria-pressed={chipGroup === group}
+                    onClick={() => onChipGroupChange?.(group)}
+                  >
+                    {group === 0 ? 'A-C' : 'D-F'}
+                  </button>
+                ))}
+              </div>
+            )}
             <button
               type="button"
               className={`track-bg-toggle ${trackBackgroundEnabled ? 'enabled' : 'disabled'}`}
@@ -143,7 +168,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
 
         <div className="track-container">
           <div className="tracks-row" role="group" aria-label="Pattern tracks">
-            {(['A', 'B', 'C'] as const).map((trackId) => (
+            {tracks.map((trackId) => (
               <TrackPanel
                 key={trackId}
                 trackId={trackId}
@@ -156,6 +181,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 pattern={getCurrentPatternForTrack(trackId)}
                 onPatternChange={onPatternChange}
                 ym2149={ym2149}
+                ym2149ForChannel={ym2149ForChannel}
                 currentInstrumentData={currentInstrument}
                 instruments={song.instrument}
                 trackBackgroundEnabled={trackBackgroundEnabled}

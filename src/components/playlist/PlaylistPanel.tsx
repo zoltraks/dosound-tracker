@@ -6,6 +6,7 @@ import type { PlaylistEntry } from '../../types/playlist.ts';
 import { asPlaylistPatternId } from '../../types/branded.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { readPlaylistTrack } from '../../utils/cursor/panelCursorFields.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
 
 interface PlaylistPanelProps {
   playlist: PlaylistEntry[];
@@ -14,8 +15,9 @@ interface PlaylistPanelProps {
   onPlaylistChange: (playlist: PlaylistEntry[]) => void;
   currentPlaybackPosition: number;
   onPositionSelect: (position: number) => void;
-  onCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
-  targetTrack: 'A' | 'B' | 'C';
+  onCreatePatternAt: (lineIndex: number, track: SongChannelId) => void;
+  targetTrack: SongChannelId;
+  tracks: readonly SongChannelId[];
   sharedCurrentLine: number;
   focusRevision?: number;
   onToggleLineFromStart: (lineIndex: number) => void;
@@ -32,6 +34,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   onPositionSelect,
   onCreatePatternAt,
   targetTrack,
+  tracks,
   sharedCurrentLine,
   focusRevision = 0,
   onToggleLineFromStart,
@@ -41,7 +44,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   const [currentLine, setCurrentLine] = useState(0);
   // REASON: kept as a plain useState so the setter stays a stable dispatch that
   // the React Compiler can track inside memoized callbacks; persisted manually below.
-  const [currentTrack, setCurrentTrack] = useState<'A' | 'B' | 'C'>(() => {
+  const [currentTrack, setCurrentTrack] = useState<SongChannelId>(() => {
     try {
       return readPlaylistTrack(localStorage.getItem(StorageKeys.PLAYLIST_TRACK));
     } catch {
@@ -89,22 +92,12 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   );
 
   const updatePattern = useCallback(
-    (lineIndex: number, track: 'A' | 'B' | 'C', patternId: string) => {
+    (lineIndex: number, track: SongChannelId, patternId: string) => {
       const newPlaylist = [...playlist];
       const entry = { ...newPlaylist[lineIndex] };
 
       if (patternId === '--' || (patternId.length === 2 && /^[0-9A-Fa-f]{2}$/.test(patternId))) {
-        switch (track) {
-          case 'A':
-            entry.A = patternId === '--' ? '--' : asPlaylistPatternId(patternId);
-            break;
-          case 'B':
-            entry.B = patternId === '--' ? '--' : asPlaylistPatternId(patternId);
-            break;
-          case 'C':
-            entry.C = patternId === '--' ? '--' : asPlaylistPatternId(patternId);
-            break;
-        }
+        entry[track] = patternId === '--' ? '--' : asPlaylistPatternId(patternId);
 
         newPlaylist[lineIndex] = entry;
         onPlaylistChange(newPlaylist);
@@ -114,21 +107,9 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   );
 
   const startEditingPattern = useCallback(
-    (lineIndex: number, track: 'A' | 'B' | 'C') => {
+    (lineIndex: number, track: SongChannelId) => {
       const entry = playlist[lineIndex];
-      let currentPattern = '--';
-
-      switch (track) {
-        case 'A':
-          currentPattern = entry.A;
-          break;
-        case 'B':
-          currentPattern = entry.B;
-          break;
-        case 'C':
-          currentPattern = entry.C;
-          break;
-      }
+      const currentPattern = entry[track] ?? '--';
 
       setCurrentLine(lineIndex);
       setCurrentTrack(track);
@@ -271,17 +252,17 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         case 'ARROWLEFT':
           event.preventDefault();
           setCurrentTrack((prev) => {
-            if (prev === 'A') return 'C';
-            if (prev === 'B') return 'A';
-            return 'B'; // C -> B
+            const index = tracks.indexOf(prev);
+            const next = index <= 0 ? tracks.length - 1 : index - 1;
+            return tracks[next] ?? prev;
           });
           break;
         case 'ARROWRIGHT':
           event.preventDefault();
           setCurrentTrack((prev) => {
-            if (prev === 'A') return 'B';
-            if (prev === 'B') return 'C';
-            return 'A'; // C -> A
+            const index = tracks.indexOf(prev);
+            const next = index < 0 || index >= tracks.length - 1 ? 0 : index + 1;
+            return tracks[next] ?? prev;
           });
           break;
         case 'N':
@@ -338,6 +319,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       playlist.length,
       currentLine,
       currentTrack,
+      tracks,
       editingPattern,
       startEditingPattern,
       finishEditingPattern,
@@ -362,7 +344,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   );
 
   const handlePatternClick = useCallback(
-    (lineIndex: number, track: 'A' | 'B' | 'C') => {
+    (lineIndex: number, track: SongChannelId) => {
       setCurrentLine(lineIndex);
       setCurrentTrack(track);
       setActiveSection('playlist');
@@ -372,11 +354,10 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   );
 
   const handleTrackHeaderClick = useCallback(
-    (track: 'A' | 'B' | 'C') => {
+    (track: SongChannelId) => {
       setCurrentTrack(track);
 
-      const section: NavigationSection =
-        track === 'A' ? 'trackA' : track === 'B' ? 'trackB' : 'trackC';
+      const section = `track${track}` as NavigationSection;
 
       setActiveSection(section);
     },
@@ -384,7 +365,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   );
 
   const handlePatternRightClick = useCallback(
-    (lineIndex: number, track: 'A' | 'B' | 'C', event: React.MouseEvent) => {
+    (lineIndex: number, track: SongChannelId, event: React.MouseEvent) => {
       event.preventDefault();
       event.stopPropagation();
       handlePatternClick(lineIndex, track);
@@ -408,7 +389,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   );
 
   const getPatternClass = useCallback(
-    (lineIndex: number, track: 'A' | 'B' | 'C') => {
+    (lineIndex: number, track: SongChannelId) => {
       const classes = ['track-pattern'];
       if (lineIndex === currentLine && track === currentTrack && isActive) {
         classes.push('current-track');
@@ -431,7 +412,11 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       <div className="playlist-header">Playlist</div>
 
       <div className="playlist-content">
-        <PlaylistHeader targetTrack={targetTrack} onTrackHeaderClick={handleTrackHeaderClick} />
+        <PlaylistHeader
+          targetTrack={targetTrack}
+          tracks={tracks}
+          onTrackHeaderClick={handleTrackHeaderClick}
+        />
 
         <div className="playlist-line-container" ref={linesContainerRef}>
           {playlist.map((entry, actualIndex) => {
@@ -444,9 +429,10 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
                 index={actualIndex}
                 entry={entry}
                 lineClassName={getLineClass(actualIndex)}
-                patternClassA={getPatternClass(actualIndex, 'A')}
-                patternClassB={getPatternClass(actualIndex, 'B')}
-                patternClassC={getPatternClass(actualIndex, 'C')}
+                patternClasses={Object.fromEntries(
+                  tracks.map((track) => [track, getPatternClass(actualIndex, track)]),
+                )}
+                tracks={tracks}
                 isCurrentLine={isCurrentLine}
                 currentTrack={currentTrack}
                 isEditing={isEditing}

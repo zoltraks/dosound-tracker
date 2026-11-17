@@ -63,6 +63,7 @@ const setup = (overrides: Record<string, unknown> = {}) => {
     getCurrentPatternForTrack: vi.fn(() => pattern),
     handlePatternChange,
     ym2149Ref: { current: ym },
+    ym2149Ref2: { current: null },
     midiHelpersRef: { current: helpers },
     midiConfigurationRef: { current: midiConfig() },
     parseBaseKeyString: parseBaseKey,
@@ -228,11 +229,13 @@ describe('handleRegisterTrackStopPreview / handleHardStopLivePreview', () => {
   });
 
   it('clamps the channel index into range', () => {
-    const { hook, ym } = setup();
+    const ym2 = { writeRegister: vi.fn(), updateChannelWithInstrument: vi.fn() };
+    const { hook } = setup({ ym2149Ref2: { current: ym2 } });
     try {
       act(() => hook.result.current.handleMidiNoteEvent(noteOn));
+      // Channel 9 clamps to F (index 5): second chip, local channel C -> VC.
       act(() => hook.result.current.handleHardStopLivePreview(9));
-      expect(ym.writeRegister).toHaveBeenCalledWith(0x0a, 0x00);
+      expect(ym2.writeRegister).toHaveBeenCalledWith(0x0a, 0x00);
     } catch (error) {
       console.log('clamp mismatch');
       throw error;

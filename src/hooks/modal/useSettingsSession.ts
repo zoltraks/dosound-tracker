@@ -24,6 +24,10 @@ export interface UseSettingsSessionParams {
   setConfirmPaste: (confirm: boolean) => void;
   soundEngineId: SoundEngineId;
   setSoundEngineId: Dispatch<SetStateAction<SoundEngineId>>;
+  dualChipEnabled: boolean;
+  setDualChipEnabled: Dispatch<SetStateAction<boolean>>;
+  visibleTracks: 3 | 6;
+  setVisibleTracks: Dispatch<SetStateAction<3 | 6>>;
 }
 
 export interface UseSettingsSessionResult extends UseSettingsDialogResult {
@@ -53,6 +57,10 @@ export function useSettingsSession({
   setConfirmPaste,
   soundEngineId,
   setSoundEngineId,
+  dualChipEnabled,
+  setDualChipEnabled,
+  visibleTracks,
+  setVisibleTracks,
 }: UseSettingsSessionParams): UseSettingsSessionResult {
   const committedSettings = useMemo(
     () => loadSettings(),
@@ -67,6 +75,8 @@ export function useSettingsSession({
       pasteTrackMode,
       confirmPaste,
       soundEngineId,
+      dualChipEnabled,
+      visibleTracks,
       isSettingsOpen,
     ],
   );
@@ -105,6 +115,8 @@ export function useSettingsSession({
     setPasteTrackMode(next.editor.pasteTrackMode);
     setConfirmPaste(next.editor.confirmPaste);
     setSoundEngineId(next.sound.engine);
+    setDualChipEnabled(next.sound.dualChip);
+    setVisibleTracks(next.general.visibleTracks);
     closeSettingsSession(next);
     setIsSettingsOpen(false);
   };

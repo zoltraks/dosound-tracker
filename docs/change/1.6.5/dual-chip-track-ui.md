@@ -2,7 +2,7 @@
 
 **Type:** Feature
 
-**Blocked by:** `docs/change/1.6.4/dual-chip-song-data.md` (six-channel model) and `docs/change/1.7.0/dual-engine-audio-panning.md` (dual-engine playback) - the view edits and plays what those records define.
+**Blocked by:** `docs/change/1.6.4/dual-chip-song-data.md` (six-channel model) and `docs/change/1.6.5/dual-engine-audio-panning.md` (dual-engine playback) - the view edits and plays what those records define.
 
 ## Summary
 

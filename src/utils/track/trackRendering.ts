@@ -1,4 +1,4 @@
-import type { Instrument, Note, Pattern } from '../../synth/SoundDriver.ts';
+import type { Instrument, Note, Pattern, SongChannelId } from '../../synth/SoundDriver.ts';
 import { Formatter } from '../format/formatters.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
@@ -63,7 +63,7 @@ export function getTrackLineClass(lineIndex: number, isCurrent: boolean): string
  * screen reader full context on every cursor move.
  */
 export function buildTrackRowAnnouncement(
-  trackId: 'A' | 'B' | 'C',
+  trackId: SongChannelId,
   lineIndex: number,
   column: 'note' | 'volume',
   noteData: Note | null,

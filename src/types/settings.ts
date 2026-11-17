@@ -18,6 +18,7 @@ export interface SettingsValues {
     textScale: TextScale;
     trackBackground: boolean;
     startupTone: boolean;
+    visibleTracks: 3 | 6;
   };
   editor: {
     restoreCursor: boolean;
@@ -27,6 +28,7 @@ export interface SettingsValues {
   };
   sound: {
     engine: SoundEngineId;
+    dualChip: boolean;
   };
 }
 
@@ -46,6 +48,7 @@ export const DEFAULT_SETTINGS: SettingsValues = {
     textScale: '100',
     trackBackground: true,
     startupTone: true,
+    visibleTracks: 3,
   },
   editor: {
     restoreCursor: true,
@@ -55,5 +58,6 @@ export const DEFAULT_SETTINGS: SettingsValues = {
   },
   sound: {
     engine: DEFAULT_SOUND_ENGINE_ID,
+    dualChip: false,
   },
 };

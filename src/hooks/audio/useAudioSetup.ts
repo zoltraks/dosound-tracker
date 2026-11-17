@@ -4,7 +4,11 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { createSoundEngine } from '../../synth/soundEngine.ts';
 import { YM2149 } from '../../synth/YM2149.ts';
 import type { SoundEngineId } from '../../constants/sound.ts';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
+import {
+  DEFAULT_SONG_CHIP,
+  DEFAULT_SONG_CLOCK,
+  SINGLE_CHIP_CHANNEL_COUNT,
+} from '../../constants/song.ts';
 import { loadSoundEngineId } from '../../utils/storage/soundEngine.ts';
 import { logger } from '../../utils/log/logger.ts';
 
@@ -12,12 +16,23 @@ type WindowWithYm2149 = Window & {
   ym2149?: SoundEngine;
 };
 
+export interface ChannelEngineTarget {
+  engine: SoundEngine;
+  // Register-space channel inside the owning chip (0-2). Global channels
+  // D-F (indices 3-5) map onto chip 2's local channels 0-2.
+  localChannel: number;
+}
+
 export interface UseAudioSetupResult {
   audioContext: AudioContext | null;
   audioError: string | null;
   ym2149Ref: React.RefObject<SoundEngine | null>;
   ym2149: SoundEngine | null;
+  ym2149Ref2: React.RefObject<SoundEngine | null>;
+  ym21492: SoundEngine | null;
+  engineForChannel: (channel: number) => ChannelEngineTarget | null;
   waitForEngine: () => Promise<SoundEngine | null>;
+  waitForEngines: () => Promise<SoundEngine[]>;
   playTestTone: () => void;
 }
 
@@ -26,19 +41,23 @@ export function useAudioSetup(
   engineId?: SoundEngineId,
   channelPans?: number[],
   songChip: string = DEFAULT_SONG_CHIP,
+  chipCount: 1 | 2 = 1,
 ): UseAudioSetupResult {
   const { audioContext, error } = useAudioContext();
   const ym2149Ref = useRef<SoundEngine | null>(null);
+  const ym2149Ref2 = useRef<SoundEngine | null>(null);
   const testToneRef = useRef<(() => void) | null>(null);
   const chipClockRef = useRef(chipClock);
   const songChipRef = useRef(songChip);
   const channelPansRef = useRef<number[]>(channelPans ?? [0.5, 0.5, 0.5]);
   const readyWaitersRef = useRef<Array<(engine: SoundEngine | null) => void>>([]);
+  const pairWaitersRef = useRef<Array<(engines: SoundEngine[]) => void>>([]);
   // The persisted key is only a mount-time fallback - a caller-provided
   // engineId wins and switching it re-runs the creation effect below.
   const [storedEngineId] = useState<SoundEngineId>(loadSoundEngineId);
   const resolvedEngineId = engineId ?? storedEngineId;
   const [ym2149, setYm2149] = useState<SoundEngine | null>(null);
+  const [ym21492, setYm21492] = useState<SoundEngine | null>(null);
 
   useEffect(() => {
     if (!audioContext) {
@@ -48,47 +67,74 @@ export function useAudioSetup(
     logger.info('AudioContext created with rate', audioContext.sampleRate, audioContext.state);
 
     let cancelled = false;
-    let landedEngine: SoundEngine | null = null;
+    const landedEngines: SoundEngine[] = [];
 
-    const landEngine = (engine: SoundEngine) => {
+    // Each chip gets its own engine through the same factory so the
+    // internal YM2149 and Ayumi drivers both support the dual path.
+    // Chip 1 receives the first three pans, chip 2 the last three.
+    const configureEngine = (engine: SoundEngine, chipIndex: 0 | 1) => {
+      engine.setClock(chipClockRef.current);
+      engine.setChip(songChipRef.current);
+      const pans = channelPansRef.current;
+      engine.setChannelPans(
+        chipIndex === 0
+          ? pans.slice(0, SINGLE_CHIP_CHANNEL_COUNT)
+          : pans.slice(SINGLE_CHIP_CHANNEL_COUNT),
+      );
+    };
+
+    const landEngine = (engine: SoundEngine, chipIndex: 0 | 1) => {
       if (cancelled) {
         engine.dispose();
         return;
       }
-      landedEngine = engine;
-      ym2149Ref.current = engine;
-      setYm2149(engine);
-      // Expose on window for debugging
-      (window as WindowWithYm2149).ym2149 = engine;
-
-      // The song clock may have moved while the engine resolved.
-      engine.setClock(chipClockRef.current);
-      engine.setChip(songChipRef.current);
-      engine.setChannelPans(channelPansRef.current);
-
-      readyWaitersRef.current.splice(0).forEach((resolve) => resolve(engine));
+      configureEngine(engine, chipIndex);
+      landedEngines[chipIndex] = engine;
+      if (chipIndex === 0) {
+        ym2149Ref.current = engine;
+        setYm2149(engine);
+        // Expose on window for debugging
+        (window as WindowWithYm2149).ym2149 = engine;
+      } else {
+        ym2149Ref2.current = engine;
+        setYm21492(engine);
+      }
+      const needed = chipCount === 2 ? 2 : 1;
+      if (landedEngines.filter(Boolean).length === needed) {
+        const all = landedEngines.slice(0, needed);
+        readyWaitersRef.current.splice(0).forEach((resolve) => resolve(all[0] ?? null));
+        pairWaitersRef.current.splice(0).forEach((resolve) => resolve(all));
+      }
     };
 
     const rejectWaiters = () => {
       readyWaitersRef.current.splice(0).forEach((resolve) => resolve(null));
+      pairWaitersRef.current.splice(0).forEach((resolve) => resolve([]));
     };
 
-    try {
-      if (resolvedEngineId === 'internal') {
-        // The internal engine constructs synchronously, so landing it here
-        // keeps writes and silenceAll reachable for the very first tick.
-        landEngine(new YM2149(audioContext, chipClockRef.current));
-      } else {
-        void createSoundEngine(resolvedEngineId, audioContext, chipClockRef.current)
-          .then(landEngine)
-          .catch((e) => {
-            logger.error('Failed to initialize audio', e);
-            rejectWaiters();
-          });
+    const createOne = (chipIndex: 0 | 1) => {
+      try {
+        if (resolvedEngineId === 'internal') {
+          // The internal engine constructs synchronously, so landing it here
+          // keeps writes and silenceAll reachable for the very first tick.
+          landEngine(new YM2149(audioContext, chipClockRef.current), chipIndex);
+        } else {
+          void createSoundEngine(resolvedEngineId, audioContext, chipClockRef.current)
+            .then((engine) => landEngine(engine, chipIndex))
+            .catch((e) => {
+              logger.error('Failed to initialize audio', e);
+              rejectWaiters();
+            });
+        }
+      } catch (e) {
+        logger.error('Failed to initialize audio', e);
+        rejectWaiters();
       }
-    } catch (e) {
-      logger.error('Failed to initialize audio', e);
-      rejectWaiters();
+    };
+
+    createOne(0);
+    if (chipCount === 2) {
+      createOne(1);
     }
 
     // Short test tone to validate the audio path: a dedicated oscillator
@@ -138,19 +184,27 @@ export function useAudioSetup(
       userEvents.forEach((eventType) => {
         document.removeEventListener(eventType, handleUserInteraction);
       });
-      landedEngine?.silenceAll();
-      landedEngine?.dispose();
-      if (ym2149Ref.current === landedEngine) {
+      for (const engine of landedEngines) {
+        engine?.silenceAll();
+        engine?.dispose();
+      }
+      if (ym2149Ref.current && landedEngines.includes(ym2149Ref.current)) {
         ym2149Ref.current = null;
       }
+      if (ym2149Ref2.current && landedEngines.includes(ym2149Ref2.current)) {
+        ym2149Ref2.current = null;
+      }
       setYm2149(null);
+      setYm21492(null);
     };
-  }, [audioContext, resolvedEngineId]);
+  }, [audioContext, resolvedEngineId, chipCount]);
 
   useEffect(() => {
     chipClockRef.current = chipClock;
-    if (ym2149Ref.current) {
-      ym2149Ref.current.setClock(chipClock);
+    for (const ref of [ym2149Ref, ym2149Ref2]) {
+      if (ref.current) {
+        ref.current.setClock(chipClock);
+      }
     }
   }, [chipClock]);
 
@@ -158,22 +212,26 @@ export function useAudioSetup(
   // engine creation consistent; the live engine reconfigures in place.
   useEffect(() => {
     songChipRef.current = songChip;
-    if (ym2149Ref.current) {
-      ym2149Ref.current.setChip(songChip);
+    for (const ref of [ym2149Ref, ym2149Ref2]) {
+      if (ref.current) {
+        ref.current.setChip(songChip);
+      }
     }
   }, [songChip]);
 
   // Channel pans mirror the song's resolved stereo settings. The ref keeps
   // a mid-flight engine creation consistent; the live engine is re-panned
-  // in place so routing changes never recreate the audio path.
+  // in place so routing changes never recreate the audio path. Chip 2
+  // receives the D/E/F slice of the six-channel tuple.
   useEffect(() => {
     const pans = channelPans ?? [0.5, 0.5, 0.5];
     const changed =
       channelPansRef.current.length !== pans.length ||
       channelPansRef.current.some((pan, i) => pan !== pans[i]);
     channelPansRef.current = pans;
-    if (changed && ym2149Ref.current) {
-      ym2149Ref.current.setChannelPans(pans);
+    if (changed) {
+      ym2149Ref.current?.setChannelPans(pans.slice(0, SINGLE_CHIP_CHANNEL_COUNT));
+      ym2149Ref2.current?.setChannelPans(pans.slice(SINGLE_CHIP_CHANNEL_COUNT));
     }
   }, [channelPans]);
 
@@ -191,12 +249,42 @@ export function useAudioSetup(
     });
   }, []);
 
+  // Resolves once every engine the song needs has landed - playback gates
+  // on this so a two-chip song never starts on a half-ready pair.
+  const waitForEngines = useCallback((): Promise<SoundEngine[]> => {
+    const needed = chipCount === 2 ? 2 : 1;
+    const current = [ym2149Ref.current, ym2149Ref2.current].filter(
+      (engine): engine is SoundEngine => engine !== null,
+    );
+    if (current.length >= needed) {
+      return Promise.resolve(current.slice(0, needed));
+    }
+    return new Promise<SoundEngine[]>((resolve) => {
+      pairWaitersRef.current.push(resolve);
+    });
+  }, [chipCount]);
+
+  const engineForChannel = useCallback((channel: number): ChannelEngineTarget | null => {
+    const engine = channel < SINGLE_CHIP_CHANNEL_COUNT ? ym2149Ref.current : ym2149Ref2.current;
+    if (!engine) {
+      return null;
+    }
+    return {
+      engine,
+      localChannel: channel % SINGLE_CHIP_CHANNEL_COUNT,
+    };
+  }, []);
+
   return {
     audioContext,
     audioError: error,
     ym2149Ref,
     ym2149,
+    ym2149Ref2,
+    ym21492,
+    engineForChannel,
     waitForEngine,
+    waitForEngines,
     playTestTone,
   };
 }

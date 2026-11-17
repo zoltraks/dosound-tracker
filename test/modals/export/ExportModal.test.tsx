@@ -10,8 +10,10 @@ const renderModal = (overrides: Partial<Parameters<typeof ExportModal>[0]> = {})
       isOpen={true}
       exportType="song"
       exportStrategy="simple"
+      chipStream={1}
       onChangeType={vi.fn()}
       onChangeStrategy={vi.fn()}
+      onChangeChipStream={vi.fn()}
       onExportFormat={vi.fn()}
       onConfirm={vi.fn()}
       onCancel={vi.fn()}

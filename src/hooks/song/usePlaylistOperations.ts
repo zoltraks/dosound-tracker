@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
-import type { Song, Step } from '../../synth/SoundDriver.ts';
+import type { Song, Step, SongChannelId } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 import {
   cloneTrackStep,
   emptyTrackStep,
@@ -17,7 +18,7 @@ import { createPatternForSong } from './usePatternManagement.ts';
 
 interface UsePlaylistOperationsArgs {
   song: Song;
-  targetTrackId: 'A' | 'B' | 'C';
+  targetTrackId: SongChannelId;
   currentPatternIndex: number;
   updateSong: (patch: Partial<Song>) => void;
   setActiveSection: (section: NavigationSection) => void;
@@ -30,7 +31,7 @@ interface UsePlaylistOperationsArgs {
 interface UsePlaylistOperationsResult {
   handlePlaylistChange: (newPlaylist: PlaylistEntry[]) => void;
   generateUniquePatternId: () => PatternId;
-  handleCreatePatternAt: (lineIndex: number, track: 'A' | 'B' | 'C') => void;
+  handleCreatePatternAt: (lineIndex: number, track: SongChannelId) => void;
   handleCreateNewTrack: () => void;
   handleCreateTrackFromSteps: (steps: Step[]) => void;
   handleAddLine: () => void;
@@ -82,7 +83,7 @@ export function usePlaylistOperations({
   }, [song.pattern]);
 
   const handleCreatePatternAt = useCallback(
-    (lineIndex: number, track: 'A' | 'B' | 'C') => {
+    (lineIndex: number, track: SongChannelId) => {
       if (lineIndex < 0 || lineIndex >= song.line.length) {
         return;
       }
@@ -272,8 +273,11 @@ export function usePlaylistOperations({
       }
     };
 
-    const duplicateTrack = (key: 'A' | 'B' | 'C') => {
+    const duplicateTrack = (key: SongChannelId) => {
       const patternId = sourceEntry[key];
+      if (patternId === undefined) {
+        return;
+      }
       if (!patternId || patternId === '--') {
         newEntry[key] = patternId;
         return;
@@ -297,9 +301,9 @@ export function usePlaylistOperations({
       newEntry[key] = asPlaylistPatternId(newId);
     };
 
-    duplicateTrack('A');
-    duplicateTrack('B');
-    duplicateTrack('C');
+    for (const key of SONG_CHANNEL_IDS) {
+      duplicateTrack(key);
+    }
 
     const insertIndex = currentIndex + 1;
     newPlaylist.splice(insertIndex, 0, newEntry);

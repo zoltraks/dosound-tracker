@@ -19,6 +19,9 @@ export interface ExportContext {
   playlistIndex: number;
   currentLine: number;
   instrument: Instrument | null;
+  // Register-stream formats (DATA/ASM, BIN, VGM, MAX) emit one AY/YM stream;
+  // this selects which chip's stream is written. Note-level formats ignore it.
+  chipStream?: 1 | 2;
 }
 
 interface UseExportOperationsArgs {
@@ -82,7 +85,7 @@ export function useExportOperations({ song }: UseExportOperationsArgs): UseExpor
         if (instrument) {
           assemblyContent = exportInstrumentToAssembly(instrument, song);
         } else {
-          assemblyContent = exportToAssembly(scopedSong, ctx.strategy);
+          assemblyContent = exportToAssembly(scopedSong, ctx.strategy, ctx.chipStream);
         }
 
         const filename = `${filenameBase}.s`;
@@ -131,7 +134,7 @@ export function useExportOperations({ song }: UseExportOperationsArgs): UseExpor
           return;
         }
 
-        const result = exportSongToMax(scopedSong, ctx.strategy);
+        const result = exportSongToMax(scopedSong, ctx.strategy, ctx.chipStream);
         const filename = `${filenameBase}.max`;
         downloadMaxFile(result.buffer, filename);
 
@@ -275,7 +278,7 @@ export function useExportOperations({ song }: UseExportOperationsArgs): UseExpor
           const asm = exportInstrumentToAssembly(instrument, song);
           bytes = parseAssemblyToBinary(asm);
         } else {
-          bytes = exportToBinary(scopedSong, ctx.strategy);
+          bytes = exportToBinary(scopedSong, ctx.strategy, ctx.chipStream);
         }
 
         const filename = `${filenameBase}.bin`;
@@ -325,7 +328,7 @@ export function useExportOperations({ song }: UseExportOperationsArgs): UseExpor
           return;
         }
 
-        const result = exportSongToVgm(scopedSong, ctx.strategy);
+        const result = exportSongToVgm(scopedSong, ctx.strategy, ctx.chipStream);
         const filename = `${filenameBase}.vgm`;
         downloadVgmFile(result.buffer, filename);
 

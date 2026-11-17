@@ -19,6 +19,7 @@ import { useKeyboardShortcuts } from './hooks/keyboard/useKeyboardShortcuts.ts';
 import { useMessageSystem } from './hooks/ui/useMessageSystem.ts';
 import { useModalState } from './hooks/modal/useModalState.ts';
 import { loadSoundEngineId } from './utils/storage/soundEngine.ts';
+import { loadSettings } from './utils/settings/settingsState.ts';
 import type { SoundEngineId } from './constants/sound.ts';
 import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.ts';
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
@@ -62,6 +63,9 @@ import { useAudioContextPlaybackSync } from './hooks/audio/useAudioContextPlayba
 import { useElectronCloseGuard } from './hooks/app/useElectronCloseGuard.ts';
 import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
 import { useChannelPans } from './hooks/song/useChannelPans.ts';
+import { songChipCount } from './utils/song/songChips.ts';
+import { channelCountForChipCount, SONG_CHANNEL_IDS } from './constants/song.ts';
+import { isDualChipView, visibleTrackIds } from './utils/song/visibleTracks.ts';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -241,16 +245,47 @@ const App: React.FC = () => {
     pendingSongImport,
   });
 
-  const { activeSection, setActiveSection, setGlobalShortcut } =
-    useKeyboardNavigation(isNavigationSuspended);
+  const [dualChipEnabled, setDualChipEnabled] = useState<boolean>(
+    () => loadSettings().sound.dualChip,
+  );
+  const [visibleTracks, setVisibleTracks] = useState<3 | 6>(
+    () => loadSettings().general.visibleTracks,
+  );
+  const [visibleChipGroup, setVisibleChipGroup] = useState<0 | 1>(0);
+
+  const songTracks = visibleTrackIds(dualChipEnabled, currentSong, visibleTracks, visibleChipGroup);
+  const visibleTrackSections = songTracks.map(
+    (id) => `track${id}` as import('./constants/navigation.ts').NavigationSection,
+  );
+
+  const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(
+    isNavigationSuspended,
+    visibleTrackSections,
+  );
 
   const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
   const { channelPans } = useChannelPans({ stereo: currentSong.stereo });
-  const { audioContext, ym2149Ref, ym2149, waitForEngine, playTestTone } = useAudioSetup(
+  const {
+    audioContext,
+    ym2149Ref,
+    ym2149,
+    ym2149Ref2,
+    ym21492,
+    engineForChannel,
+    waitForEngine,
+    waitForEngines,
+    playTestTone,
+  } = useAudioSetup(
     currentSong.clock ?? DEFAULT_SONG_CLOCK,
     soundEngineId,
     channelPans,
     currentSong.chip ?? DEFAULT_SONG_CHIP,
+    dualChipEnabled ? songChipCount(currentSong) : 1,
+  );
+
+  const ym2149ForChannel = useCallback(
+    (channel: number) => engineForChannel(channel)?.engine ?? null,
+    [engineForChannel],
   );
 
   const {
@@ -317,6 +352,17 @@ const App: React.FC = () => {
     previewChannel,
   } = useTrackFocus({ activeSection });
 
+  // A persisted cursor or focus on a hidden channel (stored six-track state
+  // on a single-chip song, or the inactive chip group) falls back to the
+  // first visible track so focus never lands on an unrendered panel.
+  const effectiveTargetTrackId = songTracks.includes(targetTrackId)
+    ? targetTrackId
+    : (songTracks[0] ?? 'A');
+  const previewChannelTrack = SONG_CHANNEL_IDS[previewChannel] ?? 'A';
+  const effectivePreviewChannel = songTracks.includes(previewChannelTrack)
+    ? previewChannel
+    : SONG_CHANNEL_IDS.indexOf(songTracks[0] ?? 'A');
+
   const { ensureAudioContextResumed } = useAudioContextResume({ audioContext });
 
   useEditorPersistence({
@@ -348,7 +394,9 @@ const App: React.FC = () => {
   } = usePlaybackBridge({
     currentSong,
     channelMutes,
+    channelCount: channelCountForChipCount(dualChipEnabled ? songChipCount(currentSong) : 1),
     ym2149Ref,
+    ym2149Ref2,
     isDebugMode,
     setSharedCurrentLine,
     stop,
@@ -543,6 +591,7 @@ const App: React.FC = () => {
     normalizeInstrumentId,
     parseBaseKeyString: parseBaseKey,
     ym2149Ref,
+    ym2149Ref2,
   });
 
   const {
@@ -595,6 +644,7 @@ const App: React.FC = () => {
     setIsLinePlaying,
     ensureAudioContextResumed,
     waitForEngine,
+    waitForEngines,
   });
 
   const handleNavigateInstrument = useCallback(
@@ -640,6 +690,7 @@ const App: React.FC = () => {
       getCurrentPatternForTrack,
       handlePatternChange,
       ym2149Ref,
+      ym2149Ref2,
       midiHelpersRef,
       midiConfigurationRef,
       parseBaseKeyString: parseBaseKey,
@@ -671,11 +722,13 @@ const App: React.FC = () => {
   const {
     pendingExportType,
     pendingExportStrategy,
+    pendingChipStream,
     handleOpenExport,
     handleCancelExport,
     handleConfirmExport,
     handleExportTypeChange,
     handleExportStrategyChange,
+    handleChipStreamChange,
     handleExportFormatFromModal,
   } = useExportModal({
     exportType,
@@ -788,6 +841,10 @@ const App: React.FC = () => {
     setConfirmPaste,
     soundEngineId,
     setSoundEngineId,
+    dualChipEnabled,
+    setDualChipEnabled,
+    visibleTracks,
+    setVisibleTracks,
   });
 
   const modals = useAppModals({
@@ -876,8 +933,10 @@ const App: React.FC = () => {
     handlePickDemoSong,
     pendingExportType,
     pendingExportStrategy,
+    pendingChipStream,
     handleExportTypeChange,
     handleExportStrategyChange,
+    handleChipStreamChange,
     handleExportFormatFromModal,
     handleConfirmExport,
     handleCancelExport,
@@ -914,8 +973,9 @@ const App: React.FC = () => {
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             ym2149={ym2149}
+            ym2149ForChannel={ym2149ForChannel}
             currentInstrument={currentInstrument}
-            previewChannel={previewChannel}
+            previewChannel={effectivePreviewChannel}
             tickIntervalMs={previewTickIntervalMs}
             hasDownloads={hasDownloads}
             onShowDownloads={() => setIsDownloadOpen(true)}
@@ -990,8 +1050,13 @@ const App: React.FC = () => {
             getCurrentPatternForTrack={getCurrentPatternForTrack}
             onPatternChange={handlePatternChange}
             ym2149={ym2149}
+            ym2149ForChannel={ym2149ForChannel}
             currentInstrument={currentInstrument}
-            targetTrackId={targetTrackId}
+            targetTrackId={effectiveTargetTrackId}
+            tracks={songTracks}
+            showChipSwitcher={isDualChipView(dualChipEnabled, currentSong) && visibleTracks === 3}
+            chipGroup={visibleChipGroup}
+            onChipGroupChange={setVisibleChipGroup}
             onToggleLineFromCursor={handleToggleLineFromCursor}
             onToggleLineFromStart={handleToggleLineFromStart}
             onToggleSongFromCursor={handleToggleSongFromCursor}
@@ -1032,7 +1097,8 @@ const App: React.FC = () => {
             onPositionSelect={handlePositionSelect}
             onPlaylistChange={handlePlaylistChange}
             onCreatePatternAt={handleCreatePatternAt}
-            targetTrackId={targetTrackId}
+            targetTrackId={effectiveTargetTrackId}
+            tracks={songTracks}
             sharedCurrentLine={sharedCurrentLine}
             onToggleLineFromStart={handleToggleLineFromStart}
             onToggleSongFromCursor={handleToggleSongFromCursor}
@@ -1046,6 +1112,7 @@ const App: React.FC = () => {
             instrumentPanelFocusRevision={instrumentPanelFocusRevision}
             playlistFocusRevision={playlistFocusRevision}
             ym2149={ym2149}
+            ym2149b={ym21492}
             channelMutes={channelMutes}
             onToggleChannelMute={toggleChannelMute}
           />
@@ -1057,8 +1124,9 @@ const App: React.FC = () => {
             currentOctave={currentOctave}
             onOctaveChange={handleOctaveChange}
             ym2149={ym2149}
+            ym2149ForChannel={ym2149ForChannel}
             currentInstrument={currentInstrument}
-            previewChannel={previewChannel}
+            previewChannel={effectivePreviewChannel}
             tickIntervalMs={previewTickIntervalMs}
             onChangeBaseKey={handleChangeBaseKey}
             onPreviewMidiNoteOn={previewInstrumentMidiNoteOn}

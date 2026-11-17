@@ -60,6 +60,7 @@ function setup(currentSong = song, channelMutes = [false, false, false]) {
     silenceAll: vi.fn(),
   };
   const ym2149Ref = { current: engine as unknown as SoundEngine };
+  const ym2149Ref2 = { current: null as SoundEngine | null };
   const midiHelpersRef = {
     current: {
       sendInstrumentMidiNoteOn: vi.fn(),
@@ -71,11 +72,12 @@ function setup(currentSong = song, channelMutes = [false, false, false]) {
   const setSharedCurrentLine = vi.fn();
   const setIsLinePlaying = vi.fn();
   const { result } = renderHook(() => {
-    const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
+    const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef, ym2149Ref2);
     return useSequencerIntegration({
       currentSong,
       patternsById: new Map(currentSong.pattern.map((pattern) => [pattern.id, pattern])),
       channelMutes,
+      channelCount: 3,
       ym2149Ref,
       midiHelpersRef,
       playbackState,

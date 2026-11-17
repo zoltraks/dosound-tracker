@@ -15,7 +15,7 @@ describe('useUiStore', () => {
 
     const { useUiStore } = await import('../../../src/hooks/ui/useUiStore.ts');
 
-    expect(useUiStore.getState().channelMutes).toEqual([false, false, false]);
+    expect(useUiStore.getState().channelMutes).toEqual([false, false, false, false, false, false]);
   });
 
   it('initializes channelMutes from a valid stored boolean array', async () => {
@@ -24,7 +24,7 @@ describe('useUiStore', () => {
 
     const { useUiStore } = await import('../../../src/hooks/ui/useUiStore.ts');
 
-    expect(useUiStore.getState().channelMutes).toEqual([true, false, true]);
+    expect(useUiStore.getState().channelMutes).toEqual([true, false, true, false, false, false]);
   });
 
   it('falls back to all false when stored value is invalid', async () => {
@@ -33,7 +33,7 @@ describe('useUiStore', () => {
 
     const { useUiStore } = await import('../../../src/hooks/ui/useUiStore.ts');
 
-    expect(useUiStore.getState().channelMutes).toEqual([false, false, false]);
+    expect(useUiStore.getState().channelMutes).toEqual([false, false, false, false, false, false]);
   });
 
   it('toggles only the requested channel mute flag', async () => {
@@ -45,14 +45,14 @@ describe('useUiStore', () => {
     const { toggleChannelMute } = useUiStore.getState();
 
     toggleChannelMute(1);
-    expect(useUiStore.getState().channelMutes).toEqual([false, true, false]);
+    expect(useUiStore.getState().channelMutes).toEqual([false, true, false, false, false, false]);
 
     toggleChannelMute(1);
-    expect(useUiStore.getState().channelMutes).toEqual([false, false, false]);
+    expect(useUiStore.getState().channelMutes).toEqual([false, false, false, false, false, false]);
 
     toggleChannelMute(0);
     toggleChannelMute(2);
-    expect(useUiStore.getState().channelMutes).toEqual([true, false, true]);
+    expect(useUiStore.getState().channelMutes).toEqual([true, false, true, false, false, false]);
   });
 
   it('ignores out-of-range indices when toggling', async () => {
@@ -63,7 +63,7 @@ describe('useUiStore', () => {
 
     const initial = useUiStore.getState().channelMutes;
     useUiStore.getState().toggleChannelMute(-1);
-    useUiStore.getState().toggleChannelMute(3);
+    useUiStore.getState().toggleChannelMute(6);
 
     expect(useUiStore.getState().channelMutes).toEqual(initial);
   });

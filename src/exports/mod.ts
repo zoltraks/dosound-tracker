@@ -1,7 +1,8 @@
-import type { Instrument, Song } from '../synth/SoundDriver.ts';
+import type { Instrument, Song, SongChannelId } from '../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../constants/music.ts';
 import { simulateSong } from '../utils/playback/playbackSimulation.ts';
 import { buildPatternLookup, isPatternTrackId } from '../utils/song/songLookup.ts';
+import { songChipCount } from '../utils/song/songChips.ts';
 import {
   downloadFile,
   exportInstrumentWith,
@@ -102,6 +103,10 @@ export function exportSongToMod(song: Song): ModExportResult {
   const { frameRate, chipClock, speed } = resolveExportTiming(normalizedSong);
   const warnings = new Set<string>();
 
+  if (songChipCount(normalizedSong) === 2) {
+    warnings.add('MOD cannot carry six AY/YM channels; only chip 1 channels A-C were exported.');
+  }
+
   warnings.add(
     'All instruments render through two generated samples (square for tone, noise for noise); envelopes are approximated at row granularity.',
   );
@@ -146,7 +151,7 @@ export function exportSongToMod(song: Song): ModExportResult {
   const channelHasNote = [false, false, false];
   let periodClamped = false;
 
-  const trackKeys: ('A' | 'B' | 'C')[] = ['A', 'B', 'C'];
+  const trackKeys: SongChannelId[] = ['A', 'B', 'C'];
 
   for (let row = 0; row < totalRows; row++) {
     const lineIndex = rowLineIndexes[row];

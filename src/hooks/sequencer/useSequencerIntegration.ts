@@ -8,12 +8,15 @@ import { Formatter } from '../../utils/format/formatters.ts';
 import type { PlaybackSimulationState } from '../playback/usePlaybackSimulation.ts';
 import { mapSongLineToPlaylistEntries } from '../../types/playlist.ts';
 import { clampVolumeNibble } from '../../utils/panel/volumeUtils.ts';
+import { SONG_CHANNEL_IDS, SINGLE_CHIP_CHANNEL_COUNT } from '../../constants/song.ts';
 
 interface UseSequencerIntegrationArgs {
   currentSong: Song;
   patternsById: Map<string, Pattern>;
   channelMutes: boolean[];
+  channelCount: number;
   ym2149Ref: React.MutableRefObject<SoundEngine | null>;
+  ym2149Ref2?: React.MutableRefObject<SoundEngine | null>;
   midiHelpersRef: React.MutableRefObject<{
     sendInstrumentMidiNoteOn: (
       ymChannel: number,
@@ -37,7 +40,9 @@ export function useSequencerIntegration({
   currentSong,
   patternsById,
   channelMutes,
+  channelCount,
   ym2149Ref,
+  ym2149Ref2,
   midiHelpersRef,
   playbackState,
   isDebugMode,
@@ -107,6 +112,8 @@ export function useSequencerIntegration({
 
       if (ym2149Ref.current) {
         const ym2149 = ym2149Ref.current;
+        const channelIds = SONG_CHANNEL_IDS.slice(0, channelCount);
+        const blankArray = <T>(fill: T): T[] => Array.from({ length: channelCount }, () => fill);
 
         const wasPlaying = wasPlayingRef.current;
 
@@ -137,14 +144,14 @@ export function useSequencerIntegration({
           // Always reset sub-tick timing on wrap/jump or first tick so
           // envelope steps realign, but avoid forcibly clearing notes just
           // because the playlist advanced to the next pattern.
-          channelSubTickRef.current = [0, 0, 0];
+          channelSubTickRef.current = blankArray(0);
 
           if (isFirstTick) {
-            channelEnvelopeStepRef.current = [0, 0, 0];
-            lastNotesRef.current = [null, null, null];
-            channelSustainRef.current = [null, null, null];
-            channelReleasedRef.current = [false, false, false];
-            channelVolumeModifierRef.current = [0x0f, 0x0f, 0x0f];
+            channelEnvelopeStepRef.current = blankArray(0);
+            lastNotesRef.current = blankArray<Note | null>(null);
+            channelSustainRef.current = blankArray<number | null>(null);
+            channelReleasedRef.current = blankArray(false);
+            channelVolumeModifierRef.current = blankArray(0x0f);
             debugTickCounterRef.current = 0;
             debugLastRowRef.current = null;
           }
@@ -175,31 +182,16 @@ export function useSequencerIntegration({
         const currentPlaylistEntry = playlistEntries[effectivePatternIndex];
 
         if (currentPlaylistEntry) {
-          const patternA = currentPlaylistEntry.A
-            ? patternsById.get(currentPlaylistEntry.A)
-            : undefined;
-          const patternB = currentPlaylistEntry.B
-            ? patternsById.get(currentPlaylistEntry.B)
-            : undefined;
-          const patternC = currentPlaylistEntry.C
-            ? patternsById.get(currentPlaylistEntry.C)
-            : undefined;
+          const patterns = channelIds.map((id) => {
+            const patternId = currentPlaylistEntry[id];
+            return typeof patternId === 'string' ? patternsById.get(patternId) : undefined;
+          });
+          const lines = patterns.map((pattern) => pattern?.step[state.currentLine]);
 
-          const lineA = patternA?.step[state.currentLine];
-          const lineB = patternB?.step[state.currentLine];
-          const lineC = patternC?.step[state.currentLine];
-
-          const noteA = lineA?.note || null;
-          const noteB = patternB ? lineB?.note || null : null;
-          const noteC = patternC ? lineC?.note || null : null;
-
-          const notes = [noteA, noteB, noteC];
-          const patterns = [patternA, patternB, patternC];
-          const volumes = [
-            lineA?.volume,
-            patternB ? lineB?.volume : undefined,
-            patternC ? lineC?.volume : undefined,
-          ];
+          const notes = lines.map((line) => line?.note || null);
+          const volumes = patterns.map((pattern, index) =>
+            pattern ? lines[index]?.volume : undefined,
+          );
           const lastNotes = lastNotesRef.current;
 
           const lastLogged = debugLastRowRef.current;
@@ -230,7 +222,7 @@ export function useSequencerIntegration({
               const cycleHex = Formatter.hex(cycle, { padWidth: 4, uppercase: true });
               const stepHex = Formatter.hex(state.currentLine, { padWidth: 2, uppercase: true });
 
-              const channelStrings = [0, 1, 2].map((ch) => {
+              const channelStrings = channelIds.map((_, ch) => {
                 const noteOnRow = notes[ch];
                 const volumeOnRow = volumes[ch];
 
@@ -261,7 +253,7 @@ export function useSequencerIntegration({
                 return `${noteText} ${safeInst} ${volText}`;
               });
 
-              const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings[0]} | ${channelStrings[1]} | ${channelStrings[2]} |`;
+              const debugLine = `${timeStr} | ${deltaStr} | ${cycleHex} | ${stepHex} | ${channelStrings.join(' | ')} |`;
               setTimeout(() => console.log(debugLine), 0);
               debugLastRowRef.current = {
                 pattern: effectivePatternIndex,
@@ -273,12 +265,22 @@ export function useSequencerIntegration({
             }
           }
 
+          const chip2Engine = ym2149Ref2?.current ?? null;
           ym2149.beginBatch();
+          chip2Engine?.beginBatch();
           try {
-            for (let ch = 0; ch < 3; ch++) {
+            for (let ch = 0; ch < channelCount; ch++) {
+              const target =
+                ch < SINGLE_CHIP_CHANNEL_COUNT
+                  ? { engine: ym2149, localChannel: ch }
+                  : { engine: chip2Engine, localChannel: ch - SINGLE_CHIP_CHANNEL_COUNT };
+              if (!target.engine) {
+                continue;
+              }
+              const { engine: targetEngine, localChannel } = target;
+
               if (channelMutes[ch]) {
-                const volumeRegister = 8 + ch;
-                ym2149.writeRegister(volumeRegister, 0x00);
+                targetEngine.writeRegister(8 + localChannel, 0x00);
                 continue;
               }
 
@@ -317,8 +319,8 @@ export function useSequencerIntegration({
                   channelEnvelopeStepRef.current[ch] = 0;
                   channelSubTickRef.current[ch] = 0;
                   updateChannelWithInstrument(
-                    ym2149,
-                    ch,
+                    targetEngine,
+                    localChannel,
                     null,
                     instrumentLookup,
                     currentInstrument,
@@ -349,8 +351,8 @@ export function useSequencerIntegration({
                 channelEnvelopeStepRef.current[ch] = 0;
                 channelSubTickRef.current[ch] = 0;
                 updateChannelWithInstrument(
-                  ym2149,
-                  ch,
+                  targetEngine,
+                  localChannel,
                   null,
                   instrumentLookup,
                   currentInstrument,
@@ -443,8 +445,8 @@ export function useSequencerIntegration({
                 const volumeModifier = channelVolumeModifierRef.current[ch];
 
                 updateChannelWithInstrument(
-                  ym2149,
-                  ch,
+                  targetEngine,
+                  localChannel,
                   activeNote,
                   instrumentLookup,
                   currentInstrument,
@@ -487,6 +489,7 @@ export function useSequencerIntegration({
             }
           } finally {
             ym2149.endBatch();
+            chip2Engine?.endBatch();
           }
         }
       }
@@ -496,6 +499,7 @@ export function useSequencerIntegration({
       playlistEntries,
       patternsById,
       channelMutes,
+      channelCount,
       channelSubTickRef,
       channelEnvelopeStepRef,
       lastNotesRef,
@@ -517,6 +521,7 @@ export function useSequencerIntegration({
       setPosition,
       currentInstrument,
       ym2149Ref,
+      ym2149Ref2,
       midiHelpersRef,
       instrumentLookup,
     ],

@@ -4,7 +4,12 @@ import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../../co
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat.ts';
 import { Formatter } from '../format/formatters.ts';
 import { formatInstrumentSlotId } from '../instrument/instrumentSelection.ts';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK, SECOND_CHIP_CHANNEL_IDS } from '../../constants/song.ts';
+import {
+  DEFAULT_SONG_CHIP,
+  DEFAULT_SONG_FRAME,
+  DEFAULT_SONG_CLOCK,
+  SECOND_CHIP_CHANNEL_IDS,
+} from '../../constants/song.ts';
 import { normalizeSongStereo } from './songStereo.ts';
 import { songChipCount } from './songChips.ts';
 import { isEnvelopeZeroDefault, trimEnvelope } from '../envelope/envelopeUtils.ts';

@@ -6,7 +6,7 @@ import {
   normalizeSongForExport,
   resolveExportTiming,
 } from './core.ts';
-import { simulateSong } from '../utils/playback/playbackSimulation.ts';
+import { simulateSong, type SimulationFrame } from '../utils/playback/playbackSimulation.ts';
 import { compressZX0 } from '../utils/compression/zx0.ts';
 
 // Number of YM2149 registers captured per frame (R0-R13).
@@ -89,13 +89,14 @@ function buildMaxInfoChunk(song: Song): number[] | null {
 function captureMaxFrames(
   song: Song,
   chipClock: number,
+  chipStream: 1 | 2 = 1,
 ): { frames: number[][]; frameCount: number } {
   const frames: number[][] = [];
 
   simulateSong(
     song,
     (frame) => {
-      const regs = frame.registers;
+      const regs = regsForFrame(frame, chipStream);
       const snapshot: number[] = new Array(YM_REGISTER_COUNT).fill(0);
       for (let reg = 0; reg < YM_REGISTER_COUNT; reg++) {
         const value = regs[reg];
@@ -185,8 +186,9 @@ function buildMaxStream(
   song: Song,
   strategy: ExportStrategy,
   chipClock: number,
+  chipStream: 1 | 2 = 1,
 ): { streamFormat: number; streamData: number[]; frameCount: number } {
-  const { frames, frameCount } = captureMaxFrames(song, chipClock);
+  const { frames, frameCount } = captureMaxFrames(song, chipClock, chipStream);
 
   if (strategy === 'simple') {
     return { streamFormat: 0x08, streamData: buildRaw8Stream(frames), frameCount };
@@ -198,13 +200,23 @@ function buildMaxStream(
   return { streamFormat: 0x07, streamData, frameCount };
 }
 
-export function exportSongToMax(song: Song, strategy: ExportStrategy = 'simple'): MaxExportResult {
+// Chip-2 register stream selection: register-log formats carry one AY/YM
+// stream, so the exporter emits the selected chip's file.
+const regsForFrame = (frame: SimulationFrame, chip?: 1 | 2) =>
+  chip === 2 && frame.registers2 ? frame.registers2 : frame.registers;
+
+export function exportSongToMax(
+  song: Song,
+  strategy: ExportStrategy = 'simple',
+  chipStream: 1 | 2 = 1,
+): MaxExportResult {
   const normalizedSong = normalizeSongForExport(song);
   const { frameRate, chipClock } = resolveExportTiming(normalizedSong);
   const { streamFormat, streamData, frameCount } = buildMaxStream(
     normalizedSong,
     strategy,
     chipClock,
+    chipStream,
   );
 
   const uncompressedSize = streamData.length;

@@ -1,5 +1,5 @@
 import type { NavigationSection } from '../../constants/navigation.ts';
-import type { Note, Pattern, Step } from '../../synth/SoundDriver.ts';
+import type { Note, Pattern, Step, SongChannelId } from '../../synth/SoundDriver.ts';
 
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 
@@ -27,13 +27,13 @@ export function stepLineIndex(currentLine: number, patternLength: number, delta:
   return wrapIndex(currentLine + delta, patternLength);
 }
 
-export function getPreviousTrackSection(trackId: 'A' | 'B' | 'C'): NavigationSection {
+export function getPreviousTrackSection(trackId: SongChannelId): NavigationSection {
   if (trackId === 'A') return 'trackC';
   if (trackId === 'B') return 'trackA';
   return 'trackB';
 }
 
-export function getNextTrackSection(trackId: 'A' | 'B' | 'C'): NavigationSection {
+export function getNextTrackSection(trackId: SongChannelId): NavigationSection {
   if (trackId === 'A') return 'trackB';
   if (trackId === 'B') return 'trackC';
   return 'trackA';

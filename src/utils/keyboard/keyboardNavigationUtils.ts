@@ -1,13 +1,17 @@
 import type { NavigationSection } from '../../constants/navigation.ts';
 
-export type TrackNavigationSection = 'trackA' | 'trackB' | 'trackC';
+export type TrackNavigationSection = Extract<NavigationSection, `track${string}`>;
+
+export const isTrackNavigationSection = (
+  section: NavigationSection,
+): section is TrackNavigationSection => section.startsWith('track');
 
 export function getNextNavigationSection(
   activeSection: NavigationSection,
   lastTrackSection: TrackNavigationSection,
   navigationOrder: readonly NavigationSection[],
 ): NavigationSection {
-  if (activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC') {
+  if (isTrackNavigationSection(activeSection)) {
     return 'mode';
   }
 
@@ -25,7 +29,7 @@ export function getPreviousNavigationSection(
   lastTrackSection: TrackNavigationSection,
   navigationOrder: readonly NavigationSection[],
 ): NavigationSection {
-  if (activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC') {
+  if (isTrackNavigationSection(activeSection)) {
     return 'commands';
   }
 

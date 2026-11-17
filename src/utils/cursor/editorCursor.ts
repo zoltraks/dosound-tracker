@@ -3,8 +3,9 @@
 // track row, and track column).
 
 import { NAVIGATION_ORDER, type NavigationSection } from '../../constants/navigation.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
 
-export type CursorTrack = 'A' | 'B' | 'C';
+export type CursorTrack = SongChannelId;
 export type CursorColumn = 'note' | 'volume';
 
 export interface EditorCursor {
@@ -15,7 +16,7 @@ export interface EditorCursor {
   column: CursorColumn;
 }
 
-const TRACKS: readonly CursorTrack[] = ['A', 'B', 'C'];
+const TRACKS: readonly CursorTrack[] = ['A', 'B', 'C', 'D', 'E', 'F'];
 const COLUMNS: readonly CursorColumn[] = ['note', 'volume'];
 
 function isTrack(value: unknown): value is CursorTrack {

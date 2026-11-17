@@ -21,6 +21,7 @@ interface HeaderPanelProps {
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   ym2149: SoundEngine | null;
+  ym2149ForChannel?: (channel: number) => SoundEngine | null;
   currentInstrument: Instrument;
   previewChannel: number;
   tickIntervalMs?: number;
@@ -47,6 +48,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
   activeSection,
   setActiveSection,
   ym2149,
+  ym2149ForChannel,
   currentInstrument,
   previewChannel,
   tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
@@ -66,7 +68,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
     }
   };
 
-  const preview = usePreviewEnvelope({ ym2149 });
+  const preview = usePreviewEnvelope({ ym2149, ym2149ForChannel });
 
   const stopPreview = () => {
     preview.stop();

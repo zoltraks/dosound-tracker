@@ -5,6 +5,7 @@ settings:
     textScale: "100"
     trackBackground: true
     startupTone: true
+    visibleTracks: 3
   editor:
     restoreCursor: true
     restoreView: true
@@ -12,3 +13,4 @@ settings:
     confirmPaste: false
   sound:
     engine: internal
+    dualChip: false

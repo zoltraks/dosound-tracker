@@ -2,10 +2,10 @@
 
 ## Document Information
 
-|             |                                                                                                                                                              |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Version     | 1.6.4                                                                                                                                                        |
-| Review Date | 2026-11-17                                                                                                                                                   |
+|             |                                                                                                                                                                                           |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version     | 1.6.4                                                                                                                                                                                     |
+| Review Date | 2026-11-17                                                                                                                                                                                |
 | Commands    | `git log`, `git status --short`, `git diff`, `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`, `npm test`, `npm run test:coverage`, `npm run test:e2e`, `npm audit` |
 
 ## Scope
@@ -22,14 +22,14 @@ window's scope.
 
 ## Recorded Work
 
-| Document                                                   | Kind        | Status | Result                                                            |
-| ---------------------------------------------------------- | ----------- | ------ | ----------------------------------------------------------------- |
-| `docs/change/1.6.4/dual-chip-song-data.md`                 | Change      | Done   | Implemented and verified this run                                 |
-| `docs/plan/1.6.4/dual-chip-song-data-implementation.md`    | Plan        | Done   | Written before source edits per the pipeline                      |
-| `docs/refactoring/1.6.4/REFACTORING.md` + `ASSESSMENT.md`  | Refactoring | Done   | Pass - channel-key literals consolidated into shared constants    |
-| `docs/change/1.7.0/dual-engine-audio-panning.md`           | Change      | Filed  | Deferred to the 1.7.0 window by design                           |
-| `docs/change/1.7.0/dual-chip-track-ui.md`                  | Change      | Filed  | Deferred to the 1.7.0 window by design                           |
-| `docs/change/1.7.0/dual-chip-exports-panels.md`            | Change      | Filed  | Deferred to the 1.7.0 window by design                           |
+| Document                                                  | Kind        | Status | Result                                                         |
+| --------------------------------------------------------- | ----------- | ------ | -------------------------------------------------------------- |
+| `docs/change/1.6.4/dual-chip-song-data.md`                | Change      | Done   | Implemented and verified this run                              |
+| `docs/plan/1.6.4/dual-chip-song-data-implementation.md`   | Plan        | Done   | Written before source edits per the pipeline                   |
+| `docs/refactoring/1.6.4/REFACTORING.md` + `ASSESSMENT.md` | Refactoring | Done   | Pass - channel-key literals consolidated into shared constants |
+| `docs/change/1.7.0/dual-engine-audio-panning.md`          | Change      | Filed  | Deferred to the 1.7.0 window by design                         |
+| `docs/change/1.7.0/dual-chip-track-ui.md`                 | Change      | Filed  | Deferred to the 1.7.0 window by design                         |
+| `docs/change/1.7.0/dual-chip-exports-panels.md`           | Change      | Filed  | Deferred to the 1.7.0 window by design                         |
 
 ## Repository Analysis
 
@@ -58,11 +58,11 @@ window's scope.
 
 ## Findings
 
-| Severity | Finding                                                                                          | Evidence                                    | Action                                                        |
-| -------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------- | ------------------------------------------------------------- |
-| Minor    | `usePlaylistOperations.handleCloneLine` duplicates A/B/C patterns but shares D/E/F references    | `usePlaylistOperations.ts` ~line 300         | Recorded for the track-UI record; data is preserved, not lost |
-| Info     | Exporters read `frame.registers` only, so two-chip songs export chip 1 until the export record    | `src/exports/*.ts`                          | By design - deferred to `dual-chip-exports-panels`            |
-| Info     | Engines slice pans to three channels; the six-tuple is forward-compatible                          | `YM2149.ts`, `AyumiEngine.ts`               | By design - deferred to `dual-engine-audio-panning`           |
+| Severity | Finding                                                                                        | Evidence                             | Action                                                        |
+| -------- | ---------------------------------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------- |
+| Minor    | `usePlaylistOperations.handleCloneLine` duplicates A/B/C patterns but shares D/E/F references  | `usePlaylistOperations.ts` ~line 300 | Recorded for the track-UI record; data is preserved, not lost |
+| Info     | Exporters read `frame.registers` only, so two-chip songs export chip 1 until the export record | `src/exports/*.ts`                   | By design - deferred to `dual-chip-exports-panels`            |
+| Info     | Engines slice pans to three channels; the six-tuple is forward-compatible                      | `YM2149.ts`, `AyumiEngine.ts`        | By design - deferred to `dual-engine-audio-panning`           |
 
 ## Verification Evidence
 

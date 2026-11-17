@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import type { TransposeOptions, TransposeResult } from '../song/useTrackOperations.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
 
 export interface UseTransposeDialogParams {
   transposeScope: 'line' | 'song';
@@ -16,7 +17,7 @@ export interface UseTransposeDialogParams {
   setTransposeSummary: (value: string) => void;
   playlistLength: number;
   currentPatternIndex: number;
-  targetTrackId: 'A' | 'B' | 'C';
+  targetTrackId: SongChannelId;
   currentInstrumentId: string;
   applyTranspose: (options: TransposeOptions) => TransposeResult | null;
 }

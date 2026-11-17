@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { logger } from '../../utils/log/logger.ts';
-import type { Song, Pattern, Step } from '../../synth/SoundDriver.ts';
+import type { Song, Pattern, Step, SongChannelId } from '../../synth/SoundDriver.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
+import { isTrackNavigationSection } from '../../utils/keyboard/keyboardNavigationUtils.ts';
 import {
   cloneTrackStep,
   emptyTrackStep,
@@ -36,8 +37,8 @@ export type { TrackPasteMode, TransposeOptions, TransposeResult };
 interface UseTrackOperationsArgs {
   song: Song;
   activeSection: NavigationSection;
-  lastTrackId: 'A' | 'B' | 'C';
-  getCurrentPatternForTrack: (trackId: 'A' | 'B' | 'C') => Pattern | null;
+  lastTrackId: SongChannelId;
+  getCurrentPatternForTrack: (trackId: SongChannelId) => Pattern | null;
   formatNoteKey: (note: string, octave: number) => string;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
   updateSong: (patch: Partial<Song>) => void;
@@ -54,7 +55,7 @@ interface UseTrackOperationsResult {
   trackClipboardError: string;
   setTrackClipboardError: (value: string) => void;
   trackSelection: TrackSelection | null;
-  handleExtendSelection: (trackId: 'A' | 'B' | 'C', delta: number) => void;
+  handleExtendSelection: (trackId: SongChannelId, delta: number) => void;
   handleCopyTrack: () => Promise<void>;
   handleCutTrack: () => Promise<void>;
   handleCloneTrack: () => void;
@@ -95,18 +96,18 @@ export function useTrackOperations({
     writeTrackSelection(trackSelection);
   }, [trackSelection]);
 
-  const getActiveTrackId = useCallback((): 'A' | 'B' | 'C' => {
-    if (activeSection === 'trackA') return 'A';
-    if (activeSection === 'trackB') return 'B';
-    if (activeSection === 'trackC') return 'C';
+  const getActiveTrackId = useCallback((): SongChannelId => {
+    const channel = activeSection.slice(5);
+    if (['A', 'B', 'C', 'D', 'E', 'F'].includes(channel)) {
+      return channel as SongChannelId;
+    }
     return lastTrackId;
   }, [activeSection, lastTrackId]);
 
-  const isTrackSectionActive =
-    activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
+  const isTrackSectionActive = isTrackNavigationSection(activeSection);
 
   const getCurrentPatternOrReport = useCallback(
-    (trackId: 'A' | 'B' | 'C'): Pattern | null => {
+    (trackId: SongChannelId): Pattern | null => {
       const pattern = getCurrentPatternForTrack(trackId);
       if (!pattern) {
         setTrackClipboardError('No pattern is assigned for the current track at this position.');
@@ -118,7 +119,7 @@ export function useTrackOperations({
   );
 
   const handleExtendSelection = useCallback(
-    (trackId: 'A' | 'B' | 'C', delta: number) => {
+    (trackId: SongChannelId, delta: number) => {
       const patternLength = resolvePatternLength(song.length);
       const next = extendTrackSelection(
         trackSelection,
@@ -136,7 +137,7 @@ export function useTrackOperations({
   );
 
   const copyTrackToClipboard = useCallback(
-    async (trackId: 'A' | 'B' | 'C', range?: { start: number; end: number }) => {
+    async (trackId: SongChannelId, range?: { start: number; end: number }) => {
       try {
         const clipboard = getClipboardApiOrReport('write', setTrackClipboardError);
         if (!clipboard) {

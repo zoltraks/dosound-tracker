@@ -35,7 +35,7 @@ describe('parseEditorCursor', () => {
   });
 
   it('returns null when the track is invalid', () => {
-    expect(parseEditorCursor(JSON.stringify({ ...validCursor, track: 'D' }))).toBeNull();
+    expect(parseEditorCursor(JSON.stringify({ ...validCursor, track: 'G' }))).toBeNull();
   });
 
   it('returns null when the column is invalid', () => {

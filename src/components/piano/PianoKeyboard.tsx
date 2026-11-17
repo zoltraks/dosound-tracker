@@ -29,6 +29,7 @@ interface PianoKeyboardProps {
   currentOctave: number;
   onOctaveChange: (octave: number) => void;
   ym2149: SoundEngine | null;
+  ym2149ForChannel?: (channel: number) => SoundEngine | null;
   currentInstrument: Instrument;
   previewChannel: number;
   tickIntervalMs?: number;
@@ -54,6 +55,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   currentOctave,
   onOctaveChange,
   ym2149,
+  ym2149ForChannel,
   currentInstrument,
   previewChannel,
   tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
@@ -72,7 +74,7 @@ export const PianoKeyboard: React.FC<PianoKeyboardProps> = ({
   const isActive = activeSection === 'piano';
   const [octaveSpan, setOctaveSpan] = useState(PIANO_MIN_OCTAVE_SPAN);
 
-  const preview = usePreviewEnvelope({ ym2149 });
+  const preview = usePreviewEnvelope({ ym2149, ym2149ForChannel });
 
   const pianoKeys = generatePianoKeys(octaveSpan, currentOctave);
 

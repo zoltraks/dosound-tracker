@@ -14,6 +14,7 @@ describe('settingsYaml', () => {
         textScale: '150' as const,
         trackBackground: false,
         startupTone: false,
+        visibleTracks: 3 as const,
       },
       editor: {
         restoreCursor: false,
@@ -21,7 +22,7 @@ describe('settingsYaml', () => {
         pasteTrackMode: 'overwriteAll' as const,
         confirmPaste: true,
       },
-      sound: { engine: 'ayumi' as const },
+      sound: { engine: 'ayumi' as const, dualChip: false },
     };
     const parsed = parseSettingsFromYaml(buildSettingsYaml(settings), DEFAULT_SETTINGS);
     try {
@@ -76,6 +77,7 @@ describe('settingsYaml', () => {
         textScale: '125' as const,
         trackBackground: false,
         startupTone: true,
+        visibleTracks: 3 as const,
       },
       editor: {
         restoreCursor: false,
@@ -83,7 +85,7 @@ describe('settingsYaml', () => {
         pasteTrackMode: 'overwriteEmpty' as const,
         confirmPaste: true,
       },
-      sound: { engine: 'ayumi' as const },
+      sound: { engine: 'ayumi' as const, dualChip: false },
     };
     const parsed = parseSettingsFromYaml(
       'settings:\n  version: 1\n  general:\n    theme: dark\n',
@@ -91,7 +93,13 @@ describe('settingsYaml', () => {
     );
     try {
       expect(parsed).toEqual({
-        general: { theme: 'dark', textScale: '125', trackBackground: false, startupTone: true },
+        general: {
+          theme: 'dark',
+          textScale: '125',
+          trackBackground: false,
+          startupTone: true,
+          visibleTracks: 3,
+        },
         editor: fallback.editor,
         sound: fallback.sound,
       });

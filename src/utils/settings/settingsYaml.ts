@@ -20,6 +20,7 @@ export const buildSettingsYaml = (settings: SettingsValues): string => {
         textScale: settings.general.textScale,
         trackBackground: settings.general.trackBackground,
         startupTone: settings.general.startupTone,
+        visibleTracks: settings.general.visibleTracks,
       },
       editor: {
         restoreCursor: settings.editor.restoreCursor,
@@ -29,6 +30,7 @@ export const buildSettingsYaml = (settings: SettingsValues): string => {
       },
       sound: {
         engine: settings.sound.engine,
+        dualChip: settings.sound.dualChip,
       },
     },
   };

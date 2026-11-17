@@ -1,5 +1,34 @@
 # Changes
 
+## Version 1.6.6
+
+Two-chip songs are now audible, editable, and exportable: the app can
+run two AY/YM chips at once, the tracker shows three or six channels,
+and every export path handles the second chip deliberately.
+
+- **Dual engines**: enabling the new `dualChip` sound setting runs one
+  `SoundEngine` per chip for both the internal YM2149 and Ayumi
+  drivers; channels A-C play on chip 1 and D-F on chip 2, chip 1 pans
+  left and chip 2 right by default through the song's six-channel
+  `stereo` model, and pan changes reach the live engines without a
+  reload.
+- **Track view**: the new `visibleTracks` setting picks three or six
+  visible tracks; on a two-chip song in three-track mode an A-C/D-F
+  switcher reaches every channel, and focus, navigation, playlist
+  columns, previews, and MIDI input all follow the six-channel model.
+- **Channel mutes**: the EQ mute toggles cover all six channels and
+  persist across reloads, upgrading stored three-channel state.
+- **Exports**: the export modal gains an `AY/YM stream` selector -
+  ASM/DATA, BIN, VGM, and MAX emit the chosen chip's register stream,
+  the register dump writes labelled `music:` and `music2:` sections,
+  WAV mixes both chips, MIDI writes up to six tracks, and MOD exports
+  A-C with a warning for the unrepresentable second chip.
+- **Panels**: the EQ panel shows per-channel meters from both engines
+  and the DUMP panel switches between chip 1 and chip 2 register
+  readouts.
+- **Bundle**: the picker, export, and paste-track modals now load on
+  demand, keeping the entry chunk under the 600 kB budget.
+
 ## Version 1.6.5
 
 The song data model now supports two AY/YM chips and six channels,

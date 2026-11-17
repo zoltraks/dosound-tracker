@@ -52,6 +52,7 @@ function setup(currentInstrument = lead) {
         normalizeInstrumentId,
         parseBaseKeyString: () => null,
         ym2149Ref: { current: null },
+        ym2149Ref2: { current: null },
       });
       return {
         ...actions,

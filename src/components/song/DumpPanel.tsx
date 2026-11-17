@@ -5,6 +5,7 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 
 interface DumpPanelProps {
   ym2149: SoundEngine | null;
+  ym2149b?: SoundEngine | null;
 }
 
 interface DerivedRegisters {
@@ -18,8 +19,10 @@ interface DerivedRegisters {
   noisePeriod: number;
 }
 
-export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
+export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149, ym2149b }) => {
   const ym2149Ref = useRef<SoundEngine | null>(null);
+  const ym2149bRef = useRef<SoundEngine | null>(null);
+  const [activeChip, setActiveChip] = useState<0 | 1>(0);
   const [derived, setDerived] = useState<DerivedRegisters>({
     toneA: 0,
     toneB: 0,
@@ -33,11 +36,13 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
 
   useEffect(() => {
     ym2149Ref.current = ym2149;
-  }, [ym2149]);
+    ym2149bRef.current = ym2149b ?? null;
+  }, [ym2149, ym2149b]);
 
   useEffect(() => {
     const updateInterval = window.setInterval(() => {
-      const currentYm2149 = ym2149Ref.current;
+      const currentYm2149 =
+        activeChip === 0 ? ym2149Ref.current : (ym2149bRef.current ?? ym2149Ref.current);
       if (!currentYm2149) {
         setDerived((prev) => {
           if (
@@ -92,7 +97,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
     }, 100);
 
     return () => clearInterval(updateInterval);
-  }, []);
+  }, [activeChip]);
 
   const formatHex = (value: number, width: number) => {
     return Formatter.hex(value, { padWidth: width });
@@ -183,6 +188,24 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149 }) => {
 
   return (
     <div className="dump-panel">
+      {ym2149b && (
+        <div className="chip-switcher" role="group" aria-label="Dump chip">
+          {([0, 1] as const).map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              className={`chip-switcher-button ${activeChip === chip ? 'active' : ''}`}
+              aria-pressed={activeChip === chip}
+              onClick={(event) => {
+                event.stopPropagation();
+                setActiveChip(chip);
+              }}
+            >
+              {chip === 0 ? 'CHIP 1' : 'CHIP 2'}
+            </button>
+          ))}
+        </div>
+      )}
       <div
         className="dump-header"
         role="button"

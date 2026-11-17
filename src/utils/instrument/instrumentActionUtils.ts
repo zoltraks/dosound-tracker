@@ -1,14 +1,23 @@
 import type { NavigationSection } from '../../constants/navigation.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
+
+const TRACK_SECTION_CHANNEL: Record<string, SongChannelId> = {
+  trackA: 'A',
+  trackB: 'B',
+  trackC: 'C',
+  trackD: 'D',
+  trackE: 'E',
+  trackF: 'F',
+};
 
 export function getInstrumentPlaybackChannel(
   activeSection: NavigationSection,
-  lastTrackId: 'A' | 'B' | 'C',
-): 0 | 1 | 2 {
-  if (activeSection === 'trackA') return 0;
-  if (activeSection === 'trackB') return 1;
-  if (activeSection === 'trackC') return 2;
-
-  return lastTrackId === 'B' ? 1 : lastTrackId === 'C' ? 2 : 0;
+  lastTrackId: SongChannelId,
+): number {
+  const channelId = TRACK_SECTION_CHANNEL[activeSection] ?? lastTrackId;
+  const index = SONG_CHANNEL_IDS.indexOf(channelId);
+  return index >= 0 ? index : 0;
 }
 
 export interface InstrumentRemovalSummaryArgs {

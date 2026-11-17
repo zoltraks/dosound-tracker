@@ -5,6 +5,7 @@ settings:
     textScale: "150"
     trackBackground: false
     startupTone: false
+    visibleTracks: 3
   editor:
     restoreCursor: false
     restoreView: true
@@ -12,3 +13,4 @@ settings:
     confirmPaste: true
   sound:
     engine: ayumi
+    dualChip: false

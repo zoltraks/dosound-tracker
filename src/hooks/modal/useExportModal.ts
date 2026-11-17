@@ -27,11 +27,13 @@ export interface UseExportModalParams {
 export interface UseExportModalResult {
   pendingExportType: ExportType;
   pendingExportStrategy: ExportStrategy;
+  pendingChipStream: 1 | 2;
   handleOpenExport: () => void;
   handleCancelExport: () => void;
   handleConfirmExport: () => void;
   handleExportTypeChange: (type: ExportType) => void;
   handleExportStrategyChange: (strategy: ExportStrategy) => void;
+  handleChipStreamChange: (chip: 1 | 2) => void;
   handleExportFormatFromModal: (format: ExportFormat) => void;
 }
 
@@ -56,10 +58,12 @@ export function useExportModal({
   const [pendingExportType, setPendingExportType] = useState<ExportType>(exportType);
   const [pendingExportStrategy, setPendingExportStrategy] =
     useState<ExportStrategy>(exportStrategy);
+  const [pendingChipStream, setPendingChipStream] = useState<1 | 2>(1);
 
   const handleOpenExport = useCallback(() => {
     setPendingExportType(exportType);
     setPendingExportStrategy(exportStrategy);
+    setPendingChipStream(1);
     setIsExportModalOpen(true);
   }, [exportType, exportStrategy]);
 
@@ -81,6 +85,10 @@ export function useExportModal({
     setPendingExportStrategy(strategy);
   }, []);
 
+  const handleChipStreamChange = useCallback((chip: 1 | 2) => {
+    setPendingChipStream(chip);
+  }, []);
+
   const buildExportContext = useCallback(
     (): ExportContext => ({
       type: pendingExportType,
@@ -88,10 +96,12 @@ export function useExportModal({
       playlistIndex: clampedPlaybackPosition,
       currentLine: sharedCurrentLine,
       instrument: currentInstrument ?? null,
+      chipStream: pendingChipStream,
     }),
     [
       pendingExportType,
       pendingExportStrategy,
+      pendingChipStream,
       clampedPlaybackPosition,
       sharedCurrentLine,
       currentInstrument,
@@ -129,6 +139,8 @@ export function useExportModal({
   return {
     pendingExportType,
     pendingExportStrategy,
+    pendingChipStream,
+    handleChipStreamChange,
     handleOpenExport,
     handleCancelExport,
     handleConfirmExport,

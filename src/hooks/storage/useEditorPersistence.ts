@@ -10,21 +10,21 @@ import {
   type EditorCursor,
 } from '../../utils/cursor/editorCursor.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
-import type { Instrument, Song } from '../../synth/SoundDriver.ts';
+import type { Instrument, Song, SongChannelId } from '../../synth/SoundDriver.ts';
 
 export interface UseEditorPersistenceParams {
-  channelMutes: [boolean, boolean, boolean];
+  channelMutes: boolean[];
   instrumentOctaves: Record<string, number>;
   trackBackgroundEnabled: boolean;
   currentSong: Song;
   currentInstrument: Instrument;
-  setLastTrackId: Dispatch<SetStateAction<'A' | 'B' | 'C'>>;
+  setLastTrackId: Dispatch<SetStateAction<SongChannelId>>;
   setActiveSection: (section: NavigationSection) => void;
   setPosition: (pattern: number, line: number, tick?: number) => void;
   setSharedCurrentLine: (line: number) => void;
   setCurrentTrackColumn: Dispatch<SetStateAction<'note' | 'volume'>>;
   activeSection: NavigationSection;
-  targetTrackId: 'A' | 'B' | 'C';
+  targetTrackId: SongChannelId;
   sequencerIsPlaying: boolean;
   sequencerCurrentPattern: number;
   sharedCurrentLine: number;

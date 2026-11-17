@@ -32,7 +32,16 @@ import { normalizeSongSpeed } from '../utils/song/songSpeed.ts';
  * @param isComplexDumpMode Whether to use complex dump mode (includes detailed comments and optimization)
  * @returns Assembly formatted string
  */
-export function exportToAssembly(song: Song, strategy: ExportStrategy = 'complex'): string {
+// Register-stream selection: chip 2 exports read the additive second
+// register file; single-chip songs and chip 1 keep `frame.registers`.
+const regsForChip = (frame: SimulationFrame, chip?: 1 | 2) =>
+  chip === 2 && frame.registers2 ? frame.registers2 : frame.registers;
+
+export function exportToAssembly(
+  song: Song,
+  strategy: ExportStrategy = 'complex',
+  chipStream: 1 | 2 = 1,
+): string {
   const normalizedSong = normalizeSongForExport(song);
   const chipClock = normalizedSong.clock ?? YM_CLOCK;
 
@@ -50,13 +59,14 @@ export function exportToAssembly(song: Song, strategy: ExportStrategy = 'complex
     { clock: chipClock },
   );
 
-  return formatFramesToAssembly(frames, normalizedSong, strategy);
+  return formatFramesToAssembly(frames, normalizedSong, strategy, chipStream);
 }
 
 function formatFramesToAssembly(
   frames: SimulationFrame[],
   song: Song,
   strategy: ExportStrategy,
+  chipStream: 1 | 2 = 1,
 ): string {
   const chipClock = song.clock ?? YM_CLOCK;
   let asm = 'music:\n\n\t; START\n\n';
@@ -78,7 +88,7 @@ function formatFramesToAssembly(
 
     for (let i = 0; i < frames.length; i++) {
       const frame = frames[i];
-      const regs = frame.registers;
+      const regs = regsForChip(frame, chipStream);
       const lineIndex = frame.lineIndex;
       const toneMeta = frame.toneMeta || {};
 
@@ -183,7 +193,7 @@ function formatFramesToAssembly(
 
     for (let i = 0; i < frames.length; i++) {
       const frame = frames[i];
-      const regs = frame.registers;
+      const regs = regsForChip(frame, chipStream);
       const lineIndex = frame.lineIndex;
       const toneMeta = frame.toneMeta || {};
 
@@ -228,7 +238,7 @@ function formatFramesToAssembly(
     // Silence only channels whose last written volume is non-zero. Every
     // strategy emits all three volume registers at frame 0, so the final
     // frame's snapshot equals the last written values.
-    const lastFrameRegs = frames[frames.length - 1].registers;
+    const lastFrameRegs = regsForChip(frames[frames.length - 1], chipStream);
     for (let ch = 0; ch < 3; ch++) {
       const lastVolume = lastFrameRegs[0x08 + ch] ?? 0;
       if (lastVolume !== 0) {
@@ -641,27 +651,15 @@ export function downloadAssemblyFile(content: string, filename: string = 'music.
   downloadFile(content, filename, 'text/plain;charset=utf-8');
 }
 
-export function exportSongRegisterDump(song: Song): { content: string; cycleCount: number } {
-  const frames: SimulationFrame[] = [];
-
-  simulateSong(song, (frame) => {
-    // Mimic the behavior of the original exportSongRegisterDump which ran at half speed
-    // (or rather, outputted one dump line for every 2 ticks of the 50Hz playback).
-    // The original logic iterated `ticksPerRow = speed / 2` and outputted a line each iteration.
-    // The simulation runs at full `speed`.
-    // We capture frames at tick 0, 2, 4...
-    if (frame.tick === 0 || frame.tick % 2 === 0) {
-      frames.push(frame);
-    }
-  });
-
+const dumpLinesForStream = (
+  frames: SimulationFrame[],
+  pick: (frame: SimulationFrame) => SimulationFrame['registers'],
+): { lines: string[]; cycleCount: number } => {
   const lines: string[] = [];
   let cycleCount = 0;
 
-  lines.push('music:');
-
   for (const frame of frames) {
-    const regs = frame.registers;
+    const regs = pick(frame);
 
     const taFine = regs[0x00] ?? 0;
     const taCoarse = regs[0x01] ?? 0;
@@ -680,6 +678,39 @@ export function exportSongRegisterDump(song: Song): { content: string; cycleCoun
     const line = '\t' + 'dc.b ' + bytes.map((b) => `$${Formatter.hex(b)}`).join(',');
     lines.push(line);
     cycleCount++;
+  }
+
+  return { lines, cycleCount };
+};
+
+export function exportSongRegisterDump(song: Song): { content: string; cycleCount: number } {
+  const frames: SimulationFrame[] = [];
+
+  simulateSong(song, (frame) => {
+    // Mimic the behavior of the original exportSongRegisterDump which ran at half speed
+    // (or rather, outputted one dump line for every 2 ticks of the 50Hz playback).
+    // The original logic iterated `ticksPerRow = speed / 2` and outputted a line each iteration.
+    // The simulation runs at full `speed`.
+    // We capture frames at tick 0, 2, 4...
+    if (frame.tick === 0 || frame.tick % 2 === 0) {
+      frames.push(frame);
+    }
+  });
+
+  const hasSecondChip = frames.some((frame) => frame.registers2 !== undefined);
+  const chip1 = dumpLinesForStream(frames, (frame) => frame.registers);
+
+  const lines: string[] = ['music:'];
+  lines.push(...chip1.lines);
+  let cycleCount = chip1.cycleCount;
+
+  // Two-chip songs carry a second register stream: emit it as its own
+  // labelled section so no channel data is dropped from the dump.
+  if (hasSecondChip) {
+    const chip2 = dumpLinesForStream(frames, (frame) => frame.registers2 ?? frame.registers);
+    lines.push('music2:');
+    lines.push(...chip2.lines);
+    cycleCount += chip2.cycleCount;
   }
 
   const content = lines.join('\n') + (lines.length ? '\n' : '');

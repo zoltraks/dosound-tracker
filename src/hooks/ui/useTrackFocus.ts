@@ -1,9 +1,20 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
+
+const TRACK_SECTION_TO_CHANNEL: Record<string, SongChannelId> = {
+  trackA: 'A',
+  trackB: 'B',
+  trackC: 'C',
+  trackD: 'D',
+  trackE: 'E',
+  trackF: 'F',
+};
 
 export const useTrackFocus = ({ activeSection }: { activeSection: NavigationSection }) => {
-  const [lastTrackId, setLastTrackId] = useState<'A' | 'B' | 'C'>('A');
+  const [lastTrackId, setLastTrackId] = useState<SongChannelId>('A');
   const [currentTrackColumn, setCurrentTrackColumn] = useState<'note' | 'volume'>('note');
   const [trackFocusRevision, setTrackFocusRevision] = useState(0);
   const [instrumentPanelFocusRevision, setInstrumentPanelFocusRevision] = useState(0);
@@ -22,39 +33,26 @@ export const useTrackFocus = ({ activeSection }: { activeSection: NavigationSect
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (activeSection === 'trackA') {
-      setLastTrackId('A');
-    } else if (activeSection === 'trackB') {
-      setLastTrackId('B');
-    } else if (activeSection === 'trackC') {
-      setLastTrackId('C');
+    const channel = TRACK_SECTION_TO_CHANNEL[activeSection];
+    if (channel) {
+      setLastTrackId(channel);
     }
   }, [activeSection]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const targetTrackId = useMemo<'A' | 'B' | 'C'>(() => {
-    if (activeSection === 'trackA') return 'A';
-    if (activeSection === 'trackB') return 'B';
-    if (activeSection === 'trackC') return 'C';
-    return lastTrackId;
+  const targetTrackId = useMemo<SongChannelId>(() => {
+    return TRACK_SECTION_TO_CHANNEL[activeSection] ?? lastTrackId;
   }, [activeSection, lastTrackId]);
 
   const handleToggleTrackBackground = useCallback(() => {
     setTrackBackgroundEnabled((prev) => !prev);
   }, []);
 
-  const previewChannel =
-    activeSection === 'trackA'
-      ? 0
-      : activeSection === 'trackB'
-        ? 1
-        : activeSection === 'trackC'
-          ? 2
-          : lastTrackId === 'B'
-            ? 1
-            : lastTrackId === 'C'
-              ? 2
-              : 0;
+  const previewChannel = useMemo(() => {
+    const channelId = TRACK_SECTION_TO_CHANNEL[activeSection] ?? lastTrackId;
+    const index = SONG_CHANNEL_IDS.indexOf(channelId);
+    return index >= 0 ? index : 0;
+  }, [activeSection, lastTrackId]);
 
   return {
     lastTrackId,

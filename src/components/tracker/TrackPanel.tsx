@@ -3,9 +3,9 @@ import { Formatter } from '../../utils/format/formatters.ts';
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import type { NavigationSection } from '../../constants/navigation.ts';
 import { KEYBOARD_TO_NOTE } from '../../constants/music.ts';
-import type { Pattern, Note, Instrument, Step } from '../../synth/SoundDriver.ts';
+import type { Pattern, Note, Instrument, Step, SongChannelId } from '../../synth/SoundDriver.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
-import { DEFAULT_SONG_FRAME } from '../../constants/song.ts';
+import { DEFAULT_SONG_FRAME, SONG_CHANNEL_IDS } from '../../constants/song.ts';
 import { TrackLine } from './TrackLine.tsx';
 import { computeEffectiveVolume } from '../../utils/track/trackUtils.ts';
 import {
@@ -31,7 +31,7 @@ import { noteKeyId } from '../../utils/panel/pianoUtils.ts';
 import { isModifierChord } from '../../utils/keyboard/keyboardShortcutUtils.ts';
 
 interface TrackPanelProps {
-  trackId: 'A' | 'B' | 'C';
+  trackId: SongChannelId;
   activeSection: NavigationSection;
   setActiveSection: (section: NavigationSection) => void;
   currentOctave: number;
@@ -41,6 +41,7 @@ interface TrackPanelProps {
   pattern: Pattern | null;
   onPatternChange: (pattern: Pattern) => void;
   ym2149: SoundEngine | null;
+  ym2149ForChannel?: (channel: number) => SoundEngine | null;
   currentInstrumentData: Instrument;
   instruments: Instrument[];
   trackBackgroundEnabled: boolean;
@@ -60,7 +61,7 @@ interface TrackPanelProps {
   ) => void;
   onPreviewMidiNoteOff?: (ymChannel: number) => void;
   onHardStopLivePreview?: (ymChannel: number) => void;
-  onRegisterStopPreview?: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  onRegisterStopPreview?: (trackId: SongChannelId, stopPreview: () => void) => void;
   selection?: { start: number; end: number } | null;
   onExtendSelection?: (delta: number) => void;
   tickIntervalMs?: number;
@@ -78,6 +79,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     pattern,
     onPatternChange,
     ym2149,
+    ym2149ForChannel,
     currentInstrumentData,
     instruments,
     trackBackgroundEnabled,
@@ -111,9 +113,11 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
   // Envelope timing state for preview notes (monophonic per track, piano-like)
   const activePreviewKeyRef = useRef<string | null>(null);
   const pressedNoteKeysRef = useRef<Set<string>>(new Set());
-  const previewChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
+  const previewChannelIndex = SONG_CHANNEL_IDS.indexOf(trackId);
+  const previewChannel = previewChannelIndex >= 0 ? previewChannelIndex : 0;
   const preview = usePreviewEnvelope({
     ym2149,
+    ym2149ForChannel,
     onAutoStop: () => {
       activePreviewKeyRef.current = null;
       if (onPreviewMidiNoteOff) {

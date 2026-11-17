@@ -1,18 +1,19 @@
 import { create } from 'zustand';
 import { DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../../constants/music.ts';
+import { SONG_CHANNEL_COUNT } from '../../constants/song.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { loadUiState } from '../../utils/storage/uiState.ts';
 
 export type UiStoreState = {
   currentOctave: number;
   sharedCurrentLine: number;
-  channelMutes: [boolean, boolean, boolean];
+  channelMutes: boolean[];
 };
 
 export type UiStoreActions = {
   setCurrentOctave: (octave: number) => void;
   setSharedCurrentLine: (line: number) => void;
-  setChannelMutes: (mutes: [boolean, boolean, boolean]) => void;
+  setChannelMutes: (mutes: boolean[]) => void;
   toggleChannelMute: (index: number) => void;
 };
 
@@ -38,27 +39,30 @@ const getInitialOctave = (): number => {
   return DEFAULT_OCTAVE;
 };
 
-const getInitialChannelMutes = (): [boolean, boolean, boolean] => {
+const getInitialChannelMutes = (): boolean[] => {
+  const empty = Array.from({ length: SONG_CHANNEL_COUNT }, () => false);
   if (typeof window === 'undefined') {
-    return [false, false, false];
+    return empty;
   }
 
   try {
     const stored = window.localStorage.getItem(StorageKeys.EQ_MUTES);
-    if (!stored) return [false, false, false];
+    if (!stored) return empty;
     const parsed = JSON.parse(stored);
+    // Stored state may carry the legacy three-entry shape; normalize to the
+    // six-channel layout, padding missing second-chip mutes as unmuted.
     if (
       Array.isArray(parsed) &&
-      parsed.length === 3 &&
+      (parsed.length === SONG_CHANNEL_COUNT || parsed.length === 3) &&
       parsed.every((v) => typeof v === 'boolean')
     ) {
-      return [parsed[0], parsed[1], parsed[2]] as [boolean, boolean, boolean];
+      return Array.from({ length: SONG_CHANNEL_COUNT }, (_, i) => parsed[i] ?? false);
     }
   } catch {
     // ignore
   }
 
-  return [false, false, false];
+  return empty;
 };
 
 export const useUiStore = create<UiStore>((set) => ({
@@ -74,10 +78,10 @@ export const useUiStore = create<UiStore>((set) => ({
     set({ currentOctave: octave });
   },
   setSharedCurrentLine: (line: number) => set({ sharedCurrentLine: line }),
-  setChannelMutes: (mutes: [boolean, boolean, boolean]) => set({ channelMutes: mutes }),
+  setChannelMutes: (mutes: boolean[]) => set({ channelMutes: mutes }),
   toggleChannelMute: (index: number) =>
     set((state: UiStore) => {
-      const next = [...state.channelMutes] as [boolean, boolean, boolean];
+      const next = [...state.channelMutes];
       if (index >= 0 && index < next.length) {
         next[index] = !next[index];
       }

@@ -2,40 +2,39 @@ import React from 'react';
 import { ChevronUp, ChevronDown } from 'lucide-react';
 import { Formatter } from '../../utils/format/formatters.ts';
 import type { PlaylistEntry } from '../../types/playlist.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
 
 interface PlaylistLineProps {
   index: number;
   entry: PlaylistEntry;
   lineClassName: string;
-  patternClassA: string;
-  patternClassB: string;
-  patternClassC: string;
+  patternClasses: Partial<Record<SongChannelId, string>>;
+  tracks: readonly SongChannelId[];
   isCurrentLine: boolean;
-  currentTrack: 'A' | 'B' | 'C';
+  currentTrack: SongChannelId;
   isEditing: boolean;
   editingPattern: string;
   onEditingPatternChange: (value: string) => void;
   onFinishEditingPattern: (options?: { refocusPlaylist?: boolean }) => void;
   onLineClick: (index: number) => void;
-  onPatternClick: (index: number, track: 'A' | 'B' | 'C') => void;
+  onPatternClick: (index: number, track: SongChannelId) => void;
   onPatternRightClick: (
     index: number,
-    track: 'A' | 'B' | 'C',
+    track: SongChannelId,
     event: React.MouseEvent<HTMLSpanElement | HTMLDivElement>,
   ) => void;
-  onCreatePatternAt: (index: number, track: 'A' | 'B' | 'C') => void;
+  onCreatePatternAt: (index: number, track: SongChannelId) => void;
   onMoveLine: (index: number, direction: 'up' | 'down') => void;
   playlistLength: number;
-  onTrackHeaderClick: (track: 'A' | 'B' | 'C') => void;
+  onTrackHeaderClick: (track: SongChannelId) => void;
 }
 
 export const PlaylistLine: React.FC<PlaylistLineProps> = ({
   index,
   entry,
   lineClassName,
-  patternClassA,
-  patternClassB,
-  patternClassC,
+  patternClasses,
+  tracks,
   isCurrentLine,
   currentTrack,
   isEditing,
@@ -52,7 +51,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
 }) => {
   const handleInputKeyDown = (
     event: React.KeyboardEvent<HTMLInputElement>,
-    track: 'A' | 'B' | 'C',
+    track: SongChannelId,
   ) => {
     const key = event.key.toUpperCase();
     if (event.key === 'Enter' && event.altKey && !event.ctrlKey && !event.metaKey) {
@@ -73,10 +72,9 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
     }
   };
 
-  const renderPatternCell = (track: 'A' | 'B' | 'C') => {
-    const patternClass =
-      track === 'A' ? patternClassA : track === 'B' ? patternClassB : patternClassC;
-    const patternValue = track === 'A' ? entry.A : track === 'B' ? entry.B : entry.C;
+  const renderPatternCell = (track: SongChannelId) => {
+    const patternClass = patternClasses[track] ?? '';
+    const patternValue = entry[track];
 
     if (isCurrentLine && currentTrack === track && isEditing) {
       return (
@@ -120,9 +118,9 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
     >
       <span className="line-number">{Formatter.hex(index, { padWidth: 2, uppercase: true })}</span>
 
-      {renderPatternCell('A')}
-      {renderPatternCell('B')}
-      {renderPatternCell('C')}
+      {tracks.map((track) => (
+        <React.Fragment key={track}>{renderPatternCell(track)}</React.Fragment>
+      ))}
 
       <div className="playlist-move-buttons" onClick={(event) => event.stopPropagation()}>
         <button

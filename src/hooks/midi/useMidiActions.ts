@@ -1,6 +1,13 @@
 import { useCallback, useEffect, useRef } from 'react';
 import type { RefObject } from 'react';
-import type { Song, Pattern, Step, Note, Instrument } from '../../synth/SoundDriver.ts';
+import type {
+  Song,
+  Pattern,
+  Step,
+  Note,
+  Instrument,
+  SongChannelId,
+} from '../../synth/SoundDriver.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
 import type { MidiConfiguration, MidiNoteEvent } from './useMidi.ts';
 import type { NavigationSection } from '../../constants/navigation.ts';
@@ -11,6 +18,8 @@ import {
   velocityToVolumeNibble,
 } from '../../utils/midi/midiActionsUtils.ts';
 import { usePreviewEnvelope } from '../playback/usePreviewEnvelope.ts';
+import { SONG_CHANNEL_COUNT, SONG_CHANNEL_IDS } from '../../constants/song.ts';
+import { isTrackNavigationSection } from '../../utils/keyboard/keyboardNavigationUtils.ts';
 
 interface MidiHelpersRef {
   sendInstrumentMidiNoteOn: (
@@ -26,14 +35,15 @@ interface MidiHelpersRef {
 
 interface UseMidiActionsArgs {
   activeSection: NavigationSection;
-  lastTrackId: 'A' | 'B' | 'C';
+  lastTrackId: SongChannelId;
   currentInstrument: Instrument;
   currentSong: Song;
   sharedCurrentLine: number;
   setSharedCurrentLine: (line: number) => void;
-  getCurrentPatternForTrack: (trackId: 'A' | 'B' | 'C') => Pattern | null;
+  getCurrentPatternForTrack: (trackId: SongChannelId) => Pattern | null;
   handlePatternChange: (pattern: Pattern) => void;
   ym2149Ref: RefObject<SoundEngine | null>;
+  ym2149Ref2: RefObject<SoundEngine | null>;
   midiHelpersRef: RefObject<MidiHelpersRef | null>;
   midiConfigurationRef: RefObject<MidiConfiguration | null>;
   parseBaseKeyString: (value?: string) => { note: string; octave: number } | null;
@@ -42,7 +52,7 @@ interface UseMidiActionsArgs {
 interface UseMidiActionsResult {
   handleMidiNoteEvent: (event: MidiNoteEvent) => void;
   handleHardStopLivePreview: (ymChannel: number) => void;
-  handleRegisterTrackStopPreview: (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => void;
+  handleRegisterTrackStopPreview: (trackId: SongChannelId, stopPreview: () => void) => void;
 }
 
 export function useMidiActions({
@@ -55,6 +65,7 @@ export function useMidiActions({
   getCurrentPatternForTrack,
   handlePatternChange,
   ym2149Ref,
+  ym2149Ref2,
   midiHelpersRef,
   midiConfigurationRef,
   parseBaseKeyString,
@@ -76,6 +87,7 @@ export function useMidiActions({
   // the getter on each start/stop.
   const livePreview = usePreviewEnvelope({
     ym2149: () => ym2149Ref.current,
+    ym2149ForChannel: (channel) => (channel < 3 ? ym2149Ref.current : ym2149Ref2.current) ?? null,
     onAutoStop: () => {
       // A preview that reaches a silent tail must still release the outgoing
       // MIDI note, otherwise the device holds it until the next explicit stop.
@@ -90,21 +102,26 @@ export function useMidiActions({
     },
   });
 
-  const trackStopPreviewRef = useRef<{
-    A: (() => void) | null;
-    B: (() => void) | null;
-    C: (() => void) | null;
-  }>({
-    A: null,
-    B: null,
-    C: null,
-  });
+  const trackStopPreviewRef = useRef<Partial<Record<SongChannelId, (() => void) | null>>>({});
 
   const handleRegisterTrackStopPreview = useCallback(
-    (trackId: 'A' | 'B' | 'C', stopPreview: () => void) => {
+    (trackId: SongChannelId, stopPreview: () => void) => {
       trackStopPreviewRef.current[trackId] = stopPreview;
     },
     [],
+  );
+
+  const engineForYmChannel = useCallback(
+    (ymChannel: number): { engine: SoundEngine; localChannel: number } | null => {
+      // Global channel space is A-F (0-5); out-of-range indexes clamp to F.
+      const channel = Math.min(Math.max(ymChannel | 0, 0), SONG_CHANNEL_COUNT - 1);
+      const engine = channel < 3 ? ym2149Ref.current : ym2149Ref2.current;
+      if (!engine) {
+        return null;
+      }
+      return { engine, localChannel: channel % 3 };
+    },
+    [ym2149Ref, ym2149Ref2],
   );
 
   const handleHardStopLivePreview = useCallback(
@@ -126,14 +143,12 @@ export function useMidiActions({
         lastMidiPreviewRef.current = null;
       }
 
-      const ym2149 = ym2149Ref.current;
-      if (ym2149) {
-        const safeChannel = Math.max(0, Math.min(2, ymChannel | 0));
-        const volumeRegister = 0x08 + safeChannel;
-        ym2149.writeRegister(volumeRegister, 0x00);
+      const target = engineForYmChannel(ymChannel | 0);
+      if (target) {
+        target.engine.writeRegister(0x08 + target.localChannel, 0x00);
       }
     },
-    [ym2149Ref, midiHelpersRef, livePreview],
+    [engineForYmChannel, midiHelpersRef, livePreview],
   );
 
   const handleMidiNoteEvent = useCallback(
@@ -164,10 +179,7 @@ export function useMidiActions({
       const clampedOctave = transposed.octave;
       const transposedNoteName = transposed.note;
 
-      const isTrackFocused =
-        activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
-
-      const ym2149 = ym2149Ref.current;
+      const isTrackFocused = isTrackNavigationSection(activeSection);
 
       if (isTrackFocused && type === 'noteOn') {
         const ignoreInputVolume = midiConfigurationRef.current?.ignoreInputVolume ?? true;
@@ -175,8 +187,7 @@ export function useMidiActions({
         const liveVolumeModifier = ignoreInputVolume ? 0x0f : velocityToVolumeNibble(midiVelocity);
         const midiOutVelocity = ignoreOutputVolume ? null : midiVelocity;
 
-        const trackId: 'A' | 'B' | 'C' =
-          activeSection === 'trackA' ? 'A' : activeSection === 'trackB' ? 'B' : 'C';
+        const trackId = activeSection.slice(5) as SongChannelId;
 
         const stopTrackPreview = trackStopPreviewRef.current[trackId];
         if (stopTrackPreview) {
@@ -220,7 +231,7 @@ export function useMidiActions({
         const nextIndex = Math.min(totalLines - 1, safeIndex + 1);
         setSharedCurrentLine(nextIndex);
 
-        const ymChannel = trackId === 'A' ? 0 : trackId === 'B' ? 1 : 2;
+        const ymChannel = Math.max(0, SONG_CHANNEL_IDS.indexOf(trackId));
 
         livePreview.start('live', {
           channel: ymChannel,
@@ -258,7 +269,7 @@ export function useMidiActions({
           last.noteNumber === noteNumber &&
           last.midiChannel === midiChannel &&
           last.ymChannel >= 0 &&
-          last.ymChannel <= 2
+          last.ymChannel < SONG_CHANNEL_COUNT
         ) {
           const helpers = midiHelpersRef.current;
           if (helpers) {
@@ -269,7 +280,8 @@ export function useMidiActions({
             const hadVoice = livePreview.hasState('live');
             livePreview.stop();
             if (!hadVoice) {
-              ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
+              const target = engineForYmChannel(last.ymChannel);
+              target?.engine.writeRegister(0x08 + target.localChannel, 0x00);
             }
             lastMidiPreviewRef.current = null;
           }
@@ -278,7 +290,7 @@ export function useMidiActions({
       }
 
       if (!isTrackFocused) {
-        const ymChannel = lastTrackId === 'B' ? 1 : lastTrackId === 'C' ? 2 : 0;
+        const ymChannel = Math.max(0, SONG_CHANNEL_IDS.indexOf(lastTrackId));
 
         if (type === 'noteOn') {
           const ignoreInputVolume = midiConfigurationRef.current?.ignoreInputVolume ?? true;
@@ -324,7 +336,7 @@ export function useMidiActions({
             last.noteNumber === noteNumber &&
             last.midiChannel === midiChannel &&
             last.ymChannel >= 0 &&
-            last.ymChannel <= 2
+            last.ymChannel < SONG_CHANNEL_COUNT
           ) {
             const helpers = midiHelpersRef.current;
             if (helpers) {
@@ -335,7 +347,8 @@ export function useMidiActions({
               const hadVoice = livePreview.hasState('live');
               livePreview.stop();
               if (!hadVoice) {
-                ym2149.writeRegister(0x08 + last.ymChannel, 0x00);
+                const target = engineForYmChannel(last.ymChannel);
+                target?.engine.writeRegister(0x08 + target.localChannel, 0x00);
               }
               lastMidiPreviewRef.current = null;
             }
@@ -355,6 +368,7 @@ export function useMidiActions({
       midiHelpersRef,
       midiConfigurationRef,
       ym2149Ref,
+      engineForYmChannel,
       parseBaseKeyString,
       livePreview,
     ],

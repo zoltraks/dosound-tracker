@@ -1,6 +1,6 @@
 import type { Instrument, Song } from '../synth/SoundDriver.ts';
 import type { ExportStrategy } from '../constants/export.ts';
-import { simulateSong } from '../utils/playback/playbackSimulation.ts';
+import { simulateSong, type SimulationFrame } from '../utils/playback/playbackSimulation.ts';
 import {
   downloadFile,
   exportInstrumentWith,
@@ -154,7 +154,16 @@ function buildGd3Tag(song: Song): Uint8Array | null {
   return new Uint8Array(bytes);
 }
 
-export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple'): VgmExportResult {
+// Chip-2 register stream selection: register-log formats carry one AY/YM
+// stream, so the exporter emits the selected chip's file.
+const regsForFrame = (frame: SimulationFrame, chip?: 1 | 2) =>
+  chip === 2 && frame.registers2 ? frame.registers2 : frame.registers;
+
+export function exportSongToVgm(
+  song: Song,
+  strategy: ExportStrategy = 'simple',
+  chipStream: 1 | 2 = 1,
+): VgmExportResult {
   const normalizedSong = normalizeSongForExport(song);
   const { frameRate, chipClock } = resolveExportTiming(normalizedSong);
   let commands: number[] = [];
@@ -185,7 +194,8 @@ export function exportSongToVgm(song: Song, strategy: ExportStrategy = 'simple')
   simulateSong(
     normalizedSong,
     (frame) => {
-      const { registers, isFirstFrame, playlistIndex, patternLineIndex, tick } = frame;
+      const { isFirstFrame, playlistIndex, patternLineIndex, tick } = frame;
+      const registers = regsForFrame(frame, chipStream);
 
       if (
         loopCommandOffset < 0 &&

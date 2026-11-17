@@ -64,14 +64,20 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'editor',
         draft: {
-          general: { theme: 'light', textScale: '125', trackBackground: false, startupTone: true },
+          general: {
+            theme: 'light',
+            textScale: '125',
+            trackBackground: false,
+            startupTone: true,
+            visibleTracks: 3,
+          },
           editor: {
             restoreCursor: true,
             restoreView: false,
             pasteTrackMode: 'overwriteAll',
             confirmPaste: false,
           },
-          sound: { engine: 'internal' },
+          sound: { engine: 'internal', dualChip: false },
         },
         focus: null,
         paneScroll: 0,
@@ -98,14 +104,20 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'bogus' as never,
         draft: {
-          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
+          general: {
+            theme: 'dark',
+            textScale: '100',
+            trackBackground: true,
+            startupTone: true,
+            visibleTracks: 3,
+          },
           editor: {
             restoreCursor: true,
             restoreView: true,
             pasteTrackMode: 'replace',
             confirmPaste: false,
           },
-          sound: { engine: 'internal' },
+          sound: { engine: 'internal', dualChip: false },
         },
         focus: null,
         paneScroll: 0,
@@ -124,14 +136,20 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'editor',
         draft: {
-          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
+          general: {
+            theme: 'dark',
+            textScale: '100',
+            trackBackground: true,
+            startupTone: true,
+            visibleTracks: 3,
+          },
           editor: {
             restoreCursor: true,
             restoreView: true,
             pasteTrackMode: 'replace',
             confirmPaste: false,
           },
-          sound: { engine: 'internal' },
+          sound: { engine: 'internal', dualChip: false },
         },
         focus: null,
         paneScroll: 0,
@@ -153,14 +171,20 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'editor',
         draft: {
-          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
+          general: {
+            theme: 'dark',
+            textScale: '100',
+            trackBackground: true,
+            startupTone: true,
+            visibleTracks: 3,
+          },
           editor: {
             restoreCursor: true,
             restoreView: true,
             pasteTrackMode: 'replace',
             confirmPaste: false,
           },
-          sound: { engine: 'internal' },
+          sound: { engine: 'internal', dualChip: false },
         },
       } as never,
     });
@@ -179,14 +203,20 @@ describe('uiState snapshot', () => {
       settingsView: {
         category: 'sound',
         draft: {
-          general: { theme: 'dark', textScale: '100', trackBackground: true, startupTone: true },
+          general: {
+            theme: 'dark',
+            textScale: '100',
+            trackBackground: true,
+            startupTone: true,
+            visibleTracks: 3,
+          },
           editor: {
             restoreCursor: true,
             restoreView: true,
             pasteTrackMode: 'replace',
             confirmPaste: false,
           },
-          sound: { engine: 'internal' },
+          sound: { engine: 'internal', dualChip: false },
         },
         focus: null,
         paneScroll: 0,

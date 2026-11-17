@@ -1,5 +1,5 @@
 import * as yaml from 'js-yaml';
-import type { Instrument, Song, Pattern, Step } from '../../synth/SoundDriver.ts';
+import type { Instrument, Song, Pattern, Step, SongChannelId } from '../../synth/SoundDriver.ts';
 import {
   MAX_INSTRUMENTS,
   MAX_PATTERN_LENGTH,
@@ -215,7 +215,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       E?: unknown;
       F?: unknown;
     };
-    const channel = (key: 'A' | 'B' | 'C' | 'D' | 'E' | 'F') =>
+    const channel = (key: SongChannelId | 'D' | 'E' | 'F') =>
       typeof e[key] === 'string' ? e[key] : '--';
     const row: Song['line'][number] = {
       A: channel('A'),

@@ -9,6 +9,8 @@ import {
 import { clampVolumeNibble } from '../utils/panel/volumeUtils.ts';
 import { normalizeInstrumentId } from '../utils/instrument/instrumentSelection.ts';
 import { buildPatternLookup, isPatternTrackId } from '../utils/song/songLookup.ts';
+import { songChannelCount } from '../utils/song/songChips.ts';
+import { SONG_CHANNEL_IDS } from '../constants/song.ts';
 
 export interface MidiExportResult {
   buffer: ArrayBuffer;
@@ -78,7 +80,7 @@ function buildTrackEvents(song: Song, channelIndex: number, warnings: Set<string
 
   const patternsById = buildPatternLookup(song.pattern);
 
-  const trackKey = channelIndex === 0 ? 'A' : channelIndex === 1 ? 'B' : 'C';
+  const trackKey = SONG_CHANNEL_IDS[channelIndex] ?? 'A';
   const lineCount = song.length || PATTERN_LENGTH;
   const lastProgramByChannel = new Map<number, number>();
 
@@ -248,7 +250,8 @@ export function exportSongToMidi(song: Song): MidiExportResult {
   const chunks: number[][] = [];
   chunks.push(encodeTrackChunk(encodeTrack(conductorEvents, 0)));
 
-  for (let ch = 0; ch < 3; ch++) {
+  const channelCount = songChannelCount(normalizedSong);
+  for (let ch = 0; ch < channelCount; ch++) {
     const events = buildTrackEvents(normalizedSong, ch, warnings);
     chunks.push(encodeTrackChunk(encodeTrack(events, totalTicks)));
   }

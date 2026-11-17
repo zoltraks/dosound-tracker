@@ -8,7 +8,7 @@ import { logger } from '../../utils/log/logger.ts';
 export interface UseSongLifecycleDialogsParams {
   createNewSong: () => void;
   setCurrentOctave: (octave: number) => void;
-  setChannelMutes: (mutes: [boolean, boolean, boolean]) => void;
+  setChannelMutes: (mutes: boolean[]) => void;
   setPosition: (pattern: number, line: number, tick?: number) => void;
   setSharedCurrentLine: (line: number) => void;
   setActiveSection: (section: NavigationSection) => void;
@@ -71,7 +71,7 @@ export function useSongLifecycleDialogs({
 
     createNewSong();
     setCurrentOctave(3);
-    setChannelMutes([false, false, false]);
+    setChannelMutes([false, false, false, false, false, false]);
     setPosition(0, 0, 0);
     setSharedCurrentLine(0);
     setActiveSection('volume');
@@ -96,7 +96,7 @@ export function useSongLifecycleDialogs({
     } catch {
       // ignore
     }
-    setChannelMutes([false, false, false]);
+    setChannelMutes([false, false, false, false, false, false]);
     setCurrentOctave(3);
     // Reload only after the mirror clear commits so reset data cannot resurrect
     void clearMirroredSnapshots().then((cleared) => {
@@ -144,7 +144,7 @@ export function useSongLifecycleDialogs({
           setPosition(0, 0, 0);
           setSharedCurrentLine(0);
           setActiveSection('commands');
-          setChannelMutes([false, false, false]);
+          setChannelMutes([false, false, false, false, false, false]);
         })
         .catch((error) => {
           logger.error('Error loading demo song', error);

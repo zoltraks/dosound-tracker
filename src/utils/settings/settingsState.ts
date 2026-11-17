@@ -14,6 +14,11 @@ const THEME_VARIANTS: readonly ThemeVariant[] = ['dark', 'light', 'contrast'];
 
 const TEXT_SCALES: readonly TextScale[] = ['100', '125', '150'];
 
+const VISIBLE_TRACK_COUNTS: readonly (3 | 6)[] = [3, 6];
+
+const normalizeVisibleTracks = (value: unknown): 3 | 6 =>
+  VISIBLE_TRACK_COUNTS.includes(value as 3 | 6) ? (value as 3 | 6) : 3;
+
 /** Reads an 'on'/'off' flag key, tolerant of absent or corrupt values. */
 export const readFlag = (key: string, fallback: boolean): boolean => {
   try {
@@ -58,6 +63,7 @@ export const normalizeSettings = (
           : base.general.trackBackground,
       startupTone:
         typeof general.startupTone === 'boolean' ? general.startupTone : base.general.startupTone,
+      visibleTracks: normalizeVisibleTracks(general.visibleTracks ?? base.general.visibleTracks),
     },
     editor: {
       restoreCursor:
@@ -74,6 +80,7 @@ export const normalizeSettings = (
     },
     sound: {
       engine: normalizeSoundEngineId(sound.engine, base.sound.engine),
+      dualChip: typeof sound.dualChip === 'boolean' ? sound.dualChip : base.sound.dualChip,
     },
   };
 };
@@ -84,6 +91,7 @@ export const loadSettings = (): SettingsValues => {
   let textScale = DEFAULT_SETTINGS.general.textScale;
   let trackBackground = DEFAULT_SETTINGS.general.trackBackground;
   let pasteTrackMode = DEFAULT_SETTINGS.editor.pasteTrackMode;
+  let visibleTracks: 3 | 6 = DEFAULT_SETTINGS.general.visibleTracks;
 
   try {
     const storedTheme = window.localStorage.getItem(StorageKeys.THEME);
@@ -105,6 +113,9 @@ export const loadSettings = (): SettingsValues => {
     if (PASTE_MODES.includes(storedPasteMode as TrackPasteMode)) {
       pasteTrackMode = storedPasteMode as TrackPasteMode;
     }
+
+    const storedVisibleTracks = window.localStorage.getItem(StorageKeys.VISIBLE_TRACKS);
+    visibleTracks = normalizeVisibleTracks(Number(storedVisibleTracks));
   } catch {
     // ignore
   }
@@ -115,6 +126,7 @@ export const loadSettings = (): SettingsValues => {
       textScale,
       trackBackground,
       startupTone: readFlag(StorageKeys.STARTUP_TONE, DEFAULT_SETTINGS.general.startupTone),
+      visibleTracks,
     },
     editor: {
       restoreCursor: readFlag(StorageKeys.RESTORE_CURSOR, DEFAULT_SETTINGS.editor.restoreCursor),
@@ -122,7 +134,10 @@ export const loadSettings = (): SettingsValues => {
       pasteTrackMode,
       confirmPaste: readFlag(StorageKeys.PASTE_CONFIRM, DEFAULT_SETTINGS.editor.confirmPaste),
     },
-    sound: { engine: loadSoundEngineId() },
+    sound: {
+      engine: loadSoundEngineId(),
+      dualChip: readFlag(StorageKeys.DUAL_CHIP, DEFAULT_SETTINGS.sound.dualChip),
+    },
   };
 };
 
@@ -147,6 +162,8 @@ export const writeSettingKeys = (settings: SettingsValues): void => {
       settings.editor.confirmPaste ? 'on' : 'off',
     );
     window.localStorage.setItem(StorageKeys.SOUND_ENGINE, settings.sound.engine);
+    window.localStorage.setItem(StorageKeys.DUAL_CHIP, settings.sound.dualChip ? 'on' : 'off');
+    window.localStorage.setItem(StorageKeys.VISIBLE_TRACKS, String(settings.general.visibleTracks));
   } catch {
     // ignore
   }

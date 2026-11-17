@@ -38,6 +38,7 @@ const renderPanel = (overrides: Partial<PanelProps> = {}) =>
       currentPlaybackPosition={0}
       onPositionSelect={vi.fn()}
       onCreatePatternAt={vi.fn()}
+      tracks={['A', 'B', 'C']}
       targetTrack="A"
       sharedCurrentLine={7}
       onToggleLineFromStart={vi.fn()}
@@ -219,6 +220,7 @@ describe('PlaylistPanel', () => {
       currentPlaybackPosition: 0,
       onPositionSelect: vi.fn(),
       onCreatePatternAt: vi.fn(),
+      tracks: ['A', 'B', 'C'] as const,
       targetTrack: 'A',
       sharedCurrentLine: 7,
       onToggleLineFromStart: vi.fn(),

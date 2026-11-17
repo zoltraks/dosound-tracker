@@ -36,6 +36,7 @@ describe('settingsState', () => {
           textScale: '150',
           trackBackground: false,
           startupTone: false,
+          visibleTracks: 3,
         },
         editor: {
           restoreCursor: false,
@@ -43,7 +44,7 @@ describe('settingsState', () => {
           pasteTrackMode: 'overwriteAll',
           confirmPaste: true,
         },
-        sound: { engine: 'ayumi' },
+        sound: { engine: 'ayumi', dualChip: false },
       });
     } catch (error) {
       console.log('loaded settings:', settings);
@@ -88,6 +89,7 @@ describe('settingsState', () => {
         textScale: '100',
         trackBackground: true,
         startupTone: false,
+        visibleTracks: 3,
       },
       editor: {
         restoreCursor: true,
@@ -95,7 +97,7 @@ describe('settingsState', () => {
         pasteTrackMode: 'replace',
         confirmPaste: false,
       },
-      sound: { engine: 'ayumi' },
+      sound: { engine: 'ayumi', dualChip: false },
     });
     try {
       expect(localStorage.getItem(StorageKeys.STARTUP_TONE)).toBe('off');
@@ -129,6 +131,7 @@ describe('settingsState', () => {
         textScale: '125' as const,
         trackBackground: false,
         startupTone: false,
+        visibleTracks: 3 as const,
       },
       editor: {
         restoreCursor: false,
@@ -136,7 +139,7 @@ describe('settingsState', () => {
         pasteTrackMode: 'overwriteEmpty' as const,
         confirmPaste: true,
       },
-      sound: { engine: 'ayumi' as const },
+      sound: { engine: 'ayumi' as const, dualChip: false },
     };
     const normalized = normalizeSettings(
       {

@@ -81,6 +81,7 @@ describe('SettingsModal', () => {
         textScale: '125',
         trackBackground: false,
         startupTone: false,
+        visibleTracks: 3,
       },
       editor: {
         restoreCursor: false,
@@ -88,7 +89,7 @@ describe('SettingsModal', () => {
         pasteTrackMode: 'overwriteAll',
         confirmPaste: false,
       },
-      sound: { engine: 'internal' },
+      sound: { engine: 'internal', dualChip: false },
     };
     const onDraftChange = vi.fn();
     const onConfirmingResetChange = vi.fn();

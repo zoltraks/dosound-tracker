@@ -48,6 +48,7 @@ export interface UsePlaybackHandlersParams {
   setIsLinePlaying: Dispatch<SetStateAction<boolean>>;
   ensureAudioContextResumed: () => Promise<void>;
   waitForEngine: () => Promise<SoundEngine | null>;
+  waitForEngines?: () => Promise<SoundEngine[]>;
 }
 
 export interface UsePlaybackHandlersResult {
@@ -80,6 +81,7 @@ export function usePlaybackHandlers({
   setIsLinePlaying,
   ensureAudioContextResumed,
   waitForEngine,
+  waitForEngines,
 }: UsePlaybackHandlersParams): UsePlaybackHandlersResult {
   const patternReturnPositionRef = useRef<{ pattern: number; line: number } | null>(null);
   const playbackGenerationRef = useRef(0);
@@ -94,14 +96,18 @@ export function usePlaybackHandlers({
       const generation = ++playbackGenerationRef.current;
       void (async () => {
         await ensureAudioContextResumed();
-        const engine = await waitForEngine();
-        if (!engine || generation !== playbackGenerationRef.current) {
+        // Two-chip songs must not start on a half-ready pair: wait for every
+        // engine the song needs, falling back to the single-engine waiter.
+        const engines = waitForEngines
+          ? await waitForEngines()
+          : await waitForEngine().then((engine) => (engine ? [engine] : []));
+        if (engines.length === 0 || generation !== playbackGenerationRef.current) {
           return;
         }
         start();
       })();
     },
-    [ensureAudioContextResumed, waitForEngine],
+    [ensureAudioContextResumed, waitForEngine, waitForEngines],
   );
 
   const handleStop = useCallback(() => {

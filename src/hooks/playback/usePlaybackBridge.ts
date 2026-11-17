@@ -22,7 +22,9 @@ export interface PlaybackMidiHelpers {
 export interface UsePlaybackBridgeParams {
   currentSong: Song;
   channelMutes: boolean[];
+  channelCount: number;
   ym2149Ref: MutableRefObject<SoundEngine | null>;
+  ym2149Ref2: MutableRefObject<SoundEngine | null>;
   isDebugMode: boolean;
   setSharedCurrentLine: (line: number) => void;
   stop: () => void;
@@ -43,7 +45,9 @@ export interface UsePlaybackBridgeResult {
 export function usePlaybackBridge({
   currentSong,
   channelMutes,
+  channelCount,
   ym2149Ref,
+  ym2149Ref2,
   isDebugMode,
   setSharedCurrentLine,
   stop,
@@ -72,14 +76,16 @@ export function usePlaybackBridge({
     return map;
   }, [currentSong.pattern]);
 
-  const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef);
+  const playbackState = usePlaybackSimulation(ym2149Ref, midiHelpersRef, ym2149Ref2);
   const { resetPlaybackState: handleStopPlayback, lastSequencerPositionRef } = playbackState;
 
   const { sequencerCallback } = useSequencerIntegration({
     currentSong,
     patternsById,
     channelMutes,
+    channelCount,
     ym2149Ref,
+    ym2149Ref2,
     midiHelpersRef,
     playbackState,
     isDebugMode,

@@ -1,6 +1,7 @@
 import { StorageKeys } from '../storage/storageKeys.ts';
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
 
-export type TrackSelectionTrackId = 'A' | 'B' | 'C';
+export type TrackSelectionTrackId = SongChannelId;
 
 /** The selection keeps the anchor row where it started and the head row that
  *  follows the cursor. The covered range includes the anchor and excludes the
@@ -16,7 +17,7 @@ export interface TrackSelectionRange {
   end: number;
 }
 
-const TRACK_IDS: readonly string[] = ['A', 'B', 'C'];
+const TRACK_IDS: readonly string[] = ['A', 'B', 'C', 'D', 'E', 'F'];
 
 export const normalizeTrackSelection = (selection: TrackSelection): TrackSelectionRange => {
   if (selection.head > selection.anchor) {

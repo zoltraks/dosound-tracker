@@ -134,6 +134,7 @@ const edgeSettings = (): SettingsValues => ({
     textScale: '150',
     trackBackground: false,
     startupTone: false,
+    visibleTracks: 3,
   },
   editor: {
     restoreCursor: false,
@@ -141,7 +142,7 @@ const edgeSettings = (): SettingsValues => ({
     pasteTrackMode: 'overwriteAll',
     confirmPaste: true,
   },
-  sound: { engine: 'ayumi' },
+  sound: { engine: 'ayumi', dualChip: false },
 });
 
 const edgeMidi = (withDevices: boolean): MidiConfiguration => ({
