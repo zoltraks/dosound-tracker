@@ -15,12 +15,12 @@ out, including deferred or unscheduled work.
 
 ## Recorded Work
 
-One row per issue document and refactoring pair under the resolved version
+One row per change record and refactoring pair under the resolved version
 directory.
 
 | Document                     | Kind        | Status | Result               |
 | ---------------------------- | ----------- | ------ | -------------------- |
-| [docs/issue/<version>/name]  | Issue       | [Done] | [one-line outcome]   |
+| [docs/change/<version>/name] | Change      | [Done] | [one-line outcome]   |
 | [docs/refactoring/<version>] | Refactoring | [Done] | [assessment verdict] |
 
 ## Repository Analysis
@@ -32,7 +32,7 @@ Report in four parts:
 
 - **Confirmed** - recorded work whose changes are present in the log.
 - **Unconfirmed** - recorded work with no corresponding change.
-- **Undocumented** - changes in the log with no issue document.
+- **Undocumented** - changes in the log with no change record.
 - **Deviations** - work that shipped differently from its plan or
   definition of done.
 
