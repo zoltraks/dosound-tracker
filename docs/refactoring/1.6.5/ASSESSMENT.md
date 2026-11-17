@@ -43,12 +43,12 @@ kept and the divergence is recorded here and in the plan's Refinements.
 
 ## Metrics Comparison
 
-| Metric          | Before window | After window |
-| --------------- | ------------- | ------------ |
-| Entry chunk     | 597.13 kB     | 598.90 kB    |
-| Test files      | 187           | 189          |
-| Test count      | 1721          | 1734         |
-| Coverage stmts  | 88.58%        | 88.42%       |
+| Metric         | Before window | After window |
+| -------------- | ------------- | ------------ |
+| Entry chunk    | 597.13 kB     | 598.90 kB    |
+| Test files     | 187           | 189          |
+| Test count     | 1721          | 1734         |
+| Coverage stmts | 88.58%        | 88.42%       |
 
 Coverage dipped slightly in absolute terms because the window added
 runtime surface faster than tests in a few dense hooks; every axis stays

@@ -65,7 +65,7 @@ import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
 import { useChannelPans } from './hooks/song/useChannelPans.ts';
 import { songChipCount } from './utils/song/songChips.ts';
 import { channelCountForChipCount, SONG_CHANNEL_IDS } from './constants/song.ts';
-import { isDualChipView, visibleTrackIds } from './utils/song/visibleTracks.ts';
+import { visibleTrackIds } from './utils/song/visibleTracks.ts';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -253,7 +253,7 @@ const App: React.FC = () => {
   );
   const [visibleChipGroup, setVisibleChipGroup] = useState<0 | 1>(0);
 
-  const songTracks = visibleTrackIds(dualChipEnabled, currentSong, visibleTracks, visibleChipGroup);
+  const songTracks = visibleTrackIds(dualChipEnabled, visibleTracks, visibleChipGroup);
   const visibleTrackSections = songTracks.map(
     (id) => `track${id}` as import('./constants/navigation.ts').NavigationSection,
   );
@@ -1054,7 +1054,7 @@ const App: React.FC = () => {
             currentInstrument={currentInstrument}
             targetTrackId={effectiveTargetTrackId}
             tracks={songTracks}
-            showChipSwitcher={isDualChipView(dualChipEnabled, currentSong) && visibleTracks === 3}
+            showChipSwitcher={dualChipEnabled && visibleTracks === 3}
             chipGroup={visibleChipGroup}
             onChipGroupChange={setVisibleChipGroup}
             onToggleLineFromCursor={handleToggleLineFromCursor}

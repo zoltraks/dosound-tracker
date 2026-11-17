@@ -2,10 +2,10 @@
 
 ## Document Information
 
-|             |                                                                                                                                                              |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Version     | 1.6.5                                                                                                                                                        |
-| Review Date | 2026-11-17                                                                                                                                                   |
+|             |                                                                                                                                                                                                                       |
+| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Version     | 1.6.5                                                                                                                                                                                                                 |
+| Review Date | 2026-11-17                                                                                                                                                                                                            |
 | Commands    | `git log`, `git status --short`, `git diff`, `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`, `npm test`, `npm run test:coverage`, `npm run test:e2e`, `npm audit`, `scripts/release-check.sh` |
 
 ## Scope
@@ -19,13 +19,13 @@ audible, editable, and exportable two-chip songs.
 
 ## Recorded Work
 
-| Document                                                        | Kind        | Status | Result                                                                            |
-| --------------------------------------------------------------- | ----------- | ------ | --------------------------------------------------------------------------------- |
-| `docs/change/1.6.5/dual-engine-audio-panning.md`                | Change      | Done   | Implemented and verified this run                                                 |
-| `docs/change/1.6.5/dual-chip-track-ui.md`                       | Change      | Done   | Implemented and verified this run                                                 |
-| `docs/change/1.6.5/dual-chip-exports-panels.md`                 | Change      | Done   | Implemented and verified this run                                                 |
-| `docs/plan/1.6.5/dual-chip-window-implementation.md`            | Plan        | Done   | Written before source edits; Refinements section records landed divergences      |
-| `docs/refactoring/1.6.5/REFACTORING.md` + `ASSESSMENT.md`       | Refactoring | Done   | Pass - projection utility, exporter pickers, mute normalization                   |
+| Document                                                  | Kind        | Status | Result                                                                      |
+| --------------------------------------------------------- | ----------- | ------ | --------------------------------------------------------------------------- |
+| `docs/change/1.6.5/dual-engine-audio-panning.md`          | Change      | Done   | Implemented and verified this run                                           |
+| `docs/change/1.6.5/dual-chip-track-ui.md`                 | Change      | Done   | Implemented and verified this run                                           |
+| `docs/change/1.6.5/dual-chip-exports-panels.md`           | Change      | Done   | Implemented and verified this run                                           |
+| `docs/plan/1.6.5/dual-chip-window-implementation.md`      | Plan        | Done   | Written before source edits; Refinements section records landed divergences |
+| `docs/refactoring/1.6.5/REFACTORING.md` + `ASSESSMENT.md` | Refactoring | Done   | Pass - projection utility, exporter pickers, mute normalization             |
 
 ## Repository Analysis
 

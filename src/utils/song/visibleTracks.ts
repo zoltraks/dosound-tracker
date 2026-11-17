@@ -1,26 +1,21 @@
 // Visible-track projection: which song channels the tracker and playlist
-// render. Single-chip songs and the disabled dual-chip setting always show
-// A-C; a two-chip song shows all six channels in six-track mode, or one
-// chip's three channels at a time in three-track mode.
-import type { Song, SongChannelId } from '../../synth/SoundDriver.ts';
+// render. The `dualChip` sound setting is the capability gate - while it
+// is off the app always shows A-C. While it is on, the `visibleTracks`
+// setting picks all six channels or one chip's three at a time; writing a
+// pattern onto D/E/F derives the song's two-chip count, so the projection
+// never needs the song's current chip count to decide what is editable.
+import type { SongChannelId } from '../../synth/SoundDriver.ts';
 import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
-import { songChipCount } from './songChips.ts';
 
 export const CHIP1_TRACK_IDS: readonly SongChannelId[] = ['A', 'B', 'C'];
 export const CHIP2_TRACK_IDS: readonly SongChannelId[] = ['D', 'E', 'F'];
 
-export const isDualChipView = (
-  dualChipEnabled: boolean,
-  song: Pick<Song, 'chipCount' | 'line'>,
-): boolean => dualChipEnabled && songChipCount(song) === 2;
-
 export const visibleTrackIds = (
   dualChipEnabled: boolean,
-  song: Pick<Song, 'chipCount' | 'line'>,
   visibleTracks: 3 | 6,
   chipGroup: 0 | 1,
 ): SongChannelId[] => {
-  if (!isDualChipView(dualChipEnabled, song)) {
+  if (!dualChipEnabled) {
     return [...CHIP1_TRACK_IDS];
   }
   if (visibleTracks === 6) {
