@@ -136,6 +136,8 @@ Create implementation plans in `docs/plan/<version>/` based on the change reques
 
 When asked to make an implementation plan for a specific change request pointing to a document source (for example `midi-support.md`), create the plan in `docs/plan/<current_version>/`, where `<current_version>` is the current program version from `package.json`. Name the plan document to match the change request file (for example `midi-support-implementation.md` for `midi-support.md`). Use the current version regardless of the version mentioned in the change request or the document location. When the change record itself sits in a different group through a declared dependency, the plan joins that same group.
 
+Fixes landed without a prior record - ad-hoc session work filed retroactively - group related fixes into as few records as the change boundaries allow, and a retroactive implementation plan is a short applied-marker naming what landed, the files touched, the verification run, and the commits rather than a full plan.
+
 **Implementation**
 
 Execute the implementation according to the plans. Follow the build-test-fix loop for each feature.
@@ -379,7 +381,7 @@ A collection mode that analyzes requests without implementing them. Each request
 
 **Improvement**
 
-`improvement` named as a mode on a work request is a working mode, not the review operation. While running the described operation, the agent applies the corrections and optimizations it discovers on the way inside the same change set - a stale doc line refreshed as it is touched, a small repair folded into the work, reusable knowledge folded back into the owning document rather than left in the session. Improvements that alter observable behavior or exceed the request's scope still split into their own record, and the mode never triggers the Session Review on its own - the named improvement operation is recorded under Self-Routines below. The mode applies improvements during the work itself; it reviews no history that precedes the request.
+`improvement` named as a mode on a work request is a working mode, not the review operation. While running the described operation, the agent applies the corrections and optimizations it discovers on the way inside the same change set - a stale doc line refreshed as it is touched, a small repair folded into the work, reusable knowledge folded back into the owning document rather than left in the session. Improvements that alter observable behavior or exceed the request's scope still split into their own record, and the mode never triggers the Session Review on its own - the named improvement operation is recorded under Self-Routines below. The mode applies improvements during the work itself; it reviews no history that precedes the request. On task completion the agent still harvests the current session's durable learnings and routes them per the Session Review table - corrections discovered on the way land in the owning documents and index under `docs/lesson/` without waiting for the trigger phrase.
 
 **Immediate**
 

@@ -162,3 +162,7 @@ A small static file server can mount `dist/` under a path prefix, and Playwright
 **`npm run retention` sweeps completed families deterministically**
 
 `scripts/retention-sweep.mjs` encodes the Document Retention sweep from `WORKFLOW.md` - dry-run prints the boundary reasoning, classified candidates, link-check hits, and `.gitkeep` actions without moving anything, `--apply` executes the `git mv` moves and reconciliation, `--repoint` rewrites staying-file references to moved paths, and `--json` emits the plan as machine-readable output. Boundary-day flat files and narrative references are reported for agent judgment, never auto-decided - run the dry-run first and read its report before passing `--apply`.
+
+**Re-read a file region after a scripted edit**
+
+Bulk edits driven through scripts (python, sed, heredocs) can insert stray text, fail to match silently, or mangle a payload - this session saw quoted fragments land inside `App.css` and a test file before the damage was caught. Re-read the touched region immediately after the script runs and again before reporting; prefer the dedicated edit tool for single-site changes and verify its result the same way.

@@ -1587,3 +1587,12 @@ Project-specific conventions extend the standard above for the DOSOUND Tracker c
 - `useUiStore` in `src/hooks/ui/` is the single Zustand store for cross-component UI state.
 - `src/assets/song/song.yaml` is imported with a `?raw` query suffix - query-suffixed specifiers
   are treated as import specifiers in every move refactoring.
+- State derived from other state or props is computed during render, never through
+  `useEffect` + `setState` - the effect path commits the stale frame first, which is the
+  one-frame flicker class (the sliding track window painted the old channel header before the
+  window-shift effect ran). An effect may still run afterward to persist the derived value as
+  an anchor, but never as the mechanism that produces it.
+- `null` marks absence and `''` marks present-but-empty - never overload the empty string for
+  both states. A `string` edit-in-progress flag cannot represent "editing an empty cell"; the
+  playlist `editingPattern` is `string | null` (`null` = no edit, `''` = live empty edit) for
+  this reason, and every guard that tests "is editing" must distinguish the two.
