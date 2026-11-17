@@ -8,7 +8,6 @@ import { InstrumentDeleteModal } from '../../modals/instrument/InstrumentDeleteM
 import { InstrumentMidiModal } from '../../modals/instrument/InstrumentMidiModal.tsx';
 import { InstrumentTypeWarningModal } from '../../modals/instrument/InstrumentTypeWarningModal.tsx';
 import { MarkdownModal } from '../../modals/information/MarkdownModal.tsx';
-import { MidiModal } from '../../modals/midi/MidiModal.tsx';
 import { TransposeModal } from '../../modals/track/TransposeModal.tsx';
 import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
 import type {
@@ -24,6 +23,14 @@ import type { InstrumentDeleteUsage } from '../../hooks/modal/useModalState.ts';
 const SettingsModal = React.lazy(async () => {
   const { SettingsModal } = await import('../../modals/settings/SettingsModal.tsx');
   return { default: SettingsModal };
+});
+
+// The MIDI dialog loads on demand like the settings modal: it opens only on
+// explicit user action, so keeping it out of the entry chunk protects the
+// bundle budget.
+const MidiModal = React.lazy(async () => {
+  const { MidiModal } = await import('../../modals/midi/MidiModal.tsx');
+  return { default: MidiModal };
 });
 
 type TransposeScope = 'line' | 'song';
@@ -449,23 +456,27 @@ export const ModalContainer: React.FC<ModalContainerProps> = ({
         onClose={onCloseManual}
       />
 
-      <MidiModal
-        isOpen={isMidiModalOpen}
-        isSupported={isMidiSupported}
-        accessError={midiAccessError}
-        configuration={midiConfiguration}
-        devices={midiDevices}
-        inMonitor={midiInMonitor}
-        outMonitor={midiOutMonitor}
-        onSave={onSaveMidiConfiguration}
-        onCancel={onCloseMidi}
-        onClear={onClearMidiMonitors}
-        onRescan={onRescanMidiDevices}
-        onChangeConfig={onLiveMidiConfigurationChange}
-        onCopySummary={setMidiCopySummary}
-        onLoadError={setMidiLoadError}
-        onSystemReset={onMidiSystemReset}
-      />
+      {isMidiModalOpen && (
+        <React.Suspense fallback={null}>
+          <MidiModal
+            isOpen={isMidiModalOpen}
+            isSupported={isMidiSupported}
+            accessError={midiAccessError}
+            configuration={midiConfiguration}
+            devices={midiDevices}
+            inMonitor={midiInMonitor}
+            outMonitor={midiOutMonitor}
+            onSave={onSaveMidiConfiguration}
+            onCancel={onCloseMidi}
+            onClear={onClearMidiMonitors}
+            onRescan={onRescanMidiDevices}
+            onChangeConfig={onLiveMidiConfigurationChange}
+            onCopySummary={setMidiCopySummary}
+            onLoadError={setMidiLoadError}
+            onSystemReset={onMidiSystemReset}
+          />
+        </React.Suspense>
+      )}
 
       {isSettingsOpen && (
         <React.Suspense fallback={null}>

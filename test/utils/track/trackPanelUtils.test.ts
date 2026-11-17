@@ -48,6 +48,16 @@ describe('trackPanelUtils', () => {
     expect(getNextTrackSection('C')).toBe('trackA');
   });
 
+  it('track section helpers cycle all six channels when dual chip is enabled', () => {
+    expect(getPreviousTrackSection('A', 6)).toBe('trackF');
+    expect(getPreviousTrackSection('D', 6)).toBe('trackC');
+    expect(getPreviousTrackSection('F', 6)).toBe('trackE');
+
+    expect(getNextTrackSection('C', 6)).toBe('trackD');
+    expect(getNextTrackSection('D', 6)).toBe('trackE');
+    expect(getNextTrackSection('F', 6)).toBe('trackA');
+  });
+
   it('parseVolumeNibble parses valid hex nibbles and clamps', () => {
     expect(parseVolumeNibble('0')).toBe(0);
     expect(parseVolumeNibble('A')).toBe(10);

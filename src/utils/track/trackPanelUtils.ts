@@ -1,5 +1,6 @@
 import type { NavigationSection } from '../../constants/navigation.ts';
 import type { Note, Pattern, Step, SongChannelId } from '../../synth/SoundDriver.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 
@@ -27,16 +28,29 @@ export function stepLineIndex(currentLine: number, patternLength: number, delta:
   return wrapIndex(currentLine + delta, patternLength);
 }
 
-export function getPreviousTrackSection(trackId: SongChannelId): NavigationSection {
-  if (trackId === 'A') return 'trackC';
-  if (trackId === 'B') return 'trackA';
-  return 'trackB';
+// Arrow-key track hops cycle through the song's navigable channels - A-C on
+// a single-chip setup, A-F once the second chip is enabled - wrapping at the
+// ends. The three-track view slides its window to keep the target visible.
+function trackSectionAt(
+  trackId: SongChannelId,
+  channelCount: number,
+  delta: number,
+): NavigationSection {
+  const ids = SONG_CHANNEL_IDS.slice(0, Math.max(1, channelCount));
+  const index = Math.max(0, ids.indexOf(trackId));
+  const next = ids[(index + delta + ids.length) % ids.length];
+  return `track${next}` as NavigationSection;
 }
 
-export function getNextTrackSection(trackId: SongChannelId): NavigationSection {
-  if (trackId === 'A') return 'trackB';
-  if (trackId === 'B') return 'trackC';
-  return 'trackA';
+export function getPreviousTrackSection(
+  trackId: SongChannelId,
+  channelCount = 3,
+): NavigationSection {
+  return trackSectionAt(trackId, channelCount, -1);
+}
+
+export function getNextTrackSection(trackId: SongChannelId, channelCount = 3): NavigationSection {
+  return trackSectionAt(trackId, channelCount, 1);
 }
 
 function ensureStep(step: Step | null | undefined): Step {

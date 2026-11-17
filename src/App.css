@@ -1518,11 +1518,13 @@ body {
   gap: var(--gap-3);
 }
 
-/* Settings modal: category sidebar plus property pane (content height, capped at 80% of the screen) */
+/* Settings modal: category sidebar plus property pane. The height is fixed
+   tall enough for the largest category group so switching categories never
+   resizes the dialog; the pane scrolls if content ever exceeds it. */
 .modal-dialog.settings-modal {
   width: 80vw;
   max-width: 720px;
-  height: auto;
+  height: min(80vh, 26rem);
   max-height: 80vh;
 }
 
@@ -1954,9 +1956,13 @@ body {
 }
 
 .chip-switcher {
-  display: inline-flex;
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  right: 4px;
+  display: flex;
+  justify-content: space-between;
   gap: 2px;
-  margin-right: 6px;
 }
 
 .chip-switcher-button {
@@ -1965,15 +1971,48 @@ body {
   color: var(--button-text);
   font-family: var(--font-mono);
   font-size: var(--fs-md);
-  padding: 1px 6px;
+  padding: 0.5px 6px;
   cursor: pointer;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+.chip-switcher-label {
+  display: inline-block;
+  transform: translateY(1px);
+}
+
+.chip-switcher-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
 .chip-switcher-button.active {
-  background: var(--button-bg);
-  border-color: var(--accent-color, var(--button-border));
+  background: color-mix(in srgb, #808080 50%, #7aa2f7 50%);
+  border-color: #000000;
+  color: #1a202c;
+  box-shadow: 0 0 4px rgba(34, 197, 94, 0.55);
+}
+
+/* Hover gives every chip button the theme's hover fill and the
+   active-section lime frame; placed after .active so the selected
+   button adopts the same fill instead of keeping its resting colors. */
+.chip-switcher-button:hover {
+  background: var(--bg-hover);
+  border-color: var(--section-active-hover-border);
+}
+
+.dark .chip-switcher-button.active:hover {
+  background: color-mix(in srgb, var(--hover-bg) 70%, var(--section-active-hover-border) 30%);
+  color: var(--button-text);
+}
+
+.dark .chip-switcher-button:hover:not(.active) {
+  background: color-mix(
+    in srgb,
+    var(--hover-bg) 60%,
+    var(--bg-tertiary) 20%,
+    var(--section-active-hover-border) 20%
+  );
 }
 
 .position-content {
@@ -3143,19 +3182,20 @@ body {
   background-color: var(--button-hover);
 }
 
+/* The edit field mirrors .track-pattern's box and typography exactly -
+   font: inherit picks up the playlist line's family, size, and leading, and
+   the padding matches the cell's - so opening an edit never shifts layout.
+   min-width: 0 drops the input's intrinsic size-attribute floor so the flex
+   share matches the span it replaces. Only the background marks the field,
+   through the theme-scoped active color; focus uses the global *:focus ring. */
 .pattern-input {
   flex: 1;
+  min-width: 0;
   text-align: center;
-  background-color: var(--input-bg);
-  border: 1px solid var(--input-border);
-  color: var(--input-text);
-  font-size: var(--fs-md);
-  padding: 1px 2px;
-  outline: none;
-}
-
-.pattern-input:focus {
-  border-color: var(--active-border);
+  padding: 1px 2px 0;
+  border: none;
+  font: inherit;
+  color: inherit;
   background-color: var(--active-bg);
 }
 
@@ -3563,6 +3603,7 @@ body {
 
 /* Dump Panel */
 .dump-panel {
+  position: relative;
   flex: 2;
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
@@ -3644,6 +3685,18 @@ body {
 
 .eq-panel:hover .volume-bar-container:nth-child(3) .volume-bar:not(.muted) .volume-fill {
   background-color: color-mix(in srgb, var(--volume-bar), blue 40%);
+}
+
+.eq-panel:hover .volume-bar-container:nth-child(4) .volume-bar:not(.muted) .volume-fill {
+  background-color: color-mix(in srgb, var(--volume-bar), cyan 40%);
+}
+
+.eq-panel:hover .volume-bar-container:nth-child(5) .volume-bar:not(.muted) .volume-fill {
+  background-color: color-mix(in srgb, var(--volume-bar), magenta 40%);
+}
+
+.eq-panel:hover .volume-bar-container:nth-child(6) .volume-bar:not(.muted) .volume-fill {
+  background-color: color-mix(in srgb, var(--volume-bar), yellow 40%);
 }
 
 .eq-content {

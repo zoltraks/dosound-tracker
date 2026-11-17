@@ -59,6 +59,23 @@ describe('createPatternForSong / addPlaylistEntryToSong', () => {
       throw error;
     }
   });
+
+  it('appends a playlist entry carrying second-chip references', () => {
+    try {
+      const next = addPlaylistEntryToSong(baseSong(), {
+        A: '--',
+        B: '--',
+        C: '--',
+        D: asPlaylistPatternId('03'),
+        F: '--',
+      });
+      expect(next.line).toHaveLength(2);
+      expect(next.line[1]).toEqual({ A: '--', B: '--', C: '--', D: '03', F: '--' });
+    } catch (error) {
+      console.log('second-chip playlist mismatch');
+      throw error;
+    }
+  });
 });
 
 describe('downloadFile', () => {

@@ -58,6 +58,7 @@ import { useSongImportWarning } from './hooks/song/useSongImportWarning.ts';
 import { useInstrumentOctaves } from './hooks/instrument/useInstrumentOctaves.ts';
 import { useEnvelopeClipboard } from './hooks/instrument/useEnvelopeClipboard.ts';
 import { useTrackFocus } from './hooks/ui/useTrackFocus.ts';
+import { useFocusedElementPersistence } from './hooks/ui/useFocusedElementPersistence.ts';
 import { useAudioContextResume } from './hooks/audio/useAudioContextResume.ts';
 import { useAudioContextPlaybackSync } from './hooks/audio/useAudioContextPlaybackSync.ts';
 import { useElectronCloseGuard } from './hooks/app/useElectronCloseGuard.ts';
@@ -65,7 +66,11 @@ import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
 import { useChannelPans } from './hooks/song/useChannelPans.ts';
 import { songChipCount } from './utils/song/songChips.ts';
 import { channelCountForChipCount, SONG_CHANNEL_IDS } from './constants/song.ts';
-import { visibleTrackIds } from './utils/song/visibleTracks.ts';
+import {
+  CHIP1_TRACK_IDS,
+  nextTrackWindowStart,
+  visibleTrackIds,
+} from './utils/song/visibleTracks.ts';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -251,16 +256,18 @@ const App: React.FC = () => {
   const [visibleTracks, setVisibleTracks] = useState<3 | 6>(
     () => loadSettings().general.visibleTracks,
   );
-  const [visibleChipGroup, setVisibleChipGroup] = useState<0 | 1>(0);
+  const [trackWindowStart, setTrackWindowStart] = useState(0);
 
-  const songTracks = visibleTrackIds(dualChipEnabled, visibleTracks, visibleChipGroup);
-  const visibleTrackSections = songTracks.map(
+  const trackChannelCount = dualChipEnabled ? SONG_CHANNEL_IDS.length : CHIP1_TRACK_IDS.length;
+  // Arrow-key track hops and section navigation reach every enabled channel;
+  // the three-track view slides its window to keep the focused track visible.
+  const navigableTrackSections = (dualChipEnabled ? SONG_CHANNEL_IDS : CHIP1_TRACK_IDS).map(
     (id) => `track${id}` as import('./constants/navigation.ts').NavigationSection,
   );
 
   const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(
     isNavigationSuspended,
-    visibleTrackSections,
+    navigableTrackSections,
   );
 
   const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
@@ -352,6 +359,17 @@ const App: React.FC = () => {
     previewChannel,
   } = useTrackFocus({ activeSection });
 
+  // The three-track window is derived during render so the first commit
+  // already frames the focused channel; resolving it in an effect would
+  // paint one stale frame per channel hop. The effect below then stores the
+  // derived start as the hysteresis anchor for the next render.
+  const targetChannelIndex = SONG_CHANNEL_IDS.indexOf(targetTrackId);
+  const effectiveWindowStart =
+    dualChipEnabled && visibleTracks === 3 && targetChannelIndex >= 0
+      ? nextTrackWindowStart(trackWindowStart, targetChannelIndex)
+      : trackWindowStart;
+  const songTracks = visibleTrackIds(dualChipEnabled, visibleTracks, effectiveWindowStart);
+
   // A persisted cursor or focus on a hidden channel (stored six-track state
   // on a single-chip song, or the inactive chip group) falls back to the
   // first visible track so focus never lands on an unrendered panel.
@@ -362,6 +380,20 @@ const App: React.FC = () => {
   const effectivePreviewChannel = songTracks.includes(previewChannelTrack)
     ? previewChannel
     : SONG_CHANNEL_IDS.indexOf(songTracks[0] ?? 'A');
+
+  // Persist the render-derived window as the hysteresis anchor; the visible
+  // projection above already applied the shift in the same commit.
+  useEffect(() => {
+    if (!dualChipEnabled || visibleTracks !== 3) {
+      return;
+    }
+    const targetIndex = SONG_CHANNEL_IDS.indexOf(targetTrackId);
+    if (targetIndex < 0) {
+      return;
+    }
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
+    setTrackWindowStart((start) => nextTrackWindowStart(start, targetIndex));
+  }, [dualChipEnabled, visibleTracks, targetTrackId]);
 
   const { ensureAudioContextResumed } = useAudioContextResume({ audioContext });
 
@@ -383,6 +415,8 @@ const App: React.FC = () => {
     sharedCurrentLine,
     currentTrackColumn,
   });
+
+  useFocusedElementPersistence();
 
   const {
     isLinePlaying,
@@ -1054,9 +1088,7 @@ const App: React.FC = () => {
             currentInstrument={currentInstrument}
             targetTrackId={effectiveTargetTrackId}
             tracks={songTracks}
-            showChipSwitcher={dualChipEnabled && visibleTracks === 3}
-            chipGroup={visibleChipGroup}
-            onChipGroupChange={setVisibleChipGroup}
+            trackChannelCount={trackChannelCount}
             onToggleLineFromCursor={handleToggleLineFromCursor}
             onToggleLineFromStart={handleToggleLineFromStart}
             onToggleSongFromCursor={handleToggleSongFromCursor}
@@ -1099,6 +1131,8 @@ const App: React.FC = () => {
             onCreatePatternAt={handleCreatePatternAt}
             targetTrackId={effectiveTargetTrackId}
             tracks={songTracks}
+            trackChannelCount={trackChannelCount}
+            onTrackChannelChange={setLastTrackId}
             sharedCurrentLine={sharedCurrentLine}
             onToggleLineFromStart={handleToggleLineFromStart}
             onToggleSongFromCursor={handleToggleSongFromCursor}

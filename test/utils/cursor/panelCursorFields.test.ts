@@ -25,10 +25,12 @@ describe('readPlaylistTrack', () => {
   it('preserves a valid track', () => {
     expect(readPlaylistTrack('B')).toBe('B');
     expect(readPlaylistTrack('C')).toBe('C');
+    expect(readPlaylistTrack('D')).toBe('D');
+    expect(readPlaylistTrack('F')).toBe('F');
   });
 
   it('falls back to A for an invalid track', () => {
-    expect(readPlaylistTrack('D')).toBe('A');
+    expect(readPlaylistTrack('G')).toBe('A');
   });
 
   it('falls back to A for null', () => {

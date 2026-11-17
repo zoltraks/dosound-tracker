@@ -27,9 +27,7 @@ interface TrackerSectionProps {
   currentInstrument: Instrument;
   targetTrackId: SongChannelId;
   tracks: readonly SongChannelId[];
-  showChipSwitcher?: boolean;
-  chipGroup?: 0 | 1;
-  onChipGroupChange?: (group: 0 | 1) => void;
+  trackChannelCount: number;
   onToggleLineFromCursor: (lineIndex: number) => void;
   onToggleLineFromStart: (lineIndex: number) => void;
   onToggleSongFromCursor: (lineIndex: number) => void;
@@ -68,9 +66,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
   currentInstrument,
   targetTrackId,
   tracks,
-  showChipSwitcher = false,
-  chipGroup = 0,
-  onChipGroupChange,
+  trackChannelCount,
   onToggleLineFromCursor,
   onToggleLineFromStart,
   onToggleSongFromCursor,
@@ -100,21 +96,6 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
       <div className="left-column-content">
         <div className="position-block">
           <div className="position-header">
-            {showChipSwitcher && (
-              <div className="chip-switcher" role="group" aria-label="AY/YM chip channels">
-                {([0, 1] as const).map((group) => (
-                  <button
-                    key={group}
-                    type="button"
-                    className={`chip-switcher-button ${chipGroup === group ? 'active' : ''}`}
-                    aria-pressed={chipGroup === group}
-                    onClick={() => onChipGroupChange?.(group)}
-                  >
-                    {group === 0 ? 'A-C' : 'D-F'}
-                  </button>
-                ))}
-              </div>
-            )}
             <button
               type="button"
               className={`track-bg-toggle ${trackBackgroundEnabled ? 'enabled' : 'disabled'}`}
@@ -199,6 +180,7 @@ export const TrackerSection: React.FC<TrackerSectionProps> = ({
                 onRegisterStopPreview={onRegisterTrackStopPreview}
                 selection={selectionRangeForTrack(trackSelection, trackId, patternLength)}
                 onExtendSelection={(delta) => onExtendSelection(trackId, delta)}
+                trackChannelCount={trackChannelCount}
                 tickIntervalMs={tickIntervalMs}
               />
             ))}

@@ -368,7 +368,7 @@ export function useTrackOperations({
 
     updateSong({ pattern: patterns });
 
-    const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
+    const section = `track${trackId}` as NavigationSection;
     setActiveSection(section);
     setTrackFocusRevision((prev) => prev + 1);
   }, [
@@ -418,7 +418,7 @@ export function useTrackOperations({
 
     updateSong({ pattern: patterns });
 
-    const section = trackId === 'A' ? 'trackA' : trackId === 'B' ? 'trackB' : 'trackC';
+    const section = `track${trackId}` as NavigationSection;
     setActiveSection(section);
   }, [
     playlistEntries,

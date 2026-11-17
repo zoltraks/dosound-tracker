@@ -149,3 +149,55 @@ describe('usePlaylistOperations create track from steps', () => {
     expect(patch.line![1].A).toBe(patch.pattern![0].id);
   });
 });
+
+describe('usePlaylistOperations second-chip channels', () => {
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it('assigns a created pattern to the D/E/F playlist key', () => {
+    const args = makeArgs();
+    const { result } = renderHook(() => usePlaylistOperations(args));
+
+    act(() => {
+      result.current.handleCreatePatternAt(0, 'D');
+    });
+
+    const patch = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<Song>;
+    const created = patch.pattern![patch.pattern!.length - 1];
+    expect(patch.line![0].D).toBe(created.id);
+    expect(patch.line![0].A).toBe('--');
+  });
+
+  it('assigns a created track to a second-chip target and focuses its section', () => {
+    const args = makeArgs({ targetTrackId: 'E' as const });
+    const { result } = renderHook(() => usePlaylistOperations(args));
+
+    act(() => {
+      result.current.handleCreateTrackFromSteps([
+        { note: { note: 'C', octave: 4, instrument: '00' } },
+      ]);
+    });
+
+    const patch = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<Song>;
+    const created = patch.pattern!.find((p) => p.step[0]?.note?.note === 'C');
+    expect(patch.line![1].E).toBe(created!.id);
+    expect(args.setActiveSection).toHaveBeenCalledWith('trackE');
+  });
+
+  it('clears the playlist reference on a second-chip target', () => {
+    const song = makeSong(2);
+    song.line[1] = { A: '--', B: '--', C: '--', F: '07' } as Song['line'][number];
+    const args = makeArgs({ song, targetTrackId: 'F' as const, currentPatternIndex: 1 });
+    const { result } = renderHook(() => usePlaylistOperations(args));
+
+    act(() => {
+      result.current.handleDeleteTrack();
+    });
+
+    const patch = (args.updateSong as ReturnType<typeof vi.fn>).mock.calls[0][0] as Partial<Song>;
+    expect(patch.line![1].F).toBe('--');
+    expect(patch.line![1].A).toBe('--');
+  });
+});

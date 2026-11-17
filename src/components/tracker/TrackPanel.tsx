@@ -64,6 +64,7 @@ interface TrackPanelProps {
   onRegisterStopPreview?: (trackId: SongChannelId, stopPreview: () => void) => void;
   selection?: { start: number; end: number } | null;
   onExtendSelection?: (delta: number) => void;
+  trackChannelCount?: number;
   tickIntervalMs?: number;
 }
 
@@ -97,6 +98,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
     onRegisterStopPreview,
     selection,
     onExtendSelection,
+    trackChannelCount = 3,
     tickIntervalMs = 1000 / DEFAULT_SONG_FRAME,
   } = props;
 
@@ -279,7 +281,10 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         if (currentColumn === 'volume') {
           setCurrentColumn('note');
         } else {
-          const targetTrack: NavigationSection = getPreviousTrackSection(trackId);
+          const targetTrack: NavigationSection = getPreviousTrackSection(
+            trackId,
+            trackChannelCount,
+          );
           setActiveSection(targetTrack);
           setCurrentColumn('volume');
         }
@@ -288,7 +293,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
         if (currentColumn === 'note') {
           setCurrentColumn('volume');
         } else {
-          const targetTrack: NavigationSection = getNextTrackSection(trackId);
+          const targetTrack: NavigationSection = getNextTrackSection(trackId, trackChannelCount);
           setActiveSection(targetTrack);
           setCurrentColumn('note');
         }
@@ -426,6 +431,7 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       setCurrentColumn,
       setActiveSection,
       onExtendSelection,
+      trackChannelCount,
     ],
   );
 

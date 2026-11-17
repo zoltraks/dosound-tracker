@@ -114,6 +114,27 @@ describe('renumberSongData', () => {
     }
   });
 
+  it('collects and remaps patterns referenced only through D/E/F', () => {
+    const song = makeSong({
+      pattern: [makePattern('02', [noteStep('01')]), makePattern('07', [noteStep('01')])],
+      line: [
+        { A: '--', B: '--', C: '--', D: '02' } as Song['line'][number],
+        { A: '02', B: '--', C: '--', F: '07' } as Song['line'][number],
+      ],
+      instrument: [makeInstrument('01')],
+    });
+    const { renumberedSong } = renumberSongData(song, null);
+    try {
+      expect(renumberedSong.pattern.map((p) => p.id)).toEqual(['00', '01']);
+      expect(renumberedSong.line[0].D).toBe('00');
+      expect(renumberedSong.line[1].A).toBe('00');
+      expect(renumberedSong.line[1].F).toBe('01');
+    } catch (error) {
+      console.log('second-chip mismatch', renumberedSong.pattern, renumberedSong.line);
+      throw error;
+    }
+  });
+
   it('skips null patterns and patterns without a string id', () => {
     const oddPattern = { id: 7, name: 'Odd', step: [] } as unknown as Pattern;
     const song = makeSong({

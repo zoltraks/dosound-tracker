@@ -43,6 +43,10 @@ export function renumberSongData(
     if (typeof entry.A === 'string') addPatternId(entry.A);
     if (typeof entry.B === 'string') addPatternId(entry.B);
     if (typeof entry.C === 'string') addPatternId(entry.C);
+    for (const key of SECOND_CHIP_CHANNEL_IDS) {
+      const value = entry[key];
+      if (typeof value === 'string') addPatternId(value);
+    }
   });
 
   song.pattern.forEach((pattern) => {

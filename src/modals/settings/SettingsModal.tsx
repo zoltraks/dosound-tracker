@@ -377,7 +377,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <>
                   <div className="settings-row">
                     <label htmlFor="settings-dual-chip" className="settings-label">
-                      Two AY/YM chips
+                      Two chips
                     </label>
                     <input
                       id="settings-dual-chip"

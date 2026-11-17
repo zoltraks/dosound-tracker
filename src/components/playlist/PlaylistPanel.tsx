@@ -6,6 +6,7 @@ import type { PlaylistEntry } from '../../types/playlist.ts';
 import { asPlaylistPatternId } from '../../types/branded.ts';
 import { StorageKeys } from '../../utils/storage/storageKeys.ts';
 import { readPlaylistTrack } from '../../utils/cursor/panelCursorFields.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 import type { SongChannelId } from '../../synth/SoundDriver.ts';
 
 interface PlaylistPanelProps {
@@ -18,6 +19,8 @@ interface PlaylistPanelProps {
   onCreatePatternAt: (lineIndex: number, track: SongChannelId) => void;
   targetTrack: SongChannelId;
   tracks: readonly SongChannelId[];
+  trackChannelCount?: number;
+  onTrackChannelChange?: (track: SongChannelId) => void;
   sharedCurrentLine: number;
   focusRevision?: number;
   onToggleLineFromStart: (lineIndex: number) => void;
@@ -35,6 +38,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   onCreatePatternAt,
   targetTrack,
   tracks,
+  trackChannelCount = 3,
+  onTrackChannelChange,
   sharedCurrentLine,
   focusRevision = 0,
   onToggleLineFromStart,
@@ -51,7 +56,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       return 'A';
     }
   });
-  const [editingPattern, setEditingPattern] = useState<string>('');
+  // null means no edit is open; '' is a live edit on an empty ('--') cell.
+  const [editingPattern, setEditingPattern] = useState<string | null>(null);
   const playlistRef = useRef<HTMLDivElement>(null);
   const linesContainerRef = useRef<HTMLDivElement | null>(null);
 
@@ -120,12 +126,15 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
 
   const finishEditingPattern = useCallback(
     (options?: { refocusPlaylist?: boolean }) => {
+      if (editingPattern === null) {
+        return;
+      }
       if (editingPattern.trim() === '') {
         updatePattern(currentLine, currentTrack, '--');
       } else {
         updatePattern(currentLine, currentTrack, editingPattern.toUpperCase().padStart(2, '0'));
       }
-      setEditingPattern('');
+      setEditingPattern(null);
 
       const shouldRefocusPlaylist = options?.refocusPlaylist !== false;
       if (!shouldRefocusPlaylist) {
@@ -148,7 +157,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
   }, [isActive, focusRevision]);
 
   useEffect(() => {
-    if (editingPattern !== '') {
+    if (editingPattern !== null) {
       return;
     }
 
@@ -190,7 +199,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     (event: React.KeyboardEvent) => {
       if (!isActive) return;
 
-      if (!editingPattern && event.ctrlKey) {
+      if (editingPattern === null && event.ctrlKey) {
         if (event.key === 'ArrowUp') {
           event.preventDefault();
           moveLine(currentLine, 'up');
@@ -206,25 +215,25 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       const key = event.key.toUpperCase();
       const bare = !event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
 
-      if (editingPattern !== '') {
+      if (editingPattern !== null) {
         if (key === 'ENTER' || key === 'ESCAPE') {
           event.preventDefault();
           if (key === 'ENTER') {
             finishEditingPattern();
           } else {
-            setEditingPattern('');
+            setEditingPattern(null);
           }
         } else if (key === 'BACKSPACE') {
           event.preventDefault();
           if (editingPattern.length === 1) {
             updatePattern(currentLine, currentTrack, '--');
-            setEditingPattern('');
+            setEditingPattern(null);
           } else {
-            setEditingPattern((prev) => prev.slice(0, -1));
+            setEditingPattern((prev) => (prev ?? '').slice(0, -1));
           }
         } else if (/^[0-9A-F]$/.test(key) && editingPattern.length < 2) {
           event.preventDefault();
-          setEditingPattern((prev) => prev + key);
+          setEditingPattern((prev) => (prev ?? '') + key);
         }
         return;
       }
@@ -250,21 +259,19 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
           });
           break;
         case 'ARROWLEFT':
+        case 'ARROWRIGHT': {
           event.preventDefault();
-          setCurrentTrack((prev) => {
-            const index = tracks.indexOf(prev);
-            const next = index <= 0 ? tracks.length - 1 : index - 1;
-            return tracks[next] ?? prev;
-          });
+          // Channel arrows cycle every enabled channel, not just the visible
+          // window - reporting the pick lets the tracker slide its window.
+          const channelIds = SONG_CHANNEL_IDS.slice(0, Math.max(1, trackChannelCount));
+          const index = channelIds.indexOf(currentTrack);
+          const delta = key === 'ARROWLEFT' ? -1 : 1;
+          const next =
+            channelIds[(index + delta + channelIds.length) % channelIds.length] ?? currentTrack;
+          setCurrentTrack(next);
+          onTrackChannelChange?.(next);
           break;
-        case 'ARROWRIGHT':
-          event.preventDefault();
-          setCurrentTrack((prev) => {
-            const index = tracks.indexOf(prev);
-            const next = index < 0 || index >= tracks.length - 1 ? 0 : index + 1;
-            return tracks[next] ?? prev;
-          });
-          break;
+        }
         case 'N':
           if (!bare) break;
           event.preventDefault();
@@ -319,7 +326,8 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
       playlist.length,
       currentLine,
       currentTrack,
-      tracks,
+      trackChannelCount,
+      onTrackChannelChange,
       editingPattern,
       startEditingPattern,
       finishEditingPattern,
@@ -347,10 +355,11 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
     (lineIndex: number, track: SongChannelId) => {
       setCurrentLine(lineIndex);
       setCurrentTrack(track);
+      onTrackChannelChange?.(track);
       setActiveSection('playlist');
       onPositionSelect(lineIndex);
     },
-    [setActiveSection, onPositionSelect],
+    [setActiveSection, onPositionSelect, onTrackChannelChange],
   );
 
   const handleTrackHeaderClick = useCallback(
@@ -421,7 +430,7 @@ export const PlaylistPanel: React.FC<PlaylistPanelProps> = ({
         <div className="playlist-line-container" ref={linesContainerRef}>
           {playlist.map((entry, actualIndex) => {
             const isCurrentLine = actualIndex === currentLine;
-            const isEditing = isCurrentLine && editingPattern !== '';
+            const isEditing = isCurrentLine && editingPattern !== null;
 
             return (
               <PlaylistLine

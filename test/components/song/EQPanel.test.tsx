@@ -33,6 +33,7 @@ describe('EQPanel', () => {
     const { container } = render(
       <EQPanel
         ym2149={engine}
+        channelCount={3}
         channelMutes={[false, false, false]}
         onToggleChannelMute={() => {}}
       />,
@@ -47,6 +48,7 @@ describe('EQPanel', () => {
     const { container } = render(
       <EQPanel
         ym2149={engine}
+        channelCount={3}
         channelMutes={[false, false, false]}
         onToggleChannelMute={() => {}}
       />,
@@ -61,6 +63,7 @@ describe('EQPanel', () => {
     const { container } = render(
       <EQPanel
         ym2149={engine}
+        channelCount={3}
         channelMutes={[true, false, false]}
         onToggleChannelMute={() => {}}
       />,
@@ -70,12 +73,54 @@ describe('EQPanel', () => {
     expect(container.querySelectorAll('.volume-bar')[0].className).toContain('muted');
   });
 
+  it('shows six bars fed by both engines when the channel count is six', () => {
+    vi.useFakeTimers();
+    const chip1 = makeEngine([channel(12), channel(0), channel(7)]);
+    const chip2 = makeEngine([channel(9), channel(0), channel(0)]);
+    const { container } = render(
+      <EQPanel
+        ym2149={chip1}
+        ym2149b={chip2}
+        channelCount={6}
+        channelMutes={[false, false, false, false, false, false]}
+        onToggleChannelMute={() => {}}
+      />,
+    );
+    advancePoll();
+    expect(fillHeights(container)).toEqual([
+      '80%',
+      '0%',
+      `${(7 / 15) * 100}%`,
+      `${(9 / 15) * 100}%`,
+      '0%',
+      '0%',
+    ]);
+    expect(container.querySelectorAll('.channel-label')).toHaveLength(6);
+  });
+
+  it('keeps the second-chip bars at zero until its engine exists', () => {
+    vi.useFakeTimers();
+    const chip1 = makeEngine([channel(12), channel(0), channel(7)]);
+    const { container } = render(
+      <EQPanel
+        ym2149={chip1}
+        ym2149b={null}
+        channelCount={6}
+        channelMutes={[false, false, false, false, false, false]}
+        onToggleChannelMute={() => {}}
+      />,
+    );
+    advancePoll();
+    expect(fillHeights(container)).toEqual(['80%', '0%', `${(7 / 15) * 100}%`, '0%', '0%', '0%']);
+  });
+
   it('toggles the channel mute on click', () => {
     vi.useFakeTimers();
     const onToggleChannelMute = vi.fn();
     const { container } = render(
       <EQPanel
         ym2149={null}
+        channelCount={3}
         channelMutes={[false, false, false]}
         onToggleChannelMute={onToggleChannelMute}
       />,

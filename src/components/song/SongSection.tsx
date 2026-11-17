@@ -21,6 +21,8 @@ interface SongSectionProps {
   onCreatePatternAt: (lineIndex: number, track: SongChannelId) => void;
   targetTrackId: SongChannelId;
   tracks: readonly SongChannelId[];
+  trackChannelCount: number;
+  onTrackChannelChange: (track: SongChannelId) => void;
   sharedCurrentLine: number;
   onToggleLineFromStart: (lineIndex: number) => void;
   onToggleSongFromCursor: (lineIndex: number) => void;
@@ -50,6 +52,8 @@ export const SongSection: React.FC<SongSectionProps> = ({
   onCreatePatternAt,
   targetTrackId,
   tracks,
+  trackChannelCount,
+  onTrackChannelChange,
   sharedCurrentLine,
   onToggleLineFromStart,
   onToggleSongFromCursor,
@@ -88,6 +92,8 @@ export const SongSection: React.FC<SongSectionProps> = ({
         onCreatePatternAt={onCreatePatternAt}
         targetTrack={targetTrackId}
         tracks={tracks}
+        trackChannelCount={trackChannelCount}
+        onTrackChannelChange={onTrackChannelChange}
         sharedCurrentLine={sharedCurrentLine}
         focusRevision={playlistFocusRevision}
         onToggleLineFromStart={onToggleLineFromStart}
@@ -113,6 +119,7 @@ export const SongSection: React.FC<SongSectionProps> = ({
         <EQPanel
           ym2149={ym2149}
           ym2149b={ym2149b}
+          channelCount={trackChannelCount}
           channelMutes={channelMutes}
           onToggleChannelMute={onToggleChannelMute}
         />

@@ -13,8 +13,8 @@ interface PlaylistLineProps {
   isCurrentLine: boolean;
   currentTrack: SongChannelId;
   isEditing: boolean;
-  editingPattern: string;
-  onEditingPatternChange: (value: string) => void;
+  editingPattern: string | null;
+  onEditingPatternChange: (value: string | null) => void;
   onFinishEditingPattern: (options?: { refocusPlaylist?: boolean }) => void;
   onLineClick: (index: number) => void;
   onPatternClick: (index: number, track: SongChannelId) => void;
@@ -64,10 +64,10 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
       event.stopPropagation();
       onFinishEditingPattern();
     } else if (event.key === 'Escape') {
-      onEditingPatternChange('');
+      onEditingPatternChange(null);
     } else if (key === 'N') {
       event.preventDefault();
-      onEditingPatternChange('');
+      onEditingPatternChange(null);
       onCreatePatternAt(index, track);
     }
   };
@@ -81,7 +81,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
         <input
           type="text"
           className="pattern-input"
-          value={editingPattern}
+          value={editingPattern ?? ''}
           onChange={(event) => onEditingPatternChange(event.target.value.toUpperCase().slice(0, 2))}
           onBlur={() => onFinishEditingPattern()}
           onKeyDown={(event) => handleInputKeyDown(event, track)}

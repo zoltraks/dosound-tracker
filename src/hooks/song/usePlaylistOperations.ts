@@ -94,17 +94,7 @@ export function usePlaylistOperations({
       const newPlaylist = mapSongLineToPlaylistEntries(song.line);
       const entry = { ...newPlaylist[lineIndex] };
 
-      switch (track) {
-        case 'A':
-          entry.A = asPlaylistPatternId(patternId);
-          break;
-        case 'B':
-          entry.B = asPlaylistPatternId(patternId);
-          break;
-        case 'C':
-          entry.C = asPlaylistPatternId(patternId);
-          break;
-      }
+      entry[track] = asPlaylistPatternId(patternId);
 
       newPlaylist[lineIndex] = entry;
       // One updateSong call keeps pattern creation and playlist assignment
@@ -130,17 +120,7 @@ export function usePlaylistOperations({
       newPattern.step = steps;
 
       const entry = { ...playlist[targetLine] };
-      switch (targetTrackId) {
-        case 'A':
-          entry.A = asPlaylistPatternId(patternId);
-          break;
-        case 'B':
-          entry.B = asPlaylistPatternId(patternId);
-          break;
-        case 'C':
-          entry.C = asPlaylistPatternId(patternId);
-          break;
-      }
+      entry[targetTrackId] = asPlaylistPatternId(patternId);
 
       playlist[targetLine] = entry;
       // One updateSong call keeps pattern creation and playlist assignment
@@ -150,8 +130,7 @@ export function usePlaylistOperations({
         pattern: [...song.pattern, newPattern],
       });
 
-      const section =
-        targetTrackId === 'A' ? 'trackA' : targetTrackId === 'B' ? 'trackB' : 'trackC';
+      const section = `track${targetTrackId}` as NavigationSection;
       setActiveSection(section);
       setSharedCurrentLine(0);
       setPosition(targetLine, 0, 0);
@@ -327,17 +306,7 @@ export function usePlaylistOperations({
     const playlist = mapSongLineToPlaylistEntries(song.line);
     const entry = { ...playlist[currentIndex] };
 
-    switch (targetTrackId) {
-      case 'A':
-        entry.A = '--';
-        break;
-      case 'B':
-        entry.B = '--';
-        break;
-      case 'C':
-        entry.C = '--';
-        break;
-    }
+    entry[targetTrackId] = '--';
 
     playlist[currentIndex] = entry;
     updateSong({ line: mapPlaylistEntriesToSongLine(playlist) });

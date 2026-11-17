@@ -1,7 +1,7 @@
 import type { Song, Pattern, Step } from '../../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
-import { asPlaylistPatternId, type PatternId } from '../../types/branded.ts';
-import type { PlaylistEntry } from '../../types/playlist.ts';
+import { type PatternId } from '../../types/branded.ts';
+import { mapPlaylistEntriesToSongLine, type PlaylistEntry } from '../../types/playlist.ts';
 
 export interface CreatePatternResult {
   updatedSong: Song;
@@ -26,14 +26,8 @@ export function createPatternForSong(song: Song, patternId: PatternId): CreatePa
 }
 
 export function addPlaylistEntryToSong(song: Song, entry: PlaylistEntry): Song {
-  const normalizedEntry: Song['line'][number] = {
-    A: entry.A === '--' ? entry.A : asPlaylistPatternId(entry.A),
-    B: entry.B === '--' ? entry.B : asPlaylistPatternId(entry.B),
-    C: entry.C === '--' ? entry.C : asPlaylistPatternId(entry.C),
-  };
-
   return {
     ...song,
-    line: [...song.line, normalizedEntry],
+    line: [...song.line, mapPlaylistEntriesToSongLine([entry])[0]],
   };
 }

@@ -4,6 +4,10 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 interface EQPanelProps {
   ym2149?: SoundEngine | null;
   ym2149b?: SoundEngine | null;
+  // Bars follow the enabled channel count (the Two chips setting), not
+  // engine presence - chip 2's engine only exists once the song uses it,
+  // but its three bars stay visible and read zero until then.
+  channelCount: number;
   channelMutes: boolean[];
   onToggleChannelMute: (channelIndex: number) => void;
 }
@@ -11,6 +15,7 @@ interface EQPanelProps {
 export const EQPanel: React.FC<EQPanelProps> = ({
   ym2149,
   ym2149b,
+  channelCount,
   channelMutes,
   onToggleChannelMute,
 }) => {
@@ -36,16 +41,13 @@ export const EQPanel: React.FC<EQPanelProps> = ({
             channel.toneEnabled || channel.noiseEnabled ? channel.volume : 0,
           );
       };
-      // Six meters: chip 1 feeds A-C, chip 2 feeds D-F when present.
+      // Six meters: chip 1 feeds A-C, chip 2 feeds D-F when its engine exists.
       const next = [...readChannels(ym2149Ref.current), ...readChannels(ym2149bRef.current)];
-      const meterCount = ym2149bRef.current ? 6 : 3;
-      const sliced = next.slice(0, meterCount);
       setVolumes((prev) => {
-        const comparable = prev.slice(0, meterCount);
-        if (comparable.every((value, index) => value === sliced[index])) {
+        if (prev.every((value, index) => value === next[index])) {
           return prev;
         }
-        return sliced;
+        return next;
       });
     }, 50);
 
@@ -61,7 +63,7 @@ export const EQPanel: React.FC<EQPanelProps> = ({
       <div className="eq-header">EQ</div>
       <div className="eq-content">
         <div className="volume-bars">
-          {volumes.slice(0, ym2149b ? 6 : 3).map((volume, index) => (
+          {volumes.slice(0, channelCount).map((volume, index) => (
             <div key={index} className="volume-bar-container">
               <div
                 className={`volume-bar ${channelMutes[index] ? 'muted' : ''}`}
@@ -75,7 +77,7 @@ export const EQPanel: React.FC<EQPanelProps> = ({
                 />
               </div>
               <span className={`channel-label ${channelMutes[index] ? 'muted' : ''}`}>
-                {String.fromCharCode(65 + index)} {/* A, B, C */}
+                {String.fromCharCode(65 + index)} {/* A-F */}
               </span>
             </div>
           ))}

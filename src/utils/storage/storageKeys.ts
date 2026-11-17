@@ -17,6 +17,7 @@ export class StorageKeys {
   static readonly TEXT_SCALE = 'dosound-tracker-text-scale' as const;
   static readonly TRANSPOSE_SETTINGS = 'dosound-tracker-transpose-settings' as const;
   static readonly EDITOR_CURSOR = 'dosound-tracker-editor-cursor' as const;
+  static readonly FOCUSED_ELEMENT = 'dosound-tracker-focused-element' as const;
   static readonly CURRENT_INSTRUMENT = 'dosound-tracker-current-instrument' as const;
   static readonly SONG_INFO_FIELD = 'dosound-tracker-song-info-field' as const;
   static readonly PLAYLIST_TRACK = 'dosound-tracker-playlist-track' as const;

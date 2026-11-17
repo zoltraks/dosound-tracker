@@ -5,6 +5,7 @@ import { ChevronUp, ChevronDown } from 'lucide-react';
 import { MAX_INSTRUMENTS, ENVELOPE_LENGTH } from '../../constants/music.ts';
 import type { Instrument } from '../../synth/SoundDriver.ts';
 import { formatInstrumentSlotId } from '../../utils/instrument/instrumentSelection.ts';
+import { isTrackNavigationSection } from '../../utils/keyboard/keyboardNavigationUtils.ts';
 import {
   computeVisibleSlotCount,
   getInstrumentForSlot as getInstrumentForSlotFromUtils,
@@ -45,8 +46,7 @@ export const InstrumentPanel: React.FC<InstrumentPanelProps> = ({
   const itemsContainerRef = useRef<HTMLDivElement | null>(null);
 
   const isActive = activeSection === 'instrumentList';
-  const isTrackSectionActive =
-    activeSection === 'trackA' || activeSection === 'trackB' || activeSection === 'trackC';
+  const isTrackSectionActive = isTrackNavigationSection(activeSection);
   const visibleSlotCount = computeVisibleSlotCount(instruments, currentIndex, MAX_INSTRUMENTS);
 
   useEffect(() => {

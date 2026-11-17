@@ -63,6 +63,24 @@ describe('PlaylistPanel', () => {
     }
   });
 
+  it('opens an empty editor on Enter for an unassigned cell', () => {
+    const { container } = renderPanel();
+    const panel = getPanel(container);
+
+    // Move the channel cursor to the empty B column, then press Enter.
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+    fireEvent.keyDown(panel, { key: 'Enter' });
+
+    const input = container.querySelector('.pattern-input') as HTMLInputElement;
+    try {
+      expect(input).toBeTruthy();
+      expect(input.value).toBe('');
+    } catch (error) {
+      console.log('empty-cell edit mismatch', container.innerHTML.slice(0, 400));
+      throw error;
+    }
+  });
+
   it('does not start pattern editing on Ctrl+Space', () => {
     const { container } = renderPanel();
     fireEvent.keyDown(getPanel(container), { key: ' ', ctrlKey: true });
@@ -243,5 +261,51 @@ describe('PlaylistPanel', () => {
       console.log('refocus mismatch', document.activeElement?.className);
       throw error;
     }
+  });
+
+  it('cycles channel columns across the full enabled set on arrow keys', () => {
+    const onTrackChannelChange = vi.fn();
+    const { container } = renderPanel({ trackChannelCount: 6, onTrackChannelChange });
+    const panel = getPanel(container);
+
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+
+    expect(onTrackChannelChange).toHaveBeenNthCalledWith(1, 'B');
+    expect(onTrackChannelChange).toHaveBeenNthCalledWith(2, 'C');
+    expect(onTrackChannelChange).toHaveBeenNthCalledWith(3, 'D');
+  });
+
+  it('wraps channel columns at the ends of the enabled set', () => {
+    const onTrackChannelChange = vi.fn();
+    const { container } = renderPanel({ trackChannelCount: 6, onTrackChannelChange });
+    const panel = getPanel(container);
+
+    fireEvent.keyDown(panel, { key: 'ArrowLeft' });
+    expect(onTrackChannelChange).toHaveBeenCalledWith('F');
+
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+    expect(onTrackChannelChange).toHaveBeenLastCalledWith('A');
+  });
+
+  it('limits channel cycling to three channels by default', () => {
+    const onTrackChannelChange = vi.fn();
+    const { container } = renderPanel({ onTrackChannelChange });
+    const panel = getPanel(container);
+
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+    fireEvent.keyDown(panel, { key: 'ArrowRight' });
+
+    expect(onTrackChannelChange).toHaveBeenNthCalledWith(3, 'A');
+  });
+
+  it('reports the clicked pattern column as the track channel', () => {
+    const onTrackChannelChange = vi.fn();
+    const { container } = renderPanel({ onTrackChannelChange });
+    const cells = container.querySelectorAll('.track-pattern');
+    fireEvent.click(cells[1]);
+    expect(onTrackChannelChange).toHaveBeenCalledWith('B');
   });
 });

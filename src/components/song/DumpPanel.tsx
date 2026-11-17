@@ -139,27 +139,27 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149, ym2149b }) => {
   const rows = [
     {
       leftLabel: 'TA',
-      leftValue: `$${formatHex(derived.toneA, 4)}`,
+      leftValue: `${formatHex(derived.toneA, 4)}`,
       rightLabel: 'VA',
-      rightValue: `$${formatHex(derived.volumeA, 1)}`,
+      rightValue: `${formatHex(derived.volumeA, 1)}`,
     },
     {
       leftLabel: 'TB',
-      leftValue: `$${formatHex(derived.toneB, 4)}`,
+      leftValue: `${formatHex(derived.toneB, 4)}`,
       rightLabel: 'VB',
-      rightValue: `$${formatHex(derived.volumeB, 1)}`,
+      rightValue: `${formatHex(derived.volumeB, 1)}`,
     },
     {
       leftLabel: 'TC',
-      leftValue: `$${formatHex(derived.toneC, 4)}`,
+      leftValue: `${formatHex(derived.toneC, 4)}`,
       rightLabel: 'VC',
-      rightValue: `$${formatHex(derived.volumeC, 1)}`,
+      rightValue: `${formatHex(derived.volumeC, 1)}`,
     },
     {
       leftLabel: 'MX',
-      leftValue: `$${formatHex(derived.mixer, 2)}`,
+      leftValue: `${formatHex(derived.mixer, 2)}`,
       rightLabel: 'NS',
-      rightValue: `$${formatHex(derived.noisePeriod, 2)}`,
+      rightValue: `${formatHex(derived.noisePeriod, 2)}`,
     },
   ];
 
@@ -201,7 +201,7 @@ export const DumpPanel: React.FC<DumpPanelProps> = ({ ym2149, ym2149b }) => {
                 setActiveChip(chip);
               }}
             >
-              {chip === 0 ? 'CHIP 1' : 'CHIP 2'}
+              <span className="chip-switcher-label">{chip === 0 ? 'CHIP 1' : 'CHIP 2'}</span>
             </button>
           ))}
         </div>

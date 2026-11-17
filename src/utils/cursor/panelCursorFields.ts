@@ -11,7 +11,7 @@ export function readSongInfoField(raw: string | null): SongInfoField {
     : 'title';
 }
 
-const PLAYLIST_TRACKS = ['A', 'B', 'C'] as const;
+const PLAYLIST_TRACKS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
 
 export type PlaylistTrack = (typeof PLAYLIST_TRACKS)[number];
 
