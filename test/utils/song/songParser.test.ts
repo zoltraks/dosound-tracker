@@ -348,3 +348,78 @@ song:
     expect(clamped.stereo).toEqual({ A: 0, C: 1 });
   });
 });
+
+describe('parseSongFromYaml two-chip songs', () => {
+  const base = `
+song:
+  title: Dual
+  author: T
+  length: 4
+  speed: 4
+  line:
+    - A: "00"
+      B: "--"
+      C: "--"
+      D: "01"
+      E: "--"
+      F: "02"
+  pattern:
+    - number: "00"
+      step:
+        - note: "C-4"
+          instrument: "00"
+    - number: "01"
+      step:
+        - note: "E-4"
+          instrument: "00"
+    - number: "02"
+      step:
+        - note: "G-4"
+          instrument: "00"
+  instrument:
+    - number: "00"
+      volume: [15]
+`;
+
+  it('reads D, E, and F playlist keys', () => {
+    const song = parseSongFromYaml(base);
+    expect(song.line[0]).toEqual({ A: '00', B: '--', C: '--', D: '01', F: '02' });
+  });
+
+  it('derives chipCount 2 from second-chip references', () => {
+    const song = parseSongFromYaml(base);
+    expect(song.chipCount).toBe(2);
+  });
+
+  it('honours an explicit chipCount field, including string form', () => {
+    const explicit = parseSongFromYaml(base.replace('speed: 4', 'speed: 4\n  chipCount: 2'));
+    expect(explicit.chipCount).toBe(2);
+
+    const single = parseSongFromYaml(
+      base.replace('speed: 4', 'speed: 4\n  chipCount: "1"').replace(/\n\s+[DEF]: "[0-9]+"/g, ''),
+    );
+    expect(single.chipCount).toBeUndefined();
+  });
+
+  it('falls back to derivation for unsupported chipCount values', () => {
+    const song = parseSongFromYaml(base.replace('speed: 4', 'speed: 4\n  chipCount: 7'));
+    expect(song.chipCount).toBe(2);
+  });
+
+  it('omits second-chip keys set to "--"', () => {
+    const song = parseSongFromYaml(base.replace('F: "02"', 'F: "--"'));
+    expect(song.line[0]).toEqual({ A: '00', B: '--', C: '--', D: '01' });
+    expect(song.chipCount).toBe(2);
+  });
+
+  it('keeps single-chip rows free of second-chip keys', () => {
+    const song = parseSongFromYaml(base.replace(/\n\s+[DEF]: "[0-9]+"/g, ''));
+    expect(song.line[0]).toEqual({ A: '00', B: '--', C: '--' });
+    expect(song.chipCount).toBeUndefined();
+  });
+
+  it('reads stereo overrides for D, E, and F', () => {
+    const song = parseSongFromYaml(`${base}  stereo: { layout: dual, D: 0.1, F: 0.9 }\n`);
+    expect(song.stereo).toEqual({ layout: 'dual', D: 0.1, F: 0.9 });
+  });
+});

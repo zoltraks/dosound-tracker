@@ -3,6 +3,7 @@ import { Formatter } from '../../utils/format/formatters.ts';
 import { formatInstrumentSlotId } from '../../utils/instrument/instrumentSelection.ts';
 import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 import { normalizePatternId } from '../../utils/pattern/patternUtils.ts';
+import { SECOND_CHIP_CHANNEL_IDS } from '../../constants/song.ts';
 
 export interface RenumberSongResult {
   renumberedSong: Song;
@@ -69,11 +70,19 @@ export function renumberSongData(
 
   const newPlaylist = song.line.map((entry) => {
     if (!entry) return entry;
-    return {
+    const remapped: typeof entry = {
       A: typeof entry.A === 'string' ? remapPatternId(entry.A) : entry.A,
       B: typeof entry.B === 'string' ? remapPatternId(entry.B) : entry.B,
       C: typeof entry.C === 'string' ? remapPatternId(entry.C) : entry.C,
     };
+    // D/E/F stay optional: remap only when the row carries the key.
+    for (const key of SECOND_CHIP_CHANNEL_IDS) {
+      const value = entry[key];
+      if (value !== undefined) {
+        remapped[key] = typeof value === 'string' ? remapPatternId(value) : value;
+      }
+    }
+    return remapped;
   });
 
   const remappedPatterns: Pattern[] = orderedPatternIds

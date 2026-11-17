@@ -49,7 +49,15 @@ export interface Line {
   A: string;
   B: string;
   C: string;
+  // Optional second-chip channels: absent resolves to the '--' empty slot.
+  D?: string;
+  E?: string;
+  F?: string;
 }
+
+// Channel letters A-F address the song's outputs: A-C belong to chip 1,
+// D-F to chip 2 on a two-chip song.
+export type SongChannelId = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
 // Per-channel stereo output settings. `layout` names a catalog wiring
 // (see STEREO_LAYOUTS in constants/song.ts); `A`/`B`/`C` are free pan
@@ -60,6 +68,9 @@ export interface SongStereo {
   A?: number;
   B?: number;
   C?: number;
+  D?: number;
+  E?: number;
+  F?: number;
 }
 
 export interface Song {
@@ -70,6 +81,9 @@ export interface Song {
   length: number;
   loop?: number | null;
   chip?: string;
+  // Number of AY/YM chips the song addresses: 1 (default) or 2. Channels
+  // A-C drive chip 1, D-F drive chip 2.
+  chipCount?: 1 | 2;
   frame?: number;
   clock?: number;
   stereo?: SongStereo;

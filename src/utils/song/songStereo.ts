@@ -2,7 +2,7 @@
 // resolution. Channel pans live on a 0..1 scale where 0 is full left,
 // 0.5 centre, and 1 full right.
 import type { SongStereo } from '../../synth/SoundDriver.ts';
-import { DEFAULT_CHANNEL_PANS, STEREO_LAYOUTS } from '../../constants/song.ts';
+import { STEREO_LAYOUTS, SONG_CHANNEL_COUNT, SONG_CHANNEL_IDS } from '../../constants/song.ts';
 
 export const clampChannelPan = (value: number): number => Math.min(1, Math.max(0, value));
 
@@ -13,7 +13,7 @@ const coerceChannelPan = (value: unknown): number | undefined => {
 
 // Normalize a raw stereo node from YAML or stored JSON into a SongStereo.
 // A bare string is shorthand for the layout id; a mapping carries an
-// optional `layout` plus `A`/`B`/`C` channel overrides. Returns undefined
+// optional `layout` plus `A`-`F` channel overrides. Returns undefined
 // when the input carries no usable member.
 export const normalizeSongStereo = (raw: unknown): SongStereo | undefined => {
   if (typeof raw === 'string') {
@@ -25,40 +25,53 @@ export const normalizeSongStereo = (raw: unknown): SongStereo | undefined => {
     return undefined;
   }
 
-  const node = raw as { layout?: unknown; A?: unknown; B?: unknown; C?: unknown };
+  const node = raw as {
+    layout?: unknown;
+    A?: unknown;
+    B?: unknown;
+    C?: unknown;
+    D?: unknown;
+    E?: unknown;
+    F?: unknown;
+  };
   const stereo: SongStereo = {};
 
   if (typeof node.layout === 'string' && node.layout.trim()) {
     stereo.layout = node.layout.trim().toLowerCase();
   }
 
-  const panA = coerceChannelPan(node.A);
-  const panB = coerceChannelPan(node.B);
-  const panC = coerceChannelPan(node.C);
-  if (panA !== undefined) stereo.A = panA;
-  if (panB !== undefined) stereo.B = panB;
-  if (panC !== undefined) stereo.C = panC;
+  const channelKeys = SONG_CHANNEL_IDS;
+  for (const key of channelKeys) {
+    const pan = coerceChannelPan(node[key]);
+    if (pan !== undefined) stereo[key] = pan;
+  }
 
   return stereo.layout !== undefined ||
     stereo.A !== undefined ||
     stereo.B !== undefined ||
-    stereo.C !== undefined
+    stereo.C !== undefined ||
+    stereo.D !== undefined ||
+    stereo.E !== undefined ||
+    stereo.F !== undefined
     ? stereo
     : undefined;
 };
 
-// Resolve the effective per-channel pans: the catalog pans for the named
-// layout (absent or unknown layouts resolve as `mono`) with each channel
-// override applied to its own slot.
-export const resolveChannelPans = (stereo: SongStereo | undefined): [number, number, number] => {
+// Resolve the effective per-channel pans as a six-tuple indexed by channel
+// letter position (A=0 .. F=5): the catalog pans for the named layout
+// (absent or unknown layouts resolve as `mono`) with each channel override
+// applied to its own slot. Callers needing only the first three channels
+// read indices 0-2; the result always carries all six so two-chip songs
+// resolve D/E/F through the same rules.
+export const resolveChannelPans = (stereo: SongStereo | undefined): number[] => {
   const layoutPans =
-    (stereo?.layout ? STEREO_LAYOUTS[stereo.layout] : undefined) ?? DEFAULT_CHANNEL_PANS;
-  const pans: [number, number, number] = [layoutPans[0], layoutPans[1], layoutPans[2]];
+    (stereo?.layout ? STEREO_LAYOUTS[stereo.layout] : undefined) ?? STEREO_LAYOUTS.mono;
+  const pans: number[] = Array.from({ length: SONG_CHANNEL_COUNT }, (_, i) => layoutPans[i]);
 
   if (stereo) {
-    const overrides = [stereo.A, stereo.B, stereo.C];
-    for (let channel = 0; channel < 3; channel++) {
-      const value = overrides[channel];
+    const channelKeys = SONG_CHANNEL_IDS;
+    for (let channel = 0; channel < SONG_CHANNEL_COUNT; channel++) {
+      const value = stereo[channelKeys[channel]];
       if (typeof value === 'number' && Number.isFinite(value)) {
         pans[channel] = clampChannelPan(value);
       }

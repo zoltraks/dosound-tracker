@@ -5,6 +5,7 @@ import type { SequencerState } from '../sequencer/useSequencer.ts';
 import type { Song } from '../../synth/SoundDriver.ts';
 import type { SoundEngine } from '../../synth/soundEngine.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 
 const clampPlaylistIndex = (patternIndex: number, playlistLength: number) =>
   Math.max(0, Math.min(patternIndex, playlistLength - 1));
@@ -20,7 +21,11 @@ const resolvePlayableLineIndex = (song: Song, patternIndex: number): number | nu
   }
   const clampedIndex = clampPlaylistIndex(patternIndex, playlistLength);
   const entry = song.line[clampedIndex];
-  if (!entry || (entry.A === '--' && entry.B === '--' && entry.C === '--')) {
+  const allEmpty = SONG_CHANNEL_IDS.every((key) => {
+    const value = entry?.[key];
+    return value === undefined || value === '--';
+  });
+  if (!entry || allEmpty) {
     return null;
   }
   return clampedIndex;

@@ -10,6 +10,8 @@ import { YM_CLOCK } from '../../synth/YM2149.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 import { buildPatternLookup, isPatternTrackId } from '../song/songLookup.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
+import { songChannelCount } from '../song/songChips.ts';
 
 export interface RegisterState {
   [register: number]: number;
@@ -31,6 +33,9 @@ export interface ChannelState {
 
 export interface SimulationFrame {
   registers: RegisterState;
+  // Second chip's register file, present only on two-chip songs. Channels
+  // D-F (indices 3-5) write here with their local channel number (ch - 3).
+  registers2?: RegisterState;
   lineIndex: number;
   playlistIndex: number;
   patternLineIndex: number;
@@ -58,6 +63,8 @@ export function simulateSong(
 ): void {
   const { retriggerBehavior = 'always', clock = YM_CLOCK } = options;
   const ticksPerRow = song.speed || 6;
+  const channelCount = songChannelCount(song);
+  const activeChannelIds = SONG_CHANNEL_IDS.slice(0, channelCount);
 
   // Lookup maps built once per simulation. First-wins insertion mirrors the
   // Array.find resolution these replace, including the degenerate '' key an
@@ -79,58 +86,52 @@ export function simulateSong(
     0x09: 0x00, // Volume B
     0x0a: 0x00, // Volume C
   };
+  // Chip 2 keeps its own register file on two-chip songs; single-chip
+  // songs never allocate it so frames stay identical to before.
+  const twoChips = channelCount === 6;
+  let currentRegs2: RegisterState | undefined = twoChips
+    ? {
+        0x07: 0x38,
+        0x08: 0x00,
+        0x09: 0x00,
+        0x0a: 0x00,
+      }
+    : undefined;
 
-  const channels: ChannelState[] = [
-    {
-      note: null,
-      envelopeStep: 0,
-      subTick: 0,
-      isNewNote: false,
-      volumeModifier: 0x0f,
-      sustainIndex: null,
-      released: false,
-    },
-    {
-      note: null,
-      envelopeStep: 0,
-      subTick: 0,
-      isNewNote: false,
-      volumeModifier: 0x0f,
-      sustainIndex: null,
-      released: false,
-    },
-    {
-      note: null,
-      envelopeStep: 0,
-      subTick: 0,
-      isNewNote: false,
-      volumeModifier: 0x0f,
-      sustainIndex: null,
-      released: false,
-    },
-  ];
+  const freshChannelState = (): ChannelState => ({
+    note: null,
+    envelopeStep: 0,
+    subTick: 0,
+    isNewNote: false,
+    volumeModifier: 0x0f,
+    sustainIndex: null,
+    released: false,
+  });
+
+  const channels: ChannelState[] = Array.from({ length: channelCount }, freshChannelState);
 
   // Normalized instrument id of each channel's active note, maintained at the
   // same sites that assign channelState.note - the held note keeps its id.
-  const channelInstrumentIds: (InstrumentId | '')[] = ['', '', ''];
+  const channelInstrumentIds: (InstrumentId | '')[] = Array.from(
+    { length: channelCount },
+    () => '',
+  );
 
   let globalLineIndex = 0;
   let hasEmittedFrame = false;
 
   for (let playlistIdx = 0; playlistIdx < song.line.length; playlistIdx++) {
     const playlistEntry = song.line[playlistIdx];
-    const patterns = [
-      patternsByIdMap.get(playlistEntry.A),
-      patternsByIdMap.get(playlistEntry.B),
-      patternsByIdMap.get(playlistEntry.C),
-    ];
+    const patterns = activeChannelIds.map((channelId) =>
+      patternsByIdMap.get(playlistEntry[channelId] ?? '--'),
+    );
 
     // Reset channel state if needed
     // At the beginning of each playlist position, only reset playback
     // state for channels that actually reference a pattern. Tracks with
     // "--" should allow any previously playing note to continue
     // sustaining across this playlist position.
-    const trackIds = [playlistEntry.A, playlistEntry.B, playlistEntry.C];
+    const trackIds = activeChannelIds.map((channelId) => playlistEntry[channelId]);
     for (let ch = 0; ch < channels.length; ch++) {
       const id = trackIds[ch];
       const hasPattern = isPatternTrackId(id);
@@ -150,22 +151,18 @@ export function simulateSong(
     const lineCount = song.length || 64;
 
     for (let lineIdx = 0; lineIdx < lineCount; lineIdx++) {
-      const notes = [
-        patterns[0]?.step[lineIdx]?.note || null,
-        patterns[1]?.step[lineIdx]?.note || null,
-        patterns[2]?.step[lineIdx]?.note || null,
-      ];
-      const volumes = [
-        patterns[0]?.step[lineIdx]?.volume,
-        patterns[1]?.step[lineIdx]?.volume,
-        patterns[2]?.step[lineIdx]?.volume,
-      ];
+      const notes = patterns.map((pattern) => pattern?.step[lineIdx]?.note || null);
+      const volumes = patterns.map((pattern) => pattern?.step[lineIdx]?.volume);
 
       for (let tick = 0; tick < ticksPerRow; tick++) {
         const newRegs: RegisterState = { ...currentRegs };
+        const newRegs2: RegisterState | undefined = currentRegs2 ? { ...currentRegs2 } : undefined;
         const toneMeta: ToneMetaByChannel = {};
 
-        for (let ch = 0; ch < 3; ch++) {
+        for (let ch = 0; ch < channelCount; ch++) {
+          // Channels D-F address chip 2's local channels 0-2.
+          const localCh = ch % 3;
+          const targetRegs = ch < 3 ? newRegs : (newRegs2 as RegisterState);
           const pattern = patterns[ch];
           const noteOnRow = notes[ch];
           const channelState = channels[ch];
@@ -193,7 +190,7 @@ export function simulateSong(
                 channelState.isNewNote = false;
                 channelState.sustainIndex = null;
                 channelState.released = false;
-                newRegs[0x08 + ch] = 0x00;
+                targetRegs[0x08 + localCh] = 0x00;
                 continue;
               }
 
@@ -288,8 +285,8 @@ export function simulateSong(
               };
 
               applyInstrumentToRegisters(
-                newRegs,
-                ch,
+                targetRegs,
+                localCh,
                 channelState.note,
                 instrument,
                 step,
@@ -324,6 +321,7 @@ export function simulateSong(
 
         callback({
           registers: newRegs,
+          ...(newRegs2 ? { registers2: newRegs2 } : {}),
           lineIndex: globalLineIndex + lineIdx,
           playlistIndex: playlistIdx,
           patternLineIndex: lineIdx,
@@ -334,6 +332,9 @@ export function simulateSong(
         });
 
         currentRegs = newRegs;
+        if (newRegs2) {
+          currentRegs2 = newRegs2;
+        }
         hasEmittedFrame = true;
       }
     }

@@ -96,3 +96,78 @@ describe('simulateSong instrument-id normalization', () => {
     }
   });
 });
+
+describe('simulateSong two-chip songs', () => {
+  const dualSong = (overrides: Partial<Song> = {}): Song => ({
+    title: 'T',
+    author: 'A',
+    year: 2025,
+    speed: 6,
+    length: 4,
+    chipCount: 2,
+    pattern: [
+      {
+        id: '00',
+        name: 'PA',
+        step: [
+          { note: { note: 'C', octave: 4, instrument: '00' }, volume: null },
+          { note: null },
+          { note: null },
+          { note: null },
+        ],
+      },
+      {
+        id: '01',
+        name: 'PD',
+        step: [
+          { note: { note: 'E', octave: 4, instrument: '00' }, volume: null },
+          { note: null },
+          { note: null },
+          { note: null },
+        ],
+      },
+    ],
+    line: [{ A: '00', B: '--', C: '--', D: '01', E: '--', F: '--' }],
+    instrument: [inst('00')],
+    ...overrides,
+  });
+
+  it('emits a second register file and six channel states', () => {
+    try {
+      const frames = collectFrames(dualSong());
+      expect(frames.length).toBeGreaterThan(0);
+      expect(frames.every((f) => f.registers2 !== undefined)).toBe(true);
+      expect(frames[0].channels).toHaveLength(6);
+      // Chip 1 channel A sounds on registers; chip 2 channel D (local 0)
+      // sounds on registers2.
+      expect(frames.some((f) => (f.registers[0x08] ?? 0) > 0)).toBe(true);
+      expect(frames.some((f) => (f.registers2?.[0x08] ?? 0) > 0)).toBe(true);
+      // toneMeta keys cover both chips' global channel indices.
+      expect(frames.some((f) => f.toneMeta[0]?.note === 'C')).toBe(true);
+      expect(frames.some((f) => f.toneMeta[3]?.note === 'E')).toBe(true);
+    } catch (error) {
+      console.log('two-chip sim mismatch');
+      throw error;
+    }
+  });
+
+  it('derives two chips from D/E/F references without chipCount', () => {
+    const derived = dualSong({ chipCount: undefined });
+    const frames = collectFrames(derived);
+    expect(frames[0].registers2).toBeDefined();
+    expect(frames[0].channels).toHaveLength(6);
+  });
+
+  it('keeps single-chip frames free of registers2', () => {
+    const frames = collectFrames(songWithIds('05', '05'));
+    expect(frames.every((f) => f.registers2 === undefined)).toBe(true);
+    expect(frames[0].channels).toHaveLength(3);
+  });
+
+  it('ignores second-chip references when chipCount is explicitly 1', () => {
+    const forced = dualSong({ chipCount: 1 });
+    const frames = collectFrames(forced);
+    expect(frames.every((f) => f.registers2 === undefined)).toBe(true);
+    expect(frames[0].channels).toHaveLength(3);
+  });
+});

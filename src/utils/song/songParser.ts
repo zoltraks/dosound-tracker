@@ -26,6 +26,7 @@ import {
   DEFAULT_SONG_CHIP,
   DEFAULT_SONG_FRAME,
   DEFAULT_SONG_CLOCK,
+  SECOND_CHIP_CHANNEL_IDS,
   SUPPORTED_SONG_CHIPS,
   SUPPORTED_SONG_FRAMES,
   SUPPORTED_SONG_CLOCKS,
@@ -51,6 +52,7 @@ interface SongYamlNode {
   year?: unknown;
   loop?: unknown;
   chip?: unknown;
+  chipCount?: unknown;
   frame?: unknown;
   clock?: unknown;
   stereo?: unknown;
@@ -205,12 +207,31 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
       throw new Error(`Invalid line entry at index ${index}`);
     }
 
-    const e = entry as { A?: unknown; B?: unknown; C?: unknown };
-    const A = typeof e.A === 'string' ? e.A : '--';
-    const B = typeof e.B === 'string' ? e.B : '--';
-    const C = typeof e.C === 'string' ? e.C : '--';
+    const e = entry as {
+      A?: unknown;
+      B?: unknown;
+      C?: unknown;
+      D?: unknown;
+      E?: unknown;
+      F?: unknown;
+    };
+    const channel = (key: 'A' | 'B' | 'C' | 'D' | 'E' | 'F') =>
+      typeof e[key] === 'string' ? e[key] : '--';
+    const row: Song['line'][number] = {
+      A: channel('A'),
+      B: channel('B'),
+      C: channel('C'),
+    };
+    // D/E/F stay optional on the row: emit them only when the file names
+    // a pattern, keeping single-chip rows free of empty second-chip keys.
+    for (const key of SECOND_CHIP_CHANNEL_IDS) {
+      const value = e[key];
+      if (typeof value === 'string' && value !== '--') {
+        row[key] = value;
+      }
+    }
 
-    return { A, B, C };
+    return row;
   });
 
   const rawPatternNodes = Array.isArray(songNode.pattern) ? songNode.pattern : songNode.patterns;
@@ -450,6 +471,18 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
 
   const stereo = normalizeSongStereo(songNode.stereo);
 
+  // Chip count: an explicit `chipCount` of 1 or 2 (number or numeric
+  // string) is authoritative; otherwise the count derives from playlist
+  // content - any D/E/F pattern reference means two chips.
+  const chipCountRaw = coerceYamlNumber(songNode.chipCount);
+  const derivedChipCount = line.some((entry) =>
+    SECOND_CHIP_CHANNEL_IDS.some((key) => entry[key] !== undefined),
+  )
+    ? 2
+    : 1;
+  const chipCount: 1 | 2 =
+    chipCountRaw === 1 || chipCountRaw === 2 ? chipCountRaw : derivedChipCount;
+
   const song: Song = {
     title,
     author,
@@ -461,6 +494,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     line,
     instrument: instruments,
     chip: normalizedChip,
+    ...(chipCount === 2 ? { chipCount } : {}),
     frame: normalizedFrame,
     clock: normalizedClock,
     ...(stereo ? { stereo } : {}),

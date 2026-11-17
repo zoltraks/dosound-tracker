@@ -22,14 +22,30 @@ export const DEFAULT_CHANNEL_PANS: [number, number, number] = [
   DEFAULT_CHANNEL_PAN,
 ];
 
-// Named hardware layouts: the canonical A/B/C wirings to stereo positions.
-// The catalog is data-driven - a new machine wiring adds an entry here.
-export const STEREO_LAYOUTS: Record<string, [number, number, number]> = {
-  mono: [DEFAULT_CHANNEL_PAN, DEFAULT_CHANNEL_PAN, DEFAULT_CHANNEL_PAN],
-  abc: [0, DEFAULT_CHANNEL_PAN, 1],
-  acb: [0, 1, DEFAULT_CHANNEL_PAN],
+// Channel vocabulary: A-C address chip 1, D-F address chip 2.
+export const SONG_CHANNEL_IDS = ['A', 'B', 'C', 'D', 'E', 'F'] as const;
+export const SECOND_CHIP_CHANNEL_IDS = ['D', 'E', 'F'] as const;
+export const SINGLE_CHIP_CHANNEL_COUNT = 3;
+export const SONG_CHANNEL_COUNT = 6;
+
+export const chipIndexForChannelId = (channelId: string): 0 | 1 => (channelId <= 'C' ? 0 : 1);
+
+export const channelIdsForChip = (chipIndex: 0 | 1): readonly string[] =>
+  chipIndex === 0 ? SONG_CHANNEL_IDS.slice(0, 3) : SONG_CHANNEL_IDS.slice(3);
+
+export const channelCountForChipCount = (chipCount: 1 | 2): number =>
+  chipCount === 2 ? SONG_CHANNEL_COUNT : SINGLE_CHIP_CHANNEL_COUNT;
+
+// Named hardware layouts: the canonical A/B/C wirings to stereo positions,
+// extended to six channels so two-chip songs resolve D/E/F as well. The
+// catalog is data-driven - a new machine wiring adds an entry here.
+export const STEREO_LAYOUTS: Record<string, [number, number, number, number, number, number]> = {
+  mono: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
+  abc: [0, 0.5, 1, 0.5, 0.5, 0.5],
+  acb: [0, 1, 0.5, 0.5, 0.5, 0.5],
+  dual: [0, 0.25, 0.5, 0.5, 0.75, 1],
 };
 
-export const STEREO_LAYOUT_ORDER = ['mono', 'abc', 'acb'];
+export const STEREO_LAYOUT_ORDER = ['mono', 'abc', 'acb', 'dual'];
 // STEREO_LAYOUT_ORDER is retained for the Song-information stereo toggle
 // planned with the pan controls.

@@ -363,3 +363,72 @@ describe('buildSongYamlForExport stereo node', () => {
     }
   });
 });
+
+describe('buildSongYamlForExport two-chip songs', () => {
+  it('emits chipCount, D/E/F row keys, and stereo members for a two-chip song', () => {
+    try {
+      const s = song({
+        chipCount: 2,
+        line: [{ A: '00', B: '--', C: '--', D: '01', E: '--', F: '02' }],
+        stereo: { layout: 'dual', F: 0.9 },
+      });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: {
+          chipCount?: number;
+          line: Record<string, string>[];
+          stereo?: Record<string, unknown>;
+        };
+      };
+      expect(doc.song.chipCount).toBe(2);
+      expect(doc.song.line[0]).toEqual({ A: '00', D: '01', F: '02' });
+      expect(doc.song.stereo).toEqual({ layout: 'dual', F: 0.9 });
+    } catch (error) {
+      console.log('two-chip yaml mismatch');
+      throw error;
+    }
+  });
+
+  it('derives chipCount emission from D/E/F references without the field', () => {
+    try {
+      const s = song({ line: [{ A: '00', B: '--', C: '--', D: '01' }] });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { chipCount?: number };
+      };
+      expect(doc.song.chipCount).toBe(2);
+    } catch (error) {
+      console.log('derived chipCount mismatch');
+      throw error;
+    }
+  });
+
+  it('keeps single-chip output free of chipCount and second-chip keys', () => {
+    try {
+      const s = song({ line: [{ A: '00', B: '--', C: '--' }] });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { chipCount?: number; line: Record<string, string>[] };
+      };
+      expect(doc.song.chipCount).toBeUndefined();
+      expect(doc.song.line[0]).toEqual({ A: '00' });
+    } catch (error) {
+      console.log('single-chip yaml mismatch');
+      throw error;
+    }
+  });
+
+  it('round-trips a two-chip song through save and load', () => {
+    try {
+      const s = song({
+        chipCount: 2,
+        line: [{ A: '00', B: '--', C: '--', D: '01' }],
+        stereo: { layout: 'dual', D: 0.1 },
+      });
+      const loaded = parseSongFromYaml(buildSongYamlForExport(s));
+      expect(loaded.chipCount).toBe(2);
+      expect(loaded.line[0]).toEqual({ A: '00', B: '--', C: '--', D: '01' });
+      expect(loaded.stereo).toEqual({ layout: 'dual', D: 0.1 });
+    } catch (error) {
+      console.log('two-chip roundtrip mismatch');
+      throw error;
+    }
+  });
+});

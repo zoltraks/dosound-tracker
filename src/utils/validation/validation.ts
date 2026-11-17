@@ -47,5 +47,34 @@ export const validateSongData = (data: unknown): Song => {
     }
   });
 
+  // Channel shape: A-C are required strings on every playlist row; the
+  // optional second-chip keys D-F must be strings when present.
+  song.line.forEach((entry, index) => {
+    if (!entry || typeof entry !== 'object') {
+      throw new ValidationError(`Playlist entry ${index} must be an object`, `line[${index}]`);
+    }
+    for (const key of ['A', 'B', 'C'] as const) {
+      if (typeof entry[key] !== 'string') {
+        throw new ValidationError(
+          `Playlist entry ${index} must carry a string "${key}"`,
+          `line[${index}].${key}`,
+        );
+      }
+    }
+    for (const key of ['D', 'E', 'F'] as const) {
+      const value = entry[key];
+      if (value !== undefined && typeof value !== 'string') {
+        throw new ValidationError(
+          `Playlist entry ${index} "${key}" must be a string when present`,
+          `line[${index}].${key}`,
+        );
+      }
+    }
+  });
+
+  if (song.chipCount !== undefined && song.chipCount !== 1 && song.chipCount !== 2) {
+    throw new ValidationError('Song chipCount must be 1 or 2', 'chipCount');
+  }
+
   return song;
 };

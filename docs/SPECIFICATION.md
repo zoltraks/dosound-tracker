@@ -190,7 +190,7 @@ The message contract is unchanged from the worker implementation: `start`, `stop
 
 Envelope progression advances every 2 ticks (40 ms at 50 Hz, 33.33 ms at 60 Hz). This means instrument envelope arrays (volume, shift, pitch, noise, mode) step forward at half the frame rate.
 
-Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in src/constants/music.ts). Each pattern contains 64 rows, and the playlist arranges patterns into a song sequence across three channels (A, B, C).
+Pattern-based playback uses 64-step resolution (PATTERN_LENGTH = 64, defined in src/constants/music.ts). Each pattern contains 64 rows, and the playlist arranges patterns into a song sequence across three channels (A, B, C). The song data model extends the channel set to six letters (A-F): channels A-C address the first chip and D-F the second, and a song declares its chip count through the optional `chipCount` field - absent means one chip, or two when playlist entries reference patterns on D/E/F. The playback simulation emits a second register stream for chip 2 on two-chip songs; live playback, the track UI, and the export formats consume the extended model in later changes.
 
 The playback speed parameter controls how many ticks elapse between sequencer steps. The minimum speed is 2 and only even values are used: an odd value is normalized down to the previous even value, and non-positive or non-numeric input falls back to 6. The normalization is implemented by `normalizeSongSpeed` in src/utils/song/songSpeed.ts and is applied on the song load and restore paths.
 

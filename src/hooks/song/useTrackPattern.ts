@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
 import { logger } from '../../utils/log/logger.ts';
-import type { Pattern, Song } from '../../synth/SoundDriver.ts';
+import type { Pattern, Song, SongChannelId } from '../../synth/SoundDriver.ts';
 import type { UpdateSongOptions } from './useDataManagement.ts';
 
 type UseTrackPatternParams = {
@@ -16,7 +16,7 @@ export const useTrackPattern = ({
   updateSong,
 }: UseTrackPatternParams) => {
   const getCurrentPatternForTrack = useCallback(
-    (trackId: 'A' | 'B' | 'C') => {
+    (trackId: SongChannelId) => {
       const playlistLength = currentSong.line.length;
       if (playlistLength === 0) {
         return null;
@@ -29,18 +29,7 @@ export const useTrackPattern = ({
         return null;
       }
 
-      let patternId = '--';
-      switch (trackId) {
-        case 'A':
-          patternId = currentPlaylistEntry.A;
-          break;
-        case 'B':
-          patternId = currentPlaylistEntry.B;
-          break;
-        case 'C':
-          patternId = currentPlaylistEntry.C;
-          break;
-      }
+      const patternId = currentPlaylistEntry[trackId] ?? '--';
 
       if (patternId === '--') {
         return null;

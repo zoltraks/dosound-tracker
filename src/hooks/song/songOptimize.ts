@@ -1,5 +1,6 @@
 import type { Instrument, Song, Pattern, Step, Note } from '../../synth/SoundDriver.ts';
 import { PATTERN_LENGTH } from '../../constants/music.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 import { normalizeInstrumentId } from '../../utils/instrument/instrumentSelection.ts';
 
 export interface OptimizeSongResult {
@@ -12,7 +13,8 @@ export function optimizeSongData(song: Song): OptimizeSongResult {
 
   const usedPatternIds = new Set<string>();
   song.line.forEach((entry) => {
-    [entry.A, entry.B, entry.C].forEach((id) => {
+    SONG_CHANNEL_IDS.forEach((channelId) => {
+      const id = entry[channelId];
       if (typeof id === 'string') {
         const trimmed = id.trim();
         if (trimmed && trimmed !== '--') {

@@ -1,5 +1,27 @@
 # Changes
 
+## Version 1.6.5
+
+The song data model now supports two AY/YM chips and six channels,
+laying the groundwork for dual-chip songs while single-chip songs stay
+unchanged.
+
+- **Song format**: playlist rows accept optional `D`, `E`, and `F`
+  pattern keys for the second chip, an optional `chipCount` field
+  declares one or two chips (derived from content when absent), and
+  the `stereo` node carries `D`-`F` pan overrides plus a `dual` layout
+  that places chip 1 left and chip 2 right.
+- **Playback simulation**: two-chip songs simulate six channels across
+  two register files, with chip-2 channels `D`-`F` writing the second
+  file's local channels; single-chip frames are unchanged.
+- **Tools**: pattern renumbering, song optimization, transpose, and
+  stored-song migration all carry second-chip references, and playlist
+  rows that name only chip-2 patterns still count as playable.
+- **Scope**: live playback audio, the track and playlist interface,
+  the EQ and dump panels, and the export formats remain three-channel
+  in this release - the dual-engine, six-track UI, and per-chip export
+  work is planned for the next window.
+
 ## Version 1.6.4
 
 Instrument envelopes can be copied and pasted between compatible slots,

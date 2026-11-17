@@ -1,5 +1,6 @@
-import type { Song, Step } from '../../synth/SoundDriver.ts';
+import type { Song, Step, SongChannelId } from '../../synth/SoundDriver.ts';
 import { NOTES, MIN_OCTAVE, MAX_OCTAVE } from '../../constants/music.ts';
+import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 import { normalizeInstrumentId } from '../instrument/instrumentSelection.ts';
 
 export interface TransposeOptions {
@@ -8,7 +9,7 @@ export interface TransposeOptions {
   trackScope: 'current' | 'all';
   instrumentScope: 'all' | 'selected';
   currentPatternIndex: number;
-  targetTrackId: 'A' | 'B' | 'C';
+  targetTrackId: SongChannelId;
   selectedInstrumentId: string;
 }
 
@@ -49,8 +50,8 @@ export function performTranspose(
     }
   }
 
-  const tracksToProcess: Array<'A' | 'B' | 'C'> =
-    trackScope === 'current' ? [targetTrackId] : ['A', 'B', 'C'];
+  const tracksToProcess: SongChannelId[] =
+    trackScope === 'current' ? [targetTrackId] : [...SONG_CHANNEL_IDS];
 
   const patternIds = new Set<string>();
 
@@ -59,18 +60,7 @@ export function performTranspose(
     if (!entry) continue;
 
     for (const track of tracksToProcess) {
-      let patternId = '--';
-      switch (track) {
-        case 'A':
-          patternId = entry.A;
-          break;
-        case 'B':
-          patternId = entry.B;
-          break;
-        case 'C':
-          patternId = entry.C;
-          break;
-      }
+      const patternId = entry[track] ?? '--';
 
       if (!patternId || patternId === '--') {
         continue;

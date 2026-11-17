@@ -7,12 +7,13 @@ export interface UseChannelPansParams {
 }
 
 export interface UseChannelPansResult {
-  channelPans: [number, number, number];
+  channelPans: number[];
 }
 
 /**
  * Resolves the song's stereo node into the per-channel pans fed to the
- * audio engine.
+ * audio engine. The tuple covers all six song channels (A-F); single-chip
+ * consumers read the first three.
  */
 export function useChannelPans({ stereo }: UseChannelPansParams): UseChannelPansResult {
   const channelPans = useMemo(() => resolveChannelPans(stereo), [stereo]);

@@ -4,8 +4,9 @@ import { PATTERN_LENGTH, DEFAULT_OCTAVE, MIN_OCTAVE, MAX_OCTAVE } from '../../co
 import { DEFAULT_BASE_KEY, formatBaseKey, normalizeInstrumentColor } from './songFormat.ts';
 import { Formatter } from '../format/formatters.ts';
 import { formatInstrumentSlotId } from '../instrument/instrumentSelection.ts';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
+import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK, SECOND_CHIP_CHANNEL_IDS } from '../../constants/song.ts';
 import { normalizeSongStereo } from './songStereo.ts';
+import { songChipCount } from './songChips.ts';
 import { isEnvelopeZeroDefault, trimEnvelope } from '../envelope/envelopeUtils.ts';
 import { quoteYamlValues, YAML_DUMP_OPTIONS } from '../yaml/yamlUtils.ts';
 import { clampVolumeNibble } from '../panel/volumeUtils.ts';
@@ -94,25 +95,33 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     return instrumentNode;
   });
 
-  // Playlist uses A/B/C keys; omit tracks with no pattern ("--").
+  // Playlist uses A-F keys; omit tracks with no pattern ("--"). D/E/F
+  // appear only when the row names a second-chip pattern.
   const lineSource = currentSong.line;
   type LegacyLineEntry = {
     A?: string;
     B?: string;
     C?: string;
+    D?: string;
+    E?: string;
+    F?: string;
     trackA?: string;
     trackB?: string;
     trackC?: string;
   };
 
   const line = lineSource.map((entry: LegacyLineEntry) => {
-    const row: { A?: string; B?: string; C?: string } = {};
+    const row: { A?: string; B?: string; C?: string; D?: string; E?: string; F?: string } = {};
     const A = entry.A ?? entry.trackA;
     const B = entry.B ?? entry.trackB;
     const C = entry.C ?? entry.trackC;
     if (A && A !== '--') row.A = A;
     if (B && B !== '--') row.B = B;
     if (C && C !== '--') row.C = C;
+    for (const key of SECOND_CHIP_CHANNEL_IDS) {
+      const value = entry[key];
+      if (value && value !== '--') row[key] = value;
+    }
     return row;
   });
 
@@ -277,6 +286,11 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   const normalizedClock = currentSong.clock ?? DEFAULT_SONG_CLOCK;
 
   songNode.chip = normalizedChip;
+  // chipCount is written only for two-chip songs; single-chip output
+  // stays free of the field.
+  if (songChipCount(currentSong) === 2) {
+    songNode.chipCount = 2;
+  }
   songNode.frame = normalizedFrame;
   songNode.clock = normalizedClock;
 
@@ -296,6 +310,15 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     }
     if (stereo.C !== undefined) {
       stereoNode.C = stereo.C;
+    }
+    if (stereo.D !== undefined) {
+      stereoNode.D = stereo.D;
+    }
+    if (stereo.E !== undefined) {
+      stereoNode.E = stereo.E;
+    }
+    if (stereo.F !== undefined) {
+      stereoNode.F = stereo.F;
     }
   }
 
@@ -328,7 +351,7 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
     });
   };
 
-  const quoteLineValues = (text: string): string => quoteYamlValues(text, '[ABC]');
+  const quoteLineValues = (text: string): string => quoteYamlValues(text, '[ABCDEF]');
   const quoteNoteValues = (text: string): string => quoteYamlValues(text, 'note');
   const quoteBaseValues = (text: string): string => quoteYamlValues(text, 'base');
   const quoteNumberValues = (text: string): string => quoteYamlValues(text, 'number');

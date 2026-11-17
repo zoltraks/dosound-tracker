@@ -7,7 +7,12 @@ import {
   DEFAULT_SONG_AUTHOR,
   parseSongFromYaml,
 } from '../../utils/song/songParser.ts';
-import { DEFAULT_SONG_CHIP, DEFAULT_SONG_FRAME, DEFAULT_SONG_CLOCK } from '../../constants/song.ts';
+import {
+  DEFAULT_SONG_CHIP,
+  DEFAULT_SONG_FRAME,
+  DEFAULT_SONG_CLOCK,
+  SECOND_CHIP_CHANNEL_IDS,
+} from '../../constants/song.ts';
 import { normalizeSongSpeed } from '../../utils/song/songSpeed.ts';
 import { normalizeSongStereo } from '../../utils/song/songStereo.ts';
 import { logger } from '../../utils/log/logger.ts';
@@ -70,11 +75,20 @@ function normalizeStoredSongToCurrentSchema(rawSong: unknown): Song {
   const lineSource = Array.isArray(rawLine) ? rawLine : [];
   const line = lineSource.map((rawEntry) => {
     const entry = (rawEntry || {}) as Record<string, unknown>;
-    return {
+    const row: Song['line'][number] = {
       A: String((entry.A ?? entry.trackA ?? '--') as string),
       B: String((entry.B ?? entry.trackB ?? '--') as string),
       C: String((entry.C ?? entry.trackC ?? '--') as string),
     };
+    // Second-chip keys pass through only when the source names a pattern,
+    // keeping single-chip rows free of empty D/E/F members.
+    for (const key of SECOND_CHIP_CHANNEL_IDS) {
+      const value = entry[key];
+      if (typeof value === 'string' && value !== '--') {
+        row[key] = value;
+      }
+    }
+    return row;
   });
 
   const rawInstruments = (song.instrument ?? song.instruments) as unknown;
