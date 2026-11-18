@@ -2,161 +2,74 @@
 
 ## Version 1.6.7
 
-The dual-chip interface is now fully reachable and the everyday
-interface is tighter: six-track editing works before a song references
-the second chip, focus survives reloads, playlist editing and column
-geometry stay stable, and the About dialog reports the live view size.
+The dual-chip interface is now fully reachable and the everyday interface is tighter: six-track editing works before a song references the second chip, focus survives reloads, playlist editing and column geometry stay stable, and the About dialog reports the live view size.
 
-- **Six-track editing**: the Three/Six-tracks setting alone exposes all
-  six channels, so second-chip tracks are reachable and editable before
-  a song references D/E/F; the three-track view follows a sliding
-  window centred on the focused channel instead of fixed chip groups,
-  and playlist channel arrows cycle every enabled channel.
-- **Focus restoration**: the app restores the actual focused control
-  after a reload, sharing the editor-cursor restore gate and retrying
-  until the persisted view settles.
-- **Playlist editing**: the cell edit input mirrors the cell's
-  typography and box so editing never shifts the row, and an open empty
-  pattern edit is distinguished from no edit.
-- **Interface density**: command-button and control padding is reduced
-  symmetrically, the settings modal height is stabilized, the MIDI
-  modal loads on demand, and chip-switcher, pattern-input, and
-  six-channel EQ hover styling is refined.
-- **About dialog**: shows the current view size in pixels with the
-  zoom factor, updating live on window resize.
-- **Dump panel**: the selected chip button adopts the theme-aware
-  colors of the hovered command button.
-- **Layout stability**: playlist and track column widths no longer
-  shift when switching between playlist and track sections.
-- **Security**: `npm audit` reports 20 high-severity ReDoS findings in
-  `picomatch` reachable only through development tooling (vite, vitest,
-  eslint, electron-builder); none reach the shipped bundle, and the
-  only automated fix is a breaking vitest major bump, so the release
-  proceeds with the risk documented.
+- **Six-track editing**: the Three/Six-tracks setting alone exposes all six channels, so second-chip tracks are reachable and editable before a song references D/E/F; the three-track view follows a sliding window centred on the focused channel instead of fixed chip groups, and playlist channel arrows cycle every enabled channel.
+- **Focus restoration**: the app restores the actual focused control after a reload, sharing the editor-cursor restore gate and retrying until the persisted view settles.
+- **Playlist editing**: the cell edit input mirrors the cell's typography and box so editing never shifts the row, and an open empty pattern edit is distinguished from no edit.
+- **Interface density**: command-button and control padding is reduced symmetrically, the settings modal height is stabilized, the MIDI modal loads on demand, and chip-switcher, pattern-input, and six-channel EQ hover styling is refined.
+- **About dialog**: shows the current view size in pixels with the zoom factor, updating live on window resize.
+- **Dump panel**: the selected chip button adopts the theme-aware colors of the hovered command button.
+- **Layout stability**: playlist and track column widths no longer shift when switching between playlist and track sections.
+- **Security**: `npm audit` reports 20 high-severity ReDoS findings in `picomatch` reachable only through development tooling (vite, vitest, eslint, electron-builder); none reach the shipped bundle, and the only automated fix is a breaking vitest major bump, so the release proceeds with the risk documented.
 
 ## Version 1.6.6
 
-Two-chip songs are now audible, editable, and exportable: the app can
-run two AY/YM chips at once, the tracker shows three or six channels,
-and every export path handles the second chip deliberately.
+Two-chip songs are now audible, editable, and exportable: the app can run two AY/YM chips at once, the tracker shows three or six channels, and every export path handles the second chip deliberately.
 
-- **Dual engines**: enabling the new `dualChip` sound setting runs one
-  `SoundEngine` per chip for both the internal YM2149 and Ayumi
-  drivers; channels A-C play on chip 1 and D-F on chip 2, chip 1 pans
-  left and chip 2 right by default through the song's six-channel
-  `stereo` model, and pan changes reach the live engines without a
-  reload.
-- **Track view**: the new `visibleTracks` setting picks three or six
-  visible tracks; on a two-chip song in three-track mode an A-C/D-F
-  switcher reaches every channel, and focus, navigation, playlist
-  columns, previews, and MIDI input all follow the six-channel model.
-- **Channel mutes**: the EQ mute toggles cover all six channels and
-  persist across reloads, upgrading stored three-channel state.
-- **Exports**: the export modal gains an `AY/YM stream` selector -
-  ASM/DATA, BIN, VGM, and MAX emit the chosen chip's register stream,
-  the register dump writes labelled `music:` and `music2:` sections,
-  WAV mixes both chips, MIDI writes up to six tracks, and MOD exports
-  A-C with a warning for the unrepresentable second chip.
-- **Panels**: the EQ panel shows per-channel meters from both engines
-  and the DUMP panel switches between chip 1 and chip 2 register
-  readouts.
-- **Bundle**: the picker, export, and paste-track modals now load on
-  demand, keeping the entry chunk under the 600 kB budget.
+- **Dual engines**: enabling the new `dualChip` sound setting runs one `SoundEngine` per chip for both the internal YM2149 and Ayumi drivers; channels A-C play on chip 1 and D-F on chip 2, chip 1 pans left and chip 2 right by default through the song's six-channel `stereo` model, and pan changes reach the live engines without a reload.
+- **Track view**: the new `visibleTracks` setting picks three or six visible tracks; on a two-chip song in three-track mode an A-C/D-F switcher reaches every channel, and focus, navigation, playlist columns, previews, and MIDI input all follow the six-channel model.
+- **Channel mutes**: the EQ mute toggles cover all six channels and persist across reloads, upgrading stored three-channel state.
+- **Exports**: the export modal gains an `AY/YM stream` selector - ASM/DATA, BIN, VGM, and MAX emit the chosen chip's register stream, the register dump writes labelled `music:` and `music2:` sections, WAV mixes both chips, MIDI writes up to six tracks, and MOD exports A-C with a warning for the unrepresentable second chip.
+- **Panels**: the EQ panel shows per-channel meters from both engines and the DUMP panel switches between chip 1 and chip 2 register readouts.
+- **Bundle**: the picker, export, and paste-track modals now load on demand, keeping the entry chunk under the 600 kB budget.
 
 ## Version 1.6.5
 
-The song data model now supports two AY/YM chips and six channels,
-laying the groundwork for dual-chip songs while single-chip songs stay
-unchanged.
+The song data model now supports two AY/YM chips and six channels, laying the groundwork for dual-chip songs while single-chip songs stay unchanged.
 
-- **Song format**: playlist rows accept optional `D`, `E`, and `F`
-  pattern keys for the second chip, an optional `chipCount` field
-  declares one or two chips (derived from content when absent), and
-  the `stereo` node carries `D`-`F` pan overrides plus a `dual` layout
-  that places chip 1 left and chip 2 right.
-- **Playback simulation**: two-chip songs simulate six channels across
-  two register files, with chip-2 channels `D`-`F` writing the second
-  file's local channels; single-chip frames are unchanged.
-- **Tools**: pattern renumbering, song optimization, transpose, and
-  stored-song migration all carry second-chip references, and playlist
-  rows that name only chip-2 patterns still count as playable.
-- **Scope**: live playback audio, the track and playlist interface,
-  the EQ and dump panels, and the export formats remain three-channel
-  in this release - the dual-engine, six-track UI, and per-chip export
-  work is planned for the next window.
+- **Song format**: playlist rows accept optional `D`, `E`, and `F` pattern keys for the second chip, an optional `chipCount` field declares one or two chips (derived from content when absent), and the `stereo` node carries `D`-`F` pan overrides plus a `dual` layout that places chip 1 left and chip 2 right.
+- **Playback simulation**: two-chip songs simulate six channels across two register files, with chip-2 channels `D`-`F` writing the second file's local channels; single-chip frames are unchanged.
+- **Tools**: pattern renumbering, song optimization, transpose, and stored-song migration all carry second-chip references, and playlist rows that name only chip-2 patterns still count as playable.
+- **Scope**: live playback audio, the track and playlist interface, the EQ and dump panels, and the export formats remain three-channel in this release - the dual-engine, six-track UI, and per-chip export work is planned for the next window.
 
 ## Version 1.6.4
 
-Instrument envelopes can be copied and pasted between compatible slots,
-the bundled demo song is a faithful transcription of Crockett's Theme,
-and muted EQ bars keep their muted color under the pointer.
+Instrument envelopes can be copied and pasted between compatible slots, the bundled demo song is a faithful transcription of Crockett's Theme, and muted EQ bars keep their muted color under the pointer.
 
-- **Envelopes**: copy and paste envelope shapes between same-type slots
-  with validation, undoable updates, and shared error reporting.
-- **Songs**: the demo song is now a MIDI-accurate transcription of
-  Crockett's Theme, replacing the earlier draft.
-- **Interface**: muted EQ bars preserve their muted color on hover, and
-  the on-screen piano adapts its visible octave span to the measured
-  content width, clamped to the playable range without duplicate top-C
-  keys.
-- **Audio**: the MIDI output-close warning names the output device
-  correctly.
-- **Tests**: dedicated suites now characterise the modal dialog, song
-  tool, instrument octave, scroll-sync, responsive-panel, audio-context,
-  and sound-engine hooks, lifting branch coverage above 82 percent.
+- **Envelopes**: copy and paste envelope shapes between same-type slots with validation, undoable updates, and shared error reporting.
+- **Songs**: the demo song is now a MIDI-accurate transcription of Crockett's Theme, replacing the earlier draft.
+- **Interface**: muted EQ bars preserve their muted color on hover, and the on-screen piano adapts its visible octave span to the measured content width, clamped to the playable range without duplicate top-C keys.
+- **Audio**: the MIDI output-close warning names the output device correctly.
+- **Tests**: dedicated suites now characterise the modal dialog, song tool, instrument octave, scroll-sync, responsive-panel, audio-context, and sound-engine hooks, lifting branch coverage above 82 percent.
 
 ## Version 1.6.3
 
-Offline support now works when the app is served from a nested path, and
-the format and state documentation is back in sync with the code it
-describes.
+Offline support now works when the app is served from a nested path, and the format and state documentation is back in sync with the code it describes.
 
-- **Offline**: the service worker registers under the deployed base and
-  resolves its precache and navigation fallback against its own scope -
-  hosting under a nested path keeps offline navigation and asset fetches
-  working, and root hosting is unchanged.
-- **Settings**: the format documentation now lists the `contrast` theme
-  and `general.textScale`, matching what the settings saver emits.
-- **Repository**: the persisted undo-history bound is a measured
-  decision - larger bounds breach the localStorage quota on large
-  songs - and the largest orchestration modules shed seven bounded
-  responsibilities into dedicated modules.
+- **Offline**: the service worker registers under the deployed base and resolves its precache and navigation fallback against its own scope - hosting under a nested path keeps offline navigation and asset fetches working, and root hosting is unchanged.
+- **Settings**: the format documentation now lists the `contrast` theme and `general.textScale`, matching what the settings saver emits.
+- **Repository**: the persisted undo-history bound is a measured decision - larger bounds breach the localStorage quota on large songs - and the largest orchestration modules shed seven bounded responsibilities into dedicated modules.
 
 ## Version 1.6.2
 
-Settings now loads on demand, reducing the JavaScript needed at startup
-and bringing the production entry bundle below its size limit.
+Settings now loads on demand, reducing the JavaScript needed at startup and bringing the production entry bundle below its size limit.
 
 ## Version 1.6.1
 
-Packaged desktop builds stop trusting the development origin, the note-off
-binding is confirmed as Shift+Space in every document, and the
-shipped-dependency license policy is enforced by a census test.
+Packaged desktop builds stop trusting the development origin, the note-off binding is confirmed as Shift+Space in every document, and the shipped-dependency license policy is enforced by a census test.
 
-- **Desktop security**: packaged apps trust only the bundled
-  `dist/index.html` for permissions and navigation - the development
-  localhost origin is denied while packaged, and foreign `file:` pages
-  stay rejected.
-- **Keyboard**: Shift+Space is the canonical note-off binding; the
-  requirements record now matches the manual, specification, and code.
-- **Repository**: the license allowlist gains PSF-2.0 and 0BSD with a
-  lockfile census guard, and the branch-coverage gate is restored to 80%
-  with the instrument-navigation logic extracted and unit-tested.
+- **Desktop security**: packaged apps trust only the bundled `dist/index.html` for permissions and navigation - the development localhost origin is denied while packaged, and foreign `file:` pages stay rejected.
+- **Keyboard**: Shift+Space is the canonical note-off binding; the requirements record now matches the manual, specification, and code.
+- **Repository**: the license allowlist gains PSF-2.0 and 0BSD with a lockfile census guard, and the branch-coverage gate is restored to 80% with the instrument-navigation logic extracted and unit-tested.
 
 ## Version 1.6.0
 
-Reset protection hardens so cleared data cannot revive, and the project's
-MIT license notice now ships with every distribution.
+Reset protection hardens so cleared data cannot revive, and the project's MIT license notice now ships with every distribution.
 
-- **Reset safety**: NEW SONG and data resets wait for the storage clear
-  to commit before reloading - a failed clear reports an error instead of
-  reloading into half-cleared state, and saves queued before a reset can
-  no longer write stale data back.
-- **License**: the project's MIT notice ships inside the web build and
-  inside packaged desktop apps, alongside the dependency notices.
-- **Repository**: bundled instrument filenames drop their song prefixes,
-  and the source tree adopts the recorded domain-directory layout with a
-  structure-purity guard keeping it that way.
+- **Reset safety**: NEW SONG and data resets wait for the storage clear to commit before reloading - a failed clear reports an error instead of reloading into half-cleared state, and saves queued before a reset can no longer write stale data back.
+- **License**: the project's MIT notice ships inside the web build and inside packaged desktop apps, alongside the dependency notices.
+- **Repository**: bundled instrument filenames drop their song prefixes, and the source tree adopts the recorded domain-directory layout with a structure-purity guard keeping it that way.
 
 ## Version 1.5.8
 

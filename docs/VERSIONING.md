@@ -116,6 +116,7 @@ One-sentence summary of the release scope and theme.
 - A bullet list follows: each item starts with a **bold subject**, the affected area, class, or feature, then a colon, then a concise description.
 - Items describe what changed and why it matters, not how it was implemented.
 - The most recent version is at the top.
+- The summary sentence and each bullet are single unwrapped lines - never hard-wrap an entry at a column width.
 - Do not include sub-headings such as `### Added` or `### Fixed` inside a version section.
 - Write in past tense.
 - Inspect source code changes between versions and describe every significant change. The CHANGELOG must accurately reflect all changes that occurred, not just a high-level summary.
