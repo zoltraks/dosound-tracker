@@ -25,9 +25,7 @@ export const AboutModal: React.FC<AboutModalProps> = ({
 }) => {
   const { width, height } = useViewportSize();
   const zoomSuffix =
-    typeof zoomFactor === 'number' && Number.isFinite(zoomFactor)
-      ? ` @ ${zoomFactor}x`
-      : '';
+    typeof zoomFactor === 'number' && Number.isFinite(zoomFactor) ? ` @ ${zoomFactor}x` : '';
 
   if (!isOpen) return null;
 

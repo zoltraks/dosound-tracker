@@ -26,6 +26,7 @@ export function DocumentModalGroup({
   aboutVersion,
   aboutRuntimeLabel,
   aboutRuntimeDetails,
+  viewZoomFactor,
   setIsAboutOpen,
   isChangelogOpen,
   changelogContent,
@@ -43,6 +44,7 @@ export function DocumentModalGroup({
         version={aboutVersion}
         runtimeLabel={aboutRuntimeLabel ?? undefined}
         runtimeDetails={aboutRuntimeDetails}
+        zoomFactor={viewZoomFactor}
         onClose={() => setIsAboutOpen(false)}
         onShowChangelog={onShowChangelog}
         onShowManual={onShowManual}

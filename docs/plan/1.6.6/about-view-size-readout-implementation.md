@@ -2,11 +2,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                                          |
-| ------------- | -------------------------------------------------------------------------------------------------------------- |
-| Intent        | Add a live `View: WxH` line with an optional zoom suffix to the About dialog, fed by a resize-aware hook.       |
+| Field         | Value                                                                                                             |
+| ------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Intent        | Add a live `View: WxH` line with an optional zoom suffix to the About dialog, fed by a resize-aware hook.         |
 | Key decisions | `useViewportSize` hook under `src/hooks/ui/`; zoom factor passed as `viewZoomFactor` through the documents slice. |
-| Open risks    | None - additive display change with a unit-tested hook and an optional prop.                                   |
+| Open risks    | None - additive display change with a unit-tested hook and an optional prop.                                      |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
@@ -76,8 +76,7 @@ export function useViewportSize(): ViewportSize {
     if (typeof window === 'undefined') {
       return;
     }
-    const handleResize = () =>
-      setSize({ width: window.innerWidth, height: window.innerHeight });
+    const handleResize = () => setSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
@@ -110,9 +109,7 @@ interface AboutModalProps {
 ```tsx
 const { width, height } = useViewportSize();
 const zoomSuffix =
-  typeof zoomFactor === 'number' && Number.isFinite(zoomFactor)
-    ? ` @ ${zoomFactor}x`
-    : '';
+  typeof zoomFactor === 'number' && Number.isFinite(zoomFactor) ? ` @ ${zoomFactor}x` : '';
 ```
 
 ```tsx

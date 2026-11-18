@@ -952,6 +952,7 @@ const App: React.FC = () => {
       aboutVersion: APP_VERSION,
       aboutRuntimeLabel,
       aboutRuntimeDetails,
+      viewZoomFactor: Number(textScale) / 100,
       onShowChangelog: handleShowChangelog,
       onCloseChangelog: handleCloseChangelog,
       onShowManual: handleShowManual,

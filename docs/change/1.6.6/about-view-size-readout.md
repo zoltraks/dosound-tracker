@@ -4,11 +4,11 @@
 
 ## Summary
 
-| Field         | Value                                                                                                              |
-| ------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Intent        | The About dialog reports the current available screen area in pixels and the active zoom factor, live on resize.   |
-| Key decisions | A `useViewportSize` hook owns the resize subscription inside the modal layer; the zoom factor travels as a prop.   |
-| Open risks    | None - read-only display addition; no state, audio, or export surface is touched.                                  |
+| Field         | Value                                                                                                            |
+| ------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Intent        | The About dialog reports the current available screen area in pixels and the active zoom factor, live on resize. |
+| Key decisions | A `useViewportSize` hook owns the resize subscription inside the modal layer; the zoom factor travels as a prop. |
+| Open risks    | None - read-only display addition; no state, audio, or export surface is touched.                                |
 
 The summary block precedes the detailed sections and is refreshed when the
 record's decisions or risks change.
