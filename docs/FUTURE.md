@@ -21,7 +21,6 @@ The following items were previously listed as future work and have since been im
 - **Dark and light theme**: toggle persisted to localStorage.
 - **Demo song**: built-in demo loadable via DEMO button.
 - **Built-in manual and changelog viewer**: in-app access to MANUAL.md and CHANGELOG.md.
+- **Modal pass-through narrowing**: the flat `useAppModals` prop list split into ten domain slices rendered by per-domain modal group components; `ModalContainer` removed and `ModalManager` reduced to a composer.
 
 ## Candidates
-
-- **`useAppModals` narrowing**: the hook shuttles every modal concern's props from `App.tsx` onto `ModalManager` - the 1.5.4 refactoring found it only when the eight export handlers collapsed through it. Splitting or thinning the pass-through is deferred decomposition work.

@@ -1,5 +1,6 @@
 import React from 'react';
 import { DialogFrame } from '../../components/modal/DialogFrame.tsx';
+import { useViewportSize } from '../../hooks/ui/useViewportSize.ts';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface AboutModalProps {
   onShowManual: () => void;
   runtimeLabel?: string | null;
   runtimeDetails?: string[];
+  zoomFactor?: number | null;
 }
 
 export const AboutModal: React.FC<AboutModalProps> = ({
@@ -19,7 +21,14 @@ export const AboutModal: React.FC<AboutModalProps> = ({
   onShowManual,
   runtimeLabel,
   runtimeDetails,
+  zoomFactor,
 }) => {
+  const { width, height } = useViewportSize();
+  const zoomSuffix =
+    typeof zoomFactor === 'number' && Number.isFinite(zoomFactor)
+      ? ` @ ${zoomFactor}x`
+      : '';
+
   if (!isOpen) return null;
 
   return (
@@ -33,6 +42,10 @@ export const AboutModal: React.FC<AboutModalProps> = ({
         <br />
         <br />
         Version: <b>{version}</b>
+        <br />
+        <br />
+        View: {width}x{height}
+        {zoomSuffix}
         <br />
         <br />
         {runtimeLabel && runtimeDetails && runtimeDetails.length > 0 && (

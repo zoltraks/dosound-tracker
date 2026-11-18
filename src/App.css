@@ -1987,10 +1987,10 @@ body {
 }
 
 .chip-switcher-button.active {
-  background: color-mix(in srgb, #808080 50%, #7aa2f7 50%);
-  border-color: #000000;
-  color: #1a202c;
-  box-shadow: 0 0 4px rgba(34, 197, 94, 0.55);
+  background: linear-gradient(135deg, var(--button-hover) 0%, var(--button-active) 100%);
+  border-color: var(--border-bright);
+  color: var(--button-text);
+  box-shadow: var(--shadow-medium), var(--glow-secondary);
 }
 
 /* Hover gives every chip button the theme's hover fill and the
