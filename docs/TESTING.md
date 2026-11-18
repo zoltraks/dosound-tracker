@@ -388,3 +388,7 @@ Section backgrounds animate over `transition: background-color 0.6s ease`, so a 
 **color-mix resolves to modern color notation in computed style**
 
 Chrome serializes `color-mix()` results as `color(srgb r g b)` or `oklab(...)`, not `rgb(r, g, b)` - a parser that only matches the rgb form returns no value and silently mis-asserts. Probe parsers must handle all three serializations when comparing theme colors.
+
+**Full-suite runs can starve the Settings dialog await**
+
+`test/components/shell/App.test.tsx` mounts the whole `App` shell and awaits the lazy-loaded Settings dialog - under full-suite worker contention the chunk load and modal mount can exceed the default 5 s test timeout, while the file passes alone and per-directory. Reproduce a suite-only timeout in isolation before treating it as a regression.

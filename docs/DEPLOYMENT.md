@@ -49,7 +49,32 @@ Outputs to `release/`:
 
 - macOS: `.dmg` and `.zip` for Intel and Apple Silicon.
 - Windows: NSIS installer and `.zip`.
-- Linux: AppImage and `.tar.gz`.
+- Linux: AppImage, `.tar.gz`, and `.deb`.
+
+**Debian Package**
+
+The `deb` target produces `dosound-tracker-<version>-linux-amd64.deb`, a
+Debian package installable through the system package manager on
+Debian-based distributions such as Linux Mint, Ubuntu, and Debian itself.
+
+```bash
+sudo apt install ./release/dosound-tracker-<version>-linux-amd64.deb
+```
+
+`apt` resolves the declared dependencies from the distribution
+repositories; `sudo dpkg -i <file>` followed by `sudo apt-get install -f`
+achieves the same result. The package registers a `.desktop` entry and
+hicolor icons, so the application appears in the desktop menu and the
+running window associates with its launcher icon. Remove it with
+`sudo apt remove dosound-tracker`.
+
+Dependency names use Debian alternation (`libgtk-3-0t64 | libgtk-3-0`) so
+the same package resolves on releases before and after the t64 package
+rename (Ubuntu 24.04 and later, including Linux Mint 22.x).
+
+The multi-size hicolor icons are sourced from `build/icons/`, which holds
+copies of the `public/media/icon/` artwork renamed to the `<size>x<size>.png`
+convention the electron-builder icon resolver expects.
 
 **License Notice**
 

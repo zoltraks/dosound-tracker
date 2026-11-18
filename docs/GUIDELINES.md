@@ -100,7 +100,7 @@ See `WORKFLOW.md` for the resolved role-to-path map of the documentation set and
 - Execution policy: Human in the Loop - the user approves plans, commits changes manually, and holds reserved decisions (commit authorship, version bump, release baseline). Inside a version-window request the default gate mode is `human-in-the-loop` with `autonomous` selectable per request - the named window request is the explicit instruction that authorizes the closing version bump, and the cycle never commits under any mode.
 - Adopted extensions: `version-window`, `run-resume`, `standards-synchronization`, `stage-gates`, `specification-audit`, `verification-options`, `preserve-before-reorganize`, `artifact-summary`, `work-modes`, `improvement-step`, `session-reporting`, `runnable-artifact`, `independent-verification`, `lessons-loop`, `clean`, `purge`, `version-family-retention`, `scout-delegation`.
 - Adopted conventions: `audit-driven-development`, `session-review`, `version-review`.
-- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md` - `archive old documents`, `archive documents`, or `run retention` runs the Document Retention sweep recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
+- Trigger phrases: `run the SDLC for <version>` or `process the <version> window` executes the Version Window SDLC recorded in `WORKFLOW.md` - `improve dosound-tracker` runs the Session Review recorded in `WORKFLOW.md` - `archive old documents`, `archive documents`, or `run retention` runs the Document Retention sweep recorded in `WORKFLOW.md` - `publish` runs the Publishing operation recorded in `WORKFLOW.md`. Trigger phrases are recorded, never implied.
 - Run-state record: `docs/plan/<version>/window-run.md` tracks completed window stages so an interrupted window run resumes at the first incomplete stage.
 - Work intake and mode selection: follow the Intake Standby and Mode Selection rules in `WORKFLOW.md`.
 - Plan confirmation: the confirmation step in `WORKFLOW.md` asks through the host's interactive question mechanics - `Implement`, `Adjust`, or `Discard` - matching the mode-selection convention.
@@ -329,7 +329,7 @@ See `SPECIFICATION.md` for the audio-critical development principles, which over
 
 ## Agent Operations
 
-See `WORKFLOW.md` for session reporting, context management, and the clean and purge operations.
+See `WORKFLOW.md` for session reporting, context management, and the clean, purge, and publish operations.
 
 ## General Rules
 

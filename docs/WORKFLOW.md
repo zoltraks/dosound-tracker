@@ -542,6 +542,14 @@ Under the `clean` and `purge` extensions:
 - A request to "clean project" or "clean the project" runs `scripts/clean.sh`, which removes only build artifacts and temporary files that are not under version control - `dist/`, `coverage/`, `playwright-report/`, `test-results/`, and temp residue such as `*.log`, `*.tmp`, `*.bak`, and `.DS_Store` files. Each target is verified ignored and untracked before deletion, a locked file is reported and skipped rather than failing the run, and `--dry-run` lists targets without deleting.
 - A request to "purge project" or "purge the project" removes everything `clean` removes plus `node_modules/` and `work/` - all restorable through `npm install` and session recreation. The script names the restore procedure when it finishes.
 
+**Publishing**
+
+A `publish` request produces a fresh, clean, production-ready build. The clean step runs `scripts/clean.sh`, the full verification loop from `TESTING.md` re-proves the tree, and the build outputs regenerate from scratch.
+
+When the request does not specify what to publish, the agent proposes all applicable targets through the host's interactive question mechanics: the HTML PWA browser app served from `dist/` and the Electron desktop build for the current machine's target OS packaged into `release/`. A request that names its targets skips the proposal and produces only those. Electron-builder output accumulates in `release/` - prune it by hand when a fresh packaging result matters, per `TOOLING.md`.
+
+The operation produces builds only - deploying to a host, uploading artifacts, and version bumps stay distinct operations under `DEPLOYMENT.md` and `VERSIONING.md`.
+
 ## Working With AI Coding Agents
 
 When delegating implementation to an AI coding agent, provide the following context:

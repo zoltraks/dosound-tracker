@@ -168,3 +168,7 @@ A small static file server can mount `dist/` under a path prefix, and Playwright
 **Re-read a file region after a scripted edit**
 
 Bulk edits driven through scripts (python, sed, heredocs) can insert stray text, fail to match silently, or mangle a payload - this session saw quoted fragments land inside `App.css` and a test file before the damage was caught. Re-read the touched region immediately after the script runs and again before reporting; prefer the dedicated edit tool for single-site changes and verify its result the same way.
+
+**`clean.sh` sweeps `*.log` under `work/` too**
+
+The temp-residue pass matches `*.log`, `*.tmp`, `*.bak`, and `.DS_Store` in every directory outside `node_modules` and `.git` - `work/` is not excluded, and every path under the gitignored `work/` passes the removable check. A captured loop log named `*.log` is deleted while its writer still holds the descriptor, leaving the output unrecoverable. Name captured verification output `*.txt` or another unmatched extension.
