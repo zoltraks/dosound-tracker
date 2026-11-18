@@ -1,6 +1,6 @@
 # Vanilla HTML Engineering Standards
 
-<!-- Version: 0.1.3 | Date: 2026-11-08 -->
+<!-- Version: 0.1.5 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -29,11 +29,48 @@ This standard does not apply to compiled single page applications.
 
 For those, use a framework-specific development standard.
 
+## Contents
+
+| Section                            | Line | Read when                                                 |
+| ---------------------------------- | ---- | --------------------------------------------------------- |
+| Purpose                            | 5    | Always - what the document covers                         |
+| Scope                              | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard           | 69   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol              | 123  | Always - detect the project shape before asking           |
+| Documentation                      | 244  | Reference - authoritative external sources                |
+| Core Technologies                  | 258  | When confirming the technology baseline                   |
+| Application Models                 | 265  | When defining app data models                             |
+| Project Structure                  | 283  | When creating or relocating project files                 |
+| Single File Applications           | 447  | When building a single-file app                           |
+| Naming Conventions                 | 615  | When naming files, symbols, or identifiers                |
+| Code Conventions                   | 653  | When writing or changing code                             |
+| Formatting and Linting             | 902  | When configuring or running lint and format checks        |
+| Testing                            | 911  | When writing or running tests                             |
+| Build                              | 924  | When building or packaging the project                    |
+| Development Server                 | 934  | When configuring the dev server                           |
+| Dependencies                       | 995  | When adding or updating dependencies                      |
+| Reactivity                         | 1025 | When wiring reactive state                                |
+| Application Shell                  | 1201 | When structuring the app shell                            |
+| Overlays                           | 1329 | When building overlays                                    |
+| Messages and Dialogs               | 1387 | When building messages or dialogs                         |
+| Forms                              | 1660 | When building forms                                       |
+| Internationalization               | 1786 | When localizing text                                      |
+| Accessibility                      | 1930 | When building user-facing UI                              |
+| Canvas Applications                | 1956 | When rendering to canvas                                  |
+| Interactive Presentations with SVG | 1985 | When building SVG presentations                           |
+| Verification                       | 2170 | Always - run every applicable check before reporting done |
+| Definition of Done                 | 2195 | Always - check before reporting the task complete         |
+| Comparison With Market Practice    | 2243 | Reference - how this compares to common practice          |
+| General Principles                 | 2388 | Always - cross-cutting principles                         |
+| Sources                            | 2409 | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 
@@ -43,7 +80,7 @@ Follow these steps in order at the start of every task that touches application 
    because a project rule overrides this standard.
 2. Determine the application model and the source layout using the Agent Intake Protocol below
 3. Confirm the model with the user when the repository is ambiguous or empty
-4. Apply the sections of this standard that match the confirmed model and layout
+4. Apply only the sections whose `Read when` entry matches the task
 5. Verify the change against the Definition of Done before reporting the task complete
 
 ### Precedence
@@ -781,7 +818,8 @@ This avoids a `fetch` round trip and keeps the application working over `file://
 <script src="js/app.js"></script>
 ```
 
-Generate that file from a source document kept under `docs/reference/`.
+Generate that file from a source document kept under the resolved reference directory
+(`docs/reference/` under the default mapping).
 
 Never hand-edit generated data.
 

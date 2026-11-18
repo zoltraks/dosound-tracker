@@ -1,6 +1,6 @@
 # TypeScript, React, and Electron Desktop Engineering Standards
 
-<!-- Version: 0.1.5 | Date: 2026-11-08 -->
+<!-- Version: 0.1.6 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -32,11 +32,41 @@ is partially in scope: the Electron-specific sections apply, but the React-speci
 A project that is a pure web application without Electron is covered by the companion
 TypeScript/React standard instead.
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard | 65   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 125  | Always - detect the project shape before asking           |
+| Documentation            | 170  | Reference - authoritative external sources                |
+| Language Version         | 188  | When confirming the language or runtime floor             |
+| Project Structure        | 201  | When creating or relocating project files                 |
+| Naming Conventions       | 235  | When naming files, symbols, or identifiers                |
+| TypeScript Configuration | 268  | When configuring TypeScript                               |
+| Code Conventions         | 335  | When writing or changing code                             |
+| Electron Integration     | 498  | When bridging Electron APIs                               |
+| Security                 | 623  | When handling untrusted input or secrets                  |
+| Styling                  | 677  | When writing styles                                       |
+| Testing                  | 700  | When writing or running tests                             |
+| Build                    | 799  | When building or packaging the project                    |
+| Dependencies             | 890  | When adding or updating dependencies                      |
+| Formatting and Linting   | 927  | When configuring or running lint and format checks        |
+| Comments                 | 987  | When writing comments                                     |
+| Verification             | 1003 | Always - run every applicable check before reporting done |
+| Definition of Done       | 1024 | Always - check before reporting the task complete         |
+| General Principles       | 1068 | Always - cross-cutting principles                         |
+| Fed Patterns             | 1094 | Reference - conventions evolved downstream                |
+| Sources                  | 1110 | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 
@@ -49,7 +79,7 @@ TypeScript, or React code.
 3. Determine the Electron version, the React version, the TypeScript version, the build tool,
    and the packaging tool using the Agent Intake Protocol below.
 4. Confirm the conclusion with the user when the repository is ambiguous or empty
-5. Apply the sections of this standard that match the confirmed project kind
+5. Apply only the sections whose `Read when` entry matches the task
 6. Run every applicable row of the Verification section
 7. Check the result against the Definition of Done before reporting the task complete
 

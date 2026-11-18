@@ -1,6 +1,6 @@
 # Accessibility Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-11-08 -->
+<!-- Version: 0.1.5 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -31,11 +31,36 @@ This standard does not apply to:
 - CLI tools, backend APIs, headless services
 - Native mobile apps (iOS/Android) - platform guidelines apply instead
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 17   | Always - whether the project is in scope                  |
+| How To Use This Standard | 59   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 117  | Always - detect the project shape before asking           |
+| Documentation            | 157  | Reference - authoritative external sources                |
+| Language Version         | 168  | When confirming the language or runtime floor             |
+| Project Structure        | 184  | When creating or relocating project files                 |
+| Naming Conventions       | 209  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 219  | When writing or changing code                             |
+| Formatting and Linting   | 400  | When configuring or running lint and format checks        |
+| Testing                  | 418  | When writing or running tests                             |
+| Build                    | 440  | When building or packaging the project                    |
+| Dependencies             | 464  | When adding or updating dependencies                      |
+| Verification             | 474  | Always - run every applicable check before reporting done |
+| Definition of Done       | 490  | Always - check before reporting the task complete         |
+| General Principles       | 520  | Always - cross-cutting principles                         |
+| Fed Patterns             | 537  | Reference - conventions evolved downstream                |
+| Sources                  | 549  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 
@@ -43,7 +68,7 @@ Follow these steps in order at the start of every task that touches UI code.
 
 1. Read the project rules file and the referring frontend standard
 2. Run automated accessibility audit (axe-core) on the current build
-3. Apply the relevant sections below for the component/feature being built
+3. Apply only the sections whose `Read when` entry matches the task
 4. Run manual verification checklist for new interactive components
 5. Run every applicable row of the Verification section
 6. Check the result against the Definition of Done before reporting the task complete

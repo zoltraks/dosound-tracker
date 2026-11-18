@@ -26,6 +26,7 @@ or by section, never raw bytes.
 - **`typescript-refactoring-development.md`** - TypeScript, refactoring. Canonical plus project conventions.
 - **`bash-inline-development.md`** - Bash and inline shell. Canonical.
 - **`clean-code-general-development.md`** - Clean code, general. Canonical.
+- **`javascript-general-development.md`** - JavaScript, general. Canonical.
 - **`javascript-inline-development.md`** - JavaScript, inline scripts. Canonical.
 - **`merge-conflict-development.md`** - Merge-conflict resolution, cross-stack. Canonical.
 - **`typescript-conflict-development.md`** - TypeScript, merge-conflict resolution. Canonical.

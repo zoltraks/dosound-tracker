@@ -1,6 +1,6 @@
 # Bash Inline Engineering Standards
 
-<!-- Version: 0.2.0 | Date: 2026-11-08 -->
+<!-- Version: 0.2.1 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -30,11 +30,36 @@ Authoring a shipped script, a cron job, a system init script,
 or the project's own tooling is out of scope - those follow product engineering standards,
 though every rule here still applies.
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard | 58   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 114  | Always - detect the project shape before asking           |
+| Documentation            | 151  | Reference - authoritative external sources                |
+| Language Version         | 162  | When confirming the language or runtime floor             |
+| Project Structure        | 170  | When creating or relocating project files                 |
+| Naming Conventions       | 190  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 199  | When writing or changing code                             |
+| Formatting and Linting   | 429  | When configuring or running lint and format checks        |
+| Testing                  | 442  | When writing or running tests                             |
+| Build                    | 452  | When building or packaging the project                    |
+| Dependencies             | 461  | When adding or updating dependencies                      |
+| Verification             | 476  | Always - run every applicable check before reporting done |
+| Definition of Done       | 486  | Always - check before reporting the task complete         |
+| General Principles       | 512  | Always - cross-cutting principles                         |
+| Fed Patterns             | 523  | Reference - conventions evolved downstream                |
+| Sources                  | 539  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 

@@ -1,6 +1,6 @@
 # JavaScript Inline Engineering Standards
 
-<!-- Version: 0.1.4 | Date: 2026-11-08 -->
+<!-- Version: 0.1.5 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -30,8 +30,32 @@ A task is in scope when all of the following conditions hold.
 
 Authoring a reusable package, the project's shipped `scripts/`,
 or application code is out of scope - those follow the language's product standards
-(`javascript-general-development.md` and the TypeScript stack),
+(`javascript-node-development.md` and the TypeScript stack),
 though every rule here still applies.
+
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 19   | Always - whether the project is in scope                  |
+| How To Use This Standard | 60   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 112  | Always - detect the project shape before asking           |
+| Documentation            | 150  | Reference - authoritative external sources                |
+| Language Version         | 167  | When confirming the language or runtime floor             |
+| Project Structure        | 175  | When creating or relocating project files                 |
+| Naming Conventions       | 188  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 197  | When writing or changing code                             |
+| Formatting and Linting   | 509  | When configuring or running lint and format checks        |
+| Testing                  | 515  | When writing or running tests                             |
+| Build                    | 523  | When building or packaging the project                    |
+| Dependencies             | 531  | When adding or updating dependencies                      |
+| Verification             | 546  | Always - run every applicable check before reporting done |
+| Definition of Done       | 559  | Always - check before reporting the task complete         |
+| General Principles       | 583  | Always - cross-cutting principles                         |
+| Sources                  | 608  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
 
 ## How To Use This Standard
 

@@ -1,6 +1,6 @@
 # Clean Code Engineering Standards
 
-<!-- Version: 0.1.2 | Date: 2026-11-11 -->
+<!-- Version: 0.1.3 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -22,6 +22,24 @@ Every code change in the repository.
 Language standards add language-specific expression.
 
 This document states the principle.
+
+## Contents
+
+| Section                  | Line | Read when                                             |
+| ------------------------ | ---- | ----------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                     |
+| Scope                    | 18   | Always - whether the project is in scope              |
+| How To Use This Standard | 44   | Always - agent entry, precedence, and non-negotiables |
+| SOLID                    | 60   | When judging responsibility and coupling              |
+| DRY                      | 73   | When removing duplication                             |
+| KISS And YAGNI           | 82   | When choosing between implementations                 |
+| Naming And Functions     | 89   | When naming functions or symbols                      |
+| Comments                 | 100  | When writing comments                                 |
+| Error Handling           | 108  | When handling failures                                |
+| Testability              | 117  | When shaping code for tests                           |
+| Fed Patterns             | 123  | Reference - conventions evolved downstream            |
+
+Read only the sections whose `Read when` entry matches the task.
 
 ## How To Use This Standard
 

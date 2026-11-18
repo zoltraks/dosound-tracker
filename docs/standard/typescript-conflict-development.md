@@ -1,6 +1,6 @@
 # TypeScript Conflict Engineering Standards
 
-<!-- Version: 0.1.1 | Date: 2026-11-08 -->
+<!-- Version: 0.1.2 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -21,6 +21,31 @@ and locale or schema files shipped inside TypeScript packages.
 
 Out of scope: non-TypeScript trees, and conflict classes the general merge-conflict standard already
 covers without a TypeScript-specific rule.
+
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 16   | Always - whether the project is in scope                  |
+| How To Use This Standard | 50   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 85   | Always - detect the project shape before asking           |
+| Documentation            | 108  | Reference - authoritative external sources                |
+| Language Version         | 119  | When confirming the language or runtime floor             |
+| Project Structure        | 126  | When creating or relocating project files                 |
+| Naming Conventions       | 139  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 147  | When writing or changing code                             |
+| Formatting and Linting   | 163  | When configuring or running lint and format checks        |
+| Testing                  | 172  | When writing or running tests                             |
+| Build                    | 178  | When building or packaging the project                    |
+| Dependencies             | 185  | When adding or updating dependencies                      |
+| Verification             | 194  | Always - run every applicable check before reporting done |
+| Definition of Done       | 205  | Always - check before reporting the task complete         |
+| General Principles       | 228  | Always - cross-cutting principles                         |
+| Fed Patterns             | 236  | Reference - conventions evolved downstream                |
+| Sources                  | 245  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
 
 ## How To Use This Standard
 

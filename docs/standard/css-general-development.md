@@ -1,6 +1,6 @@
 # CSS Engineering Standards
 
-<!-- Version: 0.1.7 | Date: 2026-11-12 -->
+<!-- Version: 0.1.7 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -32,11 +32,47 @@ TypeScript/React standard for the Tailwind-specific conventions.
 
 This standard applies to the custom CSS that supplements Tailwind.
 
+## Contents
+
+| Section                                   | Line | Read when                                                 |
+| ----------------------------------------- | ---- | --------------------------------------------------------- |
+| Purpose                                   | 5    | Always - what the document covers                         |
+| Scope                                     | 16   | Always - whether the project is in scope                  |
+| How To Use This Standard                  | 71   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol                     | 125  | Always - detect the project shape before asking           |
+| Documentation                             | 167  | Reference - authoritative external sources                |
+| Core Technologies                         | 184  | When confirming the technology baseline                   |
+| Project Structure                         | 197  | When creating or relocating project files                 |
+| Naming Conventions                        | 250  | When naming files, symbols, or identifiers                |
+| Code Conventions                          | 264  | When writing or changing code                             |
+| Layout Systems                            | 376  | When building page layout                                 |
+| Responsive Design                         | 480  | When handling viewport sizes                              |
+| Scrollable Regions and Sticky Positioning | 517  | When building scroll or sticky UI                         |
+| HTML Structure for Layout                 | 564  | When structuring layout markup                            |
+| Selectors and Scoping                     | 604  | When writing selectors                                    |
+| State Management with CSS                 | 651  | When managing state-driven styles                         |
+| Z-Index Management                        | 713  | When layering overlapping elements                        |
+| Design Tokens and Theming                 | 736  | When defining theme tokens                                |
+| Accessibility and Interaction             | 816  | When building user-facing UI                              |
+| Property Order and Values                 | 876  | When ordering style properties                            |
+| Visual Effects                            | 934  | When adding visual effects                                |
+| Formatting and Linting                    | 968  | When configuring or running lint and format checks        |
+| Testing                                   | 987  | When writing or running tests                             |
+| Build                                     | 1008 | When building or packaging the project                    |
+| Dependencies                              | 1027 | When adding or updating dependencies                      |
+| Comments                                  | 1035 | When writing comments                                     |
+| Verification                              | 1049 | Always - run every applicable check before reporting done |
+| Definition of Done                        | 1065 | Always - check before reporting the task complete         |
+| General Principles                        | 1107 | Always - cross-cutting principles                         |
+| Sources                                   | 1139 | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 
@@ -47,7 +83,7 @@ Follow these steps in order at the start of every task that touches CSS or HTML.
 2. Determine the project type, the CSS framework,
    and the browser baseline using the Agent Intake Protocol below.
 3. Confirm the conclusion with the user when the repository is ambiguous or empty
-4. Apply the sections of this standard that match the confirmed project kind
+4. Apply only the sections whose `Read when` entry matches the task
 5. Run every applicable row of the Verification section
 6. Check the result against the Definition of Done before reporting the task complete
 
@@ -525,26 +561,6 @@ because a second document-level scrollbar beside the intended one means the heig
 Size grid and flex tracks by content when clipped items would let them collapse,
 and let the container scroll.
 
-Debug a scrollable area that is larger than its content by measuring, not by
-patching margins or padding: compare `scrollHeight` against the last child's
-bottom edge, then walk the descendants for the overflowing box - `transform`
-offsets, inline-level form controls sitting on a text baseline, and children
-larger than their container all extend the scrollable bounds.
-
-A scroll container that must reach an exact end position needs an integer
-height - a fractional `clientHeight` produces a fractional scroll maximum
-that wheel deltas and programmatic `scrollTop` writes fight over. Floor the
-track height (for example through a `ResizeObserver`) before touching scroll
-logic.
-
-Do not use `scroll-snap` to repair scroll bounds - under subpixel rounding the
-snap point and the scroll maximum disagree by a pixel and the container
-bounces.
-
-Space between scrolled content and the scrollbar belongs on the items as
-`margin`, not on the scroll container as `padding` - scroll containers can
-fold their padding into the scrollable area on the block axis too.
-
 ## HTML Structure for Layout
 
 Use semantic HTML5 elements for major regions when the markup is static or server-rendered,
@@ -920,12 +936,12 @@ Write hexadecimal colors lowercase and shorten to three digits whenever every ch
 Use `::before` and `::after` for decorative effects such as shimmer sweeps.
 
 ```css
-.command-button {
+.command-btn {
   position: relative;
   overflow: hidden;
 }
 
-.command-button::before {
+.command-btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -936,7 +952,7 @@ Use `::before` and `::after` for decorative effects such as shimmer sweeps.
   transition: left 0.5s ease;
 }
 
-.command-button:hover::before {
+.command-btn:hover::before {
   left: 100%;
 }
 ```
@@ -1153,3 +1169,5 @@ https://developer.mozilla.org/en-US/docs/Web/CSS/Guides/Containment/Container_si
 - A form control that replaces a text element in the same box needs `font: inherit` and `color: inherit` - inputs do not inherit typography - plus the cell's padding and `border: none`, and `min-width: 0` so the control's intrinsic min-content (the `size` attribute) cannot raise the flex floor and shift sibling columns. `.pattern-input` in `App.css` is the reference shape.
 - Every `var(--*)` reference must resolve in the theme blocks - an undefined custom property invalidates the whole declaration silently. `.pattern-input` referenced `--input-bg`/`--input-text`/`--input-border`, which no theme defines, so the input fell back to browser-default font, color, and border metrics.
 - `:focus:not(:focus-visible) { outline: none }` removes the mouse-click ring from a dense control while keeping the keyboard focus indicator - apply it per component (the dump chip switcher) rather than relying on the global `*:focus` outline, which the canonical `:focus-visible` rule otherwise expects on every interactive element.
+- A state class (`.active`, `.current`, `.selected`, `.playback-position`) changes colors only - border width, margin, and padding are reserved by the resting rule (transparent border, fixed margin) and never added by the state. A declaration that exists only to cancel a state-added metric (`padding-left: 0px` beside a playback border, `padding-left: 3px` beside an active margin flip) marks the same wound - remove the geometry mutation rather than adding another compensation. `.playlist-line` and `.track-line.current` in `App.css` are the reference shapes.
+- Removing a negative margin raises the element's min-content contribution; inside a flex item without `min-width: 0` that one-pixel delta becomes the column's new floor and distributes fractionally across every `flex: 1` sibling - `.track-line.current`'s `margin-left: -1px` flip grew all six track panels by ~0.17px each. Audit state rules for margin changes, not only border and padding.

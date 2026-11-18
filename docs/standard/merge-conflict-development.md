@@ -1,6 +1,6 @@
 # Merge Conflict Engineering Standards
 
-<!-- Version: 0.1.1 | Date: 2026-11-08 -->
+<!-- Version: 0.1.3 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -23,6 +23,31 @@ and rule documents are in scope alongside source code.
 
 Interactive rebases and history rewrites share most rules but are out of scope where they
 reorder rather than merge.
+
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 16   | Always - whether the project is in scope                  |
+| How To Use This Standard | 52   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 85   | Always - detect the project shape before asking           |
+| Documentation            | 108  | Reference - authoritative external sources                |
+| Core Technologies        | 117  | When confirming the technology baseline                   |
+| Project Structure        | 127  | When creating or relocating project files                 |
+| Naming Conventions       | 138  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 147  | When writing or changing code                             |
+| Formatting and Linting   | 181  | When configuring or running lint and format checks        |
+| Testing                  | 188  | When writing or running tests                             |
+| Build                    | 197  | When building or packaging the project                    |
+| Dependencies             | 203  | When adding or updating dependencies                      |
+| Verification             | 211  | Always - run every applicable check before reporting done |
+| Definition of Done       | 222  | Always - check before reporting the task complete         |
+| General Principles       | 246  | Always - cross-cutting principles                         |
+| Fed Patterns             | 255  | Reference - conventions evolved downstream                |
+| Sources                  | 263  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
 
 ## How To Use This Standard
 
@@ -61,11 +86,11 @@ When two rules conflict, apply the first matching source in this list.
 
 ### Detection First
 
-| Signal Found In Repository                   | Inferred Decision                       | Confidence |
-| -------------------------------------------- | --------------------------------------- | ---------- |
-| `MERGE_HEAD` or conflict markers present     | A merge is in progress                  | High       |
-| A request to merge, sync, or update a branch | Run the Order Of Operations above       | High       |
-| `docs/standard/` holds `*-development.md`    | The project carries a standards library | High       |
+| Signal Found In Repository                              | Inferred Decision                       | Confidence |
+| ------------------------------------------------------- | --------------------------------------- | ---------- |
+| `MERGE_HEAD` or conflict markers present                | A merge is in progress                  | High       |
+| A request to merge, sync, or update a branch            | Run the Order Of Operations above       | High       |
+| A resolved standards directory holds `*-development.md` | The project carries a standards library | High       |
 
 ### Existing Project
 

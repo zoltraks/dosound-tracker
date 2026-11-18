@@ -40,6 +40,8 @@ Terminating the shell that launched `npm run dev` can leave the Vite process ali
 
 A throwaway `@playwright/test` script under `work/` can drive the dev server and assert computed styles - hover an element, wait out the transition, then read `getComputedStyle`. This verifies visual CSS behavior such as border colors, shadows, and background blends without manual screenshots.
 
+For layout-geometry claims, measure instead of asserting styles: snapshot `getBoundingClientRect` widths/positions plus the `offsetWidth`/`clientWidth`/`scrollWidth` ancestor chain across the before/after states - the chain pinpoints which flex ancestor absorbed a sub-pixel delta (the playlist shift propagated through `.left-column`'s min-content floor to all six panels). Seed the reporter's configuration through `page.addInitScript` localStorage (`dosound-tracker-dual-chip`, `dosound-tracker-visible-tracks`, and siblings) before `page.goto` - default settings may not reproduce the bug. `vite preview` serves `dist/`, so rebuild before measuring it; `npm run dev` hot-reloads for iteration.
+
 **Place an extracted hook before its earliest consumer**
 
 When a block of `App.tsx` moves into a hook, the hook call must precede the earliest consumer of any returned value - aggregate flags such as `isNavigationSuspended` consume modal-open state far earlier than the moved handler block. Scan consumers before choosing the call position - a `TS2448 used before its declaration` error is the symptom of a hook placed too late.

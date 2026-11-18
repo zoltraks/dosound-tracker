@@ -1,6 +1,6 @@
 # TypeScript Real-Time Audio Engineering Standards
 
-<!-- Version: 0.1.2 | Date: 2026-11-11 -->
+<!-- Version: 0.1.3 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -23,6 +23,28 @@ This standard applies to TypeScript codebases that:
 - run audio-adjacent logic inside React components or hooks,
 - process high-frequency event streams (MIDI, transport, envelopes),
 - produce binary export output whose correctness is byte-level
+
+## Contents
+
+| Section                      | Line | Read when                                                 |
+| ---------------------------- | ---- | --------------------------------------------------------- |
+| Purpose                      | 5    | Always - what the document covers                         |
+| Scope                        | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard     | 49   | Always - agent entry, precedence, and non-negotiables     |
+| Language Version             | 57   | When confirming the language or runtime floor             |
+| Project Structure            | 63   | When creating or relocating project files                 |
+| Timing Model                 | 91   | When reasoning about timing or ticks                      |
+| Audio-Path State Rules       | 101  | When touching the audio path                              |
+| Worker Isolation             | 113  | When isolating work in workers                            |
+| High-Frequency Event Streams | 121  | When handling high-frequency events                       |
+| Export and Serialization     | 128  | When exporting or serializing data                        |
+| Testing                      | 134  | When writing or running tests                             |
+| Verification                 | 142  | Always - run every applicable check before reporting done |
+| General Principles           | 149  | Always - cross-cutting principles                         |
+| Fed Patterns                 | 158  | Reference - conventions evolved downstream                |
+| Sources                      | 197  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
 
 ## How To Use This Standard
 

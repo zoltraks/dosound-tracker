@@ -1,6 +1,6 @@
 # TypeScript Refactoring Standard
 
-<!-- Version: 0.1.2 | Date: 2026-11-08 -->
+<!-- Version: 0.1.3 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -25,6 +25,22 @@ and defect fixes - those route through the project's change lifecycle, not throu
 
 A refactoring that cannot complete without a behavior change stops and produces a
 change record instead.
+
+## Contents
+
+| Section                            | Line | Read when                                                 |
+| ---------------------------------- | ---- | --------------------------------------------------------- |
+| Purpose                            | 5    | Always - what the document covers                         |
+| Scope                              | 17   | Always - whether the project is in scope                  |
+| How To Use This Standard           | 45   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol              | 63   | Always - detect the project shape before asking           |
+| Duplication Taxonomy               | 84   | When classifying duplicated code                          |
+| Extraction and Component Splitting | 101  | When extracting components                                |
+| Comment Policy                     | 114  | When writing comments                                     |
+| Verification                       | 139  | Always - run every applicable check before reporting done |
+| Definition of Done                 | 152  | Always - check before reporting the task complete         |
+
+Read only the sections whose `Read when` entry matches the task.
 
 ## How To Use This Standard
 

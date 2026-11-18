@@ -115,6 +115,10 @@ The selected options are recorded with their outcomes and evidence in the change
 
 Under the `independent-verification` extension, each review-class option - code review, pragmatic review, production readiness, and reality check - is executed by a reviewer other than the implementer. The recorded model: the project owner (the user) is the reviewer and the AI agent is the implementer. The mechanical options - completeness check and test-suite run - may stay with the implementer.
 
+**Geometry claims verify by measurement**
+
+A CSS layout-geometry fix is not verified by the automated loop alone - typecheck, lint, and tests cannot see a one-pixel flex drift. Measure the running build across the reported state transitions with the reporter's configuration (viewport and settings seeded per `TOOLING.md`), because defaults may not reproduce the defect. A plan's manual-confirm step remains an obligation of the implementer, not a handoff to the reporter - the 2026-11-18 playlist shift shipped "verified" while its dominant cause (`.track-line.current` margin flip propagating through `.left-column`'s min-content floor) stayed unfixed until live measurement exposed it.
+
 ## Runnable Artifact
 
 Under the `runnable-artifact` extension, a change may not be called verified until the shipped entrypoints run a live slice:

@@ -1,5 +1,39 @@
 # Changes
 
+## Version 1.6.7
+
+The dual-chip interface is now fully reachable and the everyday
+interface is tighter: six-track editing works before a song references
+the second chip, focus survives reloads, playlist editing and column
+geometry stay stable, and the About dialog reports the live view size.
+
+- **Six-track editing**: the Three/Six-tracks setting alone exposes all
+  six channels, so second-chip tracks are reachable and editable before
+  a song references D/E/F; the three-track view follows a sliding
+  window centred on the focused channel instead of fixed chip groups,
+  and playlist channel arrows cycle every enabled channel.
+- **Focus restoration**: the app restores the actual focused control
+  after a reload, sharing the editor-cursor restore gate and retrying
+  until the persisted view settles.
+- **Playlist editing**: the cell edit input mirrors the cell's
+  typography and box so editing never shifts the row, and an open empty
+  pattern edit is distinguished from no edit.
+- **Interface density**: command-button and control padding is reduced
+  symmetrically, the settings modal height is stabilized, the MIDI
+  modal loads on demand, and chip-switcher, pattern-input, and
+  six-channel EQ hover styling is refined.
+- **About dialog**: shows the current view size in pixels with the
+  zoom factor, updating live on window resize.
+- **Dump panel**: the selected chip button adopts the theme-aware
+  colors of the hovered command button.
+- **Layout stability**: playlist and track column widths no longer
+  shift when switching between playlist and track sections.
+- **Security**: `npm audit` reports 20 high-severity ReDoS findings in
+  `picomatch` reachable only through development tooling (vite, vitest,
+  eslint, electron-builder); none reach the shipped bundle, and the
+  only automated fix is a breaking vitest major bump, so the release
+  proceeds with the risk documented.
+
 ## Version 1.6.6
 
 Two-chip songs are now audible, editable, and exportable: the app can

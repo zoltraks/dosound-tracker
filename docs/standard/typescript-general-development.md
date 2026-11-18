@@ -1,6 +1,6 @@
 # TypeScript Engineering Standards
 
-<!-- Version: 0.1.9 | Date: 2026-11-08 -->
+<!-- Version: 0.2.0 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -30,11 +30,36 @@ engineering standard.
 A project that uses a different compile-to-JS language (e.g., CoffeeScript,
 PureScript) is out of scope.
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard | 58   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 113  | Always - detect the project shape before asking           |
+| Documentation            | 158  | Reference - authoritative external sources                |
+| Language Version         | 170  | When confirming the language or runtime floor             |
+| Project Structure        | 217  | When creating or relocating project files                 |
+| Naming Conventions       | 347  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 400  | When writing or changing code                             |
+| Formatting and Linting   | 535  | When configuring or running lint and format checks        |
+| Testing                  | 579  | When writing or running tests                             |
+| Build                    | 603  | When building or packaging the project                    |
+| Dependencies             | 631  | When adding or updating dependencies                      |
+| Verification             | 648  | Always - run every applicable check before reporting done |
+| Definition of Done       | 669  | Always - check before reporting the task complete         |
+| General Principles       | 702  | Always - cross-cutting principles                         |
+| Fed Patterns             | 722  | Reference - conventions evolved downstream                |
+| Sources                  | 742  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 
@@ -46,7 +71,7 @@ Follow these steps in order at the start of every task that touches TypeScript c
 3. Determine the TypeScript version, build tool,
    and project kind using the Agent Intake Protocol below.
 4. Confirm the conclusion with the user when the repository is ambiguous or empty
-5. Apply the sections of this standard that match the confirmed project kind
+5. Apply only the sections whose `Read when` entry matches the task
 6. Run every applicable row of the Verification section
 7. Check the result against the Definition of Done before reporting the task complete
 

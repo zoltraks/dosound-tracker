@@ -1,10 +1,12 @@
 # Engineering Standard Template
 
-<!-- Version: 0.1.8 | Date: 2026-11-08 -->
+<!-- Version: 0.2.0 | Date: 2026-11-18 -->
 
 ## Purpose
 
-This document defines the mandatory template for all engineering standards in `docs/standard/`.
+This document defines the mandatory template for all engineering standards in `<standard>/` - the
+resolved standards directory, `docs/standard/` under the default mapping or `docs/standards/`
+under a plural convention.
 
 Every `*-development.md` file must conform to this structure.
 
@@ -24,11 +26,44 @@ whether it lives in this library or was copied into a consumer project.
 
 Out of scope: improvement plans, templates for other document kinds, and produced project documents.
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 19   | Always - whether the project is in scope                  |
+| How To Use This Standard | 62   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 98   | Always - detect the project shape before asking           |
+| Documentation            | 121  | Reference - authoritative external sources                |
+| Language Version         | 130  | When confirming the language or runtime floor             |
+| Project Structure        | 145  | When creating or relocating project files                 |
+| Naming Conventions       | 153  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 161  | When writing or changing code                             |
+| Formatting and Linting   | 166  | When configuring or running lint and format checks        |
+| Testing                  | 174  | When writing or running tests                             |
+| Build                    | 185  | When building or packaging the project                    |
+| Dependencies             | 190  | When adding or updating dependencies                      |
+| Verification             | 200  | Always - run every applicable check before reporting done |
+| Definition of Done       | 211  | Always - check before reporting the task complete         |
+| General Principles       | 233  | Always - cross-cutting principles                         |
+| Fed Patterns             | 243  | Reference - conventions evolved downstream                |
+| Sources                  | 257  | Reference - authoritative external sources                |
+| Validation Rules         | 267  | Always - conformance checks for this document             |
+| Change Procedure         | 292  | Reference - how to amend this document                    |
+
+Read only the sections whose `Read when` entry matches the task.
+
+The lazy-load map of the document - one row per `## ` section except `Contents` itself.
+`Line` anchors to the section's heading line, and `Read when` states the trigger that loads it:
+`Always -` for sections every task reads, `When ...` for task-scoped sections,
+`Reference -` for lookup material. An agent reads this table with the front sections
+and loads only the rows the task matches.
+
 ## How To Use This Standard
 
 ### Order Of Operations
 
-1. Copy this file to `docs/standard/<language>-<category>-development.md`.
+1. Copy this file to `<standard>/<language>-<category>-development.md`.
 2. Replace the H1 and the version header values
 3. Replace each section's guidance text with the real rules
 4. Keep every skeleton table header unchanged - the validation checklist keys on them
@@ -50,7 +85,8 @@ A stacked standard adds its base standard as one extra rank above "This standard
 
 ### Non-Negotiable Rules
 
-- **Exact section set** - every standard carries the 17 sections below in the order shown
+- **Exact section set** - every standard carries the 18 sections below in the order shown,
+  including the `Contents` lazy-load map
 - **Executable verification** - every row in the Verification table is a runnable command,
   never "Review" or "Manual".
 - **Hermetic content** - no links to sibling standards, so a copied file stays usable alone
@@ -65,13 +101,13 @@ A violation of any of these rules is a defect, not a style preference.
 
 | Signal Found In Repository                    | Inferred Decision                   | Confidence |
 | --------------------------------------------- | ----------------------------------- | ---------- |
-| `docs/standard/` holds `*-development.md`     | This is the standards library       | High       |
+| `<standard>/` holds `*-development.md`        | This is the standards library       | High       |
 | A request to add a standard                   | Copy this skeleton                  | High       |
 | `standard-template-development.md` is present | This file is the governing contract | High       |
 
 ### Existing Project
 
-Confirm before editing: "This repository already carries standards under `docs/standard/` - I will
+Confirm before editing: "This repository already carries standards under `<standard>/` - I will
 extend `<name>` following this template."
 
 ### New Project
@@ -109,10 +145,9 @@ On runtime upgrade, re-validate all rules against release notes before writing c
 ## Project Structure
 
 ```
-docs/
-└── standard/
-    ├── <language>-general-development.md     # Base rules for the identifier
-    └── <language>-<category>-development.md  # Category rules stacked on general
+<standard>/                                        # Resolved standards directory
+├── <language>-general-development.md              # Base rules for the identifier
+└── <language>-<category>-development.md           # Category rules stacked on general
 ```
 
 ## Naming Conventions
@@ -166,10 +201,10 @@ A standard's Dependencies section uses this schema:
 
 | Check                   | Command Or Method                                     | Applies To    |
 | ----------------------- | ----------------------------------------------------- | ------------- |
-| Section order listing   | `grep -n "^## " docs/standard/<file>.md`              | All standards |
-| Filename pattern        | `ls docs/standard/*-development.md`                   | New files     |
-| Version header present  | `grep -n "^<!-- Version:" docs/standard/*.md`         | Changed files |
-| Forbidden check wording | `grep -rEn -e " Manual" -e " Review" docs/standard/`  | Changed files |
+| Section order listing   | `grep -n "^## " <standard>/<file>.md`                 | All standards |
+| Filename pattern        | `ls <standard>/*-development.md`                      | New files     |
+| Version header present  | `grep -n "^<!-- Version:" <standard>/*.md`            | Changed files |
+| Forbidden check wording | `grep -rEn -e " Manual" -e " Review" <standard>/`     | Changed files |
 | Diff whitespace         | `git diff --check`                                    | Every change  |
 | Document battery        | Editorial Markdown battery when the host provides one | Changed files |
 
@@ -182,7 +217,7 @@ A standard's Dependencies section uses this schema:
 
 ### Structure
 
-- All 17 sections are present in the canonical order
+- All 18 sections are present in the canonical order
 - Required subsections and table schemas match this template
 
 ### Quality
@@ -236,7 +271,9 @@ before a standard ships.
 
 | Rule                                                          | Severity |
 | ------------------------------------------------------------- | -------- |
-| All 17 required sections present                              | Error    |
+| All 18 required sections present                              | Error    |
+| Contents table lists every `## ` section with `Line` and      | Error    |
+| `Read when` columns                                           |          |
 | Section order matches required order (extra domain sections   | Error    |
 | may interleave)                                               |          |
 | `Language Version` or `Core Technologies` holds the version-  | Error    |

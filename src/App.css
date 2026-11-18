@@ -2260,7 +2260,6 @@ body {
 .track-panel.active .track-line.current {
   background-color: var(--track-active-bg);
   border-color: var(--track-active-border);
-  margin-left: 0;
   margin-top: 0px;
   margin-bottom: 0;
 }
@@ -2446,10 +2445,6 @@ body {
   background-color: var(--track-cell-active-bg);
   /* Snap background highlight on active column changes (no background transition). */
   transition: color 0.5s ease;
-}
-
-.track-panel.active .track-line.current .note-text {
-  padding-left: 3px;
 }
 
 .track-panel.active .track-line.current .volume-data {
@@ -3099,12 +3094,14 @@ body {
   gap: var(--gap-4);
   padding-top: 2px;
   padding-bottom: 1px;
-  padding-right: 2px;
-  padding-left: 1px;
+  padding-right: 1px;
+  padding-left: 0px;
   cursor: pointer;
   font-size: var(--fs-md);
   border-top: 1px solid var(--bg-primary);
   border-bottom: 1px solid var(--bg-secondary);
+  border-left: 1px solid transparent;
+  border-right: 1px solid transparent;
 }
 
 .playlist-line .line-number {
@@ -3117,18 +3114,17 @@ body {
 
 .playlist-line.current {
   background-color: var(--active-bg);
-  border: 1px solid var(--active-border);
+  border-color: var(--active-border);
 }
 
 .playlist-line.playback-position {
   background-color: var(--playback-position-bg);
-  border: 1px solid var(--playback-position-border);
+  border-color: var(--playback-position-border);
 }
 
 .playlist-line.playback-position.current {
   background-color: var(--playback-position-active-bg);
-  border: 1px solid var(--playback-position-active-border);
-  padding-left: 0px;
+  border-color: var(--playback-position-active-border);
 }
 
 .track-pattern {

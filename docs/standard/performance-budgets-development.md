@@ -1,6 +1,6 @@
 # Performance Budgets Engineering Standards
 
-<!-- Version: 0.1.5 | Date: 2026-11-10 -->
+<!-- Version: 0.1.5 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -29,11 +29,36 @@ This standard does not apply to:
 - Headless build tools, compilers, transpilers (unless they have user-facing CLI)
 - Internal libraries with no direct user interface
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard | 57   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 102  | Always - detect the project shape before asking           |
+| Documentation            | 139  | Reference - authoritative external sources                |
+| Language Version         | 153  | When confirming the language or runtime floor             |
+| Project Structure        | 167  | When creating or relocating project files                 |
+| Naming Conventions       | 187  | When naming files, symbols, or identifiers                |
+| Code Conventions         | 197  | When writing or changing code                             |
+| Formatting and Linting   | 289  | When configuring or running lint and format checks        |
+| Testing                  | 336  | When writing or running tests                             |
+| Build                    | 356  | When building or packaging the project                    |
+| Dependencies             | 428  | When adding or updating dependencies                      |
+| Verification             | 439  | Always - run every applicable check before reporting done |
+| Definition of Done       | 458  | Always - check before reporting the task complete         |
+| General Principles       | 485  | Always - cross-cutting principles                         |
+| Fed Patterns             | 503  | Reference - conventions evolved downstream                |
+| Sources                  | 524  | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 

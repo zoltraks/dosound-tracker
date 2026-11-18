@@ -1,6 +1,6 @@
 # TypeScript and React Engineering Standards
 
-<!-- Version: 0.1.6 | Date: 2026-11-12 -->
+<!-- Version: 0.1.6 | Date: 2026-11-18 -->
 
 ## Purpose
 
@@ -43,11 +43,47 @@ A project that combines a React frontend with a Node.js service applies this sta
 frontend and applies the TypeScript engineering standard and the matching backend
 standard to the service.
 
+## Contents
+
+| Section                  | Line | Read when                                                 |
+| ------------------------ | ---- | --------------------------------------------------------- |
+| Purpose                  | 5    | Always - what the document covers                         |
+| Scope                    | 18   | Always - whether the project is in scope                  |
+| How To Use This Standard | 82   | Always - agent entry, precedence, and non-negotiables     |
+| Agent Intake Protocol    | 139  | Always - detect the project shape before asking           |
+| Documentation            | 186  | Reference - authoritative external sources                |
+| Language Version         | 208  | When confirming the language or runtime floor             |
+| Project Structure        | 220  | When creating or relocating project files                 |
+| Naming Conventions       | 271  | When naming files, symbols, or identifiers                |
+| Type Safety              | 311  | When typing or annotating code                            |
+| TypeScript Configuration | 364  | When configuring TypeScript                               |
+| Module System            | 455  | When choosing or changing module boundaries               |
+| Code Conventions         | 482  | When writing or changing code                             |
+| Specialized Patterns     | 751  | When applying framework-specific patterns                 |
+| Styling                  | 901  | When writing styles                                       |
+| Resource Management      | 936  | When acquiring or releasing resources                     |
+| Configuration            | 953  | When configuring the app                                  |
+| Logging                  | 994  | When adding logging                                       |
+| Security                 | 1029 | When handling untrusted input or secrets                  |
+| Performance              | 1084 | When optimizing hot paths                                 |
+| Formatting and Linting   | 1104 | When configuring or running lint and format checks        |
+| Testing                  | 1176 | When writing or running tests                             |
+| Build                    | 1284 | When building or packaging the project                    |
+| Dependencies             | 1344 | When adding or updating dependencies                      |
+| Comments                 | 1401 | When writing comments                                     |
+| Verification             | 1422 | Always - run every applicable check before reporting done |
+| Definition of Done       | 1440 | Always - check before reporting the task complete         |
+| General Principles       | 1488 | Always - cross-cutting principles                         |
+| Fed Patterns             | 1515 | Reference - conventions evolved downstream                |
+| Sources                  | 1562 | Reference - authoritative external sources                |
+
+Read only the sections whose `Read when` entry matches the task.
+
 ## How To Use This Standard
 
 This section is the entry point for an agent.
 
-Read it before reading anything else in this document.
+Read it before reading any rule section in this document.
 
 ### Order Of Operations
 
@@ -59,7 +95,7 @@ Follow these steps in order at the start of every task that touches TypeScript o
 3. Determine the TypeScript version, the React version, the build tool, the state management,
    and the test framework using the Agent Intake Protocol below.
 4. Confirm the conclusion with the user when the repository is ambiguous or empty
-5. Apply the sections of this standard that match the confirmed project kind
+5. Apply only the sections whose `Read when` entry matches the task
 6. Run every applicable row of the Verification section
 7. Check the result against the Definition of Done before reporting the task complete
 
@@ -483,9 +519,6 @@ export function Button({ onClick, children, variant = 'primary' }: ButtonProps) 
 - When extracting effects into a custom hook,
   a ref shared with code that stays above the hook call site is declared in the component and passed
   in as a parameter - moving it into the hook creates a use-before-declaration dependency.
-- A `useCallback` or `useEffect` that consumes a ref or a setter arriving as a hook parameter lists it
-  in the dependency array - `react-hooks/exhaustive-deps` proves locally declared refs and setters
-  stable but cannot prove a parameter, and listing the stable identity changes nothing at runtime.
 - A hook or pure helper defined inside a component file belongs in the hooks or logic directory as
   soon as it is shared, long enough to obscure the component,
   or independently testable - do not leave private extractions buried in page files.
@@ -653,28 +686,6 @@ async function fetchData(signal: AbortSignal): Promise<Data> {
 - Synchronous file I/O (`readFileSync`, `writeFileSync`) on the hot path,
   because it blocks the event loop.
 - Mutable shared state across module boundaries, because it creates hidden coupling
-- Wiring `onClick={handler}` when the handler's parameters are not the event - the DOM
-  delivers a `MouseEvent`, so an optional numeric or unrelated parameter silently receives
-  the event object. Wrap the call: `onClick={() => handler()}`.
-- Letting a committing control's event bubble to a parent `onKeyDown` that closes over the
-  same editing state - the parent re-fires the commit through its stale closure. Stop
-  propagation at the committing control.
-- Binding a page-level handler to a browser-reserved chord - `Ctrl+PageUp`/`Ctrl+PageDown`
-  switch browser tabs, `Ctrl+Tab`, `Ctrl+W`, and similar never deliver `keydown` to the page,
-  so a passing unit test still leaves the binding dead in a real browser. Prefer `Shift` or
-  `Alt` variants for keys the browser claims, and confirm reserved-chord candidates against
-  the target browser before wiring them.
-- Letting a command-button operation read persisted selection state - a saved selection
-  survives focus changes and reloads, so it can silently redirect the operation to a
-  different subject than the user expects. Command buttons bind to the active subject;
-  selection-aware behaviour belongs to keyboard shortcuts only.
-- Applying utility-framework class names (`h-3 w-3`, `rotate-90`, `p-4`, `mt-2`) to
-  elements or components in a project with no utility CSS framework - the classes
-  silently match nothing, so the intended sizing or rotation never happens and the
-  element keeps its library default. A 24px lucide icon inside a 16px button
-  overflowed its row and inflated the scrollable area below the list. Size icon
-  components through their own API - lucide-react takes `size={n}` - and style
-  everything else with the project's own classes.
 
 ### React 19 Patterns
 
@@ -1532,14 +1543,6 @@ never a guessed shape - a wrapped setter may be `(value) => void`, not `Dispatch
 
 **Empty catch convention.** A deliberately empty catch is written `{ // ignore }`, stays rare,
 and marks an intentional discard rather than forgotten error handling.
-
-**Modifier-chord keys match on `event.code`.** A modifier that produces a character changes
-`event.key` - Option+digit on macOS emits `¡`, `£`, `ﬁ`, `ﬂ`, `•` - so a digit chord matched
-on `key` is silently dead there while the same Alt+digit works on Windows and Linux.
-`event.code` (`Digit1`, `Numpad1`, `KeyQ`) names the physical key and stays locale-stable.
-
-`code` values are camelCase - normalize before prefix comparisons, because
-`code.startsWith('DIGIT')` never matches `'Digit1'`.
 
 **Test-hygiene contracts.** React Testing Library does not auto-clean rendered trees - every
 component test registers `afterEach(() => cleanup())` when no global setup does it.
