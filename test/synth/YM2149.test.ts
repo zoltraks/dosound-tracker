@@ -1,6 +1,6 @@
 // @vitest-environment node
 
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
   YM2149,
   YM_CLOCK,
@@ -167,9 +167,9 @@ describe('audio node updates', () => {
     ym.writeRegister(0x08, 0x0f);
     try {
       expect(createdOscillators[0].frequency.value).toBeCloseTo(YM_CLOCK / (16 * 0x11c), 3);
-      expect(createdGains[2].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[15] * 0.3, 5);
+      expect(createdGains[3].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[15] * 0.3, 5);
     } catch (error) {
-      console.log('nodes', createdOscillators[0].frequency.value, createdGains[2].gain.value);
+      console.log('nodes', createdOscillators[0].frequency.value, createdGains[3].gain.value);
       throw error;
     }
   });
@@ -181,9 +181,9 @@ describe('audio node updates', () => {
     ym.writeRegister(0x07, 0x3e);
     ym.writeRegister(0x08, 0x00);
     try {
-      expect(createdGains[2].gain.value).toBe(0);
+      expect(createdGains[3].gain.value).toBe(0);
     } catch (error) {
-      console.log('gain', createdGains[2].gain.value);
+      console.log('gain', createdGains[3].gain.value);
       throw error;
     }
   });
@@ -434,13 +434,13 @@ describe('chip variant', () => {
     ym.writeRegister(0x07, 0x3e);
     ym.writeRegister(0x08, 0x07);
     try {
-      expect(createdGains[2].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[7] * 0.3, 5);
+      expect(createdGains[3].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[7] * 0.3, 5);
       ym.setChip('AY');
-      expect(createdGains[2].gain.value).toBeCloseTo(AY_LOG_VOLUME_TABLE[7] * 0.3, 5);
+      expect(createdGains[3].gain.value).toBeCloseTo(AY_LOG_VOLUME_TABLE[7] * 0.3, 5);
       ym.setChip('YM');
-      expect(createdGains[2].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[7] * 0.3, 5);
+      expect(createdGains[3].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[7] * 0.3, 5);
     } catch (error) {
-      console.log('chip gain', createdGains[2].gain.value);
+      console.log('chip gain', createdGains[3].gain.value);
       throw error;
     }
   });
@@ -464,18 +464,19 @@ describe('dispose', () => {
 });
 
 describe('stereo routing', () => {
-  // createdGains order: 0 noise mix, 1 envelope, 2-4 channel gains,
-  // 5-7 per-channel noise taps. createdPanners holds the 3 stereo panners.
+  // createdGains order: 0 noise mix, 1 envelope, 2 output sum,
+  // 3-5 channel gains, 6-8 per-channel noise taps. createdPanners holds the
+  // 3 stereo panners.
   it('keeps the mono graph and silent panner chain by default', () => {
     const { context, createdGains, createdPanners } = createAudioContextStub();
     new YM2149(context);
     try {
       expect(createdPanners).toHaveLength(3);
       for (let channel = 0; channel < 3; channel++) {
-        expect(createdGains[2 + channel].connect).toHaveBeenCalledTimes(1);
-        expect(createdGains[2 + channel].connect).toHaveBeenCalledWith(context.destination);
-        expect(createdGains[2 + channel].disconnect).not.toHaveBeenCalled();
-        expect(createdGains[5 + channel].gain.value).toBe(0);
+        expect(createdGains[3 + channel].connect).toHaveBeenCalledTimes(1);
+        expect(createdGains[3 + channel].connect).toHaveBeenCalledWith(createdGains[2]);
+        expect(createdGains[3 + channel].disconnect).not.toHaveBeenCalled();
+        expect(createdGains[6 + channel].gain.value).toBe(0);
       }
     } catch (error) {
       console.log('mono-routing mismatch');
@@ -492,8 +493,8 @@ describe('stereo routing', () => {
       expect(createdPanners[1].pan.value).toBe(0);
       expect(createdPanners[2].pan.value).toBe(1);
       for (let channel = 0; channel < 3; channel++) {
-        expect(createdGains[2 + channel].disconnect).toHaveBeenCalledTimes(1);
-        expect(createdGains[2 + channel].connect).toHaveBeenLastCalledWith(createdPanners[channel]);
+        expect(createdGains[3 + channel].disconnect).toHaveBeenCalledTimes(1);
+        expect(createdGains[3 + channel].connect).toHaveBeenLastCalledWith(createdPanners[channel]);
       }
     } catch (error) {
       console.log('stereo-routing mismatch');
@@ -508,8 +509,8 @@ describe('stereo routing', () => {
     ym.setChannelPans([0.5, 0.5, 0.5]);
     try {
       for (let channel = 0; channel < 3; channel++) {
-        expect(createdGains[2 + channel].connect).toHaveBeenLastCalledWith(context.destination);
-        expect(createdGains[5 + channel].gain.value).toBe(0);
+        expect(createdGains[3 + channel].connect).toHaveBeenLastCalledWith(createdGains[2]);
+        expect(createdGains[6 + channel].gain.value).toBe(0);
       }
     } catch (error) {
       console.log('mono-restore mismatch');
@@ -541,12 +542,28 @@ describe('stereo routing', () => {
     ym.writeRegister(0x06, 0x10);
     try {
       const expected = YM_LOG_VOLUME_TABLE[0x0f] * 0.4;
-      expect(createdGains[5].gain.value).toBeCloseTo(expected, 5);
-      expect(createdGains[6].gain.value).toBe(0);
+      expect(createdGains[6].gain.value).toBeCloseTo(expected, 5);
       expect(createdGains[7].gain.value).toBe(0);
+      expect(createdGains[8].gain.value).toBe(0);
       expect(createdGains[0].gain.value).toBe(0);
     } catch (error) {
       console.log('stereo-noise mismatch', JSON.stringify(createdGains.map((g) => g.gain.value)));
+      throw error;
+    }
+  });
+
+  it('rewires the output sum through routeOutput', () => {
+    const { context, createdGains } = createAudioContextStub();
+    const ym = new YM2149(context);
+    const bus = { connect: vi.fn(), disconnect: vi.fn() };
+    ym.routeOutput(bus as unknown as AudioNode);
+    try {
+      // createdGains[2] is the output sum node: it left the destination and
+      // now feeds the injected bus.
+      expect(createdGains[2].disconnect).toHaveBeenCalled();
+      expect(createdGains[2].connect).toHaveBeenLastCalledWith(bus);
+    } catch (error) {
+      console.log('routeOutput mismatch');
       throw error;
     }
   });

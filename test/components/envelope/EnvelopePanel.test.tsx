@@ -23,16 +23,20 @@ const renderPanel = (overrides: Partial<PanelProps> = {}) =>
 const getPanel = (container: HTMLElement) =>
   container.querySelector('.envelope-panel') as HTMLElement;
 
+const cursorPos = () => document.querySelector('.envelope-panel')?.getAttribute('data-position');
+
+const currentValue = () => document.querySelector('.envelope-value.current')?.textContent;
+
 describe('EnvelopePanel volume', () => {
-  it('renders bars, values and the footer with defaults', () => {
+  it('renders bars and values with defaults', () => {
     const data = zeros();
     data[0] = 0x0f;
     const { container } = renderPanel({ data });
     try {
       expect(container.querySelectorAll('.envelope-bar')).toHaveLength(ENVELOPE_LENGTH);
       expect(container.querySelectorAll('.envelope-value')).toHaveLength(ENVELOPE_LENGTH);
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
-      expect(screen.getByText('Val: 0F')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
+      expect(currentValue()).toBe('0F');
       expect(screen.getByRole('group', { name: 'Volume' })).toBeTruthy();
     } catch (error) {
       console.log('render mismatch', container.innerHTML.slice(0, 400));
@@ -44,7 +48,7 @@ describe('EnvelopePanel volume', () => {
     localStorage.setItem('dosound-tracker-envelope-cursor-volume', '5');
     renderPanel();
     try {
-      expect(screen.getByText('Pos: 5')).toBeTruthy();
+      expect(cursorPos()).toBe('5');
       expect(localStorage.getItem('dosound-tracker-envelope-cursor-volume')).toBe('5');
     } catch (error) {
       console.log('cursor restore mismatch');
@@ -57,21 +61,21 @@ describe('EnvelopePanel volume', () => {
     const panel = getPanel(document.body);
     fireEvent.keyDown(panel, { key: 'ArrowRight' });
     try {
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('arrow right mismatch');
       throw error;
     }
     fireEvent.keyDown(panel, { key: 'ArrowLeft' });
     try {
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
     } catch (error) {
       console.log('arrow left mismatch');
       throw error;
     }
     fireEvent.keyDown(panel, { key: 'ArrowLeft' });
     try {
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
     } catch (error) {
       console.log('arrow left clamp mismatch');
       throw error;
@@ -84,7 +88,7 @@ describe('EnvelopePanel volume', () => {
     const panel = getPanel(document.body);
     fireEvent.keyDown(panel, { key: 'ArrowRight' });
     try {
-      expect(screen.getByText('Pos: 1F')).toBeTruthy();
+      expect(cursorPos()).toBe('31');
     } catch (error) {
       console.log('right clamp mismatch');
       throw error;
@@ -118,7 +122,7 @@ describe('EnvelopePanel volume', () => {
     fireEvent.keyDown(panel, { key: 'ArrowUp' });
     fireEvent.keyDown(panel, { key: 'Backspace' });
     try {
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('no onChange mismatch');
       throw error;
@@ -135,7 +139,7 @@ describe('EnvelopePanel volume', () => {
     try {
       const next = onChange.mock.calls[0]?.[0] as number[];
       expect(next[0]).toBe(0);
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('backspace mismatch', onChange.mock.calls);
       throw error;
@@ -143,7 +147,7 @@ describe('EnvelopePanel volume', () => {
     fireEvent.keyDown(panel, { key: 'Delete' });
     try {
       expect(onChange).toHaveBeenCalledTimes(2);
-      expect(screen.getByText('Pos: 2')).toBeTruthy();
+      expect(cursorPos()).toBe('2');
     } catch (error) {
       console.log('delete mismatch', onChange.mock.calls);
       throw error;
@@ -158,7 +162,7 @@ describe('EnvelopePanel volume', () => {
     try {
       const next = onChange.mock.calls[0]?.[0] as number[];
       expect(next[0]).toBe(10);
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('hex a mismatch', onChange.mock.calls);
       throw error;
@@ -180,7 +184,7 @@ describe('EnvelopePanel volume', () => {
     fireEvent.keyDown(panel, { key: 'g' });
     try {
       expect(onChange).not.toHaveBeenCalled();
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
     } catch (error) {
       console.log('non-hex mismatch', onChange.mock.calls);
       throw error;
@@ -381,7 +385,7 @@ describe('EnvelopePanel volume', () => {
     fireEvent.click(bars[4] as HTMLElement);
     try {
       expect(setActiveSection).toHaveBeenCalledWith('volume');
-      expect(screen.getByText('Pos: 4')).toBeTruthy();
+      expect(cursorPos()).toBe('4');
     } catch (error) {
       console.log('bar click mismatch', setActiveSection.mock.calls);
       throw error;
@@ -401,7 +405,7 @@ describe('EnvelopePanel volume', () => {
     const valueCell = container.querySelectorAll('.envelope-value')[3] as HTMLElement;
     fireEvent.click(valueCell);
     try {
-      expect(screen.getByText('Pos: 3')).toBeTruthy();
+      expect(cursorPos()).toBe('3');
     } catch (error) {
       console.log('value click mismatch');
       throw error;
@@ -421,7 +425,7 @@ describe('EnvelopePanel volume', () => {
     fireEvent.keyDown(getPanel(container), { key: 'a' });
     try {
       expect(onChange).not.toHaveBeenCalled();
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
       expect(container.querySelector('.envelope-panel.active')).toBeNull();
     } catch (error) {
       console.log('inactive mismatch', onChange.mock.calls);
@@ -479,7 +483,7 @@ describe('EnvelopePanel volume', () => {
       />,
     );
     try {
-      expect(screen.getByText('Val: 0A')).toBeTruthy();
+      expect(currentValue()).toBe('0A');
     } catch (error) {
       console.log('data sync mismatch', container.textContent);
       throw error;
@@ -496,7 +500,7 @@ describe('EnvelopePanel modifier discipline', () => {
     try {
       const next = onChange.mock.calls[0]?.[0] as number[];
       expect(next[0]).toBe(7);
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('ctrl digit mismatch', onChange.mock.calls);
       throw error;
@@ -515,7 +519,7 @@ describe('EnvelopePanel modifier discipline', () => {
     try {
       const next = onChange.mock.calls[0]?.[0] as number[];
       expect(next[0]).toBe(5);
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('noise ctrl digit mismatch', onChange.mock.calls);
       throw error;
@@ -534,7 +538,7 @@ describe('EnvelopePanel modifier discipline', () => {
     try {
       expect(onChange).not.toHaveBeenCalled();
       expect(onSustainChange).not.toHaveBeenCalled();
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
     } catch (error) {
       console.log('ctrl chord guard mismatch', onChange.mock.calls, onSustainChange.mock.calls);
       throw error;
@@ -620,7 +624,7 @@ describe('EnvelopePanel shift', () => {
     try {
       const next = onChange.mock.calls[0]?.[0] as number[];
       expect(next[0]).toBe(0);
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('shift backspace', onChange.mock.calls);
       throw error;
@@ -705,7 +709,7 @@ describe('EnvelopePanel pitch', () => {
     fireEvent.keyDown(getPanel(document.body), { key: 'a' });
     try {
       expect(onChange).not.toHaveBeenCalled();
-      expect(screen.getByText('Pos: 0')).toBeTruthy();
+      expect(cursorPos()).toBe('0');
     } catch (error) {
       console.log('pitch hex mismatch', onChange.mock.calls);
       throw error;
@@ -749,7 +753,7 @@ describe('EnvelopePanel noise', () => {
     fireEvent.keyDown(getPanel(document.body), { key: 'Backspace' });
     try {
       expect(onChange).toHaveBeenCalledTimes(1);
-      expect(screen.getByText('Pos: 1')).toBeTruthy();
+      expect(cursorPos()).toBe('1');
     } catch (error) {
       console.log('noise backspace', onChange.mock.calls);
       throw error;

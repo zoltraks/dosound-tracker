@@ -70,7 +70,10 @@ describe('TrackPanel', () => {
     );
 
     expect(screen.getByText('A')).toBeTruthy();
-    expect(screen.getByText(/VOL/i, { selector: '.track-header-volume' })).toBeTruthy();
+    const headerVolume = document.querySelector('.track-header-volume');
+    expect(headerVolume?.textContent).toContain('F');
+    expect(headerVolume?.textContent).toContain('Volume');
+    expect(headerVolume?.textContent).not.toContain('VOL');
 
     expect(screen.getByText('C-4 00')).toBeTruthy();
   });

@@ -43,7 +43,7 @@ const edgeSong = (): Song => ({
   chip: 'YM',
   frame: 50,
   clock: 2000000,
-  stereo: { layout: 'abc', A: 0, B: 0.5, C: 1 },
+  stereo: { one: 'ACB' },
   line: [
     { A: '00', B: '01', C: '00' },
     { A: '01', B: '--', C: '--' },
@@ -142,7 +142,7 @@ const edgeSettings = (): SettingsValues => ({
     pasteTrackMode: 'overwriteAll',
     confirmPaste: true,
   },
-  sound: { engine: 'ayumi', dualChip: false },
+  sound: { engine: 'ayumi', mono: true, crosstalk: 40 },
 });
 
 const edgeMidi = (withDevices: boolean): MidiConfiguration => ({

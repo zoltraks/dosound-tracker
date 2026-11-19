@@ -96,6 +96,10 @@ All test failures must be fixed before the work is considered complete. This inc
 
 The phrase "pre-existing failure" is not a valid reason to skip fixing. A test suite with failing tests is not clean.
 
+**Attributing failures to in-flight work**
+
+When the working tree carries changes outside the current change set, a failure in a file the change did not touch is attributed by diff - confirm the failing files carry foreign edits, then report them separately with that evidence. The suite is still not clean while they stand and the report never claims green; foreign failures are escalated to their owner rather than silently fixed inside an unrelated change.
+
 ## Verification Options
 
 Under the `verification-options` extension, verification depth is selected per change from a named menu rather than implied:
@@ -226,6 +230,10 @@ Exercise critical user flows in a real browser. The specs live in `e2e/smoke.spe
 - Open the About modal and render the changelog document.
 - Enter a note, undo it with CTRL+Z, and redo it with CTRL+Y.
 
+**View-projection assertions seed the projection**
+
+Track and panel counts follow the view layer, not the song's channel count: a two-chip song under the default three-track setting renders a sliding three-channel window, so an assertion expecting six panels fails on correct code. Seed `dosound-tracker-visible-tracks` to `6` or assert against the projected set before counting UI elements.
+
 `npm run test:e2e` runs the suite against `vite preview` on port 8008, which serves `dist/` - the `pretest:e2e` script builds first, so the preview always serves the current code. The suite runs on the chromium and webkit projects - the firefox project is excluded because headless launch fails under the current macOS sandbox.
 
 File flows wait on staged input state, not ordering: `uploadSongFile` in `e2e/helpers.ts` proves the file landed on `#song-file-input` before the spec asserts the loaded value, and downloads go through `clickAndDownload`, which arms `waitForEvent` before the triggering click. The two hidden YAML inputs are disambiguated by `id` (`song-file-input`, `instrument-file-input`) - positional selectors on `accept` attributes are ambiguous because both share `accept=".yaml,.yml"`. Post-upload value assertions carry a widened polling window for parallel-worker load; fixed `waitForTimeout` delays are not used.
@@ -237,6 +245,22 @@ Chromium auto-resumes the `AudioContext` on the first gesture, so chromium-only 
 **Assert the audible outcome, not call timing**
 
 Timestamps on `writeRegister` or parameter-setter calls prove a call happened, not that anything rendered. Audio-path assertions check the audible result: gain-node values after stop, the `AudioContext` state timeline, `currentTime` progression during writes, and position/view agreement - a probe that counts calls can pass while the user hears silence.
+
+**Tap the destination chain, not a dead-end branch**
+
+The Web Audio renderer pulls only nodes reachable from `AudioContext.destination` - an `AnalyserNode` or gain connected as a leaf never processes, so a tap hung off the side measures silence regardless of the signal. Live probes tap in series: insert the tap between the node under test and its original target, or reconnect the edge through it.
+
+**Temporary graph instrumentation restores the original edge**
+
+A probe that rewires `a.connect(b)` through itself must reconnect `a` to `b` when removed - a tap that once consumed `merger.connect(destination)` left the whole bus silent while every unit test still passed. Verify probe removal by diffing the graph or re-measuring the un-probed path before reporting.
+
+**Stereo claims verify by correlation on distinct content**
+
+Mirrored or identical content on both chips cannot reveal a routing failure - both sides measure the same signal and correlation reads 1.0 either way. Seed different content per chip, capture post-bus, and compare left/right correlation: ~1.0 means the channels collapsed, a low or negative value means real separation. Confirm the seed took (resolved pan values or an active flag) before trusting the measurement - a fresh browser context carries no stored song, so a seed that assumes one silently no-ops.
+
+**Cross-engine parity is a DSP-law claim**
+
+Two engines accepting the same `setChannelPans` call is not parity - the internal engine's `StereoPannerNode` uses an equal-power taper while a worklet's default pan law can be linear, and folded-mono paths can differ in gain by several dB. Parity verification checks the law at every reachable value (0, 0.5, and 1 here, where equal-power coincides with the node taper) and the level path (bypass versus folded gains), on both engines with the same seed.
 
 ## Test Configuration
 

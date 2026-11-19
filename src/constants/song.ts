@@ -36,16 +36,10 @@ export const channelIdsForChip = (chipIndex: 0 | 1): readonly string[] =>
 export const channelCountForChipCount = (chipCount: 1 | 2): number =>
   chipCount === 2 ? SONG_CHANNEL_COUNT : SINGLE_CHIP_CHANNEL_COUNT;
 
-// Named hardware layouts: the canonical A/B/C wirings to stereo positions,
-// extended to six channels so two-chip songs resolve D/E/F as well. The
-// catalog is data-driven - a new machine wiring adds an entry here.
-export const STEREO_LAYOUTS: Record<string, [number, number, number, number, number, number]> = {
-  mono: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5],
-  abc: [0, 0.5, 1, 0.5, 0.5, 0.5],
-  acb: [0, 1, 0.5, 0.5, 0.5, 0.5],
-  dual: [0, 0.25, 0.5, 0.5, 0.75, 1],
-};
+// Per-chip stereo modes: `L`/`R`/`C` wire all three of a chip's channels to
+// one side; each `ABC` permutation assigns the chip's channels to the left,
+// centre, and right slots in order. The same tokens serve both chips - on
+// chip 2 they address D/E/F positionally.
+export const STEREO_MODES = ['L', 'R', 'C', 'ABC', 'ACB', 'BAC', 'BCA', 'CAB', 'CBA'] as const;
 
-export const STEREO_LAYOUT_ORDER = ['mono', 'abc', 'acb', 'dual'];
-// STEREO_LAYOUT_ORDER is retained for the Song-information stereo toggle
-// planned with the pan controls.
+export type StereoMode = (typeof STEREO_MODES)[number];

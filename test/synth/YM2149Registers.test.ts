@@ -87,9 +87,9 @@ describe('channel B and C register decode', () => {
     try {
       expect(createdOscillators[1].frequency.value).toBeCloseTo(YM_CLOCK / (16 * 0x100), 3);
       expect(createdOscillators[2].frequency.value).toBeCloseTo(YM_CLOCK / (16 * 0x200), 3);
-      expect(createdGains[3].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[15] * 0.3, 5);
-      expect(createdGains[4].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[8] * 0.3, 5);
-      expect(createdGains[2].gain.value).toBe(0);
+      expect(createdGains[4].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[15] * 0.3, 5);
+      expect(createdGains[5].gain.value).toBeCloseTo(YM_LOG_VOLUME_TABLE[8] * 0.3, 5);
+      expect(createdGains[3].gain.value).toBe(0);
     } catch (error) {
       console.log(
         'bc nodes',
@@ -180,9 +180,9 @@ describe('frequency clamps and silence rules', () => {
     ym.writeRegister(0x07, 0x00); // everything enabled
     ym.writeRegister(0x08, 0x0f);
     try {
-      expect(createdGains[2].gain.value).toBe(0);
+      expect(createdGains[3].gain.value).toBe(0);
     } catch (error) {
-      console.log('zero period gain', createdGains[2].gain.value);
+      console.log('zero period gain', createdGains[3].gain.value);
       throw error;
     }
   });
@@ -195,9 +195,9 @@ describe('frequency clamps and silence rules', () => {
     ym.writeRegister(0x07, 0x3f); // channel A tone disabled
     ym.writeRegister(0x08, 0x0f);
     try {
-      expect(createdGains[2].gain.value).toBe(0);
+      expect(createdGains[3].gain.value).toBe(0);
     } catch (error) {
-      console.log('mixer-off gain', createdGains[2].gain.value);
+      console.log('mixer-off gain', createdGains[3].gain.value);
       throw error;
     }
   });

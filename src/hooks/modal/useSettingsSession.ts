@@ -1,13 +1,18 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { SoundEngineId } from '../../constants/sound.ts';
 import { DEFAULT_SETTINGS } from '../../types/settings.ts';
 import type { SettingsValues, TextScale, ThemeVariant } from '../../types/settings.ts';
 import type { TrackPasteMode } from '../../utils/track/trackClipboard.ts';
 import { loadSettings, writeSettingKeys } from '../../utils/settings/settingsState.ts';
-import { updateSettingsView } from '../../utils/storage/uiState.ts';
+import { patchSettingsView, updateSettingsView } from '../../utils/storage/uiState.ts';
 import { useSettingsDialog } from './useSettingsDialog.ts';
 import type { UseSettingsDialogResult } from './useSettingsDialog.ts';
+
+export interface SettingsSoundPreview {
+  mono: boolean;
+  crosstalk: number;
+}
 
 export interface UseSettingsSessionParams {
   isSettingsOpen: boolean;
@@ -24,10 +29,13 @@ export interface UseSettingsSessionParams {
   setConfirmPaste: (confirm: boolean) => void;
   soundEngineId: SoundEngineId;
   setSoundEngineId: Dispatch<SetStateAction<SoundEngineId>>;
-  dualChipEnabled: boolean;
-  setDualChipEnabled: Dispatch<SetStateAction<boolean>>;
+  monoEnabled: boolean;
+  setMonoEnabled: Dispatch<SetStateAction<boolean>>;
+  crosstalk: number;
+  setCrosstalk: Dispatch<SetStateAction<number>>;
   visibleTracks: 3 | 6;
   setVisibleTracks: Dispatch<SetStateAction<3 | 6>>;
+  onSoundPreviewChange: (preview: SettingsSoundPreview | null) => void;
 }
 
 export interface UseSettingsSessionResult extends UseSettingsDialogResult {
@@ -57,10 +65,13 @@ export function useSettingsSession({
   setConfirmPaste,
   soundEngineId,
   setSoundEngineId,
-  dualChipEnabled,
-  setDualChipEnabled,
+  monoEnabled,
+  setMonoEnabled,
+  crosstalk,
+  setCrosstalk,
   visibleTracks,
   setVisibleTracks,
+  onSoundPreviewChange,
 }: UseSettingsSessionParams): UseSettingsSessionResult {
   const committedSettings = useMemo(
     () => loadSettings(),
@@ -75,11 +86,25 @@ export function useSettingsSession({
       pasteTrackMode,
       confirmPaste,
       soundEngineId,
-      dualChipEnabled,
+      monoEnabled,
+      crosstalk,
       visibleTracks,
       isSettingsOpen,
     ],
   );
+
+  // While the modal is closed, keep the persisted session draft aligned with
+  // the committed settings so values changed by other actions - the track
+  // background toggle, the theme button, the paste-track dialog - are what
+  // the next open restores. committedSettings is the refresh trigger; the
+  // draft re-reads storage inside the effect because the per-key writes it
+  // depends on flush in earlier persistence effects.
+  useEffect(() => {
+    if (isSettingsOpen) {
+      return;
+    }
+    patchSettingsView({ draft: loadSettings() });
+  }, [isSettingsOpen, committedSettings]);
 
   const {
     settingsCategory,
@@ -91,6 +116,22 @@ export function useSettingsSession({
     recordFocus,
     recordPaneScroll,
   } = useSettingsDialog(isSettingsOpen, committedSettings);
+
+  // The sound controls audition live: while the modal is open the draft's
+  // mono and crosstalk values feed the audio pipeline as they move, so
+  // playback reflects the settings before commit. The closed draft is
+  // stale session state and never reaches the pipeline; closing restores
+  // the committed values through the gated preview.
+  useEffect(() => {
+    onSoundPreviewChange(
+      isSettingsOpen
+        ? {
+            mono: settingsDraft.sound.mono,
+            crosstalk: settingsDraft.sound.crosstalk,
+          }
+        : null,
+    );
+  }, [isSettingsOpen, settingsDraft, onSoundPreviewChange]);
 
   const closeSettingsSession = (draft: SettingsValues) =>
     updateSettingsView({
@@ -115,7 +156,8 @@ export function useSettingsSession({
     setPasteTrackMode(next.editor.pasteTrackMode);
     setConfirmPaste(next.editor.confirmPaste);
     setSoundEngineId(next.sound.engine);
-    setDualChipEnabled(next.sound.dualChip);
+    setMonoEnabled(next.sound.mono);
+    setCrosstalk(next.sound.crosstalk);
     setVisibleTracks(next.general.visibleTracks);
     closeSettingsSession(next);
     setIsSettingsOpen(false);

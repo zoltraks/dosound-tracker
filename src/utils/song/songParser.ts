@@ -482,6 +482,9 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     : 1;
   const chipCount: 1 | 2 =
     chipCountRaw === 1 || chipCountRaw === 2 ? chipCountRaw : derivedChipCount;
+  // An explicit chipCount - including 1, which keeps a song single-chip
+  // even when its playlist references D/E/F - is stored verbatim; a
+  // derived two-chip count normalizes to the explicit field.
 
   const song: Song = {
     title,
@@ -494,7 +497,7 @@ export const parseSongFromYaml = (content: string, options?: ParseSongOptions): 
     line,
     instrument: instruments,
     chip: normalizedChip,
-    ...(chipCount === 2 ? { chipCount } : {}),
+    ...(chipCountRaw === 1 || chipCountRaw === 2 || chipCount === 2 ? { chipCount } : {}),
     frame: normalizedFrame,
     clock: normalizedClock,
     ...(stereo ? { stereo } : {}),

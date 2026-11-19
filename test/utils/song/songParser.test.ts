@@ -264,7 +264,7 @@ song:
     expect(song.author).toBe('Author Name');
   });
 
-  it('parses a stereo mapping with layout and channel overrides', () => {
+  it('parses a stereo mapping with chip modes', () => {
     const yamlContent = `
 song:
   title: Test
@@ -272,8 +272,8 @@ song:
   length: 4
   speed: 4
   stereo:
-    layout: ABC
-    B: 0.25
+    one: abc
+    two: Cab
   line:
     - A: "00"
   pattern:
@@ -289,10 +289,10 @@ song:
 
     const song = parseSongFromYaml(yamlContent);
 
-    expect(song.stereo).toEqual({ layout: 'abc', B: 0.25 });
+    expect(song.stereo).toEqual({ one: 'ABC', two: 'CAB' });
   });
 
-  it('accepts a bare stereo string as layout shorthand', () => {
+  it('ignores a bare stereo string as a mode', () => {
     const yamlContent = `
 song:
   title: Test
@@ -315,10 +315,10 @@ song:
 
     const song = parseSongFromYaml(yamlContent);
 
-    expect(song.stereo).toEqual({ layout: 'acb' });
+    expect(song.stereo).toBeUndefined();
   });
 
-  it('drops a malformed stereo node and clamps channel values', () => {
+  it('drops a malformed stereo node and invalid mode values', () => {
     const base = `
 song:
   title: Test
@@ -344,8 +344,11 @@ song:
     const malformed = parseSongFromYaml(`${base}  stereo: [1, 2]\n`);
     expect(malformed.stereo).toBeUndefined();
 
-    const clamped = parseSongFromYaml(`${base}  stereo: { A: -2, C: 5 }\n`);
-    expect(clamped.stereo).toEqual({ A: 0, C: 1 });
+    const invalidModes = parseSongFromYaml(`${base}  stereo: { one: loud, two: '---' }\n`);
+    expect(invalidModes.stereo).toBeUndefined();
+
+    const legacy = parseSongFromYaml(`${base}  stereo: { layout: abc, B: 0.25 }\n`);
+    expect(legacy.stereo).toBeUndefined();
   });
 });
 
@@ -398,7 +401,13 @@ song:
     const single = parseSongFromYaml(
       base.replace('speed: 4', 'speed: 4\n  chipCount: "1"').replace(/\n\s+[DEF]: "[0-9]+"/g, ''),
     );
-    expect(single.chipCount).toBeUndefined();
+    expect(single.chipCount).toBe(1);
+  });
+
+  it('keeps an explicit chipCount 1 authoritative over D/E/F references', () => {
+    const song = parseSongFromYaml(base.replace('speed: 4', 'speed: 4\n  chipCount: 1'));
+    expect(song.chipCount).toBe(1);
+    expect(song.line[0]).toEqual({ A: '00', B: '--', C: '--', D: '01', F: '02' });
   });
 
   it('falls back to derivation for unsupported chipCount values', () => {
@@ -418,8 +427,8 @@ song:
     expect(song.chipCount).toBeUndefined();
   });
 
-  it('reads stereo overrides for D, E, and F', () => {
-    const song = parseSongFromYaml(`${base}  stereo: { layout: dual, D: 0.1, F: 0.9 }\n`);
-    expect(song.stereo).toEqual({ layout: 'dual', D: 0.1, F: 0.9 });
+  it('reads the two mode for the second chip', () => {
+    const song = parseSongFromYaml(`${base}  stereo: { two: CBA }\n`);
+    expect(song.stereo).toEqual({ two: 'CBA' });
   });
 });

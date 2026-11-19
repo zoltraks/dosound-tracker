@@ -291,39 +291,27 @@ export const buildSongYamlForExport = (currentSong: Song): string => {
   const normalizedClock = currentSong.clock ?? DEFAULT_SONG_CLOCK;
 
   songNode.chip = normalizedChip;
-  // chipCount is written only for two-chip songs; single-chip output
-  // stays free of the field.
-  if (songChipCount(currentSong) === 2) {
+  // chipCount is song data: an explicit value - including 1, which keeps
+  // a song single-chip even when its playlist references D/E/F - is
+  // written back verbatim; a derived two-chip count serializes as 2.
+  if (currentSong.chipCount === 1 || currentSong.chipCount === 2) {
+    songNode.chipCount = currentSong.chipCount;
+  } else if (songChipCount(currentSong) === 2) {
     songNode.chipCount = 2;
   }
   songNode.frame = normalizedFrame;
   songNode.clock = normalizedClock;
 
   // Stereo settings persist only when the song carries them - a mono song
-  // writes no `stereo` node and each member is emitted only when set.
+  // writes no `stereo` node and each chip mode is emitted only when set.
   const stereo = normalizeSongStereo(currentSong.stereo);
   const stereoNode: Record<string, unknown> = {};
   if (stereo) {
-    if (stereo.layout !== undefined) {
-      stereoNode.layout = stereo.layout;
+    if (stereo.one !== undefined) {
+      stereoNode.one = stereo.one;
     }
-    if (stereo.A !== undefined) {
-      stereoNode.A = stereo.A;
-    }
-    if (stereo.B !== undefined) {
-      stereoNode.B = stereo.B;
-    }
-    if (stereo.C !== undefined) {
-      stereoNode.C = stereo.C;
-    }
-    if (stereo.D !== undefined) {
-      stereoNode.D = stereo.D;
-    }
-    if (stereo.E !== undefined) {
-      stereoNode.E = stereo.E;
-    }
-    if (stereo.F !== undefined) {
-      stereoNode.F = stereo.F;
+    if (stereo.two !== undefined) {
+      stereoNode.two = stereo.two;
     }
   }
 

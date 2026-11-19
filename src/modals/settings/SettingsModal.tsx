@@ -15,6 +15,8 @@ import {
   SOUND_ENGINE_LABELS,
   type SoundEngineId,
 } from '../../constants/sound.ts';
+import { STEREO_MODES, type StereoMode } from '../../constants/song.ts';
+import type { SongStereo } from '../../synth/SoundDriver.ts';
 import {
   buildSettingsYaml,
   parseSettingsFromYaml,
@@ -35,6 +37,11 @@ interface SettingsModalProps {
   onCommit: () => void;
   onCancel: () => void;
   onLoadError?: (message: string) => void;
+  songStereo: SongStereo | undefined;
+  songTwoChip: boolean;
+  secondChipVisible: boolean;
+  onSongStereoChange: (stereo: SongStereo | undefined) => void;
+  onSongTwoChipChange: (on: boolean) => void;
 }
 
 const CATEGORY_LABELS: Record<SettingsCategory, string> = {
@@ -73,6 +80,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onCommit,
   onCancel,
   onLoadError,
+  songStereo,
+  songTwoChip,
+  secondChipVisible,
+  onSongStereoChange,
+  onSongTwoChipChange,
 }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const scrollTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -157,6 +169,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       }
     };
     reader.readAsText(file);
+  };
+
+  const applyStereoMode = (key: 'one' | 'two', mode: StereoMode | '') => {
+    const next: SongStereo = { ...(songStereo ?? {}) };
+    if (mode === '') {
+      delete next[key];
+    } else {
+      next[key] = mode;
+    }
+    onSongStereoChange(next.one !== undefined || next.two !== undefined ? next : undefined);
   };
 
   const handleResetConfirm = () => {
@@ -376,22 +398,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               {category === 'sound' && (
                 <>
                   <div className="settings-row">
-                    <label htmlFor="settings-dual-chip" className="settings-label">
-                      Two chips
-                    </label>
-                    <input
-                      id="settings-dual-chip"
-                      type="checkbox"
-                      checked={draft.sound.dualChip}
-                      onChange={(e) =>
-                        onDraftChange({
-                          ...draft,
-                          sound: { ...draft.sound, dualChip: e.target.checked },
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="settings-row">
                     <label htmlFor="settings-sound-engine" className="settings-label">
                       Sound engine
                     </label>
@@ -412,6 +418,95 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       ))}
                     </select>
                   </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-mono" className="settings-label">
+                      Mono
+                    </label>
+                    <input
+                      id="settings-mono"
+                      type="checkbox"
+                      checked={draft.sound.mono}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          sound: { ...draft.sound, mono: e.target.checked },
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-crosstalk" className="settings-label">
+                      Crosstalk
+                    </label>
+                    <input
+                      id="settings-crosstalk"
+                      type="range"
+                      className="settings-range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={draft.sound.crosstalk}
+                      onChange={(e) =>
+                        onDraftChange({
+                          ...draft,
+                          sound: {
+                            ...draft.sound,
+                            crosstalk: Number(e.target.value),
+                          },
+                        })
+                      }
+                    />
+                    <span className="settings-value">{draft.sound.crosstalk}%</span>
+                  </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-two-chips" className="settings-label">
+                      Two chips
+                    </label>
+                    <input
+                      id="settings-two-chips"
+                      type="checkbox"
+                      checked={songTwoChip}
+                      onChange={(e) => onSongTwoChipChange(e.target.checked)}
+                    />
+                  </div>
+                  <div className="settings-row">
+                    <label htmlFor="settings-stereo-one" className="settings-label">
+                      Stereo chip 1
+                    </label>
+                    <select
+                      id="settings-stereo-one"
+                      value={songStereo?.one ?? ''}
+                      disabled={draft.sound.mono}
+                      onChange={(e) => applyStereoMode('one', e.target.value as StereoMode | '')}
+                    >
+                      <option value="">Default</option>
+                      {STEREO_MODES.map((mode) => (
+                        <option key={mode} value={mode}>
+                          {mode}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  {secondChipVisible && (
+                    <div className="settings-row">
+                      <label htmlFor="settings-stereo-two" className="settings-label">
+                        Stereo chip 2
+                      </label>
+                      <select
+                        id="settings-stereo-two"
+                        value={songStereo?.two ?? ''}
+                        disabled={draft.sound.mono}
+                        onChange={(e) => applyStereoMode('two', e.target.value as StereoMode | '')}
+                      >
+                        <option value="">Default</option>
+                        {STEREO_MODES.map((mode) => (
+                          <option key={mode} value={mode}>
+                            {mode}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                 </>
               )}
             </div>

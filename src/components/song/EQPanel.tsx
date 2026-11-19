@@ -4,9 +4,8 @@ import type { SoundEngine } from '../../synth/soundEngine.ts';
 interface EQPanelProps {
   ym2149?: SoundEngine | null;
   ym2149b?: SoundEngine | null;
-  // Bars follow the enabled channel count (the Two chips setting), not
-  // engine presence - chip 2's engine only exists once the song uses it,
-  // but its three bars stay visible and read zero until then.
+  // Bars follow the song's two-chip state: a two-chip song shows six
+  // bars (three per chip) even while chip 2 is still silent.
   channelCount: number;
   channelMutes: boolean[];
   onToggleChannelMute: (channelIndex: number) => void;

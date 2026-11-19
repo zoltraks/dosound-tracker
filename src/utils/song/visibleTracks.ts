@@ -1,10 +1,8 @@
 // Visible-track projection: which song channels the tracker and playlist
-// render. The `dualChip` sound setting is the capability gate - while it
-// is off the app always shows A-C. While it is on, the `visibleTracks`
-// setting picks all six channels or a three-channel window that slides
-// with the focused track; writing a pattern onto D/E/F derives the song's
-// two-chip count, so the projection never needs the song's current chip
-// count to decide what is editable.
+// render. The song's resolved chip count is the gate - a single-chip
+// song always shows A-C. For a two-chip song the `visibleTracks` setting
+// picks all six channels or a three-channel window that slides with the
+// focused track.
 import type { SongChannelId } from '../../synth/SoundDriver.ts';
 import { SONG_CHANNEL_IDS } from '../../constants/song.ts';
 
@@ -19,11 +17,11 @@ const clampWindowStart = (start: number): number =>
 // The window start is the index of the first visible channel. Three-track
 // windows are A-C, B-C-D, C-D-E, and D-E-F as the start runs 0..3.
 export const visibleTrackIds = (
-  dualChipEnabled: boolean,
+  twoChip: boolean,
   visibleTracks: 3 | 6,
   windowStart: number,
 ): SongChannelId[] => {
-  if (!dualChipEnabled) {
+  if (!twoChip) {
     return [...CHIP1_TRACK_IDS];
   }
   if (visibleTracks === 6) {

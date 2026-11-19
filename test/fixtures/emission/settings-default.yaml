@@ -13,4 +13,5 @@ settings:
     confirmPaste: false
   sound:
     engine: internal
-    dualChip: false
+    mono: false
+    crosstalk: 0

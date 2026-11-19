@@ -4,7 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { nextTrackWindowStart, visibleTrackIds } from '../../../src/utils/song/visibleTracks.ts';
 
 describe('visibleTrackIds', () => {
-  it('always shows A-C while the dual-chip setting is off', () => {
+  it('always shows A-C for a single-chip song', () => {
     expect(visibleTrackIds(false, 3, 0)).toEqual(['A', 'B', 'C']);
     expect(visibleTrackIds(false, 6, 3)).toEqual(['A', 'B', 'C']);
     expect(visibleTrackIds(false, 3, 3)).toEqual(['A', 'B', 'C']);

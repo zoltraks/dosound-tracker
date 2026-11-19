@@ -267,7 +267,7 @@ export const HeaderPanel: React.FC<HeaderPanelProps> = ({
             title="Settings"
             aria-label="Settings"
           >
-            ⚙
+            ⚙️
           </button>
         </div>
       </header>

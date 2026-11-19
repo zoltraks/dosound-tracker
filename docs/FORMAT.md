@@ -41,17 +41,12 @@ song:
   length: 64 # required, pattern length in rows (4..256)
   loop: 0 # optional, 0-based playlist index
   chip: 'YM' # optional, chip type: YM or AY (default "YM")
-  chipCount: 2 # optional, chip count 1 or 2 (default 1; written only for two-chip songs)
+  chipCount: 2 # optional, chip count 1 or 2 (default: derived from D/E/F references)
   frame: 50 # optional, replay rate in Hz (default 50)
   clock: 2000000 # optional, chip clock in Hz (default 2000000)
   stereo: # optional stereo output settings
-    layout: 'abc' # optional named layout: mono, abc, acb, dual
-    A: 0.0 # optional channel A pan 0..1 (0 left, 0.5 centre, 1 right)
-    B: 0.5 # optional channel B pan
-    C: 1.0 # optional channel C pan
-    D: 0.0 # optional channel D pan (two-chip songs)
-    E: 0.5 # optional channel E pan
-    F: 1.0 # optional channel F pan
+    one: 'ABC' # optional chip-1 mode: L, R, C, or an ABC permutation
+    two: 'CAB' # optional chip-2 mode (two-chip songs): L, R, C, or an ABC permutation
   line: [...] # required playlist list (or `playlist` alias when loading)
   pattern: [...] # required list (or `patterns` alias when loading)
   instrument: [...] # required list (or `instruments` alias when loading)
@@ -69,25 +64,23 @@ Loader rules (from `parseSongFromYaml`):
 - `chipCount`: missing → the effective count derives from content - `2` when any playlist entry references a pattern on `D`/`E`/`F`, otherwise `1`. An explicit `1` or `2` (number or numeric string) wins over the derivation; other values fall back to the derivation.
 - `frame`: missing or non-numeric → defaults to `50` - numeric values are floored to integers.
 - `clock`: missing or non-numeric → defaults to `2000000` - numeric values are floored to integers.
-- `stereo`: missing or malformed → absent (mono). A mapping carries an optional `layout` and optional `A`-`F` channel keys. A bare string is accepted as shorthand for `{layout: <value>}`. `layout` is trimmed and lowercased. Channel values coerce to numbers and clamp to `[0, 1]` - invalid values are dropped.
+- `stereo`: missing or malformed → absent. A mapping carries optional `one` and `two` mode keys. Each value is trimmed and uppercased; only `L`, `R`, `C`, and the six `ABC` permutations are accepted - anything else drops that key. Legacy `layout` and `A`-`F` pan members are ignored.
 
-Resolved channel pans start from the layout's canonical positions (`mono` all-centre, `abc` A left / B centre / C right, `acb` A left / C centre / B right, `dual` chip 1 toward the left and chip 2 toward the right across six channels) and each channel key overrides its own slot. An unknown layout id resolves as `mono` while still honouring channel overrides.
+Each mode token resolves to three channel pans on the 0..1 scale: `L` all-left, `R` all-right, `C` all-centre, and an `ABC` permutation places its letters into the left, centre, and right slots in order (`ABC` = first channel left, second centre, third right). `one` feeds channels A-C and `two` feeds D-F. A missing `stereo` node - or a missing `two` key on a two-chip song - resolves to the chip-count default: centred for a single-chip song, chip 1 left and chip 2 right for a two-chip song.
 
 Saver rules (from `buildSongYamlForExport`):
 
 - `title` and `author` are written only when non-empty after trimming, and the stored value is trimmed of surrounding whitespace.
 - `chip`, `frame`, and `clock` are always written. `chip` is normalised to uppercase (default `"YM"`). `frame` defaults to `50` when missing. `clock` defaults to `2000000` when missing.
-- `chipCount` is written only when the song uses two chips - single-chip songs emit no `chipCount` key.
-- `stereo` is written only when the song carries stereo settings - `layout` and each channel key are emitted only when set.
+- `chipCount` is written whenever the song carries an explicit value - `2` for two-chip songs and `1` when a song is forced single-chip despite D/E/F references; a song with no explicit value and no second-chip references emits no `chipCount` key.
+- `stereo` is written only when the song carries stereo settings - `one` and `two` are emitted only when set.
 - The saver emits `line`, `pattern`, and `instrument` lists only. `playlist`, `patterns`, `instruments`, `steps`, `lines`, `space`, `off`, and `arpeggio` are loader-accepted input aliases and never appear in emitted output.
 
 ### Stereo output
 
 The `stereo` node is a live-render property: it places each channel in the stereo field during real-time playback and instrument previews. It never changes the exported data - the assembly, binary, dump, VGM, and MAX exports carry the same YM2149 register stream regardless of pan, the WAV export renders the same mono mixdown, and the MOD and MIDI exports carry no pan data.
 
-The `layout` catalog is data-driven. `mono` maps to centre pans, `abc` to A left / B centre / C right, and `acb` to A left / C centre / B right - the canonical machine wirings. Channel keys give the free per-channel case; a `stereo` node without `layout` uses centre pans for channels it does not override.
-
-Channel keys name the song's outputs by letter. Channels `A`-`C` address the first chip and `D`-`F` the second; a two-chip song (`chipCount: 2`) may carry all six keys while a single-chip song uses only `A`-`C`.
+The mode vocabulary is fixed: `L`, `R`, and `C` wire all three of a chip's channels to one side, and the six `ABC` permutations cover every assignment of the chip's channels to the left, centre, and right slots. The same tokens serve both chips - on chip 2 they address its channels D, E, and F positionally. The app-level MONO setting overrides every mode to centre, and the CROSSTALK setting crossfeeds the summed stereo bus independently of the song's modes.
 
 ### Playlist
 

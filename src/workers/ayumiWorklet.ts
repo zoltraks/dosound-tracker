@@ -65,10 +65,23 @@ class AyumiProcessor extends AudioWorkletProcessor {
   private configure(clock: number): void {
     this.clock = clock;
     this.core.configure(this.isYm, clock, sampleRate);
-    for (let channel = 0; channel < 3; channel++) {
-      this.core.setPan(channel, this.pans[channel], false);
-    }
+    this.applyCorePans();
     this.replayRegisters();
+  }
+
+  // The equal-power curve matches the internal engine's StereoPannerNode
+  // at every reachable pan - L/R/C and the ABC permutations only ever
+  // produce 0, 0.5, or 1. While every pan sits at centre the core runs
+  // unity gains on both sides so the folded mono output reproduces the
+  // pre-stereo signal exactly instead of the -3 dB pan-law centre.
+  private applyCorePans(): void {
+    for (let channel = 0; channel < 3; channel++) {
+      if (this.stereoActive) {
+        this.core.setPan(channel, this.pans[channel], true);
+      } else {
+        this.core.setPanBypass(channel);
+      }
+    }
   }
 
   private replayRegisters(): void {
@@ -148,14 +161,13 @@ class AyumiProcessor extends AudioWorkletProcessor {
     if (message.type === 'pans') {
       for (let channel = 0; channel < 3; channel++) {
         const value = message.pans?.[channel];
-        const pan =
+        this.pans[channel] =
           typeof value === 'number' && Number.isFinite(value)
             ? Math.min(1, Math.max(0, value))
             : 0.5;
-        this.pans[channel] = pan;
-        this.core.setPan(channel, pan, false);
       }
       this.stereoActive = this.pans.some((pan) => pan !== 0.5);
+      this.applyCorePans();
       return;
     }
     if (message.type === 'reset') {

@@ -509,7 +509,8 @@ export const TrackPanel: React.FC<TrackPanelProps> = (props) => {
       <div className={`track-header ${isTargetTrack ? 'target-track' : ''}`}>
         <span className="track-header-title">{trackId}</span>
         <span className="track-header-volume">
-          VOL {Formatter.hex(effectiveVolume, { padWidth: 0 })}
+          <span className="visually-hidden">Volume </span>
+          {Formatter.hex(effectiveVolume, { padWidth: 0 })}
         </span>
       </div>
 

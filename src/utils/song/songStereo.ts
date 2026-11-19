@@ -1,82 +1,72 @@
-// Stereo output helpers: song-file boundary normalization and pan
-// resolution. Channel pans live on a 0..1 scale where 0 is full left,
-// 0.5 centre, and 1 full right.
+// Stereo output helpers: song-file boundary normalization and mode
+// resolution. Each chip takes one named wiring stored under `one`/`two`;
+// channel pans live on a 0..1 scale where 0 is full left, 0.5 centre,
+// and 1 full right.
 import type { SongStereo } from '../../synth/SoundDriver.ts';
-import { STEREO_LAYOUTS, SONG_CHANNEL_COUNT, SONG_CHANNEL_IDS } from '../../constants/song.ts';
+import { STEREO_MODES, type StereoMode } from '../../constants/song.ts';
 
-export const clampChannelPan = (value: number): number => Math.min(1, Math.max(0, value));
+const STEREO_MODE_SET = new Set<string>(STEREO_MODES);
 
-const coerceChannelPan = (value: unknown): number | undefined => {
-  const numeric = Number(value);
-  return Number.isFinite(numeric) ? clampChannelPan(numeric) : undefined;
+const coerceStereoMode = (value: unknown): StereoMode | undefined => {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+  const mode = value.trim().toUpperCase();
+  return STEREO_MODE_SET.has(mode) ? (mode as StereoMode) : undefined;
 };
 
 // Normalize a raw stereo node from YAML or stored JSON into a SongStereo.
-// A bare string is shorthand for the layout id; a mapping carries an
-// optional `layout` plus `A`-`F` channel overrides. Returns undefined
-// when the input carries no usable member.
+// Only the `one` and `two` mode keys carry meaning; legacy `layout` and
+// `A`-`F` pan members are ignored. Returns undefined when neither key
+// resolves to a valid mode.
 export const normalizeSongStereo = (raw: unknown): SongStereo | undefined => {
-  if (typeof raw === 'string') {
-    const layout = raw.trim().toLowerCase();
-    return layout ? { layout } : undefined;
-  }
-
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     return undefined;
   }
 
-  const node = raw as {
-    layout?: unknown;
-    A?: unknown;
-    B?: unknown;
-    C?: unknown;
-    D?: unknown;
-    E?: unknown;
-    F?: unknown;
-  };
+  const node = raw as { one?: unknown; two?: unknown };
   const stereo: SongStereo = {};
 
-  if (typeof node.layout === 'string' && node.layout.trim()) {
-    stereo.layout = node.layout.trim().toLowerCase();
-  }
+  const one = coerceStereoMode(node.one);
+  if (one !== undefined) stereo.one = one;
+  const two = coerceStereoMode(node.two);
+  if (two !== undefined) stereo.two = two;
 
-  const channelKeys = SONG_CHANNEL_IDS;
-  for (const key of channelKeys) {
-    const pan = coerceChannelPan(node[key]);
-    if (pan !== undefined) stereo[key] = pan;
-  }
+  return stereo.one !== undefined || stereo.two !== undefined ? stereo : undefined;
+};
 
-  return stereo.layout !== undefined ||
-    stereo.A !== undefined ||
-    stereo.B !== undefined ||
-    stereo.C !== undefined ||
-    stereo.D !== undefined ||
-    stereo.E !== undefined ||
-    stereo.F !== undefined
-    ? stereo
-    : undefined;
+// Stereo slots left/centre/right map onto the 0..1 pan scale.
+const SLOT_PANS = [0, 0.5, 1] as const;
+const CHANNEL_LETTERS = ['A', 'B', 'C'] as const;
+
+// Resolve one mode token to the chip's three channel pans. `L`/`R`/`C`
+// wire every channel to one side; a permutation token places each letter
+// into the slot matching its position in the string.
+const modeToChipPans = (mode: StereoMode): [number, number, number] => {
+  if (mode === 'L') return [0, 0, 0];
+  if (mode === 'R') return [1, 1, 1];
+  if (mode === 'C') return [0.5, 0.5, 0.5];
+
+  const pans: [number, number, number] = [0.5, 0.5, 0.5];
+  for (let slot = 0; slot < 3; slot++) {
+    const channelIndex = CHANNEL_LETTERS.indexOf(mode[slot] as (typeof CHANNEL_LETTERS)[number]);
+    pans[channelIndex] = SLOT_PANS[slot];
+  }
+  return pans;
 };
 
 // Resolve the effective per-channel pans as a six-tuple indexed by channel
-// letter position (A=0 .. F=5): the catalog pans for the named layout
-// (absent or unknown layouts resolve as `mono`) with each channel override
-// applied to its own slot. Callers needing only the first three channels
-// read indices 0-2; the result always carries all six so two-chip songs
+// letter position (A=0 .. F=5): `one` feeds A-C and `two` feeds D-F. A
+// missing key resolves to the chip-count default - centred for a
+// single-chip song, the chip split (chip 1 left, chip 2 right) for a
+// two-chip song. The result always carries all six so two-chip songs
 // resolve D/E/F through the same rules.
-export const resolveChannelPans = (stereo: SongStereo | undefined): number[] => {
-  const layoutPans =
-    (stereo?.layout ? STEREO_LAYOUTS[stereo.layout] : undefined) ?? STEREO_LAYOUTS.mono;
-  const pans: number[] = Array.from({ length: SONG_CHANNEL_COUNT }, (_, i) => layoutPans[i]);
+export const resolveChannelPans = (
+  stereo: SongStereo | undefined,
+  chipCount: 1 | 2 = 1,
+): number[] => {
+  const one = stereo?.one ?? (chipCount === 2 ? 'L' : 'C');
+  const two = stereo?.two ?? (chipCount === 2 ? 'R' : 'C');
 
-  if (stereo) {
-    const channelKeys = SONG_CHANNEL_IDS;
-    for (let channel = 0; channel < SONG_CHANNEL_COUNT; channel++) {
-      const value = stereo[channelKeys[channel]];
-      if (typeof value === 'number' && Number.isFinite(value)) {
-        pans[channel] = clampChannelPan(value);
-      }
-    }
-  }
-
-  return pans;
+  return [...modeToChipPans(one), ...modeToChipPans(two)];
 };

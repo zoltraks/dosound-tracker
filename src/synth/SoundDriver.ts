@@ -2,6 +2,8 @@
 // once lived in this file was removed; the module keeps its historical name so
 // the existing type-import path stays stable.
 
+import type { StereoMode } from '../constants/song.ts';
+
 export interface Instrument {
   id: string;
   name: string;
@@ -59,18 +61,12 @@ export interface Line {
 // D-F to chip 2 on a two-chip song.
 export type SongChannelId = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
 
-// Per-channel stereo output settings. `layout` names a catalog wiring
-// (see STEREO_LAYOUTS in constants/song.ts); `A`/`B`/`C` are free pan
-// overrides on the 0..1 scale (0 left, 0.5 centre, 1 right). Resolution
-// starts from the layout's canonical pans and applies each override.
+// Per-chip stereo output settings: `one` wires chip 1's channels and `two`
+// wires chip 2's, each to one named mode (`L`, `R`, `C`, or an `ABC`
+// permutation - see STEREO_MODES in constants/song.ts).
 export interface SongStereo {
-  layout?: string;
-  A?: number;
-  B?: number;
-  C?: number;
-  D?: number;
-  E?: number;
-  F?: number;
+  one?: StereoMode;
+  two?: StereoMode;
 }
 
 export interface Song {

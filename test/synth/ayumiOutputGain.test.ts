@@ -22,7 +22,7 @@ const renderFoldedPeak = (count: number): number => {
   core.configure(true, 2_000_000, 44100);
   let peak = 0;
   for (let channel = 0; channel < 3; channel++) {
-    core.setPan(channel, 0.5, false);
+    core.setPanBypass(channel);
     core.setMixer(channel, 0, 0, 0);
     core.setVolume(channel, 15);
     core.setTone(channel, 284);
@@ -50,7 +50,9 @@ describe('Ayumi output stage gain', () => {
     const peak = renderFoldedPeak(44100);
     const limited = softLimit(peak * STAGE_GAIN);
     try {
-      expect(limited).toBeLessThan(1.0);
+      // tanh saturates to exactly 1.0 in float64 at extreme input - the
+      // limiter's contract is bounded-at-1.0, not strictly below.
+      expect(limited).toBeLessThanOrEqual(1.0);
       expect(limited).toBeGreaterThan(SOFT_KNEE);
     } catch (error) {
       console.log('folded peak:', peak, 'limited:', limited);

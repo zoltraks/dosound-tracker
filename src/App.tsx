@@ -12,6 +12,7 @@ import { useMidiActions } from './hooks/midi/useMidiActions.ts';
 import { useTrackOperations } from './hooks/song/useTrackOperations.ts';
 import { usePasteTrackOptions } from './hooks/modal/usePasteTrackOptions.ts';
 import { useSettingsSession } from './hooks/modal/useSettingsSession.ts';
+import type { SettingsSoundPreview } from './hooks/modal/useSettingsSession.ts';
 import { usePlaylistOperations } from './hooks/song/usePlaylistOperations.ts';
 import { useScrollSync } from './hooks/ui/useScrollSync.ts';
 import { useAppState } from './hooks/app/useAppState.ts';
@@ -65,6 +66,7 @@ import { useElectronCloseGuard } from './hooks/app/useElectronCloseGuard.ts';
 import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
 import { useChannelPans } from './hooks/song/useChannelPans.ts';
 import { songChipCount } from './utils/song/songChips.ts';
+import type { SongStereo } from './synth/SoundDriver.ts';
 import { channelCountForChipCount, SONG_CHANNEL_IDS } from './constants/song.ts';
 import {
   CHIP1_TRACK_IDS,
@@ -250,18 +252,32 @@ const App: React.FC = () => {
     pendingSongImport,
   });
 
-  const [dualChipEnabled, setDualChipEnabled] = useState<boolean>(
-    () => loadSettings().sound.dualChip,
-  );
+  const [monoEnabled, setMonoEnabled] = useState<boolean>(() => loadSettings().sound.mono);
+  const [crosstalk, setCrosstalk] = useState<number>(() => loadSettings().sound.crosstalk);
   const [visibleTracks, setVisibleTracks] = useState<3 | 6>(
     () => loadSettings().general.visibleTracks,
   );
   const [trackWindowStart, setTrackWindowStart] = useState(0);
+  const [settingsSoundPreview, setSettingsSoundPreview] = useState<SettingsSoundPreview | null>(
+    null,
+  );
 
-  const trackChannelCount = dualChipEnabled ? SONG_CHANNEL_IDS.length : CHIP1_TRACK_IDS.length;
+  // While the settings modal is open its draft sound values preview live:
+  // mono and crosstalk drive the audio path before commit, and closing
+  // restores the committed settings.
+  const liveSoundSettings = modalState.isSettingsOpen ? settingsSoundPreview : null;
+  const effectiveMono = liveSoundSettings?.mono ?? monoEnabled;
+  const effectiveCrosstalk = liveSoundSettings?.crosstalk ?? crosstalk;
+  // The song's resolved chip count is the single source of truth: it
+  // selects the playback engines and the editable channel set together.
+  const songChipTotal = songChipCount(currentSong);
+  const songTwoChip = songChipTotal === 2;
+  const effectiveChipCount = songChipTotal;
+
+  const trackChannelCount = songTwoChip ? SONG_CHANNEL_IDS.length : CHIP1_TRACK_IDS.length;
   // Arrow-key track hops and section navigation reach every enabled channel;
   // the three-track view slides its window to keep the focused track visible.
-  const navigableTrackSections = (dualChipEnabled ? SONG_CHANNEL_IDS : CHIP1_TRACK_IDS).map(
+  const navigableTrackSections = (songTwoChip ? SONG_CHANNEL_IDS : CHIP1_TRACK_IDS).map(
     (id) => `track${id}` as import('./constants/navigation.ts').NavigationSection,
   );
 
@@ -271,7 +287,11 @@ const App: React.FC = () => {
   );
 
   const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
-  const { channelPans } = useChannelPans({ stereo: currentSong.stereo });
+  const { channelPans } = useChannelPans({
+    stereo: currentSong.stereo,
+    chipCount: effectiveChipCount,
+    mono: effectiveMono,
+  });
   const {
     audioContext,
     ym2149Ref,
@@ -287,7 +307,8 @@ const App: React.FC = () => {
     soundEngineId,
     channelPans,
     currentSong.chip ?? DEFAULT_SONG_CHIP,
-    dualChipEnabled ? songChipCount(currentSong) : 1,
+    effectiveChipCount,
+    effectiveCrosstalk / 100,
   );
 
   const ym2149ForChannel = useCallback(
@@ -365,10 +386,10 @@ const App: React.FC = () => {
   // derived start as the hysteresis anchor for the next render.
   const targetChannelIndex = SONG_CHANNEL_IDS.indexOf(targetTrackId);
   const effectiveWindowStart =
-    dualChipEnabled && visibleTracks === 3 && targetChannelIndex >= 0
+    songTwoChip && visibleTracks === 3 && targetChannelIndex >= 0
       ? nextTrackWindowStart(trackWindowStart, targetChannelIndex)
       : trackWindowStart;
-  const songTracks = visibleTrackIds(dualChipEnabled, visibleTracks, effectiveWindowStart);
+  const songTracks = visibleTrackIds(songTwoChip, visibleTracks, effectiveWindowStart);
 
   // A persisted cursor or focus on a hidden channel (stored six-track state
   // on a single-chip song, or the inactive chip group) falls back to the
@@ -384,7 +405,7 @@ const App: React.FC = () => {
   // Persist the render-derived window as the hysteresis anchor; the visible
   // projection above already applied the shift in the same commit.
   useEffect(() => {
-    if (!dualChipEnabled || visibleTracks !== 3) {
+    if (!songTwoChip || visibleTracks !== 3) {
       return;
     }
     const targetIndex = SONG_CHANNEL_IDS.indexOf(targetTrackId);
@@ -393,7 +414,7 @@ const App: React.FC = () => {
     }
     /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setTrackWindowStart((start) => nextTrackWindowStart(start, targetIndex));
-  }, [dualChipEnabled, visibleTracks, targetTrackId]);
+  }, [songTwoChip, visibleTracks, targetTrackId]);
 
   const { ensureAudioContextResumed } = useAudioContextResume({ audioContext });
 
@@ -428,7 +449,7 @@ const App: React.FC = () => {
   } = usePlaybackBridge({
     currentSong,
     channelMutes,
-    channelCount: channelCountForChipCount(dualChipEnabled ? songChipCount(currentSong) : 1),
+    channelCount: channelCountForChipCount(effectiveChipCount),
     ym2149Ref,
     ym2149Ref2,
     isDebugMode,
@@ -875,10 +896,13 @@ const App: React.FC = () => {
     setConfirmPaste,
     soundEngineId,
     setSoundEngineId,
-    dualChipEnabled,
-    setDualChipEnabled,
+    monoEnabled,
+    setMonoEnabled,
+    crosstalk,
+    setCrosstalk,
     visibleTracks,
     setVisibleTracks,
+    onSoundPreviewChange: setSettingsSoundPreview,
   });
 
   const modals = useAppModals({
@@ -984,6 +1008,13 @@ const App: React.FC = () => {
       onCommitSettings: handleCommitSettings,
       onCancelSettings: handleCancelSettings,
       onSettingsLoadError: setSongError,
+      songStereo: currentSong.stereo,
+      songTwoChip,
+      secondChipVisible: songTwoChip,
+      onSongStereoChange: (stereo: SongStereo | undefined) =>
+        updateSong({ stereo }, { record: false }),
+      onSongTwoChipChange: (on: boolean) =>
+        updateSong({ chipCount: on ? 2 : 1 }, { record: false }),
     },
     file: {
       isRepositoryInstrumentOpen,

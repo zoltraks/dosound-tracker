@@ -22,6 +22,11 @@ const renderModal = (overrides: Partial<Parameters<typeof SettingsModal>[0]> = {
       onCommit={vi.fn()}
       onCancel={vi.fn()}
       onLoadError={vi.fn()}
+      songStereo={undefined}
+      songTwoChip={false}
+      secondChipVisible={false}
+      onSongStereoChange={vi.fn()}
+      onSongTwoChipChange={vi.fn()}
       {...overrides}
     />,
   );
@@ -89,7 +94,7 @@ describe('SettingsModal', () => {
         pasteTrackMode: 'overwriteAll',
         confirmPaste: false,
       },
-      sound: { engine: 'internal', dualChip: false },
+      sound: { engine: 'internal', mono: false, crosstalk: 0 },
     };
     const onDraftChange = vi.fn();
     const onConfirmingResetChange = vi.fn();
@@ -470,6 +475,99 @@ describe('SettingsModal', () => {
       }
     } finally {
       vi.unstubAllGlobals();
+    }
+  });
+
+  it('shows mono, crosstalk, and stereo chip controls under the sound category', () => {
+    renderModal({ category: 'sound' });
+    try {
+      expect(screen.getByLabelText('Mono')).toBeTruthy();
+      expect(screen.getByLabelText('Crosstalk')).toBeTruthy();
+      expect(screen.getByLabelText('Stereo chip 1')).toBeTruthy();
+      expect(screen.queryByLabelText('Stereo chip 2')).toBeNull();
+    } catch (error) {
+      console.log('sound pane missing stereo controls');
+      throw error;
+    }
+  });
+
+  it('shows the second chip stereo select for two-chip songs', () => {
+    renderModal({ category: 'sound', secondChipVisible: true });
+    try {
+      expect(screen.getByLabelText('Stereo chip 2')).toBeTruthy();
+    } catch (error) {
+      console.log('second chip select missing');
+      throw error;
+    }
+  });
+
+  it('edits mono and crosstalk through onDraftChange', () => {
+    const onDraftChange = vi.fn();
+    renderModal({ category: 'sound', onDraftChange });
+    fireEvent.click(screen.getByLabelText('Mono'));
+    fireEvent.change(screen.getByLabelText('Crosstalk'), { target: { value: '55' } });
+    try {
+      expect(onDraftChange).toHaveBeenCalledWith({
+        ...DEFAULT_SETTINGS,
+        sound: { ...DEFAULT_SETTINGS.sound, mono: true },
+      });
+      expect(onDraftChange).toHaveBeenCalledWith({
+        ...DEFAULT_SETTINGS,
+        sound: { ...DEFAULT_SETTINGS.sound, crosstalk: 55 },
+      });
+    } catch (error) {
+      console.log('mono/crosstalk edits mismatch', onDraftChange.mock.calls);
+      throw error;
+    }
+  });
+
+  it('writes chip mode picks into the song stereo node', () => {
+    const onSongStereoChange = vi.fn();
+    renderModal({
+      category: 'sound',
+      songStereo: { one: 'ABC' },
+      secondChipVisible: true,
+      onSongStereoChange,
+    });
+    fireEvent.change(screen.getByLabelText('Stereo chip 1'), { target: { value: 'CBA' } });
+    fireEvent.change(screen.getByLabelText('Stereo chip 2'), { target: { value: 'R' } });
+    try {
+      expect(onSongStereoChange).toHaveBeenCalledWith({ one: 'CBA' });
+      expect(onSongStereoChange).toHaveBeenCalledWith({ one: 'ABC', two: 'R' });
+    } catch (error) {
+      console.log('stereo mode edits mismatch', onSongStereoChange.mock.calls);
+      throw error;
+    }
+  });
+
+  it('clears a chip mode back to the default', () => {
+    const onSongStereoChange = vi.fn();
+    renderModal({
+      category: 'sound',
+      songStereo: { one: 'L', two: 'R' },
+      secondChipVisible: true,
+      onSongStereoChange,
+    });
+    fireEvent.change(screen.getByLabelText('Stereo chip 1'), { target: { value: '' } });
+    try {
+      expect(onSongStereoChange).toHaveBeenCalledWith({ two: 'R' });
+    } catch (error) {
+      console.log('stereo default edit mismatch', onSongStereoChange.mock.calls);
+      throw error;
+    }
+  });
+
+  it('drives the two-chips state through the song callback', () => {
+    const onSongTwoChipChange = vi.fn();
+    renderModal({ category: 'sound', songTwoChip: true, onSongTwoChipChange });
+    const checkbox = screen.getByLabelText('Two chips') as HTMLInputElement;
+    try {
+      expect(checkbox.checked).toBe(true);
+      fireEvent.click(checkbox);
+      expect(onSongTwoChipChange).toHaveBeenCalledWith(false);
+    } catch (error) {
+      console.log('two-chips checkbox mismatch', onSongTwoChipChange.mock.calls);
+      throw error;
     }
   });
 

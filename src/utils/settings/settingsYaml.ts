@@ -30,7 +30,8 @@ export const buildSettingsYaml = (settings: SettingsValues): string => {
       },
       sound: {
         engine: settings.sound.engine,
-        dualChip: settings.sound.dualChip,
+        mono: settings.sound.mono,
+        crosstalk: settings.sound.crosstalk,
       },
     },
   };

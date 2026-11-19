@@ -28,7 +28,8 @@ export interface SettingsValues {
   };
   sound: {
     engine: SoundEngineId;
-    dualChip: boolean;
+    mono: boolean;
+    crosstalk: number;
   };
 }
 
@@ -58,6 +59,7 @@ export const DEFAULT_SETTINGS: SettingsValues = {
   },
   sound: {
     engine: DEFAULT_SOUND_ENGINE_ID,
-    dualChip: false,
+    mono: false,
+    crosstalk: 0,
   },
 };

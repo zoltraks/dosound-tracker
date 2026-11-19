@@ -87,6 +87,7 @@ export const PlaylistLine: React.FC<PlaylistLineProps> = ({
           onKeyDown={(event) => handleInputKeyDown(event, track)}
           autoFocus
           maxLength={2}
+          size={2}
         />
       );
     }

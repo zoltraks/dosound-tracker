@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SettingsCategory, SettingsValues } from '../../types/settings.ts';
+import type { SongStereo } from '../../synth/SoundDriver.ts';
 
 const SettingsModal = React.lazy(async () => {
   const { SettingsModal } = await import('../../modals/settings/SettingsModal.tsx');
@@ -18,6 +19,11 @@ export interface SettingsModalGroupParams {
   onCommitSettings: () => void;
   onCancelSettings: () => void;
   onSettingsLoadError: (message: string) => void;
+  songStereo: SongStereo | undefined;
+  songTwoChip: boolean;
+  secondChipVisible: boolean;
+  onSongStereoChange: (stereo: SongStereo | undefined) => void;
+  onSongTwoChipChange: (on: boolean) => void;
 }
 
 export interface SettingsModalGroupProps extends SettingsModalGroupParams {
@@ -37,6 +43,11 @@ export function SettingsModalGroup({
   onCommitSettings,
   onCancelSettings,
   onSettingsLoadError,
+  songStereo,
+  songTwoChip,
+  secondChipVisible,
+  onSongStereoChange,
+  onSongTwoChipChange,
 }: SettingsModalGroupProps) {
   if (!isSettingsOpen) {
     return null;
@@ -56,6 +67,11 @@ export function SettingsModalGroup({
         onCommit={onCommitSettings}
         onCancel={onCancelSettings}
         onLoadError={onSettingsLoadError}
+        songStereo={songStereo}
+        songTwoChip={songTwoChip}
+        secondChipVisible={secondChipVisible}
+        onSongStereoChange={onSongStereoChange}
+        onSongTwoChipChange={onSongTwoChipChange}
       />
     </React.Suspense>
   );

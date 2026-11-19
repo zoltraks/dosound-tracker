@@ -1599,3 +1599,6 @@ Project-specific conventions extend the standard above for the DOSOUND Tracker c
   both states. A `string` edit-in-progress flag cannot represent "editing an empty cell"; the
   playlist `editingPattern` is `string | null` (`null` = no edit, `''` = live empty edit) for
   this reason, and every guard that tests "is editing" must distinguish the two.
+- Removing the only DOM observable of component state orphans the tests that probe it - expose
+  the same state as a `data-*` attribute on the element so unit tests keep a queryable handle
+  (the envelope `Pos:`/`Val:` footer became `data-position` on `.envelope-panel`).

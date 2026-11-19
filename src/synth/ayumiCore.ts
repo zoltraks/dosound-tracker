@@ -240,6 +240,14 @@ export class AyumiCore {
     }
   }
 
+  // Unity gains on both sides - the bypass used while no channel is
+  // panned, reproducing the pre-stereo single-output signal exactly.
+  setPanBypass(index: number): void {
+    const channel = this.channels[index];
+    channel.panLeft = 1;
+    channel.panRight = 1;
+  }
+
   setTone(index: number, period: number): void {
     const masked = period & 0xfff;
     this.channels[index].tonePeriod = masked === 0 ? 1 : masked;

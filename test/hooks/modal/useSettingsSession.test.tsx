@@ -23,10 +23,13 @@ const makeParams = (
   setConfirmPaste: vi.fn(),
   soundEngineId: 'internal',
   setSoundEngineId: vi.fn(),
-  dualChipEnabled: false,
-  setDualChipEnabled: vi.fn(),
+  monoEnabled: false,
+  setMonoEnabled: vi.fn(),
+  crosstalk: 0,
+  setCrosstalk: vi.fn(),
   visibleTracks: 3,
   setVisibleTracks: vi.fn(),
+  onSoundPreviewChange: vi.fn(),
   ...overrides,
 });
 
@@ -46,12 +49,31 @@ const makeDraft = (overrides: Partial<SettingsValues> = {}): SettingsValues => (
     confirmPaste: true,
     ...overrides.editor,
   },
-  sound: { engine: 'ayumi', dualChip: false, ...overrides.sound },
+  sound: { engine: 'ayumi', mono: true, crosstalk: 40, ...overrides.sound },
 });
 
 const readUiState = () => {
   const raw = localStorage.getItem(StorageKeys.UI_STATE);
   return raw ? (JSON.parse(raw) as { settingsView?: unknown }) : null;
+};
+
+const writeSessionSnapshot = (draft: SettingsValues) => {
+  localStorage.setItem(
+    StorageKeys.UI_STATE,
+    JSON.stringify({
+      openModal: null,
+      sharedCurrentLine: 0,
+      markdownScroll: 0,
+      windowScroll: 0,
+      settingsView: {
+        category: 'general',
+        draft,
+        focus: null,
+        paneScroll: 0,
+        confirmingReset: false,
+      },
+    }),
+  );
 };
 
 describe('useSettingsSession', () => {
@@ -66,6 +88,44 @@ describe('useSettingsSession', () => {
     expect(result.current.settingsDraft).toEqual(DEFAULT_SETTINGS);
     expect(result.current.settingsCategory).toBe('general');
     expect(result.current.confirmingReset).toBe(false);
+  });
+
+  it('refreshes a stale persisted draft from committed storage while closed', () => {
+    writeSessionSnapshot(makeDraft());
+
+    renderHook(() => useSettingsSession(makeParams({ isSettingsOpen: false })));
+
+    const view = readUiState()?.settingsView as { draft?: SettingsValues } | null | undefined;
+    expect(view?.draft).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it('tracks committed changes made while the modal is closed', () => {
+    writeSessionSnapshot(makeDraft());
+    const params = makeParams({ isSettingsOpen: false });
+    const { rerender } = renderHook((p: UseSettingsSessionParams) => useSettingsSession(p), {
+      initialProps: params,
+    });
+
+    act(() => {
+      localStorage.setItem(StorageKeys.THEME, 'light');
+      localStorage.setItem(StorageKeys.TRACK_BACKGROUND_ENABLED, '0');
+    });
+    rerender(makeParams({ isSettingsOpen: false, theme: 'light', trackBackgroundEnabled: false }));
+
+    const view = readUiState()?.settingsView as { draft?: SettingsValues } | null | undefined;
+    expect(view?.draft?.general.theme).toBe('light');
+    expect(view?.draft?.general.trackBackground).toBe(false);
+  });
+
+  it('does not overwrite the session draft while the modal is open', () => {
+    const stale = makeDraft();
+    writeSessionSnapshot(stale);
+
+    renderHook(() => useSettingsSession(makeParams({ isSettingsOpen: true })));
+
+    const view = readUiState()?.settingsView as { draft?: SettingsValues } | null | undefined;
+    expect(view?.draft?.general.theme).toBe(stale.general.theme);
+    expect(view?.draft?.editor.pasteTrackMode).toBe(stale.editor.pasteTrackMode);
   });
 
   it('commits the draft: applies every setter, writes storage keys, and closes', () => {
@@ -86,6 +146,8 @@ describe('useSettingsSession', () => {
     expect(params.setPasteTrackMode).toHaveBeenCalledWith('overwriteAll');
     expect(params.setConfirmPaste).toHaveBeenCalledWith(true);
     expect(params.setSoundEngineId).toHaveBeenCalledWith('ayumi');
+    expect(params.setMonoEnabled).toHaveBeenCalledWith(true);
+    expect(params.setCrosstalk).toHaveBeenCalledWith(40);
     expect(params.setIsSettingsOpen).toHaveBeenCalledWith(false);
 
     expect(localStorage.getItem(StorageKeys.PASTE_CONFIRM)).toBe('on');
@@ -169,5 +231,45 @@ describe('useSettingsSession', () => {
       { focus?: string | null; paneScroll?: number } | null | undefined;
     expect(view?.focus).toBe('theme-select');
     expect(view?.paneScroll).toBe(120);
+  });
+
+  it('pushes the draft sound settings to the live preview while open', () => {
+    const onSoundPreviewChange = vi.fn();
+    const { result } = renderHook(() => useSettingsSession(makeParams({ onSoundPreviewChange })));
+
+    expect(onSoundPreviewChange).toHaveBeenLastCalledWith({
+      mono: DEFAULT_SETTINGS.sound.mono,
+      crosstalk: DEFAULT_SETTINGS.sound.crosstalk,
+    });
+
+    act(() => {
+      result.current.setSettingsDraft(
+        makeDraft({
+          sound: { engine: 'internal', mono: true, crosstalk: 65 },
+        }),
+      );
+    });
+
+    expect(onSoundPreviewChange).toHaveBeenLastCalledWith({
+      mono: true,
+      crosstalk: 65,
+    });
+  });
+
+  it('clears the live preview when the modal closes', () => {
+    const onSoundPreviewChange = vi.fn();
+    const openParams = makeParams({ isSettingsOpen: true, onSoundPreviewChange });
+    const { rerender } = renderHook(
+      (params: UseSettingsSessionParams) => useSettingsSession(params),
+      { initialProps: openParams },
+    );
+
+    expect(onSoundPreviewChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ mono: DEFAULT_SETTINGS.sound.mono }),
+    );
+
+    rerender(makeParams({ isSettingsOpen: false, onSoundPreviewChange }));
+
+    expect(onSoundPreviewChange).toHaveBeenLastCalledWith(null);
   });
 });

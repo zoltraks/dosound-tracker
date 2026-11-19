@@ -42,6 +42,7 @@ export function useAudioSetup(
   channelPans?: number[],
   songChip: string = DEFAULT_SONG_CHIP,
   chipCount: 1 | 2 = 1,
+  crosstalk: number = 0,
 ): UseAudioSetupResult {
   const { audioContext, error } = useAudioContext();
   const ym2149Ref = useRef<SoundEngine | null>(null);
@@ -50,6 +51,8 @@ export function useAudioSetup(
   const chipClockRef = useRef(chipClock);
   const songChipRef = useRef(songChip);
   const channelPansRef = useRef<number[]>(channelPans ?? [0.5, 0.5, 0.5]);
+  const crosstalkRef = useRef(crosstalk);
+  const busGainsRef = useRef<AudioParam[] | null>(null);
   const readyWaitersRef = useRef<Array<(engine: SoundEngine | null) => void>>([]);
   const pairWaitersRef = useRef<Array<(engines: SoundEngine[]) => void>>([]);
   // The persisted key is only a mount-time fallback - a caller-provided
@@ -69,12 +72,49 @@ export function useAudioSetup(
     let cancelled = false;
     const landedEngines: SoundEngine[] = [];
 
+    // Master stereo bus: every engine's output sums into mixIn, the
+    // splitter feeds a normalized crossfade - dry paths at 1 - c/2 and
+    // symmetric bleed paths at c/2 - so the crosstalk setting blends
+    // toward dual-mono at 100 percent without boosting correlated
+    // content. At zero crosstalk the path is transparent. mixIn is
+    // pinned to two channels: a mono-folded engine output (all-centre
+    // pans) would otherwise reach the splitter as one channel and play
+    // left-only.
+    const mixIn = audioContext.createGain();
+    mixIn.channelCount = 2;
+    mixIn.channelCountMode = 'explicit';
+    const splitter = audioContext.createChannelSplitter(2);
+    const merger = audioContext.createChannelMerger(2);
+    const dryToLeft = audioContext.createGain();
+    const dryToRight = audioContext.createGain();
+    const bleedToRight = audioContext.createGain();
+    const bleedToLeft = audioContext.createGain();
+    const crosstalkLevel = Math.min(1, Math.max(0, crosstalkRef.current));
+    const dryLevel = 1 - crosstalkLevel / 2;
+    const bleedLevel = crosstalkLevel / 2;
+    dryToLeft.gain.setValueAtTime(dryLevel, audioContext.currentTime);
+    dryToRight.gain.setValueAtTime(dryLevel, audioContext.currentTime);
+    bleedToRight.gain.setValueAtTime(bleedLevel, audioContext.currentTime);
+    bleedToLeft.gain.setValueAtTime(bleedLevel, audioContext.currentTime);
+    mixIn.connect(splitter);
+    splitter.connect(dryToLeft, 0);
+    dryToLeft.connect(merger, 0, 0);
+    splitter.connect(dryToRight, 1);
+    dryToRight.connect(merger, 0, 1);
+    splitter.connect(bleedToRight, 0);
+    bleedToRight.connect(merger, 0, 1);
+    splitter.connect(bleedToLeft, 1);
+    bleedToLeft.connect(merger, 0, 0);
+    merger.connect(audioContext.destination);
+    busGainsRef.current = [dryToLeft.gain, dryToRight.gain, bleedToRight.gain, bleedToLeft.gain];
+
     // Each chip gets its own engine through the same factory so the
     // internal YM2149 and Ayumi drivers both support the dual path.
     // Chip 1 receives the first three pans, chip 2 the last three.
     const configureEngine = (engine: SoundEngine, chipIndex: 0 | 1) => {
       engine.setClock(chipClockRef.current);
       engine.setChip(songChipRef.current);
+      engine.routeOutput(mixIn);
       const pans = channelPansRef.current;
       engine.setChannelPans(
         chipIndex === 0
@@ -181,6 +221,14 @@ export function useAudioSetup(
     return () => {
       cancelled = true;
       testToneRef.current = null;
+      busGainsRef.current = null;
+      mixIn.disconnect();
+      splitter.disconnect();
+      merger.disconnect();
+      dryToLeft.disconnect();
+      dryToRight.disconnect();
+      bleedToRight.disconnect();
+      bleedToLeft.disconnect();
       userEvents.forEach((eventType) => {
         document.removeEventListener(eventType, handleUserInteraction);
       });
@@ -234,6 +282,27 @@ export function useAudioSetup(
       ym2149Ref2.current?.setChannelPans(pans.slice(SINGLE_CHIP_CHANNEL_COUNT));
     }
   }, [channelPans]);
+
+  // Crosstalk mirrors the app setting onto the bus gains as a normalized
+  // crossfade: the dry paths ease toward 1 - c/2 while the symmetric bleed
+  // paths rise toward c/2, converging both outputs on (L+R)/2 at 100
+  // percent. The ref keeps a mid-flight bus rebuild consistent; ramps
+  // avoid zipper noise.
+  useEffect(() => {
+    crosstalkRef.current = crosstalk;
+    const gains = busGainsRef.current;
+    if (!gains || !audioContext) {
+      return;
+    }
+    const level = Math.min(1, Math.max(0, crosstalk));
+    const now = audioContext.currentTime;
+    const dry = 1 - level / 2;
+    const bleed = level / 2;
+    gains[0].setTargetAtTime(dry, now, 0.05);
+    gains[1].setTargetAtTime(dry, now, 0.05);
+    gains[2].setTargetAtTime(bleed, now, 0.05);
+    gains[3].setTargetAtTime(bleed, now, 0.05);
+  }, [crosstalk, audioContext]);
 
   const playTestTone = useCallback(() => testToneRef.current?.(), []);
 

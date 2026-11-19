@@ -91,6 +91,10 @@ export class YM2149 implements SoundEngine {
   private gainNodes: GainNode[];
   private noiseGainNode: GainNode;
   private envelopeGainNode: GainNode;
+  // Every source sums onto this node; routeOutput rewires its single hop
+  // so the app can insert a master bus (crosstalk) between engine and
+  // destination without touching the internal graph.
+  private outputNode: GainNode;
   private lastNoisePeriod: number = -1;
   // Per-variant amplitude curve, swapped by setChip - the AY-3-8910
   // table for 'AY', the YM2149 table otherwise.
@@ -116,6 +120,8 @@ export class YM2149 implements SoundEngine {
     this.gainNodes = [];
     this.noiseGainNode = audioContext.createGain();
     this.envelopeGainNode = audioContext.createGain();
+    this.outputNode = audioContext.createGain();
+    this.outputNode.connect(audioContext.destination);
 
     for (let i = 0; i < 3; i++) {
       const oscillator = audioContext.createOscillator();
@@ -126,7 +132,7 @@ export class YM2149 implements SoundEngine {
       gainNode.gain.setValueAtTime(0, audioContext.currentTime);
 
       oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
+      gainNode.connect(this.outputNode);
 
       oscillator.start();
 
@@ -134,14 +140,14 @@ export class YM2149 implements SoundEngine {
       this.gainNodes.push(gainNode);
     }
 
-    this.noiseGainNode.connect(audioContext.destination);
-    this.envelopeGainNode.connect(audioContext.destination);
+    this.noiseGainNode.connect(this.outputNode);
+    this.envelopeGainNode.connect(this.outputNode);
 
     this.pannerNodes = [];
     this.noiseChannelGainNodes = [];
     for (let i = 0; i < 3; i++) {
       const panner = audioContext.createStereoPanner();
-      panner.connect(audioContext.destination);
+      panner.connect(this.outputNode);
       this.pannerNodes.push(panner);
 
       // Per-channel noise tap feeding that channel's panner. It stays
@@ -269,7 +275,7 @@ export class YM2149 implements SoundEngine {
     this.stereoActive = next;
     for (let i = 0; i < 3; i++) {
       this.gainNodes[i].disconnect();
-      this.gainNodes[i].connect(next ? this.pannerNodes[i] : this.audioContext.destination);
+      this.gainNodes[i].connect(next ? this.pannerNodes[i] : this.outputNode);
     }
     if (!next) {
       for (const noiseChannelGain of this.noiseChannelGainNodes) {
@@ -288,6 +294,11 @@ export class YM2149 implements SoundEngine {
     });
     this.applyStereoRouting();
     this.updateAudioNodes();
+  }
+
+  routeOutput(node: AudioNode): void {
+    this.outputNode.disconnect();
+    this.outputNode.connect(node);
   }
 
   private updateNoiseGenerator(): void {

@@ -138,6 +138,8 @@ When asked to make an implementation plan for a specific change request pointing
 
 Fixes landed without a prior record - ad-hoc session work filed retroactively - group related fixes into as few records as the change boundaries allow, and a retroactive implementation plan is a short applied-marker naming what landed, the files touched, the verification run, and the commits rather than a full plan.
 
+Records authored during ad-hoc iteration describe the final landed state - a superseded intermediate design is consolidated into the batch record or removed before the batch closes, never left behind as a contradictory uncommitted document.
+
 **Implementation**
 
 Execute the implementation according to the plans. Follow the build-test-fix loop for each feature.

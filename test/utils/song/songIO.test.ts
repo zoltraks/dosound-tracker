@@ -334,16 +334,16 @@ describe('buildSongYamlForExport stereo node', () => {
     }
   });
 
-  it('round-trips layout and channel overrides through the parser', () => {
+  it('round-trips chip modes through the parser', () => {
     try {
-      const s = song({ stereo: { layout: 'abc', B: 0.25 } });
+      const s = song({ stereo: { one: 'ABC', two: 'CAB' } });
       const doc = yaml.load(buildSongYamlForExport(s)) as {
         song: { stereo?: Record<string, unknown> };
       };
-      expect(doc.song.stereo).toEqual({ layout: 'abc', B: 0.25 });
+      expect(doc.song.stereo).toEqual({ one: 'ABC', two: 'CAB' });
 
       const parsed = parseSongFromYaml(buildSongYamlForExport(s));
-      expect(parsed.stereo).toEqual({ layout: 'abc', B: 0.25 });
+      expect(parsed.stereo).toEqual({ one: 'ABC', two: 'CAB' });
     } catch (error) {
       console.log('stereo roundtrip mismatch');
       throw error;
@@ -352,11 +352,11 @@ describe('buildSongYamlForExport stereo node', () => {
 
   it('emits only the stereo members that are set', () => {
     try {
-      const s = song({ stereo: { C: 0.9 } });
+      const s = song({ stereo: { one: 'C' } });
       const doc = yaml.load(buildSongYamlForExport(s)) as {
         song: { stereo?: Record<string, unknown> };
       };
-      expect(doc.song.stereo).toEqual({ C: 0.9 });
+      expect(doc.song.stereo).toEqual({ one: 'C' });
     } catch (error) {
       console.log('stereo member mismatch');
       throw error;
@@ -370,7 +370,7 @@ describe('buildSongYamlForExport two-chip songs', () => {
       const s = song({
         chipCount: 2,
         line: [{ A: '00', B: '--', C: '--', D: '01', E: '--', F: '02' }],
-        stereo: { layout: 'dual', F: 0.9 },
+        stereo: { one: 'L', two: 'R' },
       });
       const doc = yaml.load(buildSongYamlForExport(s)) as {
         song: {
@@ -381,7 +381,7 @@ describe('buildSongYamlForExport two-chip songs', () => {
       };
       expect(doc.song.chipCount).toBe(2);
       expect(doc.song.line[0]).toEqual({ A: '00', D: '01', F: '02' });
-      expect(doc.song.stereo).toEqual({ layout: 'dual', F: 0.9 });
+      expect(doc.song.stereo).toEqual({ one: 'L', two: 'R' });
     } catch (error) {
       console.log('two-chip yaml mismatch');
       throw error;
@@ -397,6 +397,22 @@ describe('buildSongYamlForExport two-chip songs', () => {
       expect(doc.song.chipCount).toBe(2);
     } catch (error) {
       console.log('derived chipCount mismatch');
+      throw error;
+    }
+  });
+
+  it('emits an explicit chipCount 1 even when the playlist references D/E/F', () => {
+    try {
+      const s = song({
+        chipCount: 1,
+        line: [{ A: '00', B: '--', C: '--', D: '01' }],
+      });
+      const doc = yaml.load(buildSongYamlForExport(s)) as {
+        song: { chipCount?: number };
+      };
+      expect(doc.song.chipCount).toBe(1);
+    } catch (error) {
+      console.log('forced single-chip yaml mismatch');
       throw error;
     }
   });
@@ -420,12 +436,12 @@ describe('buildSongYamlForExport two-chip songs', () => {
       const s = song({
         chipCount: 2,
         line: [{ A: '00', B: '--', C: '--', D: '01' }],
-        stereo: { layout: 'dual', D: 0.1 },
+        stereo: { two: 'CBA' },
       });
       const loaded = parseSongFromYaml(buildSongYamlForExport(s));
       expect(loaded.chipCount).toBe(2);
       expect(loaded.line[0]).toEqual({ A: '00', B: '--', C: '--', D: '01' });
-      expect(loaded.stereo).toEqual({ layout: 'dual', D: 0.1 });
+      expect(loaded.stereo).toEqual({ two: 'CBA' });
     } catch (error) {
       console.log('two-chip roundtrip mismatch');
       throw error;

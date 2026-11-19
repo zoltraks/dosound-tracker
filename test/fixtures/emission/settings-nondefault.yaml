@@ -13,4 +13,5 @@ settings:
     confirmPaste: true
   sound:
     engine: ayumi
-    dualChip: false
+    mono: true
+    crosstalk: 40

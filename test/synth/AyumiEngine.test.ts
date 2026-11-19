@@ -237,4 +237,13 @@ describe('AyumiEngine instrument path', () => {
       throw error;
     }
   });
+
+  it('rewires the worklet node through routeOutput', () => {
+    const { node } = makeNode();
+    const engine = new AyumiEngine(node);
+    const bus = { connect: vi.fn(), disconnect: vi.fn() };
+    engine.routeOutput(bus as unknown as AudioNode);
+    expect(node.disconnect).toHaveBeenCalled();
+    expect(node.connect).toHaveBeenLastCalledWith(bus);
+  });
 });

@@ -36,7 +36,8 @@ export class StorageKeys {
   static readonly SOUND_ENGINE = 'dosound-tracker-sound-engine' as const;
   static readonly TRACK_SELECTION = 'dosound-tracker-track-selection' as const;
   static readonly PASTE_CONFIRM = 'dosound-tracker-paste-confirm' as const;
-  static readonly DUAL_CHIP = 'dosound-tracker-dual-chip' as const;
+  static readonly MONO = 'dosound-tracker-mono' as const;
+  static readonly CROSSTALK = 'dosound-tracker-crosstalk' as const;
   static readonly VISIBLE_TRACKS = 'dosound-tracker-visible-tracks' as const;
 
   static readonly UI_STATE = 'dosound-tracker-ui-state' as const;

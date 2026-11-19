@@ -22,6 +22,7 @@ export interface SoundEngine {
   getClock(): number;
   setChip(chip: string): void;
   setChannelPans(pans: number[]): void;
+  routeOutput(node: AudioNode): void;
   getRegisters(): YMRegisters;
   getRegistersArray(): number[];
   getState(): YMState;

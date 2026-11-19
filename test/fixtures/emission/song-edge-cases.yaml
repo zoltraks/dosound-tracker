@@ -9,10 +9,7 @@ song:
   length: 16
   loop: 1
   stereo:
-    layout: abc
-    A: 0
-    B: 0.5
-    C: 1
+    one: ACB
   line:
     - A: "00"
       B: "01"

@@ -310,6 +310,7 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
       role="group"
       aria-label={getTitle()}
       tabIndex={0}
+      data-position={currentPosition}
       onKeyDown={handleKeyDown}
       onClick={() => setActiveSection(sectionName)}
     >
@@ -424,11 +425,6 @@ export const EnvelopePanel: React.FC<EnvelopePanelProps> = ({
           </div>
         </div>
       )}
-
-      <div className="envelope-footer">
-        <span>Pos: {Formatter.hex(currentPosition, { padWidth: 0 })}</span>
-        <span>Val: {formatValue(envelopeData[currentPosition])}</span>
-      </div>
     </div>
   );
 };

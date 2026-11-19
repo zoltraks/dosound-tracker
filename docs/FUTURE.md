@@ -24,3 +24,5 @@ The following items were previously listed as future work and have since been im
 - **Modal pass-through narrowing**: the flat `useAppModals` prop list split into ten domain slices rendered by per-domain modal group components; `ModalContainer` removed and `ModalManager` reduced to a composer.
 
 ## Candidates
+
+- **Cross-engine loudness parity**: the Ayumi engine's rendered RMS measures roughly 2.4x the internal engine's across identical material - `AYUMI_OUTPUT_GAIN = 1.2` was set to the measured parity point but a residual DAC-table scaling difference remains. A calibration pass could match the two engines' absolute levels so engine selection does not change perceived loudness.

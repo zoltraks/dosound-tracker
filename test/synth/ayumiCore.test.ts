@@ -22,6 +22,36 @@ const makeCore = (): AyumiCore => {
   return core;
 };
 
+describe('AyumiCore pan laws', () => {
+  it('matches the StereoPannerNode equal-power curve at reachable pans', () => {
+    const core = new AyumiCore();
+    // Reachable song pans are only 0, 0.5, and 1 - where the equal-power
+    // law coincides with the internal engine's cos/sin taper.
+    const cases: Array<[number, number, number]> = [
+      [0, 1, 0],
+      [0.5, Math.SQRT1_2, Math.SQRT1_2],
+      [1, 0, 1],
+    ];
+    for (const [pan, left, right] of cases) {
+      core.setPan(0, pan, true);
+      const channel = (core as unknown as { channels: { panLeft: number; panRight: number }[] })
+        .channels[0];
+      expect(channel.panLeft).toBeCloseTo(left, 10);
+      expect(channel.panRight).toBeCloseTo(right, 10);
+    }
+  });
+
+  it('restores unity gains on both sides through the bypass', () => {
+    const core = new AyumiCore();
+    core.setPan(0, 0, true);
+    core.setPanBypass(0);
+    const channel = (core as unknown as { channels: { panLeft: number; panRight: number }[] })
+      .channels[0];
+    expect(channel.panLeft).toBe(1);
+    expect(channel.panRight).toBe(1);
+  });
+});
+
 describe('AyumiCore rendering', () => {
   it('produces silence when no channel is enabled', () => {
     const core = makeCore();

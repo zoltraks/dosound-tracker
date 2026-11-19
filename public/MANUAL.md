@@ -491,7 +491,8 @@ Application supports several export formats. Each format can target the full son
 - Opened with the gear button in the header panel
 - **GENERAL**: theme selection, the High Contrast variant, text size scaling (100%, 125%, 150%), and the startup test tone
 - **EDITOR**: track backgrounds, cursor and view restore, default paste mode, paste confirmation
-- **SOUND**: sound engine selection - **Internal** or the precise **Ayumi** emulation core
+- **SOUND**: sound engine selection - **Internal** or the precise **Ayumi** emulation core - plus a MONO toggle (all channels centred on both stereo sides), a crosstalk slider that crossfades the stereo image toward mono, and the song-data controls: a **Two chips** checkbox stored as the song's `chipCount` (checking it exposes the D/E/F tracks and runs the second engine; unchecking forces the song single-chip even if dormant D/E/F references remain) and per-song stereo mode selects for chip 1 (`one`) and chip 2 (`two`)
+- The sound controls preview live while the dialog is open - MONO and crosstalk apply to playing audio immediately, and the Two chips checkbox plus the stereo selects edit the song directly so they reroute playback at once; CANCEL restores the committed MONO/crosstalk values while the song edits remain, as they are track data
 - OK applies the changes immediately, RESET restores defaults, and SAVE/LOAD exchange a settings file
 
 **Theme:**
@@ -611,7 +612,7 @@ Conceptually:
 - `frame`: Optional. Replay rate in Hz. Supported values: `50` (default) or `60`.
 - `clock`: Optional. Chip clock in Hz. Supported values: `2000000` (2 MHz, default) or `1000000` (1 MHz).
 - `chip`: Optional. Chip type: `"YM"` (YM2149, default) or `"AY"` (AY-3-8910 family).
-- `stereo`: Optional. Channel placement for live playback and previews - a `layout` of `mono`, `abc`, or `acb`, or free per-channel `A`/`B`/`C` pan positions.
+- `stereo`: Optional. Per-chip channel placement for live playback and previews - `one` sets chip 1's mode and `two` sets chip 2's. Each accepts `L` (all left), `R` (all right), `C` (all centre), or an `ABC` permutation naming which channel sits left, centre, and right (`ABC` = first channel left, second centre, third right; `BAC`, `CAB`, etc. cover the rest). Without it a single-chip song plays centred while a two-chip song defaults to chip 1 left and chip 2 right. The Settings SOUND category also offers a MONO toggle (all channels centred) and a crosstalk slider that bleeds the stereo image toward mono.
 - `line`: Required list of rows (arrangement).
   - Loader also accepts the legacy key `playlist`.
 - `pattern` / `patterns`: Required list of pattern definitions.

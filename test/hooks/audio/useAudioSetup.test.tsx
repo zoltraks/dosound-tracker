@@ -18,6 +18,7 @@ vi.mock('../../../src/synth/YM2149.ts', () => ({
 const audioContextStub = {
   state: 'running',
   sampleRate: 44100,
+  currentTime: 0,
   resume: vi.fn(() => Promise.resolve()),
   createOscillator: vi.fn(() => ({
     type: '',
@@ -27,8 +28,21 @@ const audioContextStub = {
     stop: vi.fn(),
   })),
   createGain: vi.fn(() => ({
-    gain: { value: 0, setValueAtTime: vi.fn() },
+    gain: {
+      value: 0,
+      setValueAtTime: vi.fn(),
+      setTargetAtTime: vi.fn(),
+    },
     connect: vi.fn(),
+    disconnect: vi.fn(),
+  })),
+  createChannelSplitter: vi.fn(() => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
+  })),
+  createChannelMerger: vi.fn(() => ({
+    connect: vi.fn(),
+    disconnect: vi.fn(),
   })),
   destination: {},
 } as unknown as AudioContext;
@@ -56,6 +70,7 @@ const makeEngine = (name: string) =>
     getClock: vi.fn(() => 2000000),
     setChip: vi.fn(),
     setChannelPans: vi.fn(),
+    routeOutput: vi.fn(),
     updateChannelWithInstrument: vi.fn(),
     getModeValueForTick: vi.fn(),
     getToneNoiseState: vi.fn(),
@@ -174,5 +189,67 @@ describe('useAudioSetup', () => {
 
     await waitFor(() => expect(stale.dispose).toHaveBeenCalledTimes(1));
     expect(result.current.ym2149).toBe(last);
+  });
+
+  it('splits six-channel pans across the two chip engines', async () => {
+    const first = makeEngine('internal-1');
+    const second = makeEngine('internal-2');
+    YM2149Mock.mockReturnValueOnce(first).mockReturnValueOnce(second);
+
+    const { result } = renderHook(() =>
+      useAudioSetup(2_000_000, 'internal', [0, 0, 0, 1, 1, 1], 'YM', 2),
+    );
+
+    await waitFor(() => expect(result.current.ym21492).toBe(second));
+    expect(first.setChannelPans).toHaveBeenLastCalledWith([0, 0, 0]);
+    expect(second.setChannelPans).toHaveBeenLastCalledWith([1, 1, 1]);
+  });
+
+  it('routes engine output through the crosstalk bus as a normalized crossfade', async () => {
+    const engine = makeEngine('internal');
+    YM2149Mock.mockReturnValue(engine);
+    const createGain = audioContextStub.createGain as ReturnType<typeof vi.fn>;
+    createGain.mockClear();
+
+    const { result, rerender } = renderHook(
+      ({ crosstalk }: { crosstalk: number }) =>
+        useAudioSetup(2_000_000, 'internal', undefined, 'YM', 1, crosstalk),
+      { initialProps: { crosstalk: 0.5 } },
+    );
+
+    await waitFor(() => expect(result.current.ym2149).toBe(engine));
+    expect(engine.routeOutput).toHaveBeenCalledTimes(1);
+
+    // mixIn is the first gain created in the effect; the two dry gains and
+    // the two bleed gains follow in creation order.
+    const mixIn = createGain.mock.results[0]?.value as { gain: { value: number } };
+    const gainAt = (index: number) =>
+      createGain.mock.results[index]?.value as {
+        gain: {
+          setValueAtTime: ReturnType<typeof vi.fn>;
+          setTargetAtTime: ReturnType<typeof vi.fn>;
+        };
+      };
+    const dryLeft = gainAt(1);
+    const dryRight = gainAt(2);
+    const bleedRight = gainAt(3);
+    const bleedLeft = gainAt(4);
+    expect((engine.routeOutput as ReturnType<typeof vi.fn>).mock.calls[0]?.[0]).toBe(mixIn);
+
+    // Crosstalk 0.5 -> dry 0.75, bleed 0.25 on every path.
+    for (const gain of [dryLeft, dryRight]) {
+      expect(gain.gain.setValueAtTime).toHaveBeenCalledWith(0.75, expect.any(Number));
+    }
+    for (const gain of [bleedRight, bleedLeft]) {
+      expect(gain.gain.setValueAtTime).toHaveBeenCalledWith(0.25, expect.any(Number));
+    }
+
+    rerender({ crosstalk: 0.25 });
+    for (const gain of [dryLeft, dryRight]) {
+      expect(gain.gain.setTargetAtTime).toHaveBeenCalledWith(0.875, expect.any(Number), 0.05);
+    }
+    for (const gain of [bleedRight, bleedLeft]) {
+      expect(gain.gain.setTargetAtTime).toHaveBeenCalledWith(0.125, expect.any(Number), 0.05);
+    }
   });
 });

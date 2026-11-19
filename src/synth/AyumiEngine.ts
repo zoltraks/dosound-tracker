@@ -70,6 +70,11 @@ export class AyumiEngine implements SoundEngine, RegisterIo {
     this.post({ type: 'pans', pans: pans.slice(0, 3) });
   }
 
+  routeOutput(node: AudioNode): void {
+    this.node.disconnect();
+    this.node.connect(node);
+  }
+
   readRegister(register: number): number {
     return this.registerFile.read(register);
   }

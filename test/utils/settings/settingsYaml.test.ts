@@ -22,7 +22,7 @@ describe('settingsYaml', () => {
         pasteTrackMode: 'overwriteAll' as const,
         confirmPaste: true,
       },
-      sound: { engine: 'ayumi' as const, dualChip: false },
+      sound: { engine: 'ayumi' as const, mono: false, crosstalk: 0 },
     };
     const parsed = parseSettingsFromYaml(buildSettingsYaml(settings), DEFAULT_SETTINGS);
     try {
@@ -85,7 +85,7 @@ describe('settingsYaml', () => {
         pasteTrackMode: 'overwriteEmpty' as const,
         confirmPaste: true,
       },
-      sound: { engine: 'ayumi' as const, dualChip: false },
+      sound: { engine: 'ayumi' as const, mono: false, crosstalk: 0 },
     };
     const parsed = parseSettingsFromYaml(
       'settings:\n  version: 1\n  general:\n    theme: dark\n',

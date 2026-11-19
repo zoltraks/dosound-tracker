@@ -44,7 +44,7 @@ describe('settingsState', () => {
           pasteTrackMode: 'overwriteAll',
           confirmPaste: true,
         },
-        sound: { engine: 'ayumi', dualChip: false },
+        sound: { engine: 'ayumi', mono: false, crosstalk: 0 },
       });
     } catch (error) {
       console.log('loaded settings:', settings);
@@ -97,7 +97,7 @@ describe('settingsState', () => {
         pasteTrackMode: 'replace',
         confirmPaste: false,
       },
-      sound: { engine: 'ayumi', dualChip: false },
+      sound: { engine: 'ayumi', mono: false, crosstalk: 0 },
     });
     try {
       expect(localStorage.getItem(StorageKeys.STARTUP_TONE)).toBe('off');
@@ -139,7 +139,7 @@ describe('settingsState', () => {
         pasteTrackMode: 'overwriteEmpty' as const,
         confirmPaste: true,
       },
-      sound: { engine: 'ayumi' as const, dualChip: false },
+      sound: { engine: 'ayumi' as const, mono: false, crosstalk: 0 },
     };
     const normalized = normalizeSettings(
       {
@@ -150,6 +150,20 @@ describe('settingsState', () => {
       base,
     );
     expect(normalized).toEqual(base);
+  });
+
+  it('normalizeSettings clamps crosstalk into 0-100 and defaults mono', () => {
+    const normalized = normalizeSettings({
+      sound: { crosstalk: 140, mono: 'yes' },
+    });
+    expect(normalized.sound.crosstalk).toBe(100);
+    expect(normalized.sound.mono).toBe(DEFAULT_SETTINGS.sound.mono);
+
+    const negative = normalizeSettings({ sound: { crosstalk: -5 } });
+    expect(negative.sound.crosstalk).toBe(0);
+
+    const fractional = normalizeSettings({ sound: { crosstalk: 42.6 } });
+    expect(fractional.sound.crosstalk).toBe(43);
   });
 
   it('normalizeSettings handles non-object input', () => {

@@ -19,6 +19,14 @@ const VISIBLE_TRACK_COUNTS: readonly (3 | 6)[] = [3, 6];
 const normalizeVisibleTracks = (value: unknown): 3 | 6 =>
   VISIBLE_TRACK_COUNTS.includes(value as 3 | 6) ? (value as 3 | 6) : 3;
 
+const normalizeCrosstalk = (value: unknown, fallback: number): number => {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return fallback;
+  }
+  return Math.min(100, Math.max(0, Math.round(numeric)));
+};
+
 /** Reads an 'on'/'off' flag key, tolerant of absent or corrupt values. */
 export const readFlag = (key: string, fallback: boolean): boolean => {
   try {
@@ -80,7 +88,8 @@ export const normalizeSettings = (
     },
     sound: {
       engine: normalizeSoundEngineId(sound.engine, base.sound.engine),
-      dualChip: typeof sound.dualChip === 'boolean' ? sound.dualChip : base.sound.dualChip,
+      mono: typeof sound.mono === 'boolean' ? sound.mono : base.sound.mono,
+      crosstalk: normalizeCrosstalk(sound.crosstalk, base.sound.crosstalk),
     },
   };
 };
@@ -92,6 +101,7 @@ export const loadSettings = (): SettingsValues => {
   let trackBackground = DEFAULT_SETTINGS.general.trackBackground;
   let pasteTrackMode = DEFAULT_SETTINGS.editor.pasteTrackMode;
   let visibleTracks: 3 | 6 = DEFAULT_SETTINGS.general.visibleTracks;
+  let crosstalk = DEFAULT_SETTINGS.sound.crosstalk;
 
   try {
     const storedTheme = window.localStorage.getItem(StorageKeys.THEME);
@@ -116,6 +126,11 @@ export const loadSettings = (): SettingsValues => {
 
     const storedVisibleTracks = window.localStorage.getItem(StorageKeys.VISIBLE_TRACKS);
     visibleTracks = normalizeVisibleTracks(Number(storedVisibleTracks));
+
+    crosstalk = normalizeCrosstalk(
+      Number(window.localStorage.getItem(StorageKeys.CROSSTALK)),
+      DEFAULT_SETTINGS.sound.crosstalk,
+    );
   } catch {
     // ignore
   }
@@ -136,7 +151,8 @@ export const loadSettings = (): SettingsValues => {
     },
     sound: {
       engine: loadSoundEngineId(),
-      dualChip: readFlag(StorageKeys.DUAL_CHIP, DEFAULT_SETTINGS.sound.dualChip),
+      mono: readFlag(StorageKeys.MONO, DEFAULT_SETTINGS.sound.mono),
+      crosstalk,
     },
   };
 };
@@ -162,7 +178,8 @@ export const writeSettingKeys = (settings: SettingsValues): void => {
       settings.editor.confirmPaste ? 'on' : 'off',
     );
     window.localStorage.setItem(StorageKeys.SOUND_ENGINE, settings.sound.engine);
-    window.localStorage.setItem(StorageKeys.DUAL_CHIP, settings.sound.dualChip ? 'on' : 'off');
+    window.localStorage.setItem(StorageKeys.MONO, settings.sound.mono ? 'on' : 'off');
+    window.localStorage.setItem(StorageKeys.CROSSTALK, String(settings.sound.crosstalk));
     window.localStorage.setItem(StorageKeys.VISIBLE_TRACKS, String(settings.general.visibleTracks));
   } catch {
     // ignore
