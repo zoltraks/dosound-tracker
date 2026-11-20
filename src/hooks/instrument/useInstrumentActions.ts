@@ -17,6 +17,7 @@ import {
   buildInstrumentRemovalSummary,
   getInstrumentPlaybackChannel,
 } from '../../utils/instrument/instrumentActionUtils.ts';
+import { resolveNextInstrument } from '../../utils/instrument/instrumentNavigation.ts';
 import type { InstrumentId } from '../../types/branded.ts';
 import type { InstrumentDeleteUsage } from '../modal/useModalState.ts';
 
@@ -46,6 +47,7 @@ interface UseInstrumentActionsResult {
   handleCloneInstrument: () => void;
   handleDeleteInstrument: () => void;
   handleMoveInstrument: (index: number, direction: 'up' | 'down') => void;
+  handleNavigateInstrument: (delta: number) => void;
   handleCancelInstrumentDelete: () => void;
   handleConfirmDeleteInstrumentAndNotes: () => void;
   handleConfirmDeleteInstrumentOnly: () => void;
@@ -368,6 +370,16 @@ export function useInstrumentActions({
     setInstrumentOperationSummary,
   ]);
 
+  const handleNavigateInstrument = useCallback(
+    (delta: number) => {
+      const target = resolveNextInstrument(currentSong.instrument, currentInstrument, delta);
+      if (target) {
+        setCurrentInstrument(target);
+      }
+    },
+    [currentSong.instrument, currentInstrument, setCurrentInstrument],
+  );
+
   return {
     handleRenameInstrument,
     handlePlayInstrument,
@@ -375,6 +387,7 @@ export function useInstrumentActions({
     handleCloneInstrument,
     handleDeleteInstrument,
     handleMoveInstrument,
+    handleNavigateInstrument,
     handleCancelInstrumentDelete,
     handleConfirmDeleteInstrumentAndNotes,
     handleConfirmDeleteInstrumentOnly,

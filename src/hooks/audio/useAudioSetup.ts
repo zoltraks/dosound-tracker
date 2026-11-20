@@ -31,6 +31,7 @@ export interface UseAudioSetupResult {
   ym2149Ref2: React.RefObject<SoundEngine | null>;
   ym21492: SoundEngine | null;
   engineForChannel: (channel: number) => ChannelEngineTarget | null;
+  engineInstanceForChannel: (channel: number) => SoundEngine | null;
   waitForEngine: () => Promise<SoundEngine | null>;
   waitForEngines: () => Promise<SoundEngine[]>;
   playTestTone: () => void;
@@ -344,6 +345,11 @@ export function useAudioSetup(
     };
   }, []);
 
+  const engineInstanceForChannel = useCallback(
+    (channel: number): SoundEngine | null => engineForChannel(channel)?.engine ?? null,
+    [engineForChannel],
+  );
+
   return {
     audioContext,
     audioError: error,
@@ -352,6 +358,7 @@ export function useAudioSetup(
     ym2149Ref2,
     ym21492,
     engineForChannel,
+    engineInstanceForChannel,
     waitForEngine,
     waitForEngines,
     playTestTone,

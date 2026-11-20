@@ -7,7 +7,7 @@
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, relative, resolve } from 'node:path';
+import { dirname, join, relative, resolve, sep } from 'node:path';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -288,7 +288,10 @@ const gatherInputs = () => {
       '^' + glob.split('/').pop().replace('.', '\\.').replace('*', '.*') + '$',
     );
     for (const name of listFileNames(dir).filter((name) => pattern.test(name))) {
-      activeDocs[relative(ROOT, join(dir, name))] = readFileSync(join(dir, name), 'utf8');
+      activeDocs[relative(ROOT, join(dir, name)).split(sep).join('/')] = readFileSync(
+        join(dir, name),
+        'utf8',
+      );
     }
   }
 

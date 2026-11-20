@@ -1,5 +1,16 @@
 # Changes
 
+## Version 1.6.8
+
+Stereo playback is now per-chip and song-owned, the settings dialog previews sound changes live, and a Debian package joins the desktop builds.
+
+- **Per-chip stereo modes**: each chip's three channels take a named wiring - `L`, `R`, `C`, or an `ABC` permutation - stored in the song's `stereo` node as `one`/`two` tokens; new MONO and CROSSTALK app settings force all-centre playback and bleed the stereo image toward mono on a normalized constant-level crossfade bus.
+- **Live sound preview**: the settings dialog's mono, crosstalk, and two-chips draft values reach the running engines immediately; closing the dialog restores the committed settings.
+- **Song-owned chip count**: `chipCount` in the song file is the single source of truth for two-chip playback and the six-track editing surface; the app-level dual-chip setting is removed, an explicit `chipCount: 1` survives save/load, and two-chip songs default to chip 1 hard left and chip 2 hard right.
+- **Ayumi stereo parity**: the Ayumi engine applies the equal-power pan law at the reachable pan values and bypasses to unity gain while every channel is centred, matching the internal engine's stereo image and mono level.
+- **Debian package**: `npm run electron:build` emits a `.deb` for Debian-based distributions with corrected t64 dependencies, desktop association, and multi-size icons; install and removal go through `apt`/`dpkg`.
+- **Interface polish**: settings selection lists follow the active theme, second-chip track panels gain per-channel tints and frame borders, the title bar/command panel/piano adopt the section idiom, the envelope Pos/Val footer is removed, settings category buttons match command-button metrics, the settings draft resyncs after external changes, and the track header shows the bare volume value centered over its column.
+
 ## Version 1.6.7
 
 The dual-chip interface is now fully reachable and the everyday interface is tighter: six-track editing works before a song references the second chip, focus survives reloads, playlist editing and column geometry stay stable, and the About dialog reports the live view size.

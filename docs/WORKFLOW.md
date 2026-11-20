@@ -194,7 +194,7 @@ The resolved role-to-path map for the documentation set and its workflow directo
 | Lessons                | `docs/lesson/`                      | Per-session findings files, restricted                           |
 | Decision records       | `docs/decision/`                    | Durable dated decisions, restricted                              |
 | Window run state       | `docs/plan/<version>/window-run.md` | Run-resume stage record, not a plan                              |
-| Reports                | `docs/report/`                      | On-demand generated reports, restricted                          |
+| Reports                | `docs/report/<version>/`            | On-demand generated reports, restricted                          |
 | Archive                | `docs/archive/`                     | Retired documents, mirrored role grouping                        |
 | Historical directories | `docs/feature/`, `docs/prompt/`     | Restricted, not part of the active set                           |
 | Templates              | `docs/template/`                    | Document templates                                               |

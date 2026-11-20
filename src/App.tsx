@@ -1,10 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { useKeyboardNavigation } from './hooks/keyboard/useKeyboardNavigation.ts';
+import { navigableTrackSections } from './utils/keyboard/keyboardNavigationUtils.ts';
 import { useNavigationSuspension } from './hooks/keyboard/useNavigationSuspension.ts';
 import { useTheme } from './hooks/ui/useTheme.ts';
 import { useTextScale } from './hooks/ui/useTextScale.ts';
 import { useDataManagement } from './hooks/song/useDataManagement.ts';
+import { useEditPositionBridge } from './hooks/song/useEditPositionBridge.ts';
 import { usePlaybackControls } from './hooks/playback/usePlaybackControls.ts';
 import { useAudioSetup } from './hooks/audio/useAudioSetup.ts';
 import { useMidiHandling } from './hooks/midi/useMidiHandling.ts';
@@ -12,22 +13,18 @@ import { useMidiActions } from './hooks/midi/useMidiActions.ts';
 import { useTrackOperations } from './hooks/song/useTrackOperations.ts';
 import { usePasteTrackOptions } from './hooks/modal/usePasteTrackOptions.ts';
 import { useSettingsSession } from './hooks/modal/useSettingsSession.ts';
-import type { SettingsSoundPreview } from './hooks/modal/useSettingsSession.ts';
+import { useSoundPreferences } from './hooks/audio/useSoundPreferences.ts';
 import { usePlaylistOperations } from './hooks/song/usePlaylistOperations.ts';
 import { useScrollSync } from './hooks/ui/useScrollSync.ts';
 import { useAppState } from './hooks/app/useAppState.ts';
 import { useKeyboardShortcuts } from './hooks/keyboard/useKeyboardShortcuts.ts';
 import { useMessageSystem } from './hooks/ui/useMessageSystem.ts';
 import { useModalState } from './hooks/modal/useModalState.ts';
-import { loadSoundEngineId } from './utils/storage/soundEngine.ts';
-import { loadSettings } from './utils/settings/settingsState.ts';
-import type { SoundEngineId } from './constants/sound.ts';
 import { useInstrumentWarnings } from './hooks/instrument/useInstrumentWarnings.ts';
 import { useInstrumentActions } from './hooks/instrument/useInstrumentActions.ts';
 import { useDownloadAvailability } from './hooks/file/useDownloadAvailability.ts';
 import { usePlaybackBridge } from './hooks/playback/usePlaybackBridge.ts';
 import { normalizeInstrumentId } from './utils/instrument/instrumentSelection.ts';
-import { resolveNextInstrument } from './utils/instrument/instrumentNavigation.ts';
 import type { EditPosition } from './utils/song/editHistory.ts';
 import { formatBaseKey, parseBaseKey } from './utils/song/songFormat.ts';
 import { DEFAULT_SONG_CHIP, DEFAULT_SONG_CLOCK, DEFAULT_SONG_FRAME } from './constants/song.ts';
@@ -59,6 +56,8 @@ import { useSongImportWarning } from './hooks/song/useSongImportWarning.ts';
 import { useInstrumentOctaves } from './hooks/instrument/useInstrumentOctaves.ts';
 import { useEnvelopeClipboard } from './hooks/instrument/useEnvelopeClipboard.ts';
 import { useTrackFocus } from './hooks/ui/useTrackFocus.ts';
+import { useTrackWindow } from './hooks/ui/useTrackWindow.ts';
+import { useClipboardDispatch } from './hooks/ui/useClipboardDispatch.ts';
 import { useFocusedElementPersistence } from './hooks/ui/useFocusedElementPersistence.ts';
 import { useAudioContextResume } from './hooks/audio/useAudioContextResume.ts';
 import { useAudioContextPlaybackSync } from './hooks/audio/useAudioContextPlaybackSync.ts';
@@ -66,13 +65,8 @@ import { useElectronCloseGuard } from './hooks/app/useElectronCloseGuard.ts';
 import { useTrackPattern } from './hooks/song/useTrackPattern.ts';
 import { useChannelPans } from './hooks/song/useChannelPans.ts';
 import { songChipCount } from './utils/song/songChips.ts';
+import { channelCountForChipCount } from './constants/song.ts';
 import type { SongStereo } from './synth/SoundDriver.ts';
-import { channelCountForChipCount, SONG_CHANNEL_IDS } from './constants/song.ts';
-import {
-  CHIP1_TRACK_IDS,
-  nextTrackWindowStart,
-  visibleTrackIds,
-} from './utils/song/visibleTracks.ts';
 import './App.css';
 
 declare const __APP_VERSION__: string;
@@ -252,41 +246,30 @@ const App: React.FC = () => {
     pendingSongImport,
   });
 
-  const [monoEnabled, setMonoEnabled] = useState<boolean>(() => loadSettings().sound.mono);
-  const [crosstalk, setCrosstalk] = useState<number>(() => loadSettings().sound.crosstalk);
-  const [visibleTracks, setVisibleTracks] = useState<3 | 6>(
-    () => loadSettings().general.visibleTracks,
-  );
-  const [trackWindowStart, setTrackWindowStart] = useState(0);
-  const [settingsSoundPreview, setSettingsSoundPreview] = useState<SettingsSoundPreview | null>(
-    null,
-  );
-
-  // While the settings modal is open its draft sound values preview live:
-  // mono and crosstalk drive the audio path before commit, and closing
-  // restores the committed settings.
-  const liveSoundSettings = modalState.isSettingsOpen ? settingsSoundPreview : null;
-  const effectiveMono = liveSoundSettings?.mono ?? monoEnabled;
-  const effectiveCrosstalk = liveSoundSettings?.crosstalk ?? crosstalk;
+  const {
+    soundEngineId,
+    setSoundEngineId,
+    monoEnabled,
+    setMonoEnabled,
+    crosstalk,
+    setCrosstalk,
+    setSettingsSoundPreview,
+    effectiveMono,
+    effectiveCrosstalk,
+  } = useSoundPreferences({ isSettingsOpen: modalState.isSettingsOpen });
   // The song's resolved chip count is the single source of truth: it
   // selects the playback engines and the editable channel set together.
   const songChipTotal = songChipCount(currentSong);
   const songTwoChip = songChipTotal === 2;
   const effectiveChipCount = songChipTotal;
 
-  const trackChannelCount = songTwoChip ? SONG_CHANNEL_IDS.length : CHIP1_TRACK_IDS.length;
   // Arrow-key track hops and section navigation reach every enabled channel;
   // the three-track view slides its window to keep the focused track visible.
-  const navigableTrackSections = (songTwoChip ? SONG_CHANNEL_IDS : CHIP1_TRACK_IDS).map(
-    (id) => `track${id}` as import('./constants/navigation.ts').NavigationSection,
-  );
-
   const { activeSection, setActiveSection, setGlobalShortcut } = useKeyboardNavigation(
     isNavigationSuspended,
-    navigableTrackSections,
+    navigableTrackSections(songTwoChip),
   );
 
-  const [soundEngineId, setSoundEngineId] = useState<SoundEngineId>(() => loadSoundEngineId());
   const { channelPans } = useChannelPans({
     stereo: currentSong.stereo,
     chipCount: effectiveChipCount,
@@ -298,7 +281,7 @@ const App: React.FC = () => {
     ym2149,
     ym2149Ref2,
     ym21492,
-    engineForChannel,
+    engineInstanceForChannel,
     waitForEngine,
     waitForEngines,
     playTestTone,
@@ -311,11 +294,6 @@ const App: React.FC = () => {
     effectiveCrosstalk / 100,
   );
 
-  const ym2149ForChannel = useCallback(
-    (channel: number) => engineForChannel(channel)?.engine ?? null,
-    [engineForChannel],
-  );
-
   const {
     sequencerState,
     stop,
@@ -326,19 +304,14 @@ const App: React.FC = () => {
     setPatternLoopMode,
   } = usePlaybackControls({ currentSong, audioContext });
 
-  useEffect(() => {
-    editPositionRef.current = {
-      pattern: sequencerState.currentPattern,
-      line: sharedCurrentLine,
-    };
-  }, [sequencerState.currentPattern, sharedCurrentLine]);
-
-  useEffect(() => {
-    applyEditPositionRef.current = (position) => {
-      setPosition(position.pattern, position.line, 0);
-      setSharedCurrentLine(position.line);
-    };
-  }, [setPosition]);
+  useEditPositionBridge({
+    editPositionRef,
+    applyEditPositionRef,
+    sequencerPatternIndex: sequencerState.currentPattern,
+    sharedCurrentLine,
+    setPosition,
+    setSharedCurrentLine,
+  });
 
   useElectronCloseGuard({ isSongDirty, onQuitRequested: setIsQuitConfirmOpen });
 
@@ -380,41 +353,18 @@ const App: React.FC = () => {
     previewChannel,
   } = useTrackFocus({ activeSection });
 
-  // The three-track window is derived during render so the first commit
-  // already frames the focused channel; resolving it in an effect would
-  // paint one stale frame per channel hop. The effect below then stores the
-  // derived start as the hysteresis anchor for the next render.
-  const targetChannelIndex = SONG_CHANNEL_IDS.indexOf(targetTrackId);
-  const effectiveWindowStart =
-    songTwoChip && visibleTracks === 3 && targetChannelIndex >= 0
-      ? nextTrackWindowStart(trackWindowStart, targetChannelIndex)
-      : trackWindowStart;
-  const songTracks = visibleTrackIds(songTwoChip, visibleTracks, effectiveWindowStart);
-
-  // A persisted cursor or focus on a hidden channel (stored six-track state
-  // on a single-chip song, or the inactive chip group) falls back to the
-  // first visible track so focus never lands on an unrendered panel.
-  const effectiveTargetTrackId = songTracks.includes(targetTrackId)
-    ? targetTrackId
-    : (songTracks[0] ?? 'A');
-  const previewChannelTrack = SONG_CHANNEL_IDS[previewChannel] ?? 'A';
-  const effectivePreviewChannel = songTracks.includes(previewChannelTrack)
-    ? previewChannel
-    : SONG_CHANNEL_IDS.indexOf(songTracks[0] ?? 'A');
-
-  // Persist the render-derived window as the hysteresis anchor; the visible
-  // projection above already applied the shift in the same commit.
-  useEffect(() => {
-    if (!songTwoChip || visibleTracks !== 3) {
-      return;
-    }
-    const targetIndex = SONG_CHANNEL_IDS.indexOf(targetTrackId);
-    if (targetIndex < 0) {
-      return;
-    }
-    /* eslint-disable-next-line react-hooks/set-state-in-effect */
-    setTrackWindowStart((start) => nextTrackWindowStart(start, targetIndex));
-  }, [songTwoChip, visibleTracks, targetTrackId]);
+  const {
+    visibleTracks,
+    setVisibleTracks,
+    songTracks,
+    effectiveTargetTrackId,
+    effectivePreviewChannel,
+    trackChannelCount,
+  } = useTrackWindow({
+    chipCount: songChipTotal,
+    targetTrackId,
+    previewChannel,
+  });
 
   const { ensureAudioContextResumed } = useAudioContextResume({ audioContext });
 
@@ -604,21 +554,13 @@ const App: React.FC = () => {
     },
   );
 
-  const handleCopyClipboard = useCallback(() => {
-    if (isEnvelopeSectionActive) {
-      void handleCopyEnvelope();
-      return;
-    }
-    handleCopyTrackShortcut();
-  }, [isEnvelopeSectionActive, handleCopyEnvelope, handleCopyTrackShortcut]);
-
-  const handlePasteClipboard = useCallback(() => {
-    if (isEnvelopeSectionActive) {
-      void handlePasteEnvelope();
-      return;
-    }
-    handlePasteTrackShortcut();
-  }, [isEnvelopeSectionActive, handlePasteEnvelope, handlePasteTrackShortcut]);
+  const { handleCopyClipboard, handlePasteClipboard } = useClipboardDispatch({
+    isEnvelopeSectionActive,
+    handleCopyEnvelope,
+    handlePasteEnvelope,
+    handleCopyTrackShortcut,
+    handlePasteTrackShortcut,
+  });
 
   const {
     handleRenameInstrument,
@@ -627,6 +569,7 @@ const App: React.FC = () => {
     handleCloneInstrument,
     handleDeleteInstrument,
     handleMoveInstrument,
+    handleNavigateInstrument,
     handleCancelInstrumentDelete,
     handleConfirmDeleteInstrumentAndNotes,
     handleConfirmDeleteInstrumentOnly,
@@ -702,16 +645,6 @@ const App: React.FC = () => {
     waitForEngines,
   });
 
-  const handleNavigateInstrument = useCallback(
-    (delta: number) => {
-      const target = resolveNextInstrument(currentSong.instrument, currentInstrument, delta);
-      if (target) {
-        setCurrentInstrument(target);
-      }
-    },
-    [currentSong.instrument, currentInstrument, setCurrentInstrument],
-  );
-
   useKeyboardShortcuts({
     setGlobalShortcut,
     handleStartSong,
@@ -731,9 +664,6 @@ const App: React.FC = () => {
     handleNavigateInstrument,
   });
 
-  const handleLineChange = useCallback((lineIndex: number) => {
-    setSharedCurrentLine(lineIndex);
-  }, []);
   const { handleMidiNoteEvent, handleHardStopLivePreview, handleRegisterTrackStopPreview } =
     useMidiActions({
       activeSection,
@@ -1060,7 +990,7 @@ const App: React.FC = () => {
             activeSection={activeSection}
             setActiveSection={setActiveSection}
             ym2149={ym2149}
-            ym2149ForChannel={ym2149ForChannel}
+            ym2149ForChannel={engineInstanceForChannel}
             currentInstrument={currentInstrument}
             previewChannel={effectivePreviewChannel}
             tickIntervalMs={previewTickIntervalMs}
@@ -1129,7 +1059,7 @@ const App: React.FC = () => {
           <TrackerSection
             song={currentSong}
             sharedCurrentLine={sharedCurrentLine}
-            onLineChange={handleLineChange}
+            onLineChange={setSharedCurrentLine}
             onPositionScroll={handlePositionScroll}
             activeSection={activeSection}
             setActiveSection={setActiveSection}
@@ -1137,7 +1067,7 @@ const App: React.FC = () => {
             getCurrentPatternForTrack={getCurrentPatternForTrack}
             onPatternChange={handlePatternChange}
             ym2149={ym2149}
-            ym2149ForChannel={ym2149ForChannel}
+            ym2149ForChannel={engineInstanceForChannel}
             currentInstrument={currentInstrument}
             targetTrackId={effectiveTargetTrackId}
             tracks={songTracks}
@@ -1211,7 +1141,7 @@ const App: React.FC = () => {
             currentOctave={currentOctave}
             onOctaveChange={handleOctaveChange}
             ym2149={ym2149}
-            ym2149ForChannel={ym2149ForChannel}
+            ym2149ForChannel={engineInstanceForChannel}
             currentInstrument={currentInstrument}
             previewChannel={effectivePreviewChannel}
             tickIntervalMs={previewTickIntervalMs}

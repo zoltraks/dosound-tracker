@@ -41,6 +41,14 @@ export interface SettingsSession {
   confirmingReset: boolean;
 }
 
+// The live sound slice of the settings draft - the settings session feeds
+// it to the audio path while the modal is open so mono and crosstalk
+// preview before commit.
+export interface SettingsSoundPreview {
+  mono: boolean;
+  crosstalk: number;
+}
+
 export const SETTINGS_CATEGORIES: readonly SettingsCategory[] = ['general', 'editor', 'sound'];
 
 export const DEFAULT_SETTINGS: SettingsValues = {

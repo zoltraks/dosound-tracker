@@ -2,17 +2,17 @@ import { useEffect, useMemo } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
 import type { SoundEngineId } from '../../constants/sound.ts';
 import { DEFAULT_SETTINGS } from '../../types/settings.ts';
-import type { SettingsValues, TextScale, ThemeVariant } from '../../types/settings.ts';
+import type {
+  SettingsValues,
+  SettingsSoundPreview,
+  TextScale,
+  ThemeVariant,
+} from '../../types/settings.ts';
 import type { TrackPasteMode } from '../../utils/track/trackClipboard.ts';
 import { loadSettings, writeSettingKeys } from '../../utils/settings/settingsState.ts';
 import { patchSettingsView, updateSettingsView } from '../../utils/storage/uiState.ts';
 import { useSettingsDialog } from './useSettingsDialog.ts';
 import type { UseSettingsDialogResult } from './useSettingsDialog.ts';
-
-export interface SettingsSoundPreview {
-  mono: boolean;
-  crosstalk: number;
-}
 
 export interface UseSettingsSessionParams {
   isSettingsOpen: boolean;

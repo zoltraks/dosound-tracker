@@ -416,3 +416,7 @@ Chrome serializes `color-mix()` results as `color(srgb r g b)` or `oklab(...)`, 
 **Full-suite runs can starve the Settings dialog await**
 
 `test/components/shell/App.test.tsx` mounts the whole `App` shell and awaits the lazy-loaded Settings dialog - under full-suite worker contention the chunk load and modal mount can exceed the default 5 s test timeout, while the file passes alone and per-directory. Reproduce a suite-only timeout in isolation before treating it as a regression.
+
+**Concurrent heavy work flakes the e2e suite**
+
+Downloads, archive extractions, or parallel builds running alongside `npm run test:e2e` starve lazy-chunk loads past the specs' 5 s modal-visibility timeouts and playback-position assertions - a run that fails seven chromium specs under load passes the same specs on a quiet machine minutes later. Keep the machine quiet during e2e runs and re-run before classifying modal or playback failures as regressions.

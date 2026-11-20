@@ -321,7 +321,7 @@ Piano note keys enter notes only when the note column of a track is focused. Whe
 - ESCAPE cancels or closes the open modal dialog
 - ENTER confirms the open modal dialog
 
-The navigation order cycles through these sections: piano, octave, commands, trackA, trackB, trackC, mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList.
+The navigation order cycles through these sections: piano, octave, commands, the enabled track sections (trackA through trackC on a single-chip song, trackA through trackF on a two-chip song), mode, volume, shift, pitch, noise, songInfo, playlist, instrumentList. Track sections that are not rendered drop out of the cycle - `NAVIGATION_ORDER` in src/constants/navigation.ts lists all six track sections and the visible-track projection filters them.
 
 Clicking inside the command panel activates the `commands` section, except for buttons that swallow the click to keep the caller's section - the playlist line commands (ADD LINE, DUPLICATE LINE, CLONE LINE, DELETE LINE), INSERT STEP, DELETE STEP, MIDI, and EXPORT. The playlist line commands also prevent the press from taking DOM focus and bump a playlist focus revision, so while the playlist is the active section the panel stays focused after the operation.
 

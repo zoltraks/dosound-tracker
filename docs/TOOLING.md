@@ -8,6 +8,12 @@ This document owns the tooling and environment notes extracted from `WORKFLOW.md
 
 `engine-strict` in `.npmrc` makes `npm ci` fail with `EBADENGINE` when the active Node sits below the declared `engines` floor. Switch to the `.nvmrc` version first (`nvm install`, then `nvm use`) - never bypass `engine-strict`.
 
+A stale transitive version can also fail golden-file suites - `js-yaml` 4.x against a `^5.x` range broke the YAML emission goldens until `npm install` converged the tree. Check `npm ls <pkg>` before treating golden diffs as regressions.
+
+**Reach the declared Node toolchain without nvm**
+
+When the host lacks the `.nvmrc` runtime, a portable `node-v<version>-win-x64.zip` from `nodejs.org/dist/` extracted under `work/` runs the declared toolchain with no admin rights - verify the archive against `SHASUMS256.txt` first. Two host traps surfaced on 2026-11-19: the `nvm` on PATH can be the nvm-sh placeholder shim ("This is not the package you are looking for"), and SDK-style directories can be mislabeled (`C:\SDK\nodejs\v20\` contained v22.23.5 - trust `node -v`, not the folder name). Security software can EPERM-block the unsigned portable binary on temp directories outside the repository; redirect `TMP`, `TEMP`, and `TMPDIR` to a `work/` subdirectory. That redirect must stay out of `os.tmpdir()` fixture paths - repository-tooling tests build git fixtures in the temp dir and resolve the parent `.git` upward, so fixtures inside the repo silently see the real repository (the rule lives in `TESTING.md`).
+
 **npm audit fix can no-op on peer-pinned chains**
 
 `npm audit fix` may report a fix as available yet leave the advisory in place when the vulnerable package is pinned by exact-version sibling packages (for example `@vitest/mocker` held by `vitest`, `@vitest/coverage-v8`, and `@vitest/ui`). When the declared range already admits the fixed version, upgrade every member of the chain explicitly with `npm install -D <pkg>@^<fixed-version>` and re-run `npm audit`.
@@ -60,7 +66,7 @@ Every moved fragment orphans its imports in the origin file (`yaml`, `js-yaml`, 
 
 **Rule out the environment before bisecting a regression**
 
-A defect that reproduces identically on old and new revisions is not a code regression - bisection can only find a code change, so check the axis that differs between the reporter's environment and the verifier's first: browser, OS, output device, autoplay and permissions policy, dev server versus built bundle. The audio-playback desync of 2026-11-10 survived six commits of bisect because the cause was WebKit's suspended-context behavior, present in every revision.
+A defect that reproduces identically on old and new revisions is not a code regression - bisection can only find a code change, so check the axis that differs between the reporter's environment and the verifier's first: browser, OS, output device, autoplay and permissions policy, dev server versus built bundle. The audio-playback desync of 2026-11-10 survived six commits of bisect because the cause was WebKit's suspended-context behavior, present in every revision. For a same-tree A/B proof, run the failing spec on a `git worktree` of the pre-change commit - identical failures there classify the defect as environmental without touching the working tree.
 
 **Hot-module reloads can recreate audio state mid-session**
 
@@ -172,3 +178,11 @@ Bulk edits driven through scripts (python, sed, heredocs) can insert stray text,
 **`clean.sh` sweeps `*.log` under `work/` too**
 
 The temp-residue pass matches `*.log`, `*.tmp`, `*.bak`, and `.DS_Store` in every directory outside `node_modules` and `.git` - `work/` is not excluded, and every path under the gitignored `work/` passes the removable check. A captured loop log named `*.log` is deleted while its writer still holds the descriptor, leaving the output unrecoverable. Name captured verification output `*.txt` or another unmatched extension.
+
+**Phantom EOL modifications flood `git status` after `npm run format`**
+
+Prettier writes LF while an `core.autocrlf` checkout produces CRLF, so the format pass leaves roughly 1,250 stat-dirty entries whose content is identical - `git diff` comes back empty and the blob hashes match. `git diff --stat` is the truth source for the real delta, and `git add` refreshes the stat cache without staging content, so the phantom entries clear the moment the real changeset is staged.
+
+**Repository scripts emit forward-slash paths**
+
+`path.join` and `path.relative` on Windows produce backslashes that break glob matching and test expectations (`docs\lesson\` versus `docs/lesson/`). Normalize repo-relative paths to `/` in script output and comparisons - the `retention-sweep.mjs` report did this after its Windows run produced backslashed paths the suite rejected.
