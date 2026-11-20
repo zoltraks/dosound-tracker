@@ -242,6 +242,8 @@ File flows wait on staged input state, not ordering: `uploadSongFile` in `e2e/he
 
 Chromium auto-resumes the `AudioContext` on the first gesture, so chromium-only runs always observe a `running` context and cannot reproduce suspended-context behavior - playback starting before `resume()` resolves, writes piling at a frozen `currentTime`, view/audio desync. Any change touching the audio path (play/stop, sequencer sync, engine startup) must also be verified under `--project=webkit`, which preserves the suspended startup state.
 
+On Windows hosts the webkit project cannot exercise audio at all - Playwright's WebKit build ships without the Web Audio API (`window.AudioContext` is undefined, upstream `microsoft/playwright#14105`), so the two playback specs in `e2e/smoke.spec.ts` skip there through an explicit `webkit` + `win32` guard. Audio-path e2e verification therefore runs on chromium on every host and on webkit only on macOS and Linux; a Windows webkit run reports those specs as skipped, not failed.
+
 **Assert the audible outcome, not call timing**
 
 Timestamps on `writeRegister` or parameter-setter calls prove a call happened, not that anything rendered. Audio-path assertions check the audible result: gain-node values after stop, the `AudioContext` state timeline, `currentTime` progression during writes, and position/view agreement - a probe that counts calls can pass while the user hears silence.
@@ -273,7 +275,7 @@ See `vitest.config.ts` for the Vitest configuration. The configuration includes:
 - Coverage provider v8 with 80% thresholds for lines, functions, branches, and statements.
 - Path alias `@/` resolving to `src/`.
 
-DOM-free suites opt into the node environment through a `// @vitest-environment node` docblock as the file's first line. This covers `test/electron/`, `test/exports/`, `test/synth/`, `test/constants/`, `test/hooks/song/loadInitialSong.test.ts`, and the `test/utils/` files that touch no DOM API - a new pure-logic test should carry the pragma. Anything using `document`, `window.*`, `self`, DOM events, or a testing-library `render` stays on the global jsdom environment.
+DOM-free suites opt into the node environment through a `// @vitest-environment node` docblock as the file's first line. This covers `test/constants/`, `test/electron/`, `test/exports/`, `test/scripts/`, `test/synth/`, and `test/workers/` in full, `test/guard/licenseAllowlist.test.ts`, the node-side `test/hooks/song/` suites (`loadInitialSong`, `songOptimize`, `songRenumber`), and the `test/utils/` files that touch no DOM API - a new pure-logic test should carry the pragma. Anything using `document`, `window.*`, `self`, DOM events, or a testing-library `render` stays on the global jsdom environment.
 
 Node 26 prints `ExperimentalWarning: localStorage is not available` lines during `vitest` runs. This is host-runtime noise from the built-in localStorage module in worker threads, not a suite failure - the jsdom localStorage mock in `test/setup-localstorage.ts` is unaffected.
 
@@ -330,8 +332,10 @@ Tests are organised under `test/` by domain:
 - `test/constants/` — constants tests
 - `test/electron/` — main-process module tests
 - `test/exports/` — export format module tests, mirroring `src/exports/`
+- `test/guard/` — repository invariant tests (directory purity, license allowlist, utility classes)
 - `test/hooks/` — custom hook tests
 - `test/modals/` — modal dialog tests, mirroring `src/modals/`
+- `test/scripts/` — `scripts/` tooling tests (version bump, retention sweep, artifact checksums)
 - `test/synth/` — audio synthesis engine tests
 - `test/utils/` — utility function tests
 - `test/workers/` — Worker and AudioWorklet protocol tests
@@ -383,7 +387,7 @@ Under `vi.useFakeTimers()`, `performance.now()` does not advance in lockstep wit
 
 **Scratch vitest probes must live under `test/`**
 
-The vitest include glob is `test/**/*.{test,spec}.{ts,tsx}`, so a throwaway probe placed in `work/` is silently skipped. Put probe files under `test/` temporarily and delete them in the same session.
+The vitest include glob is `test/**/*.{test,spec}.{ts,tsx}`, so a throwaway probe placed in `work/` is silently skipped. Put probe files under `test/` temporarily and delete them in the same session. `tsc -b` compiles untracked files too, so a probe with type errors blocks every build and typecheck until removed - a probe must typecheck cleanly or be deleted before its owner reports done.
 
 **Fakes consumed through dependency arrays must be referentially stable**
 
@@ -399,7 +403,7 @@ Panels with scroll or media-query effects - `PlaylistPanel` reads `window.matchM
 
 **jsdom lacks navigator.clipboard**
 
-Any suite exercising a code path that calls `navigator.clipboard` installs the surface first - `Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockResolvedValue(undefined) }, configurable: true })` in `beforeEach`, then spies or asserts on `writeText` per test (the pattern lives in `test/modals/MidiModal.test.tsx`).
+Any suite exercising a code path that calls `navigator.clipboard` installs the surface first - `Object.defineProperty(navigator, 'clipboard', { value: { writeText: vi.fn().mockResolvedValue(undefined) }, configurable: true })` in `beforeEach`, then spies or asserts on `writeText` per test (the pattern lives in `test/modals/midi/MidiModal.test.tsx`).
 
 **Suite helpers live inside their describe scope**
 

@@ -2,8 +2,10 @@ import { useCallback, useRef, useState } from 'react';
 import type { RefObject } from 'react';
 import * as yaml from 'js-yaml';
 import type { NavigationSection } from '../../constants/navigation.ts';
+import { MAX_IMPORT_BYTES } from '../../constants/import.ts';
 import type { InstrumentTypeInfo } from './useInstrumentWarnings.ts';
 import { logger } from '../../utils/log/logger.ts';
+import { assertImportSize } from '../../utils/validation/importSize.ts';
 
 export interface UseInstrumentFileLoadingParams {
   loadInstrument: (content: string) => void;
@@ -21,7 +23,7 @@ export interface UseInstrumentFileLoadingResult {
   setIsRepositoryInstrumentOpen: (open: boolean) => void;
   handleLoadInstrumentClick: () => void;
   handleOpenRepositoryInstrumentPicker: () => void;
-  handleInstrumentFileContent: (content: string) => void;
+  handleInstrumentFileContent: (content: string | File) => void;
   handleConfirmInstrumentTypeWarning: () => void;
   handleCancelInstrumentTypeWarning: () => void;
   handlePickRepositoryInstrument: (fileUrl: string) => void;
@@ -50,9 +52,18 @@ export function useInstrumentFileLoading({
     setIsRepositoryInstrumentOpen(true);
   }, []);
 
-  const handleInstrumentFileContent = useCallback(
+  const handleInstrumentContent = useCallback(
     (content: string) => {
       if (!content) {
+        return;
+      }
+
+      try {
+        assertImportSize(content, 'Instrument file');
+      } catch (error) {
+        setInstrumentError(
+          error instanceof Error ? error.message : 'Error loading instrument file.',
+        );
         return;
       }
 
@@ -115,6 +126,28 @@ export function useInstrumentFileLoading({
       setInstrumentError,
       openInstrumentTypeWarning,
     ],
+  );
+
+  const handleInstrumentFileContent = useCallback(
+    (content: string | File) => {
+      if (content instanceof File) {
+        if (content.size > MAX_IMPORT_BYTES) {
+          setInstrumentError('Instrument file exceeds the maximum import size.');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = event.target?.result;
+          handleInstrumentContent(typeof result === 'string' ? result : String(result ?? ''));
+        };
+        reader.readAsText(content);
+        return;
+      }
+
+      handleInstrumentContent(content);
+    },
+    [handleInstrumentContent, setInstrumentError],
   );
 
   const handleConfirmInstrumentTypeWarning = useCallback(() => {

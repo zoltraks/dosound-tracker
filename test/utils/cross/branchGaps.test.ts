@@ -143,6 +143,7 @@ describe('midiConfiguration yaml round-trip and coercion', () => {
   it('coerces string and number booleans and ids', () => {
     const text = `
 midi:
+  version: 1
   input:
     enable: "yes"
     device: "  in-x  "
@@ -169,6 +170,7 @@ midi:
   it('keeps fallbacks for unparseable values and rejects missing root', () => {
     const text = `
 midi:
+  version: 1
   input:
     enable: "maybe"
     device: 42

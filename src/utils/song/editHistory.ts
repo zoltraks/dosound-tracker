@@ -118,9 +118,15 @@ export const serializeEditHistory = <T>(
 });
 
 // Validates a parsed payload into an EditHistory with a cleared coalescing
-// cursor - coalescing never spans a reload. Corrupt input returns an empty
-// history.
-export const deserializeEditHistory = <T>(raw: unknown): EditHistory<T> => {
+// cursor - coalescing never spans a reload. Each stack keeps only the
+// newest persisted-depth entries, matching what serializeEditHistory writes
+// (and staying under the in-memory bound). When isValidEntry is supplied,
+// any surviving entry that fails it discards the whole history, extending
+// the corrupt-input fallback. Corrupt input returns an empty history.
+export const deserializeEditHistory = <T>(
+  raw: unknown,
+  isValidEntry?: (entry: unknown) => entry is T,
+): EditHistory<T> => {
   const candidate = raw as Partial<SerializedEditHistory<T>> | null;
   if (
     candidate === null ||
@@ -130,9 +136,14 @@ export const deserializeEditHistory = <T>(raw: unknown): EditHistory<T> => {
   ) {
     return createEditHistory();
   }
+  const undo = candidate.undo.slice(-EDIT_HISTORY_PERSIST_LIMIT);
+  const redo = candidate.redo.slice(-EDIT_HISTORY_PERSIST_LIMIT);
+  if (isValidEntry && [...undo, ...redo].some((entry) => !isValidEntry(entry))) {
+    return createEditHistory();
+  }
   return {
-    undo: candidate.undo,
-    redo: candidate.redo,
+    undo,
+    redo,
     lastKey: null,
     lastTime: 0,
   };

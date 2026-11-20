@@ -76,6 +76,7 @@ describe('midiConfig YAML helpers', () => {
   it('parses device IDs with trimming and null handling', () => {
     const yaml = `
       midi:
+        version: 1
         input:
           enable: true
           device: "  input-device  "
@@ -116,6 +117,54 @@ describe('midiConfig YAML helpers', () => {
     );
     expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
       /Invalid MIDI configuration file: "midi" section is not an object\./,
+    );
+  });
+
+  it('throws MidiConfigurationFormatError on an unsupported version', () => {
+    const yaml = `
+      midi:
+        version: 2
+        input:
+          enable: true
+    `;
+    const current = makeConfig();
+
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      MidiConfigurationFormatError,
+    );
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      /unsupported version "2"/,
+    );
+  });
+
+  it('throws MidiConfigurationFormatError when the version field is missing', () => {
+    const yaml = `
+      midi:
+        input:
+          enable: true
+    `;
+    const current = makeConfig();
+
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      MidiConfigurationFormatError,
+    );
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(/unsupported version/);
+  });
+
+  it('throws MidiConfigurationFormatError on a non-numeric version', () => {
+    const yaml = `
+      midi:
+        version: "1"
+        input:
+          enable: true
+    `;
+    const current = makeConfig();
+
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      MidiConfigurationFormatError,
+    );
+    expect(() => parseMidiConfigurationFromYaml(yaml, current)).toThrowError(
+      /unsupported version "1"/,
     );
   });
 });

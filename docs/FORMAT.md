@@ -599,6 +599,7 @@ midi:
 
 - Saver (`buildMidiConfigYaml`) writes the current MIDI configuration with boolean flags and optional device identifiers.
 - Loader (`parseMidiConfigFromYaml`) parses the YAML and applies settings to the current configuration.
+- `version` values other than `1` raise `MidiConfigurationFormatError` - the same explicit-version rule the settings loader applies.
 - Boolean values can be specified as `true`/`false`, `yes`/`no`, `y`/`n`, `1`/`0`, or numeric values.
 - Device identifiers are optional strings that identify specific MIDI devices.
 - The `agnostic` flag determines whether volume information should be ignored when processing MIDI events.

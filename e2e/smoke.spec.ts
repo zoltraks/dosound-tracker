@@ -9,6 +9,14 @@ import {
   uploadSongFile,
 } from './helpers';
 
+// REASON: Playwright's WebKit build on Windows ships without the Web Audio
+// API (ENABLE_WEB_AUDIO is unsupported on the Windows port), so
+// window.AudioContext is undefined and playback can never start there.
+// Playback specs skip only on that platform - WebKit on macOS/Linux and
+// Chromium still run them for real.
+const WEBKIT_WINDOWS_NO_WEB_AUDIO =
+  'Playwright WebKit on Windows has no Web Audio API - playback cannot start in this environment';
+
 test('first launch shows the bundled song with the default instrument selected', async ({
   page,
 }) => {
@@ -19,7 +27,8 @@ test('first launch shows the bundled song with the default instrument selected',
   await expect(page.locator('.instrument-item .instrument-number').first()).toHaveText('00');
 });
 
-test('enters a note in track A and plays the song', async ({ page }) => {
+test('enters a note in track A and plays the song', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit' && process.platform === 'win32', WEBKIT_WINDOWS_NO_WEB_AUDIO);
   await gotoApp(page);
   const cell = page.locator('.track-panel.track-a .track-line .note-text').first();
   await cell.click();
@@ -148,7 +157,8 @@ test('applies the contrast theme and text scale from settings', async ({ page })
   await expect(page.locator('.app')).toHaveClass(/app-scale-125/);
 });
 
-test('switches the sound engine to Ayumi and plays', async ({ page }) => {
+test('switches the sound engine to Ayumi and plays', async ({ page, browserName }) => {
+  test.skip(browserName === 'webkit' && process.platform === 'win32', WEBKIT_WINDOWS_NO_WEB_AUDIO);
   await gotoApp(page);
   await openSettings(page);
   await page.locator('#settings-category-sound').click();

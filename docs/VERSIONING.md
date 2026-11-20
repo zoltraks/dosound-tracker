@@ -118,7 +118,7 @@ One-sentence summary of the release scope and theme.
 - The most recent version is at the top.
 - The summary sentence and each bullet are single unwrapped lines - never hard-wrap an entry at a column width.
 - Do not include sub-headings such as `### Added` or `### Fixed` inside a version section.
-- Write in past tense.
+- Write in present tense. The shipped entries have been consistently present-tense since the 1.3.x line while this rule still prescribed past tense; the rule was corrected to match practice on 2026-11-20. Entries 1.2.9 and earlier were written in past tense and stay as written - they are not rewritten.
 - Inspect source code changes between versions and describe every significant change. The CHANGELOG must accurately reflect all changes that occurred, not just a high-level summary.
 - **Omit refactoring details**: Do not list internal refactoring work, code restructuring, or test additions. Focus on functionalities, features, and bug fixes that affect users. Never use the wording "Internal refactoring" - refactoring is a routine part of a version window. If a release contains only refactoring, either omit the refactoring information or describe the change plainly in the summary without the label.
 - **Check implementation plans**: When bumping from version X.Y.Z to the next version, review all implementation plan files in `docs/plan/X.Y.Z/` to ensure every implemented feature is documented in the CHANGELOG entry for the new version. Implementation plans describe work done for the upcoming version and must be recorded when that version is released.

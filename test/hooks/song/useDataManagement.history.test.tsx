@@ -307,12 +307,30 @@ describe('useDataManagement (edit history)', () => {
   });
 
   it('hydrates the undo and redo flags from persisted stacks', async () => {
+    const snapshot = {
+      song: {
+        title: 'Stored',
+        author: 'A',
+        year: 2024,
+        speed: 6,
+        length: 4,
+        pattern: [{ id: '00', name: 'P', step: [{ note: null }] }],
+        line: [{ A: '00', B: '--', C: '--' }],
+        instrument: [],
+      },
+      instrument: {
+        id: '00',
+        name: 'i',
+        volume: [15],
+        shift: [0],
+        pitch: [0],
+        noise: [0],
+        mode: [0],
+      },
+    };
     localStorage.setItem(
       StorageKeys.EDIT_HISTORY,
-      JSON.stringify({
-        undo: [{ song: {}, instrument: {} }],
-        redo: [{ song: {}, instrument: {} }],
-      }),
+      JSON.stringify({ undo: [snapshot], redo: [snapshot] }),
     );
 
     const hook = await renderHookValue();

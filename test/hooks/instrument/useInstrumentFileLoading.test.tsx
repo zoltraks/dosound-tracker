@@ -1,6 +1,7 @@
 import { act, cleanup, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 import { useInstrumentFileLoading } from '../../../src/hooks/instrument/useInstrumentFileLoading.ts';
+import { MAX_IMPORT_BYTES } from '../../../src/constants/import.ts';
 
 afterEach(() => {
   cleanup();
@@ -96,3 +97,110 @@ it.each([
     }
   },
 );
+
+interface StubReaderInstance {
+  onload: ((event: { target: { result: unknown } }) => void) | null;
+  readAsText: ReturnType<typeof vi.fn>;
+}
+
+function stubFileReader(): StubReaderInstance[] {
+  const instances: StubReaderInstance[] = [];
+  class FakeFileReader {
+    onload: StubReaderInstance['onload'] = null;
+    readAsText = vi.fn();
+    constructor() {
+      instances.push(this);
+    }
+  }
+  vi.stubGlobal('FileReader', FakeFileReader);
+  return instances;
+}
+
+it('rejects an oversized instrument file before reading it', () => {
+  const instances = stubFileReader();
+  const hook = setup();
+  const oversized = new File([new Uint8Array(MAX_IMPORT_BYTES + 1)], 'big.yaml', {
+    type: 'text/yaml',
+  });
+
+  act(() => hook.result.current.handleInstrumentFileContent(oversized));
+
+  try {
+    expect(hook.setInstrumentError).toHaveBeenCalledExactlyOnceWith(
+      'Instrument file exceeds the maximum import size.',
+    );
+    expect(hook.loadInstrument).not.toHaveBeenCalled();
+    expect(instances).toHaveLength(0);
+  } catch (error) {
+    console.log('oversized file mismatch', hook.setInstrumentError.mock.calls);
+    throw error;
+  }
+});
+
+it('accepts an instrument file at exactly the import cap', () => {
+  const instances = stubFileReader();
+  const hook = setup();
+  const file = new File([new Uint8Array(MAX_IMPORT_BYTES)], 'cap.yaml', {
+    type: 'text/yaml',
+  });
+
+  act(() => hook.result.current.handleInstrumentFileContent(file));
+
+  try {
+    expect(instances).toHaveLength(1);
+    expect(instances[0]?.readAsText).toHaveBeenCalledWith(file);
+    expect(hook.setInstrumentError).not.toHaveBeenCalled();
+  } catch (error) {
+    console.log('cap boundary mismatch', hook.setInstrumentError.mock.calls);
+    throw error;
+  }
+});
+
+it('reads an instrument file under the cap and loads its content', () => {
+  const instances = stubFileReader();
+  const hook = setup();
+  const file = new File(['instrument: { type: dosound }'], 'inst.yaml', {
+    type: 'text/yaml',
+  });
+
+  act(() => hook.result.current.handleInstrumentFileContent(file));
+
+  try {
+    expect(instances).toHaveLength(1);
+    expect(instances[0]?.readAsText).toHaveBeenCalledWith(file);
+    expect(hook.setInstrumentError).not.toHaveBeenCalled();
+  } catch (error) {
+    console.log('file read mismatch', hook.setInstrumentError.mock.calls);
+    throw error;
+  }
+
+  act(() => {
+    instances[0]?.onload?.({ target: { result: 'instrument: { type: dosound }' } });
+  });
+
+  try {
+    expect(hook.loadInstrument).toHaveBeenCalledWith('instrument: { type: dosound }');
+    expect(hook.setActiveSection).toHaveBeenCalledWith('instrumentList');
+  } catch (error) {
+    console.log('loaded content mismatch', hook.loadInstrument.mock.calls);
+    throw error;
+  }
+});
+
+it('rejects oversized instrument text before parsing it', () => {
+  const hook = setup();
+  const oversized = `instrument: [\n${'#'.repeat(MAX_IMPORT_BYTES)}`;
+
+  act(() => hook.result.current.handleInstrumentFileContent(oversized));
+
+  try {
+    expect(hook.setInstrumentError).toHaveBeenCalledExactlyOnceWith(
+      'Instrument file exceeds the maximum import size.',
+    );
+    expect(hook.loadInstrument).not.toHaveBeenCalled();
+    expect(hook.openInstrumentTypeWarning).not.toHaveBeenCalled();
+  } catch (error) {
+    console.log('oversized text mismatch', hook.setInstrumentError.mock.calls);
+    throw error;
+  }
+});

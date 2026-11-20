@@ -74,8 +74,8 @@ export function useMidi(
       return {
         inputEnabled: !!parsed.inputEnabled,
         outputEnabled: !!parsed.outputEnabled,
-        inputId: parsed.inputId ?? null,
-        outputId: parsed.outputId ?? null,
+        inputId: typeof parsed.inputId === 'string' ? parsed.inputId : null,
+        outputId: typeof parsed.outputId === 'string' ? parsed.outputId : null,
         ignoreInputVolume:
           typeof parsed.ignoreInputVolume === 'boolean' ? parsed.ignoreInputVolume : true,
         ignoreOutputVolume:

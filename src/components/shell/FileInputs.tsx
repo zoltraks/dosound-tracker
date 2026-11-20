@@ -5,7 +5,7 @@ interface FileInputsProps {
   fileInputRef: RefObject<HTMLInputElement | null>;
   instrumentFileInputRef: RefObject<HTMLInputElement | null>;
   onLoadSong: (file: File) => void;
-  onLoadInstrument: (content: string) => void;
+  onLoadInstrument: (file: File) => void;
   setPosition: (pattern: number, line: number, tick: number) => void;
   setSharedCurrentLine: (line: number) => void;
   setActiveSection: (section: NavigationSection) => void;
@@ -49,19 +49,9 @@ export const FileInputs: React.FC<FileInputsProps> = ({
         style={{ display: 'none' }}
         onChange={(e) => {
           const file = e.target.files?.[0];
-          if (!file) {
-            return;
+          if (file) {
+            onLoadInstrument(file);
           }
-
-          const reader = new FileReader();
-          reader.onload = (ev) => {
-            const text =
-              typeof ev.target?.result === 'string'
-                ? ev.target.result
-                : String(ev.target?.result ?? '');
-            onLoadInstrument(text);
-          };
-          reader.readAsText(file);
         }}
       />
     </>

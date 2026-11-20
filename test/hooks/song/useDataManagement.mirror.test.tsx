@@ -26,6 +26,27 @@ const Harness: React.FC<{ onReady: (value: HookResult) => void }> = ({ onReady }
   return null;
 };
 
+const validSongSnapshot = (title: string) => ({
+  title,
+  author: 'A',
+  year: 2024,
+  speed: 6,
+  length: 4,
+  pattern: [{ id: '00', name: 'P', step: [{ note: null }] }],
+  line: [{ A: '00', B: '--', C: '--' }],
+  instrument: [
+    {
+      id: '00',
+      name: 'i',
+      volume: [15],
+      shift: [0],
+      pitch: [0],
+      noise: [0],
+      mode: [0],
+    },
+  ],
+});
+
 describe('useDataManagement mirror restore', () => {
   afterEach(() => {
     vi.clearAllMocks();
@@ -34,13 +55,7 @@ describe('useDataManagement mirror restore', () => {
 
   it('restores the mirrored song when localStorage is empty', async () => {
     localStorage.removeItem(StorageKeys.SONG);
-    vi.mocked(readMirroredSnapshot).mockResolvedValue({
-      title: 'Recovered Song',
-      speed: 6,
-      pattern: [],
-      line: [],
-      instrument: [],
-    });
+    vi.mocked(readMirroredSnapshot).mockResolvedValue(validSongSnapshot('Recovered Song'));
     let hook: HookResult | null = null;
     render(<Harness onReady={(value) => (hook = value)} />);
     try {
@@ -53,11 +68,31 @@ describe('useDataManagement mirror restore', () => {
     }
   });
 
+  it('rejects a malformed mirrored snapshot and keeps the default song', async () => {
+    localStorage.removeItem(StorageKeys.SONG);
+    vi.mocked(readMirroredSnapshot).mockResolvedValue({
+      title: 'Broken Song',
+      speed: 6,
+      pattern: [],
+      line: [],
+      instrument: [],
+    });
+    let hook: HookResult | null = null;
+    render(<Harness onReady={(value) => (hook = value)} />);
+    try {
+      await waitFor(() => expect(hook).not.toBeNull());
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      expect(hook!.mirrorRestoreNotice).toBeNull();
+      expect(hook!.currentSong.title).not.toBe('Broken Song');
+      expect(hook!.currentSong.pattern.length).toBeGreaterThan(0);
+    } catch (error) {
+      console.log('malformed mirror mismatch');
+      throw error;
+    }
+  });
+
   it('never reads the mirror when localStorage already holds a song', async () => {
-    localStorage.setItem(
-      StorageKeys.SONG,
-      JSON.stringify({ title: 'Stored Song', speed: 6, pattern: [], line: [], instrument: [] }),
-    );
+    localStorage.setItem(StorageKeys.SONG, JSON.stringify(validSongSnapshot('Stored Song')));
     let hook: HookResult | null = null;
     render(<Harness onReady={(value) => (hook = value)} />);
     try {

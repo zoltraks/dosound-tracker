@@ -222,4 +222,40 @@ describe('editHistory', () => {
     expect(deserializeEditHistory(null)).toEqual(createEditHistory());
     expect(deserializeEditHistory(undefined)).toEqual(createEditHistory());
   });
+
+  it('deserializeEditHistory bounds oversized stacks to the persisted depth', () => {
+    const oversized = {
+      undo: Array.from({ length: EDIT_HISTORY_PERSIST_LIMIT + 10 }, (_, index) => index),
+      redo: Array.from({ length: EDIT_HISTORY_LIMIT + 5 }, (_, index) => index + 1000),
+    };
+
+    const restored = deserializeEditHistory<number>(oversized);
+
+    expect(restored.undo).toHaveLength(EDIT_HISTORY_PERSIST_LIMIT);
+    expect(restored.undo[0]).toBe(10);
+    expect(restored.undo.at(-1)).toBe(EDIT_HISTORY_PERSIST_LIMIT + 9);
+    expect(restored.redo).toHaveLength(EDIT_HISTORY_PERSIST_LIMIT);
+    expect(restored.redo[0]).toBe(EDIT_HISTORY_LIMIT + 5 - EDIT_HISTORY_PERSIST_LIMIT + 1000);
+    expect(restored.redo.at(-1)).toBe(EDIT_HISTORY_LIMIT + 4 + 1000);
+  });
+
+  it('deserializeEditHistory keeps entries that pass the supplied validator', () => {
+    const isPositive = (entry: unknown): entry is number => typeof entry === 'number' && entry > 0;
+
+    const restored = deserializeEditHistory<number>({ undo: [1, 2, 3], redo: [4] }, isPositive);
+
+    expect(restored.undo).toEqual([1, 2, 3]);
+    expect(restored.redo).toEqual([4]);
+  });
+
+  it('deserializeEditHistory discards the whole history when any entry fails validation', () => {
+    const isPositive = (entry: unknown): entry is number => typeof entry === 'number' && entry > 0;
+
+    expect(deserializeEditHistory<number>({ undo: [1, -2, 3], redo: [] }, isPositive)).toEqual(
+      createEditHistory(),
+    );
+    expect(deserializeEditHistory<number>({ undo: [], redo: ['x'] }, isPositive)).toEqual(
+      createEditHistory(),
+    );
+  });
 });

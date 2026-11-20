@@ -82,6 +82,37 @@ describe('useMidi', () => {
     });
   });
 
+  it('restores null device ids when the persisted values are not strings', async () => {
+    const stored = {
+      inputEnabled: true,
+      outputEnabled: true,
+      inputId: { unexpected: 'object' },
+      outputId: 42,
+      ignoreInputVolume: false,
+      ignoreOutputVolume: false,
+    };
+
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+
+    let hook: HookResult | null = null;
+    render(
+      <MidiHookHarness
+        onReady={(value) => {
+          hook = value;
+        }}
+      />,
+    );
+
+    await waitFor(() => {
+      expect(hook).not.toBeNull();
+    });
+
+    expect(hook!.configuration.inputId).toBeNull();
+    expect(hook!.configuration.outputId).toBeNull();
+    expect(hook!.configuration.inputEnabled).toBe(true);
+    expect(hook!.configuration.outputEnabled).toBe(true);
+  });
+
   it('persists sanitized configuration back to localStorage when setConfiguration is called', async () => {
     window.localStorage.removeItem(STORAGE_KEY);
 

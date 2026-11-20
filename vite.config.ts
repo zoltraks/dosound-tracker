@@ -45,6 +45,8 @@ export default defineConfig({
   },
   server: {
     port: 8008,
+    // Dev-only: bind all interfaces so the app is reachable from other
+    // devices on the LAN during development; preview and builds are unaffected.
     host: true,
   },
   preview: {

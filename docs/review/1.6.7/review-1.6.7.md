@@ -2,10 +2,10 @@
 
 ## Document Information
 
-|             |                                                                                          |
-| ----------- | ---------------------------------------------------------------------------------------- |
-| Version     | 1.6.7                                                                                    |
-| Review Date | 2026-11-19                                                                               |
+|             |                                                                                                                                                                                                                          |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Version     | 1.6.7                                                                                                                                                                                                                    |
+| Review Date | 2026-11-19                                                                                                                                                                                                               |
 | Commands    | `git log`, `git status --short`, `git show --stat`, `npm run typecheck`, `npm run lint`, `npm run format`, `npm run build`, `npm test`, `npm run test:e2e`, `scripts/release-check.sh`, `npm run retention`, `npm audit` |
 
 ## Scope
@@ -27,24 +27,24 @@ the cross-engine loudness parity candidate recorded in `docs/FUTURE.md`.
 
 ## Recorded Work
 
-| Document                                                              | Kind        | Status | Result                                                                              |
-| --------------------------------------------------------------------- | ----------- | ------ | ----------------------------------------------------------------------------------- |
-| `docs/change/1.6.7/ayumi-stereo-parity.md`                            | Change      | Done   | Equal-power pan law and unity-gain bypass align Ayumi stereo and mono with internal |
-| `docs/change/1.6.7/dark-select-lists.md`                             | Change      | Done   | Settings selects and option lists follow the active theme                           |
-| `docs/change/1.6.7/dual-chip-stereo-default.md`                       | Change      | Done   | `dual` layout is the hard chip split and the two-chip-song default                  |
-| `docs/change/1.6.7/dual-chip-track-tints.md`                          | Change      | Done   | Channels D-F carry per-channel panel tints in every theme                           |
-| `docs/change/1.6.7/linux-deb-package.md`                              | Change      | Done   | `.deb` target with t64 dependencies, desktop association, and hicolor icons         |
-| `docs/change/1.6.7/section-surface-polish.md`                         | Change      | Done   | Section-idiom surfaces; envelope Pos/Val footer removed behind `data-position`      |
-| `docs/change/1.6.7/settings-category-button-metrics.md`               | Change      | Done   | Category buttons match command-button box metrics                                   |
-| `docs/change/1.6.7/settings-draft-sync.md`                            | Change      | Done   | Settings draft refreshes from committed values while the modal is closed            |
-| `docs/change/1.6.7/song-chip-count-setting.md`                        | Change      | Done   | `song.chipCount` owns two-chips; the app-level `dualChip` setting is removed        |
-| `docs/change/1.6.7/song-driven-dual-chip-playback.md`                 | Change      | Done   | Playback engines follow the song's resolved chip count                              |
-| `docs/change/1.6.7/stereo-live-preview-crossfade.md`                  | Change      | Done   | Normalized crosstalk crossfade plus live draft sound preview                        |
-| `docs/change/1.6.7/stereo-modes-crosstalk.md`                         | Change      | Done   | Per-chip `one`/`two` stereo modes with MONO and CROSSTALK settings                  |
-| `docs/change/1.6.7/track-frame-borders.md`                            | Change      | Done   | Per-channel frame borders gated by the track background option                      |
-| `docs/change/1.6.7/track-header-volume-label.md`                      | Change      | Done   | Bare volume value centered over the volume column                                   |
-| `docs/plan/1.6.7/*-implementation.md`                                 | Plan        | Done   | Three plans present; Refinements sections record landed divergences                 |
-| `docs/refactoring/1.6.7/REFACTORING.md` + `ASSESSMENT.md`             | Refactoring | Done   | Pass - `App.tsx` orchestration decomposed into five hooks plus helpers              |
+| Document                                                  | Kind        | Status | Result                                                                              |
+| --------------------------------------------------------- | ----------- | ------ | ----------------------------------------------------------------------------------- |
+| `docs/change/1.6.7/ayumi-stereo-parity.md`                | Change      | Done   | Equal-power pan law and unity-gain bypass align Ayumi stereo and mono with internal |
+| `docs/change/1.6.7/dark-select-lists.md`                  | Change      | Done   | Settings selects and option lists follow the active theme                           |
+| `docs/change/1.6.7/dual-chip-stereo-default.md`           | Change      | Done   | `dual` layout is the hard chip split and the two-chip-song default                  |
+| `docs/change/1.6.7/dual-chip-track-tints.md`              | Change      | Done   | Channels D-F carry per-channel panel tints in every theme                           |
+| `docs/change/1.6.7/linux-deb-package.md`                  | Change      | Done   | `.deb` target with t64 dependencies, desktop association, and hicolor icons         |
+| `docs/change/1.6.7/section-surface-polish.md`             | Change      | Done   | Section-idiom surfaces; envelope Pos/Val footer removed behind `data-position`      |
+| `docs/change/1.6.7/settings-category-button-metrics.md`   | Change      | Done   | Category buttons match command-button box metrics                                   |
+| `docs/change/1.6.7/settings-draft-sync.md`                | Change      | Done   | Settings draft refreshes from committed values while the modal is closed            |
+| `docs/change/1.6.7/song-chip-count-setting.md`            | Change      | Done   | `song.chipCount` owns two-chips; the app-level `dualChip` setting is removed        |
+| `docs/change/1.6.7/song-driven-dual-chip-playback.md`     | Change      | Done   | Playback engines follow the song's resolved chip count                              |
+| `docs/change/1.6.7/stereo-live-preview-crossfade.md`      | Change      | Done   | Normalized crosstalk crossfade plus live draft sound preview                        |
+| `docs/change/1.6.7/stereo-modes-crosstalk.md`             | Change      | Done   | Per-chip `one`/`two` stereo modes with MONO and CROSSTALK settings                  |
+| `docs/change/1.6.7/track-frame-borders.md`                | Change      | Done   | Per-channel frame borders gated by the track background option                      |
+| `docs/change/1.6.7/track-header-volume-label.md`          | Change      | Done   | Bare volume value centered over the volume column                                   |
+| `docs/plan/1.6.7/*-implementation.md`                     | Plan        | Done   | Three plans present; Refinements sections record landed divergences                 |
+| `docs/refactoring/1.6.7/REFACTORING.md` + `ASSESSMENT.md` | Refactoring | Done   | Pass - `App.tsx` orchestration decomposed into five hooks plus helpers              |
 
 ## Repository Analysis
 
@@ -122,31 +122,31 @@ the cross-engine loudness parity candidate recorded in `docs/FUTURE.md`.
   content (empty `git diff`, matching blob hashes). Cosmetic only.
 - **`.deb` real install** - package metadata, payload, and dependency
   resolution were verified with `dpkg-deb`/`lintian`/`apt-get
-  --simulate`; installing on a Mint host remains the record's user-side
+--simulate`; installing on a Mint host remains the record's user-side
   acceptance step.
 - **Cross-engine loudness parity** - the Ayumi parity record's residual
   ~2.4x RMS difference is deferred to the `docs/FUTURE.md` candidate.
 
 ## Findings
 
-| Severity | Finding                                                       | Evidence                                                          | Action                                  |
-| -------- | ------------------------------------------------------------- | ----------------------------------------------------------------- | --------------------------------------- |
-| Minor    | Window changeset uncommitted at review time                   | `git status` shows the refactoring pair, review, lessons, bump    | Owner commits the changeset             |
-| Minor    | `specification-audit` extension adopted but dormant           | `docs/plan/1.6.7/` holds no audit artifacts; same as 1.6.6        | Owner decides: reinstate or record dormant |
-| Info     | WebKit playback e2e fails on this host                        | `smoke.spec.ts:22` and `:151` under `--project=webkit`; identical on baseline `263cb00` | Accepted environmental risk; verify on macOS/Linux |
-| Info     | Host Node below declared engines floor                        | `node -v` 22.23.5 vs `>=26.13.0`; portable 26.13.0 EPERM on temp   | Documented in TOOLING.md and lessons    |
-| Info     | Phantom EOL modifications flood `git status`                  | ~1,250 entries, empty `git diff`, identical blob hashes           | Cosmetic; `git add` refreshes stat info |
+| Severity | Finding                                             | Evidence                                                                                | Action                                             |
+| -------- | --------------------------------------------------- | --------------------------------------------------------------------------------------- | -------------------------------------------------- |
+| Minor    | Window changeset uncommitted at review time         | `git status` shows the refactoring pair, review, lessons, bump                          | Owner commits the changeset                        |
+| Minor    | `specification-audit` extension adopted but dormant | `docs/plan/1.6.7/` holds no audit artifacts; same as 1.6.6                              | Owner decides: reinstate or record dormant         |
+| Info     | WebKit playback e2e fails on this host              | `smoke.spec.ts:22` and `:151` under `--project=webkit`; identical on baseline `263cb00` | Accepted environmental risk; verify on macOS/Linux |
+| Info     | Host Node below declared engines floor              | `node -v` 22.23.5 vs `>=26.13.0`; portable 26.13.0 EPERM on temp                        | Documented in TOOLING.md and lessons               |
+| Info     | Phantom EOL modifications flood `git status`        | ~1,250 entries, empty `git diff`, identical blob hashes                                 | Cosmetic; `git add` refreshes stat info            |
 
 ## Verification Evidence
 
 - `scripts/clean.sh` removed `dist/`, `coverage/`, `playwright-report/`,
   `test-results/`; the full loop then rebuilt from scratch.
 - Node 22.23.5 (installed toolchain): `npm run typecheck`, `npm run
-  lint`, `npm run format`, `npm run build` clean; entry chunk 591.66 kB,
+lint`, `npm run format`, `npm run build` clean; entry chunk 591.66 kB,
   under the 600 kB budget; `npm test` 197 files / 1809 tests pass.
 - Node 26.13.0 / npm 11.20.0 (declared toolchain, portable zip,
   SHA256-verified): `npm run typecheck`, `npm run lint`, `npm run
-  format`, `npm run build` clean; `npm test` 1807/1809 - the two
+format`, `npm run build` clean; `npm test` 1807/1809 - the two
   failures are `retentionSweepCoverage` git-fixture tests that require
   `os.tmpdir()` outside the repository, unreachable while TMP is
   redirected inside `work/` for the portable binary's temp EPERM; both

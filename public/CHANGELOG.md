@@ -1,5 +1,13 @@
 # Changes
 
+## Version 1.6.9
+
+Import and restore paths validate earlier and fail safer, and the desktop build tightens renderer and service-worker hardening.
+
+- **Import size gate**: instrument files larger than 1 MiB are rejected before any parsing, matching the song, settings, and history import paths.
+- **Restore validation**: persisted song, settings, undo-history, and MIDI-configuration snapshots are validated through the same contracts the import parsers apply - malformed data resets to safe defaults instead of restoring partial state.
+- **Desktop hardening**: the Electron renderer pins `sandbox: true`, and the service worker caches only successful responses so error pages cannot stick in offline storage.
+
 ## Version 1.6.8
 
 Stereo playback is now per-chip and song-owned, the settings dialog previews sound changes live, and a Debian package joins the desktop builds.

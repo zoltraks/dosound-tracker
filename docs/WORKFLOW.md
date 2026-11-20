@@ -269,7 +269,7 @@ Archived documents are historical, not active rules - the Document Directory Acc
 
 The repository adopts the `version-window` extension and the `audit-driven-development` convention. A named window request - "run the SDLC for `<version>`" or "process the `<version>` window" - executes the whole window as one operation instead of one change request at a time.
 
-The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline - `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result, and again at each stage transition - records to refactoring, refactoring to review, review to bump. An unspecified mode follows the recorded default: `human-in-the-loop`.
+The request may select a gate mode: `autonomous` runs every stage without pausing, choosing the recommended option at each decision point and reporting each decision inline - `human-in-the-loop` stops for confirmation after each change-request iteration's plan, implementation, and verification result, and again at each stage transition - records to refactoring, refactoring to review, review to bump. An unspecified mode follows the recorded default: `autonomous` (the project owner's standing instruction of 2026-11-20 made autonomous execution the usual way - see `docs/decision/2026-11-20-autonomous-sdlc-default.md`).
 
 A decision a record reserves to the user resolves under `autonomous` like every other decision point: the recommended option is chosen, reported inline, and flagged for owner confirmation in the window review.
 
@@ -281,7 +281,7 @@ Every pending question and option surface in a window run - gate confirmations, 
 - Order the requests from their recorded dependencies.
 - The named window request is the explicit authorization to read that window's `docs/change/` and `docs/plan/` groups.
 - "Continue SDLC autonomously" or "finish the `<version>` window" names the same operation on an in-progress window whose records were written ad hoc during the session rather than as pre-planned requests.
-- An unversioned proceed request - "proceed automated SDLC" and the like - resolves to the in-progress window: the `docs/change/` directory matching `package.json`. The word `automated` selects the `autonomous` gate mode.
+- An unversioned proceed request - "proceed SDLC", "proceed automated SDLC", and the like - resolves to the in-progress window: the `docs/change/` directory matching `package.json`, under the recorded default gate mode unless the request selects another.
 - A record whose work is already landed is verified against the tree and closed, not re-implemented. A record that should not be implemented is discarded with its rationale recorded in the record itself. Implementation runs only on records that describe unlanded work.
 - An empty window reports zero active records - the refactoring phase may still run on the current state and no bump is forced.
 
@@ -578,7 +578,7 @@ If the owner becomes unreachable, the escalation path is:
 - **Repository** - the GitHub account of record owns `zoltraks/dosound-tracker` - recovery goes through that account's credentials and GitHub account-recovery procedures. The full history lives in every clone, so the code itself is never hostage to a single checkout.
 - **Published site** - `https://dosound.alyx.pl` is served from the static `dist/` bundle - control follows the domain and hosting account of record.
 - **Release-signing materials** - none exist today. Desktop binaries ship unsigned per `DEPLOYMENT.md` - if signing is procured later, the certificates and notarization credentials join this list.
-- **Stale remote branches** - `origin/` carries abandoned `broken/*`, `refactoring/*`, `repair/*`, and feature branches from earlier sessions. Pruning them is an owner action, since remote deletion is irreversible - the recommendation is to remove everything except `main` when the owner next reviews the remote.
+- **Stale remote branches** - `origin/` carries abandoned `broken/*`, `refactoring/*`, `repair/*`, and feature branches from earlier sessions. Pruning them is an owner action, since remote deletion is irreversible - the recommendation is to remove everything except `main` when the owner next reviews the remote. The museum posture, verified branch classes, and the two-remote mirror are recorded in `docs/decision/2026-11-20-branch-museum.md`.
 
 **Close the window on a clean production-ready build**
 

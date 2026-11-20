@@ -1,11 +1,18 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, beforeEach, expect, it, vi } from 'vitest';
 import App from '../../../src/App.tsx';
 import { StorageKeys } from '../../../src/utils/storage/storageKeys.ts';
 
 vi.mock('../../../src/hooks/audio/useAudioContext.ts', () => ({
   useAudioContext: () => ({ audioContext: null, error: null }),
 }));
+
+beforeAll(async () => {
+  // The Settings dialog is a React.lazy chunk - warm it once so the first
+  // open resolves from the module cache instead of paying the on-demand
+  // transform cost inside the test's wait window under suite contention.
+  await import('../../../src/modals/settings/SettingsModal.tsx');
+});
 
 beforeEach(() => {
   vi.stubGlobal('innerWidth', 1440);
@@ -43,11 +50,11 @@ it('opens and closes Settings from the tracker workspace', async () => {
 
   expect(screen.getByLabelText('Song title')).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-  const dialog = await screen.findByRole('dialog', { name: 'Settings' });
+  const dialog = await screen.findByRole('dialog', { name: 'Settings' }, { timeout: 10000 });
 
   fireEvent.click(screen.getByRole('button', { name: 'CANCEL' }));
   expect(dialog.isConnected).toBe(false);
-});
+}, 20000);
 
 it('edits song metadata and undoes and redoes the edit', () => {
   render(<App />);

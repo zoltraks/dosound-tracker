@@ -113,3 +113,7 @@ Electron desktop builds can be downloaded from the project home page: https://do
 ## Web Hosting
 
 The application is a static single-page application. The live deployment is the project home page above - the `dist/` output deploys to any static file host without additional configuration. The relative build base and the scope-relative service worker keep asset and offline URLs working when the site is served from a nested path, not only from the host root.
+
+## Development Server
+
+`npm run dev` binds the Vite dev server to all interfaces through `host: true` in `vite.config.ts`, so the tracker is reachable from other devices on the local network during development - for example, exercising the UI on a phone or a second machine. The setting applies to `vite dev` only: `vite preview` and `npm run build` output keep their default binding, and deployed static hosting is unaffected.

@@ -16,6 +16,9 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
+      // Pin the renderer sandbox explicitly - Electron's default has shifted
+      // across versions, and the preload uses only sandbox-safe APIs.
+      sandbox: true,
       backgroundThrottling: false,
     },
   });

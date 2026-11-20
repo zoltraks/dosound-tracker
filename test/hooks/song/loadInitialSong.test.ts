@@ -95,7 +95,8 @@ describe('loadInitialSong', () => {
       expect(song.pattern[0].step[0].note?.note).toBe('C');
       expect(song.line[0].A).toBe('00');
       const inst = song.instrument[0];
-      expect(inst.noise).toEqual([4]);
+      expect(inst.noise).toHaveLength(ENVELOPE_LENGTH);
+      expect(inst.noise.every((value) => value === 4)).toBe(true);
       expect(inst.shift).toHaveLength(ENVELOPE_LENGTH);
       expect(inst.shift[1]).toBe(12);
       expect(song.chip).toBe('YM');
@@ -149,5 +150,70 @@ describe('loadInitialSong', () => {
       console.log('length default mismatch');
       throw error;
     }
+  });
+
+  it('falls back to the bundled song when the stored snapshot has empty collections', () => {
+    const cases: unknown[] = [
+      storedSong({ pattern: [] }),
+      storedSong({ line: [] }),
+      storedSong({ instrument: [] }),
+      { title: 'Only Title' },
+      'not-an-object',
+      42,
+    ];
+
+    for (const stored of cases) {
+      localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(stored));
+      const song = loadInitialSong();
+      expect(song.pattern.length).toBeGreaterThan(0);
+      expect(song.line.length).toBeGreaterThan(0);
+      expect(song.instrument.length).toBeGreaterThan(0);
+      expect(song.title).not.toBe('Only Title');
+    }
+  });
+
+  it('falls back to the bundled song when stored entries are not objects', () => {
+    const cases: Record<string, unknown>[] = [
+      storedSong({ pattern: [null] }),
+      storedSong({ line: [null] }),
+      storedSong({ instrument: [null] }),
+      storedSong({ pattern: ['oops'] }),
+    ];
+
+    for (const stored of cases) {
+      localStorage.setItem(SONG_STORAGE_KEY, JSON.stringify(stored));
+      const song = loadInitialSong();
+      expect(song.pattern.length).toBeGreaterThan(0);
+      expect(song.line.length).toBeGreaterThan(0);
+      expect(song.instrument.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('repairs malformed member values instead of rejecting the snapshot', () => {
+    localStorage.setItem(
+      SONG_STORAGE_KEY,
+      JSON.stringify(
+        storedSong({
+          title: 42,
+          pattern: [
+            {
+              id: '00',
+              name: 'P',
+              step: [{ note: { note: 'C', octave: 'x', instrument: '00' }, volume: 'loud' }],
+            },
+          ],
+          line: [{ A: { nested: true }, B: '--', C: '--' }],
+          instrument: [{ id: '00', name: 'i', volume: 'loud', noise: [4] }],
+        }),
+      ),
+    );
+
+    const song = loadInitialSong();
+    expect(song.title).toBe('New Song');
+    expect(song.pattern[0].step[0].note).toBeNull();
+    expect(song.pattern[0].step[0].volume).toBeUndefined();
+    expect(song.line[0].A).toBe('--');
+    expect(song.instrument[0].volume).toHaveLength(ENVELOPE_LENGTH);
+    expect(song.instrument[0].noise).toHaveLength(ENVELOPE_LENGTH);
   });
 });

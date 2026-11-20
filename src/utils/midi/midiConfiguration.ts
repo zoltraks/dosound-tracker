@@ -73,6 +73,12 @@ export const parseMidiConfigurationFromYaml = (
     output?: unknown;
   };
 
+  if (midiNode.version !== 1) {
+    throw new MidiConfigurationFormatError(
+      `Invalid MIDI configuration file: unsupported version "${String(midiNode.version)}".`,
+    );
+  }
+
   const inputNode =
     midiNode.input && typeof midiNode.input === 'object'
       ? (midiNode.input as Record<string, unknown>)

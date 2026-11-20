@@ -255,7 +255,10 @@ const buildFixture = () => {
   return fixture;
 };
 
-describe('retention sweep coverage - subprocess', () => {
+// Git fixtures and node subprocesses need headroom under coverage
+// instrumentation and full-suite worker contention - the default 5 s test
+// timeout flakes here while the suite stays green in isolation.
+describe('retention sweep coverage - subprocess', { timeout: 30000 }, () => {
   it('prints the dry-run plan, emits json, then applies with repoints', () => {
     const fixture = buildFixture();
 
@@ -384,7 +387,7 @@ describe('retention sweep coverage - subprocess', () => {
   });
 });
 
-describe('retention sweep coverage - in-process runs', () => {
+describe('retention sweep coverage - in-process runs', { timeout: 30000 }, () => {
   const runInProcess = async (fixture: string, args: string[] = []) => {
     vi.resetModules();
     const originalArgv = process.argv;
